@@ -1293,6 +1293,10 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
     Copy-Item -Path $infFile -Destination c:\request.inf -Force
 
     Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile -Force
+    
+    $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+    $certPrint.Import('C:\cert.cer')
+    $certPrint
 }
 
 function Get-CertificatePfx
@@ -1571,9 +1575,20 @@ function Get-LabIssuingCA
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
     
-    param()
+    param(
+        [string]$DomainName
+    )
     
-    $issuingCAs = Invoke-LabCommand -ComputerName (Get-LabMachine -Role CaRoot, CaSubordinate) -ScriptBlock {
+    if ($DomainName)
+    {
+        $machines = (Get-LabMachine -Role CaRoot, CaSubordinate) | Where-Object DomainName -eq $DomainName
+    }
+    else
+    {
+        $machines = (Get-LabMachine -Role CaRoot, CaSubordinate)
+    }
+    
+    $issuingCAs = Invoke-LabCommand -ComputerName  -ScriptBlock {
         $templates = certutil.exe -CATemplates
         if ($templates -like '*Machine*')
         {
@@ -1603,7 +1618,9 @@ function Request-LabCertificate
         [string]$TemplateName,
         
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [string[]]$ComputerName,
+        
+        [switch]$PassThru
     )
     
     Write-LogFunctionEntry
@@ -1617,7 +1634,7 @@ function Request-LabCertificate
         Invoke-LabCommand -ActivityName "Requesting certificate for template '$TemplateName'" -ComputerName $computer -ScriptBlock {        
             $p = Sync-Parameter -Command (Get-Command -Name Request-Certificate) -Parameters $parameters
             Request-Certificate @p
-        } -UseCredSsp -Variable $variables -Function $functions
+        } -UseCredSsp -Variable $variables -Function $functions -PassThru
     }
     
     Write-LogFunctionExit
@@ -3367,7 +3384,7 @@ function Enable-LabCertificateAutoenrollment
             [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationStoreNames', 'MY')
         }
             
-        1..3 | foreach { gpupdate.exe /force;certutil.exe -pulse;Start-Sleep -Seconds 1 }
+        1..3 | ForEach-Object { gpupdate.exe /force;certutil.exe -pulse;Start-Sleep -Seconds 1 }
             
     } -ArgumentList $gpoType, $Computer, ($User -or $CodeSigning)
     Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay
