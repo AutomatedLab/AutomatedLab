@@ -236,6 +236,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDscClients", "{42F1CA14-387C-4DC0-BF14-0DFEA2681105}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 = LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{2E4C28D0-0A96-453D-AE4B-22ED3284966C}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -300,5 +311,7 @@ Global
 		{BB2F6956-209C-40CB-8877-07E3F5C79F76} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{1D008E01-0359-4EF9-AB13-ADC357240D25} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{42F1CA14-387C-4DC0-BF14-0DFEA2681105} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{2E4C28D0-0A96-453D-AE4B-22ED3284966C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 	EndGlobalSection
 EndGlobal

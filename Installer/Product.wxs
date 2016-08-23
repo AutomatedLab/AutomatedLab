@@ -1348,73 +1348,82 @@
   <!--All references created using heat.exe-->
   <Fragment>
     <ComponentGroup Id="LabSourcesComponentGroup">
-      <Component Id="cmp39Q7tjdvSKxX9CpA2jN7av1dKyE" Directory="dir7WLcTQ0qFC0cHx.uoP_NIqE.GCw" Guid="dbaa8fac-13bf-4da0-bca1-9980baf2e84f">
+      <Component Id="cmp39Q7tjdvSKxX9CpA2jN7av1dKyE" Directory="dir7WLcTQ0qFC0cHx.uoP_NIqE.GCw" Guid="13cc9554-0c87-43a0-9106-b70533594041">
         <File Id="filIbxMxonEj6WwOyERxFXVW3gO7C4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
       </Component>
-      <Component Id="cmpS40wCYMDmHA12Z0Eb_M8pJCoZIA" Directory="dir3VF5dP_zxECzFLgWvZRzT_8xP0I" Guid="e010e263-4d3b-4a98-a039-63ba674b1d59">
+      <Component Id="cmpS40wCYMDmHA12Z0Eb_M8pJCoZIA" Directory="dir3VF5dP_zxECzFLgWvZRzT_8xP0I" Guid="f461bfb5-26b4-4468-b7e3-e93cdd6fc967">
         <File Id="fil2Qo1MjIFhq2GpbQfDHFvUP4AfkM" KeyPath="yes" Source="$(var.SolutionDir)LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt" />
       </Component>
-      <Component Id="cmprIcqQWxnQKCECiHWK_TkAwUk2Ks" Directory="dirSfK1v5lOtFi.Qg_pePMEsZfilFo" Guid="136edb28-e5b9-481e-9a65-c3af6bf04ee2">
+      <Component Id="cmprIcqQWxnQKCECiHWK_TkAwUk2Ks" Directory="dirSfK1v5lOtFi.Qg_pePMEsZfilFo" Guid="55025a96-184b-49b9-840b-409684743e15">
         <File Id="filunsCzL4IlmE8W22f.l.tiS1qSow" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt" />
       </Component>
-      <Component Id="cmpib6iIClZ0jLNwLndx89LEAircts" Directory="dirw3u8qqAB5qjrCz5DvAZ76lNMfzs" Guid="c637b3a2-ee8d-4bc4-bfff-d9f754b1a759">
+      <Component Id="cmpib6iIClZ0jLNwLndx89LEAircts" Directory="dirw3u8qqAB5qjrCz5DvAZ76lNMfzs" Guid="bf3b2871-3a83-478c-9b7c-ea826bd9cd02">
         <File Id="fil.BK3nB3T0TsV4iAcRQusCyDepv8" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1" />
       </Component>
-      <Component Id="cmpXBbxgLQRKfHk.615Ah1eT.8bUmA" Directory="dirA9tweYa2yEfjWaX7i_EZs5eEmtg" Guid="6184b86e-d796-48c2-8b6b-2838d7f0deb7">
+      <Component Id="cmpXBbxgLQRKfHk.615Ah1eT.8bUmA" Directory="dirA9tweYa2yEfjWaX7i_EZs5eEmtg" Guid="99439724-e79d-41ba-90e5-512f1198ec82">
         <File Id="filREfiGwu435gYQ3UMoq8EXnKoMm0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DotNet35Client\DotNet35Client.ps1" />
       </Component>
-      <Component Id="cmpTC4tZPxPu04AAhzX19gsdaSDdK8" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="4d6b4bad-5865-4fd0-bd40-b73dece4eac3">
+      <Component Id="cmpTC4tZPxPu04AAhzX19gsdaSDdK8" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="d155ffc0-0555-4eb1-81ae-d858751ec7e4">
         <File Id="filUjtypV_lYtzeexGnWGTkAVXqnOU" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\LabUsers.txt" />
       </Component>
-      <Component Id="cmp69Xw.ERrtpHwUI2PcNeaCh_.YXU" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="6daeec4f-3eb7-4e0b-83ea-b92825d0f6b9">
+      <Component Id="cmp69Xw.ERrtpHwUI2PcNeaCh_.YXU" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="6284249a-94e7-4a0c-b7f5-b25e21c88676">
         <File Id="filErUHjjV99bHGurv5rYyCAiQHaWo" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" />
       </Component>
-      <Component Id="cmpM0COtymNTLzzbuQ76epxJf03QTU" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="306c53ea-06e5-47d3-9dbb-6b84bc26fa70">
+      <Component Id="cmpM0COtymNTLzzbuQ76epxJf03QTU" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="78226789-5cca-4f10-b818-878eede2ccc9">
         <File Id="fil58pXueQYfHkiILdiVrZcKQZjtPs" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1" />
       </Component>
-      <Component Id="cmpqugj8tJlsI9Feml5s_na0z.LHbg" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="84f6a659-222a-417d-a6ba-d43c019f57ea">
+      <Component Id="cmpqugj8tJlsI9Feml5s_na0z.LHbg" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="147472f1-1d9d-41dd-9784-e57b80fad19e">
         <File Id="filVfQ7D83OGMpEjeYAQ6jsPPW38nI" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\RepAll.bat" />
       </Component>
-      <Component Id="cmpkyXop.ReK93sgA.t2PU7BCKDfk8" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="158ddf24-5905-4031-8cdb-72f5ff96f73e">
+      <Component Id="cmpkyXop.ReK93sgA.t2PU7BCKDfk8" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="12241212-98ac-4264-816f-ac7b0444e6d6">
         <File Id="filNxJ3TWteD7Ia7Tmjss9AW91NOR4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt" />
       </Component>
-      <Component Id="cmp2wxX9cdsOGmxyxDWL.2i6OskfCw" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="1c4c923d-b1ff-40a0-97b6-5272519946da">
+      <Component Id="cmp2wxX9cdsOGmxyxDWL.2i6OskfCw" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="75f2a098-5241-4da8-b493-f2983c4104e5">
         <File Id="filH_Uai3fQczJ2tjp8SUQIDNZF_Gc" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt" />
       </Component>
-      <Component Id="cmpQXvsAI..nO40WbNyh9suPJjVMKk" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="e68934e6-794f-47e9-8d58-d23d35d31aa8">
+      <Component Id="cmpQXvsAI..nO40WbNyh9suPJjVMKk" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="d579b8a5-f183-468e-b2e6-8f9040c79c3c">
         <File Id="fil.a95ZpfEA8knC6coamfOIxINrpA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\users.csv" />
       </Component>
-      <Component Id="cmpbTw_dy3Ck1uRP3FtPgFVRirifiQ" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="656cb757-a732-4a21-a852-136fef1d5607">
+      <Component Id="cmpbTw_dy3Ck1uRP3FtPgFVRirifiQ" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="4e9bdfc5-b123-4da1-b1da-e2b54f59f6b2">
         <File Id="filqbM7R89myPIZuNuLA.pzPEtbwvM" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1" />
       </Component>
-      <Component Id="cmpkFPYhrx13lFQHxXnZO7vcNAPNss" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="e6c6320b-df9e-4fed-b4f0-3b4f3ec8a917">
+      <Component Id="cmpkFPYhrx13lFQHxXnZO7vcNAPNss" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="102de213-3d54-4f82-83a6-36ee94e82a98">
         <File Id="filQ39OOwXeRfmojGbqKV.tXWF7j3k" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql" />
       </Component>
-      <Component Id="cmpUy5wE73MZXS.YprO94VUTzuH59g" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="e70bc081-796a-4d73-8076-461ee5bfd9d4">
+      <Component Id="cmpUy5wE73MZXS.YprO94VUTzuH59g" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="1f105575-e091-48fd-b0fc-c59210e6f3e5">
         <File Id="filYalWIKPRspvxwswYlPoF4KtNtoA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql" />
       </Component>
-      <Component Id="cmpyCfF3YE.mj4OOC649sOCes6EC94" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="8e26260c-dd35-44cf-8282-d8ee5146234c">
+      <Component Id="cmpyCfF3YE.mj4OOC649sOCes6EC94" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="72eb5f22-a986-43de-a089-d36ebbf38216">
         <File Id="filxS1WqzNb4VLR0.87hGouXBX5hR4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt" />
       </Component>
-      <Component Id="cmpXkzVllkoH4SJB_lIPFRv93VfdDc" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="7a70110e-b19a-4b3c-afa3-e77e3deaef1f">
+      <Component Id="cmpXkzVllkoH4SJB_lIPFRv93VfdDc" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="6d4899c9-98fd-4a04-838e-74803b2dc455">
         <File Id="filWwqhxJTNLvBx.idNKguuELTsEto" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi" />
       </Component>
-      <Component Id="cmpZtptSdfdc_4EfGPo3bsMVo0s8Ys" Directory="dirMSSpwAehkfJ4VCtltYuupdp_7Z4" Guid="b9a45c5f-5633-49b5-962e-0c2455b8459a">
+      <Component Id="cmpzECzawlAf5x6JLAgDyP.sIn9PzU" Directory="dir6qcjGzMTLDt8yol9DTU_rGQHCMQ" Guid="4830f332-681e-4a11-ae68-80492ca4d593">
+        <File Id="filGUeCMmnzmJxxQxtd28HY8pCaTwk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1" />
+      </Component>
+      <Component Id="cmpVIGRs60vN4NHzVxEaclPVs79bQw" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="d3ed0e58-48d6-4c1b-92ab-31a4bc97ed89">
+        <File Id="filbIpqgMiPeMf9o8VczJogg183xN0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1" />
+      </Component>
+      <Component Id="cmpNEktzdDa7PxfNjHMtZlDCp1o9oA" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="ac60dc64-7ab8-490b-a3a2-08a22c55bcc3">
+        <File Id="filwCnKGukvwP7cp5pRjch9ziry8xk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1" />
+      </Component>
+      <Component Id="cmpZtptSdfdc_4EfGPo3bsMVo0s8Ys" Directory="dirMSSpwAehkfJ4VCtltYuupdp_7Z4" Guid="679d610f-de03-4675-8b2d-ec61ae520063">
         <File Id="filGESobCBdah.C4zdibUFQ04gPUYE" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />
       </Component>
-      <Component Id="cmprzoS.tx4RKCWEiR8q5Mbe0T0038" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="8e84d22c-c8e6-410e-b2f0-c55f0d00d9e0">
+      <Component Id="cmprzoS.tx4RKCWEiR8q5Mbe0T0038" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="f081c6d6-834d-4a81-95c6-0e17eb1093aa">
         <File Id="filiVW9jVXNKNjCjhPlAtu7AwcJkEA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\oscdimg.exe" />
       </Component>
-      <Component Id="cmp7mpzjNQkUFFMVTnGGMVFxsuza5g" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="c1fd5b0d-982a-446c-8abd-651e190c1538">
+      <Component Id="cmp7mpzjNQkUFFMVTnGGMVFxsuza5g" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="f0741078-de03-47db-9f43-1ab6e9abc268">
         <File Id="fil360mBlOL.zZpRU8eb42BE0lyNK4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\RepAll.bat" />
       </Component>
-      <Component Id="cmpiTXB0ToaDWhk3kDZnU0O_aD4Ae0" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="183ad3b2-663d-40fc-b2fd-2c5a0ad7c05a">
+      <Component Id="cmpiTXB0ToaDWhk3kDZnU0O_aD4Ae0" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="64c37e30-6d2b-40c5-aa33-ccd823ed2aa8">
         <File Id="filkDmymJEpuqWygEs6Sj78DrvsvQ4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSAT.exe" />
       </Component>
-      <Component Id="cmpxM00eMcvei0KSPAUZlh2FQWTQkM" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="773743ea-ff57-474e-9a8b-8483ef41d026">
+      <Component Id="cmpxM00eMcvei0KSPAUZlh2FQWTQkM" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="e560195b-6391-43c8-88e6-acb6f61e6976">
         <File Id="filnB3n7iR313jMjFy6gSf56D2WX34" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSATAPI.dll" />
       </Component>
-      <Component Id="cmp.jnqGoDdF_iFJo_6PIiHejqnT94" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="4d8eb00f-967d-4eda-b251-8fdc4c65c923">
+      <Component Id="cmp.jnqGoDdF_iFJo_6PIiHejqnT94" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="41380587-b5b3-46b4-b5e4-e58915ad3802">
         <File Id="filqn6q7tzLAfRXxUen_6kAPmDim9s" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt" />
       </Component>
     </ComponentGroup>
@@ -1422,6 +1431,11 @@
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
       <Directory Id="dir3VF5dP_zxECzFLgWvZRzT_8xP0I" Name="OSUpdates" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
+      <Directory Id="dir6qcjGzMTLDt8yol9DTU_rGQHCMQ" Name="SetupDscClients" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
@@ -1437,6 +1451,11 @@
   <Fragment>
     <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
       <Directory Id="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Name="PrepareFirstChildDomain" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
+      <Directory Id="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Name="SetupDscPullServer" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
