@@ -88,6 +88,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabADDS.psm1 = AutomatedLab\AutomatedLabADDS.psm1
 		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
+		AutomatedLabDsc.psm1 = AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
 		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
@@ -224,6 +225,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSUpdates", "OSUpdates", "{
 		LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt = LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDscClients", "{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 = LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{1D008E01-0359-4EF9-AB13-ADC357240D25}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -286,20 +298,7 @@ Global
 		{8BD962AE-3F32-4704-8F5C-AA159589C6A3} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 		{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 		{BB2F6956-209C-40CB-8877-07E3F5C79F76} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
-	EndGlobalSection
-	GlobalSection(TeamFoundationVersionControl) = preSolution
-		SccNumberOfProjects = 4
-		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
-		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs12
-		SccLocalPath0 = .
-		SccProjectUniqueName1 = Installer\\Installer.wixproj
-		SccProjectName1 = Installer
-		SccLocalPath1 = Installer
-		SccProjectUniqueName2 = TestClient\\TestClient.csproj
-		SccProjectName2 = TestClient
-		SccLocalPath2 = TestClient
-		SccProjectUniqueName3 = LabXml\\LabXml.csproj
-		SccProjectName3 = LabXml
-		SccLocalPath3 = LabXml
+		{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{1D008E01-0359-4EF9-AB13-ADC357240D25} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 	EndGlobalSection
 EndGlobal
