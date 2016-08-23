@@ -1,0 +1,26 @@
+$sqlCmd = @"
+DECLARE @DatabaseName nvarchar(15) = N'DemoDB'
+
+If db_id(@DatabaseName) is null
+    BEGIN
+        CREATE DATABASE DemoDB
+        ON 
+        ( NAME = DEMODAT,    
+            FILENAME = N'C:\SQL Server 2000 Sample Databases\PUBS.MDF')
+            LOG ON
+        ( NAME = Demo_log,
+            FILENAME = 'C:\SQL Server 2000 Sample Databases\PUBS_LOG.LDF')
+        FOR ATTACH ;
+        
+        If db_id(@DatabaseName) is not null
+         BEGIN        
+            PRINT @DatabaseName + ' is attached successfully'
+         END
+    END
+ELSE
+Print 'DB ' +@DatabaseName+ ' already exists'
+"@
+
+Add-PSSnapin -Name SqlServerCmdletSnapin100
+
+Invoke-Sqlcmd -Query $sqlCmd -ServerInstance asql1

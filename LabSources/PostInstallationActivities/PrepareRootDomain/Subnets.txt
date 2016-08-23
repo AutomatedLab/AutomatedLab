@@ -1,0 +1,148 @@
+Name;Site;Description;Location
+10.20.134.0/24;Abidjan;Subnet of Abidjan;Abidjan
+10.20.113.0/24;AbuDhabi;Subnet of Abu Dhabi;Abu Dhabi
+10.20.132.0/24;Accra;Subnet of Accra;Accra
+10.20.129.0/24;AddisAbeba;Subnet of Addis Abeba;Addis Abeba
+10.20.118.0/24;Alexandria;Subnet of Alexandria;Alexandria
+10.20.123.0/24;Algier;Subnet of Algier;Algier
+10.20.56.0/24;Almaty;Subnet of Almaty;Almaty
+10.20.116.0/24;Amman;Subnet of Amman;Amman
+10.20.48.0/24;Amsterdam;Subnet of Amsterdam;Amsterdam
+10.20.71.0/24;Ankara;Subnet of Ankara;Ankara
+10.20.54.0/24;Athen;Subnet of Athen;Athen
+10.20.104.0/24;Bandung;Subnet of Bandung;Bandung
+10.20.85.0/24;Bangalore;Subnet of Bangalore;Bangalore
+10.20.109.0/24;Bangkok;Subnet of Bangkok;Bangkok
+10.20.35.0/24;Barcelona;Subnet of Barcelona;Barcelona
+10.20.121.0/24;Beirut;Subnet of Beirut;Beirut
+10.20.77.0/24;Belgrad;Subnet of Belgrad;Belgrad
+10.20.159.0/24;Bogota;Subnet of Bogota;Bogota
+10.20.33.0/24;Bordeaux;Subnet of Bordeaux;Bordeaux
+10.20.138.0/24;Boston;Subnet of Boston;Boston
+10.20.64.0/24;Bratislava;Subnet of Bratislava;Bratislava
+10.20.50.0/24;Bruessel;Subnet of Bruessel;Bruessel
+10.20.63.0/24;Budapest;Subnet of Budapest;Budapest
+10.20.154.0/24;BuenosAires;Subnet of Buenos Aires;Buenos Aires
+10.20.76.0/24;Bukarest;Subnet of Bukarest;Bukarest
+10.20.160.0/24;Caracas;Subnet of Caracas;Caracas
+10.20.125.0/24;Casablanca;Subnet of Casablanca;Casablanca
+10.20.83.0/24;Chennai;Subnet of Chennai;Chennai
+10.20.143.0/24;Chicago;Subnet of Chicago;Chicago
+10.20.84.0/24;Colombo;Subnet of Colombo;Colombo
+10.20.156.0/24;Cordoba;Subnet of Cordoba;Cordoba
+10.20.151.0/24;Curitiba;Subnet of Curitiba;Curitiba
+10.20.135.0/24;Dakar;Subnet of Dakar;Dakar
+10.20.117.0/24;Damaskus;Subnet of Damaskus;Damaskus
+10.20.127.0/24;DarEsSalaam;Subnet of Dar es Salaam;Dar es Salaam
+10.20.82.0/24;Dhaka;Subnet of Dhaka;Dhaka
+10.20.114.0/24;Dubai;Subnet of Dubai;Dubai
+10.30.15.0/24;DublinFitzwilliamSquare;Subnet of Dublin FitzwilliamSquare;Dublin FitzwilliamSquare
+10.20.42.0/24;DublinMerrionSquare;Subnet of Dublin MerrionSquare;Dublin MerrionSquare
+10.20.25.0/24;Genua;Subnet of Genua;Genua
+10.20.43.0/24;Glasgow;Subnet of Glasgow;Glasgow
+10.20.36.0/24;Granada;Subnet of Granada;Granada
+10.20.146.0/24;Guadalajara;Subnet of Guadalajara;Guadalajara
+10.20.110.0/24;Hanoi;Subnet of Hanoi;Hanoi
+10.20.147.0/24;Havanna;Subnet of Havanna;Havanna
+10.20.46.0/24;Helsinki;Subnet of Helsinki;Helsinki
+10.20.107.0/24;Ho-Chi-Minh-Stadt;Subnet of Ho-Chi-Minh-Stadt;Ho-Chi-Minh-Stadt
+10.20.92.0/24;Hongkong;Subnet of Hongkong;Hongkong
+10.20.72.0/24;Istanbul;Subnet of Istanbul;Istanbul
+10.20.70.0/24;Izmir;Subnet of Izmir;Izmir
+10.20.100.0/24;Jakarta;Subnet of Jakarta;Jakarta
+10.20.119.0/24;Jerusalem;Subnet of Jerusalem;Jerusalem
+10.20.126.0/24;Johannesburg;Subnet of Johannesburg;Johannesburg
+10.20.89.0/24;Kabul;Subnet of Kabul;Kabul
+10.20.111.0/24;Kairo;Subnet of Kairo;Kairo
+10.20.88.0/24;Karachi;Subnet of Karachi;Karachi
+10.20.112.0/24;Khartoum;Subnet of Khartoum;Khartoum
+10.20.59.0/24;Kiew;Subnet of Kiew;Kiew
+10.20.81.0/24;Kolkata;Subnet of Kolkata;Kolkata
+10.20.47.0/24;Kopenhagen;Subnet of Kopenhagen;Kopenhagen
+10.20.65.0/24;Krakau;Subnet of Krakau;Krakau
+10.20.106.0/24;KualaLumpur;Subnet of Kuala Lumpur;Kuala Lumpur
+10.20.98.0/24;Kyoto;Subnet of Kyoto;Kyoto
+10.20.157.0/24;Lagos;Subnet of Lagos;Lagos
+10.20.131.0/24;LaPaz;Subnet of LaPaz;LaPaz
+10.20.34.0/24;Lille;Subnet of Lille;Lille
+10.20.158.0/24;Lima;Subnet of Lima;Lima
+10.20.37.0/24;Lissabon;Subnet of Lissabon;Lissabon
+10.20.66.0/24;Ljubljana;Subnet of Ljubljana;Ljubljana
+10.20.133.0/24;Lome;Subnet of Lome;Lome
+10.20.40.0/24;London;Subnet of London;London
+10.20.145.0/24;LosAngeles;Subnet of Los Angeles;Los Angeles
+10.20.161.0/24;Luanda;Subnet of Luanda;Luanda
+10.20.51.0/24;Luxemburg;Subnet of Luxemburg;Luxemburg
+10.20.31.0/24;Lyon;Subnet of Lyon;Lyon
+10.20.21.0/24;Madrid;Subnet of Madrid;Madrid
+10.20.24.0/24;Mailand;Subnet of Mailand;Mailand
+10.20.41.0/24;Manchester;Subnet of Manchester;Manchester
+10.20.108.0/24;Manila;Subnet of Manila;Manila
+10.20.102.0/24;Melbourne;Subnet of Melbourne;Melbourne
+10.20.137.0/24;Mexiko;Subnet of Mexiko;Mexiko
+10.20.60.0/24;Minsk;Subnet of Minsk;Minsk
+10.20.153.0/24;Montevideo;Subnet of Montevideo;Montevideo
+10.20.139.0/24;Montreal;Subnet of Montreal;Montreal
+10.20.52.0/24;Moskau;Subnet of Moskau;Moskau
+10.20.87.0/24;Mumbai;Subnet of Mumbai;Mumbai
+10.30.16.0/24;Munich;Subnet of Munich;Munich
+10.30.17.0/24;Munich;Subnet of Munich (Duplicate);Munich
+10.20.128.0/24;Nairobi;Subnet of Nairobi;Nairobi
+10.20.30.0/24;Nancy;Subnet of Nancy;Nancy
+10.20.27.0/24;Neapel;Subnet of Neapel;Neapel
+10.20.80.0/24;NewDelhi;Subnet of New Delhi;New Delhi
+10.20.136.0/24;NewYork;Subnet of New York;New York
+10.20.57.0/24;Nowosibirsk;Subnet of Nowosibirsk;Nowosibirsk
+10.20.96.0/24;Osaka;Subnet of Osaka SkyBld;Osaka SkyBld
+10.20.44.0/24;Oslo;Subnet of Oslo;Oslo
+10.20.141.0/24;Ottawa;Subnet of Ottawa;Ottawa
+10.20.28.0/24;Palermo;Subnet of Palermo;Palermo
+10.20.20.0/24;Paris;Subnet of Paris;Paris
+10.20.91.0/24;Peking;Subnet of Peking;Peking
+10.20.182.0/24;PekingBibliothek;Subnet of Peking Bibliothek;Peking Bibliothek
+10.20.99.0/24;Pjoengjang;Subnet of Pjoengjang;Pjoengjang
+10.20.38.0/24;Porto;Subnet of Porto;Porto
+10.20.152.0/24;PortoAlegre;Subnet of Porto Alegre;Porto Alegre
+10.20.53.0/24;Prag;Subnet of Prag;Prag
+10.20.86.0/24;Pune;Subnet of Pune;Pune
+10.20.124.0/24;Rabat;Subnet of Rabat;Rabat
+10.20.115.0/24;Ramallah;Subnet of Ramallah;Ramallah
+10.20.68.0/24;Riga;Subnet of Riga;Riga
+10.20.149.0/24;RioDeJaneiro;Subnet of Rio de Janeiro;Rio de Janeiro
+10.20.22.0/24;Rom;Subnet of Rom;Rom
+10.20.49.0/24;Rotterdam;Subnet of Rotterdam;Rotterdam
+10.20.150.0/24;SalvadorBahia;Subnet of Salvador Bahia;Salvador Bahia
+10.20.144.0/24;SanFrancisco;Subnet of San Francisco;San Francisco
+10.20.39.0/24;SanSebastian;Subnet of San Sebastian;San Sebastian
+10.20.155.0/24;SantiagoDeChile;Subnet of Santiago de Chile;Santiago de Chile
+10.20.148.0/24;SaoPaulo;Subnet of Sao Paulo;Sao Paulo
+10.20.78.0/24;Sarajevo;Subnet of Sarajevo;Sarajevo
+10.20.95.0/24;Seoul;Subnet of Seoul;Seoul
+10.20.94.0/24;Shanghai;Subnet of Shanghai;Shanghai
+10.20.105.0/24;Singapur;Subnet of Singapur;Singapur
+10.20.74.0/24;Skopje;Subnet of Skopje;Skopje
+10.20.75.0/24;Sofia;Subnet of Sofia;Sofia
+10.20.61.0/24;StPetersburg;Subnet of St.Petersburg;St.Petersburg
+10.20.45.0/24;Stockholm;Subnet of Stockholm;Stockholm
+10.20.29.0/24;Strassburg;Subnet of Strassburg;Strassburg
+10.20.101.0/24;Sydney;Subnet of Sydney;Sydney
+10.20.93.0/24;Taipei;Subnet of Taipei;Taipei
+10.20.69.0/24;Tallin;Subnet of Tallin;Tallin
+10.20.55.0/24;Taschkent;Subnet of Taschkent;Taschkent
+10.20.120.0/24;Teheran;Subnet of Teheran;Teheran
+10.20.90.0/24;TelAviv;Subnet of Tel_Aviv;Tel_Aviv
+10.20.73.0/24;Thessaloniki;Subnet of Thessaloniki;Thessaloniki
+10.20.58.0/24;Tiflis;Subnet of Tiflis;Tiflis
+10.20.97.0/24;Tokyo;Subnet of Tokyo;Tokyo
+10.20.140.0/24;Toronto;Subnet of Toronto;Toronto
+10.20.32.0/24;Toulouse;Subnet of Toulouse;Toulouse
+10.20.23.0/24;Triest;Subnet of Triest;Triest
+10.20.122.0/24;Tunis;Subnet of Tunis;Tunis
+10.20.26.0/24;Turin;Subnet of Turin ;Turin 
+10.20.187.0/24;UlanBator;Subnet of Ulan Bator;Ulan Bator
+10.20.67.0/24;Vilnius;Subnet of Vilnius;Vilnius
+10.20.62.0/24;Warschau;Subnet of Warschau;Warschau
+10.20.142.0/24;Washington;Subnet of Washington;Washington
+10.20.103.0/24;Wellington;Subnet of Wellington;Wellington
+10.20.130.0/24;Yaounde;Subnet of Yaounde;Yaounde
+10.20.79.0/24;Zagreb;Subnet of Zagreb;Zagreb

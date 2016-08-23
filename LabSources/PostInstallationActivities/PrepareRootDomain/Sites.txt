@@ -1,0 +1,147 @@
+Name;Description;Location
+Abidjan;Site of Abidjan;Abidjan
+AbuDhabi;Site of Abu Dhabi;Abu Dhabi
+Accra;Site of Accra;Accra
+AddisAbeba;Site of Addis Abeba;Addis Abeba
+Alexandria;Site of Alexandria;Alexandria
+Algier;Site of Algier;Algier
+Almaty;Site of Almaty;Almaty
+Amman;Site of Amman;Amman
+Amsterdam;Site of Amsterdam;Amsterdam
+Ankara;Site of Ankara;Ankara
+Athen;Site of Athen;Athen
+Bandung;Site of Bandung;Bandung
+Bangalore;Site of Bangalore;Bangalore
+Bangkok;Site of Bangkok;Bangkok
+Barcelona;Site of Barcelona;Barcelona
+Beirut;Site of Beirut;Beirut
+Belgrad;Site of Belgrad;Belgrad
+Bogota;Site of Bogota;Bogota
+Bordeaux;Site of Bordeaux;Bordeaux
+Boston;Site of Boston;Boston
+Bratislava;Site of Bratislava;Bratislava
+Bruessel;Site of Bruessel;Bruessel
+Budapest;Site of Budapest;Budapest
+BuenosAires;Site of Buenos Aires;Buenos Aires
+Bukarest;Site of Bukarest;Bukarest
+Caracas;Site of Caracas;Caracas
+Casablanca;Site of Casablanca;Casablanca
+Chennai;Site of Chennai;Chennai
+Chicago;Site of Chicago;Chicago
+Colombo;Site of Colombo;Colombo
+Cordoba;Site of Cordoba;Cordoba
+Curitiba;Site of Curitiba;Curitiba
+Dakar;Site of Dakar;Dakar
+Damaskus;Site of Damaskus;Damaskus
+DarEsSalaam;Site of Dar es Salaam;Dar es Salaam
+Dhaka;Site of Dhaka;Dhaka
+Dubai;Site of Dubai;Dubai
+DublinFitzwilliamSquare;Site of Dublin FitzwilliamSquare;Dublin FitzwilliamSquare
+DublinMerrionSquare;Site of Dublin MerrionSquare;Dublin MerrionSquare
+Genua;Site of Genua;Genua
+Glasgow;Site of Glasgow;Glasgow
+Granada;Site of Granada;Granada
+Guadalajara;Site of Guadalajara;Guadalajara
+Hanoi;Site of Hanoi;Hanoi
+Havanna;Site of Havanna;Havanna
+Helsinki;Site of Helsinki;Helsinki
+Ho-Chi-Minh-Stadt;Site of Ho-Chi-Minh-Stadt;Ho-Chi-Minh-Stadt
+Hongkong;Site of Hongkong;Hongkong
+Istanbul;Site of Istanbul;Istanbul
+Izmir;Site of Izmir;Izmir
+Jakarta;Site of Jakarta;Jakarta
+Jerusalem;Site of Jerusalem;Jerusalem
+Johannesburg;Site of Johannesburg;Johannesburg
+Kabul;Site of Kabul;Kabul
+Kairo;Site of Kairo;Kairo
+Karachi;Site of Karachi;Karachi
+Khartoum;Site of Khartoum;Khartoum
+Kiew;Site of Kiew;Kiew
+Kolkata;Site of Kolkata;Kolkata
+Kopenhagen;Site of Kopenhagen;Kopenhagen
+Krakau;Site of Krakau;Krakau
+KualaLumpur;Site of Kuala Lumpur;Kuala Lumpur
+Kyoto;Site of Kyoto;Kyoto
+Lagos;Site of Lagos;Lagos
+LaPaz;Site of LaPaz;LaPaz
+Lille;Site of Lille;Lille
+Lima;Site of Lima;Lima
+Lissabon;Site of Lissabon;Lissabon
+Ljubljana;Site of Ljubljana;Ljubljana
+Lome;Site of Lome;Lome
+London;Site of London;London
+LosAngeles;Site of Los Angeles;Los Angeles
+Luanda;Site of Luanda;Luanda
+Luxemburg;Site of Luxemburg;Luxemburg
+Lyon;Site of Lyon;Lyon
+Madrid;Site of Madrid;Madrid
+Mailand;Site of Mailand;Mailand
+Manchester;Site of Manchester;Manchester
+Manila;Site of Manila;Manila
+Melbourne;Site of Melbourne;Melbourne
+Mexiko;Site of Mexiko;Mexiko
+Minsk;Site of Minsk;Minsk
+Montevideo;Site of Montevideo;Montevideo
+Montreal;Site of Montreal;Montreal
+Moskau;Site of Moskau;Moskau
+Mumbai;Site of Mumbai;Mumbai
+Munich;Site of Munich;Munich
+Nairobi;Site of Nairobi;Nairobi
+Nancy;Site of Nancy;Nancy
+Neapel;Site of Neapel;Neapel
+NewDelhi;Site of New Delhi;New Delhi
+NewYork;Site of New York;New York
+Nowosibirsk;Site of Nowosibirsk;Nowosibirsk
+Osaka;Site of Osaka;Osaka
+Oslo;Site of Oslo;Oslo
+Ottawa;Site of Ottawa;Ottawa
+Palermo;Site of Palermo;Palermo
+Paris;Site of Paris;Paris
+Peking;Site of Peking;Peking
+PekingBibliothek;Site of Peking Bibliothek;Peking Bibliothek
+Pjoengjang;Site of Pjoengjang;Pjoengjang
+Porto;Site of Porto;Porto
+PortoAlegre;Site of Porto Alegre;Porto Alegre
+Prag;Site of Prag;Prag
+Pune;Site of Pune;Pune
+Rabat;Site of Rabat;Rabat
+Ramallah;Site of Ramallah;Ramallah
+Riga;Site of Riga;Riga
+RioDeJaneiro;Site of Rio de Janeiro;Rio de Janeiro
+Rom;Site of Rom;Rom
+Rotterdam;Site of Rotterdam;Rotterdam
+SalvadorBahia;Site of Salvador Bahia;Salvador Bahia
+SanFrancisco;Site of San Francisco;San Francisco
+SanSebastian;Site of San Sebastian;San Sebastian
+SantiagoDeChile;Site of Santiago de Chile;Santiago de Chile
+SaoPaulo;Site of Sao Paulo;Sao Paulo
+Sarajevo;Site of Sarajevo;Sarajevo
+Seoul;Site of Seoul;Seoul
+Shanghai;Site of Shanghai;Shanghai
+Singapur;Site of Singapur;Singapur
+Skopje;Site of Skopje;Skopje
+Sofia;Site of Sofia;Sofia
+StPetersburg;Site of St.Petersburg;St.Petersburg
+Stockholm;Site of Stockholm;Stockholm
+Strassburg;Site of Strassburg;Strassburg
+Sydney;Site of Sydney;Sydney
+Taipei;Site of Taipei;Taipei
+Tallin;Site of Tallin;Tallin
+Taschkent;Site of Taschkent;Taschkent
+Teheran;Site of Teheran;Teheran
+TelAviv;Site of Tel_Aviv;Tel_Aviv
+Thessaloniki;Site of Thessaloniki;Thessaloniki
+Tiflis;Site of Tiflis;Tiflis
+Tokyo;Site of Tokyo;Tokyo
+Toronto;Site of Toronto;Toronto
+Toulouse;Site of Toulouse;Toulouse
+Triest;Site of Triest;Triest
+Tunis;Site of Tunis;Tunis
+Turin;Site of Turin ;Turin 
+UlanBator;Site of Ulan Bator;Ulan Bator
+Vilnius;Site of Vilnius;Vilnius
+Warschau;Site of Warschau;Warschau
+Washington;Site of Washington;Washington
+Wellington;Site of Wellington;Wellington
+Yaounde;Site of Yaounde;Yaounde
+Zagreb;Site of Zagreb;Zagreb

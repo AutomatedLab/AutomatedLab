@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Configuration>
+  <ViewDefinitions>
+    
+    <View>
+      <Name>AutomatedLab.TestResult</Name>
+      <ViewSelectedBy>
+        <TypeName>AutomatedLab.TestResult</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <AutoSize />
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>ScriptName</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Completed</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ErrorCount</Label>
+          </TableColumnHeader>
+		  <TableColumnHeader>
+            <Label>Output</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>ScriptName</PropertyName>
+              </TableColumnItem>
+			  <TableColumnItem>
+                <PropertyName>Completed</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ErrorCount</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Output</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+  </ViewDefinitions>
+</Configuration>

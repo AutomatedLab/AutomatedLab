@@ -1,0 +1,305 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{3662119A-C291-4BEC-8C6C-EBE802042E7B}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F53EE2B3-B14E-4266-9018-18CDEC02D2DA}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\AL Tutorial Series Part 1 - Architecture.docx = Documentation\AL Tutorial Series Part 1 - Architecture.docx
+		Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx = Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx
+		Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx = Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx
+		Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx = Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx
+		Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx = Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx
+		Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx = Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx
+		Documentation\AutomatedLab Documentation.docx = Documentation\AutomatedLab Documentation.docx
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Scripts", "Sample Scripts", "{0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LabSources", "LabSources", "{D1448154-F3BD-4E59-9B97-B8E83767336F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{BF2C3317-327C-4552-8C6B-18A07307D977}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt = LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt
+		LabSources\Tools\oscdimg.exe = LabSources\Tools\oscdimg.exe
+		LabSources\Tools\RepAll.bat = LabSources\Tools\RepAll.bat
+		LabSources\Tools\WinSAT.exe = LabSources\Tools\WinSAT.exe
+		LabSources\Tools\WinSATAPI.dll = LabSources\Tools\WinSATAPI.dll
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HostsFile", "HostsFile", "{02FAEEE2-57BE-41C6-85BB-6B60F9D1983A}"
+	ProjectSection(SolutionItems) = preProject
+		HostsFile\HostsFile.psd1 = HostsFile\HostsFile.psd1
+		HostsFile\HostsFile.psm1 = HostsFile\HostsFile.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabWorker", "AutomatedLabWorker", "{B7B1933B-77D7-4310-9049-7744B1F07154}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1 = AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1
+		AutomatedLabWorker\AutomatedLabAzureWorkerVirtualMachines.psm1 = AutomatedLabWorker\AutomatedLabAzureWorkerVirtualMachines.psm1
+		AutomatedLabWorker\AutomatedLabVMWareWorkerNetwork.psm1 = AutomatedLabWorker\AutomatedLabVMWareWorkerNetwork.psm1
+		AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1 = AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1
+		AutomatedLabWorker\AutomatedLabWorker.psd1 = AutomatedLabWorker\AutomatedLabWorker.psd1
+		AutomatedLabWorker\AutomatedLabWorker.psm1 = AutomatedLabWorker\AutomatedLabWorker.psm1
+		AutomatedLabWorker\AutomatedLabWorkerADCS.psm1 = AutomatedLabWorker\AutomatedLabWorkerADCS.psm1
+		AutomatedLabWorker\AutomatedLabWorkerDisks.psm1 = AutomatedLabWorker\AutomatedLabWorkerDisks.psm1
+		AutomatedLabWorker\AutomatedLabWorkerInternals.psm1 = AutomatedLabWorker\AutomatedLabWorkerInternals.psm1
+		AutomatedLabWorker\AutomatedLabWorkerNetwork.psm1 = AutomatedLabWorker\AutomatedLabWorkerNetwork.psm1
+		AutomatedLabWorker\AutomatedLabWorkerVirtualMachines.psm1 = AutomatedLabWorker\AutomatedLabWorkerVirtualMachines.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "AutomatedLabDefinition", "{688118CF-DFF0-484C-B9DA-EE9B99B6CBD6}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabDefinition\AutomatedLabDefinition.init.ps1 = AutomatedLabDefinition\AutomatedLabDefinition.init.ps1
+		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
+		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
+		AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabUnattended", "AutomatedLabUnattended", "{631E3AA3-71BA-4BE2-BEEE-8B96AE7E60F6}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\AutomatedLabUnattended.psd1 = AutomatedLabUnattended\AutomatedLabUnattended.psd1
+		AutomatedLabUnattended\AutomatedLabUnattended.psm1 = AutomatedLabUnattended\AutomatedLabUnattended.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSFileTransfer", "PSFileTransfer", "{39ADBCFF-AD67-47BF-B8BB-B928F1FB7892}"
+	ProjectSection(SolutionItems) = preProject
+		PSFileTransfer\PSFileTransfer.psd1 = PSFileTransfer\PSFileTransfer.psd1
+		PSFileTransfer\PSFileTransfer.psm1 = PSFileTransfer\PSFileTransfer.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSLog", "PSLog", "{81D0BB90-CDB0-42DF-AE54-473027485151}"
+	ProjectSection(SolutionItems) = preProject
+		PSLog\PSLog.psd1 = PSLog\PSLog.psd1
+		PSLog\PSLog.psm1 = PSLog\PSLog.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLab", "{03FEFD6A-B999-4BBA-875B-6CFA083E43CC}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\AutmatedLab.format.ps1xml = AutomatedLab\AutmatedLab.format.ps1xml
+		AutomatedLab\AutomatedLab.init.ps1 = AutomatedLab\AutomatedLab.init.ps1
+		AutomatedLab\AutomatedLab.psd1 = AutomatedLab\AutomatedLab.psd1
+		AutomatedLab\AutomatedLab.psm1 = AutomatedLab\AutomatedLab.psm1
+		AutomatedLab\AutomatedLabADCS.psm1 = AutomatedLab\AutomatedLabADCS.psm1
+		AutomatedLab\AutomatedLabADDS.psm1 = AutomatedLab\AutomatedLabADDS.psm1
+		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
+		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
+		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
+		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
+		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
+		AutomatedLab\AutomatedLabRouting.psm1 = AutomatedLab\AutomatedLabRouting.psm1
+		AutomatedLab\AutomatedLabSharePoint.psm1 = AutomatedLab\AutomatedLabSharePoint.psm1
+		AutomatedLab\AutomatedLabSQL.psm1 = AutomatedLab\AutomatedLabSQL.psm1
+		AutomatedLab\AutomatedLabVirtualMachines.psm1 = AutomatedLab\AutomatedLabVirtualMachines.psm1
+		AutomatedLab\AutomatedLabVMWare.psm1 = AutomatedLab\AutomatedLabVMWare.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISOs", "ISOs", "{02DDCCD0-7EAA-450B-AE8A-67D54E8EF30C}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\ISOs\_Put all ISO images in here.txt = LabSources\ISOs\_Put all ISO images in here.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SoftwarePackages", "SoftwarePackages", "{51120906-7BD4-4855-912D-56DBF8812578}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt = LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostInstallationActivities", "PostInstallationActivities", "{1130E19B-F91C-493B-AC50-8B7862716FB6}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt = LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DnsAndTrustSetup", "DnsAndTrustSetup", "{06858CF6-B9DA-4FB1-8188-624E6D63F824}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1 = LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DotNet35Client", "DotNet35Client", "{084EEAC4-687E-49BA-BD42-6464DCDE4894}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\DotNet35Client\DotNet35Client.ps1 = LabSources\PostInstallationActivities\DotNet35Client\DotNet35Client.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrepareFirstChildDomain", "PrepareFirstChildDomain", "{F6BA00ED-F4BA-4D03-908A-FA07433D65C3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\PrepareFirstChildDomain\LabUsers.txt = LabSources\PostInstallationActivities\PrepareFirstChildDomain\LabUsers.txt
+		LabSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1 = LabSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrepareRootDomain", "PrepareRootDomain", "{BC03E484-C1F9-4BF7-9D25-2E546EDABB3B}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1 = LabSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1
+		LabSources\PostInstallationActivities\PrepareRootDomain\RepAll.bat = LabSources\PostInstallationActivities\PrepareRootDomain\RepAll.bat
+		LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt = LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt
+		LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt = LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt
+		LabSources\PostInstallationActivities\PrepareRootDomain\users.csv = LabSources\PostInstallationActivities\PrepareRootDomain\users.csv
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrepareSqlServer", "PrepareSqlServer", "{3E54B63E-54DF-47C0-80C7-C2CB0A5D3E55}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1 = LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1
+		LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql = LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql
+		LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql = LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql
+		LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt = LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt
+		LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi = LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A33ABAA2-AE00-4951-9A9C-727C11FE2C03}"
+	ProjectSection(SolutionItems) = preProject
+		Changes.txt = Changes.txt
+		Temp.txt = Temp.txt
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{35796C10-DDB9-4E04-A2CD-FE3D00A0E361}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{F283AF3D-956C-4CE2-ABBF-273D38810E2D}"
+	ProjectSection(SolutionItems) = preProject
+		SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1 = SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1
+		SampleScripts\Workshops\ADRecoveryLab - Azure.ps1 = SampleScripts\Workshops\ADRecoveryLab - Azure.ps1
+		SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1 = SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1
+		SampleScripts\Workshops\DFSHC - Azure.ps1 = SampleScripts\Workshops\DFSHC - Azure.ps1
+		SampleScripts\Workshops\DFSHC - HyperV.ps1 = SampleScripts\Workshops\DFSHC - HyperV.ps1
+		SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1 = SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1
+		SampleScripts\Workshops\PowerShell Lab - Azure.ps1 = SampleScripts\Workshops\PowerShell Lab - Azure.ps1
+		SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1 = SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1
+		SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{F808D90D-4D58-4532-8041-ED753492C589}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\Tools\HyperV\BGInfo.bgi = AutomatedLab\Tools\HyperV\BGInfo.bgi
+		AutomatedLab\Tools\HyperV\Bginfo.exe = AutomatedLab\Tools\HyperV\Bginfo.exe
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{00FED816-9139-4579-85CC-DB74A5BA6981}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{4121F376-E671-41E2-97D7-8C1DAEA4BBF2}"
+	ProjectSection(SolutionItems) = preProject
+		SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1 = SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1
+		SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1 = SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1
+		SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1 = SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1
+		SampleScripts\HyperV\MultiForestLab 2008R2.ps1 = SampleScripts\HyperV\MultiForestLab 2008R2.ps1
+		SampleScripts\HyperV\MultiForestLab 2012R2.ps1 = SampleScripts\HyperV\MultiForestLab 2012R2.ps1
+		SampleScripts\HyperV\PKI Custom.ps1 = SampleScripts\HyperV\PKI Custom.ps1
+		SampleScripts\HyperV\PKI Simple.ps1 = SampleScripts\HyperV\PKI Simple.ps1
+		SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1 = SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1
+		SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1 = SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1
+		SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1 = SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1
+		SampleScripts\HyperV\Single 10 Client.ps1 = SampleScripts\HyperV\Single 10 Client.ps1
+		SampleScripts\HyperV\Single 2008R2 Server.ps1 = SampleScripts\HyperV\Single 2008R2 Server.ps1
+		SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1 = SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1
+		SampleScripts\HyperV\Single 2012R2 Server.ps1 = SampleScripts\HyperV\Single 2012R2 Server.ps1
+		SampleScripts\HyperV\Single 81 Client with Office.ps1 = SampleScripts\HyperV\Single 81 Client with Office.ps1
+		SampleScripts\HyperV\Single 81 Client.ps1 = SampleScripts\HyperV\Single 81 Client.ps1
+		SampleScripts\HyperV\SmallLab 2012R2 EX.ps1 = SampleScripts\HyperV\SmallLab 2012R2 EX.ps1
+		SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1 = SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1
+		SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1 = SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1
+		SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1 = SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{8BD962AE-3F32-4704-8F5C-AA159589C6A3}"
+	ProjectSection(SolutionItems) = preProject
+		SampleScripts\Azure\MultiForestLab 2012R2.ps1 = SampleScripts\Azure\MultiForestLab 2012R2.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabTest", "AutomatedLabTest", "{390023B7-CB2C-4D70-800F-8D1B6AE916CC}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabTest\AutomatedLabTest.format.ps1xml = AutomatedLabTest\AutomatedLabTest.format.ps1xml
+		AutomatedLabTest\AutomatedLabTest.psd1 = AutomatedLabTest\AutomatedLabTest.psd1
+		AutomatedLabTest\AutomatedLabTest.psm1 = AutomatedLabTest\AutomatedLabTest.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
+	ProjectSection(SolutionItems) = preProject
+		SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSUpdates", "OSUpdates", "{BB2F6956-209C-40CB-8877-07E3F5C79F76}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt = LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Debug|Mixed Platforms.Build.0 = Debug|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Debug|x86.ActiveCfg = Debug|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Release|Any CPU.ActiveCfg = Release|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Release|Mixed Platforms.ActiveCfg = Release|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Release|Mixed Platforms.Build.0 = Release|x64
+		{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}.Release|x86.ActiveCfg = Release|x64
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{3662119A-C291-4BEC-8C6C-EBE802042E7B}.Release|x86.ActiveCfg = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Debug|x86.Build.0 = Debug|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|x86.ActiveCfg = Release|Any CPU
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{BF2C3317-327C-4552-8C6B-18A07307D977} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{02DDCCD0-7EAA-450B-AE8A-67D54E8EF30C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{51120906-7BD4-4855-912D-56DBF8812578} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{1130E19B-F91C-493B-AC50-8B7862716FB6} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{06858CF6-B9DA-4FB1-8188-624E6D63F824} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{084EEAC4-687E-49BA-BD42-6464DCDE4894} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{F6BA00ED-F4BA-4D03-908A-FA07433D65C3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{BC03E484-C1F9-4BF7-9D25-2E546EDABB3B} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{3E54B63E-54DF-47C0-80C7-C2CB0A5D3E55} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{35796C10-DDB9-4E04-A2CD-FE3D00A0E361} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
+		{F283AF3D-956C-4CE2-ABBF-273D38810E2D} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{F808D90D-4D58-4532-8041-ED753492C589} = {35796C10-DDB9-4E04-A2CD-FE3D00A0E361}
+		{00FED816-9139-4579-85CC-DB74A5BA6981} = {35796C10-DDB9-4E04-A2CD-FE3D00A0E361}
+		{4121F376-E671-41E2-97D7-8C1DAEA4BBF2} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{8BD962AE-3F32-4704-8F5C-AA159589C6A3} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{BB2F6956-209C-40CB-8877-07E3F5C79F76} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+	EndGlobalSection
+	GlobalSection(TeamFoundationVersionControl) = preSolution
+		SccNumberOfProjects = 4
+		SccEnterpriseProvider = {4CA58AB2-18FA-4F8D-95D4-32DDF27D184C}
+		SccTeamFoundationServer = https://tfs.codeplex.com/tfs/tfs12
+		SccLocalPath0 = .
+		SccProjectUniqueName1 = Installer\\Installer.wixproj
+		SccProjectName1 = Installer
+		SccLocalPath1 = Installer
+		SccProjectUniqueName2 = TestClient\\TestClient.csproj
+		SccProjectName2 = TestClient
+		SccLocalPath2 = TestClient
+		SccProjectUniqueName3 = LabXml\\LabXml.csproj
+		SccProjectName3 = LabXml
+		SccLocalPath3 = LabXml
+	EndGlobalSection
+EndGlobal
