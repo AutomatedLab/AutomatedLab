@@ -1588,7 +1588,7 @@ function Get-LabIssuingCA
         $machines = (Get-LabMachine -Role CaRoot, CaSubordinate)
     }
     
-    $issuingCAs = Invoke-LabCommand -ComputerName  -ScriptBlock {
+    $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
         $templates = certutil.exe -CATemplates
         if ($templates -like '*Machine*')
         {

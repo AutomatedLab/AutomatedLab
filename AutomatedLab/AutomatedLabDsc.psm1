@@ -54,9 +54,9 @@ function Install-LabDscPullServer
             continue
         }
         
-        $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName WebServer2 -ComputerName $pullServer -PassThru
+        $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru
         
-        Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $pullServer -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machine -ScriptBlock {
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
             Install-Module xPSDesiredStateConfiguration, xDscDiagnostics -Force            
@@ -83,7 +83,7 @@ function Install-LabDscPullServer
         } -ArgumentList $machine, $cert.Thumbprint, (New-Guid) -PassThru
     }
     
-    Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Servers to complete' -NoNewline
+    Write-ScreenInfo -Message 'Waiting for configuration of routing to complete' -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
     
