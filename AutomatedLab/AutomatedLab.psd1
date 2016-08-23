@@ -55,7 +55,8 @@
         'AutomatedLabNetwork.psm1',
         'AutomatedLabAzure.psm1',
         'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1'
+        'AutomatedLabRouting.psm1',
+        'AutomatedLabDsc.psm1'
     )
 	
     # Functions to export from this module
@@ -104,6 +105,7 @@
 		'Install-LabSqlServers2008',
 		'Install-LabSqlServers2012',
 		'Install-LabSqlServers2014',
+        'Install-LabDscPullServer',
 		'Set-LabInstallationCredential',
 		'Show-LabInstallationTime',
 		'Set-LabGlobalNamePrefix',
@@ -195,7 +197,8 @@
         'AutomatedLabNetwork.psm1',
         'AutomatedLabAzure.psm1',
         'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1'
+        'AutomatedLabRouting.psm1',
+        'AutomatedLabDsc.psm1'
     )
 	
     # List of all files packaged with this module
@@ -214,7 +217,8 @@
         'AutomatedLabNetwork.psm1',
         'AutomatedLabAzure.psm1', 
         'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1'
+        'AutomatedLabRouting.psm1',
+        'AutomatedLabDsc.psm1'
     )
 	
     # Private data to pass to the module specified in ModuleToProcess

@@ -51,11 +51,19 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'FileContentDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
+        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
+        
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'FileContentDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
+        [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
+        
         [int]$RetryIntervalInSeconds,
         
         [switch]$AsJob,
@@ -226,9 +234,9 @@ function Invoke-LWCommand
     
     if ($invokeError.Count -and -not $AsJob)
     {
-        foreach ($error in $invokeError)
+        foreach ($e in $invokeError)
         {
-            Write-Error -ErrorRecord $error
+            Write-Error -ErrorRecord $e
         }
     }
     
