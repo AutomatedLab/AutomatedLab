@@ -1855,7 +1855,11 @@ function Sync-Parameter
     
     if (-not $PSBoundParameters.ContainsKey('Parameters'))
     {
-        $Parameters = $ALBoundParameters #(Get-PSCallStack)[1].GetFrameVariables().PSCmdlet.Value.SessionState.PSVariable.Get('ALBoundParameters').Value
+        $Parameters = ([hashtable]$ALBoundParameters).Clone()
+    }
+    else
+    {
+        $Parameters = ([hashtable]$Parameters).Clone()
     }
     
     $commandParameterKeys = $Command.Parameters.Keys.GetEnumerator() | ForEach-Object { $_ }
@@ -1869,11 +1873,7 @@ function Sync-Parameter
         $Parameters.Remove($key)
     }
     
-    if (-not $PSBoundParameters.ContainsKey('Parameters'))
-    {
-        #(Get-PSCallStack)[1].GetFrameVariables().PSCmdlet.Value.SessionState.PSVariable.Set('ALBoundParameters', $Parameters)
-    }
-    else
+    if ($PSBoundParameters.ContainsKey('Parameters'))
     {
         $Parameters
     }
