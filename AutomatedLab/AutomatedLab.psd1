@@ -183,7 +183,8 @@
 		'Sync-Parameter',
 		'Unblock-LabSources',
 		'Add-VariableToPSSession',
-		'Add-FunctionToPSSession'
+		'Add-FunctionToPSSession',
+		'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus'
 	
     # List of all modules packaged with this module
     ModuleList = @(
