@@ -1559,3 +1559,143 @@ function Dismount-LabIsoImage
     Write-LogFunctionExit
 }
 #endregion Dismount-LabIsoImage
+
+#region Get / Set-LabMachineUacStatus
+function Set-MachineUacStatus
+{
+    [Cmdletbinding()]
+    param(        
+        [bool]$EnableLUA,
+        
+        [int]$ConsentPromptBehaviorAdmin,
+        
+        [int]$ConsentPromptBehaviorUser,
+        
+        [switch]$PassThru
+    )
+    
+    $currentSettings = Get-MachineUacStatus -ComputerName $ComputerName
+    $uacStatusChanges = $false
+    
+    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
+    $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
+    
+    $subkey = $openRegistry.OpenSubKey($registryPath,$true)
+    
+    if ($currentSettings.EnableLUA -ne $EnableLUA -and $PSBoundParameters.ContainsKey('EnableLUA'))
+    {
+        $subkey.SetValue('EnableLUA', [int]$EnableLUA)
+        $uacStatusChanges = $true
+    }
+    
+    if ($currentSettings.PromptBehaviorAdmin -ne $ConsentPromptBehaviorAdmin -and $PSBoundParameters.ContainsKey('ConsentPromptBehaviorAdmin'))
+    {
+        $subkey.SetValue('ConsentPromptBehaviorAdmin', $ConsentPromptBehaviorAdmin)
+        $uacStatusChanges = $true
+    }
+    
+    if ($currentSettings.PromptBehaviorUser -ne $ConsentPromptBehaviorUser -and $PSBoundParameters.ContainsKey('ConsentPromptBehaviorUser'))
+    {
+        $subkey.SetValue('ConsentPromptBehaviorUser', $ConsentPromptBehaviorUser)
+        $uacStatusChanges = $true
+    }
+    
+    if ($PassThru)
+    {
+        Get-MachineUacStatus -ComputerName $ComputerName
+    }
+
+    if ($uacStatusChanges)
+    {
+        Write-Warning "Setting this requires a reboot of $ComputerName."
+    }
+}
+
+function Get-MachineUacStatus
+{
+    [CmdletBinding(SupportsShouldProcess = $true)]
+    param(
+        [string]$ComputerName = $env:COMPUTERNAME
+    )
+    
+    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
+    $uacStatus = $false
+    
+    $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
+    $subkey = $openRegistry.OpenSubKey($registryPath, $false)
+    
+    $uacStatus = $subkey.GetValue('EnableLUA')
+    $consentPromptBehaviorUser = $subkey.GetValue('ConsentPromptBehaviorUser')
+    $consentPromptBehaviorAdmin = $subkey.GetValue('ConsentPromptBehaviorAdmin')
+    
+    New-Object -TypeName PSObject -Property @{
+        ComputerName = $ComputerName
+        EnableLUA = $uacStatus
+        PromptBehaviorUser = $consentPromptBehaviorUser
+        PromptBehaviorAdmin = $consentPromptBehaviorAdmin
+    }
+}
+
+function Set-LabMachineUacStatus
+{
+    [Cmdletbinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+        
+        [bool]$EnableLUA,
+        
+        [int]$ConsentPromptBehaviorAdmin,
+        
+        [int]$ConsentPromptBehaviorUser,
+        
+        [switch]$PassThru
+    )
+
+    Write-LogFunctionEntry
+    
+    $machines = Get-LabMachine -ComputerName $ComputerName
+    
+    if (-not $machines)
+    {
+        Write-Error 'The given machines could not be found'
+        return
+    }
+    
+    $functions = Get-Command -Name Get-MachineUacStatus, Set-MachineUacStatus, Sync-Parameter
+    $variables = Get-Variable -Name PSBoundParameters
+    Invoke-LabCommand -ActivityName 'Set Uac Status' -ComputerName $machines -ScriptBlock {
+    
+        Sync-Parameter -Command (Get-Command -Name Set-MachineUacStatus)
+        Set-MachineUacStatus @ALBoundParameters
+    
+    } -Function $functions -Variable $variables -PassThru:$PassThru
+    
+    Write-LogFunctionExit
+}
+
+function Get-LabMachineUacStatus
+{
+    [Cmdletbinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName
+    )
+
+    Write-LogFunctionEntry
+    
+    $machines = Get-LabMachine -ComputerName $ComputerName
+    
+    if (-not $machines)
+    {
+        Write-Error 'The given machines could not be found'
+        return
+    }
+    
+    Invoke-LabCommand -ActivityName 'Get Uac Status' -ComputerName $machines -ScriptBlock {
+        Get-MachineUacStatus
+    } -Function (Get-Command -Name Get-MachineUacStatus) -PassThru
+
+    Write-LogFunctionExit
+}
+#endregion Get / Set-LabMachineUacStatus
