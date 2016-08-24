@@ -44,7 +44,7 @@ namespace Pki.CATemplate
         Preferred = 4096, //This flag informs the client that it SHOULD include attestation data if it is capable of doing so when creating the certificate request. It also instructs the server that attestation may or may not be completed before any certificates can be issued. For more details, see [MS-WCCE] sections 3.1.2.4.2.2.2.8 and 3.2.2.6.2.1.4.5.7.
         Required = 8192, //This flag informs the client that attestation data is required when creating the certificate request. It also instructs the server that attestation must be completed before any certificates can be issued. For more details, see [MS-WCCE] sections 3.1.2.4.2.2.2.8 and 3.2.2.6.2.1.4.5.7.
         WithoutPolicy = 16384, //This flag instructs the server to not add any certificate policy OIDs to the issued certificate even though attestation SHOULD be performed. For more details, see [MS-WCCE] section 3.2.2.6.2.1.4.5.7.
-	    xxx =  0x000F0000 
+        xxx =  0x000F0000 
     }
 
     [Flags]
@@ -924,7 +924,7 @@ function Find-CertificateAuthority
             }
         }
     }
-	
+    
     if ($caFound)
     {
         $certificateAuthority
@@ -1442,15 +1442,16 @@ function Get-LabCertificatePfx
     
     Write-LogFunctionEntry
     
-    $parameters = $PSBoundParameters
-    $variables = Get-Variable -Name parameters
+    $variables = Get-Variable -Name PSBoundParameters
     $functions = Get-Command -Name Get-CertificatePfx, Sync-Parameter
     
     foreach ($computer in $ComputerName)
     {
-        Invoke-LabCommand -ActivityName 'Exporting certificates with exportable private key' -ComputerName $computer -ScriptBlock {        
-            $p = Sync-Parameter -Command (Get-Command -Name Get-CertificatePfx) -Parameters $parameters
-            Get-CertificatePfx @p
+        Invoke-LabCommand -ActivityName 'Exporting certificates with exportable private key' -ComputerName $computer -ScriptBlock {
+        
+            Sync-Parameter -Command (Get-Command -Name Get-CertificatePfx)
+            Get-CertificatePfx @ALBoundParameters
+            
         } -Variable $variables -Function $functions -UseCredSsp -PassThru
     }
     
@@ -1483,23 +1484,26 @@ function Add-LabCertificatePfx
     
     process
     {
-        $parameters = $PSBoundParameters
-        $parameters = Sync-Parameter -Command (Get-Command -Name Add-CertificatePfx) -Parameters $parameters
-        
-        $variables = Get-Variable -Name parameters
+        $variables = Get-Variable -Name PSBoundParameters
         $functions = Get-Command -Name Add-CertificatePfx, Sync-Parameter
         
         Invoke-LabCommand -ActivityName 'Storing Pfx bytes on target machine' -ComputerName $ComputerName -ScriptBlock {
+        
             $tempFile = [System.IO.Path]::GetTempFileName()
             [System.IO.File]::WriteAllBytes($tempFile, $args[0])
             Write-Verbose "Pfx is written to '$tempFile'"
+            
         } -ArgumentList (,$Pfx) -Variable $variables
     
         Invoke-LabCommand -ActivityName 'Importing Pfx file' -ComputerName $ComputerName -ScriptBlock {
-            $parameters.Add('Path', $tempFile)
-            Add-CertificatePfx @parameters | Out-Null
+        
+            Sync-Parameter -Command (Get-Command -Name Add-LabCertificatePfx)
+            $ALBoundParameters.Add('Path', $tempFile)
+            Add-CertificatePfx @ALBoundParameters | Out-Null
             Remove-Item -Path $tempFile
+            
         } -Variable $variables -Function $functions -PassThru
+        
     }
     
     end
@@ -1544,18 +1548,18 @@ function New-LabCATemplate
 
     Write-LogFunctionEntry
     
-    $parameters = $PSBoundParameters
-    $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, parameters
+    $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
-
+    $x = $PSBoundParameters
     Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
         Add-Type -TypeDefinition $pkiInternalsTypes
         
-        $p = Sync-Parameter -Command (Get-Command -Name New-CATemplate) -Parameters $parameters
+        $p = Sync-Parameter -Command (Get-Command -Name New-CATemplate) -Parameters $ALBoundParameters
         New-CATemplate @p
         
-        $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $parameters
+        $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $ALBoundParameters
         Add-CATemplateStandardPermission @p
+        
     } -UseCredSsp -Variable $variables -Function $functions
 
     Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
@@ -1563,8 +1567,10 @@ function New-LabCATemplate
     $issuingCAs = Get-LabIssuingCA
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $issuingCAs -ScriptBlock {
-        $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $parameters
+    
+        $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
+
     } -UseCredSsp -Function $functions -Variable $variables
 }
 #endregion New-LabCATemplate
@@ -1625,15 +1631,16 @@ function Request-LabCertificate
     
     Write-LogFunctionEntry
     
-    $parameters = $PSBoundParameters
-    $variables = Get-Variable -Name parameters
+    $variables = Get-Variable -Name PSBoundParameters
     $functions = Get-Command -Name Get-CATemplate, Request-Certificate, Find-CertificateAuthority, Sync-Parameter
     
     foreach ($computer in $ComputerName)
     {
-        Invoke-LabCommand -ActivityName "Requesting certificate for template '$TemplateName'" -ComputerName $computer -ScriptBlock {        
-            $p = Sync-Parameter -Command (Get-Command -Name Request-Certificate) -Parameters $parameters
-            Request-Certificate @p
+        Invoke-LabCommand -ActivityName "Requesting certificate for template '$TemplateName'" -ComputerName $computer -ScriptBlock {
+        
+            Sync-Parameter -Command (Get-Command -Name Request-Certificate)
+            Request-Certificate @ALBoundParameters
+            
         } -UseCredSsp -Variable $variables -Function $functions -PassThru
     }
     
@@ -1646,25 +1653,25 @@ function Install-LabCA
 {
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
-	
+    
     Write-LogFunctionEntry
-	
+    
     $roles = [AutomatedLab.Roles]::CaRoot -bor [AutomatedLab.Roles]::CaSubordinate
-	
+    
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-	
+    
     $machines = Get-LabMachine -Role CaRoot, CaSubordinate
     if (-not $machines)
     {
         Write-Warning -Message 'There is no machine(s) with CA role'
         return
     }
-	
+    
     if (-not (Get-LabMachine -Role CaRoot))
     {
         Write-ScreenInfo -Message 'Subordinate CA(s) defined but lab has no Root CA(s) defined. Skipping installation of CA(s).' -Type Error
@@ -1675,21 +1682,21 @@ function Install-LabCA
     {
         Write-ScreenInfo -Message "Machines with Root CA role to be installed: '$((Get-LabMachine -Role CaRoot).Name -join ', ')'" -TaskStart
     }
-	
+    
     #Bring the RootCA server online and start installing
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     
     Start-LabVM -RoleName CaRoot, CaSubordinate
     
     Wait-LabVM -ComputerName (Get-LabMachine -Role CaRoot) -ProgressIndicator 10
-	
+    
     $caRootMachines = Get-LabMachine -Role CaRoot -IsRunning
     if ($caRootMachines.Count -ne (Get-LabMachine -Role CaRoot).Count)
     {
         Write-Error 'Not all machines of type Root CA could be started, aborting the installation'
         return
     }
-	
+    
     $installSequence = 0
     $jobs = @()
     foreach ($caRootMachine in $caRootMachines)
@@ -1704,7 +1711,7 @@ function Install-LabCA
             $jobs += Install-LabCAMachine -Machine $caRootMachine -PassThru -PreDelaySeconds ($installSequence++*30)
         }
     }
-	
+    
     if ($Jobs)
     {
         Write-ScreenInfo -Message 'Waiting for Root CA(s) to complete installation' -NoNewline
@@ -1713,15 +1720,15 @@ function Install-LabCA
     
         Write-Verbose -Message "Getting certificates from Root CA servers and placing them in '<labfolder>\Certs' on host machine"
         Get-LabMachine -Role CaRoot | Get-LabCAInstallCertificates
-	
+    
         Write-Verbose -Message 'Publishing certificates from CA servers to all online machines'
         $jobs = Publish-LabCAInstallCertificates -PassThru
-	
+    
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
-	
+    
         Write-Verbose -Message 'Waiting for all running machines to be contactable'
         Wait-LabVM -ComputerName (Get-LabMachine -All -IsRunning) -ProgressIndicator 20 -NoNewLine
-	
+    
         Write-Verbose -Message 'Invoking a GPUpdate on all running machines'
         $jobs = Invoke-LabCommand -ComputerName (Get-LabMachine -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
 
@@ -1729,7 +1736,7 @@ function Install-LabCA
     }
     
     Write-ScreenInfo -Message 'Finished installation of Root CAs' -TaskEnd
-	
+    
     #If any Subordinate CA servers to install, bring these online and start installing
     if ($machines | Where-Object { $_.Roles.Name -eq ([AutomatedLab.Roles]::CaSubordinate) })
     {
@@ -1739,7 +1746,7 @@ function Install-LabCA
             Write-Error 'Not all machines of type CaSubordinate could be started, aborting the installation'
             return
         }
-		
+        
         if ((Get-LabMachine -Role CaSubordinate).Name)
         {
             Write-ScreenInfo -Message "Machines with Subordinate CA role to be installed: '$((Get-LabMachine -Role CaSubordinate).Name -join ', ')'" -TaskStart
@@ -1763,7 +1770,7 @@ function Install-LabCA
                 $jobs += Install-LabCAMachine -Machine $caSubordinateMachine -PassThru -PreDelaySeconds ($installSequence++*30)
             }
         }
-		
+        
         if ($Jobs)
         {
             Write-ScreenInfo -Message 'Waiting for Subordinate CA(s) to complete installation' -NoNewline
@@ -1774,11 +1781,11 @@ function Install-LabCA
         
             Write-Verbose -Message "- Getting certificates from CA servers and placing them in '<labfolder>\Certs' on host machine"
             Get-LabMachine -Role CaRoot, CaSubordinate | Get-LabCAInstallCertificates
-		
+        
             Write-Verbose -Message '- Publishing certificates from Subordinate CA servers to all online machines'
             $jobs = Publish-LabCAInstallCertificates -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
-		
+        
             Write-Verbose -Message 'Invoking a GPUpdate on all machines that are online'
             $jobs = Invoke-LabCommand -ComputerName (Get-LabMachine -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoDisplay
@@ -1805,30 +1812,30 @@ function Install-LabCAMachine
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine,
-		
+        
         [int]$PreDelaySeconds,
         
         [switch]$PassThru
     )
-	
+    
     Write-LogFunctionEntry
     
     Write-Verbose -Message '****************************************************'
     Write-Verbose -Message "Starting installation of machine: $($machine.name)"
     Write-Verbose -Message '****************************************************'
-	
+    
     $role = $machine.Roles | Where-Object { $_.Name -eq ([AutomatedLab.Roles]::CaRoot) -or $_.Name -eq ([AutomatedLab.Roles]::CaSubordinate) }
-	
+    
     $param = [ordered]@{ }
-	
+    
     #region - Locate admin username and password for machine
     if ($machine.IsDomainJoined)
     {
         $domain = $lab.Domains | Where-Object { $_.Name -eq $machine.DomainName }
-		
+        
         $param.Add('UserName', ('{0}\{1}' -f $domain.Name, $domain.Administrator.UserName))
         $param.Add('Password', $domain.Administrator.Password)
-		
+        
         $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $machine.DomainName
         if ($rootDc) #if there is a root domain controller in the same domain as the machine
         {
@@ -1841,10 +1848,10 @@ function Install-LabCAMachine
             $rootDomainNetBIOSName = ($rootDomain.Name -split '\.')[0]
             $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $rootDomain
         }
-		
+        
         $param.Add('ForestAdminUserName', ('{0}\{1}' -f $rootDomainNetBIOSName, $rootDomain.Administrator.UserName))
         $param.Add('ForestAdminPassword', $rootDomain.Administrator.Password)
-		
+        
         Write-Debug -Message "Machine                   : $($machine.name)"
         Write-Debug -Message "Machine Domain            : $($machine.DomainName)"
         Write-Debug -Message "Username for job          : $($param.username)"
@@ -1859,13 +1866,13 @@ function Install-LabCAMachine
     }
     $param.Add('ComputerName', $Machine.Name)
     #endregion
-	
-	
-	
+    
+    
+    
     #region - Determine DNS name for machine. This is used when installing Enterprise CAs
     $caDNSName = $Machine.Name
     if ($Machine.DomainName) { $caDNSName += ('.' + $Machine.DomainName) }
-	
+    
     if ($Machine.DomainName)
     {
         $param.Add('DomainName', $Machine.DomainName)
@@ -1874,8 +1881,8 @@ function Install-LabCAMachine
     {
         $param.Add('DomainName', '')
     }
-	
-	
+    
+    
     if ($role.Name -eq 'CaSubordinate')
     {
         if (!($role.Properties.ContainsKey('ParentCA'))) { $param.Add('ParentCA', '<auto>') }
@@ -1883,14 +1890,14 @@ function Install-LabCAMachine
         if (!($role.Properties.ContainsKey('ParentCALogicalName'))) { $param.Add('ParentCALogicalName', '<auto>') }
         else { $param.Add('ParentCALogicalName', $role.Properties.ParentCALogicalName) }
     }
-	
+    
     if (!($role.Properties.ContainsKey('CACommonName'))) { $param.Add('CACommonName', '<auto>') }
     else { $param.Add('CACommonName', $role.Properties.CACommonName) }
     if (!($role.Properties.ContainsKey('CAType'))) { $param.Add('CAType', '<auto>') }
     else { $param.Add('CAType', $role.Properties.CAType) }
     if (!($role.Properties.ContainsKey('KeyLength'))) { $param.Add('KeyLength', '4096') }
     else { $param.Add('KeyLength', $role.Properties.KeyLength) }
-	
+    
     if (!($role.Properties.ContainsKey('CryptoProviderName'))) { $param.Add('CryptoProviderName', 'RSA#Microsoft Software Key Storage Provider') }
     else { $param.Add('CryptoProviderName', $role.Properties.CryptoProviderName) }
     if (!($role.Properties.ContainsKey('HashAlgorithmName'))) { $param.Add('HashAlgorithmName', 'SHA256') }
@@ -1901,12 +1908,12 @@ function Install-LabCAMachine
     else { $param.Add('DatabaseDirectory', $role.Properties.DatabaseDirectory) }
     if (!($role.Properties.ContainsKey('LogDirectory'))) { $param.Add('LogDirectory', '<auto>') }
     else { $param.Add('LogDirectory', $role.Properties.LogDirectory) }
-	
+    
     if (!($role.Properties.ContainsKey('ValidityPeriod'))) { $param.Add('ValidityPeriod', '<auto>') }
     else { $param.Add('ValidityPeriod', $role.Properties.ValidityPeriod) }
     if (!($role.Properties.ContainsKey('ValidityPeriodUnits'))) { $param.Add('ValidityPeriodUnits', '<auto>') }
     else { $param.Add('ValidityPeriodUnits', $role.Properties.ValidityPeriodUnits) }
-	
+    
     if (!($role.Properties.ContainsKey('CertsValidityPeriod'))) { $param.Add('CertsValidityPeriod', '<auto>') }
     else { $param.Add('CertsValidityPeriod', $role.Properties.CertsValidityPeriod) }
     if (!($role.Properties.ContainsKey('CertsValidityPeriodUnits'))) { $param.Add('CertsValidityPeriodUnits', '<auto>') }
@@ -1923,7 +1930,7 @@ function Install-LabCAMachine
     else { $param.Add('CRLDeltaPeriod', $role.Properties.CRLDeltaPeriod) }
     if (!($role.Properties.ContainsKey('CRLDeltaPeriodUnits'))) { $param.Add('CRLDeltaPeriodUnits', '<auto>') }
     else { $param.Add('CRLDeltaPeriodUnits', $role.Properties.CRLDeltaPeriodUnits) }
-	
+    
     if (!($role.Properties.ContainsKey('UseLDAPAIA'))) { $param.Add('UseLDAPAIA', '<auto>') }
     else { $param.Add('UseLDAPAIA', ($role.Properties.UseLDAPAIA -like '*Y*')) }
     if (!($role.Properties.ContainsKey('UseHTTPAIA'))) { $param.Add('UseHTTPAIA', '<auto>') }
@@ -1936,7 +1943,7 @@ function Install-LabCAMachine
     else { $param.Add('AIAHTTPURL01UploadLocation', $role.Properties.AIAHTTPURL01UploadLocation) }
     if (!($role.Properties.ContainsKey('AIAHTTPURL02UploadLocation'))) { $param.Add('AIAHTTPURL02UploadLocation', '') }
     else { $param.Add('AIAHTTPURL02UploadLocation', $role.Properties.AIAHTTPURL02UploadLocation) }
-	
+    
     if (!($role.Properties.ContainsKey('UseLDAPCRL'))) { $param.Add('UseLDAPCRL', '<auto>') }
     else { $param.Add('UseLDAPCRL', ($role.Properties.UseLDAPCRL -like '*Y*')) }
     if (!($role.Properties.ContainsKey('UseHTTPCRL'))) { $param.Add('UseHTTPCRL', '<auto>') }
@@ -1949,28 +1956,28 @@ function Install-LabCAMachine
     else { $param.Add('CDPHTTPURL01UploadLocation', $role.Properties.CDPHTTPURL01UploadLocation) }
     if (!($role.Properties.ContainsKey('CDPHTTPURL02UploadLocation'))) { $param.Add('CDPHTTPURL02UploadLocation', '') }
     else { $param.Add('CDPHTTPURL02UploadLocation', $role.Properties.CDPHTTPURL02UploadLocation) }
-	
+    
     if (!($role.Properties.ContainsKey('InstallWebEnrollment'))) { $param.Add('InstallWebEnrollment', '<auto>') }
     else { $param.Add('InstallWebEnrollment', ($role.Properties.InstallWebEnrollment -like '*Y*')) }
     if (!($role.Properties.ContainsKey('InstallWebRole'))) { $param.Add('InstallWebRole', '<auto>') }
     else { $param.Add('InstallWebRole', ($role.Properties.InstallWebRole -like '*Y*')) }
-	
+    
     if (!($role.Properties.ContainsKey('CPSURL'))) { $param.Add('CPSURL', 'http://' + $caDNSName + '/cps/cps.html') }
     else { $param.Add('CPSURL', $role.Properties.CPSURL) }
     if (!($role.Properties.ContainsKey('CPSText'))) { $param.Add('CPSText', 'Certification Practice Statement') }
     else { $param.Add('CPSText', $($role.Properties.CPSText)) }
-	
+    
     if (!($role.Properties.ContainsKey('InstallOCSP'))) { $param.Add('InstallOCSP', '<auto>') }
     else { $param.Add('InstallOCSP', ($role.Properties.InstallOCSP -like '*Y*')) }
     if (!($role.Properties.ContainsKey('OCSPHTTPURL01'))) { $param.Add('OCSPHTTPURL01', '<auto>') }
     else { $param.Add('OCSPHTTPURL01', $role.Properties.OCSPHTTPURL01) }
     if (!($role.Properties.ContainsKey('OCSPHTTPURL02'))) { $param.Add('OCSPHTTPURL02', '<auto>') }
     else { $param.Add('OCSPHTTPURL02', $role.Properties.OCSPHTTPURL02) }
-	
+    
     if (!($role.Properties.ContainsKey('DoNotLoadDefaultTemplates'))) { $param.Add('DoNotLoadDefaultTemplates', '<auto>') }
     else { $param.Add('DoNotLoadDefaultTemplates', $role.Properties.DoNotLoadDefaultTemplates -like '*Y*') }
-	
-	
+    
+    
     #region - Check if any unknown parameter name was passed
     $knownParameters = @()
     $knownParameters += 'ParentCA (only valid for Subordinate CA. Ignored for Root CAs)'
@@ -2032,10 +2039,10 @@ function Install-LabCAMachine
         Write-Warning -Message 'NOTE that all parameter names are CASE SENSITIVE!'
     }
     #endregion - Check if any unknown parameter names was passed
-	
+    
     #endregion - Parameters
-	
-	
+    
+    
     #region - Parameters debug
     Write-Debug -Message '---------------------------------------------------------------------------------------'
     Write-Debug -Message "Parameters for $($machine.name)"
@@ -2059,19 +2066,19 @@ function Install-LabCAMachine
     }
     Write-Debug -Message '---------------------------------------------------------------------------------------'
     #endregion - Parameters debug
-	
-	
+    
+    
     #region ----- Input validation (raw values) -----
     if ($role.Properties.ContainsKey('CACommonName') -and ($param.CACommonName.Length -gt 37))
     {
         Write-Error -Message "CACommonName cannot be longer than 37 characters. Specified value is: '$($param.CACommonName)'"; return
     }
-	
+    
     if ($role.Properties.ContainsKey('CACommonName') -and ($param.CACommonName.Length -lt 1))
     {
         Write-Error -Message "CACommonName cannot be blank. Specified value is: '$($param.CACommonName)'"; return
     }
-	
+    
     if ($role.Name -eq 'CaRoot')
     {
         if (-not ($param.CAType -in 'EnterpriseRootCA', 'StandAloneRootCA', '<auto>'))
@@ -2079,7 +2086,7 @@ function Install-LabCAMachine
             Write-Error -Message "CAType needs to be 'EnterpriseRootCA' or 'StandAloneRootCA' when role is CaRoot. Specified value is: '$param.CAType'"; return
         }
     }
-	
+    
     if ($role.Name -eq 'CaSubordinate')
     {
         if (-not ($param.CAType -in 'EnterpriseSubordinateCA', 'StandAloneSubordinateCA', '<auto>'))
@@ -2087,7 +2094,7 @@ function Install-LabCAMachine
             Write-Error -Message "CAType needs to be 'EnterpriseSubordinateCA' or 'StandAloneSubordinateCA' when role is CaSubordinate. Specified value is: '$param.CAType'"; return
         }
     }
-	
+    
     
     $availableCombinations = @()
     $availableCombinations += @{CryptoProviderName='Microsoft Base SMart Card Crypto Provider';           HashAlgorithmName='sha1','md2','md4','md5';                           KeyLength='1024','2048','4096'}
@@ -2126,195 +2133,195 @@ function Install-LabCAMachine
     {
         Write-Error -Message 'DatabaseDirectory needs to be located on a local drive (drive letter C-Z)'; return
     }
-	
+    
     if ($role.Properties.ContainsKey('LogDirectory') -and -not ($param.LogDirectory -match '^[C-Z]:\\'))
     {
         Write-Error -Message 'LogDirectory needs to be located on a local drive (drive letter C-Z)'; return
     }
-	
+    
     if (($param.UseLDAPAIA -ne '<auto>') -and ($param.UseLDAPAIA -notin ('Yes', 'No')))
     {
         Write-Error -Message "UseLDAPAIA needs to be 'Yes' or 'no'. Specified value is: '$($param.UseLDAPAIA)'"; return
     }
-	
+    
     if (($param.UseHTTPAIA -ne '<auto>') -and ($param.UseHTTPAIA -notin ('Yes', 'No')))
     {
         Write-Error -Message "UseHTTPAIA needs to be 'Yes' or 'no'. Specified value is: '$($param.UseHTTPAIA)'"; return
     }
-	
+    
     if (($param.UseLDAPCRL -ne '<auto>') -and ($param.UseLDAPCRL -notin ('Yes', 'No')))
     {
         Write-Error -Message "UseLDAPCRL needs to be 'Yes' or 'no'. Specified value is: '$($param.UseLDAPCRL)'"; return
     }
-	
+    
     if (($param.UseHTTPCRL -ne '<auto>') -and ($param.UseHTTPCRL -notin ('Yes', 'No')))
     {
         Write-Error -Message "UseHTTPCRL needs to be 'Yes' or 'no'. Specified value is: '$($param.UseHTTPCRL)'"; return
     }
-	
+    
     if (($param.InstallWebEnrollment -ne '<auto>') -and ($param.InstallWebEnrollment -notin ('Yes', 'No')))
     {
         Write-Error -Message "InstallWebEnrollment needs to be 'Yes' or 'no'. Specified value is: '$($param.InstallWebEnrollment)'"; return
     }
-	
+    
     if (($param.InstallWebRole -ne '<auto>') -and ($param.InstallWebRole -notin ('Yes', 'No')))
     {
         Write-Error -Message "InstallWebRole needs to be 'Yes' or 'no'. Specified value is: '$($param.InstallWebRole)'"; return
     }
-	
+    
     if (($param.AIAHTTPURL01 -ne '<auto>') -and ($param.AIAHTTPURL01 -notlike 'http://*'))
     {
         Write-Error -Message "AIAHTTPURL01 needs to start with 'http://' (https is not supported). Specified value is: '$($param.AIAHTTPURL01)'"; return
     }
-	
+    
     if (($param.AIAHTTPURL02 -ne '<auto>') -and ($param.AIAHTTPURL02 -notlike 'http://*'))
     {
         Write-Error -Message "AIAHTTPURL02 needs to start with 'http://' (https is not supported). Specified value is: '$($param.AIAHTTPURL02)'"; return
     }
-	
+    
     if (($param.CDPHTTPURL01 -ne '<auto>') -and ($param.CDPHTTPURL01 -notlike 'http://*'))
     {
         Write-Error -Message "CDPHTTPURL01 needs to start with 'http://' (https is not supported). Specified value is: '$($param.CDPHTTPURL01)'"; return
     }
-	
+    
     if (($param.CDPHTTPURL02 -ne '<auto>') -and ($param.CDPHTTPURL02 -notlike 'http://*'))
     {
         Write-Error -Message "CDPHTTPURL02 needs to start with 'http://' (https is not supported). Specified value is: '$($param.CDPHTTPURL02)'"; return
     }
-	
+    
     if (($role.Name -eq 'CaRoot') -and ($param.DoNotLoadDefaultTemplates -ne '<auto>') -and ($param.DoNotLoadDefaultTemplates -notin ('Yes', 'No')))
     {
         Write-Error -Message "DoNotLoadDefaultTemplates needs to be 'Yes' or 'no'. Specified value is: '$($param.DoNotLoadDefaultTemplates)'"; return
     }
-	
-	
-	
+    
+    
+    
     #ValidityPeriod and ValidityPeriodUnits
     if ($param.ValidityPeriodUnits -ne '<auto>')
     {
         try { $dummy = [int]$param.ValidityPeriodUnits }
         catch { Write-Error -Message 'ValidityPeriodUnits is not convertable to an integer. Please specify (enclosed as a string) a number between 1 and 2147483647'; return }
     }
-	
+    
     if (($param.ValidityPeriodUnits -ne '<auto>') -and ([int]$param.ValidityPeriodUnits) -lt 1)
     {
         Write-Error -Message 'ValidityPeriodUnits cannot be less than 1. Please specify (enclosed as a string) a number between 1 and 2147483647'; return
     }
-	
+    
     if (($param.ValidityPeriodUnits) -ne '<auto>' -and (!($role.Properties.ContainsKey('ValidityPeriod'))))
     {
         Write-Error -Message 'ValidityPeriodUnits specified (ok) while ValidityPeriod is not specified. ValidityPeriod needs to be one of "Years", "Months", "Weeks", "Days", "Hours".'; return
     }
-	
+    
     if ($param.ValidityPeriod -ne '<auto>' -and ($param.ValidityPeriod -notin ('Years', 'Months', 'Weeks', 'Days', 'Hours')))
     {
         Write-Error -Message "ValidityPeriod need to be one of 'Years', 'Months', 'Weeks', 'Days', 'Hours'. Specified value is: '$($param.ValidityPeriod)'"; return
     }
-	
-	
+    
+    
     #CertsValidityPeriod and CertsValidityPeriodUnits
     if ($param.CertsValidityPeriodUnits -ne '<auto>')
     {
         try { $dummy = [int]$param.CertsValidityPeriodUnits }
         catch { Write-Error -Message 'CertsValidityPeriodUnits is not convertable to an integer. Please specify (enclosed as a string) a number between 1 and 2147483647'; return }
     }
-	
+    
     if (($param.CertsValidityPeriodUnits) -ne '<auto>' -and (!($role.Properties.ContainsKey('CertsValidityPeriod'))))
     {
         Write-Error -Message 'CertsValidityPeriodUnits specified (ok) while CertsValidityPeriod is not specified. CertsValidityPeriod needs to be one of "Years", "Months", "Weeks", "Days", "Hours" .'; return
     }
-	
+    
     if ($param.CertsValidityPeriod -ne '<auto>' -and ($param.CertsValidityPeriod -notin ('Years', 'Months', 'Weeks', 'Days', 'Hours')))
     {
         Write-Error -Message "CertsValidityPeriod need to be one of 'Years', 'Months', 'Weeks', 'Days', 'Hours'. Specified value is: '$($param.CertsValidityPeriod)'"; return
     }
-	
-	
+    
+    
     #CRLPeriodUnits and CRLPeriodUnitsUnits
     if ($param.CRLPeriodUnits -ne '<auto>')
     {
         try { $dummy = [int]$param.CRLPeriodUnits }
         catch { Write-Error -Message 'CRLPeriodUnits is not convertable to an integer. Please specify (enclosed as a string) a number between 1 and 2147483647'; return }
     }
-	
+    
     if (($param.CRLPeriodUnits) -ne '<auto>' -and (!($role.Properties.ContainsKey('CRLPeriod'))))
     {
         Write-Error -Message 'CRLPeriodUnits specified (ok) while CRLPeriod is not specified. CRLPeriod needs to be one of "Years", "Months", "Weeks", "Days", "Hours" .'; return
     }
-	
+    
     if ($param.CRLPeriod -ne '<auto>' -and ($param.CRLPeriod -notin ('Years', 'Months', 'Weeks', 'Days', 'Hours')))
     {
         Write-Error -Message "CRLPeriod need to be one of 'Years', 'Months', 'Weeks', 'Days', 'Hours'. Specified value is: '$($param.CRLPeriod)'"; return
     }
-	
-	
+    
+    
     #CRLOverlapPeriod and CRLOverlapUnits
     if ($param.CRLOverlapUnits -ne '<auto>')
     {
         try { $dummy = [int]$param.CRLOverlapUnits }
         catch { Write-Error -Message 'CRLOverlapUnits is not convertable to an integer. Please specify (enclosed as a string) a number between 1 and 2147483647'; return }
     }
-	
+    
     if (($param.CRLOverlapUnits) -ne '<auto>' -and (!($role.Properties.ContainsKey('CRLOverlapPeriod'))))
     {
         Write-Error -Message 'CRLOverlapUnits specified (ok) while CRLOverlapPeriod is not specified. CRLOverlapPeriod needs to be one of "Years", "Months", "Weeks", "Days", "Hours" .'; return
     }
-	
+    
     if ($param.CRLOverlapPeriod -ne '<auto>' -and ($param.CRLOverlapPeriod -notin ('Years', 'Months', 'Weeks', 'Days', 'Hours')))
     {
         Write-Error -Message "CRLOverlapPeriod need to be one of 'Years', 'Months', 'Weeks', 'Days', 'Hours'. Specified value is: '$($param.CRLOverlapPeriod)'"; return
     }
-	
-	
+    
+    
     #CRLDeltaPeriod and CRLDeltaPeriodUnits
     if ($param.CRLDeltaPeriodUnits -ne '<auto>')
     {
         try { $dummy = [int]$param.CRLDeltaPeriodUnits }
         catch { Write-Error -Message 'CRLDeltaPeriodUnits is not convertable to an integer. Please specify (enclosed as a string) a number between 1 and 2147483647'; return }
     }
-	
+    
     if (($param.CRLDeltaPeriodUnits) -ne '<auto>' -and (!($role.Properties.ContainsKey('CRLDeltaPeriod'))))
     {
         Write-Error -Message 'CRLDeltaPeriodUnits specified (ok) while CRLDeltaPeriod is not specified. CRLDeltaPeriod needs to be one of "Years", "Months", "Weeks", "Days", "Hours" .'; return
     }
-	
+    
     if ($param.CRLDeltaPeriod -ne '<auto>' -and ($param.CRLDeltaPeriod -notin ('Years', 'Months', 'Weeks', 'Days', 'Hours')))
     {
         Write-Error -Message "CRLDeltaPeriod need to be one of 'Years', 'Months', 'Weeks', 'Days', 'Hours'. Specified value is: '$($param.CRLDeltaPeriod)'"; return
     }
-	
+    
     #endregion ----- Input validation (raw values) -----
-	
-	
-	
+    
+    
+    
     #region ----- Input validation (content analysis) -----
     if (($param.CAType -like 'Enterprise*') -and (!($machine.isDomainJoined)))
     {
         Write-Error -Message "CA Type specified is '$($param.CAType)' while machine is not domain joined. This is not possible"; return
     }
-	
+    
     if (($param.CAType -like 'StandAlone*') -and ($role.Properties.ContainsKey('UseLDAPAIA')) -and ($param.UseLDAPAIA))
     {
         Write-Error -Message "UseLDAPAIA is set to 'Yes' while 'CAType' is set to '$($param.CAType)'. It is not possible to use LDAP based AIA for a $($param.CAType)"; return
     }
-	
+    
     if (($param.CAType -like 'StandAlone*') -and ($role.Properties.ContainsKey('UseLDAPCRL')) -and ($param.UseLDAPCRL))
     {
         Write-Error -Message "UseLDAPCRL is set to 'Yes' while 'CAType' is set to '$($param.CAType)'. It is not possible to use LDAP based CRL for a $($param.CAType)"; return
     }
-	
+    
     if (($param.CAType -like 'StandAlone*') -and ($role.Properties.ContainsKey('InstallWebRole')) -and (!($param.InstallWebRole)))
     {
         Write-Error -Message "InstallWebRole is set to No while CAType is StandAloneCA. $($param.CAType) needs web role for hosting a CDP"
         return
     }
-	
+    
     if (($role.Properties.ContainsKey('OCSPHTTPURL01')) -or ($role.Properties.ContainsKey('OCSPHTTPURL02')) -or ($role.Properties.ContainsKey('InstallOCSP')))
     {
         Write-Warning -Message 'OCSP is not yet supported. OCSP parameters will be ignored and OCSP will not be installed!'
     }
-	
-	
+    
+    
     #if any validity parameter was defined, get these now and convert them all to hours (temporary variables)
     if ($param.ValidityPeriodUnits -ne '<auto>')
     {
@@ -2371,7 +2378,7 @@ function Install-LabCAMachine
             'Hours'  { $CRLOverlapUnitsHours = [int]([int]$param.CRLOverlapUnits) }
         }
     }
-	
+    
     if ($role.Properties.ContainsKey('CRLPeriodUnits') -and ($cRLPeriodUnitsHours) -and ($validityPeriodUnitsHours) -and ($cRLPeriodUnitsHours -ge $validityPeriodUnitsHours))
     {
         Write-Error -Message "CRLPeriodUnits is longer than ValidityPeriodUnits. This is not possible. `
@@ -2413,13 +2420,13 @@ function Install-LabCAMachine
             However, the default validity (specified by 2012/2012R2 Active Directory) of issued by Enterprise Root CAs to Subordinate CAs, is 5 years. `
         If more than 5 years is needed, a custom certificate template is needed wherein the validity can be changed."
     }
-	
-	
+    
+    
     #region - If DatabaseDirectory or LogDirectory is specified, Check for drive existence in the VM
     if (($param.DatabaseDirectory -ne '<auto>') -or ($param.LogDirectory -ne '<auto>'))
     {
         $caSession = New-LabPSSession -ComputerName $Machine -UseCredSsp
-		
+        
         if ($param.DatabaseDirectory -ne '<auto>')
         {
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
@@ -2443,7 +2450,7 @@ function Install-LabCAMachine
                 return
             }
         }
-		
+        
         if ($param.LogDirectory -ne '<auto>')
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
@@ -2467,12 +2474,12 @@ function Install-LabCAMachine
         }
     }
     #endregion - If DatabaseDirectory or LogDirectory is specified, Check for drive existence in the VM
-	
+    
     #endregion ----- Input validation (content analysis) -----
-	
-	
+    
+    
     #region ----- Calculations -----
-	
+    
     #If ValidityPeriodUnits is not defined, define it now and Update machine property "ValidityPeriod"
     if ($param.ValidityPeriodUnits -eq '<auto>')
     {
@@ -2480,8 +2487,8 @@ function Install-LabCAMachine
         $param.ValidityPeriodUnits = '10'
         if (!($validityPeriodUnitsHours)) { $validityPeriodUnitsHours = [int]($param.ValidityPeriodUnits) * 365 * 24 }
     }
-	
-	
+    
+    
     #If CAType is not defined, define it now
     if ($param.CAType -eq '<auto>')
     {
@@ -2512,8 +2519,8 @@ function Install-LabCAMachine
             }
         }
     }
-	
-	
+    
+    
     #If ParentCA is not defined, try to find it automatically
     if ($param.ParentCA -eq '<auto>')
     {
@@ -2522,18 +2529,18 @@ function Install-LabCAMachine
             if ($param.CAType -like 'Enterprise*')
             {
                 $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object DomainName -eq $machine.DomainName | Sort-Object -Property DomainName) | Select-Object -First 1
-				
+                
                 if (-not $rootCA)
                 {
                     $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
                 }
-				
+                
             }
             else
             {
                 $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
             }
-			
+            
             if ($rootCA)
             {
                 $param.ParentCALogicalName = ($rootCA.Roles | Where-Object Name -eq CaRoot).Properties.CACommonName
@@ -2547,16 +2554,16 @@ function Install-LabCAMachine
                 Write-Error -Message 'No name for Parent CA specified and no Root CA can be located automatically. Please install a Root CA in the lab before installing a Subordinate CA'
                 return
             }
-			
+            
             #Check if Parent CA is valid			
             $caSession = New-LabPSSession -ComputerName $param.ComputerName -UseCredSsp
-			
+            
             Write-Debug -Message "Testing ParentCA with command: 'certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)'"
-			
-			
+            
+            
             $totalretries = 20
             $retries = 0
-			
+            
             Write-Verbose -Message "Testing Root CA availability: certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)"
             do
             {
@@ -2577,7 +2584,7 @@ function Install-LabCAMachine
                 }
             }
             until (($result | Where-Object { $_ -like '*interface is alive*' }) -or ($retries -ge $totalretries))
-			
+            
             if ($result | Where-Object { $_ -like '*interface is alive*' })
             {
                 Write-Verbose -Message "Parent CA ($($param.ParentCA)) is contactable"
@@ -2594,7 +2601,7 @@ function Install-LabCAMachine
             $param.ParentCA = ''
         }
     }
-	
+    
     #Calculate and update machine property "CACommonName" if this was not specified. Note: the first instance of a name of a Root CA server, will be used by install code for Sub CAs.
     if ($param.CACommonName -eq '<auto>')
     {
@@ -2618,7 +2625,7 @@ function Install-LabCAMachine
         $param.CACommonName = $caBaseName + ([string]$num)
         ($machine.Roles | Where-Object Name -like Ca*).Properties.Add('CACommonName', $param.CACommonName)
     }
-	
+    
     #Converting to correct types for some parameters
     if ($param.InstallWebEnrollment -eq '<auto>')
     {
@@ -2635,7 +2642,7 @@ function Install-LabCAMachine
     {
         $param.InstallWebEnrollment = ($param.InstallWebEnrollment -like '*Y*')
     }
-	
+    
     if ($param.InstallWebRole -eq '<auto>')
     {
         if ($param.CAType -like 'Enterprise*')
@@ -2651,7 +2658,7 @@ function Install-LabCAMachine
     {
         $param.InstallWebRole = ($param.InstallWebRole -like '*Y*')
     }
-	
+    
     if ($param.UseLDAPAIA -eq '<auto>')
     {
         if ($param.CAType -like 'Enterprise*')
@@ -2667,7 +2674,7 @@ function Install-LabCAMachine
     {
         $param.UseHTTPAIA = ($param.UseHTTPAIA -like '*Y*')
     }
-	
+    
     if ($param.UseHTTPAIA -eq '<auto>')
     {
         if ($param.CAType -like 'Enterprise*')
@@ -2683,7 +2690,7 @@ function Install-LabCAMachine
     {
         $param.UseHTTPAIA = ($param.UseHTTPAIA -like '*Y*')
     }
-	
+    
     if ($param.UseLDAPCRL -eq '<auto>')
     {
         if ($param.CAType -like 'Enterprise*')
@@ -2699,7 +2706,7 @@ function Install-LabCAMachine
     {
         $param.UseLDAPCRL = ($param.UseLDAPCRL -like '*Y*')
     }
-	
+    
     if ($param.UseHTTPCRL -eq '<auto>')
     {
         if ($param.CAType -like 'Enterprise*')
@@ -2715,20 +2722,20 @@ function Install-LabCAMachine
     {
         $param.UseHTTPCRL = ($param.UseHTTPCRL -like '*Y*')
     }
-	
+    
     $param.InstallOCSP = $False
     $param.OCSPHTTPURL01 = ''
     $param.OCSPHTTPURL02 = ''
-	
-	
+    
+    
     $param.AIAHTTPURL01UploadLocation = ''
     $param.AIAHTTPURL02UploadLocation = ''
     $param.CDPHTTPURL01UploadLocation = ''
     $param.CDPHTTPURL02UploadLocation = ''
-	
-	
-	
-	
+    
+    
+    
+    
     if (($param.CaType -like 'StandAlone*') -and $role.Properties.ContainsKey('UseLDAPAIA') -and $param.UseLDAPAIA)
     {
         Write-Error -Message "Parameter 'UseLDAPAIA' is set to 'Yes' while 'CAType' is set to '$($param.CaType)'. It is not possible to use LDAP based AIA for a $($param.CaType)"
@@ -2738,7 +2745,7 @@ function Install-LabCAMachine
     {
         $param.UseLDAPAIA = $False
     }
-	
+    
     if (($param.CaType -like 'StandAlone*') -and $role.Properties.ContainsKey('UseHTTPAIA') -and (-not $param.UseHTTPAIA))
     {
         Write-Error -Message "Parameter 'UseHTTPAIA' is set to 'No' while 'CAType' is set to '$($param.CaType)'. Only AIA possible for a $($param.CaType), is Http based AIA."
@@ -2748,8 +2755,8 @@ function Install-LabCAMachine
     {
         $param.UseHTTPAIA = $True
     }
-	
-	
+    
+    
     if (($param.CaType -like 'StandAlone*') -and $role.Properties.ContainsKey('UseLDAPCRL') -and $param.UseLDAPCRL)
     {
         Write-Error -Message "Parameter 'UseLDAPCRL' is set to 'Yes' while 'CAType' is set to '$($param.CaType)'. It is not possible to use LDAP based CRL for a $($param.CaType)"
@@ -2759,7 +2766,7 @@ function Install-LabCAMachine
     {
         $param.UseLDAPCRL = $False
     }
-	
+    
     if (($param.CaType -like 'StandAlone*') -and $role.Properties.ContainsKey('UseHTTPCRL') -and (-not $param.UseHTTPCRL))
     {
         Write-Error -Message "Parameter 'UseHTTPCRL' is set to 'No' while 'CAType' is set to '$($param.CaType)'. Only CRL possible for a $($param.CaType), is Http based CRL."
@@ -2769,39 +2776,39 @@ function Install-LabCAMachine
     {
         $param.UseHTTPCRL = $True
     }
-	
-	
+    
+    
     #If AIAHTTPURL01 or CDPHTTPURL01 was not specified but is needed, populate these now
     if (($param.CaType -like 'StandAlone*') -and (!($role.Properties.ContainsKey('AIAHTTPURL01')) -and $param.UseHTTPAIA))
     {
         $param.AIAHTTPURL01 = ('http://' + $caDNSName + '/aia')
         $param.AIAHTTPURL02 = ''
     }
-	
+    
     if (($param.CaType -like 'StandAlone*') -and (!($role.Properties.ContainsKey('CDPHTTPURL01')) -and $param.UseHTTPCRL))
     {
         $param.CDPHTTPURL01 = ('http://' + $caDNSName + '/cdp')
         $param.CDPHTTPURL02 = ''
     }
-	
-	
-	
-	
-	
-	
+    
+    
+    
+    
+    
+    
     #If Enterprise  CA, and UseLDAPAia is "Yes" or not specified, set UseLDAPAIA to True
     if (($param.CaType -like 'Enterprise*') -and (!($role.Properties.ContainsKey('UseLDAPAIA'))))
     {
         $param.UseLDAPAIA = $True
     }
-	
-	
+    
+    
     #If Enterprise  CA, and UseLDAPCrl is "Yes" or not specified, set UseLDAPCrl to True
     if (($param.CaType -like 'Enterprise*') -and (!($role.Properties.ContainsKey('UseLDAPCRL'))))
     {
         $param.UseLDAPCRL = $True
     }
-	
+    
     #If AIAHTTPURL01 or CDPHTTPURL01 was not specified but is needed, populate these now (with empty strings)
     if (($param.CaType -like 'Enterprise*') -and (!($role.Properties.ContainsKey('AIAHTTPURL01'))))
     {
@@ -2816,7 +2823,7 @@ function Install-LabCAMachine
             $param.AIAHTTPURL02 = ''
         }
     }
-	
+    
     if (($param.CaType -like 'Enterprise*') -and (!($role.Properties.ContainsKey('CDPHTTPURL01'))))
     {
         if ($param.UseHTTPCRL)
@@ -2830,12 +2837,12 @@ function Install-LabCAMachine
             $param.CDPHTTPURL02 = ''
         }
     }
-	
+    
     
     function Scale-Parameters
     {
         param ([int]$hours)
-		
+        
         $factorYears = 24 * 365
         $factorMonths = 24 * (365/12)
         $factorWeeks = 24 * 7
@@ -2863,7 +2870,7 @@ function Install-LabCAMachine
         if ($returnHours -lt 1) { $returnHours = 1 }
         return ([string]$returnHours), 'Hours'
     }
-	
+    
     #if any validity parameter was not defined, calculate these now
     if ($param.CRLPeriodUnits -eq '<auto>') { $param.CRLPeriodUnits, $param.CRLPeriod = Scale-Parameters ($validityPeriodUnitsHours/8) }
     if ($param.CRLDeltaPeriodUnits -eq '<auto>') { $param.CRLDeltaPeriodUnits, $param.CRLDeltaPeriod = Scale-Parameters ($validityPeriodUnitsHours/16) }
@@ -2872,7 +2879,7 @@ function Install-LabCAMachine
     {
         $param.CertsValidityPeriodUnits, $param.CertsValidityPeriod = Scale-Parameters ($validityPeriodUnitsHours/2)
     }
-	
+    
     $role = $machine.Roles | Where-Object { ([AutomatedLab.Roles]$_.Name -band $roles) -ne 0 }
     if (($param.CAType -like '*root*') -and !($role.Properties.ContainsKey('CertsValidityPeriodUnits')))
     {
@@ -2884,7 +2891,7 @@ function Install-LabCAMachine
         if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message "Adding parameter 'CertsValidityPeriod' with value of '$($param.CertsValidityPeriod)' to machine roles properties of machine $($machine.Name)" }
         $role.Properties.Add('CertsValidityPeriod', $param.CertsValidityPeriod)
     }
-	
+    
     #If any HTTP parameter is specified and any of the DNS names in these parameters points to this CA server, install Web Role to host this
     if (!($param.InstallWebRole))
     {
@@ -2899,7 +2906,7 @@ function Install-LabCAMachine
             if ($param.CDPHTTPURL01.IndexOf('/', 2)) { $URLs += ($param.CDPHTTPURL01).Split('/')[2].Split('/')[0] }
             if ($param.CDPHTTPURL02.IndexOf('/', 2)) { $URLs += ($param.CDPHTTPURL02).Split('/')[2].Split('/')[0] }
             $ErrorActionPreference = $ErrorActionPreferenceBackup
-			
+            
             #$param.InstallWebRole = (($machine.Name + "." + $machine.domainname) -in $URLs)
             if (($machine.Name + '.' + $machine.domainname) -notin $URLs)
             {
@@ -2907,20 +2914,20 @@ function Install-LabCAMachine
             }
         }
     }
-	
-	
+    
+    
     #Setting DatabaseDirectoryh and LogDirectory to blank if automatic is selected. Hence, default locations will be used (%WINDIR%\System32\CertLog)
     if ($param.DatabaseDirectory -eq '<auto>') { $param.DatabaseDirectory = '' }
     if ($param.LogDirectory -eq '<auto>') { $param.LogDirectory = '' }
-	
-	
+    
+    
     #Test for existence of AIA location
     if (!($param.UseLDAPAia) -and !($param.UseHTTPAia)) { Write-Warning -Message 'AIA information will not be included in issued certificates because both LDAP and HTTP based AIA has been disabled' }
-	
+    
     #Test for existence of CDP location
     if (!($param.UseLDAPCrl) -and !($param.UseHTTPCrl)) { Write-Warning -Message 'CRL information will not be included in issued certificates because both LDAP and HTTP based CRLs has been disabled' }
-	
-	
+    
+    
     if (!($param.InstallWebRole) -and ($param.InstallWebEnrollment))
     {
         Write-Error -Message "InstallWebRole is set to No while InstallWebEnrollment is set to Yes. This is not possible. `
@@ -2928,9 +2935,9 @@ function Install-LabCAMachine
         Specified value for InstallWebEnrollment is: $($param.InstallWebEnrollment)"
         return
     }
-	
-	
-	
+    
+    
+    
     if ($param.DoNotLoadDefaultTemplates -eq '<auto>')
     {
         #Only for Root CA server
@@ -2952,8 +2959,8 @@ function Install-LabCAMachine
         }
     }
     #endregion ----- Calculations -----
-	
-	
+    
+    
     $job = @()
     $targets = (Get-LabMachine -Role FirstChildDC).Name
     foreach ($target in $targets)
@@ -2976,7 +2983,7 @@ function Install-LabCAMachine
     {
         $job
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Install-LabCAMachine
@@ -2998,7 +3005,7 @@ function Get-LabCAInstallCertificates
             New-Item -Path "$((Get-Lab).LabPath)\Certificates" -ItemType Directory | Out-Null
         }
     }
-	
+    
     process
     {
         #Get all certificates from CA servers and place temporalily on host machine
@@ -3007,12 +3014,12 @@ function Get-LabCAInstallCertificates
             $sourceFile = Invoke-LabCommand -ComputerName $machine -PassThru -NoDisplay -ScriptBlock {(Get-Item -Path 'C:\Windows\System32\CertSrv\CertEnroll\*.crt' | Sort-Object -Property LastWritten -Descending | Select-Object -First 1).FullName}
             
             $tempDestination = "$((Get-Lab).LabPath)\Certificates\$($Machine).crt"
-			
+            
             $caSession = New-LabPSSession -ComputerName $machine.Name
             Receive-File -Source $sourceFile -Destination $tempDestination -Session $caSession
         }
     }
-	
+    
     end
     {
         Write-LogFunctionExit
@@ -3027,28 +3034,28 @@ function Publish-LabCAInstallCertificates
     param (
         [switch]$PassThru
     )
-	
+    
     #Install the certificates to all machines in lab
-	
+    
     Write-LogFunctionEntry
     
     $targetMachines = @()
-	
+    
     #Publish to all Root DC machines (only one DC from each Root domain)
     $targetMachines += Get-LabMachine -All -IsRunning | Where-Object { ($_.Roles.Name -eq 'RootDC') -or ($_.Roles.Name -eq 'FirstChildDC') }
     
     #Also publish to any machines not domain joined
     $targetMachines += Get-LabMachine -All -IsRunning | Where-Object { -not $_.IsDomainJoined }
     Write-Verbose -Message "Target machines for publishing: '$($targetMachines -join ', ')'"
-	
+    
     $machinesNotTargeted = Get-LabMachine -All | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Name -notin $targetMachines.Name -and -not $_.IsDomainJoined }
-	
+    
     if ($machinesNotTargeted)
     {
         Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and SUbordinate certificate servers. Please update these manually.' -Type Warning
         $machinesNotTargeted | ForEach-Object { Write-Warning -Message "  $_" }
     }
-	
+    
     foreach ($machine in $targetMachines)
     {
         $machineSession = New-LabPSSession -ComputerName $machine -UseCredSsp
@@ -3057,7 +3064,7 @@ function Publish-LabCAInstallCertificates
             Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
             Send-File -Source $certfile.FullName -Destination "C:\Windows\$($certfile.BaseName).crt" -Session $machineSession
         }
-		
+        
         $scriptBlock = {
             foreach ($certfile in (Get-ChildItem -Path 'C:\Windows\*.crt'))
             {
@@ -3066,7 +3073,7 @@ function Publish-LabCAInstallCertificates
                 if ((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
                 {
                     Write-Verbose -Message '  Machine is not domain joined. Publishing certificate to local store'
-					
+                    
                     $Cert = Get-PfxCertificate $certfile.FullName
                     if ($Cert.GetNameInfo('SimpleName', $false) -eq $Cert.GetNameInfo('SimpleName', $true))
                     {
@@ -3076,11 +3083,11 @@ function Publish-LabCAInstallCertificates
                     {
                         $targetStore = 'CA'
                     }
-					
+                    
                     if (-not (Get-ChildItem -Path "Cert:\LocalMachine\$targetStore" | Where-Object { $_.ThumbPrint -eq (Get-PfxCertificate $($certfile.FullName)).ThumbPrint }))
                     {
                         $result = Invoke-Expression -Command "certutil -addstore -f $targetStore c:\Windows\$($certfile.BaseName).crt"
-						
+                        
                         if ($result | Where-Object { $_ -like '*already in store*' })
                         {
                             Write-Verbose -Message "  Certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) is already in local store on $(hostname)"
@@ -3102,7 +3109,7 @@ function Publish-LabCAInstallCertificates
                 else #If domain joined, publish to AD Enterprise store
                 {
                     Write-Verbose -Message '  Machine is domain controller. Publishing certificate to AD Enterprise store'
-					
+                    
                     if (((Get-PfxCertificate $($certfile.FullName)).Subject) -like '*root*')
                     {
                         $dsPublishStoreName = 'RootCA'
@@ -3113,12 +3120,12 @@ function Publish-LabCAInstallCertificates
                         $dsPublishStoreName = 'SubCA'
                         $readStoreName = 'CA'
                     }
-					
-					
+                    
+                    
                     if (-not (Get-ChildItem "Cert:\LocalMachine\$readStoreName" | Where-Object { $_.ThumbPrint -eq (Get-PfxCertificate $($certfile.FullName)).ThumbPrint }))
                     {
                         $result = Invoke-Expression -Command "certutil -f -dspublish c:\Windows\$($certfile.BaseName).crt $dsPublishStoreName"
-						
+                        
                         if ($result | Where-Object { $_ -like '*Certificate added to DS store*' })
                         {
                             Write-Verbose -Message "  Certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) added to DS store on $(hostname)"
