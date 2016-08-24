@@ -8,7 +8,7 @@
         {
             Ensure = 'Present'
             Type = 'File'
-            DestinationPath = 'C:\DscTestFile'
+            DestinationPath = "C:\DscTestFile_$($env:COMPUTERNAME)"
             Contents = 'OK'
         }
     }
