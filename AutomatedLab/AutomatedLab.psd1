@@ -106,6 +106,7 @@
 		'Install-LabSqlServers2012',
 		'Install-LabSqlServers2014',
         'Install-LabDscPullServer',
+        'Install-LabDscClient',
 		'Set-LabInstallationCredential',
 		'Show-LabInstallationTime',
 		'Set-LabGlobalNamePrefix',

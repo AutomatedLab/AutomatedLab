@@ -45,7 +45,8 @@ namespace AutomatedLab
         Office2016 = 4194304,
         ADFS = 8388608,
         ADFSWAP = 16777216,
-        ADFSProxy = 33554432
+        ADFSProxy = 33554432,
+        DSCPullServer = 67108864
     }
 
     public enum ActiveDirectoryFunctionalLevel
