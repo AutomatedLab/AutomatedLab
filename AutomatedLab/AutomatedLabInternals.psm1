@@ -737,13 +737,13 @@ function Get-Type
     param (
         [Parameter(Position = 0, Mandatory = $true)]
         [string] $GenericType,
-		
+        
         [Parameter(Position = 1, Mandatory = $true)]
         [string[]] $T
     )
-	
+    
     $T = $T -as [type[]]
-	
+    
     try
     {
         $generic = [type]($GenericType + '`' + $T.Count)
@@ -787,7 +787,7 @@ Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary 
 function Test-IsAdministrator
 {
     param ()
-	
+    
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
     (New-Object -TypeName Security.Principal.WindowsPrincipal -ArgumentList $currentUser).IsInRole([Security.Principal.WindowsBuiltinRole]::Administrator)
 }
@@ -1698,18 +1698,18 @@ function Add-FunctionToPSSession
     <#
             .SYNOPSIS
             Creates a function in the remote sessions based on the local definition of the specified function.
-						
+                        
             .PARAMETER Session
             Session(s) to define the function in
             .PARAMETER FunctionInfo
             The function info as returned by Get-Command that defines the function
-		
+        
             .EXAMPLE
             function test-fubar { write "cool" }
             $session = New-PSSession -ComputerName someserver
             Get-Command test-fubar | Add-FunctionToPSSession $session
             Invoke-Command -session $session { test-fubar }
-		
+        
             .NOTES
             Author: Dan Thompson, Tim Bertalot
     #>
@@ -1771,12 +1771,12 @@ function Add-VariableToPSSession
     <#
             .SYNOPSIS
             Creates a variable in the remote sessions based on the local definition of the specified variable.
-						
+                        
             .PARAMETER Session
             Session(s) to define the function in
             .PARAMETER FunctionInfo
             The function info as returned by Get-Command that defines the function
-		
+        
             .EXAMPLE
             function test-fubar { write "cool" }
             $session = New-PSSession -ComputerName someserver
@@ -1825,7 +1825,14 @@ function Add-VariableToPSSession
 
     process
     {
-        Invoke-Command -Session $Session -ScriptBlock $scriptBlock -ArgumentList $PSVariable.Name, $PSVariable.Value
+        if ($PSVariable.Name -eq 'PSBoundParameters')
+        {
+            Invoke-Command -Session $Session -ScriptBlock $scriptBlock -ArgumentList 'ALBoundParameters', $PSVariable.Value
+        }
+        else
+        {
+            Invoke-Command -Session $Session -ScriptBlock $scriptBlock -ArgumentList $PSVariable.Name, $PSVariable.Value
+        }
     }
 
     end
@@ -1838,24 +1845,38 @@ function Add-VariableToPSSession
 #region Sync-Parameter
 function Sync-Parameter
 {
+    [Cmdletbinding()]
     param (
         [Parameter(Mandatory)]
         [System.Management.Automation.FunctionInfo]$Command,
-		
-        [Parameter(Mandatory)]
+        
         [hashtable]$Parameters
     )
-	
-    $paramCopy = $Parameters.Clone()
-	
-    $Parameters.GetEnumerator() | ForEach-Object {
-        if ($_.Key -notin $Command.Parameters.Keys)
-        {
-            $paramCopy.Remove($_.Key)
-        }
+    
+    if (-not $PSBoundParameters.ContainsKey('Parameters'))
+    {
+        $Parameters = $ALBoundParameters #(Get-PSCallStack)[1].GetFrameVariables().PSCmdlet.Value.SessionState.PSVariable.Get('ALBoundParameters').Value
     }
     
-    $paramCopy
+    $commandParameterKeys = $Command.Parameters.Keys.GetEnumerator() | ForEach-Object { $_ }
+    $parameterKeys = $Parameters.Keys.GetEnumerator() | ForEach-Object { $_ }
+    
+    $keysToRemove = Compare-Object -ReferenceObject $commandParameterKeys -DifferenceObject $parameterKeys |
+    Select-Object -ExpandProperty InputObject
+    
+    foreach ($key in $keysToRemove)
+    {
+        $Parameters.Remove($key)
+    }
+    
+    if (-not $PSBoundParameters.ContainsKey('Parameters'))
+    {
+        #(Get-PSCallStack)[1].GetFrameVariables().PSCmdlet.Value.SessionState.PSVariable.Set('ALBoundParameters', $Parameters)
+    }
+    else
+    {
+        $Parameters
+    }
 }
 #endregion Sync-Parameter
 
