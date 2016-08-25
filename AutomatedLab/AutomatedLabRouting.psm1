@@ -7,6 +7,8 @@ function Install-Routing
     )
 	
     Write-LogFunctionEntry
+
+	Write-ScreenInfo -Message 'Configuring Routing role...'
 	
     $roleName = [AutomatedLab.Roles]::Routing
 	
