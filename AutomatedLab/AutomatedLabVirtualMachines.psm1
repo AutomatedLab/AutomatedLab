@@ -1569,9 +1569,7 @@ function Set-MachineUacStatus
         
         [int]$ConsentPromptBehaviorAdmin,
         
-        [int]$ConsentPromptBehaviorUser,
-        
-        [switch]$PassThru
+        [int]$ConsentPromptBehaviorUser
     )
     
     $currentSettings = Get-MachineUacStatus -ComputerName $ComputerName
@@ -1598,11 +1596,6 @@ function Set-MachineUacStatus
     {
         $subkey.SetValue('ConsentPromptBehaviorUser', $ConsentPromptBehaviorUser)
         $uacStatusChanges = $true
-    }
-    
-    if ($PassThru)
-    {
-        Get-MachineUacStatus -ComputerName $ComputerName
     }
 
     if ($uacStatusChanges)
@@ -1669,7 +1662,12 @@ function Set-LabMachineUacStatus
         Sync-Parameter -Command (Get-Command -Name Set-MachineUacStatus)
         Set-MachineUacStatus @ALBoundParameters
     
-    } -Function $functions -Variable $variables -PassThru:$PassThru
+    } -Function $functions -Variable $variables
+
+    if ($PassThru)
+    {
+        Get-LabMachineUacStatus -ComputerName $ComputerName
+    }
     
     Write-LogFunctionExit
 }
