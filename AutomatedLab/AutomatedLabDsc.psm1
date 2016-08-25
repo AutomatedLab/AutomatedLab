@@ -150,20 +150,17 @@ function Install-LabDscClient
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
     
-    foreach ($machine in $machines)
-    {
-        Invoke-LabCommand -ActivityName 'Setup machines into Dsc Pull Mode' -ComputerName $machine -ScriptBlock { 
-            param
-            (
-                [Parameter(Mandatory = $true)]
-                [string]$PullServer,
+    Invoke-LabCommand -ActivityName 'Setup machines into Dsc Pull Mode' -ComputerName $machines -ScriptBlock { 
+        param
+        (
+            [Parameter(Mandatory)]
+            [string]$PullServer,
 
-                [Parameter(Mandatory = $true)]
-                [string] $RegistrationKey
-            )
-        
-            C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachine.FQDN, $registrationKey
-    }
+            [Parameter(Mandatory)]
+            [string] $RegistrationKey
+        )
+    
+        C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
+    } -ArgumentList $pullServerMachine.FQDN, $registrationKey
 }
 #endregion Install-LabDscClient
