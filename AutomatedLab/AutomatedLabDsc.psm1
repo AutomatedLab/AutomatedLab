@@ -7,6 +7,8 @@ function Install-LabDscPullServer
     )
     
     Write-LogFunctionEntry
+
+		Write-ScreenInfo -Message 'Configuring DSC Pull Server role...'
     
     $labSources = Get-LabSourcesLocation
     $roleName = [AutomatedLab.Roles]::DSCPullServer
@@ -87,7 +89,7 @@ function Install-LabDscPullServer
         } -ArgumentList $machine, $cert.Thumbprint, (New-Guid) -AsJob -PassThru
     }
     
-    Write-ScreenInfo -Message 'Waiting for configuration of routing to complete' -NoNewline
+    Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
     
