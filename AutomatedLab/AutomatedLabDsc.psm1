@@ -48,12 +48,10 @@ function Install-LabDscPullServer
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
         
     Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
-    
         Install-WindowsFeature -Name DSC-Service
         Install-PackageProvider -Name NuGet -Force
-        Install-Module xPSDesiredStateConfiguration, xDscDiagnostics -Force
-        
-    } -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait
+        Install-Module xPSDesiredStateConfiguration, xDscDiagnostics -Force            
+    } -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
 
     $jobs = @()
 
@@ -103,7 +101,7 @@ function Install-LabDscClient
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
-        [string]$ComputerName,
+        [string[]]$ComputerName,
         
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
@@ -128,6 +126,8 @@ function Install-LabDscClient
         return
     }
     
+    Start-LabVM -ComputerName $machines -Wait
+    
     if (-not (Get-LabMachine -ComputerName $PullServer | Where-Object { $_.Roles.Name -contains 'DSCPullServer' }))
     {
         Write-Error "The given DSC Pull Server '$PullServer' could not be found in the lab."
@@ -150,8 +150,7 @@ function Install-LabDscClient
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
     
-    Invoke-LabCommand -ActivityName 'Setup machines into Dsc Pull Mode' -ComputerName $machines -ScriptBlock {
-    
+    Invoke-LabCommand -ActivityName 'Setup machines into Dsc Pull Mode' -ComputerName $machines -ScriptBlock { 
         param
         (
             [Parameter(Mandatory)]
@@ -162,7 +161,6 @@ function Install-LabDscClient
         )
     
         C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        
     } -ArgumentList $pullServerMachine.FQDN, $registrationKey
 }
 #endregion Install-LabDscClient
