@@ -1550,7 +1550,7 @@ function New-LabCATemplate
     
     $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
-    $x = $PSBoundParameters
+
     Invoke-LabCommand -ActivityName "Duplicating CA template '$SourceTemplateName' -> '$TemplateName'" -ComputerName $computerName -ScriptBlock {
         Add-Type -TypeDefinition $pkiInternalsTypes
         
