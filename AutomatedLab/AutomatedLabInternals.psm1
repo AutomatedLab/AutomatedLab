@@ -1877,6 +1877,10 @@ function Sync-Parameter
     {
         $Parameters
     }
+    else
+    {
+        $global:ALBoundParameters = $Parameters
+    }
 }
 #endregion Sync-Parameter
 
