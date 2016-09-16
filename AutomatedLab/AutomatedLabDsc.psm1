@@ -7,8 +7,6 @@ function Install-LabDscPullServer
     )
     
     Write-LogFunctionEntry
-
-		Write-ScreenInfo -Message 'Configuring DSC Pull Server role...'
     
     $labSources = Get-LabSourcesLocation
     $roleName = [AutomatedLab.Roles]::DSCPullServer
@@ -33,6 +31,12 @@ function Install-LabDscPullServer
         return
     }
     
+    if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabMachine -Role Routing)))
+    {
+        Write-Error "The lab is not connected to the internet. Internet connectivity is required to install DSC"
+        return
+    }
+    
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
     
@@ -54,6 +58,9 @@ function Install-LabDscPullServer
         Install-PackageProvider -Name NuGet -Force
         Install-Module xPSDesiredStateConfiguration, xDscDiagnostics -Force            
     } -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
+    
+    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
+    $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
 
     $jobs = @()
 
@@ -92,6 +99,19 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+    
+    foreach ($machine in $machines)
+    {
+        $registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $machine -ScriptBlock {
+            Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
+        } -PassThru
+        
+        $machine.Notes.DscRegistrationKey = $registrationKey
+    }
+    
+    Export-Lab
+    
+    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName (Get-LabMachine)
     
     Write-LogFunctionExit
 }
