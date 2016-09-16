@@ -912,48 +912,45 @@ function Export-LabDefinition
     {
         foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -ne Azure))
         {
-            foreach ($networkAdapter in $machine.NetworkAdapters)
+            if ($machine.NetworkAdapters[0].IPv4DnsServers -contains '0.0.0.0')
             {
-                if ($networkAdapter.IPv4DnsServers -contains '0.0.0.0')
+                if (-not $machine.IsDomainJoined)
                 {
-                    if (-not $machine.IsDomainJoined) #machine is not domain joined, the 1st network adapter's IP of the 1st root DC is used as DNS server
-                    {
-                        $networkAdapter.IPv4DnsServers = $firstRoot.NetworkAdapters[0].Ipv4Address[0].IpAddress
-                    }
-                    elseif ($machine.Roles.Name -contains 'RootDC') #if the machine is RootDC, its 1st network adapter's IP is used for DNS
-                    {
-                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress
-                    }
-                    elseif ($machine.Roles.Name -contains 'FirstChildDC') #if it is a FirstChildDc, the 1st network adapter's IP of the corresponsing RootDC is used
-                    {
-                        $firstChildDcRole = $machine.Roles | Where-Object Name -eq 'FirstChildDC'
-                        $roleParentDomain = $firstChildDcRole.Properties.ParentDomain
-                        $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $roleParentDomain
+                    $machine.NetworkAdapters[0].IPv4DnsServers = $firstRoot.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                }
+                elseif ($machine.Roles.Name -contains 'RootDC')
+                {
+                    $machine.NetworkAdapters[0].IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                }
+                elseif ($machine.Roles.Name -contains 'FirstChildDC')
+                {
+                    $firstChildDcRole = $machine.Roles | Where-Object Name -eq 'FirstChildDC'
+                    $roleParentDomain = $firstChildDcRole.Properties.ParentDomain
+                    $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $roleParentDomain
                     
-                        $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
-                    }
-                    else #machine is domain joined and not a RootDC or FirstChildDC
+                    $machine.NetworkAdapters[0].IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                }
+                else #machine is domain joined and not a RootDC or FirstChildDC
+                {
+                    Write-Verbose "Looking for a root DC in the machine's domain '$($machine.DomainName)'"
+                    $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+                    if ($rootDc)
                     {
-                        Write-Verbose "Looking for a root DC in the machine's domain '$($machine.DomainName)'"
-                        $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $machine.DomainName
-                        if ($rootDc)
+                        Write-Verbose "RootDC found, using the IP address of '$rootDc' for DNS: "
+                        $machine.NetworkAdapters[0].IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                    }
+                    else
+                    {
+                        Write-Verbose "No RootDC found, looking for FirstChildDC in the machine's domain"
+                        $firstChildDC = Get-LabMachineDefinition -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
+                        
+                        if ($firstChildDC)
                         {
-                            Write-Verbose "RootDC found, using the IP address of '$rootDc' for DNS: "
-                            $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                            $machine.NetworkAdapters[0].IPv4DnsServers = $firstChildDC.NetworkAdapters[0].Ipv4Address[0].IpAddress
                         }
                         else
                         {
-                            Write-Verbose "No RootDC found, looking for FirstChildDC in the machine's domain"
-                            $firstChildDC = Get-LabMachineDefinition -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
-                        
-                            if ($firstChildDC)
-                            {
-                                $networkAdapter.IPv4DnsServers = $firstChildDC.NetworkAdapters[0].Ipv4Address[0].IpAddress
-                            }
-                            else
-                            {
-                                Write-Warning "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'"
-                            }
+                            Write-Warning "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'"
                         }
                     }
                 }
@@ -1725,11 +1722,6 @@ function Add-LabMachineDefinition
     {
         throw 'Lab is already imported. Please create a new lab definition by calling New-LabDefinition before adding machines'
     }
-    
-    if (-not $OperatingSystem)
-    {
-        throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
-    }
 
     if ($AzureProperties)
     {
@@ -2354,6 +2346,11 @@ function Add-LabMachineDefinition
     $machine.AutoLogonDomainName = $AutoLogonDomainName
     $machine.AutoLogonUserName = $AutoLogonUserName
     $machine.AutoLogonPassword = $AutoLogonPassword
+    
+    if (-not $OperatingSystem)
+    {
+        throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
+    }
     
     if ($machine.HostType -eq 'HyperV')
     {

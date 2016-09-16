@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLab.psm1'
 	
     # Version number of this module.
-    ModuleVersion = '3.8.0.0'
+    ModuleVersion = '3.7.2.0'
 	
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
@@ -184,9 +184,7 @@
 		'Unblock-LabSources',
 		'Add-VariableToPSSession',
 		'Add-FunctionToPSSession',
-		'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
-        'Get-LabMachineDescription', 'Set-LabMachineDescription',
-        'Test-LabMachineInternetConnectivity'
+		'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus'
 	
     # List of all modules packaged with this module
     ModuleList = @(

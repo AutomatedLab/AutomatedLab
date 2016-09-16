@@ -66,8 +66,6 @@ function Invoke-LWCommand
         
         [int]$RetryIntervalInSeconds,
         
-        [int]$ThrottleLimit = 32,
-        
         [switch]$AsJob,
         
         [switch]$PassThru
@@ -126,10 +124,6 @@ function Invoke-LWCommand
                 $parameters.Add('AsJob', $AsJob)
                 $parameters.Add('JobName', $ActivityName)
             }
-            if ($PSBoundParameters.ContainsKey('ThrottleLimit'))
-            {
-                $parameters.Add('ThrottleLimit', $ThrottleLimit)
-            }
         }
         else
         {
@@ -148,10 +142,6 @@ function Invoke-LWCommand
             {
                 $parameters.Add('AsJob', $AsJob)
                 $parameters.Add('JobName', $ActivityName)
-            }
-            if ($PSBoundParameters.ContainsKey('ThrottleLimit'))
-            {
-                $parameters.Add('ThrottleLimit', $ThrottleLimit)
             }
         }
     }
@@ -172,10 +162,6 @@ function Invoke-LWCommand
         {
             $parameters.Add('AsJob', $AsJob)
             $parameters.Add('JobName', $ActivityName)
-        }
-        if ($PSBoundParameters.ContainsKey('ThrottleLimit'))
-        {
-            $parameters.Add('ThrottleLimit', $ThrottleLimit)
         }
     }
     

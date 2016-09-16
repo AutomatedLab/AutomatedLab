@@ -1138,16 +1138,16 @@ function Publish-CATemplate
     }
 
     Write-Verbose -Message "Publishing '$TemplateName'"
-    certutil.exe -SetCAtemplates "+$TemplateName" | Out-Null
-
-    if ($LASTEXITCODE)
+    $result = certutil.exe -SetCAtemplates "+$TemplateName"
+    if ($result -like '*command completed successfully*')
     {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Publishing the template '$TemplateName' failed: $($ex.Message)" -Exception $ex
+        Write-Verbose "Successfully published template '$TemplateName'"
+    }
+    else
+    {
+        Write-Error "Publishing the template '$TemplateName' failed: $($result[0])" -TargetObject $TemplateName
         return
     }
-
-    Write-Verbose "Successfully published template '$TemplateName'"
 }
 
 function Add-CATemplateStandardPermission
@@ -1283,24 +1283,11 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
     }
        
     Remove-Item -Path $certFile
-    Write-Verbose "Calling 'certreq.exe -q -submit -attrib CertificateTemplate:$TemplateName -config $OnlineCA $requestFile $certFile | Out-Null'"
-    certreq.exe -submit -q -attrib "CertificateTemplate:$TemplateName" -config $OnlineCA $requestFile $certFile | Out-Null
-
-    if ($LASTEXITCODE)
-    {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Submitting the certificate request failed: $($ex.Message)" -Exception $ex 
-        return
-    }
+    Write-Verbose "Calling 'certreq.exe -submit -attrib CertificateTemplate:$TemplateName -config $OnlineCA $requestFile $certFile | Out-Null'"
+    certreq.exe -submit -attrib "CertificateTemplate:$TemplateName" -config $OnlineCA $requestFile $certFile | Out-Null
  
     Write-Verbose "Calling 'certreq.exe -accept $certFile'"
-    certreq.exe -q -accept $certFile
-    if ($LASTEXITCODE)
-    {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Accepting the certificate failed: $($ex.Message)" -Exception $ex
-        return
-    }
+    certreq.exe -accept $certFile
 
     Copy-Item -Path $certFile -Destination c:\cert.cer -Force
     Copy-Item -Path $infFile -Destination c:\request.inf -Force
@@ -1564,20 +1551,20 @@ function New-LabCATemplate
     $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
 
-    Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
+    Invoke-LabCommand -ActivityName "Duplicating CA template '$SourceTemplateName' -> '$TemplateName'" -ComputerName $computerName -ScriptBlock {
         Add-Type -TypeDefinition $pkiInternalsTypes
         
         $p = Sync-Parameter -Command (Get-Command -Name New-CATemplate) -Parameters $ALBoundParameters
-        New-CATemplate @p -ErrorVariable e
+        New-CATemplate @p
         
-        if (-not $e)
-        {
-            $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $ALBoundParameters
-            Add-CATemplateStandardPermission @p | Out-Null
-        }
-    } -UseCredSsp -Variable $variables -Function $functions -PassThru
-    
+        $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $ALBoundParameters
+        Add-CATemplateStandardPermission @p
+        
+    } -UseCredSsp -Variable $variables -Function $functions
+
     Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
+
+    Start-Sleep -Seconds 10
 
     $issuingCAs = Get-LabIssuingCA
 
@@ -1623,7 +1610,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
-    [CmdletBinding()]
+    [cmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
         [ValidatePattern('CN=')]

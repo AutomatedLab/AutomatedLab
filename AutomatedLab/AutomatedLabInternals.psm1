@@ -1862,14 +1862,11 @@ function Sync-Parameter
         $Parameters = ([hashtable]$Parameters).Clone()
     }
     
-    $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
     $commandParameterKeys = $Command.Parameters.Keys.GetEnumerator() | ForEach-Object { $_ }
     $parameterKeys = $Parameters.Keys.GetEnumerator() | ForEach-Object { $_ }
     
     $keysToRemove = Compare-Object -ReferenceObject $commandParameterKeys -DifferenceObject $parameterKeys |
     Select-Object -ExpandProperty InputObject
-
-    $keysToRemove = $keysToRemove + $commonParameters | Select-Object -Unique #remove the common parameters
     
     foreach ($key in $keysToRemove)
     {
@@ -1886,37 +1883,6 @@ function Sync-Parameter
     }
 }
 #endregion Sync-Parameter
-
-function Set-LabVMDescription
-{
-    [CmdletBinding()]
-    param (
-        [hashtable]$Hashtable,
-        
-        [string]$ComputerName
-    )
-    
-    Write-LogFunctionEntry
-    
-    $t = Get-Type -GenericType AutomatedLab.SerializableDictionary -T String,String
-    $d = New-Object $t
-    
-    foreach ($kvp in $Hashtable.GetEnumerator())
-    {
-        $d.Add($kvp.Key, $kvp.Value)
-    }
-    
-    $sb = New-Object System.Text.StringBuilder
-    $xmlWriterSettings = New-Object System.Xml.XmlWriterSettings
-    $xmlWriterSettings.ConformanceLevel = 'Auto'
-    $xmlWriter = [System.Xml.XmlWriter]::Create($sb, $xmlWriterSettings)
-
-    $d.WriteXml($xmlWriter)
-    
-    Set-VM -Name $ComputerName -Notes $sb.ToString()
-    
-    Write-LogFunctionExit
-}
 
 Add-Type -TypeDefinition $meshType
 

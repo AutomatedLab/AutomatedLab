@@ -53,23 +53,8 @@ function New-LWHypervVM
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
-    $adapters = New-Object System.Collections.ArrayList
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] }))
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address }))
-
-    if ($Machine.IsDomainJoined)
-    {
-        #move the adapter that connects the machine to the domain to the top
-        $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
-        
-        $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) }
-        
-        $adapters.Remove($domainAdapter)
-        $adapters.Insert(0, $domainAdapter)
-    }
-    
-    foreach ($adapter in $adapters)
+    [int]$adapterCount = 1
+    foreach ($adapter in $Machine.NetworkAdapters)
     {
         $ipSettings = @{}
                 
@@ -77,13 +62,11 @@ function New-LWHypervVM
                 
         $ipSettings.Add('MacAddress', $mac)
         $adapter.MacAddress = $mac
+
+        #while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
+        #$mac = "$macAddressPrefix{0:X6}" -f $macIdx
                 
-        $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f $mac.Substring(0, 2),
-        $mac.Substring(2, 2),
-        $mac.Substring(4, 2),
-        $mac.Substring(6, 2),
-        $mac.Substring(8, 2),
-        $mac.Substring(10, 2)
+        $macWithDash = "$($mac.Substring(0, 2))-$($mac.Substring(2, 2))-$($mac.Substring(4, 2))-$($mac.Substring(6, 2))-$($mac.Substring(8, 2))-$($mac.Substring(10, 2))"
                 
         $ipSettings.Add('InterfaceName', $macWithDash)
         $ipSettings.Add('IpAddresses', @())
@@ -91,14 +74,14 @@ function New-LWHypervVM
         {
             foreach ($ipv4Address in $adapter.Ipv4Address)
             {
-                $ipSettings.IpAddresses += "$($ipv4Address.IpAddress)/$($ipv4Address.Cidr)"
+                $ipSettings.IpAddresses += "$($ipv4Address.IpAddress)/$($ipv4Address.Cidr)" #$adapter.Ipv4Address.IpAddress
             }
         }
         if ($adapter.Ipv6Address.Count -ge 1)
         {
             foreach ($ipv6Address in $adapter.Ipv6Address)
             {
-                $ipSettings.IpAddresses += "$($ipv6Address.IpAddress)/$($ipv6Address.Cidr)"
+                $ipSettings.IpAddresses += "$($ipv6Address.IpAddress)/$($ipv6Address.Cidr)" #$adapter.Ipv4Address.IpAddress
             }
         }
 
@@ -114,9 +97,9 @@ function New-LWHypervVM
         if ($adapter.ConnectionSpecificDNSSuffix) { $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix) }
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
-        $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
+        $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).tolower())
 
-        $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
+        $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).tolower())
                 
                 
 
@@ -212,9 +195,11 @@ function New-LWHypervVM
             Set-UnattendedDomain -DomainName $Machine.DomainName -Username $domain.Administrator.UserName -Password $domain.Administrator.Password
         }
     }
+    #endregion Unattend XML settings
 
     #set the Generation for the VM depending on SupportGen2VMs, host OS version and VM OS version
     $hostOsVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
+    $machineOsVersion = (New-Object AutomatedLab.OperatingSystem($Machine.OperatingSystem)).Version
 
     $generation = if ($PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.SupportGen2VMs)
     {
@@ -253,29 +238,22 @@ function New-LWHypervVM
     $vm = New-VM -Name $Machine.Name `
     -MemoryStartupBytes ($Machine.Memory) `
     -VHDPath $systemDisk.Path `
+    -SwitchName $Machine.NetworkAdapters[0].VirtualSwitch `
     -Path $VmPath `
     -Generation $generation `
     -ErrorAction Stop
+	
+    Set-VM -Name $Machine.Name -Notes "Created by AutomatedLab. Belongs to lab with name: $($lab.Name)"
     
-    Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
-        CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
-        CreationTime = Get-Date
-        LabName = (Get-Lab).Name
-        InitState = 0
-    }
-    
-    #remove the unconnected default network adapter
-    $vm | Remove-VMNetworkAdapter -Name 'Network Adapter'
-    foreach ($adapter in $adapters)
+    Get-VM -Name $Machine.Name | Get-VMNetworkAdapter | Set-VMNetworkAdapter -StaticMacAddress $Machine.NetworkAdapters[0].MacAddress
+
+    if ($Machine.NetworkAdapters.Count -gt 1)
     {
-        #external switches will be connected after the domain join and after the network order is configures correctly
-        if ($adapter.VirtualSwitch.SwitchType -eq 'External')
+        #foreach ($adapter in $NetworkAdapter[(($NetworkAdapter.Length)-2)..0])
+        
+        foreach ($adapter in ($Machine.NetworkAdapters | Select-Object -Skip 1))
         {
-            $vm | Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -DeviceNaming On
-        }
-        else
-        {
-            $vm | Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -DeviceNaming On
+            Add-VMNetworkAdapter -VMName $Machine.Name -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress
         }
     }
 	
@@ -288,7 +266,7 @@ function New-LWHypervVM
     if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
     if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
-    $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
+    Set-VM -Name $Machine.Name -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
 	
     Write-ProgressIndicator
     
@@ -300,11 +278,13 @@ function New-LWHypervVM
     {
         #for Generation 2 VMs
         $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
+        $VhdVolumeName = $VhdOsPartition.DriveLetter
         $VhdVolume = "$($VhdOsPartition.DriveLetter):"
     }
     else
     {
         #for Generation 1 VMs
+        $VhdVolumeName = $VhdPartition.DriveLetter
         $VhdVolume = "$($VhdPartition.DriveLetter):"
     }
 	
@@ -426,6 +406,11 @@ Windows Registry Editor Version 5.00
         {
             Add-LWVMVHDX -VMName $Machine.Name -VhdxPath $disk.Path
         }
+    }
+			
+    if ('RootDC' -in $Machine.Roles.Name)
+    {
+        Start-LabVM -ComputerName $Machine.Name
     }
             
     Write-LogFunctionExit
@@ -551,10 +536,6 @@ workflow Wait-LWHypervVM
             if ($result)
             {
                 Write-Verbose -Message "'$machine' is online and reachable by WinRM"
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                InlineScript { $machineMetadata.InitState = '1' }
-                
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
             }
         }
     }
@@ -731,25 +712,13 @@ function Start-LWHypervVM
         [switch]$NoNewLine
     )
     
-    if ($PreDelay) {
-        $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
-        Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
-    }
+    if ($PreDelay) { Wait-LWLabJob -Job (Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }) -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay }
 	
     foreach ($Name in $ComputerName)
     {
         try
         {
-            $machine = Get-LabMachine -ComputerName $Name
-            $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
             Start-VM -Name $Name -ErrorAction Stop
-
-            if ($Machine.NetworkAdapters.Count -gt 1 -and $machineMetadata.InitState -lt 5)
-            {            
-                Repair-LWHypervNetworkConfig -ComputerName $Name
-                $machineMetadata.InitState = 5
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
-            }
         }
         catch
         {
@@ -757,16 +726,11 @@ function Start-LWHypervVM
         }
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
         {
-            $job = Start-Job -Name 'Start-LWHypervVM - DelayBetweenComputers' -ScriptBlock { Start-Sleep -Seconds $Using:DelayBetweenComputers }
-            Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
+            Wait-LWLabJob -Job (Start-Job -Name 'Start-LWHypervVM - DelayBetweenComputers' -ScriptBlock { Start-Sleep -Seconds $Using:DelayBetweenComputers }) -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
         }
     }
     
-    if ($PostDelay)
-    {
-        $job = Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
-        Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay 
-    }
+    if ($PostDelay) { Wait-LWLabJob -Job (Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }) -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay }
 	
     Write-LogFunctionExit
 }
@@ -1021,7 +985,6 @@ workflow Restore-LWHypervVMSnapshot
             else
             {
                 Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
-                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n).Notes
             }
         }
 		
@@ -1220,124 +1183,3 @@ function Dismount-LWIsoImage
     }
 }
 #endregion Dismount-LWIsoImage
-
-#region Repair-LWHypervNetworkConfig
-function Repair-LWHypervNetworkConfig
-{
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory)]
-        [string]$ComputerName
-    )
-
-    Write-LogFunctionEntry
-
-    $machine = Get-LabMachine -ComputerName $ComputerName
-
-    Wait-LabVM -ComputerName $machine
-
-    #remoting does serialization with a depth of 1. Here we need more
-    $machineStream = [System.Management.Automation.PSSerializer]::Serialize($machine, 4)
-
-    Invoke-LabCommand -ComputerName $machine -ActivityName "Network config on '$machine' (renaming and ordering)" -ScriptBlock {
-        $machine = [System.Management.Automation.PSSerializer]::Deserialize($machineStream)
-
-        Write-Verbose "Renaming network adapters"
-        #rename the adapters as defined in the lab
-        foreach ($adapterInfo in $machine.NetworkAdapters)
-        {
-            $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
-            $filter = 'MACAddress = "{0}"' -f $mac
-            Write-Verbose "Looking for network adapter with using filter '$filter'"
-            $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
-    
-            Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$($adapterInfo.VirtualSwitch)'"
-            $adapter.NetConnectionID = $adapterInfo.VirtualSwitch.Name
-            $adapter.Put()
-        }
-
-        Write-Verbose "Setting the network order"
-        [array]::Reverse($machine.NetworkAdapters)
-        foreach ($adapterInfo in $machine.NetworkAdapters)
-        {
-            Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
-            do {
-                nvspbind.exe /+ $adapterInfo.VirtualSwitch.Name ms_tcpip 
-            }  until ($LASTEXITCODE -eq 14)
-        }
-    
-    } -Function (Get-Command -Name Get-StringSection) -Variable (Get-Variable -Name machineStream)
-
-    Write-Verbose "Setting the machine's init state to 10 and exporting the lab"
-    $machine.InitState = 10
-    Export-Lab
-
-    foreach ($adapterInfo in $machine.NetworkAdapters)
-    {
-        $vmAdapter = Get-VMNetworkAdapter -VMName $machine -Name $adapterInfo.VirtualSwitch.Name
-        
-        if ($adapterInfo.VirtualSwitch.Name -ne $vmAdapter.SwitchName)
-        {
-            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
-        }
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Repair-LWHypervNetworkConfig
-
-#region Get / Set-LWHypervVMDescription
-function Set-LWHypervVMDescription
-{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [hashtable]$Hashtable,
-        
-        [Parameter(Mandatory)]
-        [string]$ComputerName
-    )
-    
-    Write-LogFunctionEntry
-    
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-    $disctionary = New-Object $type
-    
-    foreach ($kvp in $Hashtable.GetEnumerator())
-    {
-        $disctionary.Add($kvp.Key, $kvp.Value)
-    }
-    
-    $notes = $disctionary.ExportToString()    
-    
-    Set-VM -Name $ComputerName -Notes $notes
-    
-    Write-LogFunctionExit
-}
-
-function Get-LWHypervVMDescription
-{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [string]$ComputerName
-    )
-    
-    Write-LogFunctionEntry
-    
-    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
-    if (-not $vm)
-    {
-        return
-    }
-    
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-    
-    $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-    $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
-        
-    $dictionary
-        
-    Write-LogFunctionExit
-}
-#endregion Get / Set-LWHypervVMDescription

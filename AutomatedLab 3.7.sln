@@ -217,7 +217,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabTest", "Automat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\Scenarios\DSC Pull Scenario 1.ps1 = SampleScripts\Scenarios\DSC Pull Scenario 1.ps1
 		SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
 	EndProjectSection
 EndProject

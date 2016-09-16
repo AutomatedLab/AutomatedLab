@@ -1,10 +1,10 @@
-﻿Configuration "TestConfig$($env:COMPUTERNAME)"
+﻿Configuration DscTestFile
 {
     Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
     
     Node localhost
     {
-        File "TestFile$($env:COMPUTERNAME)"
+        File TestFile
         {
             Ensure = 'Present'
             Type = 'File'
@@ -14,5 +14,5 @@
     }
 }
 
-&"TestConfig$($env:COMPUTERNAME)" -OutputPath C:\DscTestConfig | Out-Null
-Rename-Item -Path C:\DscTestConfig\localhost.mof -NewName "TestConfig$($env:COMPUTERNAME).mof"
+DscTestFile -OutputPath C:\DscTestConfig | Out-Null
+Rename-Item -Path C:\DscTestConfig\localhost.mof -NewName TestConfig.mof
