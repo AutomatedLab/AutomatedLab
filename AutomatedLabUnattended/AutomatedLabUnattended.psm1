@@ -856,41 +856,44 @@ function Set-UnattendedProductKey
 #region Add-UnattendedSynchronousCommand
 function Add-UnattendedSynchronousCommand
 {
-	param (
-		[Parameter(Mandatory)]
-		[string]$Command,
+    param (
+        [Parameter(Mandatory)]
+        [string]$Command,
 		
-		[Parameter(Mandatory)]
-		[string]$Description
-	)
+        [Parameter(Mandatory)]
+        [string]$Description
+    )
 	
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
-	}
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
+    }
 	
-	$highestOrder = ($un | Select-Xml -Namespace $ns -XPath //un:RunSynchronous).Node.RunSynchronousCommand.Order | Sort-Object -Descending | Select-Object -First 1
-	$runSynchronousNode = ($un | Select-Xml -Namespace $ns -XPath //un:RunSynchronous).Node
+    $highestOrder = ($un | Select-Xml -Namespace $ns -XPath //un:RunSynchronous).Node.RunSynchronousCommand.Order |
+    Sort-Object -Property { [int]$_ } -Descending |
+    Select-Object -First 1
+    
+    $runSynchronousNode = ($un | Select-Xml -Namespace $ns -XPath //un:RunSynchronous).Node
 	
-	$runSynchronousCommandNode = $un.CreateElement('RunSynchronousCommand')
+    $runSynchronousCommandNode = $un.CreateElement('RunSynchronousCommand')
 	
-	[Void]$runSynchronousCommandNode.SetAttribute('action', $wcmNamespaceUrl, 'add')
+    [Void]$runSynchronousCommandNode.SetAttribute('action', $wcmNamespaceUrl, 'add')
 	
-	$runSynchronousCommandDescriptionNode = $un.CreateElement('Description')
-	$runSynchronousCommandDescriptionNode.InnerText = $Description
+    $runSynchronousCommandDescriptionNode = $un.CreateElement('Description')
+    $runSynchronousCommandDescriptionNode.InnerText = $Description
 	
-	$runSynchronousCommandOrderNode = $un.CreateElement('Order')
-	$runSynchronousCommandOrderNode.InnerText = ([int]$highestOrder + 1)
+    $runSynchronousCommandOrderNode = $un.CreateElement('Order')
+    $runSynchronousCommandOrderNode.InnerText = ([int]$highestOrder + 1)
 	
-	$runSynchronousCommandPathNode = $un.CreateElement('Path')
-	$runSynchronousCommandPathNode.InnerText = $Command
+    $runSynchronousCommandPathNode = $un.CreateElement('Path')
+    $runSynchronousCommandPathNode.InnerText = $Command
 	
-	[void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandDescriptionNode)
-	[void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandOrderNode)
-	[void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandPathNode)
+    [void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandDescriptionNode)
+    [void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandOrderNode)
+    [void]$runSynchronousCommandNode.AppendChild($runSynchronousCommandPathNode)
 	
-	[void]$runSynchronousNode.AppendChild($runSynchronousCommandNode)
+    [void]$runSynchronousNode.AppendChild($runSynchronousCommandNode)
 }
 #endregion Add-UnattendedSynchronousCommand
 
