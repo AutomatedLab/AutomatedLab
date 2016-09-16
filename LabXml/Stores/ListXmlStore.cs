@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace AutomatedLab
@@ -96,6 +97,30 @@ namespace AutomatedLab
 
             key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
             key.Close();
+        }
+        public string ExportToString()
+        {
+            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
+            var sb = new StringBuilder();
+            var sw = new StringWriter();
+
+            serializer.Serialize(sw, this);
+
+            sw.Close();
+
+            return sb.ToString();
+        }
+
+        public static ListXmlStore<T> ImportFromString(string s)
+        {
+            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
+            var sr = new StringReader(s);
+
+            var items = (ListXmlStore<T>)serializer.Deserialize(sr);
+
+            sr.Close();
+
+            return items;
         }
     }
 }

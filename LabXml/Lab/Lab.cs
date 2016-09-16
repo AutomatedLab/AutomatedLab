@@ -82,8 +82,8 @@ namespace AutomatedLab
         private Sources sources;
         private Target target;
         private string labFilePath;
-        private Int64 maxMemory;
-        private Boolean useStaticMemory;
+        private long maxMemory;
+        private bool useStaticMemory;
         private OperatingSystem defaultOperatingSystem;
         private string defaultVirtualizationEngine;
         private User defaultInstallationUserCredential;
@@ -150,12 +150,12 @@ namespace AutomatedLab
             get { return System.IO.Path.GetDirectoryName(labFilePath); }
         }
 
-        public Int64 MaxMemory
+        public long MaxMemory
         {
             get { return maxMemory; }
             set { maxMemory = value; }
         }
-        public Boolean UseStaticMemory
+        public bool UseStaticMemory
         {
             get { return useStaticMemory; }
             set { useStaticMemory = value; }

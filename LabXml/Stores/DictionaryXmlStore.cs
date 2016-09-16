@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Text;
 using System.Xml.Serialization;
 
 namespace AutomatedLab
@@ -38,6 +39,31 @@ namespace AutomatedLab
             serializer.Serialize(fileStream, this);
 
             fileStream.Close();
+        }
+
+        public string ExportToString()
+        {
+            var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb);
+
+            serializer.Serialize(sw, this);
+
+            sw.Close();
+
+            return sb.ToString();
+        }
+
+        public static DictionaryXmlStore<TKey, TValue> ImportFromString(string s)
+        {
+            var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
+            var sr = new StringReader(s);
+
+            var items = (DictionaryXmlStore<TKey, TValue>)serializer.Deserialize(sr);
+
+            sr.Close();
+
+            return items;
         }
 
         public static DictionaryXmlStore<TKey, TValue> ImportFromRegistry(string keyName, string valueName)
