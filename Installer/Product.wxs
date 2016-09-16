@@ -156,7 +156,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />                
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabInternals.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSharePoint.psm1" />
@@ -237,7 +237,7 @@
                 <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
                   <RegistryValue Value="Test" Type="string" KeyPath="yes" />
                 </RegistryKey>
-                
+
                 <File Id='Sample_Single2012R2Server' Name='Single 2012R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server.ps1' />
                 <File Id='Sample_Single2012R2ServerDCSQL2014WebCA' Name='Single 2012R2 Server DC SQL2014 Web CA.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1' />
                 <File Id='Sample_Single2008R2Server' Name='Single 2008R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2008R2 Server.ps1' />
@@ -283,7 +283,7 @@
                 <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
                   <RegistryValue Value="Test" Type="string" KeyPath="yes" />
                 </RegistryKey>
-                
+
                 <File Id='Sample_ADPowerShellLab' Name='ADPowerShellWorkshopLab.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1' />
                 <File Id='Sample_ADRecoveryLabAzure' Name='ADRecoveryLab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADRecoveryLab - Azure.ps1' />
                 <File Id='Sample_ADRecoveryLabHyperV' Name='ADRecoveryLab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1' />
@@ -303,8 +303,9 @@
                 <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
                   <RegistryValue Value="Test" Type="string" KeyPath="yes" />
                 </RegistryKey>
-                
-                <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />                
+
+                <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
+                <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 1.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="uninstall"/>
               </Component>
@@ -346,7 +347,7 @@
           <ComponentRef Id='SamplesWorkshopComponent' />
           <ComponentRef Id='SamplesScenariosComponent' />
         </Feature>
-        
+
       </Feature>
     </Feature>
 
