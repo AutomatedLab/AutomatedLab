@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Management.Automation;
@@ -36,8 +37,9 @@ namespace AutomatedLab
         private string autoLogonDomainName;
         private string autoLogonUserName;
         private string autoLogonPassword;
-        private System.Collections.Hashtable azureProperties;
-        private System.Collections.Hashtable hypervProperties;
+        private Hashtable azureProperties;
+        private Hashtable hypervProperties;
+        private SerializableDictionary<string, string> notes;
 
         public int Processors
         {
@@ -289,11 +291,18 @@ namespace AutomatedLab
             set { hypervProperties = value; }
         }
 
+        public SerializableDictionary<string, string> Notes
+        {
+            get { return notes; }
+            set { notes = value; }
+        }
+
         public Machine()
         {
             roles = new List<Role>();
             postInstallationActivity = new List<PostInstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
+            notes = new Hashtable();
         }
 
         public override string ToString()
