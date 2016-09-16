@@ -23,6 +23,7 @@ namespace AutomatedLab
         RootDC = 1,
         FirstChildDC = 2,
         DC = 4,
+        ADDS = RootDC | FirstChildDC | DC,
         FileServer = 8,
         WebServer = 16,
         DHCP = 32,
