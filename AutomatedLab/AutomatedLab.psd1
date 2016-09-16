@@ -184,7 +184,9 @@
 		'Unblock-LabSources',
 		'Add-VariableToPSSession',
 		'Add-FunctionToPSSession',
-		'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus'
+		'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
+        'Get-LabMachineDescription', 'Set-LabMachineDescription',
+        'Test-LabMachineInternetConnectivity'
 	
     # List of all modules packaged with this module
     ModuleList = @(

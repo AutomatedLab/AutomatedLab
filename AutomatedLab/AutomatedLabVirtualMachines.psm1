@@ -43,11 +43,16 @@ function New-LabVM
     $azureVMs = @()
     foreach ($machine in $machines)
     {
-        Write-ScreenInfo -Message "Creating $($machine.HostType.ToString().Replace('HyperV', 'Hyper-V')) machine '$($machine.name)'" -TaskStart -NoNewLine
+        Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
         
         if ($machine.HostType -eq 'HyperV')
         {		
             $result = New-LWHypervVM -Machine $machine
+            
+            if ('RootDC' -in $Machine.Roles.Name)
+            {
+                Start-LabVM -ComputerName $Machine.Name
+            }
         }
         elseif ($machine.HostType -eq 'VMWare')
         {
@@ -79,7 +84,7 @@ function New-LabVM
         }
         else
         {
-            Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$($machine.name)'" -TaskEnd -Type Error
+            Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
         }
     }
 
@@ -729,7 +734,7 @@ function Wait-LabVM
                     $session = New-LabPSSession -ComputerName $ComputerName -UseLocalCredential -Retries 5000
 
                     return $ComputerName
-                } -ArgumentList $lab.Export(), $vm.Name #@(,$lab.Export()), $vm.Name
+                } -ArgumentList $lab.Export(), $vm.Name
             }
         }
     }
@@ -760,267 +765,30 @@ function Wait-LabVM
         else
         {
             Write-Verbose "The following machines are ready: $($completed -join ', ')"
+            
+            foreach ($machine in $completed)
+            {
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                if ($machineMetadata.InitState -lt 1)
+                {
+                    $machineMetadata.InitState = 1
+                }
+                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+            }            
+            
             Write-LogFunctionExit
         }
         
         
         if ($PostDelaySeconds)
         {
-            $DummyJob = Start-Job -Name "Wait $PostDelaySeconds seconds" -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
-            Wait-LWLabJob -Job $DummyJob -ProgressIndicator $ProgressIndicator -NoDisplay -NoNewLine:$NoNewLine
+            $job = Start-Job -Name "Wait $PostDelaySeconds seconds" -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
+            Wait-LWLabJob -Job $job -ProgressIndicator $ProgressIndicator -NoDisplay -NoNewLine:$NoNewLine
         }
     }
 
 }
 #endregion Wait-LabVM
-
-#region Wait-LabVM2
-function Wait-LabVM2
-{
-    param (
-        [Parameter(Mandatory, Position = 0)]
-        [string[]]$ComputerName,
-		
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
-
-        [switch]$TestPSSession = $true,
-
-        [switch]$UseCredSsp,
-
-        [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = 5,
-
-        [switch]$NoNewLine,
-
-        [int]$PostDelaySeconds = 0,
-
-        [switch]$UseSSL
-    )
-	
-    begin
-    {
-        Write-LogFunctionEntry
-		
-        $lab = Get-Lab
-        if (-not $lab)
-        {
-            Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
-            return
-        }
-		
-        $jobs = @()
-    }
-	
-    process
-    {
-        $vms = Get-LabMachine -ComputerName $ComputerName
-		
-        foreach ($vm in $vms)
-        {
-            $param = @{ }
-            $param.Port = 5985
-            $param.TestPSSession = $TestPSSession
-            $param.UseCredSsp = $UseCredSsp
-            $param.Credential = $vm.GetCredential($lab)
-            $param.LocalCredential = $vm.GetLocalCredential()
-            $param.UseSSL = $false
-            $param.Lab = $lab
-            $param.LabMachineName = $vm.Name
-            $param.IsDomainJoined = $vm.IsDomainJoined
-			
-            if ($vm.HostType -eq 'Azure')
-            {
-                $param.ComputerName = $vm.AzureConnectionInfo.DnsName
-                $param.Port = $vm.AzureConnectionInfo.Port
-                if ($UseSSL)
-                {
-                    $param.UseSSL = $true
-                    $param.SessionOption = (New-PSSessionOption -SkipCACheck -SkipCNCheck)
-                }
-                Write-Verbose "Trying to reach Azure machine $($param.ComputerName):$($param.Port)"
-            }
-            elseif ($vm.HostType -eq 'HyperV')
-            {
-                $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
-                if (-not $doNotUseGetHostEntry)
-                {
-                    $name = (Get-HostEntry -Hostname $vm).IpAddress.IpAddressToString
-                }
-
-                if ($name)
-                {
-                    $param.Add('ComputerName', $name)
-                }
-                else
-                {
-                    $param.Add('ComputerName', $vm.Name)
-                }
-                Write-Verbose "Trying to reach HyperV machine $($param.ComputerName)"
-            }
-            elseif ($vm.HostType -eq 'VMWare')
-            {
-                $param.Add('ComputerName', $vm.Name)
-                Write-Verbose "Trying to reach VMWare machine $($param.ComputerName)"
-            }
-			
-            $session = $null
-            if ((Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCPtimeout 5000).Open)
-            {
-                Write-Verbose "Computer '$($param.ComputerName)' is reachable on port $($param.Port)."
-                if ($param.IsDomainJoined)
-                {
-                    Write-Verbose "Testing connection to computer '$($param.ComputerName)' using domain credentials"
-                    if ($param.SessionOption)
-                    {
-                        $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -SessionOption $param.SessionOption -Credential $param.Credential -ErrorAction SilentlyContinue
-                    }
-                    else
-                    {
-                        $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -Credential $param.Credential -ErrorAction SilentlyContinue
-                    }
-                }
-                if (-not $session)
-                {
-                    Write-Verbose "Testing connection to computer '$($param.ComputerName)' using local credentials"
-                    if ($param.SessionOption)
-                    {
-                        $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -SessionOption $param.SessionOption -Credential $param.LocalCredential -ErrorAction SilentlyContinue
-                    }
-                    else
-                    {
-                        $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -Credential $param.LocalCredential -ErrorAction SilentlyContinue
-                    }
-                }                
-            }
-            if ($session)
-            {
-                Write-Verbose "Computer '$($param.ComputerName)' was reachable"
-                $jobs += Start-Job -Name "Waiting for machine '$($vm.Name)'" -ArgumentList $param -ScriptBlock `
-                {
-                    param ([hashtable]$param)
-                        
-                    $param.LabMachineName
-                }
-            }
-            else
-            {
-                Write-Verbose "Computer '$($param.ComputerName)' was not reachable, waiting..."
-                $jobs += Start-Job -Name "Waiting for machine '$($vm.Name)'" -ScriptBlock {
-                    param ([hashtable]$param)
-				
-                    $i = 0
-                    while (-not $result)
-                    {
-                        #Due to a problem in Windows 10 not being able to reach VMs from the host
-                        netsh.exe interface ip delete arpcache | Out-Null
-
-                        $result = (Test-NetConnection -ComputerName $param.ComputerName -Port $param.Port -ErrorAction SilentlyContinue -WarningAction SilentlyContinue).TcpTestSucceeded
-                        if ($result)
-                        {
-                            break
-                        }
-                        else
-                        {
-                            $i++
-						
-                            if (-not $i % 10) { Write-Verbose -Message "$($param.ComputerName) still not reachable after $i retries." }
-						
-                            Start-Sleep -Seconds 5
-                        }
-                    }
-
-                    if ($param.TestPSSession)
-                    {
-                        while (-not $session)
-                        {
-                            if ($param.IsDomainJoined)
-                            {
-                                if ($param.SessionOption)
-                                {
-                                    $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -SessionOption $param.SessionOption -Credential $param.Credential
-                                }
-                                else
-                                {
-                                    $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -Credential $param.Credential
-                                }
-                            }
-                            if (-not $session)
-                            {
-                                if ($param.SessionOption)
-                                {
-                                    $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -SessionOption $param.SessionOption -Credential $param.LocalCredential
-                                }
-                                else
-                                {
-                                    $session = New-PSSession -ComputerName $param.ComputerName -Port $param.Port -UseSSL:$param.UseSSL -Credential $param.LocalCredential
-                                }
-                            }
-
-                            if ($session)
-                            {
-                                break
-                            }
-                            else
-                            {
-                                $i++
-						
-                                if (-not $i % 10) { Write-Verbose -Message "Could still not create a session to $($param.ComputerName) after $i retries." }
-						
-                                Start-Sleep -Seconds 5
-                            }
-                        }
-                    }
-
-                    return $param.LabMachineName
-                } -ArgumentList $param
-            }
-        }
-    }
-	
-    end
-    {
-        Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
-		
-        Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine -NoDisplay
-        
-        $completed = $jobs | Where-Object State -eq Completed | Receive-Job -ErrorAction SilentlyContinue
-		
-        if ($completed)
-        {
-            $notReadyMachines = (Compare-Object -ReferenceObject $completed -DifferenceObject $vms.Name).InputObject
-            $jobs | Remove-Job -Force
-        }
-        else
-        {
-            $notReadyMachines = $vms.Name
-        }
-		
-        if ($notReadyMachines)
-        {
-            $message = "The following machines are not ready: $($notReadyMachines -join ', ')"
-            Write-LogFunctionExitWithError -Message $message
-        }
-        else
-        {
-            Write-Verbose "The following machines are ready: $($completed -join ', ')"
-            Write-LogFunctionExit
-        }
-        
-        
-        if ($PostDelaySeconds)
-        {
-            $DummyJob = Start-Job -Name "Wait $PostDelaySeconds seconds" -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
-            Wait-LWLabJob -Job $DummyJob -ProgressIndicator $ProgressIndicator -NoDisplay -NoNewLine:$NoNewLine
-        }
-        
-        if ($ProgressIndicator -and (-Not $NoNewLine))
-        {
-            Write-ProgressIndicatorEnd
-        }
-    }
-
-}
-#endregion Wait-LabVM2
 
 function Wait-LabVMRestart
 {
@@ -1697,3 +1465,21 @@ function Get-LabMachineUacStatus
     Write-LogFunctionExit
 }
 #endregion Get / Set-LabMachineUacStatus
+
+#region Test-LabMachineInternetConnectivity
+function Test-LabMachineInternetConnectivity
+{
+    [OutputType([bool])]
+    [CmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [string]$ComputerName
+    )
+    
+    $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
+        Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
+    } -PassThru -NoDisplay
+    
+    return $result.TcpTestSucceeded
+}
+#endregion Test-LabMachineInternetConnectivity
