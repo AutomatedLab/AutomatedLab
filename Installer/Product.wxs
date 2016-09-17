@@ -185,6 +185,7 @@
 
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
+                    <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\nvspbind.exe" />
                   </Component>
                 </Directory>
               </Directory>
