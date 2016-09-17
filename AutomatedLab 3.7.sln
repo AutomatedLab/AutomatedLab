@@ -175,6 +175,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{F808D9
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLab\Tools\HyperV\BGInfo.bgi = AutomatedLab\Tools\HyperV\BGInfo.bgi
 		AutomatedLab\Tools\HyperV\Bginfo.exe = AutomatedLab\Tools\HyperV\Bginfo.exe
+		AutomatedLab\Tools\HyperV\nvspbind.exe = AutomatedLab\Tools\HyperV\nvspbind.exe
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{00FED816-9139-4579-85CC-DB74A5BA6981}"

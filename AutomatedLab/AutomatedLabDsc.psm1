@@ -128,7 +128,7 @@ function Install-LabDscClient
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
         
-        [string]$PullServer
+        [string[]]$PullServer
     )
     
     $labSources = Get-LabSourcesLocation
@@ -157,10 +157,11 @@ function Install-LabDscClient
     }
     else
     {
-        $pullServerMachine = Get-LabMachine -ComputerName $PullServer
+        $pullServerMachines = Get-LabMachine -ComputerName $PullServer
     }
     
-    $registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $pullServerMachine -ScriptBlock {
+    <# DSC Registration Keys are stored inside the machine object, code should be obsolete
+	$registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $pullServerMachine -ScriptBlock {
         Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
     } -PassThru
     
@@ -169,23 +170,24 @@ function Install-LabDscClient
         Write-Error "Could not retrieve regitration key from DSC Pull Server '$pullServerMachine'. Was the DSC Pull Server successfully installed?"
         return
     }
-    
+	#>
+
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
     
     foreach ($machine in $machines)
     {
-        Invoke-LabCommand -ActivityName 'Setup machines into Dsc Pull Mode' -ComputerName $machine -ScriptBlock { 
-            param
+        Invoke-LabCommand -ActivityName 'Setup DSC Pull Clients' -ComputerName $pullClients -ScriptBlock {
+            param  
             (
-                [Parameter(Mandatory = $true)]
-                [string]$PullServer,
+                [Parameter(Mandatory)]
+                [string[]]$PullServer,
 
-                [Parameter(Mandatory = $true)]
-                [string] $RegistrationKey
+                [Parameter(Mandatory)]
+                [string[]]$RegistrationKey
             )
-        
+    
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachine.FQDN, $registrationKey
+        } -ArgumentList $pullServerMachines, $pullServerMachines.Notes.DscRegistrationKey -PassThru
     }
 }
 #endregion Install-LabDscClient
