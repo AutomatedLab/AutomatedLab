@@ -57,7 +57,7 @@ Configuration PullClient
                     RefreshMode = 'Pull'
                 }
             }
-       }
+        }
         
         ReportServerWeb CONTOSO-PullSrv
         {
@@ -66,6 +66,12 @@ Configuration PullClient
             #AllowUnsecureConnection = $true
         }
     }
+}
+
+if ($PullServer.Count -ne $RegistrationKey.Count)
+{
+    Write-Error "The number if pull servers ($($PullServer.Count)) is not equal to the number of registration keys ($($RegistrationKey.Count))."
+    return
 }
     
 PullClient -OutputPath c:\Dsc -PullServer $PullServer -RegistrationKey $RegistrationKey | Out-Null
