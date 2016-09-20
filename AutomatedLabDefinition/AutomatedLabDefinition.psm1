@@ -2304,7 +2304,7 @@ function Add-LabMachineDefinition
         $machine.NetworkAdapters.Add($adapter)
     }
 
-    Repair-LabSuplicateIpAddresses
+    Repair-LabDuplicateIpAddresses
     
     if ($processors -eq 0)
     {
@@ -2899,7 +2899,7 @@ function Get-LabAvailableAddresseSpace
 #endregion Get-LabAvailableAddresseSpace
 
 #region Internal
-function Repair-LabSuplicateIpAddresses
+function Repair-LabDuplicateIpAddresses
 {
     foreach ($machine in (Get-LabMachineDefinition))
     {
