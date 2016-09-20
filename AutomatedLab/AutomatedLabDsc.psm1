@@ -48,7 +48,7 @@ function Install-LabDscPullServer
     }
     
     New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
-    -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
+    -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
 
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
@@ -73,7 +73,7 @@ function Install-LabDscPullServer
             continue
         }
         
-        $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru
+        $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
             param  
@@ -110,8 +110,6 @@ function Install-LabDscPullServer
     }
     
     Export-Lab
-    
-    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName (Get-LabMachine)
     
     Write-LogFunctionExit
 }
@@ -150,33 +148,28 @@ function Install-LabDscClient
     
     Start-LabVM -ComputerName $machines -Wait
     
-    if (-not (Get-LabMachine -ComputerName $PullServer | Where-Object { $_.Roles.Name -contains 'DSCPullServer' }))
+    if ($PullServer)
     {
-        Write-Error "The given DSC Pull Server '$PullServer' could not be found in the lab."
-        return
+        if (-not (Get-LabMachine -ComputerName $PullServer | Where-Object { $_.Roles.Name -contains 'DSCPullServer' }))
+        {
+            Write-Error "The given DSC Pull Server '$PullServer' could not be found in the lab."
+            return
+        }
+        else
+        {
+            $pullServerMachines = Get-LabMachine -ComputerName $PullServer
+        }
     }
     else
     {
-        $pullServerMachines = Get-LabMachine -ComputerName $PullServer
+        $pullServerMachines = Get-LabMachine -Role DSCPullServer
     }
     
-    <# DSC Registration Keys are stored inside the machine object, code should be obsolete
-	$registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $pullServerMachine -ScriptBlock {
-        Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
-    } -PassThru
-    
-    if (-not $registrationKey)
-    {
-        Write-Error "Could not retrieve regitration key from DSC Pull Server '$pullServerMachine'. Was the DSC Pull Server successfully installed?"
-        return
-    }
-	#>
-
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
     
     foreach ($machine in $machines)
     {
-        Invoke-LabCommand -ActivityName 'Setup DSC Pull Clients' -ComputerName $pullClients -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Setup DSC Pull Clients' -ComputerName $machine -ScriptBlock {
             param  
             (
                 [Parameter(Mandatory)]
