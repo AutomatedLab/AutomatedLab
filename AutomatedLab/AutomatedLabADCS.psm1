@@ -1582,7 +1582,15 @@ function New-LabCATemplate
     $issuingCAs = Get-LabIssuingCA
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $issuingCAs -ScriptBlock {
-    
+        
+        Restart-Service -Name CertSvc
+            
+		#the following calls are for somehow refreshing the CA. If Certutil is not called, the new template might now be found.
+        certutil.exe -pulse
+        certutil.exe -TCAInfo
+        certutil.exe -DCInfo
+        certutil.exe -EntInfo contoso\dca1$
+            
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
 
