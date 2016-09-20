@@ -970,7 +970,10 @@ function Remove-LabVM
             Remove-LWVMWareVM -Name $machine
         }
 		
-        Remove-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine
+        if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
+        {
+            Remove-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine
+        }
         
         Write-ScreenInfo -Message "Lab VM '$machine' has been removed"
     }
