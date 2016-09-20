@@ -133,7 +133,7 @@ function Install-LabDscClient
     
     if ($All)
     {
-        $machines = Get-LabMachine | Where-Object { $_.Roles.Name -notin 'DC', 'RootDC', 'FirstChildDC' -and $_.Name -ne $pullServer.Name }
+        $machines = Get-LabMachine | Where-Object { $_.Roles.Name -notin 'DC', 'RootDC', 'FirstChildDC' -and $_.Name -notin $pullServer.Name }
     }
     else
     {
