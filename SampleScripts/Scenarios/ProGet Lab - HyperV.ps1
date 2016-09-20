@@ -86,6 +86,12 @@ $installArgs = $installArgs -f $sqlServer
 Write-Host "Installing ProGet on server '$webServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
 
+if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabMachine -Role Routing)))
+{
+    Write-Error "The lab is not connected to the internet. Internet connectivity is required to install ProGet. Check the configuration on the machines with the Routing role."
+    return
+}
+
 #download ProGet
 if (-not (Test-Path -Path $labSources\SoftwarePackages\ProGetSetup.exe))
 {

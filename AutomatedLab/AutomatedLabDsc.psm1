@@ -33,7 +33,7 @@ function Install-LabDscPullServer
     
     if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabMachine -Role Routing)))
     {
-        Write-Error "The lab is not connected to the internet. Internet connectivity is required to install DSC"
+        Write-Error "The lab is not connected to the internet. Internet connectivity is required to install DSC. Check the configuration on the machines with the Routing role."
         return
     }
     
