@@ -1127,9 +1127,6 @@ function Publish-CATemplate
         [string]$TemplateName
     )
     
-    gpupdate.exe /force
-    certutil.exe -pulse
-                    
     $caInfo = certutil.exe -CAInfo
     if ($caInfo -like '*No local Certification Authority*')
     {
@@ -1137,8 +1134,33 @@ function Publish-CATemplate
         return
     }
 
-    Write-Verbose -Message "Publishing '$TemplateName'"
-    certutil.exe -SetCAtemplates "+$TemplateName" | Out-Null
+    $start = Get-Date
+    $done = $false
+    $i = 0
+    do
+    {
+        Write-Verbose -Message "Trying to publish '$TemplateName' at ($(Get-Date)), retry count $i"
+        $result = certutil.exe -SetCAtemplates "+$TemplateName" | Out-Null
+        if (-not $LASTEXITCODE)
+        {
+            $done = $true
+        }
+        else
+        {
+            if ($i % 5 -eq 0)
+            {
+                Restart-Service -Name CertSvc
+            }
+
+            $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
+            Write-Verbose -Message "Publishing the template '$TemplateName' failed: $($ex.Message)"
+
+            Start-Sleep -Seconds 10
+            $i++
+        }
+    }
+    until ($done -or ((Get-Date) - $start).TotalMinutes -ge 10)
+    Write-Verbose -Message "Certificate templete '$TemplateName' published successfully"
 
     if ($LASTEXITCODE)
     {
@@ -1582,15 +1604,10 @@ function New-LabCATemplate
     $issuingCAs = Get-LabIssuingCA
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $issuingCAs -ScriptBlock {
-        
-        Restart-Service -Name CertSvc
-            
-		#the following calls are for somehow refreshing the CA. If Certutil is not called, the new template might now be found.
-        certutil.exe -pulse
-        certutil.exe -TCAInfo
-        certutil.exe -DCInfo
-        certutil.exe -EntInfo contoso\dca1$
-            
+          
+        $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain')
+        $dc = [System.DirectoryServices.ActiveDirectory.DomainController]::FindOne($ctx)
+
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
 
