@@ -269,7 +269,7 @@ function New-LWHypervVM
     foreach ($adapter in $adapters)
     {
         #external switches will be connected after the domain join and after the network order is configures correctly
-        if ($adapter.VirtualSwitch.SwitchType -eq 'External')
+        if ($adapter.VirtualSwitch.SwitchType -eq 'External' -and $adapters.Count -gt 1)
         {
             $vm | Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -DeviceNaming On
         }
