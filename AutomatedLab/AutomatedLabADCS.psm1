@@ -1604,9 +1604,6 @@ function New-LabCATemplate
     $issuingCAs = Get-LabIssuingCA
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $issuingCAs -ScriptBlock {
-          
-        $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain')
-        $dc = [System.DirectoryServices.ActiveDirectory.DomainController]::FindOne($ctx)
 
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
