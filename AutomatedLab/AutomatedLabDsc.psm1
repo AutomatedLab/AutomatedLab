@@ -24,16 +24,24 @@ function Install-LabDscPullServer
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName
-    
+    $machines = Get-LabMachine -Role $roleName    
     if (-not $machines)
     {
         return
     }
     
-    if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabMachine -Role Routing)))
+    $machinesOnline = $machines | ForEach-Object {
+        Test-LabMachineInternetConnectivity -ComputerName $_ -AsJob
+    } |
+    Receive-Job -Wait -AutoRemoveJob |
+    Where-Object { $_.TcpTestSucceeded } |
+    ForEach-Object { $_.NetAdapter.SystemName }
+    
+    $machinesOffline = (Compare-Object -ReferenceObject $machines.FQDN -DifferenceObject $machinesOnline).InputObject
+    
+    if ($machinesOffline)
     {
-        Write-Error "The lab is not connected to the internet. Internet connectivity is required to install DSC. Check the configuration on the machines with the Routing role."
+        Write-Error "The machines $($machinesOffline -join ', ') are not connected to the internet. Internet connectivity is required to install DSC. Check the configuration on the machines and the machine with the Routing role."
         return
     }
     
