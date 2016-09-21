@@ -1476,13 +1476,30 @@ function Test-LabMachineInternetConnectivity
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
-        [string]$ComputerName
+        [string]$ComputerName,
+        
+        [switch]$AsJob
     )
     
-    $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
-        Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
-    } -PassThru -NoDisplay
+    if ($AsJob)
+    {
+        $job = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
+        
+            Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
+            
+        } -PassThru -NoDisplay -AsJob
     
-    return $result.TcpTestSucceeded
+        return $job
+    }
+    else
+    {
+        $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
+        
+            Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
+            
+        } -PassThru -NoDisplay
+    
+        return $result.TcpTestSucceeded
+    }
 }
 #endregion Test-LabMachineInternetConnectivity
