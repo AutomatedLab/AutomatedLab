@@ -888,13 +888,13 @@ function Export-LabDefinition
         {
             $rootDCs = Get-LabMachineDefinition -Role RootDC
             $dnsServerIP = ''
-            if ($rootDCs | Where-Object {$_.Network -eq $network})
+            if ($rootDCs | Where-Object Network -eq $network)
             {
                 $dnsServerIP = ($rootDCs)[0].IpV4Address
             }
-            elseif ($rootDCs | Where-Object {$_.Network -eq $network})
+            elseif ($rootDCs | Where-Object Network -eq $network)
             {
-                $dnsServerIP = ($rootDCs | Where-Object {$_.Network -eq $network})[0].IpV4Address
+                $dnsServerIP = ($rootDCs | Where-Object Network -eq $network)[0].IpV4Address
             }
             if (-not ((Get-LabVirtualNetworkDefinition)[0].DnsServers) -and $dnsServerIP)
             {
@@ -906,19 +906,38 @@ function Export-LabDefinition
     }
     
     #Automatic DNS (client) configuration of machines
-    $firstRoot = Get-LabMachineDefinition -Role RootDC | Select-Object -First 1
+    $firstRootDc = Get-LabMachineDefinition -Role RootDC | Select-Object -First 1
+    $firstRouter = Get-LabMachineDefinition -Role Routing | Select-Object -First 1
+    $firstRouterExternalSwitch = $firstRouter.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType -eq 'External' }
     
-    if ($firstRoot)
+    if ($firstRootDc -or $firstRouter)
     {
         foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -ne Azure))
         {
+            if ($firstRouter)
+            {
+                $mappingNetworks = Compare-Object -ReferenceObject $firstRouter.NetworkAdapters.VirtualSwitch.Name `
+                -DifferenceObject $machine.NetworkAdapters.VirtualSwitch.Name -ExcludeDifferent -IncludeEqual
+            }
+            
             foreach ($networkAdapter in $machine.NetworkAdapters)
             {
                 if ($networkAdapter.IPv4DnsServers -contains '0.0.0.0')
                 {
                     if (-not $machine.IsDomainJoined) #machine is not domain joined, the 1st network adapter's IP of the 1st root DC is used as DNS server
                     {
-                        $networkAdapter.IPv4DnsServers = $firstRoot.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                        if ($firstRootDc)
+                        {
+                            $networkAdapter.IPv4DnsServers = $firstRootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                        }
+                        elseif ($firstRouter)
+                        {
+                            if ($networkAdapter.VirtualSwitch.Name -in $mappingNetworks.InputObject)
+                            {
+                                $networkAdapter.IPv4DnsServers = ($firstRouter.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $networkAdapter.VirtualSwitch.Name }).Ipv4Address.IpAddress
+                            }
+                        }
+                        
                     }
                     elseif ($machine.Roles.Name -contains 'RootDC') #if the machine is RootDC, its 1st network adapter's IP is used for DNS
                     {
@@ -955,6 +974,21 @@ function Export-LabDefinition
                                 Write-Warning "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'"
                             }
                         }
+                    }
+                }
+                
+                #if there is a router in the network and no gateways defined, we try to set the gateway automatically. This does not
+                #apply to network adapters that have a gateway manually configured or set to DHCP, any network adapter on a router,
+                #or if there is there wasn't found an external network adapter on the router ($firstRouterExternalSwitch)
+                if ($networkAdapter.Ipv4Gateway.Count -eq 0 -and 
+                    $firstRouterExternalSwitch -and 
+                    $machine.Roles.Name -notcontains 'Routing' -and
+                    -not $networkAdapter.UseDhcp
+                )
+                {
+                    if ($networkAdapter.VirtualSwitch.Name -in $mappingNetworks.InputObject)
+                    {
+                        $networkAdapter.Ipv4Gateway.Add(($firstRouter.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $networkAdapter.VirtualSwitch.Name }).Ipv4Address.IpAddress)
                     }
                 }
             }
@@ -2112,11 +2146,6 @@ function Add-LabMachineDefinition
                 
                 Write-ScreenInfo -Message "Using virtual network '$autoNetworkName' with address space '$addressSpace'" -Type Info
                 Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $existingNetwork.AddressSpace
-                
-                #First automatically asigned IP address will be following+1
-                #$script:autoIPAddress = $existingNetwork.AddressSpace.Network.Increment().Increment().Increment()
-
-                #$notDone = $false
             }
             else
             {
@@ -2133,14 +2162,13 @@ function Add-LabMachineDefinition
                 {
                     throw 'Virtual network could not be created. Please create virtual network manually by calling Add-LabVirtualNetworkDefinition (after calling New-LabDefinition)'
                 }
-                
-                #First automatically asigned IP address will be following + 1
-                #$script:autoIPAddress = $addressSpace.IpAddress.Increment().Increment()
             }
         }
         else
         {
-            Write-Verbose -Message 'One or more virtual network(s) has been specified.' #Using first specified virtual network '$($networkDefinitions[0])' with address space '$($networkDefinitions[0].AddressSpace)'."
+            Write-Verbose -Message 'One or more virtual network(s) has been specified.'
+            
+            #Using first specified virtual network '$($networkDefinitions[0])' with address space '$($networkDefinitions[0].AddressSpace)'."
             
             <#
                     if ($script:autoIPAddress)
@@ -2169,8 +2197,6 @@ function Add-LabMachineDefinition
                         }
                         
                         Write-Verbose -Message 'Existing Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
-
-                        #$script:autoIPAddress = $specifiedNetwork.AddressSpace.IpAddress.Increment().Increment()
                     }
                     else
                     {
@@ -2181,8 +2207,6 @@ function Add-LabMachineDefinition
                         }
                         
                         Write-Verbose -Message 'Address space specified is valid'
-                        
-                        #$script:autoIPAddress = $specifiedNetwork.AddressSpace.IpAddress.Increment().Increment()
                     }
                 }
                 else
@@ -2199,7 +2223,6 @@ function Add-LabMachineDefinition
                     {
                         Write-Verbose -Message "Existing Hyper-V virtual switch found with same name as first virtual network name. Using it with address space '$($existingNetwork.AddressSpace)'."
                         $networkDefinition.AddressSpace = $existingNetwork.AddressSpace
-                        #$script:autoIPAddress = $existingNetwork.AddressSpace.IpAddress.Increment().Increment()
                     }
                     else
                     {
@@ -2216,9 +2239,6 @@ function Add-LabMachineDefinition
                         {
                             throw 'Virtual network could not be used. Please create virtual network manually by calling Add-LabVirtualNetworkDefinition (after calling New-LabDefinition)'
                         }
-                
-                        #First automatically asigned IP address will be following+1
-                        #$script:autoIPAddress = $addressSpace.IpAddress.Increment().Increment()
                     }
                 }
             }
@@ -2294,7 +2314,12 @@ function Add-LabMachineDefinition
         if ($DnsServer2) { $adapter.Ipv4DnsServers.Add($DnsServer2) }
 
         #if the virtual network is not external, the machine is not an Azure one, is domain joined and there is no DNS server configured
-        if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and $machine.HostType -ne 'Azure' -and $machine.IsDomainJoined -and -not ($DnsServer1 -or $DnsServer2))
+        if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and 
+            $machine.HostType -ne 'Azure' -and 
+            #$machine.IsDomainJoined -and
+            -not $adapter.UseDhcp -and
+            -not ($DnsServer1 -or $DnsServer2
+        ))
         {
             $adapter.Ipv4DnsServers.Add('0.0.0.0')
         }
