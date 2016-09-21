@@ -249,6 +249,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introduction", "{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B}"
+	ProjectSection(SolutionItems) = preProject
+		SampleScripts\Introduction\01 Single Win10 Client.ps1 = SampleScripts\Introduction\01 Single Win10 Client.ps1
+		SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1 = SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1
+		SampleScripts\Introduction\03 Single domain-joined server.ps1 = SampleScripts\Introduction\03 Single domain-joined server.ps1
+		SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1 = SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -315,5 +323,6 @@ Global
 		{1D008E01-0359-4EF9-AB13-ADC357240D25} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{42F1CA14-387C-4DC0-BF14-0DFEA2681105} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{2E4C28D0-0A96-453D-AE4B-22ED3284966C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
+		{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 	EndGlobalSection
 EndGlobal

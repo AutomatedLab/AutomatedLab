@@ -312,6 +312,21 @@
               </Component>
             </Directory>
 
+            <Directory Id="SAMPLESINSTRODUCTIONDIR" Name="Introduction">
+              <Component Id='SamplesIntroductionComponent' Guid='42526be0-5995-4cff-bf97-5949c26c1288'>
+                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
+                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
+                </RegistryKey>
+
+                <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\01 Single Win10 Client.ps1' />
+                <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
+                <File Id='Sample_Intro03' Name='03 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 Single domain-joined server.ps1' />
+                <File Id='Sample_Intro04' Name='04 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1' />
+
+                <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="uninstall"/>
+              </Component>
+            </Directory>
+
           </Directory>
 
         </Directory>
@@ -347,6 +362,7 @@
           <ComponentRef Id='SamplesAzureComponent' />
           <ComponentRef Id='SamplesWorkshopComponent' />
           <ComponentRef Id='SamplesScenariosComponent' />
+          <ComponentRef Id='SamplesIntroductionComponent' />
         </Feature>
 
       </Feature>
