@@ -1,12 +1,9 @@
-$labName = 'Test4'
+$labName = 'ADMultiForest'
 
 $labSources = Get-LabSourcesLocation
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
-
-#make the network definition
-Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.41.0/24
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name forest1.net -AdminUser Install -AdminPassword Somepass1
@@ -44,19 +41,17 @@ Add-LabMachineDefinition -Name F2DC1 -DomainName forest2.net -Roles RootDC -Post
 #--------------------------------------------------------------------------------------------------------------------
 Set-LabInstallationCredential -Username Install -Password Somepass3
 
-#like the third forest - also just one D
-$roles = Get-LabMachineRoleDefinition -Role RootDC @{ DomainFunctionalLevel = 'Win2008R2'; ForestFunctionalLevel = 'Win2008R2' }
+#like the third forest - also just one domain controller
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
-Add-LabMachineDefinition -Name F3DC1 -DomainName forest3.net -Roles $roles -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name F3DC1 -DomainName forest3.net -Roles RootDC -PostInstallationActivity $postInstallActivity
 
 Install-Lab
 
 #Install software to all lab machines
-$packs = @()
-$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
-$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
-$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
-
-Install-LabSoftwarePackages -Machine (Get-LabMachine -All) -SoftwarePackage $packs
+$machines = Get-LabMachine
+Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
+Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
+Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
+Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Show-LabInstallationTime
