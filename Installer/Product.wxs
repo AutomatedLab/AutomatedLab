@@ -308,7 +308,7 @@
                 <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 1.ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
-                
+
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="uninstall"/>
               </Component>
             </Directory>
@@ -323,7 +323,12 @@
                 <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
                 <File Id='Sample_Intro03' Name='03 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 Single domain-joined server.ps1' />
                 <File Id='Sample_Intro04' Name='04 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1' />
-
+                <File Id='Sample_Intro05' Name='05 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro06' Name='06 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro07' Name='07 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1' />
+                <File Id='Sample_Intro08' Name='08 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1' />
+                <File Id='Sample_Intro09' Name='09 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1' />
+                <File Id='Sample_Intro10' Name='10 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 ISO Offline Patching.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="uninstall"/>
               </Component>
             </Directory>

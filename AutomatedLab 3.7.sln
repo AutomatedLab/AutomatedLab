@@ -256,6 +256,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 		SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1 = SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1
 		SampleScripts\Introduction\03 Single domain-joined server.ps1 = SampleScripts\Introduction\03 Single domain-joined server.ps1
 		SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1 = SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1
+		SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1
+		SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1 = SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1
+		SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1 = SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1
+		SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1 = SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1
+		SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1 = SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1
+		SampleScripts\Introduction\10 ISO Offline Patching.ps1 = SampleScripts\Introduction\10 ISO Offline Patching.ps1
 	EndProjectSection
 EndProject
 Global
