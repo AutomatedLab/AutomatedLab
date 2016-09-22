@@ -1404,7 +1404,7 @@ function Add-LabIsoImageDefinition
         }
         else
         {
-            $cachedIsos.Remove(($cachedIsos | Where-Object Name -eq $name))
+            $cachedIsos.Remove(($cachedIsos | Where-Object Name -eq $name)) | Out-Null
         }
 
         $iso = New-Object -TypeName AutomatedLab.IsoImage    
@@ -2314,8 +2314,9 @@ function Add-LabMachineDefinition
         if ($DnsServer2) { $adapter.Ipv4DnsServers.Add($DnsServer2) }
 
         #if the virtual network is not external, the machine is not an Azure one, is domain joined and there is no DNS server configured
-        if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and
-            $machine.HostType -ne 'Azure' -and
+        if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and 
+            $machine.HostType -ne 'Azure' -and 
+            #$machine.IsDomainJoined -and
             -not $adapter.UseDhcp -and
             -not ($DnsServer1 -or $DnsServer2
         ))
