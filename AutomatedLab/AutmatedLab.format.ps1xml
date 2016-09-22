@@ -94,6 +94,9 @@
             <Label>OperatingSystemName</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Idx</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
             <Label>Version</Label>
           </TableColumnHeader>
           <TableColumnHeader>
@@ -108,6 +111,9 @@
             <TableColumnItems>
               <TableColumnItem>
                 <PropertyName>OperatingSystemName</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ImageIndex</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Version</PropertyName>
