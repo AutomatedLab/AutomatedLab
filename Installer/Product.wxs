@@ -320,7 +320,7 @@
                 </RegistryKey>
 
                 <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\01 Single Win10 Client.ps1' />
-                <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
+                <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
                 <File Id='Sample_Intro03' Name='03 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 Single domain-joined server.ps1' />
                 <File Id='Sample_Intro04' Name='04 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1' />
                 <File Id='Sample_Intro05' Name='05 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1' />

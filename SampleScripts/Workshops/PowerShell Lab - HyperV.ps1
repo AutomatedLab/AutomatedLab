@@ -61,7 +61,7 @@ Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -Roles $roles -IpAddress 192.
 
 <# REMOVE THE COMMENT TO ADD THE DEVELOPMENT CLIENT TO THE LAB
 #Development client in the child domain a with some extra tools
-Add-LabIsoImageDefinition -Name VisualStudio2015 -Path $labSources\ISOs\en_visual_studio_enterprise_2015_with_update_1_x86_x64_dvd_7288517.iso
+Add-LabIsoImageDefinition -Name VisualStudio2015 -Path $labSources\ISOs\en_visual_studio_enterprise_2015_with_update_3_x86_x64_dvd_8923288.iso
 Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -OperatingSystem 'Windows 10 Pro' -Roles VisualStudio2015 -IpAddress 192.168.30.54
 #>
 
