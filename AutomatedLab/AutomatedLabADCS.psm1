@@ -1678,7 +1678,7 @@ function Request-LabCertificate
             Sync-Parameter -Command (Get-Command -Name Request-Certificate)
             Request-Certificate @ALBoundParameters
             
-        } -UseCredSsp -Variable $variables -Function $functions -PassThru
+        } -UseCredSsp -Variable $variables -Function $functions -PassThru:$PassThru
     }
     
     Write-LogFunctionExit
