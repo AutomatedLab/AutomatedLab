@@ -247,14 +247,34 @@ function Copy-LabExchangeInstallationFiles
         $ucmaFile = Get-ChildItem -Path $labSources -Filter $ucmaInstallFileName -Recurse
         if (-not $ucmaFile)
         {
-            throw "The Unified Communications Managed API 4.0 Runtime installation file ($ucmaInstallFileName) does not exist"
+            try
+            {
+                Write-Host "Downloading '$ucmaInstallFileName' from '$ucmaInstallLink'..." -NoNewline
+                Get-LabInternetFile -Uri $ucmaInstallLink -Path $labSources\SoftwarePackages\$ucmaInstallFileName -ErrorAction Stop
+                Write-Host 'finished'
+                $ucmaFile = Get-ChildItem -Path $labSources -Filter $ucmaInstallFileName -Recurse
+            }
+            catch
+            {
+                throw "The Unified Communications Managed API 4.0 Runtime installation file ($ucmaInstallFileName) does not exist and could not be downloaded. Please put the file in the LabSources\SoftwarePackages folder and start the Exchange installation again (Install-Lab -Exchange2013)"
+            }
         }
         Copy-LabFileItem -Path $ucmaFile.FullName -DestinationFolder C:\Install -ComputerName $Machine
     
         $exchangeFile = Get-ChildItem -Path $labSources -Filter $exchangeInstallFileName -Recurse
         if (-not $exchangeFile)
         {
-            throw "The Exchange 2013 installation file ($exchangeInstallFileName) does not exist"
+            try
+            {
+                Write-Host "Downloading '$exchangeInstallFileName' from '$exchangeInstallLink'..." -NoNewline
+                Get-LabInternetFile -Uri $exchangeInstallLink -Path $labSources\SoftwarePackages\$exchangeInstallFileName -ErrorAction Stop
+                Write-Host 'finished'
+                $exchangeFile = Get-ChildItem -Path $labSources -Filter $exchangeInstallFileName -Recurse
+            }
+            catch
+            {
+                throw "The Exchange 2013 installation file ($exchangeInstallFileName) does not exist and could not be downloaded. Please put the file in the LabSources\SoftwarePackages folder and start the Exchange installation again (Install-Lab -Exchange2013)"
+            }
         }
         Copy-LabFileItem -Path $exchangeFile.FullName -DestinationFolder C:\Install -ComputerName $Machine
     }
