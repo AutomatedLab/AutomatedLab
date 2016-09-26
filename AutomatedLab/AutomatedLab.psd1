@@ -263,7 +263,7 @@
         Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' 
 
         #SysInternals
-        SysInternalsUrl = 'https://technet.microsoft.com/da-dk/sysinternals/bb842062'
+        SysInternalsUrl = 'https://technet.microsoft.com/en-us/sysinternals/bb842062'
         SysInternalsDownloadUrl = 'https://download.sysinternals.com/files/SysinternalsSuite.zip'
     }
 }
