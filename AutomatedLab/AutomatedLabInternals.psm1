@@ -1618,6 +1618,8 @@ function Get-LabInternetFile
 
         [switch]$Force
     )
+    
+    Write-LogFunctionEntry
 
     if ((Test-Path -Path $Path) -and -not $Force)
     {
@@ -1629,15 +1631,52 @@ function Get-LabInternetFile
     {
         Remove-Item -Path $Path -Force
     }
+    
+    $internalUri = New-Object System.Uri($Uri)
+    $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
 
     try
     {
-        $result = Invoke-WebRequest -Uri $Uri -OutFile $Path -PassThru
+        $start = Get-Date
+        
+        #Determine length of the file to download
+        $webclient = New-Object System.Net.WebClient
+        $webclient.OpenRead($internalUri) | Out-Null
+        $fileLength = $webclient.ResponseHeaders['Content-Length']
+        Write-Verbose ("File Size of '{0}' is {1:N2}MB" -f $fileName, $fileLength)
+        $webclient.Dispose()
+        
+        Write-Verbose 'Starting download'
+        $job = Start-Job -Name "File Download" -ScriptBlock {
+            $webclient = New-Object System.Net.WebClient
+            $webclient.DownloadFile($args[0], $args[1])
+            $webclient.Dispose()
+        } -ArgumentList $internalUri, $Path
+        
+        Start-Sleep -Milliseconds 500 #to allow the WebClient create the file
+        
+        Write-Verbose 'Entering wait loop'
+        do
+        {
+            $currentLength = (Get-Item -Path $Path).Length
+            $percentageCompleted = $currentLength / $fileLength
+            Write-Progress -Activity "Downloading file '$fileName'" `
+            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($currentLength / 1MB), ($fileLength / 1MB)) `
+            -PercentComplete ($percentageCompleted * 100)
+            
+            Start-Sleep -Milliseconds 200
+        } while ((Get-Item -Path $Path).Length -lt $fileLength)
+        Write-Verbose 'Wait loop finished'
+        
+        $result = $job | Receive-Job
+        
+        $end = Get-Date
+        Write-Verbose "Web Client Sync: $($end - $start)"
 
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            Length = $result.RawContentLength
+            Length = $fileLength
         }
     }
     catch
