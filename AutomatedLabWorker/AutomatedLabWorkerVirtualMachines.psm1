@@ -267,7 +267,7 @@ function New-LWHypervVM
     $vm | Set-VMFirmware -EnableSecureBoot Off -SecureBootTemplate MicrosoftUEFICertificateAuthority
     
     #remove the unconnected default network adapter
-    $vm | Remove-VMNetworkAdapter -Name 'Network Adapter'
+    $vm | Remove-VMNetworkAdapter
     foreach ($adapter in $adapters)
     {
         #external switches will be connected after the domain join and after the network order is configures correctly
