@@ -13,7 +13,10 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }
 
-Add-LabMachineDefinition -Name DC1 -Roles RootDC
+$netAdapter = @()
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Lab1
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+Add-LabMachineDefinition -Name DC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
 
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
 Add-LabMachineDefinition -Name SQL1 -Roles SQLServer2014 -PostInstallationActivity $postInstallActivity
