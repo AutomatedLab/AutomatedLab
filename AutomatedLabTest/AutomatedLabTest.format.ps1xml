@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
   <ViewDefinitions>
-    
+
     <View>
       <Name>AutomatedLab.TestResult</Name>
       <ViewSelectedBy>
@@ -19,7 +19,10 @@
           <TableColumnHeader>
             <Label>ErrorCount</Label>
           </TableColumnHeader>
-		  <TableColumnHeader>
+          <TableColumnHeader>
+            <Label>RemoveErrorCount</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
             <Label>Output</Label>
           </TableColumnHeader>
         </TableHeaders>
@@ -29,11 +32,14 @@
               <TableColumnItem>
                 <PropertyName>ScriptName</PropertyName>
               </TableColumnItem>
-			  <TableColumnItem>
+              <TableColumnItem>
                 <PropertyName>Completed</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ErrorCount</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <ScriptBlock>$_.RemoveErrors.Count</ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>Output</PropertyName>
