@@ -1493,6 +1493,31 @@ function Get-StringSection
 }
 #endregion Get-StringSection
 
+#region Add-StringIncrement
+function Add-StringIncrement
+{
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$String
+    )
+    
+    $testNumberPattern = '^(?<text>.*?) (?<number>\d+)$'
+    
+    $result = $String -match $testNumberPattern
+    
+    if ($Matches.Number)
+    {
+        $String = $String.Substring(0, $String.Length - $Matches.Number.Length) + ([int]$Matches.Number + 1)
+    }
+    else
+    {
+        $String = $String + ' 0'
+    }
+    
+    $String
+}
+#endregion Add-StringIncrement
+
 #region Get-FullMesh
 $meshType = @"
     using System;

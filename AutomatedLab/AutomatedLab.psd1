@@ -177,6 +177,7 @@
         'Get-LabVirtualNetwork',
         'Set-LabGlobalInstallationCredential',
         'Get-StringSection',
+		'Add-StringIncrement',
         'Get-LabInternetFile',
         'Get-FullMesh',
         'Get-NextOid',
