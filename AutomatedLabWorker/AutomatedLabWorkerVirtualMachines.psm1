@@ -1157,6 +1157,9 @@ function Mount-LWIsoImage
             Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
+        #this is required as Compare-Object cannot work with a null object
+        if (-not $dvdDrivesBefore) { $dvdDrivesBefore = @() }
+
         while ((-not $done) -and ($delayIndex -le $delayBeforeCheck.Length))
         {
             try
