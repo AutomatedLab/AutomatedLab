@@ -62,8 +62,11 @@ function New-LWHypervVM
         #move the adapter that connects the machine to the domain to the top
         $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
+        #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
+        #the network ordering
         $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) }
+        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
+        Select-Object -First 1
         
         $adapters.Remove($domainAdapter)
         $adapters.Insert(0, $domainAdapter)
@@ -1246,29 +1249,50 @@ function Repair-LWHypervNetworkConfig
 
         Write-Verbose "Renaming network adapters"
         #rename the adapters as defined in the lab
+        
+        $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
             $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
             $filter = 'MACAddress = "{0}"' -f $mac
             Write-Verbose "Looking for network adapter with using filter '$filter'"
             $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
+
+            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.Name
+            while ($newName -in $newNames)
+            {
+                $newName = Add-StringIncrement -String $newName
+            }
+            $newNames += $newName
+            $adapterInfo.VirtualSwitch.Name = $newName
     
             Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$($adapterInfo.VirtualSwitch)'"
-            $adapter.NetConnectionID = $adapterInfo.VirtualSwitch.Name
+            $adapter.NetConnectionID = $newName
             $adapter.Put()
         }
 
-        Write-Verbose "Setting the network order"
-        [array]::Reverse($machine.NetworkAdapters)
-        foreach ($adapterInfo in $machine.NetworkAdapters)
+        $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
+        $i = 0
+
+        #There is no need to change the network binding order in Windows 10 or 2016
+        #Adjusting the Network Protocol Bindings in Windows 10 https://blogs.technet.microsoft.com/networking/2015/08/14/adjusting-the-network-protocol-bindings-in-windows-10/
+        if ([System.Environment]::OSVersion.Version.Major -lt 10)
         {
-            Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
-            do {
-                nvspbind.exe /+ $adapterInfo.VirtualSwitch.Name ms_tcpip 
-            }  until ($LASTEXITCODE -eq 14)
+            Write-Verbose "Setting the network order"
+            [array]::Reverse($machine.NetworkAdapters)
+            foreach ($adapterInfo in $machine.NetworkAdapters)
+            {
+                Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
+                do {
+                    nvspbind.exe /+ $adapterInfo.VirtualSwitch.Name ms_tcpip | Out-File -FilePath c:\nvspbind.log -Append
+                    $i++
+
+                    if ($i -gt $retries) { return }
+                }  until ($LASTEXITCODE -eq 14)
+            }
         }
     
-    } -Function (Get-Command -Name Get-StringSection) -Variable (Get-Variable -Name machineStream)
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream)
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
