@@ -1270,7 +1270,9 @@ function Mount-LabIsoImage
         [Parameter(Mandatory, Position = 1)]
         [string]$IsoPath,
 
-        [switch]$SupressOutput
+        [switch]$SupressOutput,
+        
+        [switch]$PassThru
     )
 
     Write-LogFunctionEntry
@@ -1290,7 +1292,7 @@ function Mount-LabIsoImage
             Write-ScreenInfo -Message "Mounting ISO image '$IsoPath' to computer '$machine'" -Type Info -NoNewLine
         }
         
-        Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath
+        Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
     }
 
     Write-LogFunctionExit

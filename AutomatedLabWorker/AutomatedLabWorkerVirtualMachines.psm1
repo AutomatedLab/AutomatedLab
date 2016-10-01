@@ -1138,7 +1138,9 @@ function Mount-LWIsoImage
         [string[]]$ComputerName,
 
         [Parameter(Mandatory, Position = 1)]
-        [string]$IsoPath
+        [string]$IsoPath,
+
+        [switch]$PassThru
     )
 
     $machines = Get-LabMachine -ComputerName $ComputerName
@@ -1150,21 +1152,18 @@ function Mount-LWIsoImage
         $done = $false
         $delayBeforeCheck = 5, 10, 15, 30, 45, 60
         $delayIndex = 0
+
+        $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5' | Select-Object -ExpandProperty DeviceID
+        } -PassThru -NoDisplay
+
         while ((-not $done) -and ($delayIndex -le $delayBeforeCheck.Length))
         {
-            if ($machine.OperatingSystem.Version -ge [system.version]'6.2')
-            {
-                Get-VMDvdDrive -VMName $machine | foreach `
-                {
-                    Remove-VMDvdDrive -VMName $machine -ControllerNumber $_.ControllerNumber -ControllerLocation $_.ControllerLocation
-                }
-            }
-                
             try
             {
-                if ($machine.OperatingSystem.Version -ge [system.version]'6.2')
+                if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop
+                    $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 else
                 {
@@ -1174,9 +1173,10 @@ function Mount-LWIsoImage
                     }
                     Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop
                 }
+                
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
                     
-                if ((Get-VMDvdDrive -VMName $machine).Path -eq $IsoPath)
+                if ((Get-VMDvdDrive -VMName $machine).Path -contains $IsoPath)
                 {
                     $done = $true
                 }
@@ -1192,6 +1192,16 @@ function Mount-LWIsoImage
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
             }
         }
+        
+        $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5' | Select-Object -ExpandProperty DeviceID
+        } -PassThru -NoDisplay
+
+        $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
+        $drive | Add-Member -Name DriveLetter -MemberType NoteProperty -Value $driveLetter
+
+        if ($PassThru) { $drive }
+
         if (-not $done)
         {
             throw "Could not add DVD drive '$IsoPath' to machine '$machine' after repeated attempts."
