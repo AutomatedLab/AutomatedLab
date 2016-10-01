@@ -218,6 +218,15 @@ namespace AutomatedLab
                     case "Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE":
                         return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
 
+                    case "Windows Server 2016 SERVERSTANDARDCORE":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERSTANDARD":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server 2016 SERVERDATACENTER":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
                     default:
                         return string.Empty;
                 }
