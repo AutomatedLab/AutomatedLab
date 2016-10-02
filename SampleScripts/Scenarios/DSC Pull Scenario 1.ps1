@@ -1,3 +1,15 @@
+<#
+This scenario demos a DSC pull server. The lab must have an internet connection in order to download additional required bits. PowerShell 5.0
+or greater is required on all DSC pull servers or clients. Please take a look at introduction script '10 ISO Offline Patching.ps1' if you
+want to create a Windows Server 2012 base image with PowerShell 5.
+
+First a domain controller is setup. Then AutomatedLab (AL) configures the routing, a web server and the CA. This scenario demos
+a DSC pull server that is encrypting the network communication using SSL. For this AL creates a new certificate template
+(DSC Pull Server SSL. The DSC pull server requests a certificate using this template and configures DSC accordingly.
+
+AL also creates a default DSC configuration that creates a test file on each DSC client. The name of the file is TestFile_<PullServer>.
+The pull server the configuration is coming from is part of the file name as a client can have multiple pull servers (partial configuraion).
+#>
 $labName = 'DSCLab1'
 
 #--------------------------------------------------------------------------------------------------------------------
