@@ -37,6 +37,18 @@ function Install-LabDscPullServer
     Where-Object { $_.TcpTestSucceeded } |
     ForEach-Object { $_.NetAdapter.SystemName }
     
+    $wrongPsVersion = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        $PSVersionTable | Add-Member -Name ComputerName -MemberType NoteProperty -Value $env:COMPUTERNAME -PassThru -Force
+    } -PassThru |
+    Where-Object { $_.PSVersion.Major -lt 5 } |
+    Select-Object -ExpandProperty ComputerName
+    
+    if ($wrongPsVersion)
+    {
+        Write-Error "The following machines have an unsupported PowerShell version. At least PowerShell 5.0 is required. $($wrongPsVersion -join ', ')"
+        return
+    }
+    
     $machinesOffline = (Compare-Object -ReferenceObject $machines.FQDN -DifferenceObject $machinesOnline).InputObject
     
     if ($machinesOffline)
