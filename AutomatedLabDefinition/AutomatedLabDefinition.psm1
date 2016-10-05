@@ -1642,7 +1642,8 @@ function Add-LabMachineDefinition
                 'Windows Server 2012 R2 SERVERDATACENTER', 'Windows Server 2012 R2 SERVERDATACENTERCORE', 'Windows Server 2012 R2 SERVERSTANDARD', 'Windows Server 2012 R2 SERVERSTANDARDCORE',
                 'Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 4 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTER',
                 'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
-                'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE'
+                'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
+                'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO'
                 
         )]
         [Alias('OS')]

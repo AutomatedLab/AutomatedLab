@@ -198,7 +198,10 @@ function New-LWHypervVM
 
     Set-WindowsFirewallState -State $Machine.EnableWindowsFirewall
 
-    if ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC')
+    if ($Machine.Roles.Name -contains 'RootDC' -or 
+        $Machine.Roles.Name -contains 'FirstChildDC' -or 
+        $Machine.Roles.Name -contains 'DC' -or 
+        $Machine.OperatingSystem.Installation -eq 'Nano Server')
     {
         #machine will not be added to domain or workgroup
     }
@@ -314,10 +317,65 @@ function New-LWHypervVM
     }
 	
     Write-Verbose "`tDisk mounted to drive $VhdVolume"
+
+    #Get-PSDrive needs to be called to update the PowerShell drive list
+    Get-PSDrive | Out-Null
 	
     $unattendXmlContent = Get-UnattendedContent
     $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
     Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
+    
+    if ($Machine.OperatingSystem.Installation -eq 'Nano Server')
+    {
+        $cmd = New-Object System.Text.StringBuilder
+        $cmd.AppendLine('cd c:\')
+        foreach ($adapter in $Machine.NetworkAdapters)
+        {
+            # Defining these as variables in case at some point need to allow them to be overridden.
+            $interfaceAlias = 'Ethernet'
+            $addressFamiyly = 'IPv4'
+            
+            If ($adapter.Ipv4Address.Count)
+            {
+                $mac = (Get-StringSection -String $adapter.MacAddress -SectionSize 2) -join '-'                
+                $cmd.AppendLine(('for /f "tokens=*" %%a in (''powershell -noprofile -command "Get-NetAdapter | where-object MacAddress -eq {0} | Select-object -ExpandProperty Name -f 1"'') do (set adapterName=%%a)' -f $mac)) | Out-Null
+                $cmd.AppendLine("ECHO Adapter Name is '%adapterName%'")
+                
+                if ($adapter.Ipv4Gateway.Count)
+                {
+                    $cmd.AppendLine(('netsh interface ip set address "%adapterName%" static addr={0} mask={1} gateway={2}' -f $adapter.Ipv4Address[0].IpAddress, $adapter.Ipv4Address[0].Netmask, $adapter.Ipv4Gateway[0].IpAddress)) | Out-Null
+                }
+                else
+                {
+                    $cmd.AppendLine(('netsh interface ip set address "%adapterName%" static addr={0} mask={1}' -f $adapter.Ipv4Address[0].IpAddress, $adapter.Ipv4Address[0].Netmask)) | Out-Null
+                }
+                
+            }
+            
+            if ($adapter.Ipv4DnsServers.Count)
+            {
+                $index = 1
+                foreach ($dnsSever in $adapter.Ipv4DnsServers)
+                {
+                    if ($dnsSever -eq '0.0.0.0') { continue }
+                    
+                    if ($index -eq 1)
+                    {
+                        $cmd.AppendLine(('netsh interface ip set dns "%adapterName%" static addr={0}' -f $dnsSever.IpAddress)) | Out-Null
+                    }
+                    else
+                    {
+                        $cmd.AppendLine(('netsh interface ip set dns "%adapterName%" static addr={0} index={1}' -f $dnsSever.IpAddress, $index)) | Out-Null
+                    }
+                    $index++
+                }
+            }
+        }
+        
+        New-Item "$VhdVolume\Windows\Setup\Scripts" -ItemType Directory | Out-Null
+        Set-Content -Path "$VhdVolume\Windows\Setup\Scripts\SetupComplete.cmd" -Value $cmd.ToString()
+        Set-Content -Path "$VhdVolume\net.cmd" -Value $cmd.ToString()
+    }
 	
     #copy AL tools to lab machine and optionally the tools folder
     $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
@@ -347,8 +405,6 @@ function New-LWHypervVM
         Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
         Write-Verbose '...done'
     }
-    
-    Get-PSDrive -Name $VhdVolume[0] | Remove-PSDrive
 	
     $enableWSManRegDump = @'
 Windows Registry Editor Version 5.00
@@ -735,7 +791,7 @@ function Start-LWHypervVM
         
         [switch]$NoNewLine
     )
-    
+        
     if ($PreDelay) {
         $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
@@ -743,22 +799,24 @@ function Start-LWHypervVM
 	
     foreach ($Name in $ComputerName)
     {
+        $machine = Get-LabMachine -ComputerName $Name
+        $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
+            
         try
         {
-            $machine = Get-LabMachine -ComputerName $Name
-            $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
             Start-VM -Name $Name -ErrorAction Stop
 
-            if ($Machine.NetworkAdapters.Count -gt 1 -and $machineMetadata.InitState -lt 5)
+            if ($machine.NetworkAdapters.Count -gt 1 -and $machineMetadata.InitState -lt 5)
             {            
                 Repair-LWHypervNetworkConfig -ComputerName $Name
                 $machineMetadata.InitState = 5
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
-            }
+            }            
         }
         catch
         {
-            Throw "Could not start Hyper-V machine '$ComputerName'"
+            $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName'", $_)
+            throw $ex
         }
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
         {
@@ -771,6 +829,17 @@ function Start-LWHypervVM
     {
         $job = Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay 
+    }
+    
+    $nanoServersToJoin = Get-LabMachine -ComputerName $ComputerName |
+    Where-Object { $_.IsDomainJoined -and -not $_.HasDomainJoined -and $_.OperatingSystem.Installation -eq 'Nano Server' }
+    
+    if ($nanoServersToJoin)
+    {
+        Wait-LabVM -ComputerName $nanoServersToJoin
+            
+        Join-LabVMDomain -Machine $nanoServersToJoin
+        Restart-LabVM -ComputerName $nanoServersToJoin -Wait
     }
 	
     Write-LogFunctionExit
@@ -1266,11 +1335,6 @@ function Repair-LWHypervNetworkConfig
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
-            $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
-            $filter = 'MACAddress = "{0}"' -f $mac
-            Write-Verbose "Looking for network adapter with using filter '$filter'"
-            $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
-
             $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.Name
             while ($newName -in $newNames)
             {
@@ -1278,19 +1342,33 @@ function Repair-LWHypervNetworkConfig
             }
             $newNames += $newName
             $adapterInfo.VirtualSwitch.Name = $newName
+                
+            if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
+            {
+                $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
+                $filter = 'MACAddress = "{0}"' -f $mac
+                Write-Verbose "Looking for network adapter with using filter '$filter'"
+                $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
     
-            Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$($adapterInfo.VirtualSwitch)'"
-            $adapter.NetConnectionID = $newName
-            $adapter.Put()
+                Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
+                $adapter.NetConnectionID = $newName
+                $adapter.Put()
+            }
+            else
+            {
+                $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join '-'
+                Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
+                Get-NetAdapter | Where-Object MacAddress -eq $mac | Rename-NetAdapter -NewName $newName
+            }
         }
-
-        $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
-        $i = 0
 
         #There is no need to change the network binding order in Windows 10 or 2016
         #Adjusting the Network Protocol Bindings in Windows 10 https://blogs.technet.microsoft.com/networking/2015/08/14/adjusting-the-network-protocol-bindings-in-windows-10/
         if ([System.Environment]::OSVersion.Version.Major -lt 10)
         {
+            $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
+            $i = 0
+            
             Write-Verbose "Setting the network order"
             [array]::Reverse($machine.NetworkAdapters)
             foreach ($adapterInfo in $machine.NetworkAdapters)

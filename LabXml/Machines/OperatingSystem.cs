@@ -227,6 +227,11 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
+                    case "Windows Server 2016 SERVERSTANDARDNANO":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERDATACENTERNANO":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
                     default:
                         return string.Empty;
                 }
