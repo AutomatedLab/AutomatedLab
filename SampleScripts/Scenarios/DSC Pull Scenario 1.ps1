@@ -37,7 +37,6 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
-    'Add-LabMachineDefinition:IsDomainJoined' = $true
     'Add-LabMachineDefinition:Memory' = 1GB
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }

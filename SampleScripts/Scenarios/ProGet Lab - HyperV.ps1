@@ -30,7 +30,6 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DnsServer1' = '192.168.110.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.110.11'
     'Add-LabMachineDefinition:Gateway' = '192.168.110.50'
-    'Add-LabMachineDefinition:IsDomainJoined' = $true
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }
 
