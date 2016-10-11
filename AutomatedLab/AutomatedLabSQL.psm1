@@ -73,8 +73,6 @@ GO
         }
         Write-ScreenInfo -Type Verbose -Message "Finished configuring Azure SQL Servers '$($azureMachines -join ', ')'"
     }
-	
-	
     
     $hypervMachines = @($machines | Where-Object HostType -eq HyperV)
     if ($hypervMachines)
@@ -114,7 +112,7 @@ GO
             
             $installBatch++
             
-            $machinesBatch = $($hypervMachines[$machineIndex..($machineIndex+$parallelInstalls-1)])
+            $machinesBatch = $($hypervMachines[$machineIndex..($machineIndex + $parallelInstalls - 1)])
             
             Write-ScreenInfo -Message "Starting machines '$($machinesBatch -join ', ')'"
             Start-LabVM -ComputerName $machinesBatch
@@ -135,14 +133,27 @@ GO
             {
                 
                 $role = $machine.Roles | Where-Object Name -like SQLServer*
+                
+                #Dismounting ISO images to have just one drive later
+                Dismount-LabIsoImage -ComputerName $machine -SupressOutput
+                                
                 Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput
                 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
                 
-                Invoke-Ternary {$role.Properties.ContainsKey('Features')}              { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" }          { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
-                Invoke-Ternary {$role.Properties.ContainsKey('InstanceName')}          { $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)" }                   { $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER' }
+                ?? { $role.Properties.ContainsKey('Features') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
                 
-                if (Invoke-LabCommand -ComputerName $machine -PassThru -NoDisplay -Verbose:$false -ScriptBlock {param ($InstanceName); Get-Service -DisplayName "SQL Server ($instanceName)" -ErrorAction SilentlyContinue} -ArgumentList $instanceName)
+                ?? { $role.Properties.ContainsKey('InstanceName') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)" } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER' }
+                
+                $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                    Get-Service -DisplayName "SQL Server ($instanceName)" -ErrorAction SilentlyContinue
+                } -Variable (Get-Variable -Name instanceName) -PassThru -NoDisplay
+                
+                if ($result)
                 {
                     Write-ScreenInfo -Message "Machine '$machine' already has SQL Server installed with requested instance name '$instanceName'" -Type Warning
                     continue
@@ -163,22 +174,7 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')}   { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" +   "$($role.Properties.SQLSysAdminAccounts)") }   { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
                 Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'}      { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') }                                         { }
                 
-                $param = @{}
-                $param.Add('ComputerName', $machine)
-                $param.Add('UseCredSSP', $true)
-                $param.Add('ActivityName', 'Install SQL Server')
-                $param.Add('AsJob', $True)
-                $param.Add('PassThru', $True)
-                $param.Add('NoDisplay', $True)
-                $param.Add('ArgumentList', $global:setupArguments)
-                    
-                $ScriptBlock = `
-                {
-                    param
-                    (
-                        [string]$SetupArguments
-                    )
-                    
+                $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
 				    
                     $dvdDrive = ''
@@ -195,18 +191,18 @@ GO
                         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{f2d3ae3a-bfcc-45e2-bf63-178d1db34294}' -Value 4 -PropertyType 'DWORD'
                         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{45da5a8b-67b5-4896-86b7-a2e838aee035}' -Value 4 -PropertyType 'DWORD'
                         
-                        Set-Content -Path C:\InstallSQLServer.cmd -Value "$dvdDrive\Setup.exe$SetupArguments"
+                        Set-Content -Path C:\InstallSQLServer.cmd -Value "$dvdDrive\Setup.exe$setupArguments"
                         schtasks.exe /Create /SC ONLOGON /TN InstallSQLServer /TR "cmd /c c:\InstallSQLServer.cmd"
                         schtasks.exe /Run /I /TN "InstallSQLServer"
                         
                         #Wait until installation starts
-                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object {$_ -like '*InstallSQLServer*' -and $_ -notlike '*Running*'})
+                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object { $_ -like '*InstallSQLServer*' -and $_ -notlike '*Running*' })
                         {
                             Start-Sleep -Seconds 1
                         }
                         
                         #Wait until installation finishes
-                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object {$_ -like '*InstallSQLServer*' -and $_ -like '*Running*'})
+                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object { $_ -like '*InstallSQLServer*' -and $_ -like '*Running*' })
                         {
                             Start-Sleep -Seconds 5
                         }
@@ -221,13 +217,22 @@ GO
                         Write-Verbose 'SQL Installation finished. Restarting machine.'
                         
                         Restart-Computer -Force
-				    }
+                    }
                     else
                     {
                         Write-Error -Message 'Setup.exe in ISO file could not be found (or ISO was not successfully mounted)'
                     }
                 }
-                $param.Add('Scriptblock', $ScriptBlock)
+                
+                $param = @{}
+                $param.Add('ComputerName', $machine)
+                $param.Add('UseCredSSP', $true)
+                $param.Add('ActivityName', 'Install SQL Server')
+                $param.Add('AsJob', $True)
+                $param.Add('PassThru', $True)
+                $param.Add('NoDisplay', $True)
+                $param.Add('Scriptblock', $scriptBlock)
+                $param.Add('Variable', (Get-Variable -Name setupArguments))
                 
                 $jobs += Invoke-LabCommand @param
                 
@@ -237,7 +242,7 @@ GO
             if ($jobs)
             {
                 Write-ScreenInfo -Type Verbose -Message "Waiting $InstallationTimeout minutes until the installation is finished"
-	            Write-ScreenInfo -Message "Waiting for installation of SQL server to complete on machines '$($machinesBatch -join ', ')'" -NoNewline
+                Write-ScreenInfo -Message "Waiting for installation of SQL server to complete on machines '$($machinesBatch -join ', ')'" -NoNewline
                 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
@@ -250,7 +255,10 @@ GO
                     
                     Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
                     
-                    $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
+                    $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014 |
+                    Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
+                    Select-Object -First 2
+                    
                     while ($startTime.AddMinutes(5) -gt (Get-Date) -and $machinesToPrepare)
                     {
                         Write-Verbose -Message "Starting machines '$($machinesToPrepare -join ', ')'"
@@ -289,7 +297,7 @@ GO
         until ($machineIndex -ge $hypervMachines.Count)
 	    
         $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014
-        $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' }
+        $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
         {
             Start-LabVM -ComputerName $machinesToPrepare -Wait
@@ -301,7 +309,7 @@ GO
         
         if ($CreateCheckPoints)
         {
-            Checkpoint-LabVM -ComputerName $machines.Name -SnapshotName 'Post SQL Server Installation'
+            Checkpoint-LabVM -ComputerName $machines -SnapshotName 'Post SQL Server Installation'
         }
     }
 	
