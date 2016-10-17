@@ -2,8 +2,8 @@
 AutomatedLab (AL) enables you to setup test and lab environments with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images (with product keys) and a Hyper-V host machine.
 
 ### [Version History](https://github.com/AutomatedLab/AutomatedLab/wiki/Version-History)
-### [Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/Installation)
-### [Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/Getting-Started)
+### [Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
+### [Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
 
 ### Supported products
 This solution supports setting up virtual machines with the following products
