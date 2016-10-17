@@ -1,13 +1,13 @@
 ## Summary
 AutomatedLab (AL) enables you to setup test and lab environments with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images (with product keys) and a Hyper-V host machine.
 
+### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
+### [2. Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
 ### [Version History](https://github.com/AutomatedLab/AutomatedLab/wiki/Version-History)
-### [Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
-### [Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
 
 ### Supported products
 This solution supports setting up virtual machines with the following products
-* Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016 TP5
+* Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016
 * SQL Server 2008, 2008R2, 2012, 2014
 * Visual Studio 2012, 2013, 2015
 * Exchange 2013, Exchange 2016 (in preview)
