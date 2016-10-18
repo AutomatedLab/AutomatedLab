@@ -307,7 +307,7 @@
 
                 <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
-                <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration)' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
+                <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="uninstall"/>
