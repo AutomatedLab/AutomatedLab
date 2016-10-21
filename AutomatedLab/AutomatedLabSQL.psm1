@@ -146,8 +146,14 @@ GO
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
                 
                 ?? { $role.Properties.ContainsKey('InstanceName') } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)" } `
-                { $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER' }
+                { 
+                    $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)"
+                    $script:instanceName = $role.Properties.InstanceName
+                } `
+                { 
+                    $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER' 
+                    $script:instanceName = 'MSSQLSERVER'
+                }
                 
                 $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
                     Get-Service -DisplayName "SQL Server ($instanceName)" -ErrorAction SilentlyContinue
