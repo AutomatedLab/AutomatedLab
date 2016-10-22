@@ -824,7 +824,7 @@ function Start-LWHypervVM
         }
         catch
         {
-            $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName'", $_.Exception)
+            $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName': $($_.Exception.Message)", $_.Exception)
             throw $ex
         }
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
