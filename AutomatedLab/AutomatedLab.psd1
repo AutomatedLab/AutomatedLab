@@ -156,6 +156,7 @@
         'Write-ScreenInfo',
         'Enable-LabCertificateAutoenrollment',
         'New-LabCATemplate',
+        'Test-LabCATemplate',
         'Add-LabVMUserRight',
         'Save-Hashes',
         'Test-FileList',
