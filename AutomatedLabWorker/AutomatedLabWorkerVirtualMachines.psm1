@@ -824,7 +824,7 @@ function Start-LWHypervVM
         }
         catch
         {
-            $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName'", $_)
+            $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName'", $_.Exception)
             throw $ex
         }
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
@@ -878,7 +878,7 @@ function Stop-LWHypervVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f }
+        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f; $LastExitCode }
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
         $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
         if ($failedJobs)
