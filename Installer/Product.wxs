@@ -164,6 +164,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVirtualMachines.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVMWare.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabRouting.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADFS.psm1" />
 
                 <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
 
