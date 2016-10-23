@@ -129,6 +129,8 @@
     <Compile Include="Validator\Machines\NoMachinesDefined.cs" />
     <Compile Include="Validator\Office\OfficeIsosExist.cs" />
     <Compile Include="Validator\Orchestrator\OrchestratorIsosExist.cs" />
+    <Compile Include="Validator\Roles\UnknownRoleProperties.cs" />
+    <Compile Include="Validator\Roles\MandatoryRoleProperties.cs" />
     <Compile Include="Validator\Roles\EmptyRoleProperties.cs" />
     <Compile Include="Validator\Routing\RoutingRoleNotSupportedOnAzure.cs" />
     <Compile Include="Validator\Routing\RoutingMachineHasAtLeastTwoNetworkCards.cs" />
