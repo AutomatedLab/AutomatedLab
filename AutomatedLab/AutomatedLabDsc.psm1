@@ -49,9 +49,14 @@ function Install-LabDscPullServer
         return
     }
     
-    $machinesOffline = (Compare-Object -ReferenceObject $machines.FQDN -DifferenceObject $machinesOnline).InputObject
+    #if there are machines online, get the ones that are offline
+    if ($machinesOnline)
+    {
+        $machinesOffline = (Compare-Object -ReferenceObject $machines.FQDN -DifferenceObject $machinesOnline).InputObject
+    }
     
-    if ($machinesOffline)
+    #if there are machines offline or all machines are offline
+    if ($machinesOffline -or -not $machinesOnline)
     {
         Write-Error "The machines $($machinesOffline -join ', ') are not connected to the internet. Internet connectivity is required to install DSC. Check the configuration on the machines and the machine with the Routing role."
         return
