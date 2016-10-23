@@ -20,7 +20,9 @@ namespace AutomatedLab
         {
             foreach (var domain in lab.Domains)
             {
-                var machinesInDomain = lab.Machines.Where(machine => machine.DomainName.ToLower() == domain.Name.ToLower());
+                var machinesInDomain = lab.Machines
+                    .Where(m => !string.IsNullOrEmpty(m.DomainName))
+                    .Where(machine => machine.DomainName.ToLower() == domain.Name.ToLower());
                 var dcs = machinesInDomain.Where(machine => machine.Roles.Where(role =>
                 role.Name == Roles.RootDC ||
                 role.Name == Roles.FirstChildDC).Count() > 0);
@@ -34,7 +36,7 @@ namespace AutomatedLab
                         TargetObject = domain.Name
                     };
                 }
-                
+
             }
         }
     }
