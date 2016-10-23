@@ -8,7 +8,7 @@ function Install-LabRouting
 	
     Write-LogFunctionEntry
 
-	Write-ScreenInfo -Message 'Configuring Routing role...'
+    Write-ScreenInfo -Message 'Configuring Routing role...'
 	
     $roleName = [AutomatedLab.Roles]::Routing
 	
@@ -102,6 +102,10 @@ function Install-LabRouting
     Write-ScreenInfo -Message 'Waiting for configuration of routing to complete' -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+
+    #to make sure the routing service works, restart the routers
+    Write-Verbose "Restarting machines '$($machines -join ', ')'"
+    Restart-LabVM -ComputerName $machines -Wait
     
     Write-LogFunctionExit
 }
