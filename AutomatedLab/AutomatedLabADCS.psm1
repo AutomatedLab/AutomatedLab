@@ -1172,6 +1172,21 @@ function Publish-CATemplate
     Write-Verbose "Successfully published template '$TemplateName'"
 }
 
+function Test-CATemplate
+{
+    [cmdletBinding()]
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$TemplateName
+    )
+    
+    $tempates = certutil.exe -Template | Select-String -Pattern TemplatePropCommonName
+
+    $template = $tempates -like "*$TemplateName"
+
+    return [bool]$template
+}
+
 function Add-CATemplateStandardPermission
 {
     [cmdletBinding()]
@@ -1578,13 +1593,13 @@ function New-LabCATemplate
         [string[]]$SamAccountName,
         
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [string]$ComputerName
     )
 
     Write-LogFunctionEntry
     
     $computer = Get-LabMachine -ComputerName $ComputerName
-    if (-not $ComputerName)
+    if (-not $computer)
     {
         Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
         return
@@ -1623,6 +1638,46 @@ function New-LabCATemplate
 }
 #endregion New-LabCATemplate
 
+#region Test-LabCATemplate
+function Test-LabCATemplate
+{
+    [cmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$TemplateName,
+        
+        [Parameter(Mandatory)]
+        [string]$ComputerName
+    )
+
+    Write-LogFunctionEntry
+    
+    $computer = Get-LabMachine -ComputerName $ComputerName
+    if (-not $computer)
+    {
+        Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
+        return
+    }
+    
+    if ((Get-LabIssuingCA) -notcontains $computer)
+    {
+        Write-Error "The given computer '$ComputerName' could is not a CA. This command needs to run on a CA." -TargetObject $ComputerName
+        return
+    }
+    
+    $variables = Get-Variable -Name PSBoundParameters
+    $functions = Get-Command -Name Test-CATemplate, Sync-Parameter
+
+    Invoke-LabCommand -ActivityName "Testing template $TemplateName" -ComputerName $ComputerName -ScriptBlock {
+
+        $p = Sync-Parameter -Command (Get-Command -Name Test-CATemplate) -Parameters $ALBoundParameters
+        Test-CATemplate @p
+
+    } -UseCredSsp -Function $functions -Variable $variables -PassThru
+}
+#endregion New-LabCATemplate
+
+
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
@@ -1649,6 +1704,13 @@ function Get-LabIssuingCA
             $env:COMPUTERNAME
         }
     } -PassThru -UseCredSsp -NoDisplay
+    
+    if (-not $issuingCAs)
+    {
+        Write-Error "There was no issuing CA found"
+        return
+    }
+
     Get-LabMachine -ComputerName $issuingCAs
 }
 #endregion Get-LabIssuingCA
@@ -3439,7 +3501,7 @@ function Enable-LabCertificateAutoenrollment
             [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationStoreNames', 'MY')
         }
             
-        1..3 | ForEach-Object { gpupdate.exe /force;certutil.exe -pulse;Start-Sleep -Seconds 1 }
+        1..3 | ForEach-Object { gpupdate.exe /force; certutil.exe -pulse; Start-Sleep -Seconds 1 }
             
     } -ArgumentList $gpoType, $Computer, ($User -or $CodeSigning)
     Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay

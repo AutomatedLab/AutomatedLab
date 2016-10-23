@@ -1,5 +1,5 @@
-﻿#region Install-Routing
-function Install-Routing
+﻿#region Install-LabRouting
+function Install-LabRouting
 {
     [cmdletBinding()]
     param (
@@ -105,7 +105,7 @@ function Install-Routing
     
     Write-LogFunctionExit
 }
-#endregion Install-Routing
+#endregion Install-LabRouting
 
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder

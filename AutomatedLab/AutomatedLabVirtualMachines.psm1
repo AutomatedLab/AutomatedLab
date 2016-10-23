@@ -943,10 +943,14 @@ function Remove-LabVM
         {
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
-        if ((Get-LabVMStatus -ComputerName $machine) -eq 'Unknown')
-        {
-            Start-LabVM -ComputerName $machines -Wait
-        }
+       
+        <#
+                removed 161023, might not be required
+                if ((Get-LabVMStatus -ComputerName $machine) -eq 'Unknown')
+                {
+                Start-LabVM -ComputerName $machines -Wait
+        }#>
+        
         Get-PSSession | Where-Object {$_.ComputerName -eq $computerName} | Remove-PSSession
         
         Write-ScreenInfo -Message "Removing Lab VM '$($machine.Name)' (and its associated disks)"
