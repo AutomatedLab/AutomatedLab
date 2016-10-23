@@ -1704,6 +1704,13 @@ function Get-LabIssuingCA
             $env:COMPUTERNAME
         }
     } -PassThru -UseCredSsp -NoDisplay
+    
+    if (-not $issuingCAs)
+    {
+        Write-Error "There was no issuing CA found"
+        return
+    }
+
     Get-LabMachine -ComputerName $issuingCAs
 }
 #endregion Get-LabIssuingCA
@@ -3494,7 +3501,7 @@ function Enable-LabCertificateAutoenrollment
             [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationStoreNames', 'MY')
         }
             
-        1..3 | ForEach-Object { gpupdate.exe /force;certutil.exe -pulse;Start-Sleep -Seconds 1 }
+        1..3 | ForEach-Object { gpupdate.exe /force; certutil.exe -pulse; Start-Sleep -Seconds 1 }
             
     } -ArgumentList $gpoType, $Computer, ($User -or $CodeSigning)
     Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay
