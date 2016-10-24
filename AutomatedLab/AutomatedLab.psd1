@@ -110,6 +110,7 @@
         'Install-LabDscClient',
         'Install-LabRouting',
         'Install-LabAdfs',
+        'Install-LabAdfsProxy',
         'Set-LabInstallationCredential',
         'Show-LabInstallationTime',
         'Set-LabGlobalNamePrefix',
