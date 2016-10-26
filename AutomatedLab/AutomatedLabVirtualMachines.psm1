@@ -1514,23 +1514,33 @@ function Test-LabMachineInternetConnectivity
         [switch]$AsJob
     )
     
+    $cmd = {
+        $result = 1..5 | 
+        ForEach-Object { Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
+        Start-Sleep -Seconds 1 }
+            
+        #if two results are positive, return the first positive result, if all are negative, return the first negative result
+        if (($result.TcpTestSucceeded | Where-Object { $_ -eq $true }).Count -ge 2)
+        {
+            $result | Where-Object TcpTestSucceeded -eq $true | Select-Object -First 1
+        }
+        elseif (($result.TcpTestSucceeded | Where-Object { $_ -eq $false }).Count -eq 5)
+        {
+            $result | Where-Object TcpTestSucceeded -eq $false | Select-Object -First 1
+        }
+    }
+    
     if ($AsJob)
     {
-        $job = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
-        
-            Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
-            
-        } -PassThru -NoDisplay -AsJob
+        $job = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" `
+        -ScriptBlock $cmd -PassThru -NoDisplay -AsJob
     
         return $job
     }
     else
     {
-        $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" -ScriptBlock {
-        
-            Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
-            
-        } -PassThru -NoDisplay
+        $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" `
+        -ScriptBlock $cmd -PassThru -NoDisplay
     
         return $result.TcpTestSucceeded
     }
