@@ -74,9 +74,6 @@ function Install-LabDscPullServer
     
     New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
     -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
-
-    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
-    $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
         
     Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
         Install-WindowsFeature -Name DSC-Service
@@ -158,7 +155,7 @@ function Install-LabDscClient
     
     if ($All)
     {
-        $machines = Get-LabMachine | Where-Object { $_.Roles.Name -notin 'DC', 'RootDC', 'FirstChildDC' -and $_.Name -notin $pullServer.Name }
+        $machines = Get-LabMachine | Where-Object { $_.Roles.Name -notin 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer' }
     }
     else
     {
