@@ -42,7 +42,7 @@ Configuration PullClient
         {
             for ($i = 0; $i -lt $PullServer.Count; $i++)
             {
-                ConfigurationRepositoryWeb "PullServer$($i + 1)"
+                ConfigurationRepositoryWeb "PullServer_$($i + 1)"
                 {
                     ServerURL          = "https://$($PullServer[$i]):8080/PSDSCPullServer.svc"
                     RegistrationKey    = $RegistrationKey[$i]
@@ -53,7 +53,7 @@ Configuration PullClient
                 PartialConfiguration "TestConfigDPull$($i + 1)"
                 {
                     Description = "Partial configuration from Pull Server $($i + 1)"
-                    ConfigurationSource = "[ConfigurationRepositoryWeb]PullServer$($i + 1)"
+                    ConfigurationSource = "[ConfigurationRepositoryWeb]PullServer_$($i + 1)"
                     RefreshMode = 'Pull'
                 }
             }
