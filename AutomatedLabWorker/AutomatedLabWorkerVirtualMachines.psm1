@@ -276,7 +276,7 @@ function New-LWHypervVM
     }
     catch { }
     
-    if ($isUefi)
+    if ($isUefi -and $vm.Generation -ge 2)
     {
         $vm | Set-VMFirmware -EnableSecureBoot Off -SecureBootTemplate MicrosoftUEFICertificateAuthority
     }
