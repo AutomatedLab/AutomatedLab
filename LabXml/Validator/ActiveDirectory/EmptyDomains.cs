@@ -20,7 +20,7 @@ namespace AutomatedLab
         {
             var emptyDomains = lab.Domains
         .Select(domain => domain.Name.ToLower())
-        .Except(machines.Select(machine => machine.DomainName));
+        .Except(machines.Select(machine => machine.DomainName.ToLower()));
 
             foreach (var emptyDomain in emptyDomains)
             {
