@@ -1232,7 +1232,7 @@ function Mount-LWIsoImage
         $delayIndex = 0
 
         $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5' | Select-Object -ExpandProperty DeviceID
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         #this is required as Compare-Object cannot work with a null object
@@ -1252,7 +1252,7 @@ function Mount-LWIsoImage
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop
+                    $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
@@ -1275,7 +1275,7 @@ function Mount-LWIsoImage
         }
         
         $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5' | Select-Object -ExpandProperty DeviceID
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
