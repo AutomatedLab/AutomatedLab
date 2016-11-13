@@ -3,7 +3,7 @@
 	ModuleToProcess = 'AutomatedLabUnattended.psm1'
 
 	# Version number of this module.
-	ModuleVersion = '3.7.1'
+	ModuleVersion = '3.8.0.9'
 
 	# ID used to uniquely identify this module
 	GUID = 'b20c8df3-3f74-4537-a40b-b53186084dd5'

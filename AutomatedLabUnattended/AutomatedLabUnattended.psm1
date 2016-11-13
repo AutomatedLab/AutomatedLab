@@ -8,7 +8,6 @@ function Import-UnattendedFile
 	
 	$script:un = [xml](Get-Content -Path $Path)
 	$script:ns = @{ un = 'urn:schemas-microsoft-com:unattend' }
-	$script:nsEmpty = 'urn:schemas-microsoft-com:unattend'
 	$Script:wcmNamespaceUrl = 'http://schemas.microsoft.com/WMIConfig/2002/State'
 }
 #endregion Import-UnattendedFile
@@ -23,7 +22,6 @@ function Import-UnattendedContent
 	
 	$script:un = $Content
 	$script:ns = @{ un = 'urn:schemas-microsoft-com:unattend' }
-	$script:nsEmpty = 'urn:schemas-microsoft-com:unattend'
     $Script:wcmNamespaceUrl = 'http://schemas.microsoft.com/WMIConfig/2002/State'
 }
 #endregion Import-UnattendedContent
@@ -950,3 +948,32 @@ function Set-LocalIntranetSites
     $ieNode.LocalIntranetSites = $Values -join ';'
 }
 #endregion Set-LocalIntranetSites
+
+#region Set-UnattendedWindowsDefender
+function Set-UnattendedWindowsDefender
+{
+    param (
+        [Parameter(Mandatory = $true)]
+        [bool]$Enabled
+    )
+	
+    if (-not $script:un)
+    {
+        Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
+        return
+    }
+	
+    $node = $script:un |
+    Select-Xml -XPath '//un:settings[@pass = "specialize"]/un:component[@name = "Security-Malware-Windows-Defender"]' -Namespace $ns |
+    Select-Object -ExpandProperty Node
+	
+    if ($Enabled)
+    {
+        $node.DisableAntiSpyware = 'true'
+    }
+    else
+    {
+        $node.DisableAntiSpyware = 'false'
+    }
+}
+#endregion Set-UnattendedWindowsDefender

@@ -170,6 +170,12 @@ function New-LWHypervVM
         Set-UnattendedAutoLogon -DomainName $Machine.Name -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
     }
 
+    $disableWindowsDefender = (Get-Module -Name AutomatedLab)[0].PrivateData.DisableWindowsDefender
+    if (-not $disableWindowsDefender)
+    {
+        Set-UnattendedWindowsDefender -Enabled $false
+    }
+
     $setLocalIntranetSites = (Get-Module -Name AutomatedLab)[0].PrivateData.SetLocalIntranetSites
     if ($setLocalIntranetSites -ne 'None' -or $setLocalIntranetSites -ne $null)
     {
@@ -270,7 +276,7 @@ function New-LWHypervVM
         InitState = 0
     }
 
-	$isUefi = try
+    $isUefi = try
     {
         Get-SecureBootUEFI -Name SetupMode
     }

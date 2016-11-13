@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLab.psm1'
     
     # Version number of this module.
-    ModuleVersion = '3.8.0.8'
+    ModuleVersion = '3.8.0.9'
     
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
@@ -255,6 +255,9 @@
         InvokeLabCommandRetryIntervalInSeconds = 10
 
         DoNotUseGetHostEntryInNewLabPSSession = $false
+
+        #General VM settings
+        DisableWindowsDefender = $true
 
         #Hyper-V VM Settings
         SetLocalIntranetSites = 'All' #All, Forest, Domain, None
