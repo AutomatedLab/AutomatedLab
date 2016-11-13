@@ -1,4 +1,4 @@
-﻿$testResultPattern = '\d{6}_\d{4}_(\w| )+_Log.xml'
+﻿$testResultPattern = '\d{6}_\d{4}_([\w\(\),-]| )+_Log.xml'
 
 #region Get-ConsoleText
 function Get-ConsoleText
@@ -40,7 +40,7 @@ function Get-ConsoleText
 #region Test-LabDeployment
 function Test-LabDeployment
 {
-    [CmdletBinding(SupportsShouldProcess)]
+    [CmdletBinding()]
 
     param(
         [Parameter(ParameterSetName = 'Path')]
@@ -120,6 +120,7 @@ function Invoke-LabScript
             Errors = $null
             ScriptFullName = $Path
             Output = $null
+            RemoveErrors = $null
     })
     $result.PSObject.TypeNames.Insert(0, 'AutomatedLab.TestResult')
 
@@ -154,7 +155,13 @@ function Invoke-LabScript
         $result.ErrorCount = $result.Errors.Count
         Clear-Host
         
-        Remove-Lab -Confirm:$false
+        if (Get-Lab -ErrorAction SilentlyContinue)
+        {
+            Remove-Lab -Confirm:$false -ErrorVariable removeErrors
+        }
+        
+        $result.RemoveErrors = $removeErrors
+        
         Write-Host '-------------------------------------------------------------'
         Write-Host "Finished invkoing script '$Path'"
 

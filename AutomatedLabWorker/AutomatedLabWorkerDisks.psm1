@@ -33,6 +33,9 @@ function New-LWReferenceVHDX
     # Get start time
     $start = Get-Date
     Write-Verbose "Beginning at $StartTime"
+    
+    $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
+    Write-Verbose "The Windows Image list contains $($imageList.Count) items"
 	
     Write-Verbose "Mounting ISO image '$IsoOsPath'"
     Mount-DiskImage -ImagePath $IsoOsPath
@@ -44,10 +47,7 @@ function New-LWReferenceVHDX
     $isoDrive = "$($isoImage.DriveLetter):"
     Write-Verbose "OS ISO mounted on drive letter '$isoDrive'"
 	
-    $imageList = Get-WindowsImage -ImagePath $isoDrive\sources\install.wim
-    Write-Verbose "The Windows Image list contains $($imageList.Count) items"
-	
-    $image = $imageList | Where-Object { $_.ImageName -eq $ImageName }
+    $image = $imageList | Where-Object OperatingSystemName -eq $OsName
 	
     if (-not $image)
     {
@@ -115,7 +115,15 @@ exit
     }
 	
     Write-Verbose 'Applying image to the volume...'
-    $wimPath = "$isoDrive\Sources\install.wim"
+    
+    if ($image.Installation -eq 'Nano Server')
+    {
+        $wimPath = "$isoDrive\NanoServer\NanoServer.wim"
+    }
+    else
+    {
+        $wimPath = "$isoDrive\Sources\install.wim"
+    }
     $job = Start-Job -ScriptBlock { Dism.exe /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\ }
 	
     Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 20 -Timeout 60
@@ -150,7 +158,22 @@ exit
             exit
         @"
         $diskpartCmd | diskpart.exe | Out-Null
-    }	
+    }
+    
+    if ($image.Installation -eq 'Nano Server')
+    {
+        $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages -File
+        foreach ($package in $packages)
+        {
+            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+        }
+        
+        $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages\en-US -File
+        foreach ($package in $packages)
+        {
+            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+        }
+    }
 	
     Write-Verbose 'Dismounting ISO and new disk'
     Dismount-DiskImage -ImagePath $IsoOsPath

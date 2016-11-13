@@ -1,5 +1,5 @@
 #The is almost the same like '07 Standalone Root CA, Sub Ca domain joined.ps1' but this adds a web server and requests
-#a web sever certificate for SSL.
+#a web sever certificate for SSL. This certificate is then used for the SSL binding.
 
 New-LabDefinition -Name 'Lab1' -DefaultVirtualizationEngine HyperV
 
@@ -22,6 +22,12 @@ Install-Lab
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
 
-Request-LabCertificate -Subject CN=web1.contoso.com -TemplateName WebServer -ComputerName Web1
+$cert = Request-LabCertificate -Subject CN=web1.contoso.com -TemplateName WebServer -ComputerName Web1 -PassThru
+
+Invoke-LabCommand -ActivityName 'Setup SSL Binding' -ComputerName Web1 -ScriptBlock {
+    New-WebBinding -Name "Default Web Site" -IP "*" -Port 443 -Protocol https
+    Import-Module -Name WebAdministration
+    Get-Item -Path "Cert:\LocalMachine\My\$($args[0].Thumbprint)" | New-Item -Path IIS:\SslBindings\0.0.0.0!443
+} -ArgumentList $cert
 
 Show-LabInstallationTime

@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLab.psm1'
     
     # Version number of this module.
-    ModuleVersion = '3.7.2.0'
+    ModuleVersion = '3.8.0.7'
     
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
@@ -177,6 +177,7 @@
         'Get-LabVirtualNetwork',
         'Set-LabGlobalInstallationCredential',
         'Get-StringSection',
+		'Add-StringIncrement',
         'Get-LabInternetFile',
         'Get-FullMesh',
         'Get-NextOid',

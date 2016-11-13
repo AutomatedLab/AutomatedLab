@@ -28,7 +28,6 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:IsDomainJoined' = $true
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }
 $PSDefaultParameterValues.Add('Add-LabMachineDefinition:Gateway', '192.168.30.50')

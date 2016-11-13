@@ -988,7 +988,7 @@ function Export-LabDefinition
                 {
                     if ($networkAdapter.VirtualSwitch.Name -in $mappingNetworks.InputObject)
                     {
-                        $networkAdapter.Ipv4Gateway.Add(($firstRouter.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $networkAdapter.VirtualSwitch.Name }).Ipv4Address.IpAddress)
+                        $networkAdapter.Ipv4Gateway.Add(($firstRouter.NetworkAdapters | Where-Object { $_.VirtualSwitch.Name -eq $networkAdapter.VirtualSwitch.Name } | Select-Object -First 1).Ipv4Address.IpAddress)
                     }
                 }
             }
@@ -1641,7 +1641,10 @@ function Add-LabMachineDefinition
                 'Windows Server 2012 SERVERDATACENTER', 'Windows Server 2012 SERVERDATACENTERCORE', 'Windows Server 2012 SERVERSTANDARD', 'Windows Server 2012 SERVERSTANDARDCORE',
                 'Windows Server 2012 R2 SERVERDATACENTER', 'Windows Server 2012 R2 SERVERDATACENTERCORE', 'Windows Server 2012 R2 SERVERSTANDARD', 'Windows Server 2012 R2 SERVERSTANDARDCORE',
                 'Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 4 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTER',
-                'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER'
+                'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
+                'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
+                'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO'
+                
         )]
         [Alias('OS')]
         [AutomatedLab.OperatingSystem]$OperatingSystem = (Get-LabDefinition).DefaultOperatingSystem,

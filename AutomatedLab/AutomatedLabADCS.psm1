@@ -1532,7 +1532,7 @@ function Add-LabCertificatePfx
     
         Invoke-LabCommand -ActivityName 'Importing Pfx file' -ComputerName $ComputerName -ScriptBlock {
         
-            Sync-Parameter -Command (Get-Command -Name Add-LabCertificatePfx)
+            Sync-Parameter -Command (Get-Command -Name Add-CertificatePfx)
             $ALBoundParameters.Add('Path', $tempFile)
             Add-CertificatePfx @ALBoundParameters | Out-Null
             Remove-Item -Path $tempFile
@@ -1583,6 +1583,19 @@ function New-LabCATemplate
 
     Write-LogFunctionEntry
     
+    $computer = Get-LabMachine -ComputerName $ComputerName
+    if (-not $ComputerName)
+    {
+        Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
+        return
+    }
+    
+    if ((Get-LabIssuingCA) -notcontains $computer)
+    {
+        Write-Error "The given computer '$ComputerName' could is not a CA. This command needs to run on a CA." -TargetObject $ComputerName
+        return
+    }
+    
     $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
 
@@ -1601,9 +1614,7 @@ function New-LabCATemplate
     
     Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
 
-    $issuingCAs = Get-LabIssuingCA
-
-    Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $issuingCAs -ScriptBlock {
+    Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $ComputerName -ScriptBlock {
 
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
