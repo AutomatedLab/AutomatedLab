@@ -99,107 +99,7 @@ function New-LabVM
 	
     if ($vmwareVMs)
     {
-        <# THIS IS NOT IMPLEMENTED YET
-                Wait-LabVM -ComputerName $vmwareVMs
-		
-                foreach ($machine in $vmwareVMs)
-                {
-                Import-UnattendedContent -Content $machine.UnattendedXmlContent
-			
-                Set-UnattendedComputerName -ComputerName $machine.Name
-			
-                if (-not $machine.ProductKey)
-                {
-                $machine.ProductKey = Get-LabAvailableOperatingSystems |
-                Where-Object { $_.OperatingSystemName -eq $machine.OperatingSystem } |
-                Select-Object -ExpandProperty ProductKey
-                }
-			
-                if ($machine.IpAddress -or $machine.DnsServers)
-                {
-                $ipSettings = @{ }
-				
-                if ($machine.IpAddress)
-                {
-                $ipSettings.Add('IpAddress', $machine.IpAddress)
-					
-                if ($machine.Gateway)
-                {
-                $ipSettings.Add('Gateway', $machine.Gateway)
-                }
-                }
-				
-                if ($machine.DnsServers)
-                {
-                $ipSettings.Add('DnsServers', $machine.DnsServers)
-                }
-				
-                Set-UnattendedIpSettings @ipSettings
-                }
-			
-                Set-UnattendedAdministratorPassword -Password $machine.InstallationUser.Password
-                Set-UnattendedAdministratorName -Name $machine.InstallationUser.UserName
-			
-                Set-UnattendedProductKey -ProductKey $machine.ProductKey
-			
-                if ($machine.UserLocale)
-                {
-                Set-UnattendedUserLocale -UserLocale $machine.UserLocale
-                }
-			
-                #if the time zone is specified we use it, otherwise we take the timezone from the host machine
-                if ($machine.TimeZone)
-                {
-                Set-UnattendedTimeZone -TimeZone $machine.TimeZone
-                }
-                else
-                {
-                Set-UnattendedTimeZone -TimeZone ([System.TimeZoneInfo]::Local.Id)
-                }
-			
-                if ($machine.IsDomainJoined -eq $true)
-                {
-                Set-UnattendedAutoLogon -DomainName $machine.DomainName -Username $machine.InstallationUser.Username -Password $machine.InstallationUser.Password
-                }
-                else
-                {
-                Set-UnattendedAutoLogon -DomainName $machine.Name -Username $machine.InstallationUser.Username -Password $machine.InstallationUser.Password
-                }
-			
-                if ($machine.Roles.Name -in 'RootDC', 'FirstChildDC', 'DC')
-                {
-                #machine will not be added to domain or workgroup
-                }
-                else
-                {
-                if (-not [string]::IsNullOrEmpty($machine.WorkgroupName))
-                {
-                Set-UnattendedWorkgroup -WorkgroupName $machine.WorkgroupName
-                }
-				
-                if (-not [string]::IsNullOrEmpty($machine.DomainName))
-                {
-                $domain = $lab.Domains | Where-Object { $_.Name -eq $machine.DomainName }
-                Set-UnattendedDomain -DomainName $machine.DomainName -Username $domain.Administrator.UserName -Password $domain.Administrator.Password
-                }
-                }
-			
-                $tempUnattendFile = [System.IO.Path]::GetTempFileName()
-                (Get-UnattendedContent).Save($tempUnattendFile)
-			
-                Send-File -Source $tempUnattendFile -Destination c:\unattend.xml -Session (New-LabPSSession -ComputerName $machine)
-			
-                #for debugging
-                Copy-Item -Path $tempUnattendFile -Destination (Join-Path -Path (Get-Lab).Target.Path -ChildPath "unattend_$($machine.Name).xml")
-			
-                Remove-Item -Path $tempUnattendFile
-                }
-		
-                $jobs = Invoke-LabCommand -ComputerName $vmwareVMs -ActivityName Sysprep -ScriptBlock { C:\Windows\System32\Sysprep\Sysprep.exe /generalize /oobe /shutdown /quiet } -UseLocalCredential -AsJob -PassThru
-		
-                Wait-LabVMRestart -ComputerName $vmwareVMs
-                Write-Verbose "All $($vmwareVMs.Count) VMWare VMs have been sysprepped and restarted"
-        #>
+        throw New-Object System.NotImplementedException
     }
 	
     Write-LogFunctionExit
@@ -1041,7 +941,7 @@ function Get-LabVMUptime
 	
     $cmdGetUptime = {
         $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
-        (Get-Date) – [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
+        (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
     }
 	
     $uptime = Invoke-LabCommand -ComputerName $ComputerName -ActivityName GetUptime -ScriptBlock $cmdGetUptime -UseLocalCredential -PassThru
