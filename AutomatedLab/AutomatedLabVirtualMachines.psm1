@@ -166,90 +166,92 @@ function Start-LabVM
 		
         if ($PSCmdlet.ParameterSetName -eq 'ByName' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabMachine -ComputerName $ComputerName
+          $vms = Get-LabMachine -ComputerName $ComputerName
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'ByRole' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            #get all machines that have a role assigned and the machine's role name is part of the parameter RoleName
-            $vms = $lab.Machines | Where-Object { $_.Roles.Name } |
-            Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
+          #get all machines that have a role assigned and the machine's role name is part of the parameter RoleName
+          $vms = $lab.Machines | Where-Object { $_.Roles.Name } |
+          Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
 			
-            if (-not $vms)
-            {
-                Write-Error "There is no machine in the lab with the role '$RoleName'"
-                return
-            }
+          if (-not $vms)
+          {
+            Write-Error "There is no machine in the lab with the role '$RoleName'"
+            return
+          }
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'ByRole' -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms = $lab.Machines | Where-Object { $_.Roles.Name -and ((Get-LabVMStatus -ComputerName $_.Name) -ne 'Started')} |
-            Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
+          $vms = $lab.Machines | Where-Object { $_.Roles.Name -and ((Get-LabVMStatus -ComputerName $_.Name) -ne 'Started')} |
+          Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
 			
-            if (-not $vms)
-            {
-                Write-Error "There is no machine in the lab with the role '$RoleName'"
-                return
-            }
-            $vms = $vms | Select-Object -First $StartNextMachines
+          if (-not $vms)
+          {
+            Write-Error "There is no machine in the lab with the role '$RoleName'"
+            return
+          }
+          $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and -not $StartNextMachines -and $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'DC' }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'DC' }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
 
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
-            $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
+          $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+          $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
 
-            #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
-            $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
+          #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+          $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
-            if ($Domain)
-            {
-                $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
-            }
+          if ($Domain)
+          {
+            $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
+          }
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
+          $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
 
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
-            $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
+          $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+          $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
-            if ($Domain)
-            {
-                $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
-            }
+          if ($Domain)
+          {
+            $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
+          }
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabMachine | Where-Object { $_.DomainName -in (Get-LabMachine -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabMachine -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
-            $vms = $vms | Select-Object -First $StartNextMachines
+          $vms = Get-LabMachine | Where-Object { $_.DomainName -in (Get-LabMachine -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabMachine -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
+          $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+          $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
         {
-            $vms = $availableVMs
+          $vms = $availableVMs
         }
     }
 	
