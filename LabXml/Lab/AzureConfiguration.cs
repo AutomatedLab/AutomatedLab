@@ -19,7 +19,7 @@ namespace AutomatedLab
         private List<AzureOSImage> vmImages;
         private List<AzureVirtualMachine> virtualMachines;
         private List<AzureRmVmSize> roleSizes;
-        private List<AzureResourceGroup> services;
+        private List<AzureResourceGroup> resourceGroups;
         private List<string> vmDisks;
         private string defaultRoleSize;        
 
@@ -95,10 +95,10 @@ namespace AutomatedLab
             set { roleSizes = value; }
         }
 
-        public List<AzureResourceGroup> Services
+        public List<AzureResourceGroup> ResourceGroups
         {
-            get { return services; }
-            set { services = NonEmptyList<AzureResourceGroup>(value); }
+            get { return resourceGroups; }
+            set { resourceGroups = NonEmptyList<AzureResourceGroup>(value); }
         }
 
         public List<string> VmDisks
@@ -119,7 +119,7 @@ namespace AutomatedLab
             this.storageAccounts = new List<AzureRmStorageAccount>();
             this.vmImages = new List<AzureOSImage>();
             this.roleSizes = new List<AzureRmVmSize>();
-            this.services = new List<AzureResourceGroup>();
+            this.resourceGroups = new List<AzureResourceGroup>();
             this.subscriptions = new List<AzureSubscription>();
             this.vmDisks = new List<string>();
         }
