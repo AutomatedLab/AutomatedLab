@@ -177,7 +177,7 @@
         'Disable-LabVMFirewallGroup',
         'Dismount-LabIsoImage',
         'Test-Port',
-        'Add-LabAzurePublishSettingFile',
+        'Add-LabAzureProfile',
         'Invoke-LabDnsAndTrusts',
         'Get-LabVirtualNetwork',
         'Set-LabGlobalInstallationCredential',
