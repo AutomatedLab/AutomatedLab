@@ -11,6 +11,7 @@ namespace AutomatedLab.Azure
         public string ProvisioningState { get; set; }
         public string ResourceId { get; set; }
         public string TagsTable { get; set; }
+        public SerializableDictionary<string,string> Tags { get; set; }
 
         public AzureResourceGroup()
         { }
