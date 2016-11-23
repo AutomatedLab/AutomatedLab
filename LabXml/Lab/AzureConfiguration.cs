@@ -11,19 +11,19 @@ namespace AutomatedLab
         private AzureSubscription defaultSubscription;
         private string subscriptionFileContent;
         private List<AzureLocation> locations;
-        private AzureStorageService defaultStorageAccount;
+        private AzureRmStorageAccount defaultStorageAccount;
         private string defaultStorageAccountKey;
         private AzureLocation defaultLocation;
         private string vnetConfig;
-        private List<AzureStorageService> storageAccounts;
+        private List<AzureRmStorageAccount> storageAccounts;
         private List<AzureOSImage> vmImages;
         private List<AzureVirtualMachine> virtualMachines;
-        private List<AzureRoleSize> roleSizes;
-        private List<AzureService> services;
+        private List<AzureRmVmSize> roleSizes;
+        private List<AzureResourceGroup> services;
         private List<string> vmDisks;
         private string defaultRoleSize;        
 
-        public List<AzureStorageService> StorageAccounts
+        public List<AzureRmStorageAccount> StorageAccounts
         {
             get { return storageAccounts; }
             set { storageAccounts = value; }
@@ -65,7 +65,7 @@ namespace AutomatedLab
             set { virtualMachines = value; }
         }
 
-        public AzureStorageService DefaultStorageAccount
+        public AzureRmStorageAccount DefaultStorageAccount
         {
             get { return defaultStorageAccount; }
             set { defaultStorageAccount = value; }
@@ -89,16 +89,16 @@ namespace AutomatedLab
             set { locations = value; }
         }
 
-        public List<AzureRoleSize> RoleSizes
+        public List<AzureRmVmSize> RoleSizes
         {
             get { return roleSizes; }
             set { roleSizes = value; }
         }
 
-        public List<AzureService> Services
+        public List<AzureResourceGroup> Services
         {
             get { return services; }
-            set { services = NonEmptyList<AzureService>(value); }
+            set { services = NonEmptyList<AzureResourceGroup>(value); }
         }
 
         public List<string> VmDisks
@@ -116,10 +116,10 @@ namespace AutomatedLab
         public AzureSettings()
         {
             this.locations = new List<AzureLocation>();
-            this.storageAccounts = new List<AzureStorageService>();
+            this.storageAccounts = new List<AzureRmStorageAccount>();
             this.vmImages = new List<AzureOSImage>();
-            this.roleSizes = new List<AzureRoleSize>();
-            this.services = new List<AzureService>();
+            this.roleSizes = new List<AzureRmVmSize>();
+            this.services = new List<AzureResourceGroup>();
             this.subscriptions = new List<AzureSubscription>();
             this.vmDisks = new List<string>();
         }

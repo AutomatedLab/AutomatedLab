@@ -53,9 +53,9 @@
     <Compile Include="Azure\AzureAccount.cs" />
     <Compile Include="Azure\AzureLocation.cs" />
     <Compile Include="Azure\AzureOSImage.cs" />
-    <Compile Include="Azure\AzureRoleSize.cs" />
-    <Compile Include="Azure\AzureService.cs" />
-    <Compile Include="Azure\AzureStorageService.cs" />
+    <Compile Include="Azure\AzureResourceGroup.cs" />
+    <Compile Include="Azure\AzureRmStorageAccount.cs" />
+    <Compile Include="Azure\AzureRmVmSize.cs" />
     <Compile Include="Azure\AzureSubscription.cs" />
     <Compile Include="Azure\AzureVirtualMachine.cs" />
     <Compile Include="Azure\CopiedObject.cs" />

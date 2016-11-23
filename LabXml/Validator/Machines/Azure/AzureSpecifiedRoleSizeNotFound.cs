@@ -18,7 +18,7 @@ namespace AutomatedLab
             if (lab.AzureSettings == null)
                 yield break;
 
-            var roleSizeLables = lab.AzureSettings.RoleSizes.Select(r => r.RoleSizeLabel);
+            var roleSizeLables = lab.AzureSettings.RoleSizes.Select(r => r.Name);
 
             var machinesWithUnknownRoleSizes = machines
                 .Where(machine => machine.HostType == VirtualizationHost.Azure && machine.AzureProperties.ContainsKey("RoleSize"))
