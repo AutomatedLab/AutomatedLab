@@ -1750,7 +1750,7 @@ function Add-LabMachineDefinition
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        Add-LabAzurePublishSettingFile
+        Add-LabAzureProfile
     }
     
     if ($Global:labExported)
