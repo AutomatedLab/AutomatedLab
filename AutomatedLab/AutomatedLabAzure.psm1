@@ -44,6 +44,8 @@ function Add-LabAzureSubscription
         [string]$DefaultLocationName,
 		
         [string]$DefaultStorageAccountName,
+
+		[string]$DefaultResourceGroupName,
 		
         [switch]$PassThru
     )
@@ -54,9 +56,9 @@ function Add-LabAzureSubscription
     
     if (-not $Path)
     {
-        $Path = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*.publishsettings' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
+        $Path = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*.azurermsettings' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
         
-        Write-ScreenInfo -Message "No publish setting file specified. Auto-detected and using publish setting file '$Path'" -Type Warning
+        Write-ScreenInfo -Message "No ARM profile file specified. Auto-detected and using ARM profile file '$Path'" -Type Warning
     }
     
     if (-not $script:lab)
@@ -66,7 +68,7 @@ function Add-LabAzureSubscription
  
     if (-not (Test-Path -Path $Path))
     {
-        throw "The subscription file '$Path' could not be found"
+        throw "The ARM profile file '$Path' could not be found"
     }
 	
     #This needs to be loaded manually to import the required DLLs
@@ -78,7 +80,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        Import-Module -Name Azure -Global -ErrorAction Stop
+        Import-Module -Name Azure* -Global -ErrorAction Stop
     }
     catch
     {
@@ -87,6 +89,15 @@ function Add-LabAzureSubscription
 	
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
     
+    try
+    {
+        $AzureRmProfile = Select-AzureRmProfile -Path $Path -ErrorAction Stop
+    }
+    catch
+    {
+        throw "The Azure Resource Manager Profile $Path could not be loaded or is outdated. $($_.Exception.Message)"
+    }
+
     Update-LabAzureSettings
     if (-not $script:lab.AzureSettings)
     {
@@ -96,28 +107,38 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.SubscriptionFileContent = Get-Content -Path $Path
     $script:lab.AzureSettings.DefaultRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
     
-    #GetEnumerator is required as otherwise the list is not expanded
-    $Subscriptions = (Import-AzurePublishSettingsFile -PublishSettingsFile $Path -ErrorAction Stop).GetEnumerator() | ForEach-Object { Get-AzureSubscription -SubscriptionId $_.Id[0] }
+    # Select the subscription which is associated with this AzureRmProfile
+    $Subscriptions = (Get-AzureRmSubscription)
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
     Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
-
-    #select subscription
+    
     if ($SubscriptionName -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object SubscriptionName -eq $SubscriptionName))
     {
         throw "A subscription named '$SubscriptionName' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription name"
     }
 
+    #select default subscription subscription
     if (-not $SubscriptionName)
     {
-        $SubscriptionName = $script:lab.AzureSettings.Subscriptions[0].SubscriptionName
+        $SubscriptionName = $AzureRmProfile.Context.Subscription.SubscriptionName
     }
 
     Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
-    $selectedSubscription = Select-AzureSubscription -SubscriptionName $SubscriptionName -PassThru
+    $selectedSubscription = $Subscriptions | Where-Object{$_.SubscriptionName -eq $SubscriptionName}
+
+    try
+    {
+        [void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+    }
+    catch
+    {
+        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message)"
+    }
+
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
     Write-Verbose "Azure subscription '$SubscriptionName' selected as default"
 
-    $locations = Get-AzureLocation
+    $locations = Get-AzureRmLocation
     $script:lab.AzureSettings.Locations =  [AutomatedLab.Azure.AzureLocation]::Create($locations)
     Write-Verbose "Added $($script:lab.AzureSettings.Locations.Count) locations"
     
@@ -135,31 +156,58 @@ function Add-LabAzureSubscription
     {
         throw 'Cannot proceed without a valid location specified'
     }
+	
+	Write-ScreenInfo -Message "Trying to locate or create default resource group"
+	# Create if no default given or default set and not existing as RG
+	if(-not $DefaultResourceGroupName -or ($DefaultResourceGroupName -and -not (Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue)))
+    {
+        # Create new lab resource group as default		
+		$RGName = $DefaultResourceGroupName
+		if(-not $RGName)
+		{
+			$RGName = $script:lab.Name
+		}
 
-    $services = Get-AzureService 
-    $script:lab.AzureSettings.Services = [AutomatedLab.Azure.AzureService]::Create($services)
-    Write-Verbose "Added $($script:lab.AzureSettings.Services.Count) services"
+		$rg_param = @{
+		Name= $RGName
+		Location = $DefaultLocationName
+		Tag = @{Description = "Auto created by AutomatedLab at $(Get-Date)"}
+		}
 
-    $storageAccounts = Get-AzureStorageAccount -WarningAction SilentlyContinue
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureStorageService]::Create($storageAccounts)
+		
+        if(Get-AzureRmResourceGroup $RGName -ErrorAction SilentlyContinue)
+        {
+            throw "Resource group $RGName already exists. Please review and if necessary change either the lab name or remove the resource group."
+        }
+
+		$DefaultResourceGroupName = (New-AzureRmResourceGroup @rg_param -ErrorAction Stop).ResourceGroupName
+		Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
+    }
+
+    $resourceGroups = Get-AzureRmResourceGroup
+    $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
+    Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
+
+    $storageAccounts = Get-AzureRmStorageAccount -WarningAction SilentlyContinue
+    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     if ($global:cacheAzureRoleSizes)
     {
-        Write-ScreenInfo -Message "Querying available role sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
+        Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
         $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes }
     }
     else
     {
-        Write-ScreenInfo -Message "Querying available role sizes for Azure location '$DefaultLocationName'" -Type Info
-        $roleSizes = Get-AzureRoleSize | Where-Object { $_.InstanceSize -in (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes }
+        Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
+        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
-    $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRoleSize]::Create($roleSizes)
-    Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) role size information"
+    $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+    Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
 	
-    $script:lab.AzureSettings.VNetConfig = (Get-AzureVNetConfig).XMLConfiguration
+    $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
     if ($global:cacheVmImages)
@@ -170,14 +218,14 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
-        $vmImages = Get-AzureVMImage | Group-Object -Property ImageFamily | ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Offer | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
         $global:cacheVmImages = $vmImages
     }
 
     $script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
     Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
-    $vms = Get-AzureVM -ServiceName $script:lab.Name -WarningAction SilentlyContinue
+    $vms = Get-AzureRmVM -WarningAction SilentlyContinue
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
     Write-Verbose "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
@@ -187,13 +235,13 @@ function Add-LabAzureSubscription
         Write-ScreenInfo -Message 'No default storage account exist. Determining storage account now' -Type Info
         if (-not $DefaultStorageAccountName)
         {
-            $DefaultStorageAccountName = ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -like 'automatedlab????????').StorageAccountName
+            $DefaultStorageAccountName = ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -like 'automatedlab????????' | Select-Object -First 1).StorageAccountName
         }
 
         if (-not $DefaultStorageAccountName)
         {
             Write-ScreenInfo -Message 'No storage account for AutomatedLab found. Creating a storage account now'
-            New-LabAzureDefaultStorageAccount -LocationName $DefaultLocationName
+            New-LabAzureDefaultStorageAccount -LocationName $DefaultLocationName -ResourceGroupName $DefaultResourceGroupName
         }
         else
         {
@@ -208,22 +256,23 @@ function Add-LabAzureSubscription
             }
         }
         Write-Verbose "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to subscription '$((Get-LabAzureDefaultSubscription).SubscriptionName)'"
-        Set-AzureSubscription -CurrentStorageAccountName (Get-LabAzureDefaultStorageAccount).StorageAccountName -SubscriptionId (Get-LabAzureDefaultSubscription).SubscriptionId
+        [void](Set-AzureRmCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName (Get-LabAzureDefaultResourceGroup))
     }
     
-    if (-not (Get-LabAzureDefaultService -ErrorAction SilentlyContinue))
+    if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
     {
-        New-LabAzureService -ServiceName (Get-LabDefinition).Name -LocationName $DefaultLocationName
+        New-LabAzureResourceGroup -ServiceName (Get-LabDefinition).Name -LocationName $DefaultLocationName
     }
     
-    #Add all additional Azure Services if configured
-    $cloudServiceNames = (Get-LabMachine).AzureProperties.CloudServiceName | Select-Object -Unique
-    if ($cloudServiceNames)
+    <# TODO, seems deprecated and or dangerous Add all additional Azure Services if configured
+    $resourceGroupNames = (Get-LabMachine).AzureProperties.ResourceGroupName | Select-Object -Unique
+    if ($resourceGroupNames)
     {
-        New-LabAzureService -ServiceName $cloudServiceNames -LocationName $lab.AzureSettings.DefaultLocation -ErrorAction Stop
-    }
+        #Rename to new-labazureresourcegroup
+        New-LabAzureResourceGroup -ServiceName $resourceGroupNames -LocationName $lab.AzureSettings.DefaultLocation -ErrorAction Stop
+    }#>
 
-    Write-ScreenInfo -Message "Azure default cloud service name will be '$($script:lab.Name)'"
+    Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
     
     Write-ScreenInfo -Message "Azure data center location will be '$DefaultLocationName'" -Type Info
     
@@ -263,18 +312,6 @@ function Get-LabAzureDefaultSubscription
     Write-LogFunctionExit
 }
 
-function Remove-LabAzureSubscription
-{
-    Write-LogFunctionEntry
-	
-    Update-LabAzureSettings
-	
-    $script:lab.AzureSettings.Subscription = $null
-    Get-AzureSubscription | Remove-AzureSubscription -Confirm:$false -Force -WarningAction SilentlyContinue
-	
-    Write-LogFunctionExit
-}
-
 function Get-LabAzureLocation
 {
     [cmdletBinding()]
@@ -290,17 +327,17 @@ function Get-LabAzureLocation
 	
     Import-Module -Name Azure
 
-    $azureLocations = Get-AzureLocation
+    $azureLocations = Get-AzureRmLocation
     
     if ($LocationName)
     {
-        if ($LocationName -notin ($azureLocations.Name))
+        if ($LocationName -notin ($azureLocations.DisplayName))
         {
-            Write-Error "Invalid location. Please specify one of the following locations: ""'$($azureLocations.Name -join ''', ''')"
+            Write-Error "Invalid location. Please specify one of the following locations: ""'$($azureLocations.DisplayName -join ''', ''')"
             return
         }
 		
-        $azureLocations | Where-Object Name -eq $LocationName
+        $azureLocations | Where-Object DisplayName -eq $LocationName
     }
     else
     {
@@ -311,18 +348,32 @@ function Get-LabAzureLocation
         }
         
         $urls = @{
+            'North Central US' = 'speedtestnsus.blob.core.windows.net'
             'Central US'='speedtestcus.blob.core.windows.net'
+            'West Central US'='speedtestwcus.blob.core.windows.net'
             'South Central US'='speedtestscus.blob.core.windows.net'
+            'West US' = 'speedtestwus.blob.core.windows.net'
+            'West US 2' = 'speedtestwus2.blob.core.windows.net'
             'East US'='speedtesteus.blob.core.windows.net'
+            'East US 2'='speedtesteus2.blob.core.windows.net'
             'West Europe'='speedtestwe.blob.core.windows.net'
             'North Europe'='speedtestne.blob.core.windows.net'
             'Southeast Asia'='speedtestsea.blob.core.windows.net'
             'East Asia'='speedtestea.blob.core.windows.net'
+            'Japan East'='speedtestjpe.blob.core.windows.net'
+            'Japan West'='speedtestjpw.blob.core.windows.net'
+            'Brazil South'='speedtestbs.blob.core.windows.net'
+            'Australia Southeast'='mickmel.blob.core.windows.net'
+            'Australia East'='micksyd.blob.core.windows.net'
+            'UK West'='speedtestukw.blob.core.windows.net'
+            'UK South'='speedtestuks.blob.core.windows.net'
+            'Canada Central'='speedtestcac.blob.core.windows.net'
+            'Canada East'='speedtestcae.blob.core.windows.net'
         }
         
         foreach ($location in $azureLocations)
         {
-            $location | Add-Member -MemberType NoteProperty -Name 'Url'     -Value ($urls."$($location.Name)")
+            $location | Add-Member -MemberType NoteProperty -Name 'Url'     -Value ($urls."$($location.DisplayName)")
             $location | Add-Member -MemberType NoteProperty -Name 'Latency' -Value 9999
         }
         
@@ -330,10 +381,17 @@ function Get-LabAzureLocation
         foreach ($location in $azureLocations)
         {
             $url = $location.Url
-            $jobs += Start-Job -Name $location.Name -ScriptBlock {
+            $jobs += Start-Job -Name $location.DisplayName -ScriptBlock {
                 $testUrl = $using:url
                 
-                (Test-Port -ComputerName $using:url -Port 443 -Count 4 | Measure-Object -Property ResponseTime -Average).Average
+                try
+                {
+                (Test-Port -ComputerName $testUrl -Port 443 -Count 4 -ErrorAction Stop| Measure-Object -Property ResponseTime -Average).Average
+                }
+                catch
+                {
+                    Write-Warning "$testUrl $($_.Exception.Message)"
+                }
             }
         }
             
@@ -341,23 +399,23 @@ function Get-LabAzureLocation
         foreach ($job in $jobs)
         {
             $result =  Receive-Job -Keep -Job $job
-            ($azureLocations | Where-Object {$_.Name -eq $job.Name}).Latency = $result
+            ($azureLocations | Where-Object {$_.DisplayName -eq $job.Name}).Latency = $result
         }
         $jobs | Remove-Job
 
-        Write-Verbose -Message 'Name            Latency' 
+        Write-Verbose -Message 'DisplayName            Latency' 
         foreach ($location in $azureLocations)
         {
-            Write-Verbose -Message "$($location.Name.PadRight(20)): $($location.Latency)" 
+            Write-Verbose -Message "$($location.DisplayName.PadRight(20)): $($location.Latency)" 
         }
 
         if ($List)
         {
-            $azureLocations | Sort-Object -Property Latency | Format-Table Name, Latency
+            $azureLocations | Sort-Object -Property Latency | Format-Table DisplayName, Latency
         }
         else
         {
-            $azureLocations | Sort-Object -Property Latency | Select-Object -First 1 | Select-Object -ExpandProperty Name
+            $azureLocations | Sort-Object -Property Latency | Select-Object -First 1 | Select-Object -ExpandProperty DisplayName
         }
     }
 	
@@ -395,13 +453,13 @@ function Set-LabAzureDefaultLocation
 	
     Update-LabAzureSettings
 	
-    if ($Name -notin $script:lab.AzureSettings.Locations.Name)
+    if ($Name -notin $script:lab.AzureSettings.Locations.DisplayName)
     {
-        Microsoft.PowerShell.Utility\Write-Error "Invalid location. Please specify one of the following locations: $($script:lab.AzureSettings.Locations.Name -join ', ')"
+        Microsoft.PowerShell.Utility\Write-Error "Invalid location. Please specify one of the following locations: $($script:lab.AzureSettings.Locations.DisplayName -join ', ')"
         return
     }
 	
-    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object Name -eq $Name
+    $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object DisplayName -eq $Name
 	
     Write-LogFunctionExit
 }
@@ -453,7 +511,9 @@ function New-LabAzureDefaultStorageAccount
     [cmdletbinding()]
     param (
         [Parameter(Mandatory)]
-        [string]$LocationName
+        [string]$LocationName,
+		[Parameter(Mandatory)]
+        [string]$ResourceGroupName
     )
 	
     Write-LogFunctionEntry
@@ -462,34 +522,37 @@ function New-LabAzureDefaultStorageAccount
 	
     $storageAccountName = "automatedlab$((1..8 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
 
-    $param = @{ }
-    $param.Add('StorageAccountName', $storageAccountName)
-    $param.Add('Description', "Auto created by AutomatedLab at $(Get-Date)")
+    $param = @{
+	Name= $storageAccountName
+	ResourceGroupName = $ResourceGroupName
+	Tag = @{Description="Auto created by AutomatedLab at $(Get-Date)"}
+	Sku = 'Standard_LRS'
+	 }
 	
     if ($LocationName)
     {
         $location = Get-LabAzureLocation -LocationName $LocationName -ErrorAction Stop
-        $param.Add('Location', $location.Name)
-        Write-ScreenInfo -Message "Creating a new storage account named '$($param.StorageAccountName)' for location '$($param.Location)'"
+        $param.Add('Location', $location.DisplayName)
+        Write-ScreenInfo -Message "Creating a new storage account named '$storageAccountName' for location '$($param.Location)'"
     }
 	
-    $result = New-AzureStorageAccount @param -ErrorAction Stop -WarningAction SilentlyContinue
+    $result = New-AzureRmStorageAccount @param -ErrorAction Stop -WarningAction SilentlyContinue
 	
-    if ($result.OperationStatus -ne 'Succeeded')
+    if ($result.ProvisioningState -ne 'Succeeded')
     {
-        throw "Could not create storage account: $($result.OperationStatus)"
+        throw "Could not create storage account $storageAccountName : $($result.ProvisioningState)"
     }
 	
     Write-ScreenInfo -Message  'Storage account now created'
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureStorageService]::Create((Get-AzureStorageAccount -ErrorAction SilentlyContinue))
+    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create((Get-AzureRmStorageAccount -ErrorAction SilentlyContinue))
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 	
-    Set-LabAzureDefaultStorageAccount -Name $param.StorageAccountName
+    Set-LabAzureDefaultStorageAccount -Name $storageAccountName
 	
     Write-LogFunctionExit
 }
 
-function Get-LabAzureDefaultService
+function Get-LabAzureDefaultResourceGroup
 {
     [cmdletbinding()]
     param ()
@@ -498,11 +561,12 @@ function Get-LabAzureDefaultService
 	
     Update-LabAzureSettings
 	
-    $script:lab.AzureSettings.Services | Where-Object ServiceName -eq $script:lab.Name
+    $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $script:lab.Name
 	
     Write-LogFunctionExit
 }
 
+#TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
     [cmdletbinding()]
@@ -512,10 +576,11 @@ function Import-LabAzureCertificate
 	
     Update-LabAzureSettings
 	
-    $service = Get-LabAzureDefaultService
+    $resourceGroup = Get-AzureRmResourceGroup -name (Get-LabAzureDefaultResourceGroup)
+	$keyVault = Get-AzureRmKeyVault -VaultName (Get-LabAzureDefaultKeyVault) -ResourceGroupName $resourceGroup
     $temp = [System.IO.Path]::GetTempFileName()
 	
-    $cert = ($service | Get-AzureCertificate).Data
+    $cert = ($keyVault | Get-AzureKeyVaultCertificate).Data
 	
     if ($cert)
     {
@@ -531,6 +596,7 @@ function Import-LabAzureCertificate
     }
 }
 
+#TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
     [cmdletbinding()]
@@ -562,6 +628,7 @@ function New-LabAzureCertificate
     #$service | Add-AzureCertificate -CertToDeploy (Get-Item -Path "Cert:\LocalMachine\Root\$($cert.Thumbprint)")
 }
 
+#TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
@@ -589,12 +656,12 @@ function Get-LabAzureCertificate
     Write-LogFunctionExit
 }
 
-function New-LabAzureService
+function New-LabAzureResourceGroup
 {
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
-        [string[]]$ServiceName,
+        [string[]]$ResourceGroupNames,
 
         [Parameter(Mandatory, Position = 1)]
         [string]$LocationName,
@@ -606,38 +673,38 @@ function New-LabAzureService
     
     Update-LabAzureSettings	
     
-    Write-Verbose "Creating the services '$($ServiceName -join ', ')' for location '$LocationName'"
+    Write-Verbose "Creating the resource groups '$($ResourceGroupNames -join ', ')' for location '$LocationName'"
 
-    $existingServices = Get-AzureService
+    $resourceGroups = Get-AzureRmResourceGroup
 
-    foreach ($name in $ServiceName)
+    foreach ($name in $ResourceGroupNames)
     {
-        if ($existingServices | Where-Object ServiceName -eq $name)
+        if ($resourceGroups | Where-Object ResourceGroupName -eq $name)
         {
-            $script:lab.AzureSettings.Services.Add([AutomatedLab.Azure.AzureService]::Create((Get-AzureService -ServiceName $name)))
-            Write-Warning "The service '$name' does already exist"
+            $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
+            Write-Warning "The resource group '$name' does already exist"
             continue
         }
 
-        $result = New-AzureService -ServiceName $name -Location $LocationName
-        $script:lab.AzureSettings.Services.Add([AutomatedLab.Azure.AzureService]::Create((Get-AzureService -ServiceName $name)))
+        $result = New-AzureRmResourceGroup -Name $name -Location $LocationName
+        $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
         if ($PassThru)
         {
             $result
         }
 
-        Write-Verbose "Service '$name' created"
+        Write-Verbose "Resource group '$name' created"
     }
 
     Write-LogFunctionExit
 }
 
-function Remove-LabAzureService
+function Remove-LabAzureResourceGroup
 {
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
-        [string[]]$ServiceName,
+        [string[]]$ResourceGroupName,
 
         [switch]$Force
     )
@@ -648,25 +715,25 @@ function Remove-LabAzureService
         
         Update-LabAzureSettings
         
-        $services = Get-LabAzureService
+        $services = Get-LabAzureResourceGroup
     }
 
     process
     {
-        Write-ScreenInfo -Message "Removing the service '$ServiceName'" -Type Warning
+        Write-ScreenInfo -Message "Removing the rg '$ResourceGroupName'" -Type Warning
 
-        foreach ($name in $ServiceName)
+        foreach ($name in $ResourceGroupName)
         {
             if ($services.ServiceName -contains $name)
             {
-                Remove-AzureService -ServiceName $name -Force:$Force -WarningAction SilentlyContinue
-                Write-Verbose "Service '$($name)' removed"
+                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
+                Write-Verbose "RG '$($name)' removed"
                 
-                $script:lab.AzureSettings.Services.Remove(($script:lab.AzureSettings.Services | Where-Object ServiceName -eq $name))
+                $script:lab.AzureSettings.ResourceGroups.Remove(($script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name))
             }
             else
             {
-                Write-ScreenInfo -Message "Service '$name' could not be found" -Type Error
+                Write-ScreenInfo -Message "RG '$name' could not be found" -Type Error
             }
         }
     }
@@ -677,114 +744,35 @@ function Remove-LabAzureService
     }
 }
 
-function Stop-LabAzureService
-{
-    [cmdletbinding()]
-    param (
-        [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
-        [string[]]$ServiceName
-    )
-
-    begin
-    {
-        Write-LogFunctionEntry
-
-        $services = Get-LabAzureService
-    }
-
-    process
-    {
-        Write-Verbose "Stopping the services '$ServiceName'"
-
-        foreach ($name in $ServiceName)
-        {
-            if ($services.ServiceName -contains $name)
-            {
-                Stop-AzureService -ServiceName $name
-                Write-Verbose "Service '$($name)' stopped"
-            }
-            else
-            {
-                Write-Error "Service '$name' could not be found"
-            }
-        }
-    }
-
-    end
-    {
-        Write-LogFunctionExit
-    }
-}
-
-function Start-LabAzureService
-{
-    [cmdletbinding()]
-    param (
-        [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
-        [string[]]$ServiceName
-    )
-
-    begin
-    {
-        Write-LogFunctionEntry
-
-        $services = Get-LabAzureService
-    }
-
-    process
-    {
-        Write-Verbose "Starting the services '$ServiceName'"
-
-        foreach ($name in $ServiceName)
-        {
-            if ($services.ServiceName -contains $name)
-            {
-                Start-AzureService -ServiceName $name
-                Write-Verbose "Service '$($name)' started"
-            }
-            else
-            {
-                Write-Error "Service '$name' could not be found"
-            }
-        }
-    }
-
-    end
-    {
-        Write-LogFunctionExit
-    }
-}
-
-function Get-LabAzureService
+function Get-LabAzureResourceGroup
 {
     [cmdletbinding()]
     param (
         [Parameter(Position = 0)]
-        [string[]]$ServiceName
+        [string[]]$ResourceGroupName
     )
 
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
 
-    $labServicesNames = $script:lab.Machines.AzureProperties.CloudServiceName | Select-Object -Unique
-    $services = $script:lab.AzureSettings.Services | Where-Object { $_.ServiceName -eq $Script:lab.Name -or $_.ServiceName -in $labServicesNames }
+    $resourceGroups = $script:lab.AzureSettings.ResourceGroups | Where-Object { $_.ResourceGroupName -eq $Script:lab.Name }
     
     if ($ServiceName)
     {
-        Write-Verbose "Getting the services '$($ServiceName -join ', ')'"
-        $services | Where-Object ServiceName -in $ServiceName
+        Write-Verbose "Getting the resource groups '$($ResourceGroupName -join ', ')'"
+        $resourceGroups | Where-Object ResourceGroupName -in $ResourceGroupName
     }
     else
     {
-        Write-Verbose 'Getting all services'
-        $services
+        Write-Verbose 'Getting all resource groups'
+        $resourceGroups
     }
     
     Write-LogFunctionExit
 }
 
-function Add-LabAzurePublishSettingFile
+function Add-LabAzureProfile
 {
     [cmdletbinding()]
     param
@@ -794,10 +782,10 @@ function Add-LabAzurePublishSettingFile
     
     Write-LogFunctionEntry
     
-    $publishSettingFile = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*ublishsetting*' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
+    $publishSettingFile = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*azurermsettings*' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
     if (-not $NoDisplay)
     {
-        Write-ScreenInfo -Message "No publish setting file specified. Auto-detected and using publish setting file '$publishSettingFile'" -Type Warning
+        Write-ScreenInfo -Message "No profile file specified. Auto-detected and using publish setting file '$publishSettingFile'" -Type Warning
     }
     Add-LabAzureSubscription -Path $publishSettingFile
     
