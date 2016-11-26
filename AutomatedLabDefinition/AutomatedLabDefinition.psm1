@@ -2214,6 +2214,7 @@ function Add-LabMachineDefinition
                         
                         #and also verify that the new address space is not overlapping with an exsiting one
                         $otherHypervSwitch = $existingHyperVVirtualSwitches |
+                        Where-Object { $_.AddressSpace } |
                         Where-Object { [AutomatedLab.IPNetwork]::Overlap($_.AddressSpace, $networkDefinition.AddressSpace) } |
                         Select-Object -First 1
                         
