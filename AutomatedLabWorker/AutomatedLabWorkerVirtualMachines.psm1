@@ -1383,10 +1383,14 @@ function Repair-LWHypervNetworkConfig
         {
             $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
             $i = 0
-            
+
+            $sortedAdapters = New-Object System.Collections.ArrayList
+            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
+            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
+             
             Write-Verbose "Setting the network order"
             [array]::Reverse($machine.NetworkAdapters)
-            foreach ($adapterInfo in $machine.NetworkAdapters)
+            foreach ($adapterInfo in $sortedAdapters)
             {
                 Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
                 do {
