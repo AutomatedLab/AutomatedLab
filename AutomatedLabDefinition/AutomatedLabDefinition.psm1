@@ -2185,13 +2185,15 @@ function Add-LabMachineDefinition
 
             foreach ($networkDefinition in $networkDefinitions)
             {
-                #Check if address space of virtual network and address space specified matches
+                #check for an virtuel switch having already the name of the new network switch
                 $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
 
+                #does the current network definition has an address space assigned
                 if ($networkDefinition.AddressSpace)
                 {
-                    Write-Verbose -Message "Virtual network '$networkDefinition' specified including address space '$($networkDefinition.AddressSpace)'"
+                    Write-Verbose -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
                     
+                    #then check if the existing network has the same address space as the new one and throw an exception if not
                     if ($existingNetwork)
                     {
                         if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
@@ -2203,10 +2205,21 @@ function Add-LabMachineDefinition
                     }
                     else
                     {
+                        #if the network does not already exist, verify if the address space if not already assigned
                         $otherHypervSwitch = $existingHyperVVirtualSwitches | Where-Object AddressSpace -eq $networkDefinition.AddressSpace
                         if ($otherHypervSwitch)
                         {
-                            throw "Another Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using address space specified in this lab. Cannot continue."
+                            throw "Another Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using address space specified in this lab ($($networkDefinition.AddressSpace)). Cannot continue."
+                        }
+                        
+                        #and also verify that the new address space is not overlapping with an exsiting one
+                        $otherHypervSwitch = $existingHyperVVirtualSwitches |
+                        Where-Object { [AutomatedLab.IPNetwork]::Overlap($_.AddressSpace, $networkDefinition.AddressSpace) } |
+                        Select-Object -First 1
+                        
+                        if ($otherHypervSwitch)
+                        {
+                            throw "The Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using an address space ($($otherHypervSwitch.AddressSpace)) that overlaps with the specified one in this lab ($($networkDefinition.AddressSpace)). Cannot continue."
                         }
                         
                         Write-Verbose -Message 'Address space specified is valid'
@@ -2245,16 +2258,6 @@ function Add-LabMachineDefinition
                     }
                 }
             }
-            
-            <#    
-                    if (-not $PSBoundParameters.ContainsKey('Network'))
-                    {
-                    #Network was not specified for machine. Use first virtual network.
-                    
-                    $network = (Get-LabVirtualNetworkDefinition)[0].Name
-                    }
-                    #}
-            #>
         }
     }
     
