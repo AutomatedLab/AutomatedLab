@@ -1227,6 +1227,12 @@ function Mount-LWIsoImage
         [switch]$PassThru
     )
 
+    if (-not (Test-Path -Path $IsoPath -PathType Leaf))
+    {
+        Write-Error "The path '$IsoPath' could not be found or is pointing to a folder"
+        return
+    }
+
     $machines = Get-LabMachine -ComputerName $ComputerName
 
     foreach ($machine in $machines)
