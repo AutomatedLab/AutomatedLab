@@ -73,8 +73,16 @@ namespace AutomatedLab
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
             var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath);
+            
+            if (key == null)
+                throw new FileNotFoundException(string.Format("The registry key '{0}' does not exist", registryPath));
 
-            var sr = new StringReader(key.GetValue(valueName).ToString());
+            var value = key.GetValue(valueName);
+
+            if (value == null)
+                throw new FileNotFoundException(string.Format("The registry value '{0}' does not exist in key '{1}'", valueName, registryPath));
+
+            StringReader sr = new StringReader(value.ToString());
 
             var items = (ListXmlStore<T>)serializer.Deserialize(sr);
 
