@@ -40,6 +40,7 @@ namespace AutomatedLab
         private Hashtable azureProperties;
         private Hashtable hypervProperties;
         private SerializableDictionary<string, string> notes;
+        private SerializableDictionary<string, string> internalNotes;
 
         public int Processors
         {
@@ -297,12 +298,18 @@ namespace AutomatedLab
             set { notes = value; }
         }
 
+        public SerializableDictionary<string, string> InternalNotes
+        {
+            get { return internalNotes; }
+            set { internalNotes = value; }
+        }
+
         public Machine()
         {
             roles = new List<Role>();
             postInstallationActivity = new List<PostInstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
-            notes = new Hashtable();
+            internalNotes = new Hashtable();
         }
 
         public override string ToString()

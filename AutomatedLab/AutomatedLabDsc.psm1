@@ -128,7 +128,7 @@ function Install-LabDscPullServer
             Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
         } -PassThru
         
-        $machine.Notes.DscRegistrationKey = $registrationKey
+        $machine.InternalNotes.DscRegistrationKey = $registrationKey
     }
     
     Export-Lab
@@ -202,7 +202,7 @@ function Install-LabDscClient
             )
     
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachines, $pullServerMachines.Notes.DscRegistrationKey -PassThru
+        } -ArgumentList $pullServerMachines, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
     }
 }
 #endregion Install-LabDscClient

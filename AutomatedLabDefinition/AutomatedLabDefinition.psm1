@@ -1715,6 +1715,8 @@ function Add-LabMachineDefinition
         [hashtable]$AzureProperties,
 
         [hashtable]$HypervProperties,
+
+        [hashtable]$Notes,
         
         #Created ValidateSet using: "'" + ((Get-AzureRoleSize | Select-Object -ExpandProperty RoleSizeLabel | Sort-Object) -join "', '") + "'"
         [ValidateSet('A10 (8 cores, 57344 MB)', 'A11 (16 cores, 114688 MB)', 'A5 (2 cores, 14336 MB)', 'A6 (4 cores, 28672 MB)', 'A7 (8 cores, 57344 MB)', 'A8 (8 cores, 57344 MB)', 'A9 (16 cores, 114688 MB)', 'Basic_A0 (1 cores, 768 MB)', 'Basic_A1 (1 cores, 1792 MB)', 'Basic_A2 (2 cores, 3584 MB)', 'Basic_A3 (4 cores, 7168 MB)', 'Basic_A4 (8 cores, 14336 MB)', 'ExtraLarge (8 cores, 14336 MB)', 'ExtraSmall (1 cores, 768 MB)', 'Large (4 cores, 7168 MB)', 'Medium (2 cores, 3584 MB)', 'Small (1 cores, 1792 MB)', 'Standard_D1 (1 cores, 3584 MB)', 'Standard_D11 (2 cores, 14336 MB)', 'Standard_D12 (4 cores, 28672 MB)', 'Standard_D13 (8 cores, 57344 MB)', 'Standard_D14 (16 cores, 114688 MB)', 'Standard_D2 (2 cores, 7168 MB)', 'Standard_D3 (4 cores, 14336 MB)', 'Standard_D4 (8 cores, 28672 MB)', 'Standard_DS1 (1 cores, 3584 MB)', 'Standard_DS11 (2 cores, 14336 MB)', 'Standard_DS12 (4 cores, 28672 MB)', 'Standard_DS13 (8 cores, 57344 MB)', 'Standard_DS14 (16 cores, 114688 MB)', 'Standard_DS2 (2 cores, 7168 MB)', 'Standard_DS3 (4 cores, 14336 MB)', 'Standard_DS4 (8 cores, 28672 MB)', 'Standard_G1 (2 cores, 28672 MB)', 'Standard_G2 (4 cores, 57344 MB)', 'Standard_G3 (8 cores, 114688 MB)', 'Standard_G4 (16 cores, 229376 MB)', 'Standard_G5 (32 cores, 458752 MB)')]
@@ -2475,6 +2477,11 @@ function Add-LabMachineDefinition
             }
             $machine.Disks.Add($labDisk)
         }
+    }
+    
+    if ($Notes)
+    {
+        $machine.Notes = $Notes
     }
 
     Write-ScreenInfo -Message 'Done' -TaskEnd
