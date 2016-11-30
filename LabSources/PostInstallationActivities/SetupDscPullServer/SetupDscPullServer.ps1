@@ -55,6 +55,7 @@ Configuration SetupDscPullServer
             ModulePath              = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
             ConfigurationPath       = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
             State                   = 'Started'
+	    UseSecurityBestPractices = $False
             DependsOn               = '[WindowsFeature]DSCServiceFeature'
         } 
 
