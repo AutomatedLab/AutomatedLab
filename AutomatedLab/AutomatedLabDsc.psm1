@@ -97,6 +97,8 @@ function Install-LabDscPullServer
         
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
+        $guid = new-guid | select -ExpandProperty guid
+        
         $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
             param  
             (
@@ -115,7 +117,7 @@ function Install-LabDscPullServer
             C:\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
     
-        } -ArgumentList $machine, $cert.Thumbprint, (New-Guid) -AsJob -PassThru
+        } -ArgumentList $machine, $cert.Thumbprint, $guid -AsJob -PassThru
     }
     
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
