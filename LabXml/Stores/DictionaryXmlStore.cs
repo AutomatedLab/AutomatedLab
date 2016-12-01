@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.IO;
 using System.Text;
 using System.Xml.Serialization;
@@ -8,6 +9,17 @@ namespace AutomatedLab
     [Serializable]
     public class DictionaryXmlStore<TKey, TValue> : SerializableDictionary<TKey, TValue>
     {
+        public DictionaryXmlStore()
+        { }
+
+        public DictionaryXmlStore(Hashtable hashtable)
+        {
+            foreach (DictionaryEntry kvp in hashtable)
+            {
+                Add((TKey)kvp.Key, (TValue)kvp.Value);
+            }
+        }
+
         public void AddFromFile(string path)
         {
             var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
@@ -15,7 +27,7 @@ namespace AutomatedLab
 
             var newItems = (DictionaryXmlStore<TKey, TValue>)serializer.Deserialize(fileStream);
             newItems.ForEach(item => Add(item.Key, item.Value));
-            
+
             fileStream.Close();
         }
 
