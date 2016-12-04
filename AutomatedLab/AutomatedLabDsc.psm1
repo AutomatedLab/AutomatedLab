@@ -97,7 +97,7 @@ function Install-LabDscPullServer
         
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
-        $guid = new-guid | select -ExpandProperty guid
+        $guid = (New-Guid).Guid
         
         $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
             param  
