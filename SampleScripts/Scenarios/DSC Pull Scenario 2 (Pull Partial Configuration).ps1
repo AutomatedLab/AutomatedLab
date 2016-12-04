@@ -39,7 +39,7 @@ Add-LabMachineDefinition -Name DDC2 -Roles DC
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name DRouter -Roles FileServer, Routing -NetworkAdapter $netAdapter
 
 #CA

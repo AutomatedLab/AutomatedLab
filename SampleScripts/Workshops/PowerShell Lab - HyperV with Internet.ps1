@@ -44,7 +44,7 @@ Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles DC -IpAddress 192.16
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer, Routing -NetworkAdapter $netAdapter
 
 #web server

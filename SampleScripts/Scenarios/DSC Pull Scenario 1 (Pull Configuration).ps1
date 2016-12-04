@@ -47,7 +47,7 @@ Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $pos
 #router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name DRouter -Roles Routing -NetworkAdapter $netAdapter
 
 #CA

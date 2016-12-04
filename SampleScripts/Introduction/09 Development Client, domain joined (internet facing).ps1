@@ -20,7 +20,7 @@ $PSDefaultParameterValues = @{
 
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Lab1
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name DC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
 
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder

@@ -43,7 +43,7 @@ Add-LabMachineDefinition -Name PGDC1 -Memory 512MB `
 #router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.110.50
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name PGRouter -Memory 512MB `
 -Roles Routing -NetworkAdapter $netAdapter
 
