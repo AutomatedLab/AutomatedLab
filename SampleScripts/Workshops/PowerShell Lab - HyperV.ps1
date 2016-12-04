@@ -15,7 +15,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 Set-LabInstallationCredential -Username Install -Password Somepass1
@@ -47,7 +47,7 @@ Add-LabMachineDefinition -Name POSHWeb1 -Memory 512MB -Roles WebServer -IpAddres
 
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB
 #SQL server with demo databases
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_x64_dvd_3932034.iso
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
 Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles SQLServer2014 -IpAddress 192.168.30.52 -PostInstallationActivity $postInstallActivity
 #>

@@ -22,8 +22,8 @@ Add-LabAzureSubscription -Path $azurePublishingFile -DefaultLocationName $azureD
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.41.0/24 -VirtualizationHost Azure
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
-Add-LabDomainDefinition -Name child.contoso.com -AdminUser install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name child.contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 $installationCredential = New-Object PSCredential('install', ('Somepass2014' | ConvertTo-SecureString -AsPlainText -Force))

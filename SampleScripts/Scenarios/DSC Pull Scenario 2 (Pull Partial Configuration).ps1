@@ -13,10 +13,10 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName
-Add-LabVirtualNetworkDefinition -Name Internet -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 Set-LabInstallationCredential -Username Install -Password Somepass1
