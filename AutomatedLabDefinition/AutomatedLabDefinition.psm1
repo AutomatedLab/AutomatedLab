@@ -242,78 +242,88 @@ $unattendedXmlDefaultContent2008 = @'
     <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <RunSynchronous>
         <RunSynchronousCommand wcm:action="add">
-            <Description>EnableAdmin</Description>
+            <Description>Disable and stop Windows Firewall 1</Description>
             <Order>1</Order>
+            <Path>cmd /c sc config MpsSvc start=disabled</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>Disable and stop Windows Firewall 2</Description>
+            <Order>2</Order>
+            <Path>cmd /c sc stop MpsSvc</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>EnableAdmin</Description>
+            <Order>3</Order>
             <Path>cmd /c net user Administrator /active:yes</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>UnfilterAdministratorToken</Description>
-            <Order>2</Order>
+            <Order>4</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v FilterAdministratorToken /t REG_DWORD /d 0 /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Remove First Logon Animation</Description>
-            <Order>3</Order>
+            <Order>5</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v EnableFirstLogonAnimation /d 0 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Do Not Open Server Manager At Logon</Description>
-            <Order>4</Order>
+            <Order>6</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\ServerManager" /v "DoNotOpenServerManagerAtLogon" /d 1 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Do not Open Initial Configuration Tasks At Logon</Description>
-            <Order>5</Order>
+            <Order>7</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\ServerManager\oobe" /v "DoNotOpenInitialConfigurationTasksAtLogon" /d 1 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Set Power Scheme to High Performance</Description>
-            <Order>6</Order>
+            <Order>8</Order>
             <Path>cmd /c powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Don't require password when console wakes up</Description>
-            <Order>7</Order>
+            <Order>9</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c fea3413e-7e05-4911-9a71-700331f1c294 0e796bdb-100d-47d6-a2d5-f7d2daa51f51 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Sleep timeout</Description>
-            <Order>8</Order>
+            <Order>10</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>monitor timeout</Description>
-            <Order>9</Order>
+            <Order>11</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 7516b95f-f776-4464-8c53-06167f40cc99 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 1</Description>
-            <Order>10</Order>
+            <Order>12</Order>
             <Path>cmd /c winrm quickconfig -quiet</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 2</Description>
-            <Order>11</Order>
+            <Order>13</Order>
             <Path>cmd /c winrm quickconfig -quiet -force</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 2</Description>
-            <Order>12</Order>
+            <Order>14</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell /v ExecutionPolicy /t REG_SZ /d Unrestricted /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Disable UAC</Description>
-            <Order>13</Order>
+            <Order>15</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system /v EnableLUA /t REG_DWORD /d 0 /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Configure BgInfo to start automatically</Description>
-            <Order>14</Order>
+            <Order>16</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v BgInfo /t REG_SZ /d "C:\Windows\BgInfo.exe C:\Windows\BgInfo.bgi /Timer:0 /nolicprompt" /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable Remote Desktop firewall rules</Description>
-            <Order>15</Order>
+            <Order>17</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
@@ -353,20 +363,30 @@ $unattendedXmlDefaultContent2008 = @'
   <settings pass="oobeSystem">
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <FirstLogonCommands>
+      <SynchronousCommand wcm:action="add">
+            <CommandLine>cmd /c sc config MpsSvc start=disabled</CommandLine>
+            <Description>1</Description>
+            <Order>1</Order>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <CommandLine>cmd /c sc stop MpsSvc</CommandLine>
+            <Description>2</Description>
+            <Order>2</Order>
+        </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm quickconfig -quiet</CommandLine>
             <Description>Enable Windows Remoting</Description>
-            <Order>1</Order>
+            <Order>3</Order>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm quickconfig -quiet -force</CommandLine>
             <Description>Enable Windows Remoting</Description>
-            <Order>2</Order>
+            <Order>4</Order>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm set winrm/config/service/auth @{CredSSP="true"}</CommandLine>
             <Description>Enable Windows Remoting CredSSP</Description>
-            <Order>3</Order>
+            <Order>5</Order>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -403,7 +423,6 @@ $unattendedXmlDefaultContent2008 = @'
   </settings>
 </unattend>
 '@
-
 #region Get-Type (helper function for creating generic types)
 function Get-Type
 {
