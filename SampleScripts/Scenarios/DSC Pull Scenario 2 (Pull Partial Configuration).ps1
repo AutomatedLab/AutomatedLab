@@ -1,3 +1,18 @@
+<#
+This scenario demos a DSC pull server confuguration using 3 pull servers. Each pull server publishes a configuration and the clients are
+pulling the configurations from all three servers (see "partial configuration').
+
+The lab must have an internet connection in order to download additional required bits. PowerShell 5.0
+or greater is required on all DSC pull servers or clients. Please take a look at introduction script '10 ISO Offline Patching.ps1' if you
+want to create a Windows Server 2012 base image with PowerShell 5.
+
+After the first a domain controller is setup, AutomatedLab (AL) configures the routing, two web servers and the CA. This scenario demos
+multiple DSC pull servers that is encrypting the network communication using SSL. For this AL creates a new certificate template
+(DSC Pull Server SSL. The DSC pull server requests a certificate using this template and configures DSC accordingly.
+
+AL also creates a default DSC configuration that creates a test file on each DSC client. The name of the file is TestFile_<PullServer>.
+The pull server the configuration is coming from is part of the file name as a client can have multiple pull servers (partial configuraion).
+#>
 $labName = 'DSCLab2'
 
 #--------------------------------------------------------------------------------------------------------------------
@@ -13,10 +28,10 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 Set-LabInstallationCredential -Username Install -Password Somepass1
