@@ -93,12 +93,12 @@ function New-LWAzureVM
     if ($sqlServerRoleName)
     {
         Write-Verbose -Message 'This is going to be a SQL Server VM'
-        $pattern = 'SQL Server (?<SqlVersion>\d{4}) (?<SqlIsR2>R2)? ?(?<SqlServicePack>RTM|SP\d) Standard on (?<OS>Windows Server \d{4} (R2)?)'
+        $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)-(?<OS>WS\d{4}(R2)?)'
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $sqlServerImages = $lab.AzureSettings.VmImages |
-        Where-Object ImageFamily -Match $pattern | 
-        Group-Object -Property Imagefamily | 
+        Where-Object Offer -Match $pattern | 
+        Group-Object -Property Offer | 
         ForEach-Object { 
             $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
         }
