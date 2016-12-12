@@ -87,22 +87,23 @@ namespace AutomatedLab
             {
                 //updating the list by getting the current list if Azure-VMImages:
                 //Get-AzureVMImage | Where-Object OS -eq Windows | Group-Object -Property Imagefamily | ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 } | Format-Table -Property Imagefamily, PublishedDate
+                
                 switch (operatingSystemName)
                 {
                     case "Windows Server 2008 R2 SERVERDATACENTER":
-                        return "Windows Server 2008 R2 SP1";
+                        return "2008-R2-SP1";
 
                     case "Windows Server 2012 SERVERDATACENTER":
-                        return "Windows Server 2012 Datacenter";
+                        return "2012-Datacenter";
 
                     case "Windows Server 2012 R2 SERVERDATACENTER":
-                        return "Windows Server 2012 R2 Datacenter";
+                        return "2012-R2-Datacenter";
 
                     case "Windows Server vNext SERVERDATACENTER":
-                        return "Windows Server Technical Preview";
+                        return "2016-Datacenter";
 
                     case "Windows 8.1 Enterprise":
-                        return "Windows 8.1 Enterprise (x64)";
+                        return "Win8.1-Ent-N";
 
                     default:
                         return string.Empty;
