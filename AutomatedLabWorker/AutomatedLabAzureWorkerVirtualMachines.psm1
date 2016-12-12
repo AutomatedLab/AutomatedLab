@@ -275,14 +275,14 @@ function New-LWAzureVM
     
     Write-ProgressIndicator
     
-    if (Get-Job -Name "CreateAzureVM ($machineServiceName)*" -ErrorAction SilentlyContinue | Where-Object State -ne 'Completed')
+    if (Get-Job -Name "CreateAzureVM ($machineResourceGroup)*" -ErrorAction SilentlyContinue | Where-Object State -ne 'Completed')
     {
-        Wait-LWLabJob -Name "CreateAzureVM ($machineServiceName)*" -NoDisplay -ProgressIndicator 10 -Timeout 30 -NoNewLine
+        Wait-LWLabJob -Name "CreateAzureVM ($machineResourceGroup)*" -NoDisplay -ProgressIndicator 10 -Timeout 30 -NoNewLine
     }
 
     $labVirtualNetworkDefinition = Get-LabVirtualNetworkDefinition
 
-    Start-Job -Name "CreateAzureVM ($machineServiceName) ($Machine)" -ArgumentList $Machine,
+    Start-Job -Name "CreateAzureVM ($machineResourceGroup) ($Machine)" -ArgumentList $Machine,
     $Machine.NetworkAdapters[0].VirtualSwitch.Name,
     $subnet,
     $roleSize.InstanceSize,
@@ -290,9 +290,12 @@ function New-LWAzureVM
     $osVhdLocation,
     $adminUserName,
     $adminPassword,
-    $machineServiceName,
+    $machineResourceGroup,
     $labVirtualNetworkDefinition,
-    $Machine.NetworkAdapters[0].Ipv4Address.IpAddress `
+    $Machine.NetworkAdapters[0].Ipv4Address.IpAddress,
+	$storageContext,
+	$resourceGroupName,
+	($lab.AzureSettings.DefaultLocation.DisplayName) `
     -ScriptBlock {
         param
         (
@@ -306,7 +309,10 @@ function New-LWAzureVM
             [string]$AdminPassword,
             [string]$MachineServiceName,
             [object[]]$LabVirtualNetworkDefinition, #AutomatedLab.VirtualNetwork[]
-            [object]$DefaultIpAddress #AutomatedLab.IPAddress
+            [object]$DefaultIpAddress, #AutomatedLab.IPAddress
+			[object]$storageContext,
+			[string]$resourceGroupName,
+			[string]$location
         )
 
         Import-Module AutomatedLab
