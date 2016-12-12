@@ -24,7 +24,7 @@ function Add-LabVirtualNetworkDefinition
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure' -and -not ((Get-LabDefinition).AzureSettings))
     {
-        Add-LabAzurePublishSettingFile
+        Add-LabAzureProfile
     }
 
     $azurePropertiesValidKeys = 'SubnetName', 'SubnetAddressPrefix', 'LocationName', 'DnsServers', 'ConnectToVnets'
