@@ -47,10 +47,11 @@ function New-LWAzureVM
     }
 
     Write-Verbose -Message "Creating container 'automatedlabdisks' for additional disks"
-    $container = Get-AzureStorageContainer -Name automatedlabdisks -ErrorAction SilentlyContinue
+	$storageContext = (Get-StorageAccount $lab.AzureSettings.DefaultStorageAccount).Context
+    $container = Get-AzureStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
     if (-not $container)
     {
-        $container = New-AzureStorageContainer -Name automatedlabdisks
+        $container = New-AzureStorageContainer -Name automatedlabdisks -Context $storageContext
     }
 
     Write-Verbose -Message "Scheduling creation Azure machine '$Machine'"
