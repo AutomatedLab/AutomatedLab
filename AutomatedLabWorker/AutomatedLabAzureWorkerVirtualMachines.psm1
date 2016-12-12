@@ -136,12 +136,12 @@ function New-LWAzureVM
     {
         Write-Verbose -Message 'This is going to be a Visual Studio VM'
 
-        $pattern = 'Visual Studio (?<Edition>\w+) (?<Version>\d{4}) ((Update) (?<Update>\d))?.+ on (?<OS>Windows Server \d{4} (R2)?)$'
+        $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d\d-(?<OS>WIN\d{2})'
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $visualStudioImages = $lab.AzureSettings.VmImages |
-        Where-Object ImageFamily -Match $pattern | 
-        Group-Object -Property Imagefamily | 
+        Where-Object Offer -EQ VisualStudio | 
+        Group-Object -Property Offer | 
         ForEach-Object { 
             $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
         }
@@ -149,7 +149,7 @@ function New-LWAzureVM
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($visualStudioImage in $visualStudioImages)
         {
-            $visualStudioImage.ImageFamily -match $pattern | Out-Null
+            $visualStudioImage.Offer -match $pattern | Out-Null
 
             $visualStudioImage | Add-Member -Name Version -Value $Matches.Version -MemberType NoteProperty -Force
             $visualStudioImage | Add-Member -Name Update -Value $Matches.Update -MemberType NoteProperty -Force
@@ -161,7 +161,7 @@ function New-LWAzureVM
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImageName = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version -eq $machineOs.Version } |
         Sort-Object -Property Update -Descending |
-        Select-Object -ExpandProperty ImageName -First 1
+        Select-Object -ExpandProperty Offer -First 1
 
         if (-not $vmImageName)
         {
