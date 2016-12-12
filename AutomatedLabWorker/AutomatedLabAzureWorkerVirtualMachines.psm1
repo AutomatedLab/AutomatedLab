@@ -225,8 +225,8 @@ function New-LWAzureVM
         }
 
         $vmImageName = $lab.AzureSettings.VmImages |
-        Where-Object ImageFamily -eq $vmImageName |
-        Select-Object -ExpandProperty ImageName
+        Where-Object Skus -eq $vmImageName |
+        Select-Object -ExpandProperty Skus
     }
     Write-Verbose -Message "The following image '$vmImageName' was chosen"
     
