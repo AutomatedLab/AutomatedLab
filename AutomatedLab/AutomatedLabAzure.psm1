@@ -184,11 +184,16 @@ function Add-LabAzureSubscription
 		Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
     }
 
+	if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
+    {
+        New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
+    }
+
     $resourceGroups = Get-AzureRmResourceGroup
     $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
     Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
-    $storageAccounts = Get-AzureRmStorageAccount -WarningAction SilentlyContinue
+    $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
     $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
@@ -218,7 +223,7 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
-        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Offer | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
+        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Where-Object PublisherName -Like '*Microsoft*' | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Offer | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
         $global:cacheVmImages = $vmImages
     }
 
@@ -255,14 +260,9 @@ function Add-LabAzureSubscription
                 throw 'Cannot proceed with an invalid default storage account'
             }
         }
-        Write-Verbose "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to subscription '$((Get-LabAzureDefaultSubscription).SubscriptionName)'"
-        [void](Set-AzureRmCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName (Get-LabAzureDefaultResourceGroup))
-    }
-    
-    if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
-    {
-        New-LabAzureResourceGroup -ServiceName (Get-LabDefinition).Name -LocationName $DefaultLocationName
-    }
+        Write-Verbose "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
+        [void](Set-AzureRmCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
+    }    
     
     <# TODO, seems deprecated and or dangerous Add all additional Azure Services if configured
     $resourceGroupNames = (Get-LabMachine).AzureProperties.ResourceGroupName | Select-Object -Unique
@@ -390,7 +390,8 @@ function Get-LabAzureLocation
                 }
                 catch
                 {
-                    Write-Warning "$testUrl $($_.Exception.Message)"
+					9999
+                    #Write-Warning "$testUrl $($_.Exception.Message)"
                 }
             }
         }
@@ -607,7 +608,7 @@ function New-LabAzureCertificate
     Update-LabAzureSettings
 	
     $certSubject = "CN=$($Script:lab.Name).cloudapp.net"
-    $service = Get-LabAzureDefaultService
+    $service = Get-LabAzureDefaultResourceGroup
     $cert = dir Cert:\LocalMachine\My | Where-Object Subject -eq $certSubject -ErrorAction SilentlyContinue
 	
     if (-not $cert)
@@ -715,7 +716,7 @@ function Remove-LabAzureResourceGroup
         
         Update-LabAzureSettings
         
-        $services = Get-LabAzureResourceGroup
+        $resourceGroups = Get-LabAzureResourceGroup
     }
 
     process
@@ -724,7 +725,7 @@ function Remove-LabAzureResourceGroup
 
         foreach ($name in $ResourceGroupName)
         {
-            if ($services.ServiceName -contains $name)
+            if ($resourceGroups.ResourceGroupNames -contains $name)
             {
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
                 Write-Verbose "RG '$($name)' removed"
@@ -758,7 +759,7 @@ function Get-LabAzureResourceGroup
 
     $resourceGroups = $script:lab.AzureSettings.ResourceGroups | Where-Object { $_.ResourceGroupName -eq $Script:lab.Name }
     
-    if ($ServiceName)
+    if ($ResourceGroupName)
     {
         Write-Verbose "Getting the resource groups '$($ResourceGroupName -join ', ')'"
         $resourceGroups | Where-Object ResourceGroupName -in $ResourceGroupName
