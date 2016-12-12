@@ -106,7 +106,7 @@ function New-LWAzureVM
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($sqlServerImage in $sqlServerImages)
         {
-            $sqlServerImage.ImageFamily -match $pattern | Out-Null
+            $sqlServerImage.Offer -match $pattern | Out-Null
 
             $sqlServerImage | Add-Member -Name SqlVersion -Value $Matches.SqlVersion -MemberType NoteProperty -Force
             $sqlServerImage | Add-Member -Name SqlIsR2 -Value $Matches.SqlIsR2 -MemberType NoteProperty -Force
@@ -119,7 +119,7 @@ function New-LWAzureVM
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImageName = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
         Sort-Object -Property SqlServicePack -Descending |
-        Select-Object -ExpandProperty ImageName -First 1
+        Select-Object -ExpandProperty Offer -First 1
 
         if (-not $vmImageName)
         {
