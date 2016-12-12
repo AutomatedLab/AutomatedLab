@@ -17,29 +17,29 @@ function New-LWAzureVM
     
     $lab = Get-Lab
     
-    $cloudServiceName = $lab.Name
+    $resourceGroupName = $lab.Name
     if ($machine.AzureProperties)
     {
-        if ($machine.AzureProperties.ContainsKey('CloudServiceName'))
+        if ($machine.AzureProperties.ContainsKey('ResourceGroupName'))
         {
-            #if the cloud service name is provided for the machine, it replaces the default
-            $cloudServiceName = $machine.AzureProperties.CloudServiceName
+            #if the resource group name is provided for the machine, it replaces the default
+            $resourceGroupName = $machine.AzureProperties.ResourceGroupName
         }
     }
     
-    $machineServiceName = $Machine.AzureProperties.CloudServiceName
-    if (-not $machineServiceName)
+    $machineResourceGroup = $Machine.AzureProperties.ResourceGroupName
+    if (-not $machineResourceGroup)
     {
-        $machineServiceName = (Get-LabAzureDefaultService).ServiceName
+        $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
-    Write-Verbose -Message "Target service for machine: '$machineServiceName'"
+    Write-Verbose -Message "Target service for machine: '$machineResourceGroup'"
     
     if (-not $global:cacheVMs)
     {
-        $global:cacheVMs = Get-AzureVM -WarningAction SilentlyContinue
+        $global:cacheVMs = Get-AzureRmVM -WarningAction SilentlyContinue
     }
 
-    if ($global:cacheVMs | Where-Object {$_.Name -eq $Machine.Name -and $_.ServiceName -eq $cloudServiceName})
+    if ($global:cacheVMs | Where-Object {$_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName})
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
