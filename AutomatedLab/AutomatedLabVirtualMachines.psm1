@@ -1220,7 +1220,7 @@ function Mount-LabIsoImage
     {
         if (-not $SupressOutput)
         {
-            Write-ScreenInfo -Message "Mounting ISO image '$IsoPath' to computer '$machine'" -Type Info -NoNewLine
+            Write-ScreenInfo -Message "Mounting ISO image '$IsoPath' to computer '$machine'" -Type Info
         }
         
         Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
@@ -1254,7 +1254,7 @@ function Dismount-LabIsoImage
     {
         if (-not $SupressOutput)
         {
-            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$machine'." -Type Info -NoNewLine
+            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$machine'." -Type Info
         }
         
         Dismount-LWIsoImage -ComputerName $machine
