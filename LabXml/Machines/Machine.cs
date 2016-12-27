@@ -309,7 +309,8 @@ namespace AutomatedLab
             roles = new List<Role>();
             postInstallationActivity = new List<PostInstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
-            internalNotes = new Hashtable();
+            internalNotes = new SerializableDictionary<string, string>();
+            notes = new SerializableDictionary<string, string>();
         }
 
         public override string ToString()
