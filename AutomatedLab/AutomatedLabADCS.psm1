@@ -1711,7 +1711,13 @@ function Get-LabIssuingCA
         return
     }
 
-    Get-LabMachine -ComputerName $issuingCAs
+    Get-LabMachine -ComputerName $issuingCAs | ForEach-Object {
+        $caName = Invoke-LabCommand -ComputerName $_ -ScriptBlock { ((certutil -config $args[0] -ping)[1] -split '"')[1] } -ArgumentList $_.Name -PassThru -NoDisplay
+        
+        $_ | Add-Member -Name CaName -MemberType NoteProperty -Value $caName -Force
+        $_ | Add-Member -Name CaPath -MemberType ScriptProperty -Value { $_.FQDN + '\' + $_.CaName } -Force
+        $_
+    }
 }
 #endregion Get-LabIssuingCA
 
