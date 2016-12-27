@@ -523,28 +523,22 @@ function New-LabDefinition
     
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string]$Name,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [string]$Path,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [string]$VmPath,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [int]$ReferenceDiskSizeInGB = 50,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [int]$MaxMemory = 0,
+        
+        [hashtable]$Notes,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [switch]$UseAllMemory = $false,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [switch]$UseStaticMemory = $false,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('Azure', 'HyperV')]
         [string]$DefaultVirtualizationEngine,
         
@@ -859,6 +853,8 @@ function New-LabDefinition
     $script:machines = New-Object $type
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Disk
     $script:disks = New-Object $type
+    
+    $script:lab.Notes = $Notes
     
     Write-LogFunctionExit
 }
