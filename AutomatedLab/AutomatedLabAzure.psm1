@@ -219,12 +219,12 @@ function Add-LabAzureSubscription
     if ($global:cacheVmImages)
     {
         Write-ScreenInfo -Message 'Querying available operating system images (using cache)' -Type Info
-        $vmImages = $global:cacheVmImages | Group-Object -Property ImageFamily | ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        $vmImages = $global:cacheVmImages
     }
     else
     {
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
-        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Where-Object PublisherName -Like '*Microsoft*' | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Offer | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
+        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Where-Object PublisherName -Like '*Microsoft*' | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Skus | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
         $global:cacheVmImages = $vmImages
     }
 
