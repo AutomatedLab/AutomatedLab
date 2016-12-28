@@ -9,6 +9,7 @@ namespace AutomatedLab
     {
         private List<AzureSubscription> subscriptions;
         private AzureSubscription defaultSubscription;
+        private string azureRmProfilePath;        
         private string subscriptionFileContent;
         private List<AzureLocation> locations;
         private AzureRmStorageAccount defaultStorageAccount;
@@ -28,6 +29,13 @@ namespace AutomatedLab
             get { return storageAccounts; }
             set { storageAccounts = value; }
         }
+
+        public string AzureProfilePath
+        {
+            get { return azureRmProfilePath; }
+            set { azureRmProfilePath = value; }
+        }
+
 
         public string SubscriptionFileContent
         {
