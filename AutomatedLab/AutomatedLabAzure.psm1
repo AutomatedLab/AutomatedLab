@@ -183,16 +183,16 @@ function Add-LabAzureSubscription
 
 		$DefaultResourceGroupName = (New-AzureRmResourceGroup @rg_param -ErrorAction Stop).ResourceGroupName
 		Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
-    }
+    }	
+
+    $resourceGroups = Get-AzureRmResourceGroup
+    $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
+    Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
 	if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
     {
         New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
     }
-
-    $resourceGroups = Get-AzureRmResourceGroup
-    $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
-    Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
     $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
