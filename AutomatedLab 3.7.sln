@@ -93,6 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
 		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
+		AutomatedLab\AutomatedLabOffice.psm1 = AutomatedLab\AutomatedLabOffice.psm1
 		AutomatedLab\AutomatedLabRouting.psm1 = AutomatedLab\AutomatedLabRouting.psm1
 		AutomatedLab\AutomatedLabSharePoint.psm1 = AutomatedLab\AutomatedLabSharePoint.psm1
 		AutomatedLab\AutomatedLabSQL.psm1 = AutomatedLab\AutomatedLabSQL.psm1
