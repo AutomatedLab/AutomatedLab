@@ -97,6 +97,8 @@ function Install-LabDscPullServer
         
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
+        $guid = (New-Guid).Guid
+        
         $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
             param  
             (
@@ -115,7 +117,7 @@ function Install-LabDscPullServer
             C:\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
     
-        } -ArgumentList $machine, $cert.Thumbprint, (New-Guid) -AsJob -PassThru
+        } -ArgumentList $machine, $cert.Thumbprint, $guid -AsJob -PassThru
     }
     
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
@@ -128,7 +130,7 @@ function Install-LabDscPullServer
             Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
         } -PassThru
         
-        $machine.Notes.DscRegistrationKey = $registrationKey
+        $machine.InternalNotes.DscRegistrationKey = $registrationKey
     }
     
     Export-Lab
@@ -202,7 +204,7 @@ function Install-LabDscClient
             )
     
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachines, $pullServerMachines.Notes.DscRegistrationKey -PassThru
+        } -ArgumentList $pullServerMachines, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
     }
 }
 #endregion Install-LabDscClient

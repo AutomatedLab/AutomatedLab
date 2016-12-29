@@ -242,78 +242,88 @@ $unattendedXmlDefaultContent2008 = @'
     <component name="Microsoft-Windows-Deployment" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <RunSynchronous>
         <RunSynchronousCommand wcm:action="add">
-            <Description>EnableAdmin</Description>
+            <Description>Disable and stop Windows Firewall 1</Description>
             <Order>1</Order>
+            <Path>cmd /c sc config MpsSvc start=disabled</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>Disable and stop Windows Firewall 2</Description>
+            <Order>2</Order>
+            <Path>cmd /c sc stop MpsSvc</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>EnableAdmin</Description>
+            <Order>3</Order>
             <Path>cmd /c net user Administrator /active:yes</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>UnfilterAdministratorToken</Description>
-            <Order>2</Order>
+            <Order>4</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System /v FilterAdministratorToken /t REG_DWORD /d 0 /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Remove First Logon Animation</Description>
-            <Order>3</Order>
+            <Order>5</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" /v EnableFirstLogonAnimation /d 0 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Do Not Open Server Manager At Logon</Description>
-            <Order>4</Order>
+            <Order>6</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\ServerManager" /v "DoNotOpenServerManagerAtLogon" /d 1 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Do not Open Initial Configuration Tasks At Logon</Description>
-            <Order>5</Order>
+            <Order>7</Order>
             <Path>cmd /c reg add "HKLM\SOFTWARE\Microsoft\ServerManager\oobe" /v "DoNotOpenInitialConfigurationTasksAtLogon" /d 1 /t REG_DWORD /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Set Power Scheme to High Performance</Description>
-            <Order>6</Order>
+            <Order>8</Order>
             <Path>cmd /c powercfg -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Don't require password when console wakes up</Description>
-            <Order>7</Order>
+            <Order>9</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c fea3413e-7e05-4911-9a71-700331f1c294 0e796bdb-100d-47d6-a2d5-f7d2daa51f51 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>Sleep timeout</Description>
-            <Order>8</Order>
+            <Order>10</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 238c9fa8-0aad-41ed-83f4-97be242c8f20 29f6c1db-86da-48c5-9fdb-f2b67b1f44da 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">   
             <Description>monitor timeout</Description>
-            <Order>9</Order>
+            <Order>11</Order>
             <Path>cmd /c powercfg -setacvalueindex 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c 7516b95f-f776-4464-8c53-06167f40cc99 3c0bc021-c8a8-4e07-a973-6b14cbcb2b7e 0</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 1</Description>
-            <Order>10</Order>
+            <Order>12</Order>
             <Path>cmd /c winrm quickconfig -quiet</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 2</Description>
-            <Order>11</Order>
+            <Order>13</Order>
             <Path>cmd /c winrm quickconfig -quiet -force</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable PowerShell Remoting 2</Description>
-            <Order>12</Order>
+            <Order>14</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell /v ExecutionPolicy /t REG_SZ /d Unrestricted /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Disable UAC</Description>
-            <Order>13</Order>
+            <Order>15</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\policies\system /v EnableLUA /t REG_DWORD /d 0 /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Configure BgInfo to start automatically</Description>
-            <Order>14</Order>
+            <Order>16</Order>
             <Path>cmd /c reg add HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run /v BgInfo /t REG_SZ /d "C:\Windows\BgInfo.exe C:\Windows\BgInfo.bgi /Timer:0 /nolicprompt" /f</Path>
         </RunSynchronousCommand>
         <RunSynchronousCommand wcm:action="add">
             <Description>Enable Remote Desktop firewall rules</Description>
-            <Order>15</Order>
+            <Order>17</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
@@ -353,20 +363,30 @@ $unattendedXmlDefaultContent2008 = @'
   <settings pass="oobeSystem">
     <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <FirstLogonCommands>
+      <SynchronousCommand wcm:action="add">
+            <CommandLine>cmd /c sc config MpsSvc start=disabled</CommandLine>
+            <Description>1</Description>
+            <Order>1</Order>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <CommandLine>cmd /c sc stop MpsSvc</CommandLine>
+            <Description>2</Description>
+            <Order>2</Order>
+        </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm quickconfig -quiet</CommandLine>
             <Description>Enable Windows Remoting</Description>
-            <Order>1</Order>
+            <Order>3</Order>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm quickconfig -quiet -force</CommandLine>
             <Description>Enable Windows Remoting</Description>
-            <Order>2</Order>
+            <Order>4</Order>
         </SynchronousCommand>
         <SynchronousCommand wcm:action="add">
             <CommandLine>winrm set winrm/config/service/auth @{CredSSP="true"}</CommandLine>
             <Description>Enable Windows Remoting CredSSP</Description>
-            <Order>3</Order>
+            <Order>5</Order>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -403,7 +423,6 @@ $unattendedXmlDefaultContent2008 = @'
   </settings>
 </unattend>
 '@
-
 #region Get-Type (helper function for creating generic types)
 function Get-Type
 {
@@ -504,28 +523,22 @@ function New-LabDefinition
     
     [CmdletBinding()]
     param (
-        [Parameter(Mandatory = $false, ValueFromPipelineByPropertyName = $true)]
         [string]$Name,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [string]$Path,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [string]$VmPath,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [int]$ReferenceDiskSizeInGB = 50,
         
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [int]$MaxMemory = 0,
+        
+        [hashtable]$Notes,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [switch]$UseAllMemory = $false,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [switch]$UseStaticMemory = $false,
 
-        [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('Azure', 'HyperV')]
         [string]$DefaultVirtualizationEngine,
         
@@ -840,6 +853,8 @@ function New-LabDefinition
     $script:machines = New-Object $type
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Disk
     $script:disks = New-Object $type
+    
+    $script:lab.Notes = $Notes
     
     Write-LogFunctionExit
 }
@@ -1715,6 +1730,8 @@ function Add-LabMachineDefinition
         [hashtable]$AzureProperties,
 
         [hashtable]$HypervProperties,
+
+        [hashtable]$Notes,
         
         #Created ValidateSet using: "'" + ((Get-AzureRMVmSize -Location 'central us' | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}) -join "', '")  + "'" | clip
         [ValidateSet('Basic_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Basic_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Basic_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Basic_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Basic_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Standard_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Standard_A1_v2 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Standard_A2_v2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_A2m_v2 (2 Cores, 16384 Mb, 4 max data disks)', 'Standard_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Standard_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A4_v2 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_A4m_v2 (4 Cores, 32768 Mb, 8 max data disks)', 'Standard_A5 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_A6 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_A7 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_A8_v2 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_A8m_v2 (8 Cores, 65536 Mb, 16 max data disks)', 'Standard_D1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_D2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_DS1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_DS2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_F1 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F16 (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F16s (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F1s (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F2s (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F4 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F4s (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F8 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_F8s (8 Cores, 16384 Mb, 16 max data disks)')]
@@ -2185,13 +2202,15 @@ function Add-LabMachineDefinition
 
             foreach ($networkDefinition in $networkDefinitions)
             {
-                #Check if address space of virtual network and address space specified matches
+                #check for an virtuel switch having already the name of the new network switch
                 $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
 
+                #does the current network definition has an address space assigned
                 if ($networkDefinition.AddressSpace)
                 {
-                    Write-Verbose -Message "Virtual network '$networkDefinition' specified including address space '$($networkDefinition.AddressSpace)'"
+                    Write-Verbose -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
                     
+                    #then check if the existing network has the same address space as the new one and throw an exception if not
                     if ($existingNetwork)
                     {
                         if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
@@ -2203,10 +2222,22 @@ function Add-LabMachineDefinition
                     }
                     else
                     {
+                        #if the network does not already exist, verify if the address space if not already assigned
                         $otherHypervSwitch = $existingHyperVVirtualSwitches | Where-Object AddressSpace -eq $networkDefinition.AddressSpace
                         if ($otherHypervSwitch)
                         {
-                            throw "Another Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using address space specified in this lab. Cannot continue."
+                            throw "Another Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using address space specified in this lab ($($networkDefinition.AddressSpace)). Cannot continue."
+                        }
+                        
+                        #and also verify that the new address space is not overlapping with an exsiting one
+                        $otherHypervSwitch = $existingHyperVVirtualSwitches |
+                        Where-Object { $_.AddressSpace } |
+                        Where-Object { [AutomatedLab.IPNetwork]::Overlap($_.AddressSpace, $networkDefinition.AddressSpace) } |
+                        Select-Object -First 1
+                        
+                        if ($otherHypervSwitch)
+                        {
+                            throw "The Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using an address space ($($otherHypervSwitch.AddressSpace)) that overlaps with the specified one in this lab ($($networkDefinition.AddressSpace)). Cannot continue."
                         }
                         
                         Write-Verbose -Message 'Address space specified is valid'
@@ -2245,16 +2276,6 @@ function Add-LabMachineDefinition
                     }
                 }
             }
-            
-            <#    
-                    if (-not $PSBoundParameters.ContainsKey('Network'))
-                    {
-                    #Network was not specified for machine. Use first virtual network.
-                    
-                    $network = (Get-LabVirtualNetworkDefinition)[0].Name
-                    }
-                    #}
-            #>
         }
     }
     
@@ -2471,6 +2492,11 @@ function Add-LabMachineDefinition
             }
             $machine.Disks.Add($labDisk)
         }
+    }
+    
+    if ($Notes)
+    {
+        $machine.Notes = $Notes
     }
 
     Write-ScreenInfo -Message 'Done' -TaskEnd

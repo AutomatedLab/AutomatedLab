@@ -87,6 +87,7 @@ namespace AutomatedLab
         private OperatingSystem defaultOperatingSystem;
         private string defaultVirtualizationEngine;
         private User defaultInstallationUserCredential;
+        private SerializableDictionary<string, string> notes;
 
         private AzureSettings azureSettings;
         private VMWareConfiguration vmwareSettings;
@@ -179,6 +180,12 @@ namespace AutomatedLab
             set { defaultInstallationUserCredential = value; }
         }
 
+        public SerializableDictionary<string, string> Notes
+        {
+            get { return notes; }
+            set { notes = value; }
+        }
+
         public List<DiskDefinitionFile> DiskDefinitionFiles
         {
             get { return diskDefinitionFiles; }
@@ -208,6 +215,7 @@ namespace AutomatedLab
 
             sources.ISOs = new List<IsoImage>();
             virtualNetworks = new List<VirtualNetwork>();
+            notes = new SerializableDictionary<string, string>();
         }
 
         public bool IsRootDomain(string domainName)

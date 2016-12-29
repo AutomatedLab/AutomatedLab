@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLab.psm1'
     
     # Version number of this module.
-    ModuleVersion = '3.8.0.8'
+    ModuleVersion = '3.8.0.11'
     
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
@@ -58,6 +58,7 @@
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
         'AutomatedLabDsc.psm1'
+        'AutomatedLabOffice.psm1'
     )
     
     # Functions to export from this module
@@ -106,6 +107,8 @@
         'Install-LabSqlServers2008',
         'Install-LabSqlServers2012',
         'Install-LabSqlServers2014',
+        'Install-LabOffice2013',
+        'Install-LabOffice2016',
         'Install-LabDscPullServer',
         'Install-LabDscClient',
         'Install-LabRouting',
@@ -210,7 +213,8 @@
         'AutomatedLabAzure.psm1',
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1'
+        'AutomatedLabDsc.psm1',
+        'AutomatedLabOffice.psm1'
     )
     
     # List of all files packaged with this module
@@ -230,7 +234,8 @@
         'AutomatedLabAzure.psm1', 
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1'
+        'AutomatedLabDsc.psm1',
+        'AutomatedLabOffice.psm1'
     )
     
     # Private data to pass to the module specified in ModuleToProcess
@@ -258,6 +263,9 @@
 
         DoNotUseGetHostEntryInNewLabPSSession = $false
 
+        #General VM settings
+        DisableWindowsDefender = $true
+
         #Hyper-V VM Settings
         SetLocalIntranetSites = 'All' #All, Forest, Domain, None
 
@@ -268,7 +276,10 @@
         #Exchange
         ExchangeUcmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
         Exchange2013DownloadLink = 'https://download.microsoft.com/download/7/4/9/74981C3B-0D3C-4068-8272-22358F78305F/Exchange2013-x64-cu13.exe'
-        Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' 
+        Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe'
+
+        #Office
+        OfficeDeploymentTool = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_7614-3602.exe'
 
         #SysInternals
         SysInternalsUrl = 'https://technet.microsoft.com/en-us/sysinternals/bb842062'

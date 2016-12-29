@@ -20,9 +20,9 @@ Add-LabAzureSubscription -Path $azurePublishingFile -DefaultLocationName $azureD
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24 -VirtualizationHost Azure
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
-Set-LabInstallationCredential -Username install -Password Somepass1
+Set-LabInstallationCredential -Username Install -Password Somepass1
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{

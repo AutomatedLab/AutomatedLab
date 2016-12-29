@@ -1,5 +1,8 @@
-## Summary
+## Project Summary
 AutomatedLab (AL) enables you to setup test and lab environments with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images (with product keys) and a Hyper-V host machine.
+
+### Download AutomatedLab (lateset version 3.8.0.10 released on 12/2/2016)
+You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) right here in GitHub if you do not want to compile your own version of AutomatedLab.
 
 ### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
 ### [2. Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)

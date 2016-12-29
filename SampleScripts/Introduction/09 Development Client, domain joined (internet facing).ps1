@@ -4,11 +4,11 @@
 New-LabDefinition -Name 'Lab1' -DefaultVirtualizationEngine HyperV
 
 $labSources = Get-LabSourcesLocation
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_x64_dvd_3932034.iso
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564
 Add-LabIsoImageDefinition -Name VisualStudio2015 -Path $labSources\ISOs\en_visual_studio_enterprise_2015_with_update_3_x86_x64_dvd_8923288.iso
 
 Add-LabVirtualNetworkDefinition -Name Lab1
-Add-LabVirtualNetworkDefinition -Name Internet -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
+Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -20,11 +20,11 @@ $PSDefaultParameterValues = @{
 
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Lab1
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Internet -UseDhcp
-Add-LabMachineDefinition -Name DC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+Add-LabMachineDefinition -Name DC1 -Roles RootDC -NetworkAdapter $netAdapter
 
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
-Add-LabMachineDefinition -Name SQL1 -Roles SQLServer2014 -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name SQL1 -Roles SQLServer2014, Routing -PostInstallationActivity $postInstallActivity
 
 Add-LabMachineDefinition -Name DevClient1 -OperatingSystem 'Windows 10 Pro' -Roles VisualStudio2015
 

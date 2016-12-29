@@ -158,6 +158,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabInternals.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabOffice.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSharePoint.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSQL.psm1" />

@@ -170,6 +170,12 @@ function New-LWHypervVM
         Set-UnattendedAutoLogon -DomainName $Machine.Name -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
     }
 
+    $disableWindowsDefender = (Get-Module -Name AutomatedLab)[0].PrivateData.DisableWindowsDefender
+    if (-not $disableWindowsDefender)
+    {
+        Set-UnattendedWindowsDefender -Enabled $false
+    }
+
     $setLocalIntranetSites = (Get-Module -Name AutomatedLab)[0].PrivateData.SetLocalIntranetSites
     if ($setLocalIntranetSites -ne 'None' -or $setLocalIntranetSites -ne $null)
     {
@@ -270,7 +276,7 @@ function New-LWHypervVM
         InitState = 0
     }
 
-	$isUefi = try
+    $isUefi = try
     {
         Get-SecureBootUEFI -Name SetupMode
     }
@@ -662,13 +668,14 @@ function Wait-LWHypervVMRestart
         $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
     }
     
-    $VMdrive = ((Get-Lab).Target.Path)[0]
+    $vMdrive = ((Get-Lab).Target.Path)[0]
     $start = (Get-Date)
     $progressIndicatorStart = (Get-Date)
-    $DiskTime = @()
-    $LastMachineStart = (Get-Date).AddSeconds(-5)
+    $diskTime = @()
+    $lastMachineStart = (Get-Date).AddSeconds(-5)
+    $delayedStart = @()
     
-    $lastMonitorJob = (Get-Date)
+    #$lastMonitorJob = (Get-Date)
     
     do
     {
@@ -678,23 +685,31 @@ function Wait-LWHypervVMRestart
             $progressIndicatorStart = (Get-Date)
         }
                 
-        $DiskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).countersamples | Where-Object {$_.InstanceName -like "*$VMdrive`:*"}).CookedValue))
+        $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vMdrive`:*"}).CookedValue))
                 
         if ($StartMachinesWhileWaiting)
         {
-            Write-Debug -Message "Disk Time: $($DiskTime[-1]). Average (20): $([int](($DiskTime[(($DiskTime).count-15)..(($DiskTime).count)] | Measure-Object -Average).Average)) - Average (5): $([int](($DiskTime[(($DiskTime).count-5)..(($DiskTime).count)] | Measure-Object -Average).Average))"
-            if (((Get-Date) - $LastMachineStart).TotalSeconds -ge 20)
+            if ($StartMachinesWhileWaiting[0].NetworkAdapters.Count -gt 1)
             {
-                if (($DiskTime[(($DiskTime).count-15)..(($DiskTime).count)] | Measure-Object -Average).Average -lt 50 -and ($DiskTime[(($DiskTime).count-5)..(($DiskTime).count)] | Measure-Object -Average).Average -lt 60)
+                $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
+                $delayedStart += $StartMachinesWhileWaiting[0]                
+            }
+            else
+            {
+                Write-Debug -Message "Disk Time: $($diskTime[-1]). Average (20): $([int](($diskTime[(($diskTime).Count-15)..(($diskTime).Count)] | Measure-Object -Average).Average)) - Average (5): $([int](($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average))"
+                if (((Get-Date) - $lastMachineStart).TotalSeconds -ge 20)
                 {
-                    Write-Verbose -Message 'Starting next machine'
-                    $LastMachineStart = (Get-Date)
-                    Start-LabVm -ComputerName $StartMachinesWhileWaiting[0]
-                    $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object {$_ -ne $StartMachinesWhileWaiting[0]}
-                    if ($StartMachinesWhileWaiting)
+                    if (($diskTime[(($diskTime).Count-15)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 50 -and ($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 60)
                     {
-                        Start-LabVm -ComputerName $StartMachinesWhileWaiting[0]
-                        $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object {$_ -ne $StartMachinesWhileWaiting[0]}
+                        Write-Verbose -Message 'Starting next machine'
+                        $lastMachineStart = (Get-Date)
+                        Start-LabVM -ComputerName $StartMachinesWhileWaiting[0]
+                        $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
+                        if ($StartMachinesWhileWaiting)
+                        {
+                            Start-LabVM -ComputerName $StartMachinesWhileWaiting[0]
+                            $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
+                        }
                     }
                 }
             }
@@ -726,7 +741,7 @@ function Wait-LWHypervVMRestart
         foreach ($machine in $machines)
         {
             $currentMachineUptime = (Get-VM -Name $machine).Uptime.TotalSeconds
-            Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime Saved uptime=$($machine.uptime)"
+            Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
                 Write-Verbose -Message "Machine '$machine' has now restarted"
@@ -757,7 +772,7 @@ function Wait-LWHypervVMRestart
         }
     }
     until (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0 -or (Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)    
-    
+
     if (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0)
     {
         Write-Verbose -Message "All machines have now restarted ($($machines.name -join ', ')"
@@ -772,6 +787,11 @@ function Wait-LWHypervVMRestart
                 Write-Error -Message "Timeout while waiting for computer '$computer' to restart." -TargetObject $computer
             }
         }
+    }
+    
+    if ($delayedStart)
+    {
+        Start-LabVM -ComputerName $delayedStart
     }
     
     if ((-not $NoNewLine) -and $ProgressIndicator)
@@ -1221,6 +1241,12 @@ function Mount-LWIsoImage
         [switch]$PassThru
     )
 
+    if (-not (Test-Path -Path $IsoPath -PathType Leaf))
+    {
+        Write-Error "The path '$IsoPath' could not be found or is pointing to a folder"
+        return
+    }
+
     $machines = Get-LabMachine -ComputerName $ComputerName
 
     foreach ($machine in $machines)
@@ -1377,10 +1403,14 @@ function Repair-LWHypervNetworkConfig
         {
             $retries = $machine.NetworkAdapters.Count * $machine.NetworkAdapters.Count * 2
             $i = 0
-            
+
+            $sortedAdapters = New-Object System.Collections.ArrayList
+            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
+            $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
+             
             Write-Verbose "Setting the network order"
             [array]::Reverse($machine.NetworkAdapters)
-            foreach ($adapterInfo in $machine.NetworkAdapters)
+            foreach ($adapterInfo in $sortedAdapters)
             {
                 Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
                 do {
@@ -1392,7 +1422,7 @@ function Repair-LWHypervNetworkConfig
             }
         }
     
-    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream)
+    } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream) -NoDisplay
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
