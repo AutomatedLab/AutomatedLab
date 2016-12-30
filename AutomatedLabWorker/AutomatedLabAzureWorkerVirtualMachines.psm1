@@ -32,7 +32,7 @@ function New-LWAzureVM
     {
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
-    Write-Verbose -Message "Target service for machine: '$machineResourceGroup'"
+    Write-Verbose -Message "Target resource group for machine: '$machineResourceGroup'"
     
     if (-not $global:cacheVMs)
     {
@@ -47,7 +47,7 @@ function New-LWAzureVM
     }
 
     Write-Verbose -Message "Creating container 'automatedlabdisks' for additional disks"
-	$storageContext = (Get-StorageAccount $lab.AzureSettings.DefaultStorageAccount).Context
+	$storageContext = (Get-AzureRmStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup).Context
     $container = Get-AzureStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
     if (-not $container)
     {
@@ -58,15 +58,14 @@ function New-LWAzureVM
 
     #random number in the path to prevent conflicts
     $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
-    $osVhdLocation = "http://$((Get-LabAzureDefaultStorageAccount).StorageAccountName).blob.core.windows.net/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
+    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
     $lab.AzureSettings.VmDisks.Add($osVhdLocation)
     Write-Verbose -Message "The location of the VM disk is '$osVhdLocation'"
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
-			
-    $subnet = (Get-LabXmlAzureNetworkVirtualNetworkSite -Name $Machine.Network[0]).Subnets.Subnet.name | Where-Object { $_ -ne 'GatewaySubnet' }
-    Write-Verbose -Message "Subnet for the VM is '$subnet'"
+
+	
     
     #if this machine has a SQL Server role
     if ($Machine.Roles.Name -match 'SQLServer(?<SqlVersion>\d{4})')
