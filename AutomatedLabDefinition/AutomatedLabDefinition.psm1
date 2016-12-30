@@ -2079,7 +2079,7 @@ function Add-LabMachineDefinition
                 Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace
                 
                 #First automatically assigned IP address will be following+1
-                $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').3"
+                $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').5"
                 $script:autoIPAddress = [AutomatedLab.IPAddress]$addressSpaceIpAddress
 
                 $notDone = $false                
