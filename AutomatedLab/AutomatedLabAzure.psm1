@@ -175,13 +175,24 @@ function Add-LabAzureSubscription
 		Tag = @{Description = "Auto created by AutomatedLab at $(Get-Date)"}
 		}
 
+		$CreateResourceGroup = $true
 		
         if(Get-AzureRmResourceGroup $RGName -ErrorAction SilentlyContinue)
         {
-            throw "Resource group $RGName already exists. Please review and if necessary change either the lab name or remove the resource group."
+			$Choice = Read-Host -Prompt "Resource group $RGName already exists. Please enter y to use this resource group, r to recreate the resource group or any other key to cancel"
+
+			switch -Regex ($Choice)
+			{
+				'y' {$CreateResourceGroup = $false; break}
+				'r' {Remove-AzureRmResourceGroup -Name $RGName -Force; break}
+				default {throw "Resource group $RGName already exists. User cancelled the operation"}
+			}
         }
 
-		$DefaultResourceGroupName = (New-AzureRmResourceGroup @rg_param -ErrorAction Stop).ResourceGroupName
+		if($CreateResourceGroup)
+		{
+			$DefaultResourceGroupName = (New-AzureRmResourceGroup @rg_param -ErrorAction Stop).ResourceGroupName
+		}
 		Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
     }	
 
@@ -574,6 +585,7 @@ function Import-LabAzureCertificate
     [cmdletbinding()]
     param ()
 	
+	throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
@@ -603,7 +615,7 @@ function New-LabAzureCertificate
 {
     [cmdletbinding()]
     param ()
-	
+	throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
@@ -636,7 +648,7 @@ function Get-LabAzureCertificate
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     [cmdletbinding()]
     param ()
-	
+	throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
