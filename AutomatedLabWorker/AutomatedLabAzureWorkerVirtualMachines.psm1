@@ -88,7 +88,7 @@ function New-LWAzureVM
         $sharePointRoleName = $Matches[0]
         $sharePointVersion = $Matches.Version
     }
-            
+	            
     if ($sqlServerRoleName)
     {
         Write-Verbose -Message 'This is going to be a SQL Server VM'
@@ -116,9 +116,11 @@ function New-LWAzureVM
 
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        $vmImageName = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
-        Sort-Object -Property SqlServicePack -Descending |
-        Select-Object -ExpandProperty Offer -First 1
+        $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
+        Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
+		$OfferName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
+		$PublisherName = $vmImage | Select-Object -ExpandProperty PublisherName
+		$SkusName = $vmImage | Select-Object -ExpandProperty Skus
 
         if (-not $vmImageName)
         {
@@ -135,15 +137,11 @@ function New-LWAzureVM
     {
         Write-Verbose -Message 'This is going to be a Visual Studio VM'
 
-        $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d\d-(?<OS>WIN\d{2})'
+        $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d{2,3}-(?<OS>WIN\d{2})'
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $visualStudioImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -EQ VisualStudio | 
-        Group-Object -Property Offer | 
-        ForEach-Object { 
-            $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
-        }
+        Where-Object Offer -EQ VisualStudio
 
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($visualStudioImage in $visualStudioImages)
@@ -158,9 +156,11 @@ function New-LWAzureVM
 
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        $vmImageName = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version -eq $machineOs.Version } |
-        Sort-Object -Property Update -Descending |
-        Select-Object -ExpandProperty Offer -First 1
+        $vmImage = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version.Major -eq $machineOs.Version.Major } |
+        Sort-Object -Property Update -Descending | Select-Object -First 1
+		$OfferName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
+		$PublisherName = $vmImage | Select-Object -ExpandProperty PublisherName
+		$SkusName = $vmImage | Select-Object -ExpandProperty Skus
 
         if (-not $vmImageName)
         {
@@ -177,22 +177,16 @@ function New-LWAzureVM
     {
         Write-Verbose -Message 'This is going to be a SharePoint VM'
 
-        $sharePoint2013Pattern = '\w+__SharePoint-(?<Version>2013)'
-        $windowsPattern = 'Windows Server (?<SKU>\w+) (?<Version>\d{4}) (\w+)'
-                
-        #get all SQL images machting the RegEx pattern and then get only the latest one
-        $sharePointImages = $lab.AzureSettings.VmImages |
-        Where-Object ImageName -Match $sharePoint2013Pattern |
+		# AzureRM currently has only one SharePoint offer
+        
+		$sharePointImages = $lab.AzureSettings.VmImages |
+        Where-Object Offer -Match 'SharePoint' |
         Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
 
-        #add the version, SP Level and OS from the ImageFamily field to the image object
+        # Add the SP version
         foreach ($sharePointImage in $sharePointImages)
         {
-            $sharePointImage.ImageName -match $sharePoint2013Pattern | Out-Null
-            $sharePointImage | Add-Member -Name Version -Value $Matches.Version -MemberType NoteProperty -Force
-
-            $sharePointImage.ImageFamily -match $windowsPattern | Out-Null
-            $sharePointImage | Add-Member -Name OS -Value (New-Object AutomatedLab.OperatingSystem($Matches.Version)) -MemberType NoteProperty -Force
+            $sharePointImage | Add-Member -Name Version -Value $sharePointImage.Skus -MemberType NoteProperty -Force
         }
 
         #get the image that matches the OS and SQL server version
@@ -200,9 +194,12 @@ function New-LWAzureVM
         Write-Warning "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available."
         
         #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
-        $vmImageName = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-        Sort-Object -Property Update -Descending |
-        Select-Object -ExpandProperty ImageName -First 1
+        $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
+        Sort-Object -Property Update -Descending | Select-Object -First 1
+
+		$OfferName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
+		$PublisherName = $vmImage | Select-Object -ExpandProperty PublisherName
+		$SkusName = $vmImage | Select-Object -ExpandProperty Skus
 
         if (-not $vmImageName)
         {
@@ -223,26 +220,29 @@ function New-LWAzureVM
             throw "There is no Azure VM image for the operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup."
         }
 
-        $vmImageName = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName |
-        Select-Object -ExpandProperty Skus
+        $vmImage = $lab.AzureSettings.VmImages |
+        Where-Object Skus -eq $vmImageName  | Select-Object -First 1
+
+		$OfferName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
+		$PublisherName = $vmImage | Select-Object -ExpandProperty PublisherName
+		$SkusName = $vmImage | Select-Object -ExpandProperty Skus
     }
-    Write-Verbose -Message "The following image '$vmImageName' was chosen"
+    Write-Verbose -Message "We selected the SKUs $SkusName from offer $OfferName by publisher $PublisherName"
     
     Write-ProgressIndicator
     
     if ($machine.AzureProperties.RoleSize)
     {
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.RoleSizeLabel -eq $machine.AzureProperties.RoleSize }
-        Write-Verbose -Message "Using specified role size of The VM has the role size '$($roleSize.InstanceSize)'"
+        Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
+        Write-Verbose -Message "Using specified role size of '$($roleSize.Name)'"
     }
     elseif ($machine.AzureProperties.UseAllRoleSizes)
     {
         $DefaultAzureRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.Cores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, Cores |
+        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors } |
+        Sort-Object -Property MemoryInMB, NumberOfCores |
         Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
@@ -251,20 +251,21 @@ function New-LWAzureVM
     {
         switch ($lab.AzureSettings.DefaultRoleSize)
         {
-            'A' { $pattern = '^(ExtraLarge|ExtraSmall|Large|Medium|Small|A\d{1,2}|Basic_A\d{1,2})' }
+			'A' { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
             'D' { $pattern = '^Standard_D\d{1,2}' }
             'DS' { $pattern = '^Standard_DS\d{1,2}' }
             'G' { $pattern = '^Standard_G\d{1,2}' }
-            default { $pattern = '^(ExtraLarge|ExtraSmall|Large|Medium|Small|A\d{1,2}|Basic_A\d{1,2})'}
+            'F' { $pattern = '^Standard_F\d{1,2}' }
+            default { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
         }
         
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object InstanceSize -Match $pattern |
-        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.Cores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, Cores |
+        Where-Object Name -Match $pattern |
+        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
+        Sort-Object -Property MemoryInMB, NumberOfCores |
         Select-Object -First 1
 
-        Write-Verbose -Message "Using specified role size of '$($roleSize.InstanceSize)' out of role sizes '$pattern'"
+        Write-Verbose -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
     
     if (-not $roleSize)
