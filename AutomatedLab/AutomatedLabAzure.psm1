@@ -606,7 +606,7 @@ function Import-LabAzureCertificate
     }
     else
     {
-        Write-LogFunctionExitWithError -Message "Could not receive certificate for cloud serivice '$($service.ServiceName)'"
+        Write-LogFunctionExitWithError -Message "Could not receive certificate for resource group '$resourceGroup'"
     }
 }
 

@@ -2122,7 +2122,7 @@ function Add-LabMachineDefinition
                 
                 if ($networkFound)
                 {
-                    Write-ScreenInfo "Creating virtual network with name '$autoNetworkName' adn address space '192.168.$octet.1/24'" -Type Warning
+                    Write-ScreenInfo "Creating virtual network with name '$autoNetworkName' and address space '192.168.$octet.1/24'" -Type Warning
                     Add-LabVirtualNetworkDefinition -Name $autoNetworkName  -AddressSpace "192.168.$octet.1/24"
                 }
                 else
@@ -2131,7 +2131,7 @@ function Add-LabMachineDefinition
                 }
                 
                 #First automatically asigned IP address will be following+1
-                $script:autoIPAddress = ([AutomatedLab.IPAddress]("192.168.$octet.3")).AddressAsString
+                $script:autoIPAddress = ([AutomatedLab.IPAddress]("192.168.$octet.5")).AddressAsString
             }
             
             #throw 'No virtual network is defined. Please call Add-LabVirtualNetworkDefinition before adding machines but after calling New-LabDefinition'
