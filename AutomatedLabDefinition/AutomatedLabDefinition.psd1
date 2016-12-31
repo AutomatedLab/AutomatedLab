@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLabDefinition.psm1'
 	
     # Version number of this module.
-    ModuleVersion = '3.8.0.11'
+    ModuleVersion = '3.9.0.0'
 	
     # ID used to uniquely identify this module
     GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
