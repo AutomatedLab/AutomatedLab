@@ -1067,11 +1067,11 @@ function Get-LWAzureVMStatus
 	
     foreach ($azureVm in $azureVms)
     {
-        if ($azureVm.PowerState -eq 'running')
+        if ($azureVm.PowerState -eq 'VM running')
         {
             $result.Add($azureVm.Name, 'Started')
         }
-        elseif ($azureVm.PowerState -eq 'stopped' -or $azureVm.PowerState -eq 'deallocated')
+        elseif ($azureVm.PowerState -eq 'VM stopped' -or $azureVm.PowerState -eq 'VM deallocated')
         {
             $result.Add($azureVm.Name, 'Stopped')
         }
