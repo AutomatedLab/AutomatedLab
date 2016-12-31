@@ -1733,8 +1733,8 @@ function Add-LabMachineDefinition
 
         [hashtable]$Notes,
         
-        #Created ValidateSet using: "'" + ((Get-AzureRoleSize | Select-Object -ExpandProperty RoleSizeLabel | Sort-Object) -join "', '") + "'"
-        [ValidateSet('A10 (8 cores, 57344 MB)', 'A11 (16 cores, 114688 MB)', 'A5 (2 cores, 14336 MB)', 'A6 (4 cores, 28672 MB)', 'A7 (8 cores, 57344 MB)', 'A8 (8 cores, 57344 MB)', 'A9 (16 cores, 114688 MB)', 'Basic_A0 (1 cores, 768 MB)', 'Basic_A1 (1 cores, 1792 MB)', 'Basic_A2 (2 cores, 3584 MB)', 'Basic_A3 (4 cores, 7168 MB)', 'Basic_A4 (8 cores, 14336 MB)', 'ExtraLarge (8 cores, 14336 MB)', 'ExtraSmall (1 cores, 768 MB)', 'Large (4 cores, 7168 MB)', 'Medium (2 cores, 3584 MB)', 'Small (1 cores, 1792 MB)', 'Standard_D1 (1 cores, 3584 MB)', 'Standard_D11 (2 cores, 14336 MB)', 'Standard_D12 (4 cores, 28672 MB)', 'Standard_D13 (8 cores, 57344 MB)', 'Standard_D14 (16 cores, 114688 MB)', 'Standard_D2 (2 cores, 7168 MB)', 'Standard_D3 (4 cores, 14336 MB)', 'Standard_D4 (8 cores, 28672 MB)', 'Standard_DS1 (1 cores, 3584 MB)', 'Standard_DS11 (2 cores, 14336 MB)', 'Standard_DS12 (4 cores, 28672 MB)', 'Standard_DS13 (8 cores, 57344 MB)', 'Standard_DS14 (16 cores, 114688 MB)', 'Standard_DS2 (2 cores, 7168 MB)', 'Standard_DS3 (4 cores, 14336 MB)', 'Standard_DS4 (8 cores, 28672 MB)', 'Standard_G1 (2 cores, 28672 MB)', 'Standard_G2 (4 cores, 57344 MB)', 'Standard_G3 (8 cores, 114688 MB)', 'Standard_G4 (16 cores, 229376 MB)', 'Standard_G5 (32 cores, 458752 MB)')]
+        #Created ValidateSet using: "'" + ((Get-AzureRMVmSize -Location 'central us' | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}) -join "', '")  + "'" | clip
+        [ValidateSet('Basic_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Basic_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Basic_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Basic_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Basic_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Standard_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Standard_A1_v2 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Standard_A2_v2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_A2m_v2 (2 Cores, 16384 Mb, 4 max data disks)', 'Standard_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Standard_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A4_v2 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_A4m_v2 (4 Cores, 32768 Mb, 8 max data disks)', 'Standard_A5 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_A6 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_A7 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_A8_v2 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_A8m_v2 (8 Cores, 65536 Mb, 16 max data disks)', 'Standard_D1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_D2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_DS1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_DS2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_F1 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F16 (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F16s (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F1s (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F2s (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F4 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F4s (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F8 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_F8s (8 Cores, 16384 Mb, 16 max data disks)')]
         [string]$AzureRoleSize,
 
         [switch]$PassThru
@@ -1745,7 +1745,7 @@ function Add-LabMachineDefinition
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
-    $azurePropertiesValidKeys = 'CloudServiceName', 'UseAllRoleSizes', 'RoleSize'
+    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'
     
     if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
     {
@@ -1767,7 +1767,7 @@ function Add-LabMachineDefinition
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        Add-LabAzurePublishSettingFile
+        Add-LabAzureProfile
     }
     
     if ($Global:labExported)
@@ -2079,7 +2079,7 @@ function Add-LabMachineDefinition
                 Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace
                 
                 #First automatically assigned IP address will be following+1
-                $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').3"
+                $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').5"
                 $script:autoIPAddress = [AutomatedLab.IPAddress]$addressSpaceIpAddress
 
                 $notDone = $false                
@@ -2122,7 +2122,7 @@ function Add-LabMachineDefinition
                 
                 if ($networkFound)
                 {
-                    Write-ScreenInfo "Creating virtual network with name '$autoNetworkName' adn address space '192.168.$octet.1/24'" -Type Warning
+                    Write-ScreenInfo "Creating virtual network with name '$autoNetworkName' and address space '192.168.$octet.1/24'" -Type Warning
                     Add-LabVirtualNetworkDefinition -Name $autoNetworkName  -AddressSpace "192.168.$octet.1/24"
                 }
                 else
@@ -2131,7 +2131,7 @@ function Add-LabMachineDefinition
                 }
                 
                 #First automatically asigned IP address will be following+1
-                $script:autoIPAddress = ([AutomatedLab.IPAddress]("192.168.$octet.3")).AddressAsString
+                $script:autoIPAddress = ([AutomatedLab.IPAddress]("192.168.$octet.5")).AddressAsString
             }
             
             #throw 'No virtual network is defined. Please call Add-LabVirtualNetworkDefinition before adding machines but after calling New-LabDefinition'

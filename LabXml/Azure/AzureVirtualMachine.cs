@@ -29,7 +29,7 @@ namespace AutomatedLab.Azure
         public List<string> PublicIPFqdns {get;set;}                                                                                           
         public string PublicIPName {get;set;}                                                                                                                             
         //System.Collections.Generic.List[Microsoft.WindowsAzure.Commands.ServiceManagement.Model.ResourceExtensionStatus] ResourceExtensionStatusList {get;set;}    
-        public string ServiceName {get;set;}                                                                                                                              
+        public string ResourceGroupName {get;set;}                                                                                                                              
         public string Status {get;set;}                                                                                                                                   
         public string VirtualNetworkName {get;set;}                                                                                                                       
         //Microsoft.WindowsAzure.Commands.ServiceManagement.Model.PersistentVM VM {get;set;}                                                                         
