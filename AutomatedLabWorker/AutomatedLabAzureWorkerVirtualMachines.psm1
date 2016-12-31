@@ -363,6 +363,11 @@ function New-LWAzureVM
         Write-Verbose -Message "Setting private and dynamic public IP addresses."
 		$defaultIPv4Address = $DefaultIpAddress
 		$publicIpAddress = New-AzureRmPublicIpAddress -Name "$($Machine.Name.ToLower())pip" -ResourceGroupName $resourceGroupName -Location $location -DomainNameLabel $Machine.Name.ToLower() -AllocationMethod Dynamic
+		if($publicIpAddress.ProvisioningState -ne 'Succeeded')
+		{
+			throw "No public IP could be assigned to $($machine.Name). Connections to this machine will not work."
+		}
+
         Write-Verbose -Message "Default IP address is '$DefaultIpAddress'. Public IP is $($publicIpAddress.IpAddress)"
         
 		Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
@@ -838,8 +843,9 @@ function Start-LWAzureVM
 	
     Write-LogFunctionEntry
 	
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue | 
-        Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | 
+	# This is ugly and will likely change in one of the next AzureRM module updates. PowerState is indeed a string literal instead of an Enum
+    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status | 
+        Where-Object {$_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | 
         Select-Object -Unique)
     }
 
