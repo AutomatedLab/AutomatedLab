@@ -1666,16 +1666,16 @@ function Add-LabDomainAdmin
             [System.Security.SecureString]$Password
         )
 
-        $server = 'localohost'
+        $server = 'localhost'
 
         $user = New-ADUser -Name $Name -AccountPassword $Password -Enabled $true -PassThru
 
-        Add-ADGroupMember -Identity 'Domain Admins' -Members $user -Server localhost
+        Add-ADGroupMember -Identity 'Domain Admins' -Members $user -Server $server
 
         try
         {
-            Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user -Server localhost
-            Add-ADGroupMember -Identity 'Schema Admins' -Members $user -Server localhost
+            Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user -Server $server
+            Add-ADGroupMember -Identity 'Schema Admins' -Members $user -Server $server
         }
         catch
         {
