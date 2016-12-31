@@ -625,7 +625,7 @@ function Wait-LabVM
                     )
 
                     #$VerbosePreference = 2
-                    Import-Module -Name Azure
+                    Import-Module -Name Azure*
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes
 
@@ -668,12 +668,15 @@ function Wait-LabVM
             
             foreach ($machine in $completed)
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                if ($machineMetadata.InitState -lt 1)
-                {
-                    $machineMetadata.InitState = 1
-                }
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+				if((Get-LabMachine $machine).HostType -eq 'HyperV')
+				{
+					$machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+					if ($machineMetadata.InitState -lt 1)
+					{
+						$machineMetadata.InitState = 1
+					}
+					Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+				}
             }            
             
             Write-LogFunctionExit
