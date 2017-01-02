@@ -22,11 +22,11 @@ function New-LWHypervVM
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
-	
+    
     Write-LogFunctionEntry
 
     $script:lab = Get-Lab
-	
+    
     if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
@@ -41,10 +41,10 @@ function New-LWHypervVM
     {
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
-			
+            
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
     Set-UnattendedComputerName -ComputerName $Machine.Name
-	
+    
     #region network adapter settings
     $macAddressPrefix = '0017FA'
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
@@ -113,7 +113,7 @@ function New-LWHypervVM
             $rootDomainName = Get-LabMachine -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
         }
-				
+                
         if ($adapter.ConnectionSpecificDNSSuffix) { $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix) }
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
@@ -136,20 +136,20 @@ function New-LWHypervVM
             
     Add-UnattendedRenameNetworkAdapters
     #endregion network adapter settings
-			
+            
     Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password
     Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName
-			
+            
     if ($Machine.ProductKey)
     {
         Set-UnattendedProductKey -ProductKey $Machine.ProductKey
     }
-			
+            
     if ($Machine.UserLocale)
     {
         Set-UnattendedUserLocale -UserLocale $Machine.UserLocale
     }
-			
+            
     #if the time zone is specified we use it, otherwise we take the timezone from the host machine
     if ($Machine.TimeZone)
     {
@@ -159,7 +159,7 @@ function New-LWHypervVM
     {
         Set-UnattendedTimeZone -TimeZone ([System.TimeZoneInfo]::Local.Id)
     }
-			
+            
     #if domain-joined and not a DC
     if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
     {
@@ -217,7 +217,7 @@ function New-LWHypervVM
         {
             Set-UnattendedWorkgroup -WorkgroupName $Machine.WorkgroupName
         }
-				
+                
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
             $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
@@ -243,19 +243,19 @@ function New-LWHypervVM
     {
         1
     }
-	
+    
     $vmPath = $lab.GetMachineTargetPath($Machine.Name)
     $path = "$vmPath\$($Machine.Name).vhdx"
     Write-Verbose "`tVM Disk path is '$path'"
-	
+    
     if (Test-Path -Path $path)
     {
         Write-ScreenInfo -Message "The disk $path does already exist. Disk cannot be created" -Type Warning
         return $false
     }
-	
+    
     Write-ProgressIndicator
-	
+    
     $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
     $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
     Write-Verbose "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
@@ -301,9 +301,9 @@ function New-LWHypervVM
             $vm | Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress
         }
     }
-	
+    
     Write-Verbose "`tMachine '$Name' created"
-	
+    
     $automaticStartAction = 'Nothing'
     $automaticStartDelay  = 0
     $automaticStopAction  = 'ShutDown'
@@ -312,13 +312,13 @@ function New-LWHypervVM
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
     if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
     $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
-	
+    
     Write-ProgressIndicator
     
     Mount-DiskImage -ImagePath $path
     $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
     $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
-	
+    
     if ($VhdPartition.Count -gt 1)
     {
         #for Generation 2 VMs
@@ -330,12 +330,12 @@ function New-LWHypervVM
         #for Generation 1 VMs
         $VhdVolume = "$($VhdPartition.DriveLetter):"
     }
-	
+    
     Write-Verbose "`tDisk mounted to drive $VhdVolume"
 
     #Get-PSDrive needs to be called to update the PowerShell drive list
     Get-PSDrive | Out-Null
-	
+    
     $unattendXmlContent = Get-UnattendedContent
     $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
     Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
@@ -391,7 +391,7 @@ function New-LWHypervVM
         Set-Content -Path "$VhdVolume\Windows\Setup\Scripts\SetupComplete.cmd" -Value $cmd.ToString()
         Set-Content -Path "$VhdVolume\net.cmd" -Value $cmd.ToString()
     }
-	
+    
     #copy AL tools to lab machine and optionally the tools folder
     $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
@@ -420,7 +420,7 @@ function New-LWHypervVM
         Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
         Write-Verbose '...done'
     }
-	
+    
     $enableWSManRegDump = @'
 Windows Registry Editor Version 5.00
 
@@ -452,10 +452,10 @@ Windows Registry Editor Version 5.00
 '@
     #Using the .net class as the PowerShell provider usually does not recognize the new drive
     [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
-	
+    
     Dismount-DiskImage -ImagePath $path
     Write-Verbose "`tdisk image dismounted"
-	
+    
     Write-ProgressIndicator
     
     Write-Verbose "`tSettings RAM, start and stop actions"
@@ -476,9 +476,9 @@ Windows Registry Editor Version 5.00
     }
 
     Set-VM -Name $Machine.Name @param
-	
+    
     Set-VM -Name $Machine.Name -ProcessorCount $Machine.Processors
-	
+    
     if ($DisableIntegrationServices)
     {
         Disable-VMIntegrationService -VMName $Machine.Name -Name 'Time Synchronization'
@@ -488,7 +488,7 @@ Windows Registry Editor Version 5.00
     {
         Set-VMBios -VMName $Machine.Name -EnableNumLock
     }
-	
+    
     Write-Verbose "Creating snapshot named '$($Machine.Name) - post OS Installation'"
     if ($CreateCheckPoints)
     {
@@ -517,14 +517,14 @@ function Remove-LWHypervVM
         [Parameter(Mandatory)]
         [string]$Name
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
     if ($vm)
     {
         $vmPath = Split-Path -Path $vm.HardDrives[0].Path -Parent
-	
+    
         if ($vm.State -eq 'Saved')
         {
             Write-Verbose "Deleting saved state of VM '$($Name)'"
@@ -542,7 +542,7 @@ function Remove-LWHypervVM
         Write-Verbose "Removing VM files for '$($Name)'"
         Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVM
@@ -553,14 +553,14 @@ workflow Wait-LWHypervVM
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-		
+        
         [int]$Port = 5985,
-		
+        
         [switch]$TestCredSsp
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     foreach -parallel -throttlelimit 50 ($machine in $ComputerName)
     {
         sequence
@@ -568,16 +568,16 @@ workflow Wait-LWHypervVM
             Write-Verbose -Message "Waiting for machine '$machine' to come online..."
             $uptimeCheck = 1
             $uptimeCheckTotal = 5
-			
+            
             $uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
             if ($uptime -gt 180)
             {
                 Write-Verbose -Message "Machine '$machine' has been been running for more than 3 minutes. Only one online check is done."
                 $uptimeCheckTotal = 1
             }
-			
+            
             $ping = New-Object -TypeName System.Net.Networkinformation.Ping
-			
+            
             $pingAnswer = ''
             $pingCount = 0
             Do
@@ -586,7 +586,7 @@ workflow Wait-LWHypervVM
                 {
                     $pingAnswer = $ping.Send($machine, 1000)
                     $pingCount++
-					
+                    
                     #for each 10th test print out a message
                     if ($pingCount % 10 -eq 0)
                     {
@@ -595,14 +595,14 @@ workflow Wait-LWHypervVM
                 }
                 catch
                 {
-					
+                    
                 }
                 Start-Sleep -Milliseconds 500
                 Write-ProgressIndicator
             }
             Until ($pingAnswer.Status -eq 'Success')
             Write-Verbose -Message "'$machine' was reachable by ICMP, testing WinRM"
-			
+            
             $i = 0
             while ($uptimeCheck -le $uptimeCheckTotal)
             {
@@ -623,7 +623,7 @@ workflow Wait-LWHypervVM
                 $i++
                 Write-ProgressIndicator
             }
-			
+            
             if ($result)
             {
                 Write-Verbose -Message "'$machine' is online and reachable by WinRM"
@@ -634,7 +634,7 @@ workflow Wait-LWHypervVM
             }
         }
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Wait-LWHypervVM
@@ -645,7 +645,7 @@ function Wait-LWHypervVMRestart
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-		
+        
         [double]$TimeoutInMinutes = 15,
 
         [ValidateRange(1, 300)]
@@ -657,9 +657,9 @@ function Wait-LWHypervVMRestart
 
         [switch]$NoNewLine
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $machines = Get-LabMachine -ComputerName $ComputerName
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
@@ -825,7 +825,7 @@ function Start-LWHypervVM
         $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
-	
+    
     foreach ($Name in $ComputerName)
     {
         $machine = Get-LabMachine -ComputerName $Name
@@ -870,7 +870,7 @@ function Start-LWHypervVM
         Join-LabVMDomain -Machine $nanoServersToJoin
         Restart-LabVM -ComputerName $nanoServersToJoin -Wait
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Start-LWHypervVM
@@ -892,7 +892,7 @@ function Stop-LWHypervVM
     )
 
     Write-LogFunctionEntry
-	
+    
     $start = Get-Date
     
     if ($ShutdownFromOperatingSystem)
@@ -941,16 +941,16 @@ workflow Save-LWHypervVM
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-	
+    
     sequence
     {
         Write-LogFunctionEntry
-		
+        
         foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
         {
             Save-VM -Name $Name
         }
-		
+        
         Write-LogFunctionExit
     }
 }
@@ -963,22 +963,22 @@ workflow Checkpoint-LWHypervVM
     Param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-		
+        
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
-	
+    
     Write-LogFunctionEntry
     
     sequence
     {
         Write-LogFunctionEntry
-		
+        
         #only if we create a checkpoint of more than two machines we save them first and start them after taking the checkpoints
         #this is required for replicating applications to make sure the snapshots are taken very closely
-		
+        
         $WORKFLOW:runningMachines = @()
-		
+        
         Write-Verbose -Message 'Remembering all running machines'
         if ($ComputerName.Count -gt 1)
         {
@@ -988,25 +988,25 @@ workflow Checkpoint-LWHypervVM
                 {
                     Suspend-VM -Name $n -ErrorAction SilentlyContinue
                     Save-VM -Name $n -ErrorAction SilentlyContinue
-					
+                    
                     Write-Verbose -Message "    '$n' was running"
                     $WORKFLOW:runningMachines += $n
                 }
             }
-			
+            
             Start-Sleep -Seconds 5
         }
-		
+        
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
             Checkpoint-VM -Name $n -SnapshotName $SnapshotName
         }
-		
+        
         Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
         if ($ComputerName.Count -gt 1)
         {
             Start-Sleep -Seconds 5
-			
+            
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
             {
                 if ($n -in $WORKFLOW:runningMachines)
@@ -1020,7 +1020,7 @@ workflow Checkpoint-LWHypervVM
                 }
             }
         }
-		
+        
         Write-LogFunctionExit
     }
 }
@@ -1034,16 +1034,16 @@ workflow Remove-LWHypervVMSnapshot
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [Parameter(Mandatory, ParameterSetName = 'AllSnapshots')]
         [string[]]$ComputerName,
-		
+        
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [string]$SnapshotName,
-		
+        
         [Parameter(ParameterSetName = 'AllSnapshots')]
         [switch]$All
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
     {
         if ($SnapshotName)
@@ -1056,7 +1056,7 @@ workflow Remove-LWHypervVMSnapshot
         {
             $snapshot = Get-VMSnapshot -VMName $n
         }
-		
+        
         if (-not $snapshot)
         {
             Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
@@ -1066,7 +1066,7 @@ workflow Remove-LWHypervVMSnapshot
             Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
         }
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVMSnapshot
@@ -1078,17 +1078,17 @@ workflow Restore-LWHypervVMSnapshot
     Param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-		
+        
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
-	
+    
     sequence
     {
         Write-LogFunctionEntry
-		
+        
         $WORKFLOW:runningMachines = @()
-		
+        
         Write-Verbose -Message 'Remembering all running machines'
         foreach ($n in $ComputerName)
         {
@@ -1098,7 +1098,7 @@ workflow Restore-LWHypervVMSnapshot
                 $WORKFLOW:runningMachines += $n
             }
         }
-		
+        
         if ($ComputerName.Count -gt 1)
         {
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
@@ -1107,16 +1107,16 @@ workflow Restore-LWHypervVMSnapshot
                 Save-VM -Name $n -ErrorAction SilentlyContinue
             }
         }
-		
+        
         Start-Sleep -Seconds 5
-		
-		
+        
+        
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
             $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
                 $_.Name -eq $SnapshotName
             }
-			
+            
             if (-not $snapshot)
             {
                 Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
@@ -1124,15 +1124,15 @@ workflow Restore-LWHypervVMSnapshot
             else
             {
                 Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
-                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n).Notes
+                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
             }
         }
-		
+        
         Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
         if ($ComputerName.Count -gt 1)
         {
             Start-Sleep -Seconds 5
-			
+            
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
             {
                 if ($n -in $WORKFLOW:runningMachines)
@@ -1146,7 +1146,7 @@ workflow Restore-LWHypervVMSnapshot
                 }
             }
         }
-		
+        
         Write-LogFunctionExit
     }
 }
@@ -1159,12 +1159,12 @@ function Get-LWHypervVMStatus
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $result = @{ }
     $vms = Get-VM | Where-Object Name -in $ComputerName
-	
+    
     foreach ($vm in $vms)
     {
         if ($vm.State -eq 'Running')
@@ -1180,9 +1180,9 @@ function Get-LWHypervVMStatus
             $result.Add($vm.Name, 'Unknown')
         }
     }
-	
+    
     $result
-	
+    
     Write-LogFunctionExit
 }
 #endregion Get-LWHypervVMStatus
@@ -1196,20 +1196,20 @@ function Enable-LWHypervVMRemoting
     )
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-	
+    
     $script = {
         param ($DomainName, $UserName, $Password)
-		
+        
         $RegPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
-		
+        
         Set-ItemProperty -Path $RegPath -Name AutoAdminLogon -Value 1 -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultUserName -Value $UserName -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultPassword -Value $Password -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultDomainName -Value $DomainName -ErrorAction SilentlyContinue
-		
+        
         Enable-WSManCredSSP -Role Server -Force | Out-Null
     }
-	
+    
     foreach ($machine in $machines)
     {
         $cred = $machine.GetCredential((Get-Lab))
