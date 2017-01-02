@@ -1967,8 +1967,38 @@ function Move-LabDomainController
 }
 #endregion function Move-LabDomainController
 
-#region Invoke-LabDnsAndTrusts
-function Invoke-LabDnsAndTrusts
+#region Install-LabDnsForwarder
+function Install-LabDnsForwarder
+{
+    $forestNames = (Get-LabMachine -Role RootDC).DomainName
+    if (-not $forestNames)
+    {
+        Write-Error 'Could not get forest names from the lab'
+        return
+    }
+
+    $forwarders = Get-FullMesh -List $forestNames
+
+    foreach ($forwarder in $forwarders)
+    {
+        $targetMachine = Get-LabMachine -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
+        $masterServers = Get-LabMachine -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
+    
+        $cmd = @"
+            `$hostname = hostname.exe
+            Write-Verbose "Creating a DNS forwarder on server '$hostname'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
+            #Add-DnsServerConditionalForwarderZone -ReplicationScope Forest -Name $($forwarder.Destination) -MasterServers $($masterServers.IpV4Address)
+            dnscmd . /zoneadd $($forwarder.Destination) /forwarder $($masterServers.IpV4Address)
+            Write-Verbose '...done'
+"@
+
+        Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
+    }
+}
+#region Install-LabDnsForwarder
+
+#region Install-LabADDSTrust
+function Install-LabADDSTrust
 {
     $forestNames = (Get-LabMachine -Role RootDC).DomainName
     if (-not $forestNames)
@@ -2052,4 +2082,4 @@ function Invoke-LabDnsAndTrusts
         }
     }
 }
-#region Invoke-LabDnsAndTrusts
+#region Install-LabADDSTrust
