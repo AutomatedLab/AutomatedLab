@@ -177,7 +177,12 @@ function Install-LabAdfsProxy
         
         $someAdfsServer = Get-LabMachine -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
         Write-Verbose "Getting certificate from some ADFS server '$someAdfsServer'"
-        $cert = Get-LabCertificatePfx -ComputerName $someAdfsServer -DnsName $adfsFullName -ErrorAction Stop
+        $cert = Get-LabCertificatePfx -ComputerName $someAdfsServer -DnsName $adfsFullName
+        if (-not $cert)
+        {
+            Write-Error "Could not get certificate from '$someAdfsServer'. Cannot continue with ADFS Proxy setup."
+            return
+        }
         Write-Verbose "Got certificate with thumbprint '$($cert.Thumbprint)'"
         
         Write-Verbose "Adding certificate to '$labAdfsProxy'"
