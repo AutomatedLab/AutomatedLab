@@ -53,7 +53,7 @@ Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB `
 
 
 #SQL server
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564.iso
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
 Add-LabMachineDefinition -Name PGSql1 -Memory 2GB `
 -Roles SQLServer2014 -IpAddress 192.168.110.52 -PostInstallationActivity $postInstallActivity
