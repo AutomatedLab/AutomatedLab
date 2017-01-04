@@ -68,7 +68,7 @@ $machines = Get-LabMachine
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
-
+Checkpoint-LabVM -All -SnapshotName 1
 Show-LabInstallationTime
 
 #region ProGet Installation
@@ -185,7 +185,13 @@ while (-not $isActivated -and $activationRetries -gt 0)
 
         Start-Sleep -Seconds 30
 
-        -not [bool]((Invoke-WebRequest -Uri 'http://localhost:81/feeds/Default').Links | Where-Object href -like *licensing*)
+        try
+        {
+            $result = -not [bool]((Invoke-WebRequest -Uri 'http://localhost:81/feeds/Default').Links | Where-Object href -like *licensing*)
+        }
+        catch
+        { }
+        $result
     } -PassThru
 
     $activationRetries--
@@ -196,6 +202,8 @@ if (-not $isActivated)
     Write-Error "'Activating ProGet did not work. Please do this manually using the web portal and then invoke the activity  'RegisterPSRepository'"
     return
 }
+
+Restart-LabVM -ComputerName $webServer -Wait
 
 Write-Host 'ProGet is now activated'
 
