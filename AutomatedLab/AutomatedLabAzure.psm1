@@ -45,7 +45,7 @@ function Add-LabAzureSubscription
 		
         [string]$DefaultStorageAccountName,
 
-		[string]$DefaultResourceGroupName,
+        [string]$DefaultResourceGroupName,
 		
         [switch]$PassThru
     )
@@ -77,15 +77,6 @@ function Add-LabAzureSubscription
     {
         throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please download it from 'http://azure.microsoft.com/en-us/downloads/'"
     }
-
-    try
-    {
-        Import-Module -Name Azure* -Global -ErrorAction Stop
-    }
-    catch
-    {
-        throw $_.Exception
-    }
 	
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
     
@@ -104,12 +95,12 @@ function Add-LabAzureSubscription
         $script:lab.AzureSettings = New-Object AutomatedLab.AzureSettings
     }
 
-	$script:lab.AzureSettings.AzureProfilePath = $Path
+    $script:lab.AzureSettings.AzureProfilePath = $Path
     $script:lab.AzureSettings.SubscriptionFileContent = Get-Content -Path $Path
     $script:lab.AzureSettings.DefaultRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
     
     # Select the subscription which is associated with this AzureRmProfile
-    $Subscriptions = (Get-AzureRmSubscription)
+    $subscriptions = (Get-AzureRmSubscription)
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
     Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
     
@@ -158,49 +149,56 @@ function Add-LabAzureSubscription
         throw 'Cannot proceed without a valid location specified'
     }
 	
-	Write-ScreenInfo -Message "Trying to locate or create default resource group"
-	# Create if no default given or default set and not existing as RG
-	if(-not $DefaultResourceGroupName -or ($DefaultResourceGroupName -and -not (Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue)))
+    Write-ScreenInfo -Message "Trying to locate or create default resource group"
+    # Create if no default given or default set and not existing as RG
+    if(-not $DefaultResourceGroupName -or ($DefaultResourceGroupName -and -not (Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue)))
     {
         # Create new lab resource group as default		
-		$RGName = $DefaultResourceGroupName
-		if(-not $RGName)
-		{
-			$RGName = $script:lab.Name
-		}
-
-		$rg_param = @{
-		Name= $RGName
-		Location = $DefaultLocationName
-		Tag = @{Description = "Auto created by AutomatedLab at $(Get-Date)"}
-		}
-
-		$CreateResourceGroup = $true
-		
-        if(Get-AzureRmResourceGroup $RGName -ErrorAction SilentlyContinue)
+        $rgName = $DefaultResourceGroupName
+        if (-not $rgName)
         {
-			$Choice = Read-Host -Prompt "Resource group $RGName already exists. Please enter y to use this resource group, r to recreate the resource group or any other key to cancel"
-
-			switch -Regex ($Choice)
-			{
-				'y' {$CreateResourceGroup = $false; break}
-				'r' {Remove-AzureRmResourceGroup -Name $RGName -Force; break}
-				default {throw "Resource group $RGName already exists. User cancelled the operation"}
-			}
+            $rgName = $script:lab.Name
         }
 
-		if($CreateResourceGroup)
-		{
-			$DefaultResourceGroupName = (New-AzureRmResourceGroup @rg_param -ErrorAction Stop).ResourceGroupName
-		}
-		Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
+        $rgParams = @{
+            Name= $rgName
+            Location = $DefaultLocationName
+            Tag = @{ 
+                AutomatedLab = $script:lab.Name
+				CreationTime = Get-Date
+            }
+        }
+
+        $createResourceGroup = $true
+		
+        if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
+        {
+            $choice = Read-Host -Prompt "Resource group '$rgName' already exists. Please enter 'y' to use this resource group, 'r' to recreate the resource group or any other key to cancel"
+
+            switch -Regex ($choice)
+            {
+                'y' { $createResourceGroup = $false; break }
+                'r' { Remove-AzureRmResourceGroup -Name $rgName -Force; break }
+                default { throw "Resource group $rgName already exists. User cancelled the operation" }
+            }
+        }
+
+        if ($createResourceGroup)
+        {
+            $DefaultResourceGroupName = (New-AzureRmResourceGroup @rgParams -ErrorAction Stop).ResourceGroupName
+        }
+        else
+        {
+            $DefaultResourceGroupName = $rgName
+        }
+        Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
     }	
 
     $resourceGroups = Get-AzureRmResourceGroup
     $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
     Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
-	if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
+    if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
     {
         New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
     }
@@ -277,11 +275,11 @@ function Add-LabAzureSubscription
     }    
     
     <# TODO, seems deprecated and or dangerous Add all additional Azure Services if configured
-    $resourceGroupNames = (Get-LabMachine).AzureProperties.ResourceGroupName | Select-Object -Unique
-    if ($resourceGroupNames)
-    {
-        #Rename to new-labazureresourcegroup
-        New-LabAzureResourceGroup -ServiceName $resourceGroupNames -LocationName $lab.AzureSettings.DefaultLocation -ErrorAction Stop
+            $resourceGroupNames = (Get-LabMachine).AzureProperties.ResourceGroupName | Select-Object -Unique
+            if ($resourceGroupNames)
+            {
+            #Rename to new-labazureresourcegroup
+            New-LabAzureResourceGroup -ServiceName $resourceGroupNames -LocationName $lab.AzureSettings.DefaultLocation -ErrorAction Stop
     }#>
 
     Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
@@ -398,11 +396,11 @@ function Get-LabAzureLocation
                 
                 try
                 {
-                (Test-Port -ComputerName $testUrl -Port 443 -Count 4 -ErrorAction Stop| Measure-Object -Property ResponseTime -Average).Average
+                    (Test-Port -ComputerName $testUrl -Port 443 -Count 4 -ErrorAction Stop| Measure-Object -Property ResponseTime -Average).Average
                 }
                 catch
                 {
-					9999
+                    9999
                     #Write-Warning "$testUrl $($_.Exception.Message)"
                 }
             }
@@ -525,7 +523,7 @@ function New-LabAzureDefaultStorageAccount
     param (
         [Parameter(Mandatory)]
         [string]$LocationName,
-		[Parameter(Mandatory)]
+        [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
 	
@@ -536,11 +534,14 @@ function New-LabAzureDefaultStorageAccount
     $storageAccountName = "automatedlab$((1..8 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
 
     $param = @{
-	Name= $storageAccountName
-	ResourceGroupName = $ResourceGroupName
-	Tag = @{Description="Auto created by AutomatedLab at $(Get-Date)"}
-	Sku = 'Standard_LRS'
-	 }
+        Name= $storageAccountName
+        ResourceGroupName = $ResourceGroupName
+        Tag = @{
+			AutomatedLab = $script:lab.Name
+			CreationTime = Get-Date	
+		}
+        Sku = 'Standard_LRS'
+    }
 	
     if ($LocationName)
     {
@@ -585,13 +586,13 @@ function Import-LabAzureCertificate
     [cmdletbinding()]
     param ()
 	
-	throw New-Object System.NotImplementedException
+    throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
 	
     $resourceGroup = Get-AzureRmResourceGroup -name (Get-LabAzureDefaultResourceGroup)
-	$keyVault = Get-AzureRmKeyVault -VaultName (Get-LabAzureDefaultKeyVault) -ResourceGroupName $resourceGroup
+    $keyVault = Get-AzureRmKeyVault -VaultName (Get-LabAzureDefaultKeyVault) -ResourceGroupName $resourceGroup
     $temp = [System.IO.Path]::GetTempFileName()
 	
     $cert = ($keyVault | Get-AzureKeyVaultCertificate).Data
@@ -615,7 +616,7 @@ function New-LabAzureCertificate
 {
     [cmdletbinding()]
     param ()
-	throw New-Object System.NotImplementedException
+    throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
@@ -648,7 +649,7 @@ function Get-LabAzureCertificate
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     [cmdletbinding()]
     param ()
-	throw New-Object System.NotImplementedException
+    throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 	
     Update-LabAzureSettings
