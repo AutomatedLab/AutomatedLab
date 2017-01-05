@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
   <Product Name='AutomatedLab !(bind.FileVersion.AutomatedLabDll)' Id='cd5019ad-4d53-440c-8772-6f152405ed36' UpgradeCode='a6ec942f-a805-4d87-a87c-9d5a0916d06f'
   Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='Raimund Andree, Per Pedersen'>
