@@ -1767,7 +1767,7 @@ function Add-LabMachineDefinition
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        Add-LabAzureProfile
+        throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
     }
     
     if ($Global:labExported)

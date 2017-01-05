@@ -182,7 +182,6 @@
         'Disable-LabVMFirewallGroup',
         'Dismount-LabIsoImage',
         'Test-Port',
-        'Add-LabAzureProfile',
         'Install-LabDnsForwarder',
 		'Install-LabADDSTrust',
         'Get-LabVirtualNetwork',

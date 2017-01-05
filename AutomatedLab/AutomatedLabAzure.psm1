@@ -786,23 +786,3 @@ function Get-LabAzureResourceGroup
     
     Write-LogFunctionExit
 }
-
-function Add-LabAzureProfile
-{
-    [cmdletbinding()]
-    param
-    (
-        [switch]$NoDisplay
-    )
-    
-    Write-LogFunctionEntry
-    
-    $publishSettingFile = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*azurermsettings*' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
-    if (-not $NoDisplay)
-    {
-        Write-ScreenInfo -Message "No profile file specified. Auto-detected and using publish setting file '$publishSettingFile'" -Type Warning
-    }
-    Add-LabAzureSubscription -Path $publishSettingFile
-    
-    Write-LogFunctionExit
-}
