@@ -88,12 +88,6 @@ function Remove-LabNetworkSwitches
         }
         Write-Verbose '...done'
     }
-            
-    $virtualNetworks = $Script:data.VirtualNetworks | Where-Object HostType -eq Azure
-    if ($virtualNetworks)
-    {
-        Remove-LWAzureNetworkSwitch -VirtualNetwork $virtualNetworks
-    }
 		
     Write-Verbose 'done'
 
