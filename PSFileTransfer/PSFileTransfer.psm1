@@ -287,10 +287,11 @@ function Send-Directory
 	#Write-Progress -Activity "Send directory $Source to $Destination on $($Session.ComputerName)" -Status 'Checking source'
 	
 	$localDir = Get-Item $Source -ErrorAction Stop
-	if (-not $localDir.PSIsContainer)
-	{
-		Send-File -Source $Source -Destination $Destination -Session $Session
-	}
+    if (-not $localDir.PSIsContainer)
+    {
+        Send-File -Source $Source -Destination $Destination -Session $Session
+        return
+    }
 	
 	Invoke-Command -Session $Session -ScriptBlock {
 		param ($Destination)
@@ -444,45 +445,64 @@ function Get-FileLength
 
 function Copy-LabFileItem
 {
-	param (
-		[Parameter(Mandatory)]
-		[string[]]$Path,
+    param (
+        [Parameter(Mandatory)]
+        [string[]]$Path,
 		
-		[Parameter(Mandatory)]
-		[string[]]$ComputerName,
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
 
         [string]$DestinationFolder,
 		
-		[switch]$Recurse
-	)
+        [switch]$Recurse,
+        
+        [switch]$FallbackToPSSession = $true
+    )
 	
-	Write-LogFunctionEntry
+    Write-LogFunctionEntry
 	
-	$machines = Get-LabMachine -ComputerName $ComputerName -ErrorAction Stop
-	$connectedMachines = @{ }
+    $machines = Get-LabMachine -ComputerName $ComputerName -ErrorAction Stop
+    $connectedMachines = @{ }
 	
-	foreach ($machine in $machines)
-	{
-		$cred = $machine.GetCredential((Get-Lab))
+    foreach ($machine in $machines)
+    {
+        $cred = $machine.GetCredential((Get-Lab))
 		
-		try
-		{
-			$drive = New-PSDrive -Name "C_on_$machine" -PSProvider FileSystem -Root "\\$machine\c$" -Credential $cred -ErrorAction Stop
-			Write-Debug "Drive '$($drive.Name)' created"
-			$connectedMachines.Add($machine.Name, $drive)
-		}
-		catch
-		{
-			Microsoft.PowerShell.Utility\Write-Error -Message "Could not create a SMB connection to '$machine' ('\\$machine\c$'). Files could not be copied." -TargetObject $machine -Exception $_.Exception
-			continue
-		}
-	}
+        try
+        {
+            $drive = New-PSDrive -Name "C_on_$machine" -PSProvider FileSystem -Root "\\$machine\c$" -Credential $cred -ErrorAction Stop
+            Write-Debug "Drive '$($drive.Name)' created"
+            $connectedMachines.Add($machine.Name, $drive)
+        }
+        catch
+        {
+            if (-not $FallbackToPSSession)
+            {
+            Microsoft.PowerShell.Utility\Write-Error -Message "Could not create a SMB connection to '$machine' ('\\$machine\c$'). Files could not be copied." -TargetObject $machine -Exception $_.Exception
+            continue
+            }
+            
+            foreach ($p in $Path)
+            {
+                $session = New-LabPSSession -ComputerName $machine
+                $destination = if (-not $DestinationFolder)
+                {
+                    Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
+                }
+                else
+                {
+                    Join-Path -Path $DestinationFolder -ChildPath (Split-Path -Path $p -Leaf)
+                }
+                Send-Directory -Source $p -Session $session -Destination $destination
+            }
+        }
+    }
 	
-	Write-Verbose -Message "Copying the items '$($Path -join ', ')' to machines '$($connectedMachines.Keys -join ', ')'"
+    Write-Verbose -Message "Copying the items '$($Path -join ', ')' to machines '$($connectedMachines.Keys -join ', ')'"
 	
-	foreach ($machine in $connectedMachines.GetEnumerator())
-	{
-		Write-Debug "Starting copy job for machine '$($machine.Name)'..."
+    foreach ($machine in $connectedMachines.GetEnumerator())
+    {
+        Write-Debug "Starting copy job for machine '$($machine.Name)'..."
         
         if ($DestinationFolder)
         {
@@ -500,13 +520,13 @@ function Copy-LabFileItem
             $DestinationFolder = "$($machine.Value):\"
         }
 
-		Copy-Item -Path $Path -Destination $DestinationFolder -Recurse -Force
-		Write-Debug '...finished'
+        Copy-Item -Path $Path -Destination $DestinationFolder -Recurse -Force
+        Write-Debug '...finished'
 		
-		$machine.Value | Remove-PSDrive
-		Write-Debug "Drive '$($drive.Name)' removed"
-		Write-Verbose "Files copied on to machine '$($machine.Name)'"
-	}
+        $machine.Value | Remove-PSDrive
+        Write-Debug "Drive '$($drive.Name)' removed"
+        Write-Verbose "Files copied on to machine '$($machine.Name)'"
+    }
 	
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
