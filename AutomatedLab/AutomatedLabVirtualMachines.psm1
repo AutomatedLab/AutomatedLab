@@ -40,7 +40,7 @@ function New-LabVM
         return
     }
 	
-    $azureVMs = @()
+    $jobs = @()
     foreach ($machine in $machines)
     {
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
@@ -52,6 +52,16 @@ function New-LabVM
             if ('RootDC' -in $Machine.Roles.Name)
             {
                 Start-LabVM -ComputerName $Machine.Name
+            }
+            
+            if ($result)
+            {
+                Write-ProgressIndicatorEnd
+                Write-ScreenInfo -Message 'Done' -TaskEnd
+            }
+            else
+            {
+                Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
             }
         }
         elseif ($machine.HostType -eq 'VMWare')
@@ -70,22 +80,24 @@ function New-LabVM
         }
         elseif ($machine.HostType -eq 'Azure')
         {
-            $result = New-LWAzureVM -Machine $machine
-            if ($result)
-            {
-                $azureVMs += $machine
-            }
+            $jobs += New-LWAzureVM -Machine $machine
         }
-
-        if ($result)
-        {
-            Write-ProgressIndicatorEnd
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        }
-        else
-        {
-            Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
-        }
+    }
+    
+    #test if the machine creation jobs succeeded
+    $jobs | Wait-Job | Out-Null
+    $failedJobs = $jobs | Where-Object State -eq 'Failed'
+    $completedJobs = $jobs | Where-Object State -eq 'Completed'
+    if ($failedJobs)
+    {
+        $machinesFailedToCreate = ($failedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
+        throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a look at the background job's result (Get-Job, Receive-Job)"
+    }
+            
+    if ($completedJobs)
+    {
+        $azureVMs = $completedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }
+        $azureVMs = Get-LabMachine -ComputerName $azureVMs
     }
 
     if ($azureVMs)
@@ -625,7 +637,7 @@ function Wait-LabVM
                     )
 
                     #$VerbosePreference = 2
-                    Import-Module -Name Azure
+                    Import-Module -Name Azure*
                     Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                     Import-Lab -LabBytes $LabBytes
 
@@ -668,12 +680,15 @@ function Wait-LabVM
             
             foreach ($machine in $completed)
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                if ($machineMetadata.InitState -lt 1)
+                if((Get-LabMachine $machine).HostType -eq 'HyperV')
                 {
-                    $machineMetadata.InitState = 1
+                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                    if ($machineMetadata.InitState -lt 1)
+                    {
+                        $machineMetadata.InitState = 1
+                    }
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
                 }
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
             }            
             
             Write-LogFunctionExit
