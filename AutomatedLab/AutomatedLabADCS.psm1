@@ -1715,7 +1715,7 @@ function Get-LabIssuingCA
         $caName = Invoke-LabCommand -ComputerName $_ -ScriptBlock { ((certutil -config $args[0] -ping)[1] -split '"')[1] } -ArgumentList $_.Name -PassThru -NoDisplay
         
         $_ | Add-Member -Name CaName -MemberType NoteProperty -Value $caName -Force
-        $_ | Add-Member -Name CaPath -MemberType ScriptProperty -Value { $_.FQDN + '\' + $_.CaName } -Force
+        $_ | Add-Member -Name CaPath -MemberType ScriptProperty -Value { $this.FQDN + '\' + $this.CaName } -Force
         $_
     }
 }

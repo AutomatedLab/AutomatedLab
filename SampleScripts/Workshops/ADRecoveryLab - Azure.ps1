@@ -1,7 +1,7 @@
 ﻿$labName = 'ADRES<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
-$azurePublishingFile = '<PATH TO YOU AZURE PUBLISHING FILE>' #IF YOU HAVE NO PUBLISHING FILE, CALL Get-AzurePublishSettingsFile
-$azureDefaultLocation = 'North Europe'
+$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU HAVE NO PROFILE FILE, CALL Save-AzureRmProfile
+$azureDefaultLocation = 'North Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #setting addMemberServer to $true installes an additional server in the lab
 $addMemberServer = $false
@@ -16,10 +16,10 @@ $labSources = Get-LabSourcesLocation
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
-Add-LabAzureSubscription -Path $azurePublishingFile -DefaultLocationName $azureDefaultLocation
+Add-LabAzureSubscription -Path $azureResourceManagerProfile -DefaultLocationName $azureDefaultLocation
 
 #make the network definition
-Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.41.0/24 -VirtualizationHost Azure
+Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.41.0/24
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
