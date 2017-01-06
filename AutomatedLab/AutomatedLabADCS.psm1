@@ -1673,9 +1673,9 @@ function Test-LabCATemplate
         $p = Sync-Parameter -Command (Get-Command -Name Test-CATemplate) -Parameters $ALBoundParameters
         Test-CATemplate @p
 
-    } -UseCredSsp -Function $functions -Variable $variables -PassThru
+    } -UseCredSsp -Function $functions -Variable $variables -PassThru -NoDisplay
 }
-#endregion New-LabCATemplate
+#endregion Test-LabCATemplate
 
 
 #region Get-LabIssuingCA

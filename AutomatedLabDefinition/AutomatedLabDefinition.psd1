@@ -70,7 +70,7 @@
             }
 
             MandatoryRoleProperties = @{
-                ADFSProxy = @('AdfsFullName')
+                ADFSProxy = @('AdfsFullName', 'AdfsDomainName')
             }
 
         }

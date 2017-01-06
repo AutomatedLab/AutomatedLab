@@ -3,7 +3,7 @@
 	ModuleToProcess = 'PSFileTransfer.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '3.5'
+	ModuleVersion = '3.9'
 	
 	# ID used to uniquely identify this module
 	GUID = '789c9c76-4756-4489-a74f-31ca64488c7b'

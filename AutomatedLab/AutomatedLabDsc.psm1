@@ -8,6 +8,7 @@ function Install-LabDscPullServer
     
     Write-LogFunctionEntry
     
+    $lab = Get-Lab
     $labSources = Get-LabSourcesLocation
     $roleName = [AutomatedLab.Roles]::DSCPullServer
     
@@ -18,7 +19,7 @@ function Install-LabDscPullServer
         return
     }
     
-    if (-not (Get-LabMachine -Role Routing))
+    if (-not (Get-LabMachine -Role Routing) -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
     {
         Write-Error 'This role requires the lab to have an internet connection. However there is no machine with the Routing role in the lab. Please make sure that one machine has also an internet facing network adapter and the routing role.'
         return
@@ -72,8 +73,11 @@ function Install-LabDscPullServer
         return
     }
     
-    New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
-    -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+    if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
+    {
+        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
+        -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+    }
         
     Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
         Install-WindowsFeature -Name DSC-Service

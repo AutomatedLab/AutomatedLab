@@ -88,7 +88,7 @@ function Install-LabAdfs
         }    
 
         Invoke-LabCommand -ActivityName 'Add ADFS Service User and DNS record' -ComputerName $adfsDc -ScriptBlock {
-            Add-KdsRootKey –EffectiveTime (Get-Date).AddHours(-10) #not required if not used GMSA
+            Add-KdsRootKey -EffectiveTime (Get-Date).AddHours(-10) #not required if not used GMSA
             New-ADUser -Name $adfsServiceName -AccountPassword ($adfsServicePassword | ConvertTo-SecureString -AsPlainText -Force) -Enabled $true -PasswordNeverExpires $true
     
             foreach ($entry in $adfsServers)
@@ -142,6 +142,8 @@ function Install-LabAdfsProxy
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message 'Configuring ADFS roles...'
+    
+    $lab = Get-Lab
 	
     if (-not (Get-LabMachine))
     {
@@ -161,22 +163,33 @@ function Install-LabAdfsProxy
     Start-LabVM -RoleName ADFSProxy -Wait -ProgressIndicator 15
 
     $labAdfsProxies = Get-LabMachine -Role ADFSProxy
+    $job = Install-LabWindowsFeature -ComputerName $labAdfsProxies -FeatureName Web-Application-Proxy -AsJob -PassThru
+    Wait-LWLabJob -Job $job
 
+    Write-ScreenInfo "Installing the ADFS Proxy Servers '$($labAdfsProxies -join ',')'" -Type Info
     foreach ($labAdfsProxy in $labAdfsProxies)
     {
-        Write-ScreenInfo "Installing the ADFS Proxy Servers '$($labAdfsProxies -join ',')'" -Type Info
-        $adfsFullName = ($labAdfsProxy.Roles | Where-Object Name -EQ ADFSProxy).Properties.AdfsFullName
+        Write-Verbose "Installing ADFS Proxy on '$labAdfsProxy'"
+        $adfsProxyRole = $labAdfsProxy.Roles | Where-Object Name -eq ADFSProxy
+        $adfsFullName = $adfsProxyRole.Properties.AdfsFullName
+        $adfsDomainName = $adfsProxyRole.Properties.AdfsDomainName
+        Write-Verbose "ADFS Full Name is '$adfsFullName'"
         
-        $cert = Get-LabMachine -Role ADFS | ForEach-Object {
-            Get-LabCertificatePfx -ComputerName $_ -DnsName $adfsFullName -ErrorAction SilentlyContinue            
-        } | Get-Random
+        $someAdfsServer = Get-LabMachine -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
+        Write-Verbose "Getting certificate from some ADFS server '$someAdfsServer'"
+        $cert = Get-LabCertificatePfx -ComputerName $someAdfsServer -DnsName $adfsFullName
+        if (-not $cert)
+        {
+            Write-Error "Could not get certificate from '$someAdfsServer'. Cannot continue with ADFS Proxy setup."
+            return
+        }
+        Write-Verbose "Got certificate with thumbprint '$($cert.Thumbprint)'"
         
+        Write-Verbose "Adding certificate to '$labAdfsProxy'"
         $cert | Add-LabCertificatePfx -ComputerName $labAdfsProxy
         
-        Install-LabWindowsFeature -ComputerName $labAdfsProxy -FeatureName Web-Application-Proxy
-        
         $certThumbprint = $cert.Thumbprint
-        $cred = (Get-LabMachine -ComputerName $labAdfsProxy).GetCredential((Get-Lab))
+        $cred = ($lab.Domains | Where-Object Name -eq $adfsDomainName).GetCredential()
 
         $result = Invoke-LabCommand -ActivityName 'Configuring ADFS Proxy Servers' -ComputerName $labAdfsProxy -ScriptBlock {
             Install-WebApplicationProxy -FederationServiceTrustCredential $cred -CertificateThumbprint $certThumbprint -FederationServiceName $adfsFullName
