@@ -81,6 +81,8 @@ function New-LabVM
         elseif ($machine.HostType -eq 'Azure')
         {
             $jobs += New-LWAzureVM -Machine $machine
+            
+            Write-ScreenInfo -Message 'Done' -TaskEnd
         }
     }
     
