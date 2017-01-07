@@ -17,6 +17,7 @@ function New-LWAzureNetworkSwitch
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+    $jobs = @()
 	
     foreach ($network in $VirtualNetwork)
     {
@@ -29,9 +30,9 @@ function New-LWAzureNetworkSwitch
             AddressPrefix = $network.AddressSpace
             ErrorAction = 'Stop'
             Tag = @{ 
-				AutomatedLab = $script:lab.Name
-				CreationTime = Get-Date	
-			}
+                AutomatedLab = $script:lab.Name
+                CreationTime = Get-Date	
+            }
         }		
 
         if ($network.DnsServers)
@@ -39,7 +40,7 @@ function New-LWAzureNetworkSwitch
             $azureNetworkParameters.Add('DnsServer', $network.DnsServers)
         }
 		
-        $jobs = Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
+        $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
             param
             (
                 $ProfilePath,
@@ -73,13 +74,11 @@ function New-LWAzureNetworkSwitch
 			
             $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
         } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $azureNetworkParameters, $network.Subnets,$network
-    
-        #Wait for network creation jobs and configure vnet peering    
-        Wait-LWLabJob -Job $jobs
-
-        Write-ScreenInfo -Message "Done" -TaskEnd
     }
-
+    
+    #Wait for network creation jobs and configure vnet peering    
+    Wait-LWLabJob -Job $jobs
+    Write-ScreenInfo -Message "Done" -TaskEnd
     Write-ProgressIndicator
 
     foreach ($network in $VirtualNetwork)
