@@ -321,9 +321,6 @@ function New-LWAzureVM
             [string]$SkusName
         )
 
-        #Import-Module AutomatedLab
-        
-        #$bvp = $VerbosePreference
         $VerbosePreference = 'Continue'
         
         Write-Verbose '-------------------------------------------------------'
@@ -347,8 +344,6 @@ function New-LWAzureVM
         Write-Verbose "Skus: $SkusName"
         Write-Verbose '-------------------------------------------------------'
 		        
-        #$VerbosePreference = $bvp
-        #Import-Module -Name Azure*
         Select-AzureRmProfile -Path $SubscriptionPath
         Set-AzureRmContext -SubscriptionName $SubscriptionName
         
@@ -845,10 +840,13 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 	
     # This is ugly and will likely change in one of the next AzureRM module updates. PowerState is indeed a string literal instead of an Enum
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status | 
-    Where-Object {$_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | 
-        Select-Object -Unique)
+    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    if (-not $azureVms)
+    {
+        'Error invoking Get-AzureRmVM'
     }
+    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     $retries = 5
     $machinesToJoin = @()
@@ -913,7 +911,9 @@ function Stop-LWAzureVM
 	
     Write-LogFunctionEntry
 	
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object {$_.Name -in $ComputerName -and $_.ResourceGroupName -in ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique)}
+    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue 
+    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 	
     if ($ShutdownFromOperatingSystem)
     {
@@ -1063,8 +1063,13 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
 	
     $result = @{ }
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status | Where-Object {$_.Name -in $ComputerName -and $_.ResourceGroupName -in ((Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique)}
-    
+    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    if (-not $azureVms)
+    {
+        'Error invoking Get-AzureRmVM'
+    }
+    $resourceGroups = (Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 	
     foreach ($azureVm in $azureVms)
     {
