@@ -369,7 +369,7 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:\d{4})(R2)";
+                var exp = @"(?:\d{4}( )?)(R2)";
 
                 var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
 
