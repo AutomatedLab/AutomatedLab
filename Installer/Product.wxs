@@ -154,6 +154,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
