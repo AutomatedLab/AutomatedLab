@@ -906,11 +906,12 @@ function Stop-LWAzureVM
 
         [switch]$NoNewLine,
 
-        [switch]$ShutdownFromOperatingSystem = $true
+        [switch]$ShutdownFromOperatingSystem
     )
 	
     Write-LogFunctionEntry
 	
+	$lab = Get-Lab
     $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue 
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
@@ -928,28 +929,36 @@ function Stop-LWAzureVM
     }
     else
     {
+		$jobs = @()		
+
         foreach ($name in $ComputerName)
         {
-            $vm = $azureVms | Where-Object Name -eq $name
-            $result = $vm | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
-            
-            if ($result.Status -ne 'Succeeded')
-            {
-                Write-Error -Message 'Could not stop Azure VM' -TargetObject $name
-            }
-            else
-            {
-                #remove the AzureConnectionInfo if existing as ports may change if the machine starts again
-                if ($vm.AzureConnectionInfo)
-                {
-                    $vm.AzureConnectionInfo = $null
-                }
-            }
-            if ($ProgressIndicator -and (-not $NoNewLine))
-            {
-                Write-ProgressIndicator
-            }
+            $vm = $azureVms | Where-Object Name -eq $name			
+            $jobs += Start-Job -Name "StopAzureVm_$name" -ScriptBlock {
+			param
+			(
+				[object]$Machine,
+				[string]$SubscriptionPath
+			)
+				Import-Module -Name Azure*
+				Select-AzureRmProfile -Path $SubscriptionPath
+				$result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+
+				if ($result.Status -ne 'Succeeded')
+				{
+					Write-Error -Message 'Could not stop Azure VM' -TargetObject $Machine.Name
+				}
+			} -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
         }
+
+		Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        if ($failedJobs)
+        {
+			$jobNames = ($failedJobs | foreach {if($_.Name.StartsWith("StopAzureVm_")){($_.Name -split "_")[1]}}) -join ", "
+            Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
+        }
+
     }
     
     if ($ProgressIndicator -and (-not $NoNewLine))
