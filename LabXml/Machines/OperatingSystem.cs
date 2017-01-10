@@ -369,11 +369,11 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:\d{4}( )?)(R2)";
+                var exp = @"(WS)?(?:\d{4}( )?)(?<IsR2>R2)";
 
                 var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
 
-                if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                if (!string.IsNullOrEmpty(match.Groups["IsR2"].Value))
                 {
                     return true;
                 }
