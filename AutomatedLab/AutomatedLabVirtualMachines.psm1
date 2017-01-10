@@ -1006,7 +1006,7 @@ function Connect-LabVM
             Invoke-Expression $cmd | Out-Null
             mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
 			
-            Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
+            Start-Sleep -Seconds 5 #otherwise credentials get deleted too quickly
 			
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
