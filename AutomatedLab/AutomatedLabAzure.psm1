@@ -165,7 +165,7 @@ function Add-LabAzureSubscription
             Location = $DefaultLocationName
             Tag = @{ 
                 AutomatedLab = $script:lab.Name
-				CreationTime = Get-Date
+                CreationTime = Get-Date
             }
         }
 
@@ -233,7 +233,24 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
-        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName | Where-Object PublisherName -Like '*Microsoft*' | Get-AzureRmVMImageOffer | Get-AzureRmVMImageSku | Get-AzureRmVMImage | Group-Object Skus | foreach{$_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1}
+        
+        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Skus -eq 'Enterprise' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        
         $global:cacheVmImages = $vmImages
     }
 
@@ -537,9 +554,9 @@ function New-LabAzureDefaultStorageAccount
         Name= $storageAccountName
         ResourceGroupName = $ResourceGroupName
         Tag = @{
-			AutomatedLab = $script:lab.Name
-			CreationTime = Get-Date	
-		}
+            AutomatedLab = $script:lab.Name
+            CreationTime = Get-Date	
+        }
         Sku = 'Standard_LRS'
     }
 	

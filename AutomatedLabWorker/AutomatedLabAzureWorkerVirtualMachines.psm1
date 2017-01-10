@@ -92,13 +92,13 @@ function New-LWAzureVM
     if ($sqlServerRoleName)
     {
         Write-Verbose -Message 'This is going to be a SQL Server VM'
-        $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)-(?<OS>WS\d{4}(R2)?)'
+        $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $sqlServerImages = $lab.AzureSettings.VmImages |
         Where-Object Offer -Match $pattern | 
-        Group-Object -Property Offer | 
-        ForEach-Object { 
+        Group-Object -Property Sku, Offer | 
+        ForEach-Object {
             $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
         }
 
@@ -843,7 +843,7 @@ function Start-LWAzureVM
     $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     if (-not $azureVms)
     {
-        'Error invoking Get-AzureRmVM'
+        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
     }
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
@@ -1066,7 +1066,7 @@ function Get-LWAzureVMStatus
     $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     if (-not $azureVms)
     {
-        'Error invoking Get-AzureRmVM'
+        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
     }
     $resourceGroups = (Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
