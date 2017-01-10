@@ -515,10 +515,9 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
 
         #turn off the Windows firewall
-        netsh.exe advfirewall set domain state off
-        netsh.exe advfirewall set private state off
-        netsh.exe advfirewall set public state off
-
+        #netsh.exe advfirewall set domain state off
+        #netsh.exe advfirewall set private state off
+        #netsh.exe advfirewall set public state off
         
         $disks = ($MachineSettings."$computerName")[2]
         Write-Verbose -Message "Disk count for $computerName`: $disks"
@@ -562,14 +561,6 @@ function Initialize-LWAzureVM
     
     $lab = Get-Lab
 
-    <#test again if the machine creation jobs succeeded
-    $jobs = Get-Job -Name CreateAzureVM*
-    if ($jobs | Where-Object State -eq Failed)
-    {
-        $machinesFailedToCreate = ($jobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
-        throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a loot at the background job's result (Get-Job, Receive-Job)"
-    }#>
-
     Write-ScreenInfo -Message 'Waiting for all machines to be visible in Azure'
     while ((Get-AzureRmVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
     {        
@@ -600,7 +591,6 @@ function Initialize-LWAzureVM
     {
         $toolsDestination = "$($stagingMachine.ToolsPathDestination)"
     }
-    
     
     if ($Machine | Where-Object {$_.ToolsPath -ne ''})
     {
@@ -686,18 +676,6 @@ function Initialize-LWAzureVM
             Wait-LabVM -ComputerName $otherMachines -ProgressIndicator 15 -ErrorAction Stop
         }
         Write-ScreenInfo -Message 'All machines are now accessible' -TaskEnd
-		
-        Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
-	    
-        $machineSettings = @{}
-        foreach ($m in $Machine)
-        {
-            $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count)))
-        }
-        $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
-        Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
-        Write-ScreenInfo -Message 'Finished' -TaskEnd
-	    
 	    
         Write-ScreenInfo -Message 'Starting copy of Tools content to all machines' -TaskStart
 	    
@@ -746,6 +724,16 @@ function Initialize-LWAzureVM
         }
     }
     Write-ScreenInfo -Message 'Finished' -TaskEnd
+
+    Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
+    $machineSettings = @{}
+    foreach ($m in $Machine)
+    {
+        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count)))
+    }
+    $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    Write-ScreenInfo -Message 'Finished' -TaskEnd
 	
     Enable-LabVMRemoting -ComputerName $Machine
     
@@ -769,6 +757,7 @@ function Initialize-LWAzureVM
     Write-LogFunctionExit
 }
 #endregion Initialize-LWAzureVM
+
 
 #region Remove-LWAzureVM
 function Remove-LWAzureVM
