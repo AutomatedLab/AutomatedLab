@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("LabXmlValidator")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Raimund Andree")]
+[assembly: AssemblyCompany("Raimund Andree, Per Pedersen, Jan-Hendrik Peters")]
 [assembly: AssemblyProduct("LabXmlValidator")]
 [assembly: AssemblyCopyright("Copyright ©  2017")]
 [assembly: AssemblyTrademark("")]
@@ -31,5 +31,5 @@ using System.Runtime.InteropServices;
 //
 // You can specify all the values or you can default the Build and Revision Numbers 
 // by using the '*' as shown below:
-[assembly: AssemblyVersion("3.9.0.1")]
-[assembly: AssemblyFileVersion("3.9.0.1")]
+[assembly: AssemblyVersion("3.9.0.2")]
+[assembly: AssemblyFileVersion("3.9.0.2")]
