@@ -383,7 +383,7 @@ function New-LWAzureVM
         $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
                                    
         $DiskName = "$($machine.Name)_os"
-        $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlab1/$DiskName.vhd"
+        $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
         
         Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
         $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop
@@ -396,7 +396,7 @@ function New-LWAzureVM
             foreach ($disk in $Machine.Disks)
             {
                 Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk'"
-                $vmConfig = $vmConfig | Add-AzureRmVMDataDisk -Name $disk.Name.ToLower() -VhdUri "$($StorageContext.BlobEndpoint)automatedlab1/$($disk.Name).vhd" -Caching None -DiskSizeInGB $disk.DiskSize -Lun $lun -CreateOption Empty				
+                $vmConfig = $vmConfig | Add-AzureRmVMDataDisk -Name $disk.Name.ToLower() -VhdUri "$($StorageContext.BlobEndpoint)automatedlabdisks/$($disk.Name).vhd" -Caching None -DiskSizeInGB $disk.DiskSize -Lun $lun -CreateOption Empty				
                 $lun++
             }
         }
