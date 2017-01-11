@@ -393,10 +393,14 @@ function New-LWAzureVM
             Write-Verbose 'Adding data disks'
             $lun = 0
         
-            foreach ($disk in $Machine.Disks)
+            foreach ($disk in $Machine.Disks.GetEnumerator())
             {
-                Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk'"
-                $vm = $vm | Add-AzureRmVMDataDisk -Name $disk.Name.ToLower() -VhdUri "$($StorageContext.BlobEndpoint)automatedlabdisks/$($disk.Name.ToLower()).vhd" -Caching None -DiskSizeInGB $disk.DiskSize -Lun $lun -CreateOption Empty				
+				$DataDiskName = $Disk.Name.ToLower()
+				$DiskSize = $Disk.Size
+				$VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
+
+                Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
+                $vm = $vm | Add-AzureRmVMDataDisk -Name $DataDiskName -VhdUri $VhdUri -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty				
                 $lun++
             }
         }
