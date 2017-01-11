@@ -251,6 +251,15 @@ function Add-LabAzureSubscription
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
+		$vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+		Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+		Get-AzureRmVMImageOffer |
+		Get-AzureRmVMImageSku |
+		Get-AzureRmVMImage |
+		Where-Object Offer -eq 'VisualStudio' |
+		Group-Object -Property Skus, Offer |
+		ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
         $global:cacheVmImages = $vmImages
     }
 

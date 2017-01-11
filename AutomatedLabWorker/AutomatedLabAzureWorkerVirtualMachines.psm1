@@ -146,7 +146,7 @@ function New-LWAzureVM
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($visualStudioImage in $visualStudioImages)
         {
-            $visualStudioImage.Offer -match $pattern | Out-Null
+            $visualStudioImage.Skus -match $pattern | Out-Null
 
             $visualStudioImage | Add-Member -Name Version -Value $Matches.Version -MemberType NoteProperty -Force
             $visualStudioImage | Add-Member -Name Update -Value $Matches.Update -MemberType NoteProperty -Force
@@ -396,7 +396,7 @@ function New-LWAzureVM
             foreach ($disk in $Machine.Disks)
             {
                 Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk'"
-                $vmConfig = $vmConfig | Add-AzureRmVMDataDisk -Name $disk.Name.ToLower() -VhdUri "$($StorageContext.BlobEndpoint)automatedlabdisks/$($disk.Name).vhd" -Caching None -DiskSizeInGB $disk.DiskSize -Lun $lun -CreateOption Empty				
+                $vm = $vm | Add-AzureRmVMDataDisk -Name $disk.Name.ToLower() -VhdUri "$($StorageContext.BlobEndpoint)automatedlabdisks/$($disk.Name.ToLower()).vhd" -Caching None -DiskSizeInGB $disk.DiskSize -Lun $lun -CreateOption Empty				
                 $lun++
             }
         }
