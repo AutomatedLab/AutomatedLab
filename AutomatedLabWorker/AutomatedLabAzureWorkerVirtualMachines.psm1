@@ -137,7 +137,7 @@ function New-LWAzureVM
     {
         Write-Verbose -Message 'This is going to be a Visual Studio VM'
 
-        $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d{2,3}-(?<OS>WIN\d{2})'
+        $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d{2,3}-((?<OS>WIN\d{2})|(?<OS>WS\d{4,6}))'
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $visualStudioImages = $lab.AzureSettings.VmImages |
