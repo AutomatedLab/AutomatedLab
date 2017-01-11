@@ -206,6 +206,11 @@ namespace AutomatedLab
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Technical Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise 2015 LTSB":
+                        return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
+                    case "Windows 10 Enterprise 2016 LTSB":
+                        return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
+
 
                     case "Windows Server 2016 Technical Preview 4 SERVERDATACENTER":
                         return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
