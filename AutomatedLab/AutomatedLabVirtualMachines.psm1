@@ -41,7 +41,7 @@ function New-LabVM
     }
 	
     $jobs = @()
-    foreach ($machine in $machines)
+    foreach ($machine in $machines.GetEnumerator())
     {
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
         
