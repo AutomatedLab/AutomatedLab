@@ -168,6 +168,7 @@ function Install-LabOffice2016
   </Add>
   <Updates Enabled="TRUE" />
   <Display Level="None" AcceptEULA="TRUE" />
+  <Property Name="SharedComputerLicensing" Value="1" />
   <Logging Level="Standard" Path="%temp%" />
   <!--Silent install of 32-Bit Office 365 ProPlus with Updates and Logging enabled-->
 </Configuration>
@@ -213,7 +214,7 @@ function Install-LabOffice2016
     
     foreach ($machine in $machines)
     {
-        Write-ScreenInfo "Preparing Office 206 installation on '$machine'..." -NoNewLine
+        Write-ScreenInfo "Preparing Office 2016 installation on '$machine'..." -NoNewLine
         $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
         
         Invoke-LabCommand -ActivityName 'Copy Office to C' -ComputerName $machine -ScriptBlock {

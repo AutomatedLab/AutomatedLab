@@ -29,7 +29,7 @@ function Install-LabSqlServers
         return
     }
 
-    $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014
+    $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016
 
     #The dafault SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin accout has permissions, Invoke-LabCommand cannot be used.
@@ -44,15 +44,7 @@ function Install-LabSqlServers
         Write-ScreenInfo -Message "Configuring Azure SQL Servers '$($azureMachines -join ', ')'"
         
         foreach ($machine in $azureMachines)
-        {
-            <#
-                    if (Invoke-LabCommand -ComputerName $machine -PassThru -NoDisplay -Verbose:$false -ScriptBlock {Get-Service -DisplayName "SQL Server (*)" -ErrorAction SilentlyContinue})
-                    {
-                    Write-ScreenInfo -Message "Machine '$machine' already has SQL Server. Machine needs to be removed and re-added with SQL Server role since it is deployed in Azure." -Type Warning
-                    continue
-                    }
-            #>
-            
+        {            
             Write-ScreenInfo -Type Verbose -Message "Configuring Azure SQL Server '$machine'"
             Write-ScreenInfo -Message (Get-Date)
             $sqlCmd = {
@@ -63,9 +55,14 @@ GO
 CREATE LOGIN [BUILTIN\Administrators] FROM WINDOWS WITH DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english]
 GO
 
-ALTER SERVER ROLE [sysadmin] ADD MEMBER [BUILTIN\Administrators]
+-- ALTER SERVER ROLE [sysadmin] ADD MEMBER [BUILTIN\Administrators]
+-- The folloing statement works in SQL 2008 to 2016
+EXEC master..sp_addsrvrolemember @loginame = N'BUILTIN\Administrators', @rolename = N'sysadmin'
 GO
 "@
+                if ((Get-PSSnapin -Registered -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue) -and -not (Get-PSSnapin -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue)) {
+                    Add-PSSnapin -Name SqlServerCmdletSnapin100
+                }
                 Invoke-Sqlcmd -Query $query
             }
 
@@ -252,7 +249,8 @@ GO
                 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
-                $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
+                $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014 |
+                Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
