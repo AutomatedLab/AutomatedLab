@@ -242,7 +242,7 @@ function New-LWAzureVM
     {
         $DefaultAzureRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors } |
+        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
         Sort-Object -Property MemoryInMB, NumberOfCores |
         Select-Object -First 1
 
