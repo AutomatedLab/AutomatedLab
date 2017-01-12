@@ -278,7 +278,12 @@ function New-LWAzureVM
     
     $labVirtualNetworkDefinition = Get-LabVirtualNetworkDefinition
 
+	# List-serialization issues when passing to job. Disks will be added to a hashtable
+	$Disks = @{}
+    $Machine.Disks | %{$Disks.Add($_.Name,$_.DiskSize)}
+
     Start-Job -Name "CreateAzureVM ($machineResourceGroup) ($Machine)" -ArgumentList $Machine,
+	$Disks,
     $Machine.NetworkAdapters[0].VirtualSwitch.Name,
     $roleSize.Name,
     $vmImageName,
@@ -301,6 +306,7 @@ function New-LWAzureVM
         param
         (
             [object]$Machine, #AutomatedLab.Machine
+			[object]$Disks,
             [string]$Vnet,
             [string]$RoleSize,
             [string]$VmImageName,
@@ -388,15 +394,15 @@ function New-LWAzureVM
         Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
         $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop
 
-        if ($Machine.Disks)
+        if ($Disks)
         {
-            Write-Verbose 'Adding data disks'
+            Write-Verbose "Adding $($Disks.Count) data disks"
             $lun = 0
         
-            foreach ($disk in $Machine.Disks.GetEnumerator())
+            foreach ($Disk in $Disks.GetEnumerator())
             {
-				$DataDiskName = $Disk.Name.ToLower()
-				$DiskSize = $Disk.Size
+				$DataDiskName = $Disk.Key.ToLower()
+				$DiskSize = $Disk.Value
 				$VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
 
                 Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
