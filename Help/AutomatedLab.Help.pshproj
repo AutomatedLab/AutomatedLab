@@ -1498,8 +1498,8 @@ South India            9999</Output>
         <string>Get-LabCertificatePfx -All &lt;SwitchParameter&gt; -ComputerName &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get PFX files</Synopsis>
+        <Description>Gets certificates with exportable private key for one or more lab machines by using the properties DnsName,Thumbprint, or by setting the switch parameter All. Found certificates are exported as a PSObject including the Bytes of the certificate</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1521,7 +1521,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The DNS name of the certificate subject</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1531,7 +1531,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer name on which the certificates should be exported on</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1541,7 +1541,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The thumbprint of the certificate that should be exported</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1551,11 +1551,24 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether all exportable certificates should be found</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Get-LabCertificatePfx</Name>
+          <Cmd>Get-LabCertificatePfx -All -ComputerName DC1</Cmd>
+          <Description>Gets all certificates with exportable private key from computer DC1</Description>
+          <Output>A custom object with the properties:
+Thumbprint = &lt;The certificate thumbprint&gt;
+DnsNameList = &lt;DNS name list in the certificate&gt;
+Location = &lt;Cert store location&gt;
+Store = &lt;Cert store name&gt;
+Computer = DC1
+Pfx = &lt;Byte content of the pfx file&gt;</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1566,8 +1579,8 @@ South India            9999</Output>
         <string>Get-LabHyperVAvailableMemory</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get available HyperV memory</Synopsis>
+        <Description>Gets the available of the amount of RAM the local HyperV manages (TotalVisibleMemorySize of the Win32_OperatingSystem WMI class)</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1591,8 +1604,8 @@ South India            9999</Output>
         <string>Get-LabInternetFile [-Uri] &lt;String&gt; [-Path] &lt;Object&gt; [-Force]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Download a file</Synopsis>
+        <Description>Gets a file by URI and stores it in a specific path if it does not exist.</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1612,7 +1625,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The URI of the file to retrieve</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -1621,7 +1634,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The target path to store the retrieved file in</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1631,11 +1644,18 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>If present, overwrite the file at the destination</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabInternetFile -Uri 'https://download.microsoft.com/download/3/1/D/31D734E0-BFE8-4C33-A9DE-2392808ADEE6/SSMS-Setup-ENU.exe' -Path '\\VM1\AFileShare\SSMS.exe'</Cmd>
+          <Description>Downloads the SQL Server Management Suite and saves it on a lab machine's file share</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1646,8 +1666,8 @@ South India            9999</Output>
         <string>Get-LabIssuingCA [[-DomainName] &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the issuing CA</Synopsis>
+        <Description>Gets the issuing certificate authority for the current lab and if specified the selected domain FQDN</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1667,7 +1687,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The domain name the issuing CA should be retrieved from</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1684,8 +1704,8 @@ South India            9999</Output>
         <string>Get-LabMachine -All &lt;SwitchParameter&gt; [-IsRunning]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get a lab machine</Synopsis>
+        <Description>Get one or more lab machine objects with additional information</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1708,7 +1728,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names to retrieve</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1718,7 +1738,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether only running machines should be returned</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Roles" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1728,7 +1748,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates which roles should be returned</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1738,11 +1758,31 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Returns all lab machines. Can be omitted if no other parameters are specified</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabMachine</Cmd>
+          <Description>Returns all lab machines</Description>
+          <Output>Name      DomainName     Ip Address   OS
+----      ----------     ----------   --
+kb-fe01   dom.local 172.16.50.6  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-fe02   dom.local 172.16.50.4  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-fe03   dom.local 172.16.50.5  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-edge01                172.16.50.1  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-edge02                172.16.50.2  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-edge03                172.16.50.3  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+KB-SQL02  dom.local 172.16.50.7  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+KB-SQL01  dom.local 172.16.50.8  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-dc01   dom.local 172.16.50.9  Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-owa01  dom.local 172.16.50.10 Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+kb-med01  dom.local 172.16.50.11 Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)
+DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.9600.17415)</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1753,8 +1793,8 @@ South India            9999</Output>
         <string>Get-LabMachineUacStatus [-ComputerName] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the UAC status of a machine</Synopsis>
+        <Description>Retrieves the status of the User Account Control of one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1774,7 +1814,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1789,8 +1829,8 @@ South India            9999</Output>
         <string>Get-LabPSSession [[-ComputerName] &lt;String[]&gt;] [-UseCredSsp]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get PSSessions</Synopsis>
+        <Description>Get all open PowerShell sessions to one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1810,7 +1850,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1820,7 +1860,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether CredSSP should be used</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1835,8 +1875,8 @@ South India            9999</Output>
         <string>Get-LabSoftwarePackage [-Path] &lt;String&gt; [[-CommandLine] &lt;String&gt;] [[-Timeout] &lt;Int32&gt;] [[-ProcessName] &lt;String&gt;] [[-CustomProgressChecker] &lt;ScriptBlock&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get a software package</Synopsis>
+        <Description>Gets a Software Package object to be used in AutomatedLab. The function takes in a scriptblock meant as a custom progress checking script which is currently not implemented.</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1857,7 +1897,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The full file path to the software package to execute</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -1867,7 +1907,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The command line for the software package</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -1877,7 +1917,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>A timeout in minutes for the package installation</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
@@ -1887,7 +1927,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The process name of the executable</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="ScriptBlock" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
@@ -1897,7 +1937,7 @@ South India            9999</Output>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Not implemented. Script block for custom progress check.</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1912,8 +1952,8 @@ South India            9999</Output>
         <string>Get-LabSourcesLocation</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get lab source location</Synopsis>
+        <Description>Gets the lab sources location by either returning it directly if defined or by scanning all local disks for a folder called LabSources</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1937,8 +1977,8 @@ South India            9999</Output>
         <string>Get-LabVariable</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get lab variables</Synopsis>
+        <Description>Gets all defined variables in the global scope matching the name pattern 'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'</Description>
         <Notes />
         <InputType />
         <InputUrl />
