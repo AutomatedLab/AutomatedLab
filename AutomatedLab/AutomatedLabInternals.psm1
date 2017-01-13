@@ -1813,22 +1813,6 @@ function Add-FunctionToPSSession
 #region Add-VariableToPSSession
 function Add-VariableToPSSession
 {
-    <#
-            .SYNOPSIS
-            Creates a variable in the remote sessions based on the local definition of the specified variable.
-                        
-            .PARAMETER Session
-            Session(s) to define the function in
-            .PARAMETER FunctionInfo
-            The function info as returned by Get-Command that defines the function
-        
-            .EXAMPLE
-            function test-fubar { write "cool" }
-            $session = New-PSSession -ComputerName someserver
-            Get-Command test-fubar | Add-FunctionToPSSession $session
-            Invoke-Command -session $session { test-fubar }
-    #>
-
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'

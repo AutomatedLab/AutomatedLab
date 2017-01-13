@@ -530,8 +530,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Checkpoint-LabVM -SnapshotName &lt;String&gt; [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create a VM checkpoint</Synopsis>
+        <Description>This function creates a checkpoint of a lab virtual machine running on HyperV</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -552,7 +552,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -563,7 +563,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The snapshot name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -573,11 +573,18 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Switch parameter to snapshot all lab VMs</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Checkpoint-LabVM -All -SnapshotName 'FirstSnapshot'</Cmd>
+          <Description>Creates a snapshot called FirstSnapshot for all machines of a given lab</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -588,8 +595,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Clear-Lab</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Clear lab data</Synopsis>
+        <Description>Clears the variable $script:data to effectively clear the lab definition</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -613,8 +620,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Clear-LabCache</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Clear the lab cache</Synopsis>
+        <Description>Removes the automated lab cache from the Windows registry: HKEY_CURRENT_USER\Software\AutomatedLab\Cache</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -638,8 +645,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Connect-LabVM [-ComputerName] &lt;String[]&gt; [-UseLocalCredential]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Connect to a lab VM</Synopsis>
+        <Description>Gets the connection information for Azure and HyperV VMs and uses the information to open a Remote Desktop Session to those machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -659,7 +666,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names to connect to</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -669,11 +676,18 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Switch parameter to indicate if a local user credential of the machine should be used</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Connect-LabVM -ComputerName DC1,DC2 -Credential (Get-Credential)</Cmd>
+          <Description>Connects the machines DC1 and DC2 via Remote Desktop and the credentials specified in Get-Credential</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -684,8 +698,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Disable-LabVMFirewallGroup [-ComputerName] &lt;String[]&gt; [-FirewallGroup] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Deactivate firewall group on machine</Synopsis>
+        <Description>Deactivates one or more named firewall groups on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -705,7 +719,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -715,7 +729,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The firewall group names</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -730,8 +744,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Dismount-LabIsoImage [-ComputerName] &lt;String[]&gt; [-SupressOutput]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Dismounts an ISO</Synopsis>
+        <Description>Dismounts the mounted ISO image file from one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -751,7 +765,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -761,7 +775,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether output should be suppressed or not</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
