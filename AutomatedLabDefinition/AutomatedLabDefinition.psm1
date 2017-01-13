@@ -1651,7 +1651,7 @@ function Add-LabMachineDefinition
                 'Windows 7 PROFESSIONAL', 'Windows 7 ULTIMATE', 'Windows 7 Enterprise',
                 'Windows 8 Pro', 'Windows 8 Enterprise',
                 'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
-                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
+                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
                 'Windows Server 2008 R2 SERVERDATACENTER', 'Windows Server 2008 R2 SERVERDATACENTERCORE', 'Windows Server 2008 R2 SERVERENTERPRISE', 'Windows Server 2008 R2 SERVERENTERPRISECORE', 'Windows Server 2008 R2 SERVERSTANDARD', 'Windows Server 2008 R2 SERVERSTANDARDCORE', 'Windows Server 2008 R2 SERVERWEB', 'Windows Server 2008 R2 SERVERWEBCORE',
                 'Windows Server 2012 SERVERDATACENTER', 'Windows Server 2012 SERVERDATACENTERCORE', 'Windows Server 2012 SERVERSTANDARD', 'Windows Server 2012 SERVERSTANDARDCORE',
                 'Windows Server 2012 R2 SERVERDATACENTER', 'Windows Server 2012 R2 SERVERDATACENTERCORE', 'Windows Server 2012 R2 SERVERSTANDARD', 'Windows Server 2012 R2 SERVERSTANDARDCORE',
@@ -1767,7 +1767,7 @@ function Add-LabMachineDefinition
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        Add-LabAzureProfile
+        throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
     }
     
     if ($Global:labExported)
@@ -2062,27 +2062,27 @@ function Add-LabMachineDefinition
             Write-ScreenInfo -Message 'No virtual networks specified. Creating a network automatically' -Type Warning
             if (-not ($Global:existingAzureNetworks))
             {
-                $Global:existingAzureNetworks = [xml]((Get-AzureVNetConfig).XMLConfiguration)
+                $Global:existingAzureNetworks = Get-AzureRmVirtualNetwork
             }
             
             #Virtual network name will be same as lab name
             $autoNetworkName = (Get-LabDefinition).Name
             
             #Priority 1. Check for existence of an Azure virtual network with same name as network name
-            $existingNetwork = $Global:existingAzureNetworks.NetworkConfiguration.VirtualNetworkConfiguration.VirtualNetworkSites.VirtualNetworkSite | Where-Object {$_.name -eq $autoNetworkName}
+            $existingNetwork = $Global:existingAzureNetworks | Where-Object { $_.Name -eq $autoNetworkName }
             if ($existingNetwork)
             {
                 Write-Verbose -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
-                $addressSpace = $existingNetwork.AddressSpace.AddressPrefix
+                $addressSpace = $existingNetwork.AddressSpace.AddressPrefixes
                 
                 Write-ScreenInfo -Message "Creating virtual network '$autoNetworkName' with address spacee '$addressSpace'" -Type Warning
-                Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace
+                Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace[0]
                 
                 #First automatically assigned IP address will be following+1
                 $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').5"
                 $script:autoIPAddress = [AutomatedLab.IPAddress]$addressSpaceIpAddress
 
-                $notDone = $false                
+                $notDone = $false
             }
             else
             {
@@ -2095,7 +2095,7 @@ function Add-LabMachineDefinition
                     $octet++
                     
                     $azureInUse = $false
-                    foreach ($azureNetwork in $Global:existingAzureNetworks.NetworkConfiguration.VirtualNetworkConfiguration.VirtualNetworkSites.VirtualNetworkSite.AddressSpace.AddressPrefix)
+                    foreach ($azureNetwork in $Global:existingAzureNetworks.AddressSpace.AddressPrefixes)
                     {
                         if (Test-IpInSameSameNetwork -Ip1 "192.168.$octet.0/24" -Ip2 $azureNetwork)
                         {
@@ -2107,14 +2107,6 @@ function Add-LabMachineDefinition
                         Write-Verbose -Message "Network '192.168.$octet.0/24' is in use by an existing Azure virtual network"
                         continue
                     }
-                    
-                    <# Save for later when doing VPN
-                            if (Get-NetRoute -DestinationPrefix "192.168.$octet.0/24" -ErrorAction SilentlyContinue)
-                            {
-                            Write-Verbose -Message "Network '192.168.$octet.0/24' is routable"
-                            continue
-                            }
-                    #>
                     
                     $networkFound = $true
                 }

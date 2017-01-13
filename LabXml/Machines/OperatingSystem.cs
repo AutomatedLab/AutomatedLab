@@ -87,7 +87,7 @@ namespace AutomatedLab
             {
                 //updating the list by getting the current list if Azure-VMImages:
                 //Get-AzureVMImage | Where-Object OS -eq Windows | Group-Object -Property Imagefamily | ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 } | Format-Table -Property Imagefamily, PublishedDate
-                
+
                 switch (operatingSystemName)
                 {
                     case "Windows Server 2008 R2 SERVERDATACENTER":
@@ -99,11 +99,17 @@ namespace AutomatedLab
                     case "Windows Server 2012 R2 SERVERDATACENTER":
                         return "2012-R2-Datacenter";
 
-                    case "Windows Server vNext SERVERDATACENTER":
+                    case "Windows Server 2016 SERVERDATACENTER":
                         return "2016-Datacenter";
 
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
+
+                    case "Windows 10 Enterprise":
+                        return "Windows-10-N-x64";
+
+                    case "Windows 7 ENTERPRISE":
+                        return "Win7-SP1-Ent-N";
 
                     default:
                         return string.Empty;
@@ -200,6 +206,11 @@ namespace AutomatedLab
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Technical Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise 2015 LTSB":
+                        return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
+                    case "Windows 10 Enterprise 2016 LTSB":
+                        return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
+
 
                     case "Windows Server 2016 Technical Preview 4 SERVERDATACENTER":
                         return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
@@ -363,11 +374,11 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:\d{4} )(R2)";
+                var exp = @"(WS)?(?:\d{4}( )?)(?<IsR2>R2)";
 
                 var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
 
-                if (!string.IsNullOrEmpty(match.Groups[1].Value))
+                if (!string.IsNullOrEmpty(match.Groups["IsR2"].Value))
                 {
                     return true;
                 }
@@ -377,21 +388,5 @@ namespace AutomatedLab
                 }
             }
         }
-
-        //public static Version ConvertShortVersionString(string versionString)
-        //{
-        //    var exp = @"(?<Version>\d{4})(?<R2>R2)";
-
-        //    var match = System.Text.RegularExpressions.Regex.Match(versionString, exp);
-
-        //    if (!string.IsNullOrEmpty(match.Groups[1].Value))
-        //    {
-        //        selecct ;
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentException("Could not parse string and retreive the OS version");
-        //    }
-        //}
     }
 }

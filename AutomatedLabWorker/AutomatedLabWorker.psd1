@@ -3,13 +3,13 @@
 	RootModule = 'AutomatedLabWorker.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '3.9.0.0'
+	ModuleVersion = '3.9.0.2'
 	
 	# ID used to uniquely identify this module
 	GUID = '3addac35-cd7a-4bd2-82f5-ab9c83a48246'
 	
 	# Author of this module
-	Author = 'Raimund Andree, Per Pedersen'
+	Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
 	
 	# Company or vendor of this module
 	CompanyName = 'AutomatedLab Team'

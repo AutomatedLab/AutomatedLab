@@ -24,7 +24,7 @@ function Add-LabVirtualNetworkDefinition
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure' -and -not ((Get-LabDefinition).AzureSettings))
     {
-        Add-LabAzureProfile
+        throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
     }
 
     $azurePropertiesValidKeys = 'SubnetName', 'SubnetAddressPrefix', 'LocationName', 'DnsServers', 'ConnectToVnets'

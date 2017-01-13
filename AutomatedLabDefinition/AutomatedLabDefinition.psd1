@@ -3,13 +3,13 @@
     ModuleToProcess = 'AutomatedLabDefinition.psm1'
 	
     # Version number of this module.
-    ModuleVersion = '3.9.0.0'
+    ModuleVersion = '3.9.0.2'
 	
     # ID used to uniquely identify this module
     GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
 	
     # Author of this module
-    Author = 'Raimund Andree, Per Pedersen'
+    Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
 	
     # Company or vendor of this module
     CompanyName = 'AutomatedLab Team'

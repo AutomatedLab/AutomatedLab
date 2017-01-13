@@ -3,13 +3,13 @@
     ModuleToProcess = 'AutomatedLab.psm1'
     
     # Version number of this module.
-    ModuleVersion = '3.9.0.0'
+    ModuleVersion = '3.9.0.2'
     
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
     # Author of this module
-    Author = 'Raimund Andree, Per Pedersen'
+    Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
     # Company or vendor of this module
     CompanyName = 'AutomatedLab Team'
@@ -182,7 +182,6 @@
         'Disable-LabVMFirewallGroup',
         'Dismount-LabIsoImage',
         'Test-Port',
-        'Add-LabAzureProfile',
         'Install-LabDnsForwarder',
 		'Install-LabADDSTrust',
         'Get-LabVirtualNetwork',

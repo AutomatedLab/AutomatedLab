@@ -40,8 +40,8 @@ function New-LabVM
         return
     }
 	
-    $azureVMs = @()
-    foreach ($machine in $machines)
+    $jobs = @()
+    foreach ($machine in $machines.GetEnumerator())
     {
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
         
@@ -52,6 +52,16 @@ function New-LabVM
             if ('RootDC' -in $Machine.Roles.Name)
             {
                 Start-LabVM -ComputerName $Machine.Name
+            }
+            
+            if ($result)
+            {
+                Write-ProgressIndicatorEnd
+                Write-ScreenInfo -Message 'Done' -TaskEnd
+            }
+            else
+            {
+                Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
             }
         }
         elseif ($machine.HostType -eq 'VMWare')
@@ -70,22 +80,26 @@ function New-LabVM
         }
         elseif ($machine.HostType -eq 'Azure')
         {
-            $result = New-LWAzureVM -Machine $machine
-            if ($result)
-            {
-                $azureVMs += $machine
-            }
-        }
-
-        if ($result)
-        {
-            Write-ProgressIndicatorEnd
+            $jobs += New-LWAzureVM -Machine $machine
+            
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
-        else
-        {
-            Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
-        }
+    }
+    
+    #test if the machine creation jobs succeeded
+    $jobs | Wait-Job | Out-Null
+    $failedJobs = $jobs | Where-Object State -eq 'Failed'
+    $completedJobs = $jobs | Where-Object State -eq 'Completed'
+    if ($failedJobs)
+    {
+        $machinesFailedToCreate = ($failedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
+        throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a look at the background job's result (Get-Job, Receive-Job)"
+    }
+            
+    if ($completedJobs)
+    {
+        $azureVMs = $completedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }
+        $azureVMs = Get-LabMachine -ComputerName $azureVMs
     }
 
     if ($azureVMs)
@@ -668,15 +682,15 @@ function Wait-LabVM
             
             foreach ($machine in $completed)
             {
-				if((Get-LabMachine $machine).HostType -eq 'HyperV')
-				{
-					$machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-					if ($machineMetadata.InitState -lt 1)
-					{
-						$machineMetadata.InitState = 1
-					}
-					Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
-				}
+                if((Get-LabMachine $machine).HostType -eq 'HyperV')
+                {
+                    $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                    if ($machineMetadata.InitState -lt 1)
+                    {
+                        $machineMetadata.InitState = 1
+                    }
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                }
             }            
             
             Write-LogFunctionExit
@@ -992,7 +1006,7 @@ function Connect-LabVM
             Invoke-Expression $cmd | Out-Null
             mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
 			
-            Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
+            Start-Sleep -Seconds 5 #otherwise credentials get deleted too quickly
 			
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
