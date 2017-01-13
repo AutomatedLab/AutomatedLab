@@ -790,8 +790,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Enable-LabCertificateAutoenrollment [-Computer] [-User] [-CodeSigning] [[-CodeSigningTemplateName] &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enable certificate auto-enrollment</Synopsis>
+        <Description>Enables the auto-enrollment for machines, including code-signing certificates</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -856,8 +856,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Enable-LabHostRemoting</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enable remoting on the lab host</Synopsis>
+        <Description>Enables WinRM remoting on the machine setting up the lab by enabling WinRM, allowing credential delegation and adding * to the trusted hosts in the local group policy</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -881,8 +881,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Enable-LabVMFirewallGroup [-ComputerName] &lt;String[]&gt; [-FirewallGroup] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enable firewall group on machine</Synopsis>
+        <Description>Enables one or more named firewall groups on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -902,7 +902,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -912,7 +912,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The firewall group names</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -928,8 +928,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Enable-LabVMRemoting -All &lt;SwitchParameter&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enable remoting on machines</Synopsis>
+        <Description>Enables remoting on one or more lab machines on Azure, HyperV and VMWare</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -950,7 +950,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -960,7 +960,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether all lab machines should be used</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -976,8 +976,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Enter-LabPSSession [-Machine] &lt;Machine&gt; [-UseCredSsp] [-UseLocalCredential]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enter a PSSession</Synopsis>
+        <Description>Create and enter a new PowerShell session to a lab machine</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -998,7 +998,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1008,7 +1008,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether CredSSP should be used to facilitate authentication</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1018,7 +1018,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether the machine's local user credentials should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Machine" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -1028,11 +1028,18 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab machine</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabMachine FS1 | Enter-LabPSSession -UseLocalCredentials</Cmd>
+          <Description>Find the lab machine FS1 and enter a session</Description>
+          <Output>A PowerShell session to FS1 with local credentials</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1043,8 +1050,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Export-Lab</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Export a lab</Synopsis>
+        <Description>Exports a lab including all machine and disk definitions to local XML stores according to the location defined in the lab settings</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1068,8 +1075,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-FullMesh [-List] &lt;Array&gt; [-OneWay]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Combine list items to mesh</Synopsis>
+        <Description>For a given array or list of items, generate a full mesh by matching every item to every other item</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1090,7 +1097,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The list of items to create a mesh for</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1100,11 +1107,40 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether a mesh should be created only one-way</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>$list = @("Orange","Strawberry","Pear","Apple","Banana")
+$FruitSalad = Get-FullMesh $list</Cmd>
+          <Description>Combines all array items and stores them in a variable</Description>
+          <Output>Source     Destination
+------     -----------
+Orange     Strawberry 
+Orange     Pear       
+Orange     Apple      
+Orange     Banana     
+Strawberry Orange     
+Strawberry Pear       
+Strawberry Apple      
+Strawberry Banana     
+Pear       Orange     
+Pear       Strawberry 
+Pear       Apple      
+Pear       Banana     
+Apple      Orange     
+Apple      Strawberry 
+Apple      Pear       
+Apple      Banana     
+Banana     Orange     
+Banana     Strawberry 
+Banana     Pear       
+Banana     Apple   </Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1115,10 +1151,10 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-Lab [-List]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis>s</Synopsis>
-        <Description>d</Description>
-        <Notes>n</Notes>
-        <InputType>i</InputType>
+        <Synopsis>Show lab data</Synopsis>
+        <Description>Return the lab data for the current lab or list all existing labs</Description>
+        <Notes />
+        <InputType />
         <InputUrl />
         <InputTypeDescription />
         <ReturnType />
@@ -1136,11 +1172,19 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether all existing labs should be listed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Import-Lab MyLabName
+$LabData = Get-Lab</Cmd>
+          <Description>Imports a lab and stores the lab data in the variable LabData</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1151,8 +1195,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAvailableOperatingSystem [[-Path] &lt;String[]&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Show available lab OS</Synopsis>
+        <Description>Shows all available operating systems that are available for an imported or newly created lab. Available after either calling New-LabDefinition or Import-Lab or by specifying a path to the ISO folder</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1172,11 +1216,31 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Lab ISO folder path</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabAvailableOperatingSystem -Path D:\LabSources\ISOs</Cmd>
+          <Description>List all available OS in the lab sources directory</Description>
+          <Output>
+OperatingSystemName                         Idx Version        PublishedDate       IsoPath                             
+-------------------                         --- -------        -------------       -------                             
+Windows Server 2012 R2 SERVERSTANDARDCORE   1   6.3.9600.17415 21.11.2014 15:34:09 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 SERVERSTANDARD       2   6.3.9600.17415 21.11.2014 15:45:29 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 SERVERDATACENTERCORE 3   6.3.9600.17415 21.11.2014 15:54:25 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 SERVERDATACENTER     4   6.3.9600.17415 21.11.2014 16:06:15 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERSTANDARDCORE      1   10.0.14393.0   12.09.2016 13:04:57 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERSTANDARD          2   10.0.14393.0   12.09.2016 13:09:49 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERDATACENTERCORE    3   10.0.14393.0   12.09.2016 13:12:56 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERDATACENTER        4   10.0.14393.0   12.09.2016 13:17:32 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERSTANDARDNANO      1   10.0.14393.0   16.07.2016 13:41:54 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 SERVERDATACENTERNANO    2   10.0.14393.0   16.07.2016 13:40:45 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 SERVERDATACENTER     1   6.3.9600.17415 21.11.2014 16:06:15 D:\LabSources\ISOs\UpdatedServer2...</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1187,8 +1251,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureCertificate</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Not Implemented</Synopsis>
+        <Description>Not Implemented</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1212,8 +1276,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureDefaultLocation</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the default Azure location</Synopsis>
+        <Description>Returns the selected default location on Azure for the current lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1237,8 +1301,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureDefaultResourceGroup</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the default resource group</Synopsis>
+        <Description>Gets the default resource group for the current lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1262,8 +1326,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureDefaultStorageAccount</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the default storage account</Synopsis>
+        <Description>Gets the lab's default storage account in the lab resource group/lab location</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1287,8 +1351,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureLocation [[-LocationName] &lt;String&gt;] [-List]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get a lab location</Synopsis>
+        <Description>Gets valid Azure locations by response time or name. Can also list all available Azure locations</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1308,7 +1372,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The location display name to return</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1318,11 +1382,49 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether all locations should be listed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabAzureLocation</Cmd>
+          <Description>Get the fastest responding Azure location</Description>
+          <Output>UK South</Output>
+        </Example>
+        <Example>
+          <Name>Example 2</Name>
+          <Cmd>Get-LabAzureLocation -List</Cmd>
+          <Description>Lists all available Azure locations. Returns 9999 if location is not reachable or not yet implemented in AL</Description>
+          <Output>DisplayName         Latency
+-----------         -------
+UK South                 67
+West Europe           73,75
+North Europe          94,75
+UK West                95,5
+East US               95,75
+Canada Central        109,5
+Central US            128,5
+East US 2             167,5
+Canada East          181,25
+North Central US     197,75
+West US              201,75
+South Central US      205,5
+Southeast Asia       214,25
+East Asia            240,25
+Brazil South          257,5
+Japan East           296,25
+Japan West           311,25
+Australia East          324
+Australia Southeast  332,25
+West Central US        9999
+West US 2              9999
+Central India          9999
+West India             9999
+South India            9999</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1333,8 +1435,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureResourceGroup [[-ResourceGroupName] &lt;String[]&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get resource groups</Synopsis>
+        <Description>Returns either named Azure resource groups defined in the lab settings or returns all defined resource groups</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1354,7 +1456,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The names of the resource groups to return</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1369,8 +1471,8 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
         <string>Get-LabAzureSubscription</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get an Azure subscription</Synopsis>
+        <Description>Gets all subscriptions for a given lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
