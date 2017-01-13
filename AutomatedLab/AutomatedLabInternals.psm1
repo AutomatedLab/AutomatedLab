@@ -1759,25 +1759,6 @@ function Unblock-LabSources
 #region Add-FunctionToPSSession
 function Add-FunctionToPSSession
 {
-    <#
-            .SYNOPSIS
-            Creates a function in the remote sessions based on the local definition of the specified function.
-                        
-            .PARAMETER Session
-            Session(s) to define the function in
-            .PARAMETER FunctionInfo
-            The function info as returned by Get-Command that defines the function
-        
-            .EXAMPLE
-            function test-fubar { write "cool" }
-            $session = New-PSSession -ComputerName someserver
-            Get-Command test-fubar | Add-FunctionToPSSession $session
-            Invoke-Command -session $session { test-fubar }
-        
-            .NOTES
-            Author: Dan Thompson, Tim Bertalot
-    #>
-
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'
