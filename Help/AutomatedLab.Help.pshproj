@@ -2003,8 +2003,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-LabVHDX -All &lt;SwitchParameter&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get lab disks</Synopsis>
+        <Description>Gets lab disk files either by name or returns all lab disks</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2036,7 +2036,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Switch parameter to return all disks</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2052,8 +2052,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-LabVMRdpFile [-UseLocalCredential] [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get RDP connection file</Synopsis>
+        <Description>Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g. %userprofile%\Documents\AutomatedLab-Labs\&lt;LabName&gt;\</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2074,7 +2074,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2084,7 +2084,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether the machines' local credentials should be used to connect</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2094,7 +2094,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Create RDP files for all lab VMs</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2109,8 +2109,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-LabVMStatus [-ComputerName] &lt;String[]&gt; [-AsHashTable]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get the status of a VM</Synopsis>
+        <Description>Gets the status of one or more lab virtual machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2130,7 +2130,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2140,11 +2140,22 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that if only one machine status is requested the output should still be a hash table or just the status</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-LabVMStatus -ComputerName DC1,kb-edge01</Cmd>
+          <Description>Get the status of DC1 and kb-edge01</Description>
+          <Output>Name                           Value                                                                                                                                                                                                                                                                                               
+----                           -----                                                                                                                                                                                                                                                                                               
+DC1                            Started                                                                                                                                                                                                                                                                                             
+kb-edge01                        Stopped                                                                                                                                                                                                                                                                                             
+</Output>
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -2155,8 +2166,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-LabVMUptime [-ComputerName] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get uptime</Synopsis>
+        <Description>Gets the VMs uptime by checking the last boot time remotely via WMI</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2176,7 +2187,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2191,8 +2202,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-LabWindowsFeature [-ComputerName] &lt;String[]&gt; [[-FeatureName] &lt;String[]&gt;] [-UseLocalCredential] [[-ProgressIndicator] &lt;Int32&gt;] [-NoDisplay]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get Windows feature status</Synopsis>
+        <Description>Gets the status of one or more Windows features on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2213,7 +2224,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -2224,7 +2235,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The feature names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2234,7 +2245,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether local credentials should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -2254,7 +2265,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if output should be suppressed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2269,8 +2280,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-NextOid [-Oid] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Return next object id</Synopsis>
+        <Description>Returns the next object ID for a given object ID</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2290,7 +2301,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The previous object ID</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2305,8 +2316,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Get-StringSection [-String] &lt;String&gt; [-SectionSize] &lt;Int32&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Split a string into an array</Synopsis>
+        <Description>Splits a string into sections by defining section sizes</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2326,7 +2337,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The input string</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -2336,7 +2347,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The size of the section the string should be split into</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2438,8 +2449,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Import-LabAzureCertificate</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Not implemented</Synopsis>
+        <Description>Not implemented</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2796,8 +2807,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabADDSTrust</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create forest trust</Synopsis>
+        <Description>Creates DNS forwarders and a bidirectional trust for all forests in the current lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2821,8 +2832,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabAdfs</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Enable ADFS</Synopsis>
+        <Description>Configures the Active Directory Federation Services for the current lab by generating certificates from the lab CA, creating a service user and the necessary DNS entries as well as setting up an ADFS farm</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2846,8 +2857,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabAdfsProxy</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create ADFS proxy</Synopsis>
+        <Description>Configures an ADFS proxy for existing ADFS lab machines by retrieving a valid certificate for one ADFS machine and then installing a web application proxy</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2871,8 +2882,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabDcs [[-DcPromotionRestartTimeout] &lt;Int32&gt;] [[-AdwsReadyTimeout] &lt;Int32&gt;] [-CreateCheckPoints]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install domain controllers</Synopsis>
+        <Description>Installs lab domain controllers after the root and child domains have been set-up and the RootDC and FirstChildDC machines have been installed</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2892,7 +2903,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The DC promo restart timeout, i.e. how long we should wait for the restart after the DC promo to complete</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -2902,7 +2913,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout to wait for the Active Directory Web Services</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2912,7 +2923,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if checkpoints should be created after DC promo</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2927,8 +2938,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabDnsForwarder</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create DNS forwarders</Synopsis>
+        <Description>Creates conditional DNS forwarders for every forest in the lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2953,8 +2964,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabDscClient [-All] [-PullServer &lt;String[]&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Configure DSC clients</Synopsis>
+        <Description>Configures all lab machines' LCM to work with the lab's DSC pull server</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2975,7 +2986,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2985,7 +2996,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The pull server names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2995,7 +3006,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if all lab machines should be selected except for 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer'</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3010,8 +3021,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabDscPullServer [[-InstallationTimeout] &lt;Int32&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install a DSC pull server</Synopsis>
+        <Description>Configures the labs DSC pull servers with SSL</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3031,7 +3042,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout in minutes how long we should wait for the installation</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3046,8 +3057,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabFirstChildDcs [[-DcPromotionRestartTimeout] &lt;Int32&gt;] [[-AdwsReadyTimeout] &lt;Int32&gt;] [-CreateCheckPoints]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install the first child domain's domain controllers</Synopsis>
+        <Description>Installs all lab machines with the role FirstChildDc after all RootDCs have been installed. This will set-up all child domains for a given lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3067,7 +3078,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The DC promo restart timeout, i.e. how long we should wait for the restart after the DC promo to complete</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -3077,7 +3088,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout to wait for the Active Directory Web Services</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3087,7 +3098,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if checkpoints should be created after DC promo</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3102,8 +3113,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabOffice2013</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install Microsoft Office 2013</Synopsis>
+        <Description>Installs Microsoft Office 2013 on designated lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3127,8 +3138,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabOffice2016</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install Microsoft Office 2016</Synopsis>
+        <Description>Installs Microsoft Office 2016 on designated lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3152,8 +3163,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabRootDcs [[-DcPromotionRestartTimeout] &lt;Int32&gt;] [[-AdwsReadyTimeout] &lt;Int32&gt;] [-CreateCheckPoints]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install root domain controllers</Synopsis>
+        <Description>Installs all root domain controllers (machines with role RootDC) and root domains in the current lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3173,7 +3184,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The DC promo restart timeout, i.e. how long we should wait for the restart after the DC promo to complete</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -3183,7 +3194,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout to wait for the Active Directory Web Services</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3193,7 +3204,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if checkpoints should be created after DC promo</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3208,8 +3219,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabRouting [[-InstallationTimeout] &lt;Int32&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Configure RRAS</Synopsis>
+        <Description>Configures Routing and Remote Access Services on one or more lab machines connected to an externally facing interface. Will set up full NAT and a DNS proxy.</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3246,8 +3257,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabSoftwarePackage [-Timeout &lt;Int32&gt;] -Machine &lt;Machine[]&gt; -SoftwarePackage &lt;SoftwarePackage&gt; [-UseCredSsp] [-AsJob] [-PassThru] [-NoDisplay] [-ProgressIndicator &lt;Int32&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install software</Synopsis>
+        <Description>Installs a lab software package on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3270,7 +3281,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The source path of the package to install</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3282,7 +3293,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The package command line</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3294,7 +3305,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The process name of the installation process</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3304,7 +3315,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The installation timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="ScriptBlock" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3315,7 +3326,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Currently not implemented scriptblock to check the progress by using a custom method</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Boolean" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3326,7 +3337,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the parent folder of the software package should be copied entirely to the target machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3338,7 +3349,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3348,7 +3359,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if CredSSP should be used to connect to the target machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3358,7 +3369,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the installation should be run as a job</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3368,7 +3379,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the results should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3378,7 +3389,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if output should be suppressed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3399,7 +3410,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The local path on the target machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Machine[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3409,7 +3420,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SoftwarePackage" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3419,7 +3430,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab software package</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3434,8 +3445,8 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
         <string>Install-LabSoftwarePackages [-Machine] &lt;Machine[]&gt; [-SoftwarePackage] &lt;SoftwarePackage[]&gt; [-WaitForInstallation] [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install multiple packages</Synopsis>
+        <Description>Installs one or more software packages on lab machines by calling Install-LabSoftwarePackage</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3455,7 +3466,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The target machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SoftwarePackage[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="1" globbing="false">
@@ -3465,7 +3476,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The software packages to install</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3475,7 +3486,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the script should be waiting for the installation of all packages on all machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3485,7 +3496,7 @@ DC1       dom.local 172.16.50.12 Windows Server 2012 R2 SERVERDATACENTER (6.3.96
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the resulting jobs should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
