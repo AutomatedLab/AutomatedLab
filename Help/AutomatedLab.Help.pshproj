@@ -3694,7 +3694,7 @@ SQLServer2008
       </Syntax>
       <GeneralHelp>
         <Synopsis>Invoke command on a lab vm</Synopsis>
-        <Description>Invokes a script block on a lab machine</Description>
+        <Description>Invokes a script block or a script file on a lab VM with the ability to add function definitions and variables for the script block to use. Scripts and script blocks can also use a dependency folder containing dependencies.</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3718,7 +3718,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The name of the activity to execute</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3728,7 +3728,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the post installation activities defined in the lab should be processed instead of a script block</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -3742,7 +3742,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Object[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3752,7 +3752,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The argument list for the script block or the script</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3762,7 +3762,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if CredSSP should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3772,7 +3772,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the machines' local credentials should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSCredential" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3783,7 +3783,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The credential that should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSVariable[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3793,7 +3793,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The names of the variables to add to the sessions executing the lab command</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="FunctionInfo[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3803,7 +3803,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The function definitions to add to the sessions executing the lab command</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3813,7 +3813,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The amount of parallel jobs to create</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3823,7 +3823,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the lab commands should be executed in the background</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3833,7 +3833,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the resulting jobs should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3843,7 +3843,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if output should be suppressed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="ScriptBlock" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -3854,7 +3854,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The script block to execute on the machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3867,7 +3867,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The number of retries in case the script block fails</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3880,7 +3880,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The amount of seconds to wait between each retry</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3892,7 +3892,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The script file path if a script file should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3904,11 +3904,25 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The folder containing the files the script or the script block depend on</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>$ALocallyDefinedVariable = "This is a"
+$AndAnother = "Test"
+function Get-SomeThingOnMyLocalMachine
+{
+    Write-Host "$ALocallyDefinedVariable $AndAnother"
+}
+
+Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-SomeThingOnMyLocalMachine} -Variable ALocallyDefinedVariable,AndAnother -Function (Get-Command Get-SomeThingOnMyLocalMachine) -UseLocalCredential -Retries 3 -RetryIntervalInSeconds 20</Cmd>
+          <Description>Invokes a script block calling a locally-defined function on the machine DC1. The locally-defined function as well as the two local variables are passed to the VM before the script block is executed</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -3919,8 +3933,8 @@ SQLServer2008
         <string>Join-LabVMDomain [-Machine] &lt;Machine[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Join a VM to a domain</Synopsis>
+        <Description>Joins one or more lab VMs to their defined domain</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3940,7 +3954,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab machines</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3955,8 +3969,8 @@ SQLServer2008
         <string>Mount-LabIsoImage [-ComputerName] &lt;String[]&gt; [-IsoPath] &lt;String&gt; [-SupressOutput] [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Mount an ISO</Synopsis>
+        <Description>Mounts a disk image on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3976,7 +3990,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -3986,7 +4000,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The full path of the ISO file to mount</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3996,7 +4010,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if output should be suppressed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4006,7 +4020,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if a psobject containing drive info should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4021,8 +4035,8 @@ SQLServer2008
         <string>New-LabADSubnet [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create new AD subnet</Synopsis>
+        <Description>Creates a new Active Directory subnet for the site Default-First-Site-Name</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4057,8 +4071,8 @@ SQLServer2008
         <string>New-LabCATemplate [-TemplateName] &lt;String&gt; [[-DisplayName] &lt;String&gt;] [-SourceTemplateName] &lt;String&gt; [[-ApplicationPolicy] &lt;String[]&gt; {EmailProtection | OCSPSigning | CodeSigning | ClientAuthentication | IpsecTunnel | TimeStamping | IpsecUser | IpsecEndSystem | ServerAuthentication | CapWap} ] [[-EnrollmentFlags] &lt;EnrollmentFlags&gt;] [[-PrivateKeyFlags] &lt;PrivateKeyFlags&gt;] [[-Version] &lt;Int32&gt;] [[-ValidityPeriod] &lt;TimeSpan&gt;] [[-RenewalPeriod] &lt;TimeSpan&gt;] [-SamAccountName] &lt;String[]&gt; [-ComputerName] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create CA template</Synopsis>
+        <Description>Creates a new certificate template in the lab certificate authority</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4078,7 +4092,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The name of the new CA template</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -4088,7 +4102,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The display name of the template</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -4098,7 +4112,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The name of the source template</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
@@ -4109,7 +4123,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The names of the application policies</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="EnrollmentFlags" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
@@ -4119,7 +4133,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The enrollment flags for the template</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PrivateKeyFlags" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="5" globbing="false">
@@ -4129,7 +4143,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The private key usage flags</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="6" globbing="false">
@@ -4139,7 +4153,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The template version</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="7" globbing="false">
@@ -4149,7 +4163,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timespan certificates created from this template are valid for</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="8" globbing="false">
@@ -4159,7 +4173,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timespan after which certificates created by this template have to be renewed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="9" globbing="false">
@@ -4169,7 +4183,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The SamAccountNames of users permitted to use the template</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="10" globbing="false">
@@ -4179,7 +4193,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab machine with the CA role</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4196,8 +4210,8 @@ SQLServer2008
         <string>New-LabPSSession -Session &lt;PSSession&gt; [-UseLocalCredential] [-UseCredSsp] [-Credential &lt;PSCredential&gt;] [-Retries &lt;Int32&gt;] [-Interval &lt;Int32&gt;] [-UseSSL]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create PowerShell sessions</Synopsis>
+        <Description>Creates or repurposes sessions to one or more machines with the ability to use SSL</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4219,7 +4233,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The remote computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4229,7 +4243,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the machine credential should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4239,7 +4253,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if CredSSP should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSCredential" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4250,7 +4264,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The credential used to connect</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4260,7 +4274,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The number of retries to enable a sessions</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4270,7 +4284,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The retry interval in seconds</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4280,7 +4294,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if SSL should be used to connect the sessions</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Machine[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4290,7 +4304,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab VMs</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSSession" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4300,7 +4314,7 @@ SQLServer2008
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>An existing session. Used to recreate a broken session</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4489,8 +4503,8 @@ SQLServer2008
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
