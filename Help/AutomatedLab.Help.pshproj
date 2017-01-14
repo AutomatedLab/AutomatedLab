@@ -3511,8 +3511,25 @@ kb-edge01                        Stopped
         <string>Install-LabSqlServers [[-InstallationTimeout] &lt;Int32&gt;] [-CreateCheckPoints]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install SQL servers</Synopsis>
+        <Description>Installs all SQL servers in the current lab with the configured installation properties of each server. The valid properties include:
+Features
+InstanceName
+Collation
+SQLSvcAccount     
+SQLSvcPassword    
+AgtSvcAccount     
+AgtSvcPassword    
+RsSvcAccount
+AgtSvcStartupType
+BrowserSvcStartupType
+RsSvcStartupType
+AsSysAdminAccounts
+AsSvcAccount
+IsSvcAccount
+SQLSysAdminAccounts
+SQLServer2008
+</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3532,7 +3549,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout in minutes we should wait for the installation to finish</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3542,7 +3559,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if a checkpoint should be created after installing SQL</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -3557,8 +3574,8 @@ kb-edge01                        Stopped
         <string>Install-LabWindowsFeature [-ComputerName] &lt;String[]&gt; [-FeatureName] &lt;String[]&gt; [-IncludeAllSubFeature] [-UseLocalCredential] [[-ProgressIndicator] &lt;Int32&gt;] [-NoDisplay] [-PassThru] [-AsJob]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Install a Windows feature</Synopsis>
+        <Description>Installs one or more Windows features on one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -3579,7 +3596,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -3590,7 +3607,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The feature names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3600,7 +3617,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if all subfeatures for the selected features should be installed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3610,7 +3627,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether the machine's local credentials should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -3630,7 +3647,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if output should be suppressed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3640,7 +3657,7 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the resulting jobs should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -3650,11 +3667,18 @@ kb-edge01                        Stopped
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the installation jobs should be started in the background or should be waited upon</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Install-LabWindowsFeature -ComputerName (Get-LabMachine -Running) -FeatureName RSAT -IncludeAllSubFeature</Cmd>
+          <Description>Installs the full Remote Server Admin Tools on all running lab machines</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -3669,8 +3693,8 @@ kb-edge01                        Stopped
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; [-ScriptBlock] &lt;ScriptBlock&gt; -DependencyFolderPath &lt;String&gt; [-ArgumentList &lt;Object[]&gt;] [-UseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Invoke command on a lab vm</Synopsis>
+        <Description>Invokes a script block on a lab machine</Description>
         <Notes />
         <InputType />
         <InputUrl />
