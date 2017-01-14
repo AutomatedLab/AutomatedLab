@@ -4330,8 +4330,8 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>New-LabVHDX [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create new VHDX</Synopsis>
+        <Description>Creates new VHDX files for the lab and initializing them with NTFS and a partition called Data</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4352,7 +4352,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The names of the VHDX files to create</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -4362,7 +4362,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if all disks defined in the lab should be created</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4378,8 +4378,8 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>New-LabVM [-All] [-CreateCheckPoints]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Create a new virtual machine</Synopsis>
+        <Description>Creates new virtual machines for the machine definitions present in the lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4400,7 +4400,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The names of the machines to create</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4410,7 +4410,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if a checkpoint should be created after machine creation</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4420,7 +4420,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all lab machines should be created</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4435,8 +4435,11 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>Remove-DeploymentFiles</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove deployment data</Synopsis>
+        <Description>Removes the following files and folders used to deploy the machines from all running lab machines:
+c:\unattend.xml
+c:\WSManRegKey.reg
+c:\DeployDebug</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4462,8 +4465,8 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>Remove-Lab [-Name] &lt;String&gt; [-RemoveReferenceDisks] [-WhatIf] [-Confirm]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove the lab</Synopsis>
+        <Description>Fully removes the current lab, the lab stored at a specific location or a named lab. For Azure-based labs, the lab resource group is removed completely, regardless of additional machines deployed to the resource group</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4485,7 +4488,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates if the reference disks should be removed as well</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4497,7 +4500,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Aliases>
             <string>wi</string>
           </Aliases>
-          <Description />
+          <Description>Indicates if a trial run should be executed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4509,7 +4512,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Aliases>
             <string>cf</string>
           </Aliases>
-          <Description />
+          <Description>Indicates that all actions need confirmation</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4519,7 +4522,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The path to the lab</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -4529,7 +4532,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The name of the lab</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4546,8 +4549,8 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>Remove-LabPSSession [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove sessions</Synopsis>
+        <Description>Removes one or more PowerShell sessions currently active</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4569,7 +4572,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names for which sessions should be removed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Machine[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4579,7 +4582,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab machines for which sessions should be removed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4589,7 +4592,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all sessions should be removed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4604,8 +4607,8 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <string>Remove-LabVariable</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove AutomatedLab variables</Synopsis>
+        <Description>Removes all variables matching  'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'</Description>
         <Notes />
         <InputType />
         <InputUrl />
