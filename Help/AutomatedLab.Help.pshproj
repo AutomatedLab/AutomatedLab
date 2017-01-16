@@ -6241,8 +6241,8 @@ c:\DeployDebug</Description>
         <string>Unblock-LabSources [[-Path] &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Unblock lab sources</Synopsis>
+        <Description>Unblocks all lab sources in order to be able to properly execute all scripts and downloaded files</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6277,8 +6277,8 @@ c:\DeployDebug</Description>
         <string>Update-LabAzureSettings</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Update Azure settings</Synopsis>
+        <Description>Updates the lab's Azure settings after e.g. Add-LabAzureSubscription is called</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6302,8 +6302,8 @@ c:\DeployDebug</Description>
         <string>Update-LabIsoImage -SourceIsoImagePath &lt;String&gt; -TargetIsoImagePath &lt;String&gt; -UpdateFolderPath &lt;String&gt; -SourceImageIndex &lt;Int32&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Update an ISO</Synopsis>
+        <Description>Updates a lab iso image by adding installable hotfixes from a location to the ISO and saving it</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6323,7 +6323,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The source ISO</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6333,7 +6333,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The target ISO</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6343,7 +6343,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The folder containing the updates</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6353,7 +6353,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The image index of the edition to update</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6368,8 +6368,8 @@ c:\DeployDebug</Description>
         <string>Wait-LabADReady [-ComputerName] &lt;String[]&gt; [[-TimeoutInMinutes] &lt;Int32&gt;] [[-ProgressIndicator] &lt;Int32&gt;] [-NoNewLine]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Wait for the lab AD</Synopsis>
+        <Description>Waits for the lab Active Directory to be ready by waiting for the Active Directory Web Services and executing Get-ADDomainController</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6389,7 +6389,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names the test will be executed on</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -6399,7 +6399,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout in minutes how long we should wait</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -6419,7 +6419,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new line should be present in the output</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6434,8 +6434,8 @@ c:\DeployDebug</Description>
         <string>Wait-LabVM [-ComputerName] &lt;String[]&gt; [-TimeoutInMinutes &lt;Double&gt;] [-PostDelaySeconds &lt;Int32&gt;] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Wait for VM</Synopsis>
+        <Description>Waits for a lab machine to accept incoming sessions, indicating that it is ready to be used</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6511,8 +6511,8 @@ c:\DeployDebug</Description>
         <string>Wait-LabVMRestart [-ComputerName] &lt;String[]&gt; [-TimeoutInMinutes &lt;Double&gt;] [-ProgressIndicator &lt;Int32&gt;] [-StartMachinesWhileWaiting &lt;Machine[]&gt;] [-NoNewLine] [-MonitorJob &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Wait for machine restart</Synopsis>
+        <Description>Waits for the restart of a lab machine</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6532,7 +6532,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names to be waited on</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Double" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6542,7 +6542,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The wait timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6563,7 +6563,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates the machines that should be started while waiting for the VM restart</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6573,7 +6573,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new lines should be present in the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Object" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6582,7 +6582,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>not implemented</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6597,8 +6597,8 @@ c:\DeployDebug</Description>
         <string>Wait-LabVMShutdown [-ComputerName] &lt;String[]&gt; [-TimeoutInMinutes &lt;Double&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Wait for machine shutdown</Synopsis>
+        <Description>Waits for one or more lab machines to shut down</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6618,7 +6618,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Double" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6628,7 +6628,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The shutdown timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6643,8 +6643,8 @@ c:\DeployDebug</Description>
         <string>Write-ProgressIndicator</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Writes a .</Synopsis>
+        <Description>Writes a . to the output without a new line to indicate that the operation is still running</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6668,8 +6668,8 @@ c:\DeployDebug</Description>
         <string>Write-ProgressIndicatorEnd</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Write a .</Synopsis>
+        <Description>Writes a . to the output and appends a new line to indicate that the operation is completed its last step</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6693,8 +6693,8 @@ c:\DeployDebug</Description>
         <string>Write-ScreenInfo [-Message] &lt;String[]&gt; [[-TimeDelta] &lt;TimeSpan&gt;] [[-TimeDelta2] &lt;TimeSpan&gt;] [-Type &lt;String&gt; {Error | Warning | Info | Verbose | Debug} ] [-NoNewLine] [-Indent &lt;Int32&gt;] [-DeployStart] [-TaskStart] [-TaskEnd]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Write to console</Synopsis>
+        <Description>Writes formatted output to the console window and tracks installation time. Proper indentation is achieved by using the switch parameters TaskStart and TaskEnd to indicate that a specific task has been entered or left</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6714,7 +6714,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The message to write</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -6724,7 +6724,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>A time span indicating the first time delta in the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
@@ -6734,7 +6734,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>A time span indicating the second time delta in the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6745,7 +6745,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The type of the message, e.g. Error</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6755,7 +6755,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new line should be appended to the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6765,7 +6765,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The amount of levels to indent the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6775,7 +6775,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the lab deployment has started and sets the time stamp accordingly</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6785,7 +6785,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that a specific task has been started</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6795,7 +6795,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that a specific task has ended</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
