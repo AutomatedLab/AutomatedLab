@@ -734,6 +734,7 @@ namespace GPO
 #region Get-Type (helper function for creating generic types)
 function Get-Type
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Position = 0, Mandatory = $true)]
         [string] $GenericType,
@@ -759,6 +760,7 @@ function Get-Type
 #region Invoke-Ternary
 function Invoke-Ternary 
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param
     (
         [scriptblock]
@@ -786,6 +788,7 @@ Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary 
 #region Test-IsAdministrator
 function Test-IsAdministrator
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param ()
     
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -796,6 +799,7 @@ function Test-IsAdministrator
 #region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
@@ -803,6 +807,7 @@ function Get-LabHyperVAvailableMemory
 #region Write-ProgressIndicator
 function Write-ProgressIndicator
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     Write-ScreenInfo -Message '.' -NoNewline
 }
 #endregion Write-ProgressIndicator
@@ -810,6 +815,7 @@ function Write-ProgressIndicator
 #region Write-ProgressIndicatorEnd
 function Write-ProgressIndicatorEnd
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     Write-ScreenInfo -Message '.'
 }
 #endregion Write-ProgressIndicatorEnd
@@ -817,6 +823,7 @@ function Write-ProgressIndicatorEnd
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     Remove-Lab
     Remove-Module *
 }
@@ -825,6 +832,7 @@ function Reset-AutomatedLab
 #region Write-ScreenInfo
 function Write-ScreenInfo
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param
     (
         [Parameter(Mandatory, Position = 1)]
@@ -955,6 +963,7 @@ function Write-ScreenInfo
 #region Save-Hashes
 function Save-Hashes
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -983,6 +992,7 @@ function Save-Hashes
 #region Test-FileHashes
 function Test-FileHashes
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1018,6 +1028,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1031,6 +1042,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1054,6 +1066,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1070,6 +1083,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1086,6 +1100,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1255,6 +1270,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     Invoke-LabCommand -ComputerName (Get-LabMachine) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path c:\unattend.xml
@@ -1267,6 +1283,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1304,6 +1321,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1341,6 +1359,7 @@ function Disable-LabVMFirewallGroup
 #region Test-Port
 function Test-Port
 {  
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
 
     Param(  
@@ -1476,6 +1495,7 @@ function Test-Port
 #region Get-StringSection
 function Get-StringSection
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$String,
@@ -1496,6 +1516,7 @@ function Get-StringSection
 #region Add-StringIncrement
 function Add-StringIncrement
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [string]$String
@@ -1597,6 +1618,7 @@ $meshType = @"
 "@
 function Get-FullMesh
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1634,6 +1656,7 @@ function Get-FullMesh
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory)]
         [string]$Uri,
@@ -1714,6 +1737,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [string]$Path = (Get-LabSourcesLocation)
     )
@@ -1759,6 +1783,7 @@ function Unblock-LabSources
 #region Add-FunctionToPSSession
 function Add-FunctionToPSSession
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'
@@ -1813,6 +1838,7 @@ function Add-FunctionToPSSession
 #region Add-VariableToPSSession
 function Add-VariableToPSSession
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'
@@ -1874,6 +1900,7 @@ function Add-VariableToPSSession
 #region Sync-Parameter
 function Sync-Parameter
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
     param (
         [Parameter(Mandatory)]
@@ -1918,6 +1945,7 @@ function Sync-Parameter
 
 function Set-LabVMDescription
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,

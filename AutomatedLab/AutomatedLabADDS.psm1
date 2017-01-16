@@ -633,6 +633,7 @@ $adInstallDcPre2012 = {
 #region Install-LabRootDcs
 function Install-LabRootDcs
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
@@ -857,6 +858,7 @@ function Install-LabRootDcs
 #region Install-LabFirstChildDcs
 function Install-LabFirstChildDcs
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
@@ -1093,6 +1095,7 @@ function Install-LabFirstChildDcs
 #region Install-LabDcs
 function Install-LabDcs
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
@@ -1308,6 +1311,7 @@ function Install-LabDcs
 #region Wait-LabADReady
 function Wait-LabADReady
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1430,6 +1434,7 @@ function Wait-LabADReady
 #region Get-LabADReady
 function Get-LabADReady
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -1476,6 +1481,7 @@ function Get-LabADReady
 #region Reset-DNSConfiguration
 function Reset-DNSConfiguration
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param
     (
@@ -1519,6 +1525,7 @@ function Reset-DNSConfiguration
 #region Sync-LabActiveDirectory
 function Sync-LabActiveDirectory
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param
     (
@@ -1647,6 +1654,7 @@ function Sync-LabActiveDirectory
 #region Add-LabDomainAdmin
 function Add-LabDomainAdmin
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory)]
         [string]$Name,
@@ -1690,6 +1698,7 @@ function Add-LabDomainAdmin
 #region New-LabADSubnet
 function New-LabADSubnet
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [switch]$PassThru
@@ -1759,6 +1768,7 @@ function New-LabADSubnet
 #region function New-LabADSite
 function New-LabADSite
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param
     (
@@ -1885,6 +1895,7 @@ function New-LabADSite
 #region function Move-LabDomainController
 function Move-LabDomainController
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param
     (
@@ -1970,6 +1981,7 @@ function Move-LabDomainController
 #region Install-LabDnsForwarder
 function Install-LabDnsForwarder
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     $forestNames = (Get-LabMachine -Role RootDC).DomainName
     if (-not $forestNames)
     {
@@ -2000,6 +2012,7 @@ function Install-LabDnsForwarder
 #region Install-LabADDSTrust
 function Install-LabADDSTrust
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     $forestNames = (Get-LabMachine -Role RootDC).DomainName
     if (-not $forestNames)
     {

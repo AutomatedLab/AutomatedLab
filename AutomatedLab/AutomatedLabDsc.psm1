@@ -1,6 +1,7 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -146,6 +147,7 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
