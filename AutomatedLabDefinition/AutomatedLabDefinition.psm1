@@ -480,6 +480,7 @@ Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary 
 #region Get-LabVolumesOnPhysicalDisks
 function Get-LabVolumesOnPhysicalDisks
 {
+# .ExternalHelp AutomatedLabDefinition.Help.xml
     $physicalDisks = Get-PhysicalDisk | Where-Object {$_.BusType -ne 'File Backed Virtual'}
     $disks = Get-CimInstance -Class Win32_DiskDrive | Where-Object { $_.SerialNumber } | Where-Object { $_.SerialNumber.Trim() -in $physicalDisks.SerialNumber }
 
@@ -2753,6 +2754,7 @@ function Get-DiskSpeed
 #region Set-LabLocalVirtualMachineDiskAuto
 function Set-LabLocalVirtualMachineDiskAuto
 {
+	# .ExternalHelp AutomatedLabDefinition.Help.xml
     [cmdletBinding()]
     param
     (
@@ -2891,6 +2893,7 @@ function Get-LabVirtualNetwork
 #region Get-LabAvailableAddresseSpace
 function Get-LabAvailableAddresseSpace
 {
+	# .ExternalHelp AutomatedLabDefinition.Help.xml
     $defaultAddressSpace = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultAddressSpace
     
     if (-not $defaultAddressSpace)
@@ -2947,6 +2950,7 @@ function Get-LabAvailableAddresseSpace
 #region Internal
 function Repair-LabDuplicateIpAddresses
 {
+	# .ExternalHelp AutomatedLabDefinition.Help.xml
     foreach ($machine in (Get-LabMachineDefinition))
     {
         foreach ($adapter in $machine.NetworkAdapters)

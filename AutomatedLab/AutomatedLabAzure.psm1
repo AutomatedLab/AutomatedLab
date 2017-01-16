@@ -6,6 +6,7 @@ $PSDefaultParameterValues = @{
 
 function Update-LabAzureSettings
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -36,6 +37,7 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [string]$Path,
 
@@ -324,6 +326,7 @@ function Add-LabAzureSubscription
 
 function Get-LabAzureSubscription
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param ()
 	
     Write-LogFunctionEntry
@@ -337,6 +340,7 @@ function Get-LabAzureSubscription
 
 function Get-LabAzureDefaultSubscription
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param ()
 	
     Write-LogFunctionEntry
@@ -350,6 +354,7 @@ function Get-LabAzureDefaultSubscription
 
 function Get-LabAzureLocation
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [string]$LocationName,
@@ -461,6 +466,7 @@ function Get-LabAzureLocation
 
 function Get-LabAzureDefaultLocation
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -481,6 +487,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -503,6 +510,7 @@ function Set-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultStorageAccount
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -525,6 +533,7 @@ function Set-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultStorageAccount
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -545,6 +554,7 @@ function Get-LabAzureDefaultStorageAccount
 
 function New-LabAzureDefaultStorageAccount
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory)]
@@ -594,6 +604,7 @@ function New-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultResourceGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -609,6 +620,7 @@ function Get-LabAzureDefaultResourceGroup
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -640,6 +652,7 @@ function Import-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
     throw New-Object System.NotImplementedException
@@ -672,6 +685,7 @@ function New-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     [cmdletbinding()]
     param ()
@@ -699,6 +713,7 @@ function Get-LabAzureCertificate
 
 function New-LabAzureResourceGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -742,6 +757,7 @@ function New-LabAzureResourceGroup
 
 function Remove-LabAzureResourceGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
@@ -787,6 +803,7 @@ function Remove-LabAzureResourceGroup
 
 function Get-LabAzureResourceGroup
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Position = 0)]
