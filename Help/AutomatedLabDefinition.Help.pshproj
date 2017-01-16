@@ -13,17 +13,15 @@
         <string>Add-LabDiskDefinition [-Name] &lt;String&gt; [-DiskSizeInGb] &lt;Int32&gt; [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Add lab disk definition</Synopsis>
+        <Description>Adds a disk definition the the current lab. Disk definitions can be used by lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name DiskSizeInGb PassThru Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -38,7 +36,7 @@
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The disk name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="1" globbing="false">
@@ -50,7 +48,7 @@
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The disk size in GB</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -60,21 +58,7 @@
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>Indicates that the disk object should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -95,12 +79,10 @@ This information is used for AutomatedLab to be able to logon to all machines du
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name AdminUser AdminPassword PassThru Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -146,20 +128,6 @@ This information is used for AutomatedLab to be able to logon to all machines du
           <Description>Whether or not to return the actual created domain definition in the call of this function to enable you to continue working on a pipeline</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples />
       <RelatedLinks />
@@ -173,19 +141,17 @@ This information is used for AutomatedLab to be able to logon to all machines du
       </Syntax>
       <GeneralHelp>
         <Synopsis>Adds a definition of an ISO file using a logical name and a path of the ISO file</Synopsis>
-        <Description>When AutomatedLab are to install roles like SQL Server, Exchange, Visual Studio, Office etc, it must know where to find the ISO file for these products.
+        <Description>When AutomatedLab is to install roles like SQL Server, Exchange, Visual Studio, Office etc, it must know where to find the ISO file for these products.
 AutomatedLab does this by associating a logical name with a definition of an ISO file by path. This way, when AutomatedLab needs an ISO file, it looks for this "mapping".
 
 All operating system ISO files are detected automatically UNLESS the ISO files are not placed within the LabSources folder structure. If so, you must specify manually using Add-LabIsoImageDefinition, where the ISO file is located.</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Path IsOperatingSystem NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -227,7 +193,7 @@ Names are case sensitive. Built-in possible options:
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the ISO is an OS installation disk</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -237,21 +203,7 @@ Names are case sensitive. Built-in possible options:
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>Indicates that no output should be visible</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -285,12 +237,10 @@ Names are case sensitive. Built-in possible options:
         <Notes />
         <InputType>None</InputType>
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType>None</ReturnType>
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="Network" Params="Name Memory MinMemory MaxMemory Processors DiskName OperatingSystem OperatingSystemVersion Network IpAddress Gateway DnsServer1 DnsServer2 IsDomainJoined DefaultDomain InstallationUserCredential DomainName Roles ProductKey UserLocale TimeZone PostInstallationActivity ToolsPath ToolsPathDestination VirtualizationHost EnableWindowsFirewall AutoLogonDomainName AutoLogonUserName AutoLogonPassword AzureProperties HypervProperties Notes AzureRoleSize PassThru Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -365,7 +315,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The disk names created by Add-LabDiskDefinition</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="OperatingSystem" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -379,7 +329,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
           <Aliases>
             <string>OS</string>
           </Aliases>
-          <Description />
+          <Description>The lab operating system to use</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -389,7 +339,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The operating system version</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -400,7 +350,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The lab network to connect this machine to</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -411,7 +361,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The static private IP address of this machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -422,7 +372,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The default gateway for the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -433,7 +383,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The first DNS server for the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -444,7 +394,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The second DNS server for the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -454,7 +404,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the machine should be joined to a lab domain</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -464,7 +414,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The default domain for the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSCredential" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -475,7 +425,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The credentials of the installation user (i.e. the local admin)</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -486,7 +436,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The domain name of the machine. </Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Role[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -496,7 +446,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine's role definitions</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -506,7 +456,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The product key of the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -517,7 +467,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The locale to use</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -528,7 +478,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine's time zone</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PostInstallationActivity[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -538,7 +488,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Post installation activities as defined with Get-LabPostInstallationActivity</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -548,7 +498,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The local tools path to be copied to the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -558,7 +508,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The tools path on the destination machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="VirtualizationHost" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -568,7 +518,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The virtualization host to use. It is recommended to define the default virtualization host when creating a new lab</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -578,7 +528,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that Windows firewall should be enabled on the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -588,7 +538,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The domain for the auto logon user</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -598,7 +548,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The user name for the auto logon user</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -608,7 +558,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The password for the auto logon user</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -618,7 +568,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The Azure properties. Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -628,7 +578,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The HyperV properties</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -638,7 +588,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Notes to add to the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -649,7 +599,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The role size of the machine on Azure</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -659,7 +609,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the machine definition should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="NetworkAdapter[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -669,21 +619,7 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The lab network adapter to connect this machine to</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -737,12 +673,10 @@ Machine will not be domain joined but be placed in workgroup.</Description>
         <Notes />
         <InputType>None</InputType>
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType>None</ReturnType>
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name AddressSpace VirtualizationEngine HyperVProperties AzureProperties PassThru Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -814,20 +748,6 @@ Machine will not be domain joined but be placed in workgroup.</Description>
           <Description>Wheter or not the virtual network will be returned as an object</Description>
           <DefaultValue>False</DefaultValue>
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples>
         <Example>
@@ -877,17 +797,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Export-LabDefinition [-Force] [-ExportDefaultUnattendedXml]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Export lab as XML</Synopsis>
+        <Description>Exports the whole lab definition as XML files in the standard path $env:USERPROFILE\Documents\AutomatedLab-Labs</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Force ExportDefaultUnattendedXml Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -900,7 +818,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Overwrite existing XML files</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -910,21 +828,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>Export the unattend.xml for all machines as well</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -944,12 +848,10 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="DriveLetter Interations Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -977,20 +879,6 @@ Machines can then be configured (defined) to use this network using -Network par
           <Description>Number of measurements to perform</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples>
         <Example>
@@ -1016,8 +904,8 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-LabAvailableAddresseSpace</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get available address space</Synopsis>
+        <Description>Gets the available address space for the lab by examining the key DefaultAddressSpace in the PrivateData section of the module definition AutomatedLabDefinition.psd1</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1046,32 +934,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
-      <Parameters>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-      </Parameters>
+      <Parameters />
       <Examples>
         <Example>
           <Name>Example 1</Name>
@@ -1095,12 +966,10 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
@@ -1117,17 +986,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-LabIsoImageDefinition</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Returns all ISOs in the lab</Synopsis>
+        <Description>Returns all image definitions currently found in the lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
@@ -1151,12 +1018,10 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="ByName" Params="ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1195,20 +1060,6 @@ Machines can then be configured (defined) to use this network using -Network par
           <Description />
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples />
       <RelatedLinks />
@@ -1221,17 +1072,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-LabMachineRoleDefinition [-Role] &lt;Roles&gt; [[-Properties] &lt;Hashtable&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get a role definition</Synopsis>
+        <Description>Gets a role definition to be used with the parameter Roles for a new virtual machine definition</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Role Properties Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1244,7 +1093,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The role names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -1254,25 +1103,18 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The properties for one role definition that can be set for the role, e.g. $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>$role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }</Cmd>
+          <Description>Gets a role definition for the first DC of a child domain with the additional properties ParentDomain = contoso.com and the child domain name NewDomain = child</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -1286,17 +1128,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-LabPostInstallationActivity -IsoImage &lt;String&gt; -ScriptFileName &lt;String&gt; [-UseCredSsp]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get post-installation activity</Synopsis>
+        <Description>Returns a new post-installation activity that can be attached to machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="FileContentDependencyLocalScript" Params="DependencyFolder KeepFolder ScriptFilePath UseCredSsp Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1313,7 +1153,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>A folder of dependency files if necessary</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1324,7 +1164,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the target folder should be kept on the machine</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1335,7 +1175,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The script file path of the script that is executed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1345,7 +1185,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that CredSSP should be used</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1356,7 +1196,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The remote script file name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -1367,21 +1207,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The ISO image that should be mounted during post-installation</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1401,32 +1227,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
       </ParamSets>
-      <Parameters>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-      </Parameters>
+      <Parameters />
       <Examples />
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
@@ -1444,12 +1253,10 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="ByName" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1476,20 +1283,6 @@ Machines can then be configured (defined) to use this network using -Network par
           <Description />
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples />
       <RelatedLinks />
@@ -1502,8 +1295,8 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-LabVolumesOnPhysicalDisks</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get lab volumes</Synopsis>
+        <Description>Get all file-backed virtual volumes on all disks with drive letter and serial number</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -1527,17 +1320,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Get-Type [-GenericType] &lt;String&gt; [-T] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Get generic type</Synopsis>
+        <Description>Helper function to get the generic type of an object</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="GenericType T Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1563,20 +1354,6 @@ Machines can then be configured (defined) to use this network using -Network par
           <Description />
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples />
       <RelatedLinks />
@@ -1589,17 +1366,15 @@ Machines can then be configured (defined) to use this network using -Network par
         <string>Invoke-Ternary [[-decider] &lt;ScriptBlock&gt;] [[-ifTrue] &lt;ScriptBlock&gt;] [[-ifFalse] &lt;ScriptBlock&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Implementation of ??</Synopsis>
+        <Description>Implementation of the C# operator ??</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="decider ifTrue ifFalse" />
@@ -1612,7 +1387,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The function that acts as the decider. Must return true or false</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="ScriptBlock" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -1622,7 +1397,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The commands to execute if the decider was true</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="ScriptBlock" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -1632,7 +1407,7 @@ Machines can then be configured (defined) to use this network using -Network par
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The commands to execute if the decider was false</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -1652,12 +1427,10 @@ Machines can then be configured (defined) to use this network using -Network par
         <Notes />
         <InputType>None</InputType>
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType>None</ReturnType>
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Path VmPath ReferenceDiskSizeInGB MaxMemory Notes UseAllMemory UseStaticMemory DefaultVirtualizationEngine NoAzurePublishSettingsFile AzureSubscriptionName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -1775,20 +1548,6 @@ based on what role(s) the machines are to have. This is only true if the memory 
           <Description>Specifying what Azure subscription to use as default. This could be needed if having more than one Azure subscription to make sure a specific subscription is used.</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples>
         <Example>
@@ -1859,12 +1618,10 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="manual" Params="VirtualSwitch InterfaceName Ipv4Address Ipv4Gateway Ipv4DNSServers IPv6Address IPv6AddressPrefix IPv6Gateway IPv6DNSServers ConnectionSpecificDNSSuffix AppendParentSuffixes AppendDNSSuffixes RegisterInDNS DnsSuffixInDnsRegistration NetBIOSOptions Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2036,20 +1793,6 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
           <Description />
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
       </Parameters>
       <Examples />
       <RelatedLinks />
@@ -2062,17 +1805,15 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Remove-LabDomainDefinition [-Name] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove a domain definition</Synopsis>
+        <Description>Removes a domain definition from the lab domain definitions</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2085,21 +1826,7 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The name of the domain definition to remove</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2114,17 +1841,15 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Remove-LabIsoImageDefinition [-Name] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove ISO definition</Synopsis>
+        <Description>Removes an ISO image from the lab's image definitions</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2137,21 +1862,7 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The ISO name</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2166,17 +1877,15 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Remove-LabMachineDefinition [-Name] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove a machine definition</Synopsis>
+        <Description>Removes a machine definition from the current lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2189,21 +1898,7 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The machine name</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2218,17 +1913,15 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Remove-LabVirtualNetworkDefinition [-Name] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove a virtual network definition</Synopsis>
+        <Description>Removes a virtual network definition from the lab's network definitions</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2241,21 +1934,7 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The name of the virtual network</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2270,8 +1949,8 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Repair-LabDuplicateIpAddresses</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Repair duplicate IPs</Synopsis>
+        <Description>Modifies duplicate IP addresses for machines by incrementing the address by one</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -2295,17 +1974,15 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <string>Set-LabLocalVirtualMachineDiskAuto [[-SpaceNeeded] &lt;Int64&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set the VM disk container</Synopsis>
+        <Description>Automatically determines the disk to store all VMs on by latency. Boot volumes are only selected if no other volumes are present or if the next drive is more than 50% slower than the boot drive.</Description>
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="SpaceNeeded Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2318,21 +1995,7 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
+          <Description>The space needed for the whole lab installation</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -2352,12 +2015,10 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
         <Notes />
         <InputType />
         <InputUrl />
-        <InputTypeDescription>
-</InputTypeDescription>
+        <InputTypeDescription />
         <ReturnType />
         <ReturnUrl />
-        <ReturnTypeDescription>
-</ReturnTypeDescription>
+        <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Path Quiet Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -2379,20 +2040,6 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="actionpreference" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationAction</Name>
-          <Attributes />
-          <Aliases />
-          <Description />
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="string" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>InformationVariable</Name>
-          <Attributes />
           <Aliases />
           <Description />
           <DefaultValue />
