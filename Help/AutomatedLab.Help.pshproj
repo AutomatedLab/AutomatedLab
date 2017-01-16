@@ -4506,8 +4506,8 @@ c:\DeployDebug</Description>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.AliasAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
@@ -4633,8 +4633,8 @@ c:\DeployDebug</Description>
         <string>Remove-LabVM [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove a VM</Synopsis>
+        <Description>Removes a lab machine from the current lab. All existing sessions are removed as well as the existing entries in the hosts file</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4655,7 +4655,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4665,7 +4665,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all lab machines are going to be removed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4683,8 +4683,8 @@ c:\DeployDebug</Description>
         <string>Remove-LabVMSnapshot [-AllMachines] [-AllSnapShots]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Remove a snapshot</Synopsis>
+        <Description>Removes a named snapshot or all snapshots for one or more machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4708,7 +4708,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -4719,7 +4719,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The snapshot name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -4730,7 +4730,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all snapshots of the current lab should be removed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -4741,7 +4741,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the snapshot should be removed for all machines</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4756,8 +4756,8 @@ c:\DeployDebug</Description>
         <string>Request-LabCertificate [-Subject] &lt;String&gt; [[-SAN] &lt;String[]&gt;] [[-OnlineCA] &lt;String&gt;] [-TemplateName] &lt;String&gt; [-ComputerName] &lt;String[]&gt; [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Request a certificate</Synopsis>
+        <Description>Requests a certificate from the lab CA</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4778,7 +4778,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The certificate's subject</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -4788,7 +4788,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The subject alternative names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -4798,7 +4798,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The CA to use</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
@@ -4808,7 +4808,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The template to use</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
@@ -4818,7 +4818,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine for which a certificate is to be requested</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4828,7 +4828,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the certificate should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4843,8 +4843,8 @@ c:\DeployDebug</Description>
         <string>Reset-AutomatedLab</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Reset the lab</Synopsis>
+        <Description>Resets the lab by removing the current lab and unloading all modules</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4868,8 +4868,8 @@ c:\DeployDebug</Description>
         <string>Restart-LabVM [-ComputerName] &lt;String[]&gt; [-Wait] [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Restart a machine</Synopsis>
+        <Description>Restarts one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4889,7 +4889,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4899,7 +4899,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that we should wait for the restart to complete</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Double" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4909,7 +4909,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The restart timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4929,7 +4929,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new lines should be inserted into the output</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4944,8 +4944,8 @@ c:\DeployDebug</Description>
         <string>Restart-ServiceResilient [[-ComputerName] &lt;String[]&gt;] [[-ServiceName] &lt;Object&gt;] [-NoNewLine]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Restart a service</Synopsis>
+        <Description>Reliably restarts one or more services by utilising a retry count and properly observing dependencies</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -4965,7 +4965,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Object" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -4974,7 +4974,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The service to restart</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -4984,7 +4984,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new lines should be present in the output</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5000,8 +5000,8 @@ c:\DeployDebug</Description>
         <string>Restore-LabVMSnapshot -SnapshotName &lt;String&gt; [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Restore a snapshot</Synopsis>
+        <Description>Restores a named snapshot on one or more machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5022,7 +5022,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -5033,7 +5033,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The snapshot name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -5043,7 +5043,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the snapshot should be restored on all machines</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5058,8 +5058,8 @@ c:\DeployDebug</Description>
         <string>Save-Hashes [[-Filename] &lt;Object&gt;] [[-FolderName] &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Saves hashes</Synopsis>
+        <Description>Saves file hashes of all AutomatedLab module files or of all files in a folder to be used in Test-FileHashed. Export is done in csv format</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5078,7 +5078,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The file name to hash</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Object" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -5087,7 +5087,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The folder containing files to be hashed</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5104,8 +5104,8 @@ c:\DeployDebug</Description>
         <string>Save-LabVM [-All]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Save a VM</Synopsis>
+        <Description>Saves the state of a lab machine on HyperV and VMWare</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5127,7 +5127,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Roles" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -5137,7 +5137,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The roles of the machines to be saved</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
@@ -5147,7 +5147,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all machines should be saved</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5162,8 +5162,8 @@ c:\DeployDebug</Description>
         <string>Set-LabAzureDefaultLocation [-Name] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set Azure location</Synopsis>
+        <Description>Sets the default location for all Azure-based lab commands</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5183,7 +5183,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The location display name, e.g. 'West US'</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5198,8 +5198,8 @@ c:\DeployDebug</Description>
         <string>Set-LabAzureDefaultStorageAccount [-Name] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set default storage account</Synopsis>
+        <Description>Sets the default storage account for the lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5219,7 +5219,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The storage account name</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5234,8 +5234,8 @@ c:\DeployDebug</Description>
         <string>Set-LabDefaultOperatingSystem [-OperatingSystem] &lt;String&gt; [[-Version] &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set default OS</Synopsis>
+        <Description>Sets the default operating system for all lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5258,7 +5258,7 @@ c:\DeployDebug</Description>
           <Aliases>
             <string>Name</string>
           </Aliases>
-          <Description />
+          <Description>The OS name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -5268,7 +5268,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The OS version string</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5283,8 +5283,8 @@ c:\DeployDebug</Description>
         <string>Set-LabDefaultVirtualizationEngine [-VirtualizationEngine] &lt;String&gt; {Azure | HyperV | VMware} </string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set default virtualization engine</Synopsis>
+        <Description>Sets the default virtualization engine for the lab</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5305,7 +5305,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The virtualization engine to use. Supported values: HyperV, VMWare, Azure</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5320,8 +5320,8 @@ c:\DeployDebug</Description>
         <string>Set-LabGlobalNamePrefix [[-Name] &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set a machine prefix</Synopsis>
+        <Description>Sets a prefix to prepend to all machine names</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5342,7 +5342,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The prefix</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5358,8 +5358,8 @@ c:\DeployDebug</Description>
         <string>Set-LabInstallationCredential [-Username &lt;String&gt;] [-Password &lt;String&gt;] -Prompt &lt;SwitchParameter&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set the installation credential</Synopsis>
+        <Description>Sets the installation credential for all lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5382,7 +5382,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The installation user name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5393,7 +5393,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The installation user's password</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5403,7 +5403,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that a prompt should be displayed for the username and password</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5418,8 +5418,8 @@ c:\DeployDebug</Description>
         <string>Set-LabMachineUacStatus [-ComputerName] &lt;String[]&gt; [[-EnableLUA] &lt;Boolean&gt;] [[-ConsentPromptBehaviorAdmin] &lt;Int32&gt;] [[-ConsentPromptBehaviorUser] &lt;Int32&gt;] [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Set the UAC</Synopsis>
+        <Description>Sets the UAC for a lab machine</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5439,7 +5439,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names to set UAC on</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Boolean" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -5449,7 +5449,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates whether LUA should be enabled or not</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
@@ -5459,7 +5459,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Sets the consent prompt behavior for administrative users</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
@@ -5469,7 +5469,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Sets the consent prompt behavior for users</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5479,7 +5479,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the results should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5494,8 +5494,8 @@ c:\DeployDebug</Description>
         <string>Show-LabInstallationTime</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Show installation time</Synopsis>
+        <Description>Shows the lab installation time. AutomatedLab keeps track of the time it took from the first lab command to the execution of Show-LabInstallationTime</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5521,8 +5521,8 @@ c:\DeployDebug</Description>
         <string>Start-LabVM [-All] [-Wait] [-NoNewline] [-DelayBetweenComputers &lt;Int32&gt;] [-TimeoutInMinutes &lt;Int32&gt;] [-StartNextMachines &lt;Int32&gt;] [-StartNextDomainControllers &lt;Int32&gt;] [-Domain &lt;String&gt;] [-RootDomainMachines] [-ProgressIndicator &lt;Int32&gt;] [-PreDelaySeconds &lt;Int32&gt;] [-PostDelaySeconds &lt;Int32&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Start a machine</Synopsis>
+        <Description>Starts one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5544,7 +5544,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machines to start</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5554,7 +5554,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that we should wait for the startup procedure to finish</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5564,7 +5564,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new lines should be present in the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5574,7 +5574,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The delay in minutes between the computer startups</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5584,7 +5584,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The startup timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5594,7 +5594,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Start the next n machines</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5604,7 +5604,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Start the next n domain controllers</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5614,7 +5614,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Starts all machines of a specific domain</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5624,7 +5624,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Start all machines of the root domain</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5664,7 +5664,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The roles to start</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5674,7 +5674,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Start all machines</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5690,8 +5690,8 @@ c:\DeployDebug</Description>
         <string>Stop-LabVM [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-All] [-Wait] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Stop a machine</Synopsis>
+        <Description>Stops one or more lab machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5712,7 +5712,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The computer names</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Double" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5722,7 +5722,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The shutdown timeout in minutes</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5732,7 +5732,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that we should wait for the machine to stop</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5752,7 +5752,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that no new lines should be present in the output</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5762,7 +5762,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that all lab machines should be stopped</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5777,8 +5777,8 @@ c:\DeployDebug</Description>
         <string>Sync-LabActiveDirectory [-ComputerName] &lt;String[]&gt; [[-ProgressIndicator] &lt;Int32&gt;] [-AsJob] [-Passthru]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Start AD replication</Synopsis>
+        <Description>Initiates the Active Directory synchronisation in the lab environment by calling repadmin on the selected machines</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5798,7 +5798,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machines repadmin should be executed on</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -5818,7 +5818,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that replication should be started as a job</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -5828,7 +5828,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the resulting job objects should be passed back to the caller</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5843,8 +5843,8 @@ c:\DeployDebug</Description>
         <string>Sync-Parameter [-Command] &lt;FunctionInfo&gt; [[-Parameters] &lt;Hashtable&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Update a commands parameters</Synopsis>
+        <Description>Updates the parameters used by a function by either using the AutomatedLab bound parameters or a parameter set that is passed to the function. Common parameters will be skipped</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5864,7 +5864,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The FunctionInfo object to be used, e.g. Get-Command Get-ADUser</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -5874,11 +5874,25 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The parameter hashtable to be synchronised</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>$functions = Get-Command -Name Get-MachineUacStatus, Set-MachineUacStatus, Sync-Parameter
+    $variables = Get-Variable -Name PSBoundParameters
+    Invoke-LabCommand -ActivityName 'Set Uac Status' -ComputerName $machines -ScriptBlock {
+    
+        Sync-Parameter -Command (Get-Command -Name Set-MachineUacStatus)
+        Set-MachineUacStatus @ALBoundParameters
+    
+    } -Function $functions -Variable $variables</Cmd>
+          <Description>The example uses the bound parameters to synchronise the parameter set for the cmdlet Set-MachineUacStatus and calls the function with the synchronised parameters</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -5889,8 +5903,8 @@ c:\DeployDebug</Description>
         <string>Test-FileHashes [[-Filename] &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Tests a file hash</Synopsis>
+        <Description>Tests a file hash against a list of cached file hashes produced by Save-Hashes</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5909,7 +5923,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The list of file hashes</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5924,8 +5938,8 @@ c:\DeployDebug</Description>
         <string>Test-FileList [[-Filename] &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Test a file list</Synopsis>
+        <Description>Tests files in a list of AutomatedLab module files generated by Save-FileList for existence</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5944,7 +5958,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The file list</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5959,8 +5973,8 @@ c:\DeployDebug</Description>
         <string>Test-FolderExist [[-FolderName] &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Test-Path</Synopsis>
+        <Description>Wrapper for Test-Path</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -5979,7 +5993,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The folder to test</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -5994,8 +6008,8 @@ c:\DeployDebug</Description>
         <string>Test-FolderNotExist [[-FolderName] &lt;Object&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Test-Path</Synopsis>
+        <Description>Tests if a folder exists where it should not exist</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6014,7 +6028,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The folder name</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6029,8 +6043,8 @@ c:\DeployDebug</Description>
         <string>Test-LabCATemplate [-TemplateName] &lt;String&gt; [-ComputerName] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Test CA template existence</Synopsis>
+        <Description>Tests if the specified certificate template exists</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6050,7 +6064,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The template name (common name)</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -6060,7 +6074,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine to check for template existence on</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6075,8 +6089,8 @@ c:\DeployDebug</Description>
         <string>Test-LabMachineInternetConnectivity [-ComputerName] &lt;String&gt; [-AsJob]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Check internet connection</Synopsis>
+        <Description>Tests if the specified lab machine has a working internet connection</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6096,7 +6110,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machine name</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6106,7 +6120,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that the test should be carried out as a background job</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6121,8 +6135,8 @@ c:\DeployDebug</Description>
         <string>Test-Port [-ComputerName] &lt;String[]&gt; [-Port] &lt;Int32&gt; [-Count &lt;Int32&gt;] [-Delay &lt;Int32&gt;] [-TcpTimeout &lt;Int32&gt;] [-UdpTimeout &lt;Int32&gt;] [-Tcp] [-Udp]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
+        <Synopsis>Test a port</Synopsis>
+        <Description>Tests if a TCP or a UDP port is open on the specified machine</Description>
         <Notes />
         <InputType />
         <InputUrl />
@@ -6142,7 +6156,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The machines to check</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
@@ -6152,7 +6166,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The port number</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6162,7 +6176,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The amount of times the check should be executed</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6172,7 +6186,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The delay in seconds between each check</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6182,7 +6196,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout for testing a TCP port</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6192,7 +6206,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The timeout for testing a UDP port</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6202,7 +6216,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that a TCP port should be tested</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -6212,7 +6226,7 @@ c:\DeployDebug</Description>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Indicates that a UDP port should be tested</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
