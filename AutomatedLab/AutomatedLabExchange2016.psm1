@@ -1,316 +1,173 @@
-#region script blocks
-$ucmaCmd = {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$UcmaInstallLink
-    )
-
-    $ucmaInstallUri = New-Object System.Uri($UcmaInstallLink)
-    $ucmaInstallFileName = $ucmaInstallUri.Segments[$ucmaInstallUri.Segments.Count-1]
-    $retries = 5
-
-    New-Item C:\Install -Type Directory -ErrorAction SilentlyContinue | Out-Null
-
-    $start = Get-Date
-    Write-Verbose 'Downloading the Unified Communications Managed API 4.0 Runtime installation files...'
-
-    while (-not (Test-Path -Path "C:\Install\$ucmaInstallFileName") -and $retries -gt 0)
-    {
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable admin IE Enhanced Security Configuration
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
-        
-        $client = New-Object System.Net.WebClient
-        $client.DownloadFile($UcmaInstallLink, "C:\Install\$ucmaInstallFileName")
-
-        $retries--
-        
-        if (-not (Test-Path -Path "C:\Install\$ucmaInstallFileName"))
-        {
-            Start-Sleep -Seconds 30
-        }
-    }
-    $end = Get-Date
-    Write-Verbose "...downloading the Unified Communications Managed API 4.0 Runtime installation files took $($end - $start)"
-
-    Write-Verbose 'Installing Unified Communications Managed API 4.0 Runtime...'
-    $start = Get-Date
-    & "C:\Install\$ucmaInstallFileName" /Quiet | Out-Null
-    $end = Get-Date
-    Write-Verbose "...installing Unified Communications Managed API 4.0 Runtime took $($end - $start)"
-}
-
-$exchangeDownloadCmd = {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$ExchangeInstallLink
-    )
-
-    $exchangeInstallUri = New-Object System.Uri($ExchangeInstallLink)
-    $exchangeInstallFileName = $ExchangeInstallUri.Segments[$ExchangeInstallUri.Segments.Count-1]
-    $retries = 5
-
-    New-Item C:\Install -Type Directory -ErrorAction SilentlyContinue | Out-Null
-
-    $start = Get-Date
-    Write-Verbose 'Downloading the Exchange Installation files...'
-    while (-not (Test-Path -Path "C:\Install\$exchangeInstallFileName") -and $retries -gt 0)
-    {
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable admin IE Enhanced Security Configuration
-        reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
-        
-        $client = New-Object System.Net.WebClient
-        $client.DownloadFile($exchangeInstallLink, "C:\Install\$exchangeInstallFileName")
-
-        $retries--
-        
-        if (-not (Test-Path -Path "C:\Install\$exchangeInstallFileName"))
-        {
-            Start-Sleep -Seconds 30
-        }
-    }
-    $end = Get-Date
-    Write-Verbose "...downloading the Exchange Installation files took $($end - $start)"
-
-    Write-Verbose 'Extracting the Exchange Installation files...'
-    $start = Get-Date
-    & "C:\Install\$ExchangeInstallFileName" /X:C:\Install\ExchangeInstall /Q | Out-Null
-    $end = Get-Date
-    Write-Verbose "...extracting the Exchange Installation files took $($end - $start)"
-}
-
-$exchangeExtractCmd = {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$ExchangeInstallLink
-    )
-
-    $exchangeInstallUri = New-Object System.Uri($ExchangeInstallLink)
-    $exchangeInstallFileName = $ExchangeInstallUri.Segments[$ExchangeInstallUri.Segments.Count-1]
-
-    Write-Verbose 'Extracting the Exchange Installation files...'
-    $start = Get-Date
-    & "C:\Install\$ExchangeInstallFileName" /X:C:\Install\ExchangeInstall /Q | Out-Null
-    $end = Get-Date
-    Write-Verbose "...extracting the Exchange Installation files took $($end - $start)"
-}
-
-$exchangeSchemaUpdateCmd = {
-    $VerbosePreference = 'Continue'
-    Write-Verbose 'Starting the Exchange Schema Update...'
-
-    $start = Get-Date
-    $Error.Clear()
-    $result = New-Object PSObject -Property @{ InstallStatus = $null; InstallMessage = $null; InstallErrors = $null }
-
-    $result.InstallMessage = & 'c:\Install\ExchangeInstall\setup.exe' /PrepareSchema /IAcceptExchangeServerLicenseTerms
-    if ($Error.Exception.Message -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
-    {
-        $result.InstallStatus = 'RebootRequired'
-    }
-    elseif ($Error.Count -eq 0)
-    {
-        $result.InstallStatus = 'Success'
-    }
-    else
-    {
-        $result.InstallStatus = 'Failed'
-    }
-
-    $end = Get-Date
-
-    Write-Verbose "...Exchange Schema Update took $($end - $start)"
-
-    $result.InstallErrors = $Error
-    return $result
-}
-
-$exchangePrepAllDomainsCmd = {
-    $VerbosePreference = 'Continue'
-    Write-Verbose 'Starting the Exchange Domain Prep for all domains...'
-
-    $start = Get-Date
-    $Error.Clear()
-    $result = New-Object PSObject -Property @{ InstallStatus = $null; InstallMessage = $null; InstallErrors = $null }
-
-    $result.InstallMessage = & 'c:\Install\ExchangeInstall\setup.exe' /PrepareAllDomains /IAcceptExchangeServerLicenseTerms
-    if ($Error.Exception.Message -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
-    {
-        $result.InstallStatus = 'RebootRequired'
-    }
-    elseif ($Error.Count -eq 0)
-    {
-        $result.InstallStatus = 'Success'
-    }
-    else
-    {
-        $result.InstallStatus = 'Failed'
-    }
-
-    $end = Get-Date
-
-    Write-Verbose "...Exchange Domain Prep for all domains took $($end - $start)"
-
-    $result.InstallErrors = $Error
-    return $result
-}
-
-$exchangePrepareADCmd = {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$OrganizationName
-    )
-
-    $VerbosePreference = 'Continue'
-    Write-Verbose 'Starting the Exchange AD Prep...'
-
-    $start = Get-Date
-    $Error.Clear()
-    $result = New-Object PSObject -Property @{ InstallStatus = $null; InstallMessage = $null; InstallErrors = $null }
-
-    $result.InstallMessage = & 'c:\Install\ExchangeInstall\setup.exe' /PrepareAD /OrganizationName:"$OrganizationName" /IAcceptExchangeServerLicenseTerms
-    if ($Error.Exception.Message -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
-    {
-        $result.InstallStatus = 'RebootRequired'
-    }
-    elseif ($Error.Count -eq 0)
-    {
-        $result.InstallStatus = 'Success'
-    }
-    else
-    {
-        $result.InstallStatus = 'Failed'
-    }
-
-    $end = Get-Date
-
-    Write-Verbose "...Exchange AD Prep took $($end - $start)"
-
-    $result.InstallErrors = $Error
-    return $result
-}
-
-$exchangeSetupCmd = {
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$OrganizationName
-    )
+function Copy-LabExchange2016InstallationFiles
+{
+    Write-LogFunctionEntry
     
-    $VerbosePreference = 'Continue'
-    Write-Verbose 'Starting the Exchange Installation...'
-
-    $start = Get-Date
-    $Error.Clear()
-    $result = New-Object PSObject -Property @{ InstallStatus = $null; InstallMessage = $null; InstallErrors = $null }
-
-    $result.InstallMessage = & 'c:\Install\ExchangeInstall\setup.exe' /Mode:Install /Roles:mb /InstallWindowsComponents /OrganizationName:"$OrganizationName" /IAcceptExchangeServerLicenseTerms
-    if ($Error.Exception.Message -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
+    Write-ScreenInfo -Message 'Download Exchange 2016 requirements' -TaskStart
+    
+    #if there is one Exchange server on Hyper-V, make sure the required sources are in the LabSources folder
+    $downloadTargetFolder = Join-Path -Path $labSources -ChildPath SoftwarePackages
+    if ($exchangeServers | Where-Object HostType -eq HyperV)
     {
-        $result.InstallStatus = 'RebootRequired'
+        Write-ScreenInfo 'Exchange Servers in the lab running on Hyper-V, downloading the files to the local LabSources folder...' -TaskStart
+        
+        Write-ScreenInfo -Message "Downloading Exchange 2016 from '$exchangeDownloadLink'"
+        Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+        Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
+        Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+        Write-ScreenInfo -Message "Downloading .net Framework 4.5.2 from '$dotnet452DownloadLink'"
+        Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+        
+        Write-ScreenInfo 'finished' -TaskEnd
     }
-    elseif ($Error.Count -eq 0)
+    
+    #if there is one Exchange server on Azure, make sure the required sources are in LabSources on Azure
+    $1stAzureExchangeServer = $exchangeServers | Where-Object HostType -eq Azure
+    if ($exchangeServers | Where-Object HostType -eq 'Azure')
     {
-        $result.InstallStatus = 'Success'
+        throw (New-Object System.NotImplementedException)
+        #TODO: The destination path on Azure needs to be defined.
+        Invoke-LabCommand -ActivityName "Downloading Exchange Server 2016" -ComputerName $1stAzureExchangeServer -ScriptBlock {
+            Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+            Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+            Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+        } -Function (Get-Command -Name Get-LabInternetFile) -Variable (Get-Variable -Name Uri)
     }
-    else
+    
+    #distribute the sources to all exchange servers and the RootDC
+    Write-ScreenInfo 'Copying sources to Exchange Servers' -TaskStart
+    foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq HyperV)
     {
-        $result.InstallStatus = 'Failed'
+        Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Write-ScreenInfo 'finished'
     }
+    Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
+    
+    #now distribute the sources to all Hyper-V Root DCs that
+    Write-ScreenInfo 'Copying sources to Root DCs' -TaskStart
+    foreach ($rootDc in $exchangeRootDCs)
+    {
+        Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaDownloadLink) -DestinationFolder C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        Write-ScreenInfo 'finished'
+    }
+    Write-ScreenInfo 'finished copying file to RootDCs' -TaskEnd
+    
+    foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq Azure)
+    {
+        #TODO: The path of the Azure LabSources folder needs to be determined
+        throw (New-Object System.NotImplementedException)
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaDownloadLink) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452DownloadLink) -DestinationFolder C:\Install -ComputerName $exchangeServer
+    }
+    
+    Write-ScreenInfo 'Finished downloading Exchange 2016 requirements' -TaskEnd
 
-    $end = Get-Date
-
-    Write-Verbose "...Exchange Installation took $($end - $start)"
-
-    $result.InstallErrors = $Error
-    return $result
+    $machines = (@($exchangeServers) + $exchangeRootDCs)
+    $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$ExchangeInstallFileName" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $machines -AsJob -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicatorForJob -NoDisplay
 }
 
-function Copy-LabExchangeInstallationFiles
+function Start-ExchangeInstallSequence
 {
     param(
-        [Parameter(Mandatory = $true)]
-        [AutomatedLab.Machine]$Machine
+        [Parameter(Mandatory)]
+        [string]$Activity,
+        
+        [Parameter(Mandatory)]
+        [string]$ComputerName,
+        
+        [Parameter(Mandatory)]
+        [string]$CommandLine
     )
-
-    $exchangeInstallLink = $MyInvocation.MyCommand.Module.PrivateData.Exchange2016DownloadLink
-    $ucmaInstallLink = $MyInvocation.MyCommand.Module.PrivateData.ExchangeUcmaDownloadLink
-
-    #copy the files to the destination machine
-    if ($Machine.HostType -eq 'HyperV')
-    {
-        $exchangeInstallUri = New-Object System.Uri($exchangeInstallLink)
-        $exchangeInstallFileName = $ExchangeInstallUri.Segments[$ExchangeInstallUri.Segments.Count-1]
-        $ucmaInstallUri = New-Object System.Uri($ucmaInstallLink)
-        $ucmaInstallFileName = $ucmaInstallUri.Segments[$ucmaInstallUri.Segments.Count-1]
-
-        $labSources = Get-LabSourcesLocation
-
-        $ucmaFile = Get-ChildItem -Path $labSources -Filter $ucmaInstallFileName -Recurse
-        if (-not $ucmaFile)
-        {
-            try
-            {
-                Write-Host "Downloading '$ucmaInstallFileName' from '$ucmaInstallLink'..." -NoNewline
-                Get-LabInternetFile -Uri $ucmaInstallLink -Path $labSources\SoftwarePackages\$ucmaInstallFileName -ErrorAction Stop
-                Write-Host 'finished'
-                $ucmaFile = Get-ChildItem -Path $labSources -Filter $ucmaInstallFileName -Recurse
-            }
-            catch
-            {
-                throw "The Unified Communications Managed API 4.0 Runtime installation file ($ucmaInstallFileName) does not exist and could not be downloaded. Please put the file in the LabSources\SoftwarePackages folder and start the Exchange installation again (Install-Lab -Exchange2016)"
-            }
-        }
-        Copy-LabFileItem -Path $ucmaFile.FullName -DestinationFolder C:\Install -ComputerName $Machine
     
-        $exchangeFile = Get-ChildItem -Path $labSources -Filter $exchangeInstallFileName -Recurse
-        if (-not $exchangeFile)
+    Write-ScreenInfo -Message $Activity -TaskStart -NoNewLine
+    try
+    {
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
+    }
+    catch
+    {
+        if ($_ -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
         {
+            Restart-LabVM -ComputerName $ComputerName
             try
             {
-                Write-Host "Downloading '$exchangeInstallFileName' from '$exchangeInstallLink'..." -NoNewline
-                Get-LabInternetFile -Uri $exchangeInstallLink -Path $labSources\SoftwarePackages\$exchangeInstallFileName -ErrorAction Stop
-                Write-Host 'finished'
-                $exchangeFile = Get-ChildItem -Path $labSources -Filter $exchangeInstallFileName -Recurse
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
             }
             catch
             {
-                throw "The Exchange 2016 installation file ($exchangeInstallFileName) does not exist and could not be downloaded. Please put the file in the LabSources\SoftwarePackages folder and start the Exchange installation again (Install-Lab -Exchange2016)"
+                if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
+                {
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
+                }
             }
         }
-        Copy-LabFileItem -Path $exchangeFile.FullName -DestinationFolder C:\Install -ComputerName $Machine
+        else
+        {
+            $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
+            $resultVariable.Value = $exchangeError
+            Write-Error "Exchange Schema Update failed on server '$ComputerName'. See content of $($resultVariable.Name) for details."
+        }
     }
+
+    Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
+    
+    $result
 }
-#endregion script blocks
 
 #region Install-LabExchange2016
 function Install-LabExchange2016
 {
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
-	
-    #$start = Get-Date
 
     Write-LogFunctionEntry
-    
-    $lab = Get-Lab
-    $machines = Get-LabMachine -Role Exchange2016
-    $exchangeInstallLink = $MyInvocation.MyCommand.Module.PrivateData.Exchange2016DownloadLink
-    $ucmaInstallLink = $MyInvocation.MyCommand.Module.PrivateData.ExchangeUcmaDownloadLink
 
-    if (-not $machines)
+    $start = Get-Date
+    
+    $labSources = Get-LabSourcesLocation
+    $lab = Get-Lab
+    
+    $exchangeServers = Get-LabMachine -Role Exchange2016
+    if (-not $exchangeServers)
     {
         Write-Verbose 'No Exchange 2016 servers defined in the lab. Skipping installation'
         return
     }
+
+    $exchangeRootDomains = $lab.GetParentDomain((Get-LabMachine -Role Exchange2016).DomainName).Name
+    $exchangeRootDCs = Get-LabMachine -Role RootDC | Where-Object DomainName -in $exchangeRootDomains
+    
+    
+    $exchangeDownloadLink =  New-Object System.Uri($MyInvocation.MyCommand.Module.PrivateData.Exchange2016DownloadLink)
+    $ucmaDownloadLink = New-Object System.Uri($MyInvocation.MyCommand.Module.PrivateData.ExchangeUcmaDownloadLink)
+    $dotnet452DownloadLink = New-Object System.Uri($MyInvocation.MyCommand.Module.PrivateData.dotnet452DownloadLink)
+    
+    $exchangeInstallFileName = $exchangeDownloadLink.Segments[$ucmaInstallUri.Segments.Count-1]
+    $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaInstallUri.Segments.Count-1]
+    $dotnet452InstallFileName = $dotnet452DownloadLink.Segments[$ucmaInstallUri.Segments.Count-1]
+    
+    Copy-LabExchange2016InstallationFiles    
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
-    Start-LabVM -ComputerName $machines -Wait -ProgressIndicator 15
+    Start-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 15
 
     $jobs = @()
 
-    Write-ScreenInfo -Message "Preparing machines: '$($machines -join ', ')'" -TaskStart
+    Write-ScreenInfo -Message "Preparing machines: '$($exchangeServers -join ', ')'" -TaskStart
     
-    $ProgressIndicatorForJob = 15
-    foreach ($machine in $machines)
+    #region Add AD permissions in the root domain if Exchange is installed in a child domain
+    $progressIndicatorForJob = 15
+    foreach ($machine in $exchangeServers)
     {
         $rootDomain = $lab.GetParentDomain($machine.DomainName)
         $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $rootDomain
@@ -329,52 +186,30 @@ function Install-LabExchange2016
                 Add-ADGroupMember -Identity 'Schema Admins' -Members $user
                 Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user
             } -ArgumentList $userName, $dc.FQDN -UseCredSsp
-
-            if ($rootDc.HostType -eq 'HyperV')
-            {
-                Write-ScreenInfo -Message 'Extracting Files' -NoNewLine
-                Copy-LabExchangeInstallationFiles -Machine $rootDc
-                $jobs += Invoke-LabCommand -ActivityName 'Extracting Files' -ComputerName $rootDc -ScriptBlock $exchangeExtractCmd -ArgumentList $exchangeInstallLink -AsJob -PassThru -NoDisplay
-            }
-            elseif ($rootDc.HostType -eq 'Azure')
-            {
-                Write-ScreenInfo -Message 'Downloading Files' -NoNewLine
-                $jobs += Invoke-LabCommand -ActivityName 'Downloading Files' -ComputerName $rootDc -ScriptBlock $exchangeDownloadCmd -ArgumentList $exchangeInstallLink -AsJob -PassThru -NoDisplay
-                $ProgressIndicatorForJob = 30
-            }
-        }
-
-        if ($machine.HostType -eq 'HyperV')
-        {
-            Write-ScreenInfo -Message 'Extracting Files' -NoNewLine
-            Copy-LabExchangeInstallationFiles -Machine $machine
-            $jobs += Invoke-LabCommand -ActivityName 'Extracting Files' -ComputerName $machine -ScriptBlock $exchangeExtractCmd `
-            -ArgumentList $exchangeInstallLink -AsJob -PassThru -NoDisplay
-        }
-        elseif ($rootDc.HostType -eq 'Azure')
-        {
-            Write-ScreenInfo -Message 'Downloading Files' -NoNewLine
-            $jobs += Invoke-LabCommand -ActivityName 'Downloading Files' -ComputerName $machine -ScriptBlock $exchangeDownloadCmd `
-            -ArgumentList $exchangeInstallLink -AsJob -PassThru -NoDisplay
-            $ProgressIndicatorForJob = 30
         }
     }
+    #endregion
     
-    Wait-LWLabJob -Job (Install-LabWindowsFeature -ComputerName $machines -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay) `
-    -NoDisplay -NoNewLine -ProgressIndicator 15
-    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicatorForJob -NoDisplay
+    Write-Verbose 'Installing Windows Features Server-Media-Foundation, RSAT'
+    $jobs += Install-LabWindowsFeature -ComputerName $exchangeServers -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -ProgressIndicator $progressIndicatorForJob -NoDisplay
+    Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 45
     
-    Write-ScreenInfo -Message "Finished preparing machines: '$($machines -join ', ')'" -TaskEnd
+    $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
     
+    $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru -NoDisplay
+    $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru -NoDisplay
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
+    
+    Write-ScreenInfo -Message "Finished preparing machines: '$($exchangeServers -join ', ')'" -TaskEnd
     
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-    Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 45
+    Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 45
     
     Sync-LabActiveDirectory -ComputerName $rootDc
-
-    $jobs.Clear()
     
-    foreach ($machine in $machines)
+    foreach ($machine in $exchangeServers)
     {
         Write-ScreenInfo -Message "Performing pre-requisites for machine '$machine'" -TaskStart
         
@@ -391,101 +226,26 @@ function Install-LabExchange2016
             $prepMachine = $machine
         }
 
-        
-
         # PREPARE SCHEMA
-        Write-ScreenInfo -Message 'Performing Exchange Schema Update' -NoNewLine
-        $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName 'Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -UseCredSsp -PassThru -NoDisplay -AsJob
-        $result = Wait-LwLabJob -Job $exchangeSchemaUpdateJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
-            
-        if ($result.InstallStatus -eq 'RebootRequired')
-        {
-            Write-ScreenInfo -Message "Restarting '$prepMachine' before updating the schema"
-            Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
-            Write-ScreenInfo -Message 'Restarting Exchange Schema Update'
-            $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName '(Re)Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -UseCredSsp -PassThru -NoDisplay -AsJob
-            $result = Wait-LwLabJob -Job $exchangeSchemaUpdateJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
-        }
+        $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine '/PrepareSchema /IAcceptExchangeServerLicenseTerms' -ErrorAction Stop
         
-        if ($result.InstallStatus -ne 'Success')
-        {
-            $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-            $resultVariable.Value = $result
-            Write-Error "Exchange Schema Update failed on server '$prepMachine'. See content of $($resultVariable.Name) for details."
-            return
-        }
-
-            
-
         # PREPARE AD
-        Write-ScreenInfo -Message 'Performing Exchange AD Prep' -NoNewLine
-        $exchangeADPrepJob = Invoke-LabCommand -ActivityName 'Performing Exchange AD Prep' -ComputerName $prepMachine -ScriptBlock $exchangePrepareADCmd `
-        -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
-        $result = Wait-LwLabJob -Job $exchangeADPrepJob -ReturnResults -ProgressIndicator 30 -NoDisplay -ErrorAction SilentlyContinue
-
-        if ($result.InstallStatus -eq 'RebootRequired')
-        {
-            Write-ScreenInfo -Message "Restarting machine '$prepMachine' before updating the schema"
-            Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
-            Write-ScreenInfo -Message 'Restarting Exchange AD Prep'
-            $exchangeADPrepJob = Invoke-LabCommand -ActivityName 'Restarting Exchange AD Prep' -ComputerName $prepMachine -ScriptBlock $exchangePrepareADCmd `
-            -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
-            $result = Wait-LwLabJob -Job $exchangeADPrepJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
-        }
-        
-        if ($result.InstallStatus -ne 'Success')
-        {
-            $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-            $resultVariable.Value = $result
-            Write-Error "Exchange AD Prep failed on server '$prepMachine'. See content of $($resultVariable.Name) for details."
-            return
-        }
-        
-        
+        $commandLine = '/PrepareAD /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
+        $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         
         #PREPARE ALL DOMAINS
-        Write-ScreenInfo -Message 'Preparing All Domains' -NoNewLine
-        $ExchangePrepareAllDomains = Invoke-LabCommand -ActivityName 'Preparing All Domains' -ComputerName $prepMachine -ScriptBlock $exchangePrepAllDomainsCmd `
-        -UseCredSsp -PassThru -NoDisplay -AsJob
-        $result = Wait-LwLabJob -Job $ExchangePrepareAllDomains -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 10 -NoDisplay
-        
-        if ($result.InstallStatus -eq 'RebootRequired')
-        {
-            Write-ScreenInfo -Message "Restarting machine '$prepMachine' before preparing all domains"
-            Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
-            $ExchangePrepareAllDomains = Invoke-LabCommand -ActivityName 'Restarting preparing All Domains' -ComputerName $prepMachine `
-            -ScriptBlock $exchangePrepAllDomainsCmd -UseCredSsp -PassThru -NoDisplay -AsJob
-            
-            $result = Wait-LwLabJob -Job $ExchangePrepareAllDomains -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 10 -NoDisplay
-        }
-        
-        if ($result.InstallStatus -ne 'Success')
-        {
-            $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-            $resultVariable.Value = $result
-            Write-Error "Exchange Prep all domains failed on server '$prepMachine'. See content of $($resultVariable.Name) for details."
-            return
-        }
-        
-        Write-ScreenInfo -Message "Finished performing pre-requisites for machine '$machine'" -TaskEnd
+        $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms' -ErrorAction Stop
     }
     
-    
-    
-    Write-ScreenInfo -Message 'Triggering replication and installing Ucma' -NoNewLine
+    Write-ScreenInfo -Message 'Triggering replication' -NoNewLine
     Get-LabMachine -Role RootDC | ForEach-Object {
         Sync-LabActiveDirectory -ComputerName $_
     }
-
-    $jobs += Invoke-LabCommand -ActivityName 'Install Ucma' -ComputerName $machines -ScriptBlock $ucmaCmd `
-    -ArgumentList $ucmaInstallLink -AsJob -PassThru -NoDisplay
-    
-    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
     
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-    Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 45
+    Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 5
     
-    foreach ($machine in $machines)
+    foreach ($machine in $exchangeServers)
     {
         Write-ScreenInfo -Message "Installing Exchange Server 2016 on machine '$machine'" -TaskStart
         
@@ -493,38 +253,9 @@ function Install-LabExchange2016
 
         #FINALLY INSTALL EXCHANGE
         Write-ScreenInfo -Message 'Install Exchange Server 2016' -NoNewLine
-        $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange' -ComputerName $machine -ScriptBlock $exchangeSetupCmd `
-        -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
-        $result = Wait-LwLabJob -Job $exchangeInstallJob -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 120 -NoDisplay
-        
-        if ($result.InstallStatus -eq 'RebootRequired')
-        {
-            Write-ScreenInfo -Message "Restarting machine '$machine' as part of the installation" -NoNewLine
-            Restart-LabVM -ComputerName $machine -Wait -ProgressIndicator 45
-            Write-ScreenInfo -Message 'Continuing installation' -NoNewLine
-            $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange' -ComputerName $machine -ScriptBlock $exchangeSetupCmd `
-            -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
-            $result = Wait-LwLabJob -Job $exchangeInstallJob -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 120 -NoDisplay -Timeout 120
-        }
-        
-        
-        if (-not $result)
-        {
-            Write-ScreenInfo -Message "No result, restarting '$machine' to retry install" -NoNewLine
-            Restart-LabVM -ComputerName $machine -Wait -ProgressIndicator 45
-            Write-ScreenInfo -Message 'Install Exchange Server 2016' -NoNewLine
-            $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange (retry)' -ComputerName $machine -ScriptBlock $exchangeSetupCmd -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
-            Wait-LwLabJob -Job $exchangeInstallJob -ProgressIndicator 120 -NoDisplay -Timeout 120
-            $result = $exchangeInstallJob | Receive-Job -ErrorAction SilentlyContinue
-        }
-
-        if ($result.InstallStatus -ne 'Success')
-        {
-            $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-            $resultVariable.Value = $result
-            Write-Error "Exchange installation failed on server '$machine'. See content of $($resultVariable.Name) for details."
-            continue
-        }
+       
+        $commandLine = '/Mode:Install /Roles:mb /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
+        $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         
         Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$machine'" -TaskEnd
     }
