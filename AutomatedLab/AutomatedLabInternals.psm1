@@ -1635,20 +1635,30 @@ function Get-FullMesh
 function Get-LabInternetFile
 {
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [string]$Uri,
 
-        [Parameter(Mandatory)]
-        $Path,
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
 
-        [switch]$Force
+        [switch]$Force,
+        
+        [switch]$PassThru
     )
     
-    Write-LogFunctionEntry
+    $start = Get-Date
+    
+    $internalUri = New-Object System.Uri($Uri)
+    $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+    
+    if (Test-Path -Path $Path -PathType Container)
+    {
+        $Path = Join-Path -Path $Path -ChildPath $fileName
+    }
 
     if ((Test-Path -Path $Path) -and -not $Force)
     {
-        Write-Error "The file '$Path' does already exist"
+        Write-ScreenInfo "The file '$Path' does already exist, skipping the download" -Type Warning
         return
     }
 
@@ -1657,56 +1667,66 @@ function Get-LabInternetFile
         Remove-Item -Path $Path -Force
     }
     
-    $internalUri = New-Object System.Uri($Uri)
-    $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+    Write-Verbose "Uri is '$Uri'"
+    Write-Verbose "Path os '$Path'"
 
     try
     {
-        $start = Get-Date
+        $bytesProcessed = 0
+        $request = [System.Net.WebRequest]::Create($Uri)
         
-        #Determine length of the file to download
-        $webclient = New-Object System.Net.WebClient
-        $webclient.OpenRead($internalUri) | Out-Null
-        $fileLength = $webclient.ResponseHeaders['Content-Length']
-        Write-Verbose ("File Size of '{0}' is {1:N2}MB" -f $fileName, $fileLength)
-        $webclient.Dispose()
-        
-        Write-Verbose 'Starting download'
-        $job = Start-Job -Name "File Download" -ScriptBlock {
-            $webclient = New-Object System.Net.WebClient
-            $webclient.DownloadFile($args[0], $args[1])
-            $webclient.Dispose()
-        } -ArgumentList $internalUri, $Path
-        
-        Start-Sleep -Milliseconds 500 #to allow the WebClient create the file
-        
-        Write-Verbose 'Entering wait loop'
-        do
+        if ($request)
         {
-            $currentLength = (Get-Item -Path $Path).Length
-            $percentageCompleted = $currentLength / $fileLength
-            Write-Progress -Activity "Downloading file '$fileName'" `
-            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($currentLength / 1MB), ($fileLength / 1MB)) `
-            -PercentComplete ($percentageCompleted * 100)
-            
-            Start-Sleep -Milliseconds 200
-        } while ((Get-Item -Path $Path).Length -lt $fileLength)
-        Write-Verbose 'Wait loop finished'
-        
-        $result = $job | Receive-Job
-        
-        $end = Get-Date
-        Write-Verbose "Web Client Sync: $($end - $start)"
-
-        New-Object PSObject -Property @{
-            Uri = $Uri
-            Path = $Path
-            Length = $fileLength
+            Write-Verbose 'WebRequest created'
+            $response = $request.GetResponse()
+            if ($response)
+            {
+                Write-Verbose 'Responce received'
+                $remoteStream = $response.GetResponseStream()
+ 
+                $localStream = [System.IO.File]::Create($Path)
+ 
+                $buffer = New-Object System.Byte[] 1024
+                $bytesRead = 0
+ 
+                do
+                {
+                    Write-Verbose '.'
+                    $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                    $localStream.Write($buffer, 0, $bytesRead)
+                    $bytesProcessed += $bytesRead
+                        
+                    $percentageCompleted = $bytesProcessed / $response.ContentLength
+                    Write-Progress -Activity "Downloading file '$fileName'" `
+                    -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                    -PercentComplete ($percentageCompleted * 100)
+                        
+                } while ($bytesRead -gt 0)
+            }
         }
     }
     catch
     {
         Write-Error -Exception $_.Exception
+    }
+    finally
+    {
+    
+        if ($response) { $response.Close() }
+        if ($remoteStream) { $remoteStream.Close() }
+        if ($localStream) { $localStream.Close() }
+    }
+    
+    $end = Get-Date
+    Write-Verbose "Download has taken: $($end - $start)"
+
+    if ($PassThru)
+    {
+        New-Object PSObject -Property @{
+            Uri = $Uri
+            Path = $Path
+            Length = $response.ContentLength
+        }
     }
 }
 #endregion Get-LabInternetFile
