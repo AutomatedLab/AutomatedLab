@@ -270,23 +270,63 @@ function Install-LWSoftwarePackage
         
         [string]$CommandLine,
         
-        [int]$Timeout = 10,
+        [bool]$AsScheduledJob,
         
-        [ValidateNotNullOrEmpty()]
-        [string]$ProcessName,
-        
-        [ValidateNotNullOrEmpty()]
-        [string]$ProcessDescription        
+        [bool]$UseShellExecute
     )
     
-    if (-not $ProcessName)
+    #region New-InstallProcess
+    function New-InstallProcess
     {
-        $ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Path,
+
+            [string]$CommandLine,
+            
+            [bool]$UseShellExecute
+        )
+    
+        $pInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
+        $pInfo.FileName = $Path
+        
+        $pInfo.UseShellExecute = $UseShellExecute
+        if (-not $UseShellExecute)
+        {
+            $pInfo.RedirectStandardError = $true
+            $pInfo.RedirectStandardOutput = $true
+        }
+        $pInfo.Arguments = $CommandLine
+
+        $p = New-Object -TypeName System.Diagnostics.Process
+        $p.StartInfo = $pInfo
+        Write-Verbose -Message "Starting process $($pInfo.FileName) $($pInfo.Arguments)"
+        $p.Start() | Out-Null
+        Write-Verbose "The installation process ID is $($p.Id)"
+        $p.WaitForExit()
+        Write-Verbose -Message 'Process exited. Reading output'
+
+        $params = @{ Process = $p }
+        if (-not $UseShellExecute)
+        {
+            $params.Add('Output', $p.StandardOutput.ReadToEnd())
+            $params.Add('Error', $p.StandardError.ReadToEnd())
+        }
+        New-Object -TypeName PSObject -Property $params
     }
-    $cmd = $Path + ' ' + $CommandLine
-    
-    #--------------------------------------------------------------------------------------
-    
+    #endregion New-InstallProcess
+
+    if ($AsScheduledJob -and $PSVersionTable.PSVersion -lt '3.0')
+    {
+        throw 'The AsScheduledJob feature requires at least PowerShell V3'
+    }
+
+    if (-not (Test-Path -Path $Path -PathType Leaf))
+    {
+        Write-Error "The file '$Path' could not found"
+        return        
+    }
+        
     $start = Get-Date
     Write-Verbose -Message "Starting setup of '$ProcessName' with the following command"
     Write-Verbose -Message "`t$cmd"
@@ -295,69 +335,7 @@ function Install-LWSoftwarePackage
     $installationMethod = [System.IO.Path]::GetExtension($Path)
     $installationFile = [System.IO.Path]::GetFileName($Path)
     
-    if ($installationMethod -eq '.exe')
-    {
-        Write-Verbose -Message 'Starting installation of Exe file'
-        
-        $args = @{ }
-        $args.Add('FilePath', $Path)
-        if ($CommandLine)
-        {
-            $args.Add('ArgumentList', $CommandLine)
-        }
-        $args.Add('PassThru', $true)
-        
-        $p = Start-Process @args
-        Write-Verbose -Message "The installation process ID is $($p.Id)"
-        
-        $queryExpression = "`$_.Name -eq '$ProcessName'"
-        if ($ProcessDescription)
-        {
-            $queryExpression += "-and `$_.Description -eq '$processDescription'"
-        }
-        $queryExpression = [scriptblock]::Create($queryExpression)
-        
-        Write-Verbose -Message 'Query expression for looking for the setup process:'
-        Write-Verbose -Message "`t$queryExpression"
-        
-        if (-not (Get-Process | Where-Object -FilterScript $queryExpression))
-        {
-            Write-Error -Message "Installation of '$ProcessName' did not start"
-            return
-        }
-        else
-        {
-            $p = Get-Process | Where-Object -FilterScript $queryExpression
-            Write-Verbose -Message "Installation process is '$($p.Name)' with ID $($p.Id)"
-        }
-        
-        while (Get-Process | Where-Object -FilterScript $queryExpression)
-        {
-            if ((Get-Date).AddMinutes(-$Timeout) -gt $start)
-            {
-                Write-Error -Message "Installation of '$ProcessName' hit the timeout of $Timeout minutes. Killing the setup process"
-                
-                if ($ProcessDescription)
-                {
-                    Get-Process |
-                    Where-Object -FilterScript {
-                        $_.Name -eq $ProcessName -and $_.Description -eq $ProcessDescription
-                    } |
-                    Stop-Process -Force
-                }
-                else
-                {
-                    Get-Process -Name $ProcessName | Stop-Process -Force
-                }
-                
-                Write-Error -Message "Installation of '$installationFile' was not successfull"
-                return
-            }
-            
-            Start-Sleep -Seconds 5
-        }
-    }
-    elseif ($installationMethod -eq '.msi')
+    if ($installationMethod -eq '.msi')
     {
         Write-Verbose -Message 'Starting installation of MSI file'
         
@@ -378,10 +356,6 @@ function Install-LWSoftwarePackage
         Write-Verbose -Message 'Installation arguments for MSI are:'
         Write-Verbose -Message "`tPath: $Path"
         Write-Verbose -Message "`tLog File: '`t$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetFileNameWithoutExtension($Path)).log'"
-        
-        $p = Start-Process -FilePath 'msiexec' -ArgumentList $CommandLine -PassThru
-        Write-Verbose "The installation process ID is $($p.Id)"
-        $p.WaitForExit()
     }
     elseif ($installationMethod -eq '.msu')
     {
@@ -393,48 +367,60 @@ function Install-LWSoftwarePackage
         expand.exe -F:* $Path $tempRemoteFolder
         
         $cabFile = (Get-ChildItem -Path $tempRemoteFolder\*.cab -Exclude WSUSSCAN.cab).FullName
-        
-        $pinfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
-        $pinfo.FileName = 'dism.exe'
-        $pinfo.RedirectStandardError = $true
-        $pinfo.RedirectStandardOutput = $true
-        $pinfo.UseShellExecute = $false
-        $pinfo.Arguments = "/Online /Add-Package /PackagePath:""$cabFile"" /NoRestart /Quiet"
-        
-        $p = New-Object -TypeName System.Diagnostics.Process
-        $p.StartInfo = $pinfo
-        Write-Verbose -Message "Starting process $($pinfo.FileName) $($pinfo.Arguments)"
-        $null = $p.Start()
-        Write-Verbose "The installation process ID is $($p.Id)"
-        $p.WaitForExit()
-        Write-Verbose -Message 'Process exited. Reading output'
-        $p.StandardOutput.ReadToEnd()
-        $p.StandardError.ReadToEnd()
-        Write-Verbose -Message 'Reading output done'
-        
-        Write-Verbose -Message 'Cleaning up source and temp files'
-        
-        Remove-Item -Path $tempRemoteFolder -Recurse -Confirm:$false
-        Remove-Item -Path $Path -Confirm:$false
-        Write-Verbose -Message 'Cleaning up source and temp files done'
+
+        $Path = 'dism.exe'
+        $CommandLine = "/Online /Add-Package /PackagePath:""$cabFile"" /NoRestart /Quiet"
     }
+    elseif ($installationMethod -eq '.exe')
+    { }
     else
     {
         Write-Error -Message 'The extension of the file to install is unknown'
         return
     }
-    
-    Write-Verbose "Exit code of installation process is '$($p.ExitCode)'"
-    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010 -and $p.ExitCode -ne $null)
+
+    if ($AsScheduledJob)
     {
-        Write-Error -Message "Installation process returned error code: $($p.ExitCode). See the log file for more information"
+        $jobName = "AL_$(New-Guid)"
+        Write-Verbose "In the AsScheduledJob mode, creating scheduled job named '$jobName'"
+        $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
+        Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
+        
+        while (-not $job)
+        {
+            $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+        }        
+        $job | Wait-Job | Out-Null
+        $result = $job | Receive-Job
+    }
+    else
+    {
+        $result = New-InstallProcess -Path $Path -CommandLine $CommandLine -UseShellExecute $UseShellExecute
+    }
+    
+    Start-Sleep -Seconds 5
+    
+    if ($AsScheduledJob)
+    {
+        Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
+        $scheduledJob | Unregister-ScheduledJob
+    }
+
+    if ($installationMethod -eq '.msu')
+    {
+        Remove-Item -Path $tempRemoteFolder -Recurse -Confirm:$false
+    }
+        
+    Write-Verbose "Exit code of installation process is '$($result.Process.ExitCode)'"
+    if ($result.Process.ExitCode -ne 0 -and $result.Process.ExitCode -ne 3010 -and $result.Process.ExitCode -ne $null)
+    {
+        throw $result.Error
     }
     else
     {
         Write-Verbose -Message "Installation of '$installationFile' finished successfully"
+        $result.Output
     }
-    
-    Write-Verbose -Message 'Exiting'
 }
 #endregion Install-LWSoftwarePackage
 
