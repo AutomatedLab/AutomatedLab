@@ -22,7 +22,23 @@ namespace AutomatedLab
         private List<AzureRmVmSize> roleSizes;
         private List<AzureResourceGroup> resourceGroups;
         private List<string> vmDisks;
-        private string defaultRoleSize;        
+        private string defaultRoleSize;
+        private string labSourcesStorageAccountName;
+        private string labSourcesResourceGroupName;
+
+        public string LabSourcesResourceGroupName
+        {
+            get { return labSourcesResourceGroupName; }
+            set { labSourcesResourceGroupName = value; }
+        }
+
+
+        public string LabSourcesStorageAccountName
+        {
+            get { return labSourcesStorageAccountName; }
+            set { labSourcesStorageAccountName = value; }
+        }
+
 
         public List<AzureRmStorageAccount> StorageAccounts
         {
