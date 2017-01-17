@@ -197,7 +197,12 @@
         'Add-FunctionToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
-        'Test-LabMachineInternetConnectivity'
+        'Test-LabMachineInternetConnectivity',
+		'Add-LabAzureProfile',
+		'New-LabAzureLabSourcesStorage',
+		'Get-LabAzureLabSourcesStorage',
+		'Remove-LabAzureLabSourcesStorage',
+		'Sync-LabAzureLabSources'
     
     # List of all modules packaged with this module
     ModuleList = @(
