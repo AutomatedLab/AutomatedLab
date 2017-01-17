@@ -268,6 +268,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 		SampleScripts\Introduction\10 ISO Offline Patching.ps1 = SampleScripts\Introduction\10 ISO Offline Patching.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-EDE3-4069-9B4C-310FDE3EDF19}"
+	ProjectSection(SolutionItems) = preProject
+		Help\AutomatedLab.Help.pshproj = Help\AutomatedLab.Help.pshproj
+		Help\AutomatedLabDefinition.Help.pshproj = Help\AutomatedLabDefinition.Help.pshproj
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

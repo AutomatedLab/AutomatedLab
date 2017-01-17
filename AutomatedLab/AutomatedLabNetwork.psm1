@@ -1,6 +1,7 @@
 #region New-LabNetworkSwitches
 function New-LabNetworkSwitches
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
 	
@@ -53,6 +54,7 @@ function New-LabNetworkSwitches
 #region Remove-LabNetworkSwitches
 function Remove-LabNetworkSwitches
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
 	

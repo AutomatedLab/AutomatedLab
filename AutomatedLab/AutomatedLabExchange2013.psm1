@@ -226,6 +226,7 @@ $exchangeSetupCmd = {
 
 function Copy-LabExchangeInstallationFiles
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [AutomatedLab.Machine]$Machine
@@ -284,6 +285,7 @@ function Copy-LabExchangeInstallationFiles
 #region Install-LabExchange2013
 function Install-LabExchange2013
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 	

@@ -1,5 +1,6 @@
 ﻿function Update-LabVMWareSettings
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	if ((Get-PSCallStack).Command -contains 'Import-Lab')
 	{
 		$Script:lab = Get-Lab
@@ -12,6 +13,7 @@
 
 function Add-LabVMWareSettings
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	param (
 		[Parameter(Mandatory)]
 		[string]$DataCenterName,
