@@ -1975,6 +1975,40 @@ function Set-LabVMDescription
     Write-LogFunctionExit
 }
 
+function Get-LabSourcesLocationInternal
+{
+
+$lab = Get-Lab -ErrorAction SilentlyContinue
+$labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
+
+$defaultEngine = 'HyperV'
+if($lab)
+{
+	$defaultEngine = $lab.DefaultVirtualizationEngine
+}
+elseif($labDefinition)
+{
+	$defaultEngine = $labDefinition.DefaultVirtualizationEngine
+}
+
+if ($defaultEngine -eq 'HyperV')
+{
+    $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
+
+    foreach ($drive in $hardDrives)
+    {
+        if (Test-Path -Path "$drive\LabSources")
+        {
+            "$drive\LabSources"
+        }
+    }
+}
+elseif($defaultEngine -eq 'Azure')
+{
+    (Get-LabAzureLabSourcesStorage).Path
+}
+}
+
 Add-Type -TypeDefinition $meshType
 
 New-Alias -Name ral -Value Reset-AutomatedLab -Scope Global -ErrorAction SilentlyContinue
