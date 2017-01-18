@@ -151,6 +151,7 @@
         'Set-LabDefaultVirtualizationEngine',
         'Set-LabGlobalNamePrefix',
         'Get-LabSourcesLocation',
+		'Get-LabSourcesLocationInternal',
         'Get-LabVariable',
         'Remove-LabVariable',
         '*-LabAzureService',
