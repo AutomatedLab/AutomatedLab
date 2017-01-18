@@ -10,7 +10,6 @@ function Install-LabDscPullServer
     Write-LogFunctionEntry
     
     $lab = Get-Lab
-    $labSources = Get-LabSourcesLocation
     $roleName = [AutomatedLab.Roles]::DSCPullServer
     
     if (-not (Get-LabMachine))
@@ -158,8 +157,6 @@ function Install-LabDscClient
         
         [string[]]$PullServer
     )
-    
-    $labSources = Get-LabSourcesLocation
     
     if ($All)
     {

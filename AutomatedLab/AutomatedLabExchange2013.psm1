@@ -243,8 +243,6 @@ function Copy-LabExchangeInstallationFiles
         $ucmaInstallUri = New-Object System.Uri($ucmaInstallLink)
         $ucmaInstallFileName = $ucmaInstallUri.Segments[$ucmaInstallUri.Segments.Count-1]
 
-        $labSources = Get-LabSourcesLocation
-
         $ucmaFile = Get-ChildItem -Path $labSources -Filter $ucmaInstallFileName -Recurse
         if (-not $ucmaFile)
         {
