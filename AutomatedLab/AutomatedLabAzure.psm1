@@ -976,10 +976,10 @@ $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.Azure
 $AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
 # Create the empty folders first
-foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocation) -Recurse -Directory))
+foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
 {
     $err = $Null
-	$FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocation)\",'')
+	$FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
 	# Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
 	$null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
@@ -994,7 +994,7 @@ foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocation) -Recurse -Direc
 }
 
 # Sync the lab sources
-foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocation) -Recurse -File))
+foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
 {
 	# Check if file is an OS ISO and skip
 	if($File.Extension -eq '.iso')
@@ -1008,7 +1008,7 @@ foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocation) -Recurse -File))
 		}
 	}
 
-	$FileName = $File.FullName.Replace("$(Get-LabSourcesLocation)\",'')
+	$FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
 	$AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
 	if($AzureFile)
