@@ -14,6 +14,7 @@ namespace AutomatedLab
         {
             getter = scriptGetter;
             setter = scriptSetter;
+            Visibility = SessionStateEntryVisibility.Public;
         }
         private ScriptBlock getter;
         private ScriptBlock setter;
