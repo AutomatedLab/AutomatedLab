@@ -1977,7 +1977,10 @@ function Set-LabVMDescription
 
 function Get-LabSourcesLocationInternal
 {
-
+param
+(
+	[switch]$Local
+)
 $lab = Get-Lab -ErrorAction SilentlyContinue
 $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
 
@@ -1991,7 +1994,7 @@ elseif($labDefinition)
 	$defaultEngine = $labDefinition.DefaultVirtualizationEngine
 }
 
-if ($defaultEngine -eq 'HyperV')
+if ($defaultEngine -eq 'HyperV' -or $Local)
 {
     $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
 
@@ -2005,7 +2008,18 @@ if ($defaultEngine -eq 'HyperV')
 }
 elseif($defaultEngine -eq 'Azure')
 {
-    (Get-LabAzureLabSourcesStorage).Path
+	try
+	{
+		(Get-LabAzureLabSourcesStorage -ErrorAction Stop).Path
+	}
+	catch
+	{
+		Get-LabSourcesLocationInternal -Local
+	}
+}
+else
+{
+	Get-LabSourcesLocationInternal -Local
 }
 }
 
