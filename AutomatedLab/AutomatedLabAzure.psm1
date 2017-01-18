@@ -895,7 +895,11 @@ $null = New-LabAzureResourceGroup -ResourceGroupNames $ResourceGroupName -Locati
 
 if(-not $StorageAccountName)
 {
-	$StorageAccountName = (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where-Object StorageAccountName -like 'automatedlabsources?????')[0].StorageAccountName
+	try
+	{
+		$StorageAccountName = (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like 'automatedlabsources?????')[0].StorageAccountName
+	}
+	catch{ }
 	if(-not $StorageAccountName)
 	{
 		$StorageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
