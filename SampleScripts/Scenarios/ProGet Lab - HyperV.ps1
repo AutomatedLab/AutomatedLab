@@ -7,7 +7,6 @@ $proGetLink = 'http://inedo.com/proget/download/nosql/4.6.4'
 #----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
 #--------------------------------------------------------------------------------------------------------------------
 
-$labSources = Get-LabSourcesLocation
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV

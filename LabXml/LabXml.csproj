@@ -62,6 +62,7 @@
     <Compile Include="Disks\Disk.cs" />
     <Compile Include="Disks\ISO.cs" />
     <Compile Include="Disks\LocalDisk.cs" />
+    <Compile Include="DynamicVariable.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Extensions\Extensions.cs" />
     <Compile Include="Lab\AzureConfiguration.cs" />

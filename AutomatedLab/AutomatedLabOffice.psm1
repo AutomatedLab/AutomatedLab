@@ -175,8 +175,7 @@ function Install-LabOffice2016
   <!--Silent install of 32-Bit Office 365 ProPlus with Updates and Logging enabled-->
 </Configuration>
 '@
-    
-    $labSources = Get-LabSourcesLocation
+
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::Office2016
     

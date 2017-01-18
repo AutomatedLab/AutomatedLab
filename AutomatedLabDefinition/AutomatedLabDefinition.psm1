@@ -758,7 +758,6 @@ function New-LabDefinition
                     Unblock-File -Path $filePath
         
                     #Extract files to Tools folder
-                    $labSources = Get-LabSourcesLocation
                     if (-not (Test-Path -Path "$labSources\Tools"))
                     {
                         Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
@@ -809,7 +808,7 @@ function New-LabDefinition
     $diskDefinitionFile.Path = $diskDefinitionFilePath
     $script:lab.DiskDefinitionFiles.Add($diskDefinitionFile)
     
-    Write-ScreenInfo -Message "Location of LabSources folder is '$(Get-LabSourcesLocation)'"
+    Write-ScreenInfo -Message "Location of LabSources folder is '($labSources)'"
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {
@@ -2730,7 +2729,6 @@ function Get-DiskSpeed
     Write-ScreenInfo -Message "Measuring speed of drive $DriveLetter" -Type Info
     
     $tempFileName = [System.IO.Path]::GetTempFileName()
-    $labSources = Get-LabSourcesLocation
     
     & "$labSources\Tools\WinSAT.exe" disk -ran -read -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
     $readThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
