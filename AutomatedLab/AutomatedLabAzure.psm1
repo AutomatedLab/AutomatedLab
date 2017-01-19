@@ -1005,6 +1005,8 @@ Write-LogFunctionExit
 $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
 $AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
+Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
+
 # Create the empty folders first
 foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
 {
