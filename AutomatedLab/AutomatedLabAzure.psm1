@@ -206,7 +206,13 @@ function Add-LabAzureSubscription
     }
 
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
+	foreach($Account in $storageAccounts)
+	{
+		$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($Account)
+		$ALStorageAccount.StorageAccountKey = ($Account | Get-AzureRmStorageAccountKey)[0].Value
+		$script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+	}
+    
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     if ($global:cacheAzureRoleSizes)
@@ -597,7 +603,13 @@ function New-LabAzureDefaultStorageAccount
     }
 	
     Write-ScreenInfo -Message  'Storage account now created'
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create((Get-AzureRmStorageAccount -ErrorAction SilentlyContinue))
+
+	$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName
+
+	$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageAccount)
+	$ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+	$script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 	
     Set-LabAzureDefaultStorageAccount -Name $storageAccountName
@@ -918,7 +930,23 @@ if(-not (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where
 }
 
 $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
+$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageAccount)
+$ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+
 $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
+if(($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+{
+	$existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
+	if($existingGroup)
+	{
+		$i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
+		$script:Lab.AzureSettings.StorageAccounts[$i] = $ALStorageAccount
+	}
+}
+else
+{
+	$script:Lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+}
 
 if(-not (Get-AzureStorageShare -Name 'labsources' -Context $StorageAccount.Context -ErrorAction SilentlyContinue))
 {
@@ -938,17 +966,19 @@ function Get-LabAzureLabSourcesStorage
 param
 ()
 
-$StorageInfo = New-Object psobject
+$StorageAccount = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.ResourceGroupName -eq $script:Lab.AzureSettings.LabSourcesResourceGroupName -and $_.StorageAccountName -eq $script:Lab.AzureSettings.LabSourcesStorageAccountName}
 
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
-$AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+if(-not $StorageAccount)
+{
+	$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName	
+	$StorageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($Account | Get-AzureRmStorageAccountKey)[0].Value
+}
 
-$StorageInfo | Add-Member -MemberType NoteProperty -Name 'ResourceGroupName' -Value $script:Lab.AzureSettings.LabSourcesResourceGroupName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountName' -Value $script:Lab.AzureSettings.LabSourcesStorageAccountName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountKey' -Value $AccountKey -PassThru |
-Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources"
 
-$StorageInfo
+$StorageAccount |
+Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources" -Force
+
+$StorageAccount
 
 }
 
