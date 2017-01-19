@@ -804,7 +804,9 @@ function Remove-LabAzureResourceGroup
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
                 Write-Verbose "RG '$($name)' removed"
                 
-                $script:lab.AzureSettings.ResourceGroups.Remove(($script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name))
+				$RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
+				$Index =  $script:lab.AzureSettings.ResourceGroups.IndexOf($RgObject)
+                $script:lab.AzureSettings.ResourceGroups.RemoveAt($Index)
             }
             else
             {
