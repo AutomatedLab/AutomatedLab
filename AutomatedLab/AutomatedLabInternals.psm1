@@ -1750,7 +1750,7 @@ function Unblock-LabSources
 		$lab = Get-LabDefinition -ErrorAction SilentlyContinue
 	}
 
-	if($lab.DefaultVirtualizationEngine -eq 'Azure' -and -not $Path.StartsWith("\\"))
+	if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
 	{
 		Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
 		return
