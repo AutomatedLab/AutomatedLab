@@ -165,13 +165,13 @@ exit
         $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages -File
         foreach ($package in $packages)
         {
-            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
         }
         
         $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages\en-US -File
         foreach ($package in $packages)
         {
-            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
         }
     }
 	
