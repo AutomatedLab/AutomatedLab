@@ -392,6 +392,8 @@ function Save-LabVM
 	
     end
     {
+        $vms = Get-LabMachine -ComputerName $vms
+        
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
@@ -405,7 +407,7 @@ function Save-LabVM
 			
             if ($vm.HostType -eq 'HyperV')
             {
-                Save-LWLabVM -Name $vm
+                Save-LWHypervVM -ComputerName $vm
             }
             elseif ($vm.HostType -eq 'Azure')
             {
@@ -413,7 +415,7 @@ function Save-LabVM
             }
             elseif ($vm.HostType -eq 'VMWare')
             {
-                Save-LWVMWareVM -Name $vm
+                Save-LWVMWareVM -ComputerName $vm
             }
         }
 		
