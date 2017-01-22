@@ -175,14 +175,7 @@ function Add-LabAzureSubscription
 		
         if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
         {
-            $choice = Read-Host -Prompt "Resource group '$rgName' already exists. Please enter 'y' to use this resource group, 'r' to recreate the resource group or any other key to cancel"
-
-            switch -Regex ($choice)
-            {
-                'y' { $createResourceGroup = $false; break }
-                'r' { Remove-AzureRmResourceGroup -Name $rgName -Force; break }
-                default { throw "Resource group $rgName already exists. User cancelled the operation" }
-            }
+            $createResourceGroup = $false
         }
 
         if ($createResourceGroup)
