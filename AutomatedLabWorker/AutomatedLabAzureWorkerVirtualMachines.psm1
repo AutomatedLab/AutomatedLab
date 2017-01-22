@@ -387,6 +387,7 @@ function New-LWAzureVM
         
         Write-Verbose -Message 'Adding NIC to VM'
         $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
+		
                                    
         $DiskName = "$($machine.Name)_os"
         $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
@@ -510,6 +511,15 @@ function Initialize-LWAzureVM
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
+		#Map the Azure lab source drive
+		$azureCredential = New-Object pscredential (($MachineSettings."$computerName")[4], (ConvertTo-SecureString -String ($MachineSettings."$computerName")[5] -AsPlainText -Force))
+		
+		$azureDrive = New-PSDrive -Name X -PSProvider FileSystem -Root ($MachineSettings."$computerName")[3] -Description 'Azure lab sources' -Persist -Credential $azureCredential -ErrorAction SilentlyContinue
+		if(-not $azureDrive)
+		{
+			Write-Warning "Could not map $(($MachineSettings."$computerName")[3]) as drive X. Post-installations might fail."
+		}
+		
         #set the time zone
         $timezone = ($MachineSettings."$computerName")[1]
         Write-Verbose -Message "Time zone for $computerName`: $regsettings"
@@ -572,7 +582,7 @@ function Initialize-LWAzureVM
     $lab = Get-Lab
 
     Write-ScreenInfo -Message 'Waiting for all machines to be visible in Azure'
-    while ((Get-AzureRmVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
+    while ((Get-AzureRmVM -ResourceGroupName $lab.Name -WarningAction SilentlyContinue | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
     {        
         Start-Sleep -Seconds 10
         Write-Verbose 'Still waiting for all machines to be visible in Azure'
@@ -739,7 +749,7 @@ function Initialize-LWAzureVM
     $machineSettings = @{}
     foreach ($m in $Machine)
     {
-        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count)))
+        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count), (Get-LabAzureLabSourcesStorage).Path, (Get-LabAzureLabSourcesStorage).StorageAccountName, (Get-LabAzureLabSourcesStorage).StorageAccountKey))
     }
     $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay

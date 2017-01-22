@@ -35,10 +35,10 @@ function New-LWAzureNetworkSwitch
             }
         }		
 
-        if ($network.DnsServers)
+        <#if ($network.DnsServers)
         {
             $azureNetworkParameters.Add('DnsServer', $network.DnsServers)
-        }
+        }#>
 		
         $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
             param

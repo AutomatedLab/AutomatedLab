@@ -1759,10 +1759,22 @@ function Unblock-LabSources
 {
     # .ExternalHelp AutomatedLab.Help.xml
     param(
-        [string]$Path = (Get-LabSourcesLocation)
+        [string]$Path = $global:labSources
     )
 
     Write-LogFunctionEntry
+
+	$lab = Get-Lab -ErrorAction SilentlyContinue
+	if(-not $lab)
+	{
+		$lab = Get-LabDefinition -ErrorAction SilentlyContinue
+	}
+
+	if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
+	{
+		Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
+		return
+	}
 
     if (-not (Test-Path -Path $Path))
     {

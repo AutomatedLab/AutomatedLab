@@ -175,14 +175,7 @@ function Add-LabAzureSubscription
 		
         if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
         {
-            $choice = Read-Host -Prompt "Resource group '$rgName' already exists. Please enter 'y' to use this resource group, 'r' to recreate the resource group or any other key to cancel"
-
-            switch -Regex ($choice)
-            {
-                'y' { $createResourceGroup = $false; break }
-                'r' { Remove-AzureRmResourceGroup -Name $rgName -Force; break }
-                default { throw "Resource group $rgName already exists. User cancelled the operation" }
-            }
+            $createResourceGroup = $false
         }
 
         if ($createResourceGroup)
@@ -206,7 +199,13 @@ function Add-LabAzureSubscription
     }
 
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
+	foreach($Account in $storageAccounts)
+	{
+		$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($Account)
+		$ALStorageAccount.StorageAccountKey = ($Account | Get-AzureRmStorageAccountKey)[0].Value
+		$script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+	}
+    
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     if ($global:cacheAzureRoleSizes)
@@ -597,7 +596,13 @@ function New-LabAzureDefaultStorageAccount
     }
 	
     Write-ScreenInfo -Message  'Storage account now created'
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create((Get-AzureRmStorageAccount -ErrorAction SilentlyContinue))
+
+	$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName
+
+	$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageAccount)
+	$ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+	$script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 	
     Set-LabAzureDefaultStorageAccount -Name $storageAccountName
@@ -792,7 +797,9 @@ function Remove-LabAzureResourceGroup
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
                 Write-Verbose "RG '$($name)' removed"
                 
-                $script:lab.AzureSettings.ResourceGroups.Remove(($script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name))
+				$RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
+				$Index =  $script:lab.AzureSettings.ResourceGroups.IndexOf($RgObject)
+                $script:lab.AzureSettings.ResourceGroups.RemoveAt($Index)
             }
             else
             {
@@ -918,7 +925,23 @@ if(-not (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where
 }
 
 $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
+$ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageAccount)
+$ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+
 $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
+if(($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+{
+	$existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
+	if($existingGroup)
+	{
+		$i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
+		$script:Lab.AzureSettings.StorageAccounts[$i] = $ALStorageAccount
+	}
+}
+else
+{
+	$script:Lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+}
 
 if(-not (Get-AzureStorageShare -Name 'labsources' -Context $StorageAccount.Context -ErrorAction SilentlyContinue))
 {
@@ -938,17 +961,19 @@ function Get-LabAzureLabSourcesStorage
 param
 ()
 
-$StorageInfo = New-Object psobject
+$StorageAccount = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.ResourceGroupName -eq $script:Lab.AzureSettings.LabSourcesResourceGroupName -and $_.StorageAccountName -eq $script:Lab.AzureSettings.LabSourcesStorageAccountName}
 
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
-$AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+if(-not $StorageAccount)
+{
+	$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName	
+	$StorageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($Account | Get-AzureRmStorageAccountKey)[0].Value
+}
 
-$StorageInfo | Add-Member -MemberType NoteProperty -Name 'ResourceGroupName' -Value $script:Lab.AzureSettings.LabSourcesResourceGroupName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountName' -Value $script:Lab.AzureSettings.LabSourcesStorageAccountName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountKey' -Value $AccountKey -PassThru |
-Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources"
 
-$StorageInfo
+$StorageAccount |
+Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources" -Force
+
+$StorageAccount
 
 }
 
@@ -974,6 +999,8 @@ Write-LogFunctionExit
 # Retrieve storage context
 $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
 $AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+
+Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
 
 # Create the empty folders first
 foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))

@@ -209,7 +209,8 @@
 		'New-LabAzureLabSourcesStorage',
 		'Get-LabAzureLabSourcesStorage',
 		'Remove-LabAzureLabSourcesStorage',
-		'Sync-LabAzureLabSources'
+		'Sync-LabAzureLabSources',
+		'Remove-LabAzureResourceGroup'
     
     # List of all modules packaged with this module
     ModuleList = @(
