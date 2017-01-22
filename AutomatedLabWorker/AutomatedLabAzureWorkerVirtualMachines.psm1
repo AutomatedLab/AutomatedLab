@@ -514,7 +514,7 @@ function Initialize-LWAzureVM
 		#Map the Azure lab source drive
 		$azureCredential = New-Object pscredential (($MachineSettings."$computerName")[4], (ConvertTo-SecureString -String ($MachineSettings."$computerName")[5] -AsPlainText -Force))
 		
-		$azureDrive = New-PSDrive -Name X -PSProvider FileSystem -Root ($MachineSettings."$computerName")[3] -Description 'Azure lab sources' -Persist -Credential $azureCredential -ErrorAction SilentlyContinue
+		$azureDrive = New-PSDrive -Name X -PSProvider FileSystem -Root ($MachineSettings."$computerName")[3] -Description 'Azure lab sources' -Persist -Scope Global -Credential $azureCredential -ErrorAction SilentlyContinue
 		if(-not $azureDrive)
 		{
 			Write-Warning "Could not map $(($MachineSettings."$computerName")[3]) as drive X. Post-installations might fail."
