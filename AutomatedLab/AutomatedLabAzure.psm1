@@ -1067,7 +1067,7 @@ foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -R
 
 	if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
 	{
-		$null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue
+		$null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue -Force
 		Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
 	}
 
