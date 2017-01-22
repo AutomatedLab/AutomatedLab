@@ -929,7 +929,7 @@ $ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageA
 $ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
 $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
-if(($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+if($script:Lab.AzureSettings.StorageAccounts -and ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
 {
 	$existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
 	if($existingGroup)
@@ -992,7 +992,10 @@ function Sync-LabAzureLabSources
 # .ExternalHelp AutomatedLab.Help.xml
 [CmdletBinding()]
 param
-()
+(
+	[switch]$SkipIsos,
+	[int]$MaxFileSizeInMb
+)
 
 Write-LogFunctionExit
 
@@ -1005,6 +1008,11 @@ Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
 # Create the empty folders first
 foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
 {
+	if($SkipIsos -and $Folder.Name -eq 'Isos')
+	{
+		continue
+	}
+
     $err = $Null
 	$FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
@@ -1023,6 +1031,18 @@ foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) 
 # Sync the lab sources
 foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
 {
+	if($SkipIsos -and $File.Directory.Name -eq 'Isos')
+	{
+		Write-Verbose "SkipIsos is true, skipping $($File.Name)"
+		continue
+	}
+
+	if($MaxFileSizeInMb -and $File.Length/1MB -ge $MaxFileSizeInMb)
+	{
+		Write-Verbose "MaxFileSize is $MaxFileSizeInMb mb, skipping $($File.Name)"
+		continue
+	}
+
 	# Check if file is an OS ISO and skip
 	if($File.Extension -eq '.iso')
 	{
