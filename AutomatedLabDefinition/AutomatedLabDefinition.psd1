@@ -65,8 +65,17 @@
 
             ValidRoleProperties = @{
                 ADFS = 'DisplayName', 'ServiceName', 'ServicePassword'
-                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel'
-                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel'
+
+				CaRoot = 'CACommonName' ,'KeyLength', 'ValidityPeriod',  'ValidityPeriodUnits'
+				CaSubordinate = 'CACommonName' ,'KeyLength', 'ValidityPeriod',  'ValidityPeriodUnits', 'ParentCA', 'ParentCALogicalName'
+
+                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet'
+                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet'
+				DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
+
+				Exchange2013 = 'OrganizationName'
+				Exchange2016 = 'OrganizationName'
+
             }
 
             MandatoryRoleProperties = @{
