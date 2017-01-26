@@ -223,7 +223,7 @@ function Add-LabAzureSubscription
 	# Add LabSources storage
 	New-LabAzureLabSourcesStorage
 
-    $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+    $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
 	
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
@@ -288,16 +288,19 @@ function Add-LabAzureSubscription
 	$script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
 	
 	# Cache all images
-	$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
-	$osImageList = New-Object $osImageListType
-
-	foreach($vmImage in $vmImages)
+	if($vmImages)
 	{
-		$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
-	}
+		$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+		$osImageList = New-Object $osImageListType
 
-	$osImageList.Timestamp = Get-Date
-    $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+		foreach($vmImage in $vmImages)
+		{
+			$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
+		}
+
+		$osImageList.Timestamp = Get-Date
+		$osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+	}
 
     Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
