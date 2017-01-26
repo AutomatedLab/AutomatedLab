@@ -1,7 +1,7 @@
 $labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
 $azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU HAVE NO PROFILE FILE, CALL Save-AzureRmProfile
-$azureDefaultLocation = 'North Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
+$azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
