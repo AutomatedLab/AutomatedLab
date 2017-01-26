@@ -229,13 +229,31 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
-    if ($global:cacheVmImages)
+	# Read cache
+	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+
+    try
+    {
+        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+        $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
+        Write-Verbose "Read $($global:cacheVmImages.Count) OS images from the cache"
+    }
+    catch
+    {
+        Write-Verbose 'Could not read OS image info from the cache'
+    }
+
+    if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
     {
         Write-ScreenInfo -Message 'Querying available operating system images (using cache)' -Type Info
         $vmImages = $global:cacheVmImages
     }
     else
     {
+		if($global:cacheVmImages)
+		{
+			Write-Verbose ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) ,$global:cacheVmImages.TimeStamp)
+		}
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
         
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
@@ -267,7 +285,20 @@ function Add-LabAzureSubscription
         $global:cacheVmImages = $vmImages
     }
 
-    $script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
+	$script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
+	
+	# Cache all images
+	$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+	$osImageList = New-Object $osImageListType
+
+	foreach($vmImage in $vmImages)
+	{
+		$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
+	}
+
+	$osImageList.Timestamp = Get-Date
+    $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+
     Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
     $vms = Get-AzureRmVM -WarningAction SilentlyContinue
