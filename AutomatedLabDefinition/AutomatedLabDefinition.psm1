@@ -1167,7 +1167,7 @@ function Test-LabDefinition
     #we need to get the machine config files as well
     try
     {
-        $machineDefinitionFiles = ([xml](Get-Content -Path $Path) | Select-Xml -XPath '//MachineDefinitionFile' -ErrorAction Stop).Node.Path
+        $machineDefinitionFiles = ([xml](Get-Content -Path $Path -Encoding UTF8) | Select-Xml -XPath '//MachineDefinitionFile' -ErrorAction Stop).Node.Path
     }
     catch
     {
