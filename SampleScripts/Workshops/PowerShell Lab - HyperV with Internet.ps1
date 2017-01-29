@@ -91,6 +91,11 @@ $cmd = {
 Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabMachine -ComputerName POSHFS1) -ScriptBlock $cmd
 #endregion
 
-Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName PoshClient1
+if (Get-LabMachine -ComputerName POSHClient1)
+{
+	Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
+	Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online } -ComputerName POSHClient1
+	Restart-LabVM -ComputerName POSHClient1 -Wait
+}
 
 Show-LabInstallationTime
