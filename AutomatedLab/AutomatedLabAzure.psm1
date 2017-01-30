@@ -220,6 +220,8 @@ function Add-LabAzureSubscription
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
+	$script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+
 	# Add LabSources storage
 	New-LabAzureLabSourcesStorage
 
@@ -284,18 +286,20 @@ function Add-LabAzureSubscription
 
         $global:cacheVmImages = $vmImages
     }
-
-	$script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
+	
+	$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+	$script:lab.AzureSettings.VmImages = New-Object $osImageListType
 	
 	# Cache all images
 	if($vmImages)
-	{
-		$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+	{		
 		$osImageList = New-Object $osImageListType
+		
 
 		foreach($vmImage in $vmImages)
 		{
-			$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
+			$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))			
+            $script:lab.AzureSettings.VmImages.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
 		}
 
 		$osImageList.Timestamp = Get-Date
