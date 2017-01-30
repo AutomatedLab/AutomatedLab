@@ -21,6 +21,12 @@ function New-LWAzureNetworkSwitch
 	
     foreach ($network in $VirtualNetwork)
     {
+
+		if(Get-LWAzureNetworkSwitch -VirtualNetwork $network)
+		{
+			Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
+			continue
+		}
         Write-ScreenInfo -Message "Creating Azure virtual network '$($network.Name)'" -TaskStart
              
         $azureNetworkParameters = @{
@@ -34,11 +40,6 @@ function New-LWAzureNetworkSwitch
                 CreationTime = Get-Date	
             }
         }		
-
-        <#if ($network.DnsServers)
-        {
-            $azureNetworkParameters.Add('DnsServer', $network.DnsServers)
-        }#>
 		
         $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
             param
@@ -161,3 +162,29 @@ function Remove-LWAzureNetworkSwitch
     Write-LogFunctionExit
 }
 #endregion Remove-LWNetworkSwitch
+
+#region Get-LWAzureNetworkSwitch
+function Get-LWAzureNetworkSwitch
+{
+param
+(
+	[Parameter(Mandatory)]
+    [AutomatedLab.VirtualNetwork[]]$virtualNetwork
+)
+	$lab = Get-Lab
+    $jobs = @()
+	
+    foreach ($network in $VirtualNetwork)
+    {
+        Write-ScreenInfo -Message "Locating Azure virtual network '$($network.Name)'" -TaskStart
+         
+        $azureNetworkParameters = @{
+            Name = $network.Name
+            ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
+            ErrorAction = 'SilentlyContinue'
+        }
+		
+		Get-AzureRmVirtualNetwork @azureNetworkParameters
+	}
+}
+#endregion
