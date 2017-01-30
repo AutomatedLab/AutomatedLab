@@ -32,7 +32,14 @@ function New-LWAzureVM
     {
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
-    Write-Verbose -Message "Target resource group for machine: '$machineResourceGroup'"
+
+	if(Get-AzureRmVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
+	{
+		Write-Verbose -Message "Target machine $($Machine.Name) already exists. Skipping..."
+		return
+	}
+    
+	Write-Verbose -Message "Target resource group for machine: '$machineResourceGroup'"
     
     if (-not $global:cacheVMs)
     {
@@ -43,7 +50,7 @@ function New-LWAzureVM
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
-        Return $false
+        return
     }
 
     Write-Verbose -Message "Creating container 'automatedlabdisks' for additional disks"
@@ -511,15 +518,15 @@ function Initialize-LWAzureVM
         #Set Power Scheme to High Performance
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
-		#Map the Azure lab source drive
-		$azureCredential = New-Object pscredential (($MachineSettings."$computerName")[4], (ConvertTo-SecureString -String ($MachineSettings."$computerName")[5] -AsPlainText -Force))
-		
-		$azureDrive = New-PSDrive -Name X -PSProvider FileSystem -Root ($MachineSettings."$computerName")[3] -Description 'Azure lab sources' -Persist -Scope Global -Credential $azureCredential -ErrorAction SilentlyContinue
-		if(-not $azureDrive)
-		{
-			Write-Warning "Could not map $(($MachineSettings."$computerName")[3]) as drive X. Post-installations might fail."
-		}
-		
+		# Map the Azure lab source drive
+		$shareUser = ($MachineSettings."$computerName")[4]
+		$sharePassword = ($MachineSettings."$computerName")[5]
+		$sharePath = ($MachineSettings."$computerName")[3]
+
+		$null = Start-Process cmdkey -ArgumentList "/add:$($sharePath -replace '\\\\','' -replace '\\labsources','') /user:$shareUser /pass:$sharePassword" -Wait
+		Start-Sleep -Milliseconds 500
+		$null = Start-Process net -ArgumentList "use * $sharePath /persistent:yes /user:$shareUser $sharePassword" -Wait
+
         #set the time zone
         $timezone = ($MachineSettings."$computerName")[1]
         Write-Verbose -Message "Time zone for $computerName`: $regsettings"
@@ -612,9 +619,9 @@ function Initialize-LWAzureVM
         $toolsDestination = "$($stagingMachine.ToolsPathDestination)"
     }
     
-    if ($Machine | Where-Object {$_.ToolsPath -ne ''})
+    <#if ($Machine | Where-Object {$_.ToolsPath -ne ''})
     {
-        #Compress all tools for all machines into one zip file
+        Compress all tools for all machines into one zip file
         $tempFolderPath = [System.IO.Path]::GetTempFileName()
         Remove-Item -Path $tempFolderPath
         $tempFolderPath = "$tempFolderPath.tmp"
@@ -742,7 +749,7 @@ function Initialize-LWAzureVM
                 
             } -ArgumentList $stagingMachine.NetworkAdapters[0].Ipv4Address.IpAddress, $stagingMachine.InstallationUser.UserName, $stagingMachine.InstallationUser.Password, $toolsDestination
         }
-    }
+    }#>
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
