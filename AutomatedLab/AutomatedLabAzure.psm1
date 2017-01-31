@@ -788,7 +788,7 @@ function Remove-LabAzureResourceGroup
 
     process
     {
-        Write-ScreenInfo -Message "Removing the rg '$ResourceGroupName'" -Type Warning
+        Write-ScreenInfo -Message "Removing the Resource Group '$ResourceGroupName'" -Type Warning
 
         foreach ($name in $ResourceGroupName)
         {
