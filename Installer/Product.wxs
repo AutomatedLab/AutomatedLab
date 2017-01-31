@@ -130,6 +130,7 @@
                   <RegistryValue Value="Test" Type="string" KeyPath="yes" />
                 </RegistryKey>
 
+                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psd1" />
@@ -150,7 +151,8 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutmatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />

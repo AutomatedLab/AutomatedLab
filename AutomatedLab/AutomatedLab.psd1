@@ -39,7 +39,7 @@
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
     # Format files (.ps1xml) to be loaded when importing this module
-    FormatsToProcess = @('AutmatedLab.format.ps1xml')
+    FormatsToProcess = @('AutomatedLab.format.ps1xml')
     
     # Modules to import as nested modules of the module specified in ModuleToProcess
     NestedModules = @(
