@@ -2007,9 +2007,12 @@ function Install-LabDnsForwarder
         Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
     }
     
-    $rootDcs = Get-LabMachine -Role RootDC | Where-Object HostType -eq Azure
-    Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $rootDcs -ScriptBlock {
-        dnscmd /ResetForwarders 168.63.129.16
+    $azureRootDCs = Get-LabMachine -Role RootDC | Where-Object HostType -eq Azure
+    if ($azureRootDCs)
+    {
+        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $rootDcs -ScriptBlock {
+            dnscmd /ResetForwarders 168.63.129.16
+        }
     }
 }
 #region Install-LabDnsForwarder
