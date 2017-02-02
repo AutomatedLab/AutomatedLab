@@ -634,7 +634,7 @@ function Wait-LabVM
             
             netsh.exe interface ip delete arpcache | Out-Null
             
-            $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -Retries 1 -ErrorAction SilentlyContinue
+            $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -UseCredSsp -Retries 1 -ErrorAction SilentlyContinue
             
             if ($session)
             {
@@ -665,7 +665,7 @@ function Wait-LabVM
 
                     #do 5000 retries. This job is cancelled anyway if the timeout is reached
                     Write-Verbose "Trying to create session to '$ComputerName'"
-                    $session = New-LabPSSession -ComputerName $ComputerName -UseLocalCredential -Retries 5000
+                    $session = New-LabPSSession -ComputerName $ComputerName -UseLocalCredential -UseCredSsp -Retries 5000
 
                     return $ComputerName
                 } -ArgumentList $lab.Export(), $vm.Name
