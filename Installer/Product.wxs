@@ -206,7 +206,7 @@
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
 
-          <Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
+          <!--<Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
 
             <Component Id='DocumentationComponent' Guid='ec60d79b-cf47-457b-bfd8-b1e2c98e096a'>
 
@@ -227,7 +227,7 @@
 
             </Component>
 
-          </Directory>
+          </Directory>-->
 
           <Directory Id="SAMPLESDIR" Name="AutomatedLab Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
@@ -365,9 +365,9 @@
       <Feature Id='LabSources' Title='Lab Sources' Description='Creates a folder structure that all samples scripts are based on and provides some lab preparation scripts.' Level='1' ConfigurableDirectory='LABSOURCESDIR'>
         <ComponentGroupRef Id='LabSourcesComponentGroup'/>
 
-        <Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
+        <!--<Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
           <ComponentRef Id='DocumentationComponent' />
-        </Feature>
+        </Feature>-->
 
         <Feature Id='Samples' Title='Sample Scripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
           <ComponentRef Id='SamplesComponent' />
@@ -1090,7 +1090,7 @@
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />
 
-    <CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />
+    <!--<CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />-->
   </Product>
 
   <Fragment>
