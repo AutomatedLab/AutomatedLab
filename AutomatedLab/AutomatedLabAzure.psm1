@@ -6,7 +6,7 @@ $PSDefaultParameterValues = @{
 
 function Update-LabAzureSettings
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -37,7 +37,7 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [string]$Path,
 
@@ -175,14 +175,7 @@ function Add-LabAzureSubscription
 		
         if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
         {
-            $choice = Read-Host -Prompt "Resource group '$rgName' already exists. Please enter 'y' to use this resource group, 'r' to recreate the resource group or any other key to cancel"
-
-            switch -Regex ($choice)
-            {
-                'y' { $createResourceGroup = $false; break }
-                'r' { Remove-AzureRmResourceGroup -Name $rgName -Force; break }
-                default { throw "Resource group $rgName already exists. User cancelled the operation" }
-            }
+            $createResourceGroup = $false
         }
 
         if ($createResourceGroup)
@@ -206,7 +199,13 @@ function Add-LabAzureSubscription
     }
 
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccounts)
+    foreach($storageAccount in $storageAccounts)
+    {
+        $alStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccount)
+        $alStorageAccount.StorageAccountKey = ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
+        $script:lab.AzureSettings.StorageAccounts.Add($alStorageAccount)
+    }
+    
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     if ($global:cacheAzureRoleSizes)
@@ -221,8 +220,8 @@ function Add-LabAzureSubscription
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
-	# Add LabSources storage
-	New-LabAzureLabSourcesStorage
+    # Add LabSources storage
+    New-LabAzureLabSourcesStorage
 
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
@@ -256,14 +255,14 @@ function Add-LabAzureSubscription
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
-		$vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-		Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-		Get-AzureRmVMImageOffer |
-		Get-AzureRmVMImageSku |
-		Get-AzureRmVMImage |
-		Where-Object Offer -eq 'VisualStudio' |
-		Group-Object -Property Skus, Offer |
-		ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'VisualStudio' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         $global:cacheVmImages = $vmImages
     }
@@ -329,7 +328,7 @@ function Add-LabAzureSubscription
 
 function Get-LabAzureSubscription
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param ()
 	
     Write-LogFunctionEntry
@@ -343,7 +342,7 @@ function Get-LabAzureSubscription
 
 function Get-LabAzureDefaultSubscription
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param ()
 	
     Write-LogFunctionEntry
@@ -357,7 +356,7 @@ function Get-LabAzureDefaultSubscription
 
 function Get-LabAzureLocation
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [string]$LocationName,
@@ -469,7 +468,7 @@ function Get-LabAzureLocation
 
 function Get-LabAzureDefaultLocation
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -490,7 +489,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -513,7 +512,7 @@ function Set-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultStorageAccount
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -536,7 +535,7 @@ function Set-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultStorageAccount
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -557,7 +556,7 @@ function Get-LabAzureDefaultStorageAccount
 
 function New-LabAzureDefaultStorageAccount
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory)]
@@ -597,7 +596,13 @@ function New-LabAzureDefaultStorageAccount
     }
 	
     Write-ScreenInfo -Message  'Storage account now created'
-    $script:lab.AzureSettings.StorageAccounts = [AutomatedLab.Azure.AzureRmStorageAccount]::Create((Get-AzureRmStorageAccount -ErrorAction SilentlyContinue))
+
+    $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName
+
+    $ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageAccount)
+    $ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+    $script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 	
     Set-LabAzureDefaultStorageAccount -Name $storageAccountName
@@ -607,7 +612,7 @@ function New-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultResourceGroup
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -623,7 +628,7 @@ function Get-LabAzureDefaultResourceGroup
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
 	
@@ -655,7 +660,7 @@ function Import-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
     throw New-Object System.NotImplementedException
@@ -688,7 +693,7 @@ function New-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     [cmdletbinding()]
     param ()
@@ -716,7 +721,7 @@ function Get-LabAzureCertificate
 
 function New-LabAzureResourceGroup
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -745,7 +750,7 @@ function New-LabAzureResourceGroup
                 $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
                 Write-Verbose "The resource group '$name' does already exist"
             }
-			continue
+            continue
         }
 
         $result = New-AzureRmResourceGroup -Name $name -Location $LocationName
@@ -763,7 +768,7 @@ function New-LabAzureResourceGroup
 
 function Remove-LabAzureResourceGroup
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
@@ -783,7 +788,7 @@ function Remove-LabAzureResourceGroup
 
     process
     {
-        Write-ScreenInfo -Message "Removing the rg '$ResourceGroupName'" -Type Warning
+        Write-ScreenInfo -Message "Removing the Resource Group '$ResourceGroupName'" -Type Warning
 
         foreach ($name in $ResourceGroupName)
         {
@@ -792,7 +797,9 @@ function Remove-LabAzureResourceGroup
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
                 Write-Verbose "RG '$($name)' removed"
                 
-                $script:lab.AzureSettings.ResourceGroups.Remove(($script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name))
+                $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
+                $Index =  $script:lab.AzureSettings.ResourceGroups.IndexOf($RgObject)
+                $script:lab.AzureSettings.ResourceGroups.RemoveAt($Index)
             }
             else
             {
@@ -809,7 +816,7 @@ function Remove-LabAzureResourceGroup
 
 function Get-LabAzureResourceGroup
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param (
         [Parameter(Position = 0)]
@@ -838,11 +845,11 @@ function Get-LabAzureResourceGroup
 
 function Add-LabAzureProfile
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
-		[switch]$PassThru,
+        [switch]$PassThru,
         [switch]$NoDisplay
     )
     
@@ -854,188 +861,208 @@ function Add-LabAzureProfile
         Write-ScreenInfo -Message "Auto-detected and using publish setting file '$publishSettingFile'" -Type Info
     }
 
-	if(-not $publishSettingFile)
-	{
-		return
-	}
+    if(-not $publishSettingFile)
+    {
+        return
+    }
 
-	if($NoDisplay)
-	{
-		$null = Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-	}
-	else
-	{
-		Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-	}   
+    if($NoDisplay)
+    {
+        $null = Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
+    }
+    else
+    {
+        Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
+    }   
     
     Write-LogFunctionExit
 }
 
 function New-LabAzureLabSourcesStorage
 {
-# .ExternalHelp AutomatedLab.Help.xml
-[CmdletBinding()]
-param
-()
+    # .ExternalHelp AutomatedLab.Help.xml
+    [CmdletBinding()]
+    param
+    ()
 
-Write-LogFunctionEntry
+    Write-LogFunctionEntry
 
-$ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName
-$StorageAccountName = $script:Lab.AzureSettings.LabSourcesStorageAccountName
+    $ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName
+    $StorageAccountName = $script:Lab.AzureSettings.LabSourcesStorageAccountName
 
-if(-not $ResourceGroupName)
-{
-	Write-Verbose 'AutomatedLab lab source resource group not set. Setting it to AutomatedLabSources'
-	$ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName = 'AutomatedLabSources'
-}
-
-
-$null = New-LabAzureResourceGroup -ResourceGroupNames $ResourceGroupName -LocationName (Get-LabAzureDefaultLocation)
+    if(-not $ResourceGroupName)
+    {
+        Write-Verbose 'AutomatedLab lab source resource group not set. Setting it to AutomatedLabSources'
+        $ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName = 'AutomatedLabSources'
+    }
 
 
-if(-not $StorageAccountName)
-{
-	try
-	{
-		$StorageAccountName = (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like 'automatedlabsources?????')[0].StorageAccountName
-	}
-	catch{ }
-	if(-not $StorageAccountName)
-	{
-		$StorageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-		Write-Verbose "Generated random storage account name $StorageAccountName"
-	}
-	else
-	{
-		Write-Verbose "Found and selected existing storage account $StorageAccountName"
-	}
-}
+    $null = New-LabAzureResourceGroup -ResourceGroupNames $ResourceGroupName -LocationName (Get-LabAzureDefaultLocation)
 
-if(-not (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where-Object StorageAccountName -eq $StorageAccountName))
-{
-	Write-Verbose "AutomatedLab lab source storage account '$StorageAccountName' does not exist. Creating it."
-	$null = New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -Location (Get-LabAzureDefaultLocation) -Kind Storage -SkuName Standard_LRS
-}
 
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
-$script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
+    if(-not $StorageAccountName)
+    {
+        try
+        {
+            $StorageAccountName = (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like 'automatedlabsources?????')[0].StorageAccountName
+        }
+        catch{ }
+        if(-not $StorageAccountName)
+        {
+            $StorageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+            Write-Verbose "Generated random storage account name $StorageAccountName"
+        }
+        else
+        {
+            Write-Verbose "Found and selected existing storage account $StorageAccountName"
+        }
+    }
 
-if(-not (Get-AzureStorageShare -Name 'labsources' -Context $StorageAccount.Context -ErrorAction SilentlyContinue))
-{
-	Write-Verbose "AutomatedLab lab source file share 'labsources' does not exist. Creating it..."
-	$null = New-AzureStorageShare -Name 'labsources' -Context $StorageAccount.Context
-}
+    if(-not (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where-Object StorageAccountName -eq $StorageAccountName))
+    {
+        Write-Verbose "AutomatedLab lab source storage account '$StorageAccountName' does not exist. Creating it."
+        New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -Location (Get-LabAzureDefaultLocation) -Kind Storage -SkuName Standard_LRS | Out-Null
+    }
 
-Write-Verbose "Successfully selected storage account $StorageAccountName in $ResourceGroupName and created labsources share"
+    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
+    $alStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccount)
+    $alStorageAccount.StorageAccountKey = ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
-Write-LogFunctionExit
+    $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
+    if ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName -contains $StorageAccountName)
+    {
+        $existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -eq $StorageAccountName
+        if($existingGroup)
+        {
+            $i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
+            $script:Lab.AzureSettings.StorageAccounts[$i] = $alStorageAccount
+        }
+    }
+    else
+    {
+        $script:Lab.AzureSettings.StorageAccounts.Add($alStorageAccount)
+    }
+
+    if(-not (Get-AzureStorageShare -Name 'labsources' -Context $storageAccount.Context -ErrorAction SilentlyContinue))
+    {
+        Write-Verbose "AutomatedLab lab source file share 'labsources' does not exist. Creating it..."
+        New-AzureStorageShare -Name 'labsources' -Context $storageAccount.Context | Out-Null
+    }
+
+    Write-Verbose "Successfully selected storage account $StorageAccountName in $ResourceGroupName and created labsources share"
+
+    Write-LogFunctionExit
 }
 
 function Get-LabAzureLabSourcesStorage
 {
-# .ExternalHelp AutomatedLab.Help.xml
-[CmdletBinding()]
-param
-()
+    # .ExternalHelp AutomatedLab.Help.xml
+    [CmdletBinding()]
+    param
+    ()
 
-$StorageInfo = New-Object psobject
+    $StorageAccount = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.ResourceGroupName -eq $script:Lab.AzureSettings.LabSourcesResourceGroupName -and $_.StorageAccountName -eq $script:Lab.AzureSettings.LabSourcesStorageAccountName}
 
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
-$AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+    if(-not $StorageAccount)
+    {
+        $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName	
+        $StorageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
+    }
 
-$StorageInfo | Add-Member -MemberType NoteProperty -Name 'ResourceGroupName' -Value $script:Lab.AzureSettings.LabSourcesResourceGroupName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountName' -Value $script:Lab.AzureSettings.LabSourcesStorageAccountName -PassThru |
-Add-Member -MemberType NoteProperty -Name 'StorageAccountKey' -Value $AccountKey -PassThru |
-Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources"
 
-$StorageInfo
+    $StorageAccount |
+    Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources" -Force
+
+    $StorageAccount
 
 }
 
 function Remove-LabAzureLabSourcesStorage
 {
-# .ExternalHelp AutomatedLab.Help.xml
-[CmdletBinding()]
-param
-()
+    # .ExternalHelp AutomatedLab.Help.xml
+    [CmdletBinding()]
+    param
+    ()
 
-Remove-LabAzureResourceGroup -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Force
+    Remove-LabAzureResourceGroup -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Force
 }
 
 function Sync-LabAzureLabSources
 {
-# .ExternalHelp AutomatedLab.Help.xml
-[CmdletBinding()]
-param
-()
+    # .ExternalHelp AutomatedLab.Help.xml
+    [CmdletBinding()]
+    param
+    ()
 
-Write-LogFunctionExit
+    Write-LogFunctionExit
 
-# Retrieve storage context
-$StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
-$AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+    # Retrieve storage context
+    $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
+    $AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
-# Create the empty folders first
-foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
-{
-    $err = $Null
-	$FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+    Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
 
-	# Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-	$null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
-	Write-Verbose "Created directory $FolderName in labsources"
-    if($err)
+    # Create the empty folders first
+    foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
     {
-        if($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
+        $err = $Null
+        $FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+
+        # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
+        $null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
+        Write-Verbose "Created directory $FolderName in labsources"
+        if($err)
         {
-            throw "An error ocurred during file upload: $($err[0].Exception.Message)"
+            if($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
+            {
+                throw "An error ocurred during file upload: $($err[0].Exception.Message)"
+            }
         }
     }
-}
 
-# Sync the lab sources
-foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
-{
-	# Check if file is an OS ISO and skip
-	if($File.Extension -eq '.iso')
-	{
-		$IsoDefinition = Get-LabIsoImageDefinition | Where-Object {$_.Path -EQ $File.FullName -and $_.IsOperatingSystem}
+    # Sync the lab sources
+    foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
+    {
+        # Check if file is an OS ISO and skip
+        if($File.Extension -eq '.iso')
+        {
+            $IsoDefinition = Get-LabIsoImageDefinition | Where-Object {$_.Path -EQ $File.FullName -and $_.IsOperatingSystem}
 
-		if($IsoDefinition)
-		{
-			Write-Verbose "Skipping OS ISO $($File.FullName)"
-			continue
-		}
-	}
+            if($IsoDefinition)
+            {
+                Write-Verbose "Skipping OS ISO $($File.FullName)"
+                continue
+            }
+        }
 
-	$FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+        $FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
-	$AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-	if($AzureFile)
-	{
-		$AzureHash = $AzureFile.Properties.ContentMD5
-		$FileHash = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-		Write-Verbose "$FileName already exists in Azure. Source hash is $FileHash and Azure hash is $AzureHash"
-	}
+        $AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
+        if($AzureFile)
+        {
+            $AzureHash = $AzureFile.Properties.ContentMD5
+            $FileHash = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
+            Write-Verbose "$FileName already exists in Azure. Source hash is $FileHash and Azure hash is $AzureHash"
+        }
 
-	if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
-	{
-		$null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue
-		Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
-	}
+        if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
+        {
+            $null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue
+            Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
+        }
 
-	# Try to set the file hash
-	$UploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-	$UploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-	$ApiResponse = $UploadedFile.SetPropertiesAsync()
-	if(-not $ApiResponse.Status -eq "RanToCompletion")
-	{
-		Write-Warning "Could not generate MD5 hash for file $FileName. Status was $($ApiResponse.Status)"
-		continue
-	}
+        # Try to set the file hash
+        $UploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
+        $UploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
+        $ApiResponse = $UploadedFile.SetPropertiesAsync()
+        if(-not $ApiResponse.Status -eq "RanToCompletion")
+        {
+            Write-Warning "Could not generate MD5 hash for file $FileName. Status was $($ApiResponse.Status)"
+            continue
+        }
 
-	Write-Verbose "Azure file $FileName successfully uploaded and hash generated"
+        Write-Verbose "Azure file $FileName successfully uploaded and hash generated"
 
-	Write-LogFunctionExit
-}
+        Write-LogFunctionExit
+    }
 }

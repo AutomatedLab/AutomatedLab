@@ -130,6 +130,7 @@
                   <RegistryValue Value="Test" Type="string" KeyPath="yes" />
                 </RegistryKey>
 
+                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psd1" />
@@ -150,7 +151,8 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutmatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
@@ -204,7 +206,7 @@
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
 
-          <Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
+          <!--<Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
 
             <Component Id='DocumentationComponent' Guid='ec60d79b-cf47-457b-bfd8-b1e2c98e096a'>
 
@@ -225,7 +227,7 @@
 
             </Component>
 
-          </Directory>
+          </Directory>-->
 
           <Directory Id="SAMPLESDIR" Name="AutomatedLab Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
@@ -325,14 +327,15 @@
 
                 <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\01 Single Win10 Client.ps1' />
                 <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
-                <File Id='Sample_Intro03' Name='03 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 Single domain-joined server.ps1' />
-                <File Id='Sample_Intro04' Name='04 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1' />
-                <File Id='Sample_Intro05' Name='05 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro06' Name='06 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro07' Name='07 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1' />
-                <File Id='Sample_Intro08' Name='08 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1' />
-                <File Id='Sample_Intro09' Name='09 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1' />
-                <File Id='Sample_Intro10' Name='10 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 ISO Offline Patching.ps1' />
+                <File Id='Sample_Intro03' Name='03 PowerShell 5 on Windows 7.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1' />
+                <File Id='Sample_Intro04' Name='04 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server.ps1' />
+                <File Id='Sample_Intro05' Name='05 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1' />
+                <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro07' Name='07 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
+                <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
+                <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
+                <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="uninstall"/>
               </Component>
             </Directory>
@@ -362,9 +365,9 @@
       <Feature Id='LabSources' Title='Lab Sources' Description='Creates a folder structure that all samples scripts are based on and provides some lab preparation scripts.' Level='1' ConfigurableDirectory='LABSOURCESDIR'>
         <ComponentGroupRef Id='LabSourcesComponentGroup'/>
 
-        <Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
+        <!--<Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
           <ComponentRef Id='DocumentationComponent' />
-        </Feature>
+        </Feature>-->
 
         <Feature Id='Samples' Title='Sample Scripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
           <ComponentRef Id='SamplesComponent' />
@@ -1087,7 +1090,7 @@
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />
 
-    <CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />
+    <!--<CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />-->
   </Product>
 
   <Fragment>

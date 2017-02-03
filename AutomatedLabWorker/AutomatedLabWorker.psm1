@@ -316,11 +316,6 @@ function Install-LWSoftwarePackage
     }
     #endregion New-InstallProcess
 
-    if ($AsScheduledJob -and $PSVersionTable.PSVersion -lt '3.0')
-    {
-        throw 'The AsScheduledJob feature requires at least PowerShell V3'
-    }
-
     if (-not (Test-Path -Path $Path -PathType Leaf))
     {
         Write-Error "The file '$Path' could not found"
@@ -381,17 +376,42 @@ function Install-LWSoftwarePackage
 
     if ($AsScheduledJob)
     {
-        $jobName = "AL_$(New-Guid)"
+        $jobName = "AL_$([guid]::NewGuid())"
         Write-Verbose "In the AsScheduledJob mode, creating scheduled job named '$jobName'"
-        $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
-        Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
-        
-        while (-not $job)
+            
+        if ($PSVersionTable.PSVersion -lt '3.0')
         {
-            $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
-        }        
-        $job | Wait-Job | Out-Null
-        $result = $job | Receive-Job
+            $processName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+            $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
+            SCHTASKS /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine" /RU "SYSTEM" | Out-Null
+            while (-not ($p))
+            {
+                Start-Sleep -Milliseconds 200
+                $p = Get-Process -Name $processName -ErrorAction SilentlyContinue
+            }
+
+            $p.WaitForExit()
+            Write-Verbose -Message 'Process exited. Reading output'
+
+            $params = @{ Process = $p }
+            $params.Add('Output', "Output cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            $params.Add('Error', "Errors cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            New-Object -TypeName PSObject -Property $params
+
+            
+        }
+        else
+        {
+            $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
+            Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
+            
+            while (-not $job)
+            {
+                $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+            }        
+            $job | Wait-Job | Out-Null
+            $result = $job | Receive-Job
+        }
     }
     else
     {
@@ -402,8 +422,15 @@ function Install-LWSoftwarePackage
     
     if ($AsScheduledJob)
     {
-        Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
-        $scheduledJob | Unregister-ScheduledJob
+        if ($PSVersionTable.PSVersion -lt '3.0')
+        {
+            schtasks.exe /DELETE /TN $jobName /F | Out-Null
+        }
+        else
+        {
+            Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
+            $scheduledJob | Unregister-ScheduledJob
+        }
     }
 
     if ($installationMethod -eq '.msu')

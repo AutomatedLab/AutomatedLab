@@ -3,7 +3,7 @@
     ModuleToProcess = 'AutomatedLab.psm1'
     
     # Version number of this module.
-    ModuleVersion = '3.9.0.2'
+    ModuleVersion = '3.9.0.5'
     
     # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
@@ -39,7 +39,7 @@
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
     # Format files (.ps1xml) to be loaded when importing this module
-    FormatsToProcess = @('AutmatedLab.format.ps1xml')
+    FormatsToProcess = @('AutomatedLab.format.ps1xml')
     
     # Modules to import as nested modules of the module specified in ModuleToProcess
     NestedModules = @(
@@ -209,7 +209,8 @@
 		'New-LabAzureLabSourcesStorage',
 		'Get-LabAzureLabSourcesStorage',
 		'Remove-LabAzureLabSourcesStorage',
-		'Sync-LabAzureLabSources'
+		'Sync-LabAzureLabSources',
+		'Remove-LabAzureResourceGroup'
     
     # List of all modules packaged with this module
     ModuleList = @(

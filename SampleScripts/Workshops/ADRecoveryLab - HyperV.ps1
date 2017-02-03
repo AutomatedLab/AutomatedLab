@@ -60,8 +60,7 @@ Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DnsServer1 192
 Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 `
     -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles DC
 
-#Now the actual work begins. First the virtual network adapter is created and then the base images per OS
-#All VMs are diffs from the base.
+#Now the actual work begins
 Install-Lab
 
 #Installs RSAT on ContosoMember1 if the optional machine is part of the lab

@@ -3,7 +3,7 @@
 	RootModule = 'AutomatedLabWorker.psm1'
 	
 	# Version number of this module.
-	ModuleVersion = '3.9.0.2'
+	ModuleVersion = '3.9.0.5'
 	
 	# ID used to uniquely identify this module
 	GUID = '3addac35-cd7a-4bd2-82f5-ab9c83a48246'
