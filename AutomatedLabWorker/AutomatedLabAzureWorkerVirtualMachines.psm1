@@ -523,9 +523,9 @@ function Initialize-LWAzureVM
 		$sharePassword = ($MachineSettings."$computerName")[5]
 		$sharePath = ($MachineSettings."$computerName")[3]
 
-		$null = Start-Process cmdkey -ArgumentList "/add:$($sharePath -replace '\\\\','' -replace '\\labsources','') /user:$shareUser /pass:$sharePassword" -Wait
+		cmdkey /add:$($sharePath -replace '\\\\','' -replace '\\labsources','') /user:$shareUser /pass:$sharePassword
 		Start-Sleep -Milliseconds 500
-		$null = Start-Process net -ArgumentList "use * $sharePath /persistent:yes /user:$shareUser $sharePassword" -Wait
+		net use * $sharePath /persistent:yes /user:$shareUser $sharePassword
 
         #set the time zone
         $timezone = ($MachineSettings."$computerName")[1]
@@ -545,6 +545,14 @@ function Initialize-LWAzureVM
         #netsh.exe advfirewall set domain state off
         #netsh.exe advfirewall set private state off
         #netsh.exe advfirewall set public state off
+		
+		if(($MachineSettings."$computerName")[6])
+		{
+			$DnsServers = ($MachineSettings."$computerName")[6]
+			Write-Verbose "Configuring $($DnsServers.Count) DNS Servers"
+			$idx = (Get-NetIPInterface | Where-object {$_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*"}).ifIndex
+			Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
+		}
         
         $disks = ($MachineSettings."$computerName")[2]
         Write-Verbose -Message "Disk count for $computerName`: $disks"
@@ -754,9 +762,11 @@ function Initialize-LWAzureVM
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     $machineSettings = @{}
+	$lab = Get-Lab
     foreach ($m in $Machine)
     {
-        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count), (Get-LabAzureLabSourcesStorage).Path, (Get-LabAzureLabSourcesStorage).StorageAccountName, (Get-LabAzureLabSourcesStorage).StorageAccountKey))
+		[string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
+        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count), (Get-LabAzureLabSourcesStorage).Path, (Get-LabAzureLabSourcesStorage).StorageAccountName, (Get-LabAzureLabSourcesStorage).StorageAccountKey, $DnsServers))
     }
     $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
@@ -1011,7 +1021,7 @@ function Wait-LWAzureRestartVM
     Write-Verbose -Message "Starting monitoring the servers at '$start'"
 	
     $machines = Get-LabMachine -ComputerName $ComputerName
-	
+		
     $cmd = {
         param (
             [datetime]$Start
