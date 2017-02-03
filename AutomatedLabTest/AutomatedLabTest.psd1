@@ -1,5 +1,5 @@
 @{
-	ModuleToProcess = 'AutomatedLabTest.psm1'
+	RootModule = 'AutomatedLabTest.psm1'
 	
 	ModuleVersion = '3.8.0.1'
 	
