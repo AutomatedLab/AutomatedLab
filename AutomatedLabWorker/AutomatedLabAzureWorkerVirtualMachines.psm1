@@ -521,9 +521,11 @@ function Initialize-LWAzureVM
 		# Map the Azure lab source drive
 		$shareUser = ($MachineSettings."$computerName")[4]
 		$sharePassword = ($MachineSettings."$computerName")[5]
+		$shareCredential = New-Object pscredential($shareUser, (ConvertTo-SecureString -String $sharePassword -AsPlainText -Force))
 		$sharePath = ($MachineSettings."$computerName")[3]
 
-		cmdkey /add:$($sharePath -replace '\\\\','' -replace '\\labsources','') /user:$shareUser /pass:$sharePassword
+		New-PSDrive -Name y -PSProvider FileSystem -Root $sharePath -Persist -Credential $shareCredential
+
 		Start-Sleep -Milliseconds 500
 		net use * $sharePath /persistent:yes /user:$shareUser $sharePassword
 
@@ -766,7 +768,16 @@ function Initialize-LWAzureVM
     foreach ($m in $Machine)
     {
 		[string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
-        $machineSettings.Add($m.Name.ToUpper(), @($m.UserLocale, $m.TimeZone, [int]($m.Disks.Count), (Get-LabAzureLabSourcesStorage).Path, (Get-LabAzureLabSourcesStorage).StorageAccountName, (Get-LabAzureLabSourcesStorage).StorageAccountKey, $DnsServers))
+        $machineSettings.Add($m.Name.ToUpper(), 
+			@(
+			$m.UserLocale,
+			$m.TimeZone,
+			[int]($m.Disks.Count),
+			(Get-LabAzureLabSourcesStorage).Path,
+			(Get-LabAzureLabSourcesStorage).StorageAccountName,
+			(Get-LabAzureLabSourcesStorage).StorageAccountKey,
+			$DnsServers,
+			$Machine.GetLocalCredential()))
     }
     $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
