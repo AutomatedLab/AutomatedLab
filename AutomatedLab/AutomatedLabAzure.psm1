@@ -220,22 +220,43 @@ function Add-LabAzureSubscription
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
-    # Add LabSources storage
-    New-LabAzureLabSourcesStorage
 
-    $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+	$script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
+
+	# Add LabSources storage
+	New-LabAzureLabSourcesStorage
+
+    $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
 	
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
-    if ($global:cacheVmImages)
+	# Read cache
+	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+
+    try
+    {
+        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+        $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
+        Write-Verbose "Read $($global:cacheVmImages.Count) OS images from the cache"
+    }
+    catch
+    {
+        Write-Verbose 'Could not read OS image info from the cache'
+    }
+
+    if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
     {
         Write-ScreenInfo -Message 'Querying available operating system images (using cache)' -Type Info
         $vmImages = $global:cacheVmImages
     }
     else
     {
+		if($global:cacheVmImages)
+		{
+			Write-Verbose ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) ,$global:cacheVmImages.TimeStamp)
+		}
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
         
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
@@ -266,8 +287,26 @@ function Add-LabAzureSubscription
 
         $global:cacheVmImages = $vmImages
     }
+	
+	$osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
+	$script:lab.AzureSettings.VmImages = New-Object $osImageListType
+	
+	# Cache all images
+	if($vmImages)
+	{		
+		$osImageList = New-Object $osImageListType
+		
 
-    $script:lab.AzureSettings.VmImages = [AutomatedLab.Azure.AzureOSImage]::Create($vmImages)
+		foreach($vmImage in $vmImages)
+		{
+			$osImageList.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))			
+            $script:lab.AzureSettings.VmImages.Add([AutomatedLab.Azure.AzureOSImage]::Create($vmImage))
+		}
+
+		$osImageList.Timestamp = Get-Date
+		$osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+	}
+
     Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
     $vms = Get-AzureRmVM -WarningAction SilentlyContinue
@@ -928,20 +967,21 @@ function New-LabAzureLabSourcesStorage
     $alStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccount)
     $alStorageAccount.StorageAccountKey = ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
-    $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
-    if ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName -contains $StorageAccountName)
-    {
-        $existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -eq $StorageAccountName
-        if($existingGroup)
-        {
-            $i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
-            $script:Lab.AzureSettings.StorageAccounts[$i] = $alStorageAccount
-        }
-    }
-    else
-    {
-        $script:Lab.AzureSettings.StorageAccounts.Add($alStorageAccount)
-    }
+
+$script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
+if($script:Lab.AzureSettings.StorageAccounts -and ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+{
+	$existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
+	if($existingGroup)
+	{
+		$i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
+		$script:Lab.AzureSettings.StorageAccounts[$i] = $ALStorageAccount
+	}
+}
+else
+{
+	$script:Lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
+}
 
     if(-not (Get-AzureStorageShare -Name 'labsources' -Context $storageAccount.Context -ErrorAction SilentlyContinue))
     {
@@ -989,10 +1029,14 @@ function Remove-LabAzureLabSourcesStorage
 
 function Sync-LabAzureLabSources
 {
-    # .ExternalHelp AutomatedLab.Help.xml
-    [CmdletBinding()]
-    param
-    ()
+
+# .ExternalHelp AutomatedLab.Help.xml
+[CmdletBinding()]
+param
+(
+	[switch]$SkipIsos,
+	[int]$MaxFileSizeInMb
+)
 
     Write-LogFunctionExit
 
@@ -1002,8 +1046,22 @@ function Sync-LabAzureLabSources
 
     Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
 
-    # Create the empty folders first
-    foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
+
+# Create the empty folders first
+foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
+{
+	if($SkipIsos -and $Folder.Name -eq 'Isos')
+	{
+		continue
+	}
+
+    $err = $Null
+	$FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+
+	# Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
+	$null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
+	Write-Verbose "Created directory $FolderName in labsources"
+    if($err)
     {
         $err = $Null
         $FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
@@ -1020,49 +1078,62 @@ function Sync-LabAzureLabSources
         }
     }
 
-    # Sync the lab sources
-    foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
-    {
-        # Check if file is an OS ISO and skip
-        if($File.Extension -eq '.iso')
-        {
-            $IsoDefinition = Get-LabIsoImageDefinition | Where-Object {$_.Path -EQ $File.FullName -and $_.IsOperatingSystem}
 
-            if($IsoDefinition)
-            {
-                Write-Verbose "Skipping OS ISO $($File.FullName)"
-                continue
-            }
-        }
+# Sync the lab sources
+foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
+{
+	if($SkipIsos -and $File.Directory.Name -eq 'Isos')
+	{
+		Write-Verbose "SkipIsos is true, skipping $($File.Name)"
+		continue
+	}
 
-        $FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+	if($MaxFileSizeInMb -and $File.Length/1MB -ge $MaxFileSizeInMb)
+	{
+		Write-Verbose "MaxFileSize is $MaxFileSizeInMb mb, skipping $($File.Name)"
+		continue
+	}
 
-        $AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-        if($AzureFile)
-        {
-            $AzureHash = $AzureFile.Properties.ContentMD5
-            $FileHash = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-            Write-Verbose "$FileName already exists in Azure. Source hash is $FileHash and Azure hash is $AzureHash"
-        }
+	# Check if file is an OS ISO and skip
+	if($File.Extension -eq '.iso')
+	{
+		$IsoDefinition = Get-LabIsoImageDefinition | Where-Object {$_.Path -EQ $File.FullName -and $_.IsOperatingSystem}
 
-        if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
-        {
-            $null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue
-            Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
-        }
+		if($IsoDefinition)
+		{
+			Write-Verbose "Skipping OS ISO $($File.FullName)"
+			continue
+		}
+	}
 
-        # Try to set the file hash
-        $UploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-        $UploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-        $ApiResponse = $UploadedFile.SetPropertiesAsync()
-        if(-not $ApiResponse.Status -eq "RanToCompletion")
-        {
-            Write-Warning "Could not generate MD5 hash for file $FileName. Status was $($ApiResponse.Status)"
-            continue
-        }
+	$FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
-        Write-Verbose "Azure file $FileName successfully uploaded and hash generated"
+	$AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
+	if($AzureFile)
+	{
+		$AzureHash = $AzureFile.Properties.ContentMD5
+		$FileHash = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
+		Write-Verbose "$FileName already exists in Azure. Source hash is $FileHash and Azure hash is $AzureHash"
+	}
 
-        Write-LogFunctionExit
-    }
+	if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
+	{
+		$null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue -Force
+		Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
+	}
+
+	# Try to set the file hash
+	$UploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
+	$UploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
+	$ApiResponse = $UploadedFile.SetPropertiesAsync()
+	if(-not $ApiResponse.Status -eq "RanToCompletion")
+	{
+		Write-Warning "Could not generate MD5 hash for file $FileName. Status was $($ApiResponse.Status)"
+		continue
+	}
+
+	Write-Verbose "Azure file $FileName successfully uploaded and hash generated"
+
+	Write-LogFunctionExit
+}
 }
