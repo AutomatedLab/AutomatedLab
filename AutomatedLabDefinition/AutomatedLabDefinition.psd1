@@ -1,38 +1,38 @@
 ﻿@{
     RootModule = 'AutomatedLabDefinition.psm1'
-	
-    ModuleVersion = '3.9.0.6'
-	
+    
+    ModuleVersion = '3.9.1.0'
+    
     GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
-	
+    
     Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
-	
+    
     CompanyName = 'AutomatedLab Team'
-	
+    
     Copyright = '2016'
-	
+    
     Description = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
-	
+    
     PowerShellVersion = '4.0'
-	
+    
     DotNetFrameworkVersion = '4.0'
-	
+    
     ScriptsToProcess = @('AutomatedLabDefinition.init.ps1')
-	
+    
     NestedModules = @('AutomatedLabDefinitionNetwork.psm1')
-	
+    
     FileList = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
-	
-	RequiredModules = @(
-		'AutomatedLabUnattended'
-		'PSLog'
-	)
+    
+    RequiredModules = @(
+        'AutomatedLabUnattended'
+        'PSLog'
+    )
 
     PrivateData = @{
         LabFileName = 'Lab.xml'
         MachineFileName = 'Machines.xml'
         DiskFileName = 'Disks.xml'
-		
+        
         MemoryWeight_RootDC = 1
         MemoryWeight_FirstChildDC = 1
         MemoryWeight_DC = 1
@@ -55,17 +55,17 @@
             ValidRoleProperties = @{
                 ADFS = 'DisplayName', 'ServiceName', 'ServicePassword'
 
-				CaRoot = 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
-				CaSubordinate = 'ParentCA', 'ParentCALogicalName', 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
+                CaRoot = 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
+                CaSubordinate = 'ParentCA', 'ParentCALogicalName', 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
 
                 RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet'
                 FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet'
-				DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
+                DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
 
-				Exchange2013 = 'OrganizationName'
-				Exchange2016 = 'OrganizationName'
+                Exchange2013 = 'OrganizationName'
+                Exchange2016 = 'OrganizationName'
 
-				Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
+                Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
             }
 
             MandatoryRoleProperties = @{
