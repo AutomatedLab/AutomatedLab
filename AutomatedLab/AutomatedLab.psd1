@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '3.9.0.6'
+    ModuleVersion = '3.9.1.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -200,6 +200,8 @@
         'Get-LabAzureLabSourcesStorage',
         'Remove-LabAzureLabSourcesStorage',
         'Sync-LabAzureLabSources',
+        'Test-LabSourcesOnAzureStorage',
+        'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup'
     )
     
