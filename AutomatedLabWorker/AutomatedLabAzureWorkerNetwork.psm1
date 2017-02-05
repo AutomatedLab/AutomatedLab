@@ -10,23 +10,23 @@ function New-LWAzureNetworkSwitch
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork,
-		
+        
         [switch]$PassThru
     )
-	
+    
     Write-LogFunctionEntry
 
     $lab = Get-Lab
     $jobs = @()
-	
+    
     foreach ($network in $VirtualNetwork)
     {
 
-		if(Get-LWAzureNetworkSwitch -VirtualNetwork $network)
-		{
-			Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
-			continue
-		}
+        if(Get-LWAzureNetworkSwitch -VirtualNetwork $network)
+        {
+            Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
+            continue
+        }
         Write-ScreenInfo -Message "Creating Azure virtual network '$($network.Name)'" -TaskStart
              
         $azureNetworkParameters = @{
@@ -39,8 +39,13 @@ function New-LWAzureNetworkSwitch
                 AutomatedLab = $script:lab.Name
                 CreationTime = Get-Date	
             }
-        }		
-		
+        }
+        
+        if ($network.DnsServers)
+        {
+            $azureNetworkParameters.Add('DnsServer', $network.DnsServers)
+        }
+        
         $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
             param
             (
@@ -50,7 +55,7 @@ function New-LWAzureNetworkSwitch
                 $Subnets,
                 $Network
             )
-			
+            
             Select-AzureRmProfile -Path $ProfilePath
             Set-AzureRmContext -SubscriptionName $Subscription
 
@@ -72,7 +77,7 @@ function New-LWAzureNetworkSwitch
             {
                 $azureNetworkParameters.Add('Subnet',$azureSubnets)
             }
-			
+            
             $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
         } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $azureNetworkParameters, $network.Subnets,$network
     }
@@ -128,7 +133,7 @@ function New-LWAzureNetworkSwitch
             }			
         }
     }    
-	
+    
     Write-LogFunctionExit
 }
 #endregion New-LWNetworkSwitch
@@ -139,26 +144,26 @@ function Remove-LWAzureNetworkSwitch
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
     )
-	
+    
     Write-LogFunctionEntry
 
     $lab = Get-Lab
-	
+    
     Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning
-	
+    
     foreach ($network in $VirtualNetwork)
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
-		
+        
         $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Select-AzureRmProfile -Path $($lab.AzureSettings.AzureProfilePath);Select-AzureRmSubscription -SubscriptionName $($lab.AzureSettings.DefaultSubscription.SubscriptionName); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
         Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
     }
     $jobs = Get-Job -Name RemoveAzureVNet*
     Write-Verbose "Waiting on the removal of $($jobs.Count)"
     $jobs | Wait-Job | Out-Null
-	
+    
     Write-Verbose "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
-	
+    
     Write-LogFunctionExit
 }
 #endregion Remove-LWNetworkSwitch
@@ -168,12 +173,12 @@ function Get-LWAzureNetworkSwitch
 {
 param
 (
-	[Parameter(Mandatory)]
+    [Parameter(Mandatory)]
     [AutomatedLab.VirtualNetwork[]]$virtualNetwork
 )
-	$lab = Get-Lab
+    $lab = Get-Lab
     $jobs = @()
-	
+    
     foreach ($network in $VirtualNetwork)
     {
         Write-ScreenInfo -Message "Locating Azure virtual network '$($network.Name)'" -TaskStart
@@ -183,8 +188,8 @@ param
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
             ErrorAction = 'SilentlyContinue'
         }
-		
-		Get-AzureRmVirtualNetwork @azureNetworkParameters
-	}
+        
+        Get-AzureRmVirtualNetwork @azureNetworkParameters
+    }
 }
 #endregion

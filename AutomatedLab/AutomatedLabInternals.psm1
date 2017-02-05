@@ -1706,12 +1706,12 @@ function Get-LabInternetFile
             {
                 Write-Verbose 'Responce received'
                 $remoteStream = $response.GetResponseStream()
- 
+ 
                 $localStream = [System.IO.File]::Create($Path)
- 
+ 
                 $buffer = New-Object System.Byte[] 1024
                 $bytesRead = 0
- 
+ 
                 do
                 {
                     Write-Verbose '.'
@@ -1764,17 +1764,17 @@ function Unblock-LabSources
 
     Write-LogFunctionEntry
 
-	$lab = Get-Lab -ErrorAction SilentlyContinue
-	if(-not $lab)
-	{
-		$lab = Get-LabDefinition -ErrorAction SilentlyContinue
-	}
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+    if(-not $lab)
+    {
+        $lab = Get-LabDefinition -ErrorAction SilentlyContinue
+    }
 
-	if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
-	{
-		Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
-		return
-	}
+    if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
+    {
+        Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
+        return
+    }
 
     if (-not (Test-Path -Path $Path))
     {
