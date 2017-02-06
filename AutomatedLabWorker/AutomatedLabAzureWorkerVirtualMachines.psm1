@@ -33,7 +33,7 @@ function New-LWAzureVM
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
 
-    if(Get-AzureRmVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
+    if (Get-AzureRmVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue -WarningAction SilentlyContinue)
     {
         Write-Verbose -Message "Target machine $($Machine.Name) already exists. Skipping..."
         return
@@ -768,7 +768,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
     
     # This is ugly and will likely change in one of the next AzureRM module updates. PowerState is indeed a string literal instead of an Enum
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
     if (-not $azureVms)
     {
         throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
@@ -1000,7 +1000,7 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
     if (-not $azureVms)
     {
         throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
@@ -1040,7 +1040,7 @@ function Get-LWAzureVMConnectionInfo
     
     Write-LogFunctionEntry
 
-    $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName
+    $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureDefaultResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName
     
     foreach ($name in $ComputerName)
     {
