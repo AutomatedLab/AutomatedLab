@@ -804,22 +804,6 @@ function Get-LabHyperVAvailableMemory
 }
 #endregion Get-LabHyperVAvailableMemory
 
-#region Write-ProgressIndicator
-function Write-ProgressIndicator
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    Write-ScreenInfo -Message '.' -NoNewline
-}
-#endregion Write-ProgressIndicator
-
-#region Write-ProgressIndicatorEnd
-function Write-ProgressIndicatorEnd
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    Write-ScreenInfo -Message '.'
-}
-#endregion Write-ProgressIndicatorEnd
-
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
@@ -828,137 +812,6 @@ function Reset-AutomatedLab
     Remove-Module *
 }
 #endregion Reset-AutomatedLab
-
-#region Write-ScreenInfo
-function Write-ScreenInfo
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    param
-    (
-        [Parameter(Mandatory, Position = 1)]
-        [string[]]$Message,
-        
-        [Parameter(Position = 2)]
-        [timespan]$TimeDelta,
-        
-        [Parameter(Position = 3)]
-        [timespan]$TimeDelta2,
-        
-        [ValidateSet('Error', 'Warning', 'Info', 'Verbose', 'Debug')]
-        [string]$Type = 'Info',
-        
-        [switch]$NoNewLine,
-        
-        [int]$Indent,
-        
-        [switch]$DeployStart,
-        
-        [switch]$TaskStart,
-        
-        [switch]$TaskEnd
-    )
-    
-    if ($DeployStart)
-    {
-        $Global:scriptStart = (Get-Date)
-    }
-    if (-not $Global:taskStart)
-    {
-        [datetime[]]$Global:taskStart = @()
-        $Global:taskStart += (Get-Date)
-    }
-    elseif ($TaskStart)
-    {
-        $Global:taskStart += (Get-Date)
-    }
-    elseif ($TaskEnd)
-    {
-        $TimeDelta2 = ((Get-Date) - $Global:taskStart[-1])
-        
-        $newSize = ($Global:taskStart).Length-1
-        if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length-1)
-    }
-    
-    
-    if (-not $TimeDelta -and $Global:scriptStart)  { [timespan]$TimeDelta  = (Get-Date) - $Global:scriptStart }
-    if (-not $TimeDelta2 -and $Global:taskStart[-1]) { [timespan]$TimeDelta2 = (Get-Date) - $Global:taskStart[-1] }
-    
-    $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f ($TimeDelta.Hours), ($TimeDelta.Minutes), ($TimeDelta.Seconds)
-    $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f ($TimeDelta2.Hours), ($TimeDelta2.Minutes), ($TimeDelta2.Seconds), ($TimeDelta2.Milliseconds)
-    
-    $TimeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f ((Get-Date).Hour), ((Get-Date).Minute), ((Get-Date).Second)
-    
-    if ($NoNewLine)
-    {
-        if ($Global:labDeploymentNoNewLine)
-        {
-            switch ($Type)
-            {
-                Error   { Write-Host $message -NoNewline -ForegroundColor Red}
-                Warning { Write-Host $message -NoNewline -ForegroundColor DarkYellow }
-                Info    { Write-Host $message -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
-            }
-        }
-        else
-        {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
-
-            switch ($Type)
-            {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
-            }
-
-        }
-        $Global:labDeploymentNoNewLine = $True
-    }
-    else
-    {
-        if ($Global:labDeploymentNoNewLine)
-        {
-            switch ($Type)
-            {
-                Error   { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red } }
-                Warning { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow } }
-                Info    { $Message | ForEach-Object { Write-Host $_ } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
-                Debug   { if ($DebugPreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
-            }
-        }
-        else
-        {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
-            switch ($Type)
-            {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
-            }
-        }
-        $Global:labDeploymentNoNewLine = $False
-    }
-
-    if ($TaskStart)
-    {
-        $Global:indent++
-    }
-    
-    if ($TaskEnd)
-    {
-        $Global:indent--
-        if ($Global:indent -lt 0) { $Global:indent = 0 }
-    }
-    
-}
-#endregion function Write-ScreenInfo
 
 #region Save-Hashes
 function Save-Hashes
@@ -1373,8 +1226,8 @@ function Test-Port
 
         [int]$Delay = 500,
         
-        [int]$TcpTimeout=1000,
-        [int]$UdpTimeout=1000,
+        [int]$TcpTimeout = 1000,
+        [int]$UdpTimeout = 1000,
         [switch]$Tcp,
         [switch]$Udp
     )
