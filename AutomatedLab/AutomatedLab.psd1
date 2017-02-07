@@ -199,6 +199,7 @@
         'New-LabAzureLabSourcesStorage',
         'Get-LabAzureLabSourcesStorage',
         'Remove-LabAzureLabSourcesStorage',
+        'Test-LabAzureLabSourcesStorage',
         'Sync-LabAzureLabSources',
         'Test-LabSourcesOnAzureStorage',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
