@@ -80,7 +80,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabPostInstallActivity -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -UseCredSsp -ScriptBlock {
+Invoke-LabPostInstallActivity -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 

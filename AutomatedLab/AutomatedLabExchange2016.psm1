@@ -89,7 +89,7 @@ function Start-ExchangeInstallSequence
     Write-ScreenInfo -Message $Activity -TaskStart -NoNewLine
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
     }
     catch
@@ -99,14 +99,14 @@ function Start-ExchangeInstallSequence
             Restart-LabVM -ComputerName $ComputerName
             try
             {
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
             }
             catch
             {
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -UseCredSsp -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                     $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
                 }
             }
@@ -185,7 +185,7 @@ function Install-LabExchange2016
 
                 Add-ADGroupMember -Identity 'Schema Admins' -Members $user
                 Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user
-            } -ArgumentList $userName, $dc.FQDN -UseCredSsp
+            } -ArgumentList $userName, $dc.FQDN
         }
     }
     #endregion
@@ -259,7 +259,7 @@ function Install-LabExchange2016
         
         Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$machine'" -TaskEnd
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Install-LabExchange2016

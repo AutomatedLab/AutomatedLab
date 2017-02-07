@@ -97,7 +97,7 @@ if (-not (Test-Path -Path $labSources\SoftwarePackages\ProGetSetup.exe))
     Invoke-WebRequest -Uri $proGetLink -OutFile $installPath
 }
 
-Install-LabSoftwarePackage -ComputerName $webServer -Path $installPath -CommandLine $installArgs -UseCredSsp
+Install-LabSoftwarePackage -ComputerName $webServer -Path $installPath -CommandLine $installArgs
 
 $sqlQuery = @'
 USE [ProGet]
@@ -118,31 +118,31 @@ GO
 DECLARE @roleId int
 
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles] 
-	WHERE [Role_Name] = 'Administer'
+    FROM [ProGet].[dbo].[Roles] 
+    WHERE [Role_Name] = 'Administer'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
+    VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Domain Users the 'Publish Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles] 
-	WHERE [Role_Name] = 'Publish Packages'
+    FROM [ProGet].[dbo].[Roles] 
+    WHERE [Role_Name] = 'Publish Packages'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
+    VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Anonymous access the 'View & Download Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles]
-	WHERE [Role_Name] = 'View & Download Packages'
+    FROM [ProGet].[dbo].[Roles]
+    WHERE [Role_Name] = 'View & Download Packages'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
+    VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
 
 --INSERT INTO [ProGet].[dbo].[Configuration] 
@@ -150,14 +150,14 @@ GO
 
 -- Change user directory to 'Active Directory with Multiple Domains user directory'
 UPDATE [ProGet].[dbo].[Configuration]
-	SET [Value_Text] = 3
-	WHERE [Key_Name] = 'Web.UserDirectoryId'
+    SET [Value_Text] = 3
+    WHERE [Key_Name] = 'Web.UserDirectoryId'
 GO
 
 -- remove the connector to the public PowerShell Gallery on the default feed
 DELETE FROM [ProGet].[dbo].[FeedConnectors] WHERE [Feed_Id] = (SELECT [Feed_Id]
-	FROM [ProGet].[dbo].[Feeds]
-	WHERE [ProGet].[dbo].[Feeds].[Feed_Name] = 'Default')
+    FROM [ProGet].[dbo].[Feeds]
+    WHERE [ProGet].[dbo].[Feeds].[Feed_Name] = 'Default')
 GO
 '@ -f $webServer, $webServer.DomainName, $flatDomainName
 
@@ -168,7 +168,7 @@ Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -Script
     #for some reason the user is added to the ProGet database when this is only invoked once
     Invoke-Sqlcmd -Query (Get-Content C:\ProGetQuery.sql -Raw)
     Invoke-Sqlcmd -Query (Get-Content C:\ProGetQuery.sql -Raw)
-} -UseCredSsp -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
+} -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
 
 Write-Host "Restarting '$webServer'"
 Restart-LabVM -ComputerName $webServer -Wait
@@ -227,5 +227,5 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName $client -Scri
     (New-ScriptFileInfo -Path C:\SomeScript2.ps1 -Version 1.0 -Author Me -Description Test -PassThru -Force) + 'Get-Date' | Out-File C:\SomeScript.ps1
     Publish-Script -Path C:\SomeScript.ps1 -Repository Internal -NuGetApiKey 'Install@Contoso.com:Somepass1'
 
-} -ArgumentList $webServer -UseCredSsp
+} -ArgumentList $webServer
 #endregion ProGet Installation

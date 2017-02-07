@@ -1215,7 +1215,7 @@ function Enable-LWHypervVMRemoting
         $cred = $machine.GetCredential((Get-Lab))
         try
         {
-            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -NoDisplay -ScriptBlock $script `
+            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay  `
             -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
         }
         catch

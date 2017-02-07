@@ -2672,7 +2672,7 @@ function Get-LabPostInstallationActivity
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [string]$ScriptFilePath,
         
-        [switch]$UseCredSsp
+        [switch]$DoNotUseCredSsp
     )
     
     Write-LogFunctionEntry
@@ -2705,7 +2705,7 @@ function Get-LabPostInstallationActivity
         }
     }
     
-    $activity.UseCredSsp = $UseCredSsp
+    $activity.DoNotUseCredSsp = $DoNotUseCredSsp
     
     Write-LogFunctionExit -ReturnValue $activity
     return $activity

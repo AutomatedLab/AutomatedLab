@@ -230,7 +230,6 @@ GO
                 
                 $param = @{}
                 $param.Add('ComputerName', $machine)
-                $param.Add('UseCredSSP', $true)
                 $param.Add('ActivityName', 'Install SQL Server')
                 $param.Add('AsJob', $True)
                 $param.Add('PassThru', $True)

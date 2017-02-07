@@ -226,7 +226,7 @@ $exchangeSetupCmd = {
 
 function Copy-LabExchangeInstallationFiles
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [AutomatedLab.Machine]$Machine
@@ -283,10 +283,10 @@ function Copy-LabExchangeInstallationFiles
 #region Install-LabExchange2013
 function Install-LabExchange2013
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
-	
+    
     #$start = Get-Date
 
     Write-LogFunctionEntry
@@ -328,7 +328,7 @@ function Install-LabExchange2013
 
                 Add-ADGroupMember -Identity 'Schema Admins' -Members $user
                 Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user
-            } -ArgumentList $userName, $dc.FQDN -UseCredSsp
+            } -ArgumentList $userName, $dc.FQDN
 
             if ($rootDc.HostType -eq 'HyperV')
             {
@@ -395,7 +395,7 @@ function Install-LabExchange2013
 
         # PREPARE SCHEMA
         Write-ScreenInfo -Message 'Performing Exchange Schema Update' -NoNewLine
-        $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName 'Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -UseCredSsp -PassThru -NoDisplay -AsJob
+        $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName 'Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -PassThru -NoDisplay -AsJob
         $result = Wait-LwLabJob -Job $exchangeSchemaUpdateJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
             
         if ($result.InstallStatus -eq 'RebootRequired')
@@ -403,7 +403,7 @@ function Install-LabExchange2013
             Write-ScreenInfo -Message "Restarting '$prepMachine' before updating the schema"
             Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
             Write-ScreenInfo -Message 'Restarting Exchange Schema Update'
-            $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName '(Re)Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -UseCredSsp -PassThru -NoDisplay -AsJob
+            $exchangeSchemaUpdateJob = Invoke-LabCommand -ActivityName '(Re)Performing Exchange Schema Update' -ComputerName $prepMachine -ScriptBlock $exchangeSchemaUpdateCmd -PassThru -NoDisplay -AsJob
             $result = Wait-LwLabJob -Job $exchangeSchemaUpdateJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
         }
         
@@ -420,7 +420,7 @@ function Install-LabExchange2013
         # PREPARE AD
         Write-ScreenInfo -Message 'Performing Exchange AD Prep' -NoNewLine
         $exchangeADPrepJob = Invoke-LabCommand -ActivityName 'Performing Exchange AD Prep' -ComputerName $prepMachine -ScriptBlock $exchangePrepareADCmd `
-        -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
+        -ArgumentList $exchangeOrganization -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
         $result = Wait-LwLabJob -Job $exchangeADPrepJob -ReturnResults -ProgressIndicator 30 -NoDisplay -ErrorAction SilentlyContinue
 
         if ($result.InstallStatus -eq 'RebootRequired')
@@ -429,7 +429,7 @@ function Install-LabExchange2013
             Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
             Write-ScreenInfo -Message 'Restarting Exchange AD Prep'
             $exchangeADPrepJob = Invoke-LabCommand -ActivityName 'Restarting Exchange AD Prep' -ComputerName $prepMachine -ScriptBlock $exchangePrepareADCmd `
-            -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
+            -ArgumentList $exchangeOrganization -PassThru -NoDisplay -AsJob -ErrorAction SilentlyContinue
             $result = Wait-LwLabJob -Job $exchangeADPrepJob -ProgressIndicator 30 -NoDisplay -ReturnResults -ErrorAction SilentlyContinue
         }
         
@@ -445,8 +445,7 @@ function Install-LabExchange2013
         
         #PREPARE ALL DOMAINS
         Write-ScreenInfo -Message 'Preparing All Domains' -NoNewLine
-        $ExchangePrepareAllDomains = Invoke-LabCommand -ActivityName 'Preparing All Domains' -ComputerName $prepMachine -ScriptBlock $exchangePrepAllDomainsCmd `
-        -UseCredSsp -PassThru -NoDisplay -AsJob
+        $ExchangePrepareAllDomains = Invoke-LabCommand -ActivityName 'Preparing All Domains' -ComputerName $prepMachine -ScriptBlock $exchangePrepAllDomainsCmd -PassThru -NoDisplay -AsJob
         $result = Wait-LwLabJob -Job $ExchangePrepareAllDomains -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 10 -NoDisplay
         
         if ($result.InstallStatus -eq 'RebootRequired')
@@ -454,7 +453,7 @@ function Install-LabExchange2013
             Write-ScreenInfo -Message "Restarting machine '$prepMachine' before preparing all domains"
             Restart-LabVM -ComputerName $prepMachine -Wait -ProgressIndicator 45
             $ExchangePrepareAllDomains = Invoke-LabCommand -ActivityName 'Restarting preparing All Domains' -ComputerName $prepMachine `
-            -ScriptBlock $exchangePrepAllDomainsCmd -UseCredSsp -PassThru -NoDisplay -AsJob
+            -ScriptBlock $exchangePrepAllDomainsCmd -PassThru -NoDisplay -AsJob
             
             $result = Wait-LwLabJob -Job $ExchangePrepareAllDomains -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 10 -NoDisplay
         }
@@ -494,7 +493,7 @@ function Install-LabExchange2013
         #FINALLY INSTALL EXCHANGE
         Write-ScreenInfo -Message 'Install Exchange Server 2013' -NoNewLine
         $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange' -ComputerName $machine -ScriptBlock $exchangeSetupCmd `
-        -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
+        -ArgumentList $exchangeOrganization -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
         $result = Wait-LwLabJob -Job $exchangeInstallJob -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 120 -NoDisplay
         
         if ($result.InstallStatus -eq 'RebootRequired')
@@ -503,7 +502,7 @@ function Install-LabExchange2013
             Restart-LabVM -ComputerName $machine -Wait -ProgressIndicator 45
             Write-ScreenInfo -Message 'Continuing installation' -NoNewLine
             $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange' -ComputerName $machine -ScriptBlock $exchangeSetupCmd `
-            -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
+            -ArgumentList $exchangeOrganization -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
             $result = Wait-LwLabJob -Job $exchangeInstallJob -ReturnResults -ErrorAction SilentlyContinue -ProgressIndicator 120 -NoDisplay -Timeout 120
         }
         
@@ -513,7 +512,7 @@ function Install-LabExchange2013
             Write-ScreenInfo -Message "No result, restarting '$machine' to retry install" -NoNewLine
             Restart-LabVM -ComputerName $machine -Wait -ProgressIndicator 45
             Write-ScreenInfo -Message 'Install Exchange Server 2013' -NoNewLine
-            $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange (retry)' -ComputerName $machine -ScriptBlock $exchangeSetupCmd -ArgumentList $exchangeOrganization -UseCredSsp -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
+            $exchangeInstallJob = Invoke-LabCommand -ActivityName 'Install Exchange (retry)' -ComputerName $machine -ScriptBlock $exchangeSetupCmd -ArgumentList $exchangeOrganization -PassThru -NoDisplay -Asjob -ErrorAction SilentlyContinue
             Wait-LwLabJob -Job $exchangeInstallJob -ProgressIndicator 120 -NoDisplay -Timeout 120
             $result = $exchangeInstallJob | Receive-Job -ErrorAction SilentlyContinue
         }
@@ -528,7 +527,7 @@ function Install-LabExchange2013
         
         Write-ScreenInfo -Message "Finished installing Exchange Server 2013 on machine '$machine'" -TaskEnd
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Install-LabExchange2013

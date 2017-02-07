@@ -871,7 +871,7 @@ $gpoType = @'
 
 function Get-NextOid
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [string]$Oid
@@ -884,7 +884,7 @@ function Get-NextOid
 
 function Find-CertificateAuthority
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [string]$DomainName
@@ -939,7 +939,7 @@ function Find-CertificateAuthority
 
 function Get-CATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -998,7 +998,7 @@ $KeyUsages = @{
 
 function New-CATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1125,7 +1125,7 @@ function New-CATemplate
 
 function Publish-CATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1179,7 +1179,7 @@ function Publish-CATemplate
 
 function Test-CATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1195,7 +1195,7 @@ function Test-CATemplate
 
 function Add-CATemplateStandardPermission
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1238,7 +1238,7 @@ function Add-CATemplateStandardPermission
 
 function Request-Certificate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1359,7 +1359,7 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
 
 function Get-CertificatePfx
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'DnsName')]
@@ -1445,7 +1445,7 @@ function Get-CertificatePfx
 
 function Add-CertificatePfx
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1485,7 +1485,7 @@ function Add-CertificatePfx
 #region Get-LabCertificatePfx
 function Get-LabCertificatePfx
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'DnsName')]
@@ -1513,7 +1513,7 @@ function Get-LabCertificatePfx
             Sync-Parameter -Command (Get-Command -Name Get-CertificatePfx)
             Get-CertificatePfx @ALBoundParameters
             
-        } -Variable $variables -Function $functions -UseCredSsp -PassThru
+        } -Variable $variables -Function $functions -PassThru
     }
     
     Write-LogFunctionExit
@@ -1523,7 +1523,7 @@ function Get-LabCertificatePfx
 #region Add-LabCertificatePfx
 function Add-LabCertificatePfx
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
@@ -1578,7 +1578,7 @@ function Add-LabCertificatePfx
 #region New-LabCATemplate
 function New-LabCATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1638,7 +1638,7 @@ function New-LabCATemplate
             $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $ALBoundParameters
             Add-CATemplateStandardPermission @p | Out-Null
         }
-    } -UseCredSsp -Variable $variables -Function $functions -PassThru
+    } -Variable $variables -Function $functions -PassThru
     
     Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
 
@@ -1647,14 +1647,14 @@ function New-LabCATemplate
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
 
-    } -UseCredSsp -Function $functions -Variable $variables
+    } -Function $functions -Variable $variables
 }
 #endregion New-LabCATemplate
 
 #region Test-LabCATemplate
 function Test-LabCATemplate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1687,7 +1687,7 @@ function Test-LabCATemplate
         $p = Sync-Parameter -Command (Get-Command -Name Test-CATemplate) -Parameters $ALBoundParameters
         Test-CATemplate @p
 
-    } -UseCredSsp -Function $functions -Variable $variables -PassThru -NoDisplay
+    } -Function $functions -Variable $variables -PassThru -NoDisplay
 }
 #endregion Test-LabCATemplate
 
@@ -1695,7 +1695,7 @@ function Test-LabCATemplate
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
     
@@ -1718,7 +1718,7 @@ function Get-LabIssuingCA
         {
             $env:COMPUTERNAME
         }
-    } -PassThru -UseCredSsp -NoDisplay
+    } -PassThru -NoDisplay
     
     if (-not $issuingCAs)
     {
@@ -1739,7 +1739,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1773,7 +1773,7 @@ function Request-LabCertificate
             Sync-Parameter -Command (Get-Command -Name Request-Certificate)
             Request-Certificate @ALBoundParameters
             
-        } -UseCredSsp -Variable $variables -Function $functions -PassThru:$PassThru
+        } -Variable $variables -Function $functions -PassThru:$PassThru
     }
     
     Write-LogFunctionExit
@@ -1783,7 +1783,7 @@ function Request-LabCertificate
 #region Install-LabCA
 function Install-LabCA
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
     
@@ -1940,7 +1940,7 @@ function Install-LabCA
 #region Install-LabCAMachine
 function Install-LabCAMachine
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     
     param (
@@ -2559,7 +2559,7 @@ function Install-LabCAMachine
     #region - If DatabaseDirectory or LogDirectory is specified, Check for drive existence in the VM
     if (($param.DatabaseDirectory -ne '<auto>') -or ($param.LogDirectory -ne '<auto>'))
     {
-        $caSession = New-LabPSSession -ComputerName $Machine -UseCredSsp
+        $caSession = New-LabPSSession -ComputerName $Machine
         
         if ($param.DatabaseDirectory -ne '<auto>')
         {
@@ -2690,7 +2690,7 @@ function Install-LabCAMachine
             }
             
             #Check if Parent CA is valid			
-            $caSession = New-LabPSSession -ComputerName $param.ComputerName -UseCredSsp
+            $caSession = New-LabPSSession -ComputerName $param.ComputerName
             
             Write-Debug -Message "Testing ParentCA with command: 'certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)'"
             
@@ -2707,7 +2707,7 @@ function Install-LabCAMachine
                         [string]$ParentCALogicalName
                     )
                     Invoke-Expression -Command "certutil -ping $ParentCA\$ParentCALogicalName"
-                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -UseCredSsp -PassThru
+                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -PassThru
                 
                 if (-not ($result | Where-Object { $_ -like '*interface is alive*' }))
                 {
@@ -2748,7 +2748,7 @@ function Install-LabCAMachine
             {
                 $name.Split('=')[1].Trim()
             }
-        } -UseCredSsp -NoDisplay -PassThru
+        } -NoDisplay -PassThru
         $num = 0
         do
         {
@@ -3125,7 +3125,7 @@ function Install-LabCAMachine
 #region Get-LabCAInstallCertificates
 function Get-LabCAInstallCertificates
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [AutomatedLab.Machine[]]$Machines
@@ -3166,7 +3166,7 @@ function Get-LabCAInstallCertificates
 #region Publish-LabCAInstallCertificates
 function Publish-LabCAInstallCertificates
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [switch]$PassThru
     )
@@ -3194,7 +3194,7 @@ function Publish-LabCAInstallCertificates
     
     foreach ($machine in $targetMachines)
     {
-        $machineSession = New-LabPSSession -ComputerName $machine -UseCredSsp
+        $machineSession = New-LabPSSession -ComputerName $machine
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
@@ -3294,7 +3294,7 @@ function Publish-LabCAInstallCertificates
 #region Enable-LabCertificateAutoenrollment
 function Enable-LabCertificateAutoenrollment
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     
     param
@@ -3341,7 +3341,7 @@ function Enable-LabCertificateAutoenrollment
     if ($Computer)
     {
         Write-ScreenInfo -Message 'Configuring permissions for computer certificates' -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Configure permissions on workstation authentication template on CAs' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock `
+        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Configure permissions on workstation authentication template on CAs' -NoDisplay -AsJob -PassThru -ScriptBlock `
         {
             $domainName = ([adsi]'LDAP://RootDSE').DefaultNamingContext
                 
@@ -3352,7 +3352,7 @@ function Enable-LabCertificateAutoenrollment
         Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay -NoNewLine
             
             
-        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publish workstation authentication certificate template on CAs' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publish workstation authentication certificate template on CAs' -NoDisplay -AsJob -PassThru -ScriptBlock {
             certutil.exe -SetCAtemplates +Workstation
             #Add-CATemplate -Name 'Workstation' -Confirm:$false
         }
@@ -3362,7 +3362,7 @@ function Enable-LabCertificateAutoenrollment
     if ($CodeSigning)
     {
         Write-ScreenInfo -Message "Enabling code signing certificate and enabling auto enrollment of these. Code signing certificate template name: '$CodeSigningTemplateName'" -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Create certificate template for Code Signing' -AsJob -PassThru -UseCredSsp -NoDisplay -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Create certificate template for Code Signing' -AsJob -PassThru -NoDisplay -ScriptBlock {
             param ($NewCodeSigningTemplateName)
                 
             $ConfigContext = ([adsi]'LDAP://RootDSE').ConfigurationNamingContext 
@@ -3430,7 +3430,7 @@ function Enable-LabCertificateAutoenrollment
         
         
         Write-ScreenInfo -Message 'Publishing Code Signing certificate template on all issuing CAs' -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publishing code signing certificate template' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publishing code signing certificate template' -NoDisplay -AsJob -PassThru -ScriptBlock {
             param ($NewCodeSigningTemplateName)
                 
             $ConfigContext = ([ADSI]'LDAP://RootDSE').ConfigurationNamingContext 
@@ -3489,7 +3489,7 @@ function Enable-LabCertificateAutoenrollment
     }
 
     Write-ScreenInfo -Message "Enabling auto enrollment of $out certificates" -NoNewLine
-    $job = Invoke-LabCommand -ComputerName $machines -ActivityName 'Configuring machines for auto enrollment and performing auto enrollment of certificates' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock `
+    $job = Invoke-LabCommand -ComputerName $machines -ActivityName 'Configuring machines for auto enrollment and performing auto enrollment of certificates' -NoDisplay -AsJob -PassThru -ScriptBlock `
     {
         param
         (

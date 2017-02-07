@@ -8,7 +8,7 @@ $adInstallRootDcScriptPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-	
+    
     $dcpromoAnswerFile = @"
       [DCInstall]
       ; New forest promotion
@@ -29,15 +29,15 @@ $adInstallRootDcScriptPre2012 = {
       ; Run-time flags (optional)
       ;RebootOnCompletion=No
 "@
-	
+    
     if ($Verbose) { $VerbosePreference = 'Continue' }
     
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
     
     $dcpromoAnswerFile | Out-File -FilePath C:\DcpromoAnswerFile.txt -Force
-	
+    
     dcpromo /unattend:'C:\DcpromoAnswerFile.txt'
-	
+    
     if ($LASTEXITCODE -ge 11)
     {
         throw 'Could not install new domain'
@@ -46,9 +46,9 @@ $adInstallRootDcScriptPre2012 = {
     {
         Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
     }
-	
+    
     Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord
-	
+    
     Write-Verbose -Message 'finished installing the Root Domain Controller'
 }
 
@@ -65,7 +65,7 @@ $adInstallRootDcScript2012 = {
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
     
     Write-Verbose -Message "Starting installation of Root Domain Controller on '$(HOSTNAME.EXE)'"
-	
+    
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     $result = Install-WindowsFeature AD-Domain-Services, DNS -IncludeManagementTools
     if (-not $result.Success)
@@ -76,7 +76,7 @@ $adInstallRootDcScript2012 = {
     {
         Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
     }
-	
+    
     Write-Verbose -Message "Creating a new forest named '$DomainName' on the machine '$(HOSTNAME.EXE)'"
     $safeModePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
     $result = Install-ADDSForest -DomainName $DomainName `
@@ -94,9 +94,9 @@ $adInstallRootDcScript2012 = {
     {
         Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
     }
-	
+    
     Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord
-	
+    
     Write-Verbose -Message 'finished installing the Root Domain Controller'
 }
 
@@ -114,19 +114,19 @@ $adInstallFirstChildDc2012 = {
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
-	
+    
     Write-Verbose -Message "Starting installation of First Child Domain Controller of domain '$NewDomainName' on '$(HOSTNAME.EXE)'"
     Write-Verbose -Message "NewDomainName is '$NewDomainName'"
     Write-Verbose -Message "ParentDomainName is '$ParentDomainName'"
     Write-Verbose -Message "RootCredential UserName is '$($RootDomainCredential.UserName)'"
     Write-Verbose -Message "RootCredential Password is '$($RootDomainCredential.GetNetworkCredential().Password)'"
     Write-Verbose -Message "DomainMode is '$DomainMode'"
-	
+    
     Write-Verbose -Message "Trying to reach domain $ParentDomainName"
     while (-not $result -and $count -lt 15)
     {
         $result = Test-Connection -ComputerName $ParentDomainName -Count 1 -Quiet
-		
+        
         if ($result)
         {
             Write-Verbose -Message "Domain $ParentDomainName was reachable ($count)"
@@ -135,11 +135,11 @@ $adInstallFirstChildDc2012 = {
         {
             Write-Warning "Domain $ParentDomainName was not reachable ($count)"
         }
-		
+        
         Start-Sleep -Seconds 1
-		
+        
         Clear-DnsClientCache
-		
+        
         $count++
     }
     if (-not $result)
@@ -150,7 +150,7 @@ $adInstallFirstChildDc2012 = {
     {
         Write-Verbose -Message "The domain '$ParentDomainName' could be reached"
     }
-	
+    
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     $result = Install-Windowsfeature AD-Domain-Services, DNS -IncludeManagementTools
     if (-not $result.Success)
@@ -185,7 +185,7 @@ $adInstallFirstChildDc2012 = {
             }
 
             Start-Sleep -Seconds $SecondsBetweenRetries
-			
+            
             $result = Install-ADDSDomain -NewDomainName $NewDomainName `
             -NewDomainNetbiosName $newDomainNetbiosName `
             -ParentDomainName $ParentDomainName `
@@ -206,7 +206,7 @@ $adInstallFirstChildDc2012 = {
         $retriesDone++
     }
     until ($result.Status -ne 'Error' -or $retriesDone -ge $Retries)
-	
+    
     if ($result.Status -eq 'Error')
     {
         Write-Error "Could not install new domain '$NewDomainName' on computer '$(HOSTNAME.EXE)' in $Retries retries. Aborting the promotion of '$(HOSTNAME.EXE)'"
@@ -216,9 +216,9 @@ $adInstallFirstChildDc2012 = {
     {
         Write-Verbose -Message "Active Directory installed successfully on computer '$(HOSTNAME.EXE)'"
     }
-	
+    
     Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord
-	
+    
     Write-Verbose -Message 'Finished installing the first child Domain Controller'
 }
 
@@ -243,14 +243,14 @@ $adInstallFirstChildDcPre2012 = {
     Write-Verbose -Message "RootCredential UserName is '$($RootDomainCredential.UserName)'"
     Write-Verbose -Message "RootCredential Password is '$($RootDomainCredential.GetNetworkCredential().Password)'"
     Write-Verbose -Message "DomainMode is '$DomainMode'"
-	
+    
     Write-Verbose -Message "Starting installation of First Child Domain Controller of domain '$NewDomainName' on '$(HOSTNAME.EXE)'"
-	
+    
     Write-Verbose -Message "Trying to reach domain $ParentDomainName"
     while (-not $result -and $count -lt 15)
     {
         $result = Test-Connection -ComputerName $ParentDomainName -Count 1 -Quiet
-		
+        
         if ($result)
         {
             Write-Verbose -Message "Domain $ParentDomainName was reachable ($count)"
@@ -259,11 +259,11 @@ $adInstallFirstChildDcPre2012 = {
         {
             Write-Warning "Domain $ParentDomainName was not reachable ($count)"
         }
-		
+        
         Start-Sleep -Seconds 1
-		
+        
         ipconfig.exe /flushdns | Out-Null
-		
+        
         $count++
     }
     if (-not $result)
@@ -274,9 +274,9 @@ $adInstallFirstChildDcPre2012 = {
     {
         Write-Verbose -Message "The domain $ParentDomainName could be reached"
     }
-	
+    
     Write-Verbose -Message "Credentials prepared for user $logonName"
-	
+    
     $tempName = $NewDomainName #using seems not to work in a if statement
     if ($tempName.Contains('.'))
     {
@@ -286,7 +286,7 @@ $adInstallFirstChildDcPre2012 = {
     {
         $domainType = 'Child'
     }
-	
+    
     $dcpromoAnswerFile = @"
       [DCInstall]
       ; New child domain promotion
@@ -311,7 +311,7 @@ $adInstallFirstChildDcPre2012 = {
       ; Run-time flags (optional)
       ; RebootOnCompletion=No
 "@
-	
+    
     if ($domainType -eq 'Child')
     {
         $dcpromoAnswerFile += ("
@@ -327,26 +327,26 @@ $adInstallFirstChildDcPre2012 = {
 
     $dcpromoAnswerFile | Out-File -FilePath C:\DcpromoAnswerFile.txt -Force
     Copy-Item -Path C:\DcpromoAnswerFile.txt -Destination C:\DcpromoAnswerFileBackup.txt
-	
+    
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Write-Verbose -Message "Promoting machine '$(HOSTNAME.EXE)' to domain $($NewDomainName)"
     dcpromo /unattend:'C:\DcpromoAnswerFile.txt'
-	
+    
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
         Write-Warning "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
-		
+        
         Start-Sleep -Seconds $SecondsBetweenRetries
-		
+        
         Copy-Item -Path C:\DcpromoAnswerFileBackup.txt -Destination C:\DcpromoAnswerFile.txt
         dcpromo /unattend:'C:\DcpromoAnswerFile.txt'
         Write-Verbose -Message "Return code of DCPromo was '$LASTEXITCODE'"
-		
+        
         $retriesDone++
     }
-	
+    
     if ($LASTEXITCODE -ge 11)
     {
         Write-Error "Could not install new domain '$NewDomainName' on computer '$(HOSTNAME.EXE)' in $Retries retries. Aborting the promotion of '$(HOSTNAME.EXE)'"
@@ -356,10 +356,10 @@ $adInstallFirstChildDcPre2012 = {
     {
         Write-Verbose -Message "AD-Domain-Services windows feature installed successfully on computer '$(HOSTNAME.EXE)'"
     }
-	
+    
     Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters `
     -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord -ErrorAction Stop
-	
+    
     Write-Verbose -Message 'finished installing the the first child Domain Controller'
 }
 
@@ -381,10 +381,10 @@ $adInstallDc2012 = {
     Write-Verbose -Message "DomainName is '$DomainName'"
     Write-Verbose -Message "RootCredential UserName is '$($RootDomainCredential.UserName)'"
     Write-Verbose -Message "RootCredential Password is '$($RootDomainCredential.GetNetworkCredential().Password)'"
-	
+    
     #The random delay is very important when promoting more than one Domain Controller.
     Start-Sleep -Seconds (Get-Random -Minimum 60 -Maximum 180)
-	
+    
     Write-Verbose -Message "Trying to reach domain $DomainName"
     $count = 0
     while (-not $result -and $count -lt 15)
@@ -392,7 +392,7 @@ $adInstallDc2012 = {
         Clear-DnsClientCache
         
         $result = Test-Connection -ComputerName $DomainName -Count 1 -Quiet
-		
+        
         if ($result)
         {
             Write-Verbose -Message "Domain $DomainName was reachable ($count)"
@@ -401,9 +401,9 @@ $adInstallDc2012 = {
         {
             Write-Warning "Domain $DomainName was not reachable ($count)"
         }
-		
+        
         Start-Sleep -Seconds 1
-		
+        
         $count++
     }
     if (-not $result)
@@ -414,12 +414,12 @@ $adInstallDc2012 = {
     {
         Write-Verbose -Message "The domain '$DomainName' could be reached"
     }
-	
+    
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Install-Windowsfeature AD-Domain-Services, DNS -IncludeManagementTools
-	
+    
     Write-Verbose -Message "Promoting machine '$(HOSTNAME.EXE)' to domain '$DomainName'"
-	
+    
     #this is required for RODCs
     $expectedNetbionDomainName = ($DomainName -split '\.')[0]
     
@@ -442,7 +442,7 @@ $adInstallDc2012 = {
                 'BUILTIN\Backup Operators',
                 'BUILTIN\Account Operators',
         "$expectedNetbionDomainName\Denied RODC Password Replication Group"))
-	    
+        
         $param.Add('AllowPasswordReplicationAccountName', @("$expectedNetbionDomainName\Allowed RODC Password Replication Group"))
     }
     else
@@ -459,32 +459,32 @@ $adInstallDc2012 = {
         Write-Error -Message 'Error occured in installation of Domain Controller. Error:'
         Write-Error -Message $_
     }
-	
+    
     Write-Verbose -Message 'First attempt of installation finished'
     $retriesDone = 0
     while ($result.Status -eq 'Error' -and $retriesDone -lt $Retries)
     {
         Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
-		
+        
         Start-Sleep -Seconds $SecondsBetweenRetries
         try
         {
             $result = Install-ADDSDomainController @param
         }
         catch { }
-		
+        
         $retriesDone++
     }
-	
+    
     if ($result.Status -eq 'Error')
     {
         Write-Error "The problem could not be solved in $Retries retries. Aborting the promotion of '$(HOSTNAME.EXE)'"
         return
     }
-	
+    
     Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord
-	
+    
     Write-Verbose -Message 'finished installing the Root Domain Controller'
 }
 
@@ -506,7 +506,7 @@ $adInstallDcPre2012 = {
     Write-Verbose -Message "DomainName is '$DomainName'"
     Write-Verbose -Message "RootCredential UserName is '$($RootDomainCredential.UserName)'"
     Write-Verbose -Message "RootCredential Password is '$($RootDomainCredential.GetNetworkCredential().Password)'"
-	
+    
     #$type is required for the pre-2012 installatioon
     if ($IsReadOnly)
     {
@@ -516,9 +516,9 @@ $adInstallDcPre2012 = {
     {
         $type = 'Replica'
     }
-	
+    
     Start-Sleep -Seconds (Get-Random -Minimum 60 -Maximum 180)
-	
+    
     $dcpromoAnswerFile = @"
       [DCInstall]
       ; Read-Only Replica DC promotion
@@ -537,7 +537,7 @@ $adInstallDcPre2012 = {
       SafeModeAdminPassword=$($RootDomainCredential.GetNetworkCredential().Password)
       ; RebootOnCompletion=No
 "@
-	
+    
     if ($type -eq 'ReadOnlyReplica')
     {
         $dcpromoAnswerFile += ('
@@ -553,7 +553,7 @@ $adInstallDcPre2012 = {
         $dcpromoAnswerFile += ('
         CreateDNSDelegation=No')
     }
-	
+    
     $dcpromoAnswerFile | Out-File -FilePath C:\DcpromoAnswerFile.txt -Force
     #The backup file is required to be able to start dcpromo a second time as the passwords are getting
     #removed by dcpromo
@@ -561,9 +561,9 @@ $adInstallDcPre2012 = {
     
     #For debug
     Copy-Item -Path C:\DcpromoAnswerFile.txt -Destination C:\DeployDebug\DcpromoAnswerFile.txt
-	
+    
     Write-Verbose -Message "Starting installation of an additional Domain Controller on '$(HOSTNAME.EXE)'"
-	
+    
     Write-Verbose -Message "Trying to reach domain $DomainName"
     $count = 0
     while (-not $result -and $count -lt 15)
@@ -571,7 +571,7 @@ $adInstallDcPre2012 = {
         ipconfig.exe /flushdns | Out-Null
         
         $result = Test-Connection -ComputerName $DomainName -Count 1 -Quiet
-		
+        
         if ($result)
         {
             Write-Verbose -Message "Domain $DomainName was reachable ($count)"
@@ -580,9 +580,9 @@ $adInstallDcPre2012 = {
         {
             Write-Warning "Domain $DomainName was not reachable ($count)"
         }
-		
+        
         Start-Sleep -Seconds 1
-		
+        
         $count++
     }
     if (-not $result)
@@ -593,28 +593,28 @@ $adInstallDcPre2012 = {
     {
         Write-Verbose -Message "The domain $DomainName could be reached"
     }
-	
+    
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Write-Verbose -Message "Promoting machine '$(HOSTNAME.EXE)' to domain '$($DomainName)'"
     Copy-Item -Path C:\DcpromoAnswerFileBackup.txt -Destination C:\DcpromoAnswerFile.txt
     dcpromo /unattend:'C:\DcpromoAnswerFile.txt'
     Write-Verbose -Message "Return code of DCPromo was '$LASTEXITCODE'"
-	
+    
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
         Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
         ipconfig.exe /flushdns | Out-Null
-		
+        
         Start-Sleep -Seconds $SecondsBetweenRetries
-		
+        
         Copy-Item -Path C:\DcpromoAnswerFileBackup.txt -Destination C:\DcpromoAnswerFile.txt
         dcpromo /unattend:'C:\DcpromoAnswerFile.txt'
         Write-Verbose -Message "Return code of DCPromo was '$LASTEXITCODE'"
-		
+        
         $retriesDone++
     }
-	
+    
     if ($LASTEXITCODE -ge 11)
     {
         Write-Error "The problem could not be solved in $Retries retries. Aborting the promotion of '$(HOSTNAME.EXE)'"
@@ -623,7 +623,7 @@ $adInstallDcPre2012 = {
     else
     {
         Write-Verbose -Message 'finished installing the Domain Controller'
-		
+        
         Set-ItemProperty -Path Microsoft.PowerShell.Core\Registry::HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\NTDS\Parameters `
         -Name 'Repl Perform Initial Synchronizations' -Value 0 -Type DWord -ErrorAction Stop
     }
@@ -637,23 +637,23 @@ function Install-LabRootDcs
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-		
+        
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-		
+        
         [switch]$CreateCheckPoints
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-	
+    
     $machines = Get-LabMachine -Role RootDC
-	
+    
     if (-not $machines)
     {
         Write-Warning -Message "There is no machine with the role 'RootDC'"
@@ -661,7 +661,7 @@ function Install-LabRootDcs
         return
     }
     
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     Start-LabVM -RoleName RootDC -ProgressIndicator 10 -PostDelaySeconds 5 -Wait
     
@@ -742,7 +742,7 @@ function Install-LabRootDcs
             $domainFunctionalLevel
         }
         
-	    
+        
         Write-ScreenInfo -Message 'Waiting for Root Domain Controllers to complete installation of Active Directory and restart' -NoNewLine
         
         $machinesToStart = @()
@@ -756,7 +756,7 @@ function Install-LabRootDcs
         Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
         
         Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
-	    
+        
         #Wait a little to be able to connect in first attempt
         Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {Start-Sleep -Seconds 60}) -ProgressIndicator 30 -NoDisplay -NoNewLine
         
@@ -789,7 +789,7 @@ function Install-LabRootDcs
             }
             
             $user = Get-ADUser -Identity ([System.Security.Principal.WindowsIdentity]::GetCurrent().User) -Server localhost
-		
+        
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Schema Admins' -Members $user -Server localhost
@@ -806,7 +806,7 @@ function Install-LabRootDcs
         Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Register non domain joined machines in DNS' -NoDisplay -ScriptBlock ([scriptblock]::Create($dnsCmd))
         
         Enable-LabVMRemoting -ComputerName $machines
-	    
+        
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
         
@@ -862,21 +862,21 @@ function Install-LabFirstChildDcs
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-		
+        
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-		
+        
         [switch]$CreateCheckPoints
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-	
+    
     $machines = $lab.Machines | Where-Object { $_.Roles.Name -contains 'FirstChildDC' }
     if (-not $machines)
     {
@@ -884,10 +884,10 @@ function Install-LabFirstChildDcs
         Write-LogFunctionExit
         return
     }
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     Start-LabVM -RoleName FirstChildDC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
-	
+    
     #Determine if any machines are already isntalled as Domain Controllers and exclude these
     $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.name -ActivityName 'Check if Active Directory Domain Services is already installed' -PassThru -NoDisplay -ScriptBlock `
         {
@@ -938,26 +938,26 @@ function Install-LabFirstChildDcs
         foreach ($machine in $machines)
         {
             $dcRole = $machine.Roles | Where-Object Name -eq 'FirstChildDc'
-		    
+            
             $parentDomainName = $dcRole.Properties['ParentDomain']
             $newDomainName = $dcRole.Properties['NewDomain']
             $domainFunctionalLevel = $dcRole.Properties['DomainFunctionalLevel']
             $parentDomain = $lab.Domains | Where-Object Name -eq $parentDomainName
-		    
+            
             #get the root domain to build the root domain credentials
             if (-not $parentDomain)
             {
                 throw "New domain '$newDomainName' could not be installed. The root domain ($parentDomainName) could not be found in the lab"
             }
             $rootCredential = $parentDomain.GetCredential()
-		    
+            
             #if there is a '.' inside the domain name, it is a new domain tree, otherwise a child domain hence we need to
             #create a DNS zone for the child domain in the parent domain
             if ($NewDomainName.Contains('.'))
             {
                 $parentDc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object DomainName -eq $ParentDomainName
                 Write-Verbose -Message "Setting up a new domain tree hence creating a stub zone on Domain Controller '$($parentDc.Name)'"
-			    
+                
                 $cmd = "dnscmd . /zoneadd $NewDomainName /dsstub $((Get-LabMachine -Role RootDC,FirstChildDC,DC | Where-Object DomainName -eq $NewDomainName).IpV4Address -join ', ') /dp /forest"
                 
                 Invoke-LabCommand -ScriptBlock ([scriptblock]::Create($cmd)) -ComputerName $parentDc -NoDisplay -ActivityName 'Add DNS zones'
@@ -1003,7 +1003,7 @@ function Install-LabFirstChildDcs
             $siteName
         }
         
-	    
+        
         Write-ScreenInfo -Message 'Waiting for First Child Domain Controllers to complete installation of Active Directory and restart' -NoNewline
         
         $domains = @((Get-LabMachine -Role RootDC).DomainName)
@@ -1043,13 +1043,13 @@ function Install-LabFirstChildDcs
             }
             
             $user = Get-ADUser -Identity ([System.Security.Principal.WindowsIdentity]::GetCurrent().User)
-		    
+            
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user
         }
         Invoke-LabCommand -ComputerName $machines -ActivityName 'Make installation user Domain Admin' -NoDisplay -ScriptBlock $cmd -ErrorAction SilentlyContinue
-	    
+        
         Enable-LabVMRemoting -ComputerName $machines
-	    
+        
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
         
@@ -1087,7 +1087,7 @@ function Install-LabFirstChildDcs
     }
     
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
-	
+    
     Write-LogFunctionExit
 }
 #endregion Install-LabFirstChildDcs
@@ -1099,30 +1099,30 @@ function Install-LabDcs
     [cmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-		
+        
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-		
+        
         [switch]$CreateCheckPoints
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-	
+    
     $machines = Get-LabMachine -Role DC
-	
+    
     if (-not $machines)
     {
         Write-Warning -Message "There is no machine with the role 'DC'"
         Write-LogFunctionExit
         return
     }
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     Start-LabVM -RoleName DC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
 
@@ -1179,7 +1179,7 @@ function Install-LabDcs
         $childDcs = Get-LabMachine -Role FirstChildDC
         
         $jobs = @()
-	    
+        
         foreach ($machine in $machines)
         {
             $dcRole = $machine.Roles | Where-Object Name -like '*DC'
@@ -1250,23 +1250,23 @@ function Install-LabDcs
         Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -ProgressIndicator 60 -MonitorJob $jobs
         
         Write-ScreenInfo -Message 'Additional Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
-	    
+        
         #Wait a little to be able to connect in first attempt
         Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {Start-Sleep -Seconds 60}) -ProgressIndicator 20 -NoDisplay -NoNewLine
         
         Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
-	    
+        
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
-	    
+        
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
-	    
+        
         Enable-LabVMRemoting -ComputerName $machines
-	    
+        
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabMachine -Role DC) -ProgressIndicator 20 -NoNewLine
         
-	    
+        
         Write-Verbose -Message 'Restarting DNS and Netlogon services on all Domain Controllers and triggering replication'
         $jobs = @()
         foreach ($dc in (Get-LabMachine -Role RootDC))
@@ -1301,7 +1301,7 @@ function Install-LabDcs
         Write-ScreenInfo -Message 'All additional Domain Controllers are already installed' -Type Warning -TaskEnd
         return
     }
-	
+    
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
     
     Write-LogFunctionExit
@@ -1315,21 +1315,21 @@ function Wait-LabADReady
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-		
+        
         [int]$TimeoutInMinutes = 15,
 
         [int]$ProgressIndicator,
 
         [switch]$NoNewLine
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $start = Get-Date
-	
+    
     $machines = Get-LabMachine -ComputerName $ComputerName
     $machines | Add-Member -Name AdRetries -MemberType NoteProperty -Value 2 -Force
-	
+    
     $ProgressIndicatorTimer = (Get-Date)
     Do
     {
@@ -1426,7 +1426,7 @@ function Wait-LabADReady
             Write-Error -Message "Timeout occured waiting for Active Directory to be ready on Domain Controller: $_. Retry count is $($_.AdRetries)" -TargetObject $_
         }
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Wait-LabADReady
@@ -1439,13 +1439,13 @@ function Test-LabADReady
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     $start = Get-Date
-	
+    
     $machines = Get-LabMachine -ComputerName $ComputerName
-	
+    
     
     $AdReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -NoDisplay -ScriptBlock `
     {
@@ -1473,7 +1473,7 @@ function Test-LabADReady
     } -PassThru -ErrorAction SilentlyContinue
     
     -not ($AdReady -contains $false)
-	
+    
     Write-LogFunctionExit
 }
 #endregion Test-LabADReady
@@ -1623,10 +1623,7 @@ function Sync-LabActiveDirectory
     
         if ($AsJob)
         {
-            $job = Invoke-LabCommand -ActivityName "Triggering replication on '$ComputerName'" `
-            -NoDisplay -ComputerName $ComputerName `
-            -ScriptBlock $adForceReplication `
-            -UseCredSsp -AsJob -Passthru
+            $job = Invoke-LabCommand -ActivityName "Triggering replication on '$ComputerName'" -ComputerName $ComputerName -ScriptBlock $adForceReplication -AsJob -Passthru -NoDisplay 
 
             if ($PassThru)
             {
@@ -1635,10 +1632,7 @@ function Sync-LabActiveDirectory
         }
         else
         {
-            $result = Invoke-LabCommand -ActivityName "Triggering replication on '$ComputerName'" `
-            -ComputerName $ComputerName `
-            -ScriptBlock $adForceReplication `
-            -UseCredSsp -Passthru -NoDisplay
+            $result = Invoke-LabCommand -ActivityName "Triggering replication on '$ComputerName'" -ComputerName $ComputerName -ScriptBlock $adForceReplication -Passthru -NoDisplay
 
             if ($PassThru)
             {
@@ -1758,7 +1752,7 @@ function New-LabADSubnet
         }
     
         Invoke-LabCommand -ComputerName $rootDc -ActivityName 'Create AD SubNet' -NoDisplay `
-        -ScriptBlock $createSubnetScript -UseCredSsp -AsJob -ArgumentList $networkInfo
+        -ScriptBlock $createSubnetScript -AsJob -ArgumentList $networkInfo
     }
   
     Write-LogFunctionExit
