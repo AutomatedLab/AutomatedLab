@@ -1154,7 +1154,7 @@ function Connect-LWAzureLabSourcesDrive
         {
                 if ($line -match $pattern)
                 {
-                        net.exe use "$($Matches.DriveLetter):" /d
+                        net.exe use "$($Matches.DriveLetter):" /d | Out-Null
                 }
         }
     
