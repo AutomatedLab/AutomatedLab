@@ -33,7 +33,7 @@ function New-LWAzureVM
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
 
-    if (Get-AzureRmVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue -WarningAction SilentlyContinue)
+    if(Get-AzureRmVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue -WarningAction SilentlyContinue)
     {
         Write-Verbose -Message "Target machine $($Machine.Name) already exists. Skipping..."
         return
@@ -638,20 +638,10 @@ function Initialize-LWAzureVM
 
     #refresh the machine list to have also Azure meta date is available
     $Machine = Get-LabMachine -ComputerName $Machine
-    
-    #Point out first added machine as staging machine for staging Tools folder and alike
-    $stagingMachine = $Machine[0]
-    
+      
     #copy AL tools to lab machine and optionally the tools folder
-    Write-ScreenInfo -Message "Waiting for machine '$stagingMachine' to be accessible" -NoNewLine
-    Wait-LabVM -ComputerName $stagingMachine -ProgressIndicator 15 -ErrorAction Stop
-    
-    $toolsDestination = "$($stagingMachine.ToolsPath)"
-    if ($stagingMachine.ToolsPathDestination)
-    {
-        $toolsDestination = "$($stagingMachine.ToolsPathDestination)"
-    }
-    Write-ScreenInfo -Message 'Finished' -TaskEnd
+    Write-ScreenInfo -Message "Waiting for machines '$($Machine -join ', ')' to be accessible" -NoNewLine
+    Wait-LabVM -ComputerName $Machine -ProgressIndicator 15 -DoNotUseCredSsp -ErrorAction Stop
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     $machineSettings = @{}
@@ -670,7 +660,7 @@ function Initialize-LWAzureVM
             )
         )
     }
-    $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -NoDisplay -AsJob -PassThru
+    $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -DoNotUseCredSsp -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Write-ScreenInfo -Message 'Finished' -TaskEnd
     
@@ -692,6 +682,9 @@ function Initialize-LWAzureVM
     {
         Write-ScreenInfo -Message "($($Machine.Count)) new Azure machines was configured"
     }
+
+    Write-Verbose "Removing all sessions after VmInit"
+    Remove-LabPSSession
         
     Write-LogFunctionExit
 }
@@ -1115,7 +1108,7 @@ function Enable-LWAzureVMRemoting
         $cred = $machine.GetCredential((Get-Lab))
         try
         {
-            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -NoDisplay -ScriptBlock $script `
+            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay `
             -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
         }
         catch
@@ -1140,22 +1133,37 @@ function Connect-LWAzureLabSourcesDrive
 {
     param(
         [Parameter(Mandatory, Position = 0)]
-        [string]$ComputerName,
-        
-        [switch]$UseLocalCredential,
-        
-        [switch]$UseCredSsp
+        [System.Management.Automation.Runspaces.PSSession]$Session
     )
     
     Write-LogFunctionEntry
+    
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'CredSsp' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+    {
+        return
+    }
 
     $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage
     
-    Invoke-LabCommand -ActivityName 'Maping Azure LabSources Share' -ComputerName $ComputerName -ScriptBlock {
-        $cmd = 'net.exe use * {0} /u:{1} {2}' -f $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
+    Invoke-Command -Session $Session -ScriptBlock {
+        $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
+
+        #remove all drive connected to an Azure LabSources share that are no longer available
+        $drives = net.exe use
+        foreach ($line in $drives)
+        {
+                if ($line -match $pattern)
+                {
+                        net.exe use "$($Matches.DriveLetter):" /d
+                }
+        }
+    
+        $cmd = 'net.exe use * {0} /u:{1} {2}' -f $args[0], $args[1], $args[2]
         $cmd = [scriptblock]::Create($cmd)
-        &$cmd
-    } -Variable (Get-Variable -Name labSourcesStorageAccount) -UseLocalCredential:$UseLocalCredential -UseCredSsp:$UseCredSsp -NoDisplay
+        &$cmd | Out-Null
+        
+        if (-not $LASTEXITCODE) { $ALLabSourcesMapped = $true }
+    } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
     
     Write-LogFunctionExit
 }
