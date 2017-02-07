@@ -663,7 +663,7 @@ function Install-LabRootDcs
     
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName RootDC -ProgressIndicator 10 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName RootDC -DoNotUseCredSsp -ProgressIndicator 10 -PostDelaySeconds 5 -Wait
     
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.name -ActivityName 'Check if Active Directory is already installed and configured' -PassThru -NoDisplay -ScriptBlock `
@@ -886,7 +886,7 @@ function Install-LabFirstChildDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName FirstChildDC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName FirstChildDC -DoNotUseCredSsp -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
     
     #Determine if any machines are already isntalled as Domain Controllers and exclude these
     $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.name -ActivityName 'Check if Active Directory Domain Services is already installed' -PassThru -NoDisplay -ScriptBlock `
@@ -1124,7 +1124,7 @@ function Install-LabDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName DC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName DC -DoNotUseCredSsp .\1033-ProgressIndicator 15 -PostDelaySeconds 5 -Wait
 
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.Name `

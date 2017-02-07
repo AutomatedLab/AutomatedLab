@@ -137,6 +137,8 @@ function Start-LabVM
         [switch]$All,
         
         [switch]$Wait,
+        
+        [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewline,
 
@@ -316,7 +318,7 @@ function Start-LabVM
 
         if ($Wait)
         {
-            Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine
+            Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
         }
         
         if ($ProgressIndicator -and (-not $NoNewline))
