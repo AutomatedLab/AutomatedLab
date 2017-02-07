@@ -42,18 +42,18 @@ function Add-LabAzureSubscription
         [string]$Path,
 
         [string]$SubscriptionName,
-		
+        
         [string]$DefaultLocationName,
-		
+        
         [string]$DefaultStorageAccountName,
 
         [string]$DefaultResourceGroupName,
-		
+        
         [switch]$PassThru
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
     
     if (-not $Path)
@@ -72,14 +72,14 @@ function Add-LabAzureSubscription
     {
         throw "The ARM profile file '$Path' could not be found"
     }
-	
+    
     #This needs to be loaded manually to import the required DLLs
     $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
     if (-not (Get-Module -Name Azure -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
     {
         throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please download it from 'http://azure.microsoft.com/en-us/downloads/'"
     }
-	
+    
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
     
     try
@@ -150,7 +150,7 @@ function Add-LabAzureSubscription
     {
         throw 'Cannot proceed without a valid location specified'
     }
-	
+    
     Write-ScreenInfo -Message "Trying to locate or create default resource group"
     # Create if no default given or default set and not existing as RG
     if(-not $DefaultResourceGroupName -or ($DefaultResourceGroupName -and -not (Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue)))
@@ -172,7 +172,7 @@ function Add-LabAzureSubscription
         }
 
         $createResourceGroup = $true
-		
+        
         if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
         {
             $createResourceGroup = $false
@@ -224,11 +224,14 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
 
     # Add LabSources storage
-    New-LabAzureLabSourcesStorage
+    if (-not (Test-LabAzureLabSourcesStorage))
+    {
+        New-LabAzureLabSourcesStorage
+    }
 
-    $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
+    $script:lab.AzureSettings.VmImages = $vmimages | ForEach-Object { [AutomatedLab.Azure.AzureOSImage]::Create($_) }
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
-	
+    
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
@@ -287,15 +290,15 @@ function Add-LabAzureSubscription
 
         $global:cacheVmImages = $vmImages
     }
-	
+    
     $osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
     $script:lab.AzureSettings.VmImages = New-Object $osImageListType
-	
+    
     # Cache all images
     if($vmImages)
     {		
         $osImageList = New-Object $osImageListType
-		
+        
 
         foreach($vmImage in $vmImages)
         {
@@ -361,7 +364,7 @@ function Add-LabAzureSubscription
     {
         $script:lab.AzureSettings.Subscription
     }
-	
+    
     Write-LogFunctionExit
 }
 
@@ -369,13 +372,13 @@ function Get-LabAzureSubscription
 {
     # .ExternalHelp AutomatedLab.Help.xml
     param ()
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $script:lab.AzureSettings.Subscriptions
-	
+    
     Write-LogFunctionExit
 }
 
@@ -383,13 +386,13 @@ function Get-LabAzureDefaultSubscription
 {
     # .ExternalHelp AutomatedLab.Help.xml
     param ()
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $script:lab.AzureSettings.DefaultSubscription
-	
+    
     Write-LogFunctionExit
 }
 
@@ -402,11 +405,11 @@ function Get-LabAzureLocation
 
         [switch]$List
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     #Update-LabAzureSettings
-	
+    
     Import-Module -Name Azure*
 
     $azureLocations = Get-AzureRmLocation
@@ -418,7 +421,7 @@ function Get-LabAzureLocation
             Write-Error "Invalid location. Please specify one of the following locations: ""'$($azureLocations.DisplayName -join ''', ''')"
             return
         }
-		
+        
         $azureLocations | Where-Object DisplayName -eq $LocationName
     }
     else
@@ -501,7 +504,7 @@ function Get-LabAzureLocation
             $azureLocations | Sort-Object -Property Latency | Select-Object -First 1 | Select-Object -ExpandProperty DisplayName
         }
     }
-	
+    
     Write-LogFunctionExit
 }
 
@@ -510,19 +513,19 @@ function Get-LabAzureDefaultLocation
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     if (-not $Script:lab.AzureSettings.DefaultLocation)
     {
         Write-Error 'The default location is not defined. Use Set-LabAzureDefaultLocation to define it.'
         return
     }
-	
+    
     $Script:lab.AzureSettings.DefaultLocation
-	
+    
     Write-LogFunctionExit
 }
 
@@ -533,19 +536,19 @@ function Set-LabAzureDefaultLocation
         [Parameter(Mandatory)]
         [string]$Name
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     if ($Name -notin $script:lab.AzureSettings.Locations.DisplayName)
     {
         Microsoft.PowerShell.Utility\Write-Error "Invalid location. Please specify one of the following locations: $($script:lab.AzureSettings.Locations.DisplayName -join ', ')"
         return
     }
-	
+    
     $script:lab.AzureSettings.DefaultLocation = $script:lab.AzureSettings.Locations | Where-Object DisplayName -eq $Name
-	
+    
     Write-LogFunctionExit
 }
 
@@ -556,19 +559,19 @@ function Set-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$Name
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     if (-not ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -eq $Name))
     {
         Microsoft.PowerShell.Utility\Write-Error "Invalid storage account. Please specify one of the following storage accounts: $($script:lab.AzureSettings.StorageAccounts.StorageAccountName -join ', ')"
         return
     }
-	
+    
     $script:lab.AzureSettings.DefaultStorageAccount = $script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -eq $Name
-	
+    
     Write-LogFunctionExit
 }
 
@@ -577,19 +580,19 @@ function Get-LabAzureDefaultStorageAccount
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     if (-not $Script:lab.AzureSettings.DefaultStorageAccount)
     {
         Write-Error 'The default storage account is not defined. Use Set-LabAzureDefaultStorageAccount to define it.'
         return
     }
-	
+    
     $Script:lab.AzureSettings.DefaultStorageAccount
-	
+    
     Write-LogFunctionExit
 }
 
@@ -603,11 +606,11 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $storageAccountName = "automatedlab$((1..8 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
 
     $param = @{
@@ -619,21 +622,21 @@ function New-LabAzureDefaultStorageAccount
         }
         Sku = 'Standard_LRS'
     }
-	
+    
     if ($LocationName)
     {
         $location = Get-LabAzureLocation -LocationName $LocationName -ErrorAction Stop
         $param.Add('Location', $location.DisplayName)
         Write-ScreenInfo -Message "Creating a new storage account named '$storageAccountName' for location '$($param.Location)'"
     }
-	
+    
     $result = New-AzureRmStorageAccount @param -ErrorAction Stop -WarningAction SilentlyContinue
-	
+    
     if ($result.ProvisioningState -ne 'Succeeded')
     {
         throw "Could not create storage account $storageAccountName : $($result.ProvisioningState)"
     }
-	
+    
     Write-ScreenInfo -Message  'Storage account now created'
 
     $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $storageAccountName
@@ -643,9 +646,9 @@ function New-LabAzureDefaultStorageAccount
     $script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
 
     Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
-	
+    
     Set-LabAzureDefaultStorageAccount -Name $storageAccountName
-	
+    
     Write-LogFunctionExit
 }
 
@@ -654,13 +657,13 @@ function Get-LabAzureDefaultResourceGroup
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
-	
+    
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $script:lab.Name
-	
+    
     Write-LogFunctionExit
 }
 
@@ -670,23 +673,23 @@ function Import-LabAzureCertificate
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
-	
+    
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $resourceGroup = Get-AzureRmResourceGroup -name (Get-LabAzureDefaultResourceGroup)
     $keyVault = Get-AzureRmKeyVault -VaultName (Get-LabAzureDefaultKeyVault) -ResourceGroupName $resourceGroup
     $temp = [System.IO.Path]::GetTempFileName()
-	
+    
     $cert = ($keyVault | Get-AzureKeyVaultCertificate).Data
-	
+    
     if ($cert)
     {
         $cert | Out-File -FilePath $temp
         certutil -addstore -f Root $temp | Out-Null
-		
+        
         Remove-Item -Path $temp
         Write-LogFunctionExit
     }
@@ -704,27 +707,27 @@ function New-LabAzureCertificate
     param ()
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $certSubject = "CN=$($Script:lab.Name).cloudapp.net"
     $service = Get-LabAzureDefaultResourceGroup
     $cert = dir Cert:\LocalMachine\My | Where-Object Subject -eq $certSubject -ErrorAction SilentlyContinue
-	
+    
     if (-not $cert)
     {
         $temp = [System.IO.Path]::GetTempFileName()
-	
+    
         #not required as SSL is not used yet	
         #& 'C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Bin\makecert.exe' -r -pe -n $certSubject -b 01/01/2000 -e 01/01/2036 -eku 1.3.6.1.5.5.7.3.1, 1.3.6.1.5.5.7.3.2 -ss my -sr localMachine -sky exchange -sp "Microsoft RSA SChannel Cryptographic Provider" -sy 12 $temp
-		
+        
         certutil.exe -addstore -f Root $temp | Out-Null
-		
+        
         Remove-Item -Path $temp
-		
+        
         $cert = dir Cert:\LocalMachine\Root | Where-Object Subject -eq $certSubject
     }
-	
+    
     #not required as SSL is not used yet
     #$service | Add-AzureCertificate -CertToDeploy (Get-Item -Path "Cert:\LocalMachine\Root\$($cert.Thumbprint)")
 }
@@ -738,13 +741,13 @@ function Get-LabAzureCertificate
     param ()
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
-	
+    
     Update-LabAzureSettings
-	
+    
     $certSubject = "CN=$($Script:lab.Name).cloudapp.net"
-	
+    
     $cert = dir Cert:\LocalMachine\My | Where-Object Subject -eq $certSubject -ErrorAction SilentlyContinue
-	
+    
     if (-not $cert)
     {
         #just returning nothing is more convenient
@@ -754,7 +757,7 @@ function Get-LabAzureCertificate
     {
         $cert
     }
-	
+    
     Write-LogFunctionExit
 }
 
@@ -917,82 +920,68 @@ function Add-LabAzureProfile
     Write-LogFunctionExit
 }
 
+#region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param
-    ()
+    (
+        [string]$LocationName,
+
+        [switch]$NoDisplay
+    )
 
     Write-LogFunctionEntry
 
-    $ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName
-    $StorageAccountName = $script:Lab.AzureSettings.LabSourcesStorageAccountName
-
-    if(-not $ResourceGroupName)
+    Test-LabAzureSubscription
+    $azureLabSourcesResourceGroupName = 'AutomatedLabSources'
+    
+    if (-not $LocationName)
     {
-        Write-Verbose 'AutomatedLab lab source resource group not set. Setting it to AutomatedLabSources'
-        $ResourceGroupName = $script:Lab.AzureSettings.LabSourcesResourceGroupName = 'AutomatedLabSources'
+        $LocationName = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).DisplayName
+    }
+    if (-not $LocationName)
+    {
+        Write-Error "LocationName was not provided and could not be retrieved from a present lab. Please specify a location name or import a lab"
+        return
+    }
+    if ($LocationName -notin (Get-AzureRmLocation).DisplayName)
+    {
+        Write-Error "The location name '$LocationName' is not valid. Please invoke 'Get-AzureRmLocation' to get a list of possible locations"
     }
 
+    $currentSubscription = (Get-AzureRmContext).Subscription
+    Write-ScreenInfo -Message "Looking for Azure LabSources inside subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
 
-    $null = New-LabAzureResourceGroup -ResourceGroupNames $ResourceGroupName -LocationName (Get-LabAzureDefaultLocation)
-
-
-    if(-not $StorageAccountName)
+    $resourceGroup = Get-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue
+    if (-not $resourceGroup)
     {
-        try
-        {
-            $StorageAccountName = (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like 'automatedlabsources?????')[0].StorageAccountName
-        }
-        catch{ }
-        if(-not $StorageAccountName)
-        {
-            $StorageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-            Write-Verbose "Generated random storage account name $StorageAccountName"
-        }
-        else
-        {
-            Write-Verbose "Found and selected existing storage account $StorageAccountName"
-        }
+        Write-ScreenInfo "Resoure Group '$azureLabSourcesResourceGroupName' could not be found, creating it"
+        New-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -Location $LocationName | Out-Null
     }
 
-    if(-not (Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName | Where-Object StorageAccountName -eq $StorageAccountName))
+    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like automatedlabsources?????
+    if (-not $storageAccount)
     {
-        Write-Verbose "AutomatedLab lab source storage account '$StorageAccountName' does not exist. Creating it."
-        New-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName -Location (Get-LabAzureDefaultLocation) -Kind Storage -SkuName Standard_LRS | Out-Null
+        Write-ScreenInfo "No storage account for AutomatedLabSources could not be found, creating it"
+        $storageAccountName = "automatedlabsources$((1..5 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+        New-AzureRmStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -Name $storageAccountName -Location $LocationName -Kind Storage -SkuName Standard_LRS | Out-Null
+        $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
     }
 
-    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $ResourceGroupName -Name $StorageAccountName
-    $alStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccount)
-    $alStorageAccount.StorageAccountKey = ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
-
-
-    $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
-    if($script:Lab.AzureSettings.StorageAccounts -and ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+    $share = Get-AzureStorageShare -Context $StorageAccount.Context -Name labsources -ErrorAction SilentlyContinue
+    if (-not $share)
     {
-        $existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
-        if($existingGroup)
-        {
-            $i = $script:Lab.AzureSettings.StorageAccounts.IndexOf($existingGroup)
-            $script:Lab.AzureSettings.StorageAccounts[$i] = $ALStorageAccount
-        }
-    }
-    else
-    {
-        $script:Lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
-    }
-
-    if(-not (Get-AzureStorageShare -Name 'labsources' -Context $storageAccount.Context -ErrorAction SilentlyContinue))
-    {
-        Write-Verbose "AutomatedLab lab source file share 'labsources' does not exist. Creating it..."
+        Write-ScreenInfo "The share 'labsources' could not be found, creating it"
         New-AzureStorageShare -Name 'labsources' -Context $storageAccount.Context | Out-Null
     }
 
-    Write-Verbose "Successfully selected storage account $StorageAccountName in $ResourceGroupName and created labsources share"
+    Write-ScreenInfo "Azure LabSources verified / created" -TaskEnd
 
     Write-LogFunctionExit
 }
+#endregion New-LabAzureLabSourcesStorage
 
 function Get-LabAzureLabSourcesStorage
 {
@@ -1001,19 +990,26 @@ function Get-LabAzureLabSourcesStorage
     param
     ()
 
-    $StorageAccount = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.ResourceGroupName -eq $script:Lab.AzureSettings.LabSourcesResourceGroupName -and $_.StorageAccountName -eq $script:Lab.AzureSettings.LabSourcesStorageAccountName}
+    Write-LogFunctionEntry
+    
+    Test-LabAzureSubscription
+    $azureLabSourcesResourceGroupName = 'AutomatedLabSources'
+    
+    $currentSubscription = (Get-AzureRmContext).Subscription
+    
+    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName automatedlabsources -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like automatedlabsources?????
 
-    if(-not $StorageAccount)
+    if (-not $storageAccount)
     {
-        $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName	
-        $StorageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
+        Write-Error "The AutomatedLabSources share on Azure does not exist"
+        return        
     }
 
+    $storageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value -Force
+    $storageAccount | Add-Member -MemberType NoteProperty -Name Path -Value "\\$($storageAccount.StorageAccountName).file.core.windows.net\labsources" -Force
+    $storageAccount | Add-Member -MemberType NoteProperty -Name SubscriptionName -Value (Get-AzureRmContext).Subscription.SubscriptionName -Force
 
-    $StorageAccount |
-    Add-Member -MemberType NoteProperty -Name 'Path' -Value "\\$($script:Lab.AzureSettings.LabSourcesStorageAccountName).file.core.windows.net\labsources" -Force
-
-    $StorageAccount
+    $storageAccount
 }
 
 function Test-LabAzureLabSourcesStorage
@@ -1035,20 +1031,31 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
     
     if (Test-LabAzureLabSourcesStorage)
     {
+        throw (New-Object System.NotImplementedException)
         $azureLabSources = Get-LabAzureLabSourcesStorage
         
-        $Path -like "$($ls.Path)*"
+        $Path -like "$($azureLabSources.Path)*"
     }
 }
 
 function Remove-LabAzureLabSourcesStorage
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [CmdletBinding()]
+    [CmdletBinding(ConfirmImpact = 'High')]
     param
     ()
 
-    Remove-LabAzureResourceGroup -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Force
+    Write-LogFunctionExit
+    Test-LabAzureSubscription
+    
+    if (Test-LabAzureLabSourcesStorage)
+    {
+        $azureLabStorage = Get-LabAzureLabSourcesStorage
+        
+        Remove-AzureRmResourceGroup -Name $azureLabStorage.ResourceGroupName -Force
+    }
+    
+    Write-LogFunctionExit
 }
 
 function Sync-LabAzureLabSources
@@ -1063,36 +1070,40 @@ function Sync-LabAzureLabSources
     )
 
     Write-LogFunctionExit
+    Test-LabAzureSubscription
+    
+    $currentSubscription = (Get-AzureRmContext).Subscription
+    Write-ScreenInfo -Message "Syncing LabSources in subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
 
     # Retrieve storage context
-    $StorageAccount = Get-AzureRmStorageAccount -ResourceGroupName $script:Lab.AzureSettings.LabSourcesResourceGroupName -Name $script:Lab.AzureSettings.LabSourcesStorageAccountName
-    $AccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
+    $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
 
-    Unblock-LabSources -Path (Get-LabSourcesLocationInternal -Local)
-
+    $localLabsources = Get-LabSourcesLocationInternal -Local
+    Unblock-LabSources -Path $localLabsources
 
     # Create the empty folders first
-    foreach($Folder in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -Directory))
+    foreach($folder in (Get-ChildItem -Path $localLabsources -Recurse -Directory))
     {
-        if($SkipIsos -and $Folder.Name -eq 'Isos')
+        if($SkipIsos -and $folder.Name -eq 'Isos')
         {
             continue
         }
+        
+        $folderName = $folder.FullName.Replace($localLabsources, '')
+        Write-ScreenInfo "Working on folder '$folderName' with " -NoNewLine
+        
+        $err = $null
 
-        $err = $Null
-        $FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
-
-        # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-        $null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
-        Write-Verbose "Created directory $FolderName in labsources"
+        # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory        
+        New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+        Write-Verbose "Created directory $($folderName) in labsources"
         if($err)
         {
-            $err = $Null
-            $FolderName = $Folder.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+            $err = $null
 
             # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-            $null = New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FolderName -ErrorVariable err -ErrorAction SilentlyContinue
-            Write-Verbose "Created directory $FolderName in labsources"
+            New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+            Write-Verbose "Created directory '$folderName' in labsources"
             if($err)
             {
                 if($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
@@ -1104,61 +1115,80 @@ function Sync-LabAzureLabSources
 
 
         # Sync the lab sources
-        foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Recurse -File))
+        $files = Get-ChildItem -Path $folder.FullName -File
+        Write-ScreenInfo "with $($files.Count) files" -NoNewLine
+        foreach($file in $files)
         {
-            if($SkipIsos -and $File.Directory.Name -eq 'Isos')
+            Write-ProgressIndicator
+            if($SkipIsos -and $file.Directory.Name -eq 'Isos')
             {
-                Write-Verbose "SkipIsos is true, skipping $($File.Name)"
+                Write-Verbose "SkipIsos is true, skipping $($file.Name)"
                 continue
             }
 
-            if($MaxFileSizeInMb -and $File.Length/1MB -ge $MaxFileSizeInMb)
+            if($MaxFileSizeInMb -and $file.Length/1MB -ge $MaxFileSizeInMb)
             {
-                Write-Verbose "MaxFileSize is $MaxFileSizeInMb mb, skipping $($File.Name)"
+                Write-Verbose "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
                 continue
             }
 
             # Check if file is an OS ISO and skip
-            if($File.Extension -eq '.iso')
+            if($file.Extension -eq '.iso')
             {
-                $IsoDefinition = Get-LabIsoImageDefinition | Where-Object {$_.Path -EQ $File.FullName -and $_.IsOperatingSystem}
+                $IsoDefinition = Get-LabIsoImageDefinition | Where-Object { $_.Path -EQ $file.FullName -and $_.IsOperatingSystem }
 
                 if($IsoDefinition)
                 {
-                    Write-Verbose "Skipping OS ISO $($File.FullName)"
+                    Write-Verbose "Skipping OS ISO $($file.FullName)"
                     continue
                 }
             }
 
-            $FileName = $File.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
+            $fileName = $file.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
-            $AzureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-            if($AzureFile)
+            $azureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
+            if($azureFile)
             {
-                $AzureHash = $AzureFile.Properties.ContentMD5
-                $FileHash = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-                Write-Verbose "$FileName already exists in Azure. Source hash is $FileHash and Azure hash is $AzureHash"
+                $azureHash = $azureFile.Properties.ContentMD5
+                $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+                Write-Verbose "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
             }
 
-            if(-not $AzureFile -or ($AzureFile -and $FileHash -ne $AzureHash))
+            if(-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
             {
-                $null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Source $File.FullName -Path $FileName -ErrorAction SilentlyContinue -Force
-                Write-Verbose "Azure file $FileName successfully uploaded. Generating file hash..."
+                $null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
+                Write-Verbose "Azure file $fileName successfully uploaded. Generating file hash..."
             }
 
             # Try to set the file hash
-            $UploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $StorageAccount.Context) -Path $FileName -ErrorAction SilentlyContinue
-            $UploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $File.FullName -Algorithm MD5).Hash
-            $ApiResponse = $UploadedFile.SetPropertiesAsync()
-            if(-not $ApiResponse.Status -eq "RanToCompletion")
+            $uploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
+            $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+            $apiResponse = $uploadedFile.SetPropertiesAsync()
+            if(-not $apiResponse.Status -eq "RanToCompletion")
             {
-                Write-Warning "Could not generate MD5 hash for file $FileName. Status was $($ApiResponse.Status)"
+                Write-Warning "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)"
                 continue
             }
 
-            Write-Verbose "Azure file $FileName successfully uploaded and hash generated"
-
-            Write-LogFunctionExit
+            Write-Verbose "Azure file $fileName successfully uploaded and hash generated"
         }
+        
+        Write-ScreenInfo 'done' #with folder
+    }
+    
+    Write-ScreenInfo "LabSources Sync complete" -TaskEnd
+    
+    Write-LogFunctionExit
+}
+
+function Test-LabAzureSubscription
+{
+    try
+    {
+        $ctx = Get-AzureRmContext
+    }
+    catch
+    {
+        throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Select-AzureRmProfile ' first"
     }
 }
