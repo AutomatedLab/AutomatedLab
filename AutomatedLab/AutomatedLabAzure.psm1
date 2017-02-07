@@ -224,12 +224,9 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
 
     # Add LabSources storage
-    if (-not (Test-LabAzureLabSourcesStorage))
-    {
-        New-LabAzureLabSourcesStorage
-    }
+    New-LabAzureLabSourcesStorage
 
-    $script:lab.AzureSettings.VmImages = $vmimages | ForEach-Object { [AutomatedLab.Azure.AzureOSImage]::Create($_) }
+    $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
     
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
@@ -939,7 +936,7 @@ function New-LabAzureLabSourcesStorage
     
     if (-not $LocationName)
     {
-        $LocationName = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).DisplayName
+        $LocationName = Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue
     }
     if (-not $LocationName)
     {
