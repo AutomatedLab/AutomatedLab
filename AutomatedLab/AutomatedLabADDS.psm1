@@ -666,34 +666,19 @@ function Install-LabRootDcs
     Start-LabVM -RoleName RootDC -DoNotUseCredSsp -ProgressIndicator 10 -PostDelaySeconds 5 -Wait
     
     #Determine if any machines are already installed as Domain Controllers and exclude these
-    $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.name -ActivityName 'Check if Active Directory is already installed and configured' -PassThru -NoDisplay -ScriptBlock `
+    $machinesAlreadyInstalled = foreach ($machine in $machines)
+    {
+        if (Test-LabADReady -ComputerName $machines)
         {
-            $hostOSVersion = [System.Version](Get-WmiObject -Class Win32_OperatingSystem).Version
-            if ($hostOSVersion -lt [system.version]'6.2')
-            {
-                #Pre Windows Server 2012
-                Import-Module -Name ServerManager
-                if (Get-Module -ListAvailable -Name ActiveDirectory)
-                {
-                    Import-Module -Name ActiveDirectory -ErrorAction SilentlyContinue
-                }
-            }
-            if ((Get-WindowsFeature -Name 'AD-Domain-Services').Installed -eq 'Installed')
-            {
-                try
-                {
-                    Get-ADDomain -Server $env:COMPUTERNAME | Out-Null
-                    $env:COMPUTERNAME
-                }
-                catch {}
-            }
-    })
-    $machines = $machines | Where-Object {$_.Name -notin $machinesAlreadyInstalled}
+            $machine.Name
+        }
+    }
+    
+    $machines = $machines | Where-Object Name -notin $machinesAlreadyInstalled
     foreach ($m in $machinesAlreadyInstalled)
     {
         Write-ScreenInfo -Message "Machine '$m' is already a Domain Controller. Skipping this machine." -Type Warning
     }
-    
     
     $jobs = @()
     if ($machines)
@@ -886,41 +871,17 @@ function Install-LabFirstChildDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName FirstChildDC -DoNotUseCredSsp -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName FirstChildDC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
     
-    #Determine if any machines are already isntalled as Domain Controllers and exclude these
-    $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.name -ActivityName 'Check if Active Directory Domain Services is already installed' -PassThru -NoDisplay -ScriptBlock `
+    #Determine if any machines are already installed as Domain Controllers and exclude these
+    $machinesAlreadyInstalled = foreach ($machine in $machines)
+    {
+        if (Test-LabADReady -ComputerName $machines)
         {
-            $hostOSVersion = [system.version](Get-WmiObject -Class Win32_OperatingSystem).Version
-            if ($hostOSVersion -lt [system.version]'6.2')
-            {
-                #Pre Windows Server 2012
-                Import-Module -Name ServerManager -ErrorAction SilentlyContinue
-                if ((Get-WindowsFeature -Name 'AD-Domain-Services').Installed -eq 'Installed')
-                {
-                    try
-                    {
-                        Get-ADDomain -Server $env:COMPUTERNAME | Out-Null
-                        $env:COMPUTERNAME
-                    }
-                    catch
-                    { }
-                }
-            }
-            else
-            {
-                if ((Get-WindowsFeature -Name 'AD-Domain-Services').InstallState -eq 'Installed')
-                {
-                    try
-                    {
-                        Get-ADDomain -Server $env:COMPUTERNAME | Out-Null
-                        $env:COMPUTERNAME
-                    }
-                    catch
-                    { }
-                }
-            }
-    })
+            $machine.Name
+        }
+    }
+    
     $machines = $machines | Where-Object Name -notin $machinesAlreadyInstalled
     foreach ($m in $machinesAlreadyInstalled)
     {
@@ -1124,45 +1085,18 @@ function Install-LabDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName DC -DoNotUseCredSsp .\1033-ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName DC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
 
     #Determine if any machines are already installed as Domain Controllers and exclude these
-    $machinesAlreadyInstalled = @(Invoke-LabCommand -ComputerName $machines.Name `
-        -ActivityName 'Check if Active Directory Domain Services is already installed' -ScriptBlock {
-            $hostOSVersion = [System.Version](Get-WmiObject -Class Win32_OperatingSystem).Version
-            if ($hostOSVersion -lt [System.Version]'6.2')
-            {
-                #Pre Windows Server 2012
-                Import-Module -Name ServerManager -ErrorAction SilentlyContinue
-                if ((Get-WindowsFeature -Name 'AD-Domain-Services').Installed -eq 'Installed')
-                {
-                    try
-                    {
-                        Get-AdDomain -Server $env:COMPUTERNAME | Out-Null
-                        $env:COMPUTERNAME
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-            else
-            {
-                if ((Get-WindowsFeature -Name 'AD-Domain-Services').InstallState -eq 'Installed')
-                {
-                    try
-                    {
-                        Get-AdDomain -Server $env:COMPUTERNAME | Out-Null
-                        $env:COMPUTERNAME
-                    }
-                    catch
-                    {
-                    }
-                }
-            }
-    } -PassThru -NoDisplay)
+    $machinesAlreadyInstalled = foreach ($machine in $machines)
+    {
+        if (Test-LabADReady -ComputerName $machines)
+        {
+            $machine.Name
+        }
+    }
     
-    $machines = $machines | Where-Object { $_.Name -notin $machinesAlreadyInstalled }
+    $machines = $machines | Where-Object Name -notin $machinesAlreadyInstalled
     foreach ($m in $machinesAlreadyInstalled)
     {
         Write-ScreenInfo -Message "Machine '$m' is already a Domain Controller. Skipping this machine." -Type Warning
@@ -1437,42 +1371,38 @@ function Test-LabADReady
     # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [string]$ComputerName
     )
     
     Write-LogFunctionEntry
     
-    $start = Get-Date
-    
-    $machines = Get-LabMachine -ComputerName $ComputerName
-    
-    
-    $AdReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -NoDisplay -ScriptBlock `
+    $machine = Get-LabMachine -ComputerName $ComputerName
+    if (-not $machine)
     {
-        try
+        Write-Error "The machine '$ComputerName' could not be found in the lab"
+        return
+    }
+    
+    $adReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -ScriptBlock {
+     
+        if ((Get-Service -Name ADWS).Status -eq 'Running')
         {
-            if ((Get-Service -Name ADWS -ErrorAction Stop).Status -eq 'Running')
+            try
             {
-                try
-                {
-                    $env:ADPS_LoadDefaultDrive = 0
-                    $WarningPreference = 'SilentlyContinue'
-                    Import-Module -Name ActiveDirectory -ErrorAction Stop -Verbose:$false
-                    [bool](Get-GetADDomainController -Server $env:COMPUTERNAME -Verbose:$false)
-                }
-                catch
-                {
-                    $false
-                }
+                $env:ADPS_LoadDefaultDrive = 0
+                $WarningPreference = 'SilentlyContinue'
+                Import-Module -Name ActiveDirectory -ErrorAction Stop
+                [bool](Get-GetADDomainController -Server $env:COMPUTERNAME -ErrorAction SilentlyContinue)
+            }
+            catch
+            {
+                $false
             }
         }
-        catch
-        {
-            $false
-        }
-    } -PassThru -ErrorAction SilentlyContinue
+        
+    } -DoNotUseCredSsp -PassThru -NoDisplay  -ErrorAction SilentlyContinue
     
-    -not ($AdReady -contains $false)
+    [bool]$adReady
     
     Write-LogFunctionExit
 }
