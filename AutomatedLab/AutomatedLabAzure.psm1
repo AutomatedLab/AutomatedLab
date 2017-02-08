@@ -1090,9 +1090,9 @@ function Sync-LabAzureLabSources
     Unblock-LabSources -Path $localLabsources
 
     # Create the empty folders first
-    foreach($folder in (Get-ChildItem -Path $localLabsources -Recurse -Directory))
+    foreach ($folder in (Get-ChildItem -Path $localLabsources -Recurse -Directory))
     {
-        if($SkipIsos -and $folder.Name -eq 'Isos')
+        if ($SkipIsos -and $folder.Name -eq 'ISOs')
         {
             continue
         }
@@ -1105,16 +1105,16 @@ function Sync-LabAzureLabSources
         # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory        
         New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
         Write-Verbose "Created directory $($folderName) in labsources"
-        if($err)
+        if ($err)
         {
             $err = $null
 
             # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
             New-AzureStorageDirectory -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
             Write-Verbose "Created directory '$folderName' in labsources"
-            if($err)
+            if ($err)
             {
-                if($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
+                if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
                 {
                     throw "An error ocurred during file upload: $($err[0].Exception.Message)"
                 }
@@ -1125,27 +1125,27 @@ function Sync-LabAzureLabSources
         # Sync the lab sources
         $files = Get-ChildItem -Path $folder.FullName -File
         Write-ScreenInfo "with $($files.Count) files" -NoNewLine
-        foreach($file in $files)
+        foreach ($file in $files)
         {
             Write-ProgressIndicator
-            if($SkipIsos -and $file.Directory.Name -eq 'Isos')
+            if ($SkipIsos -and $file.Directory.Name -eq 'Isos')
             {
                 Write-Verbose "SkipIsos is true, skipping $($file.Name)"
                 continue
             }
 
-            if($MaxFileSizeInMb -and $file.Length/1MB -ge $MaxFileSizeInMb)
+            if ($MaxFileSizeInMb -and $file.Length/1MB -ge $MaxFileSizeInMb)
             {
                 Write-Verbose "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
                 continue
             }
 
             # Check if file is an OS ISO and skip
-            if($file.Extension -eq '.iso')
+            if ($file.Extension -eq '.iso')
             {
-                $IsoDefinition = Get-LabIsoImageDefinition | Where-Object { $_.Path -EQ $file.FullName -and $_.IsOperatingSystem }
+                $isOs = [bool](Get-LabAvailableOperatingSystem -Path $file.FullName)
 
-                if($IsoDefinition)
+                if ($isOs)
                 {
                     Write-Verbose "Skipping OS ISO $($file.FullName)"
                     continue
@@ -1155,14 +1155,14 @@ function Sync-LabAzureLabSources
             $fileName = $file.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\",'')
 
             $azureFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
-            if($azureFile)
+            if ($azureFile)
             {
                 $azureHash = $azureFile.Properties.ContentMD5
                 $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
                 Write-Verbose "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
             }
 
-            if(-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
+            if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
             {
                 $null = Set-AzureStorageFileContent -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
                 Write-Verbose "Azure file $fileName successfully uploaded. Generating file hash..."
@@ -1172,7 +1172,7 @@ function Sync-LabAzureLabSources
             $uploadedFile = Get-AzureStorageFile -Share (Get-AzureStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
             $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
             $apiResponse = $uploadedFile.SetPropertiesAsync()
-            if(-not $apiResponse.Status -eq "RanToCompletion")
+            if (-not $apiResponse.Status -eq "RanToCompletion")
             {
                 Write-Warning "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)"
                 continue
