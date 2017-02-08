@@ -102,7 +102,7 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.DefaultRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
     
     # Select the subscription which is associated with this AzureRmProfile
-    $subscriptions = (Get-AzureRmSubscription)
+    $subscriptions = Get-AzureRmSubscription -WarningAction SilentlyContinue
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
     Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
     
@@ -936,7 +936,7 @@ function New-LabAzureLabSourcesStorage
     
     if (-not $LocationName)
     {
-        $LocationName = Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue
+        $LocationName = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).DisplayName
     }
     if (-not $LocationName)
     {
@@ -1028,7 +1028,6 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
     
     if (Test-LabAzureLabSourcesStorage)
     {
-        throw (New-Object System.NotImplementedException)
         $azureLabSources = Get-LabAzureLabSourcesStorage
         
         $Path -like "$($azureLabSources.Path)*"
