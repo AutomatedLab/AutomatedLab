@@ -1158,9 +1158,9 @@ function Connect-LWAzureLabSourcesDrive
                 }
         }
     
-        $cmd = 'net.exe use * {0} /u:{1} {2}' -f $args[0], $args[1], $args[2]
+        $cmd = 'net.exe use * {0} /u:{1} {1}' -f $args[0], $args[1]#, $args[2]
         $cmd = [scriptblock]::Create($cmd)
-        &$cmd | Out-Null
+        &$cmd 2>&1 | Out-Null
         
         if (-not $LASTEXITCODE) { $ALLabSourcesMapped = $true }
     } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
