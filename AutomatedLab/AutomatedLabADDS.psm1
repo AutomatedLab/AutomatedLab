@@ -668,7 +668,7 @@ function Install-LabRootDcs
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
     {
-        if (Test-LabADReady -ComputerName $machines)
+        if (Test-LabADReady -ComputerName $machine)
         {
             $machine.Name
         }
@@ -683,15 +683,14 @@ function Install-LabRootDcs
     $jobs = @()
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'c:\DeployDebug' for debug info" -NoDisplay -ScriptBlock `
-        {
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'C:\DeployDebug' for debug info" -NoDisplay -ScriptBlock {
             New-Item -ItemType Directory -Path 'c:\DeployDebug' -ErrorAction SilentlyContinue | Out-Null
 
-            $acl = Get-Acl c:\DeployDebug
+            $acl = Get-Acl -Path C:\DeployDebug
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
-            Set-Acl c:\DeployDebug $acl
-        }
+            Set-Acl -Path C:\DeployDebug -AclObject $acl
+        } -DoNotUseCredSsp
         
         foreach ($machine in $machines)
         {
@@ -876,7 +875,7 @@ function Install-LabFirstChildDcs
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
     {
-        if (Test-LabADReady -ComputerName $machines)
+        if (Test-LabADReady -ComputerName $machine)
         {
             $machine.Name
         }
@@ -890,10 +889,14 @@ function Install-LabFirstChildDcs
     
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'c:\DeployDebug' for debug info" -NoDisplay -ScriptBlock `
-        {
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'C:\DeployDebug' for debug info" -NoDisplay -ScriptBlock {
             New-Item -ItemType Directory -Path 'c:\DeployDebug' -ErrorAction SilentlyContinue | Out-Null
-        }
+
+            $acl = Get-Acl -Path C:\DeployDebug
+            $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
+            $acl.AddAccessRule($rule)
+            Set-Acl -Path C:\DeployDebug -AclObject $acl
+        } -DoNotUseCredSsp
         
         $jobs = @()
         foreach ($machine in $machines)
@@ -1090,7 +1093,7 @@ function Install-LabDcs
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
     {
-        if (Test-LabADReady -ComputerName $machines)
+        if (Test-LabADReady -ComputerName $machine)
         {
             $machine.Name
         }
@@ -1104,10 +1107,14 @@ function Install-LabDcs
     
     if ($machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'c:\DeployDebug' for debug info" -NoDisplay -ScriptBlock `
-        {
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Create folder 'C:\DeployDebug' for debug info" -NoDisplay -ScriptBlock {
             New-Item -ItemType Directory -Path 'c:\DeployDebug' -ErrorAction SilentlyContinue | Out-Null
-        }
+
+            $acl = Get-Acl -Path C:\DeployDebug
+            $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
+            $acl.AddAccessRule($rule)
+            Set-Acl -Path C:\DeployDebug -AclObject $acl
+        } -DoNotUseCredSsp
         
         $rootDcs = Get-LabMachine -Role RootDC
         $childDcs = Get-LabMachine -Role FirstChildDC
@@ -1271,41 +1278,14 @@ function Wait-LabADReady
         {
             if ($machine.AdRetries)
             {
-                $AdReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -NoDisplay -ScriptBlock {
-                    try
-                    {
-                        if ((Get-Service -Name ADWS -ErrorAction Stop).Status -eq 'Running')
-                        {
-                            try
-                            {
-                                $env:ADPS_LoadDefaultDrive = 0
-                                $backupWarningPreference = $WarningPreference
-                                $WarningPreference = 'SilentlyContinue'
-                                Import-Module -Name ActiveDirectory -ErrorAction Stop -Verbose:$false
-                                [bool](Get-ADDomainController -Server $env:COMPUTERNAME -Verbose:$false)
-                            }
-                            catch
-                            {
-                                $false
-                            }
-                        }
-                    }
-                    catch
-                    {
-                        $false
-                    }
-                    finally
-                    {
-                        $WarningPreference = $BackupWarningPreference
-                    }
-                } -PassThru -ErrorAction SilentlyContinue
+                $adReady = Test-LabADReady -ComputerName $machine
                 
                 if ($DebugPreference)
                 {
-                    Write-Debug -Message "Return $AdReady from $($machine.Name)"
+                    Write-Debug -Message "Return '$adReady' from '$($machine)'"
                 }
                 
-                if ($AdReady)
+                if ($adReady)
                 {
                     $machine.AdRetries--
                 }
@@ -1392,7 +1372,7 @@ function Test-LabADReady
                 $env:ADPS_LoadDefaultDrive = 0
                 $WarningPreference = 'SilentlyContinue'
                 Import-Module -Name ActiveDirectory -ErrorAction Stop
-                [bool](Get-GetADDomainController -Server $env:COMPUTERNAME -ErrorAction SilentlyContinue)
+                [bool](Get-ADDomainController -Server $env:COMPUTERNAME -ErrorAction SilentlyContinue)
             }
             catch
             {
