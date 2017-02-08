@@ -1037,7 +1037,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
 function Remove-LabAzureLabSourcesStorage
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [CmdletBinding(ConfirmImpact = 'High')]
+    [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
 
@@ -1048,7 +1048,11 @@ function Remove-LabAzureLabSourcesStorage
     {
         $azureLabStorage = Get-LabAzureLabSourcesStorage
         
-        Remove-AzureRmResourceGroup -Name $azureLabStorage.ResourceGroupName -Force
+        if ($PSCmdlet.ShouldProcess($azureLabStorage.ResourceGroupName, 'Remove Resource Group'))
+        {
+            Remove-AzureRmResourceGroup -Name $azureLabStorage.ResourceGroupName -Force | Out-Null
+            Write-Warning "Azure Resource Group '$($azureLabStorage.ResourceGroupName)' was removed"
+        }
     }
     
     Write-LogFunctionExit
