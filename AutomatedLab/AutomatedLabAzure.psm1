@@ -949,7 +949,7 @@ function New-LabAzureLabSourcesStorage
     }
 
     $currentSubscription = (Get-AzureRmContext).Subscription
-    Write-ScreenInfo -Message "Looking for Azure LabSources inside subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
+    Write-ScreenInfo "Looking for Azure LabSources inside subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
 
     $resourceGroup = Get-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue
     if (-not $resourceGroup)
@@ -1012,8 +1012,10 @@ function Get-LabAzureLabSourcesStorage
 function Test-LabAzureLabSourcesStorage
 {
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
+    
+    $AzureStorageShare = Get-AzureStorageShare -Context $azureLabSources.Context -ErrorAction SilentlyContinue
 
-    [bool]$azureLabSources
+    [bool]$AzureStorageShare
 }
 
 function Test-LabPathIsOnLabAzureLabSourcesStorage
@@ -1071,6 +1073,12 @@ function Sync-LabAzureLabSources
 
     Write-LogFunctionExit
     Test-LabAzureSubscription
+    
+    if (-not (Test-LabAzureLabSourcesStorage))
+    {
+        Write-Error "There is no LabSources share available in the current subscription '$((Get-AzureRmContext).Subscription.SubscriptionName)'. To create one, please call 'New-LabAzureLabSourcesStorage'."
+        return
+    }
     
     $currentSubscription = (Get-AzureRmContext).Subscription
     Write-ScreenInfo -Message "Syncing LabSources in subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
