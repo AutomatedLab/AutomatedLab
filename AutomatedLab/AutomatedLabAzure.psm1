@@ -1013,9 +1013,14 @@ function Test-LabAzureLabSourcesStorage
 {
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
     
-    $AzureStorageShare = Get-AzureStorageShare -Context $azureLabSources.Context -ErrorAction SilentlyContinue
+	if (-not $azureLabSources)
+	{
+		return $false
+	}
 
-    [bool]$AzureStorageShare
+    $azureStorageShare = Get-AzureStorageShare -Context $azureLabSources.Context -ErrorAction SilentlyContinue
+
+    [bool]$azureStorageShare
 }
 
 function Test-LabPathIsOnLabAzureLabSourcesStorage
