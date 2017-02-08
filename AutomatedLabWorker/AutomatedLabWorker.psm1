@@ -13,19 +13,11 @@ function Invoke-LWCommand
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyScriptBlock')]
-        [ValidateScript({
-                    [System.IO.Directory]::Exists($_) -or [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$DependencyFolderPath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        [ValidateScript({
-                    [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$ScriptFilePath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -73,10 +65,28 @@ function Invoke-LWCommand
         [switch]$PassThru
     )
     
-    #required to suporess verbose messages, warnings and errors
+    Write-LogFunctionEntry
+    
+    #required to supress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    Write-LogFunctionEntry
+    if ($DependencyFolderPath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) -and -not (Test-Path -Path $DependencyFolderPath))
+        {
+            Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
+            return
+        }
+    }
+    
+    if ($ScriptFilePath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath) -and -not (Test-Path -Path $ScriptFilePath -PathType Leaf))
+        {
+            Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
+            return
+        }
+    }
 
     $internalSession = New-Object System.Collections.ArrayList
     $internalSession.AddRange($Session)
@@ -92,19 +102,26 @@ function Invoke-LWCommand
     {
         Write-Verbose -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
         
-        try
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
-            Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
+            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination C:\ -Recurse -Force } -ArgumentList $DependencyFolderPath
         }
-        catch
+        else
         {
-            if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+            try
             {
-                Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
             }
-            else
+            catch
             {
-                Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+                {
+                    Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
+                else
+                {
+                    Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
             }
         }
         
