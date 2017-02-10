@@ -25,6 +25,15 @@ namespace AutomatedLab
         private string defaultRoleSize;
         private string labSourcesStorageAccountName;
         private string labSourcesResourceGroupName;
+        private int loadBalancerPortCounter;
+
+        public int LoadBalancerPortCounter
+        {
+            get { return loadBalancerPortCounter; }
+            set { loadBalancerPortCounter = value; }
+        }
+
+
 
         public string LabSourcesResourceGroupName
         {
