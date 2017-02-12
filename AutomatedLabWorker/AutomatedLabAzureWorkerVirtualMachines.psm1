@@ -372,18 +372,31 @@ function New-LWAzureVM
         Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
         $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
 
-        Write-Verbose -Message "Setting private and dynamic public IP addresses."
+        Write-Verbose -Message "Setting private IP address."
         $defaultIPv4Address = $DefaultIpAddress
-        $publicIpAddress = New-AzureRmPublicIpAddress -Name "$($Machine.Name.ToLower())pip" -ResourceGroupName $ResourceGroupName -Location $Location -DomainNameLabel "$($LabName.ToLower())-$($Machine.Name.ToLower())" -AllocationMethod Dynamic
-        if($publicIpAddress.ProvisioningState -ne 'Succeeded')
-        {
-            throw "No public IP could be assigned to $($machine.Name). Connections to this machine will not work."
-        }
 
-        Write-Verbose -Message "Default IP address is '$DefaultIpAddress'. Public IP is $($publicIpAddress.IpAddress)"
+        Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
+
+		Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
+		$LoadBalancer = Get-AzureRmLoadBalancer -Name "$($resourceGroup)loadbalancer" -ResourceGroupName $resourceGroup -ErrorAction Stop		
+		
+		$inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
+		$inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
+		$inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
+
+		$nicProperties = @{
+			Name = "$($Machine.Name.ToLower())nic0"
+			ResourceGroupName = $ResourceGroupName
+			Location = $Location
+			Subnet = $subnet
+			PrivateIpAddress = $defaultIPv4Address
+			LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
+			LoadBalancerInboundNatRule = $inboundNatRules
+			ErrorAction = "Stop"
+		}
         
         Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
-        $networkInterface = New-AzureRmNetworkInterface -Name "$($Machine.Name.ToLower())nic0" -ResourceGroupName $ResourceGroupName -Location $Location -Subnet $Subnet -PrivateIpAddress $defaultIPv4Address -PublicIpAddress $publicIpAddress
+        $networkInterface = New-AzureRmNetworkInterface @nicProperties
         
         Write-Verbose -Message 'Adding NIC to VM'
         $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
@@ -1116,31 +1129,32 @@ function Get-LWAzureVMConnectionInfo
 {
     param (
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [AutomatedLab.Machine[]]$ComputerName
     )
 	
     Write-LogFunctionEntry
 
-    $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName
+	$azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName
 	
     foreach ($name in $ComputerName)
     {
         $azureVM = $azureVMs | Where-Object Name -eq $name
 
         if (-not $azureVM)
-        { return }		
+        { return }
 
         $nic = Get-AzureRmNetworkInterface | Where {$_.virtualmachine.id -eq ($azureVM.Id)}
         $ip = Get-AzureRmPublicIpAddress | where {$_.Id -eq $nic.IpConfigurations.publicipaddress.id}
 
-        # Why are DnsName and HttpsName being used? Seems like it would be the same anyway...
+        # TODO Get Load Balancer Public IP and Load Balancer DNS Name
         New-Object PSObject -Property @{
-            ComputerName = $name
+            ComputerName = $name.Name
             DnsName = $ip.DnsSettings.Fqdn
             HttpsName = $ip.DnsSettings.Fqdn
             VIP = $ip.IpAddress
-            Port = 5985
-            RdpPort = 3389
+            Port = $name.AzureProperties.LoadBalancerWinrmHttpPort
+			HttpsPort = $name.AzureProperties.LoadBalancerWinrmHttpsPort
+            RdpPort = $name.AzureProperties.LoadBalancerRdpPort
             ResourceGroupName = $azureVM.ResourceGroupName
         }
     }
