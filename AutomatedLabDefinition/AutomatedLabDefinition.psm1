@@ -1835,6 +1835,16 @@ function Add-LabMachineDefinition
     {
         $VirtualizationHost = (Get-LabDefinition).DefaultVirtualizationEngine
     }
+
+	if($VirtualizationHost -eq 'Azure')
+	{
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerRdpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter	
+	}
     
     if ($InstallationUserCredential)
     {
