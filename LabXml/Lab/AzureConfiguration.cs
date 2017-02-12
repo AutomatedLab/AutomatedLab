@@ -155,6 +155,9 @@ namespace AutomatedLab
             this.resourceGroups = new List<AzureResourceGroup>();
             this.subscriptions = new List<AzureSubscription>();
             this.vmDisks = new List<string>();
+
+            // Start port counter above well-known ports
+            this.LoadBalancerPortCounter = 5000
         }
 
         protected List<T> NonEmptyList<T>(List<T> value)
