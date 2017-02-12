@@ -210,7 +210,9 @@
 		'Get-LabAzureLabSourcesStorage',
 		'Remove-LabAzureLabSourcesStorage',
 		'Sync-LabAzureLabSources',
-		'Remove-LabAzureResourceGroup'
+		'Remove-LabAzureResourceGroup',
+		'New-LWAzureLoadBalancer',
+		'Remove-LWAzureLoadBalancer'
     
     # List of all modules packaged with this module
     ModuleList = @(
