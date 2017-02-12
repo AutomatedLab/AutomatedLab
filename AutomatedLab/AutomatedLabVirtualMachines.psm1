@@ -10,7 +10,9 @@ function New-LabVM
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
 		
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+		[int]$ProgressIndicator = 20
     )
 	
     Write-LogFunctionEntry
@@ -42,6 +44,14 @@ function New-LabVM
     }
 	
     $jobs = @()
+
+	if($Lab.DefaultVirtualizationEngine -eq 'Azure')
+	{		
+		Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
+		New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({$_.HostType -eq 'Azure'})) -Wait
+		Write-ScreenInfo -Message 'Done' -TaskEnd
+	}
+
     foreach ($machine in $machines.GetEnumerator())
     {
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
@@ -88,9 +98,12 @@ function New-LabVM
     }
     
     #test if the machine creation jobs succeeded
+	Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     $jobs | Wait-Job | Out-Null
     $failedJobs = $jobs | Where-Object State -eq 'Failed'
     $completedJobs = $jobs | Where-Object State -eq 'Completed'
+	Write-ScreenInfo -Message 'Done' -TaskEnd
+
     if ($failedJobs)
     {
         $machinesFailedToCreate = ($failedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
