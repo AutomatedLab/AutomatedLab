@@ -26,6 +26,14 @@ namespace AutomatedLab
         private string labSourcesStorageAccountName;
         private string labSourcesResourceGroupName;
         private int loadBalancerPortCounter;
+        private AzureAvailabilitySet defaultAvailabilitySet;
+
+        public AzureAvailabilitySet DefaultAvailabilitySet
+        {
+            get { return defaultAvailabilitySet; }
+            set { defaultAvailabilitySet = value; }
+        }
+
 
         public int LoadBalancerPortCounter
         {
@@ -157,7 +165,7 @@ namespace AutomatedLab
             this.vmDisks = new List<string>();
 
             // Start port counter above well-known ports
-            this.LoadBalancerPortCounter = 5000
+            this.LoadBalancerPortCounter = 5000;
         }
 
         protected List<T> NonEmptyList<T>(List<T> value)
