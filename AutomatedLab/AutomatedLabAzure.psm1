@@ -1203,7 +1203,6 @@ function Test-LabAzureSubscription
         throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Select-AzureRmProfile ' first"
     }
 }
-}
 
 function New-LabAzureAvailabilitySet
 {
