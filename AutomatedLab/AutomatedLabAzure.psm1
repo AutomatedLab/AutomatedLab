@@ -198,6 +198,9 @@ function Add-LabAzureSubscription
         New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
     }
 
+	Write-Verbose -Message 'Creating default availability set'
+	New-LabAzureAvailabilitySet
+
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
     foreach($storageAccount in $storageAccounts)
     {
@@ -1199,4 +1202,45 @@ function Test-LabAzureSubscription
     {
         throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Select-AzureRmProfile ' first"
     }
+}
+}
+
+function New-LabAzureAvailabilitySet
+{
+[CmdletBinding()]
+param
+(
+	[switch]$PassThru
+)
+	if(-not $Script:Lab.AzureSettings.DefaultAvailabilitySet)
+	{
+		$AvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $Script:Lab.Name -Name "lab$($Script:Lab.Name)avset" -Location  (Get-LabAzureDefaultLocation).Location
+		$Script:Lab.AzureSettings.DefaultAvailabilitySet = [AutomatedLab.Azure.AzureAvailabilitySet]::Create($AvailabilitySet)
+	}
+
+	if($PassThru)
+	{
+		$Script:Lab.AzureSettings.DefaultAvailabilitySet
+	}
+}
+
+function Get-LabAzureAvailabilitySet
+{
+[CmdletBinding()]
+param
+(
+)
+
+if(-not $Script:Lab.AzureSettings.DefaultAvailabilitySet)
+{
+	throw 'Get-LabAzureAvailabilitySet should only be called after a lab has been imported or Add-LabAzureSubscription has been called'	
+}
+
+$Script:Lab.AzureSettings.DefaultAvailabilitySet
+}
+
+Remove-LabAzureAvailabilitySet
+{
+	$Script:Lab.AzureSettings.DefaultAvailabilitySet | Remove-AzureRmAvailabilitySet
+	$Script:Lab.AzureSettings.DefaultAvailabilitySet = $null
 }

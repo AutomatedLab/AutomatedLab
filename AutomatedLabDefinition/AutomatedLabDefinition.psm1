@@ -1749,7 +1749,7 @@ function Add-LabMachineDefinition
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
-    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'
+    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort'
     
     if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
     {
@@ -1835,6 +1835,16 @@ function Add-LabMachineDefinition
     {
         $VirtualizationHost = (Get-LabDefinition).DefaultVirtualizationEngine
     }
+
+	if($VirtualizationHost -eq 'Azure')
+	{
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerRdpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+		$script:lab.AzureSettings.LoadBalancerPortCounter++
+		$machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter	
+	}
     
     if ($InstallationUserCredential)
     {
@@ -2132,6 +2142,24 @@ function Add-LabMachineDefinition
             
             #throw 'No virtual network is defined. Please call Add-LabVirtualNetworkDefinition before adding machines but after calling New-LabDefinition'
         }
+				
+		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerRdpPort'))
+		{
+			$Machine.AzureProperties.Add('LoadBalancerRdpPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
+			$lab.AzureSettings.LoadBalancerPortCounter ++
+		}
+
+		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerWinRmHttpPort'))
+		{
+			$Machine.AzureProperties.Add('LoadBalancerWinRmHttpPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
+			$lab.AzureSettings.LoadBalancerPortCounter ++
+		}
+
+		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerWinRmHttpsPort'))
+		{
+			$Machine.AzureProperties.Add('LoadBalancerWinRmHttpsPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
+			$lab.AzureSettings.LoadBalancerPortCounter ++
+		}
     }
     elseif ($VirtualizationHost -eq 'HyperV')
     {

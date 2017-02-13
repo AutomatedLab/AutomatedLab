@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Azure\AzureAccount.cs" />
+    <Compile Include="Azure\AzureAvailabilitySet.cs" />
     <Compile Include="Azure\AzureLocation.cs" />
     <Compile Include="Azure\AzureOSImage.cs" />
     <Compile Include="Azure\AzureResourceGroup.cs" />
