@@ -187,9 +187,9 @@ $backendConfig = New-AzureRmLoadBalancerBackendAddressPoolConfig -Name "$($resou
 $inboundRules = @()
 foreach($machine in $ConnectedMachines)
 {
-	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.AzureProperties.LoadBalancerRdpPort -BackendPort 3389
-	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.AzureProperties.LoadBalancerWinRmHttpPort -BackendPort 5985
-	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.AzureProperties.LoadBalancerWinrmHttpsPort -BackendPort 5986
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
 }
 
 $loadBalancer = New-AzureRmLoadBalancer -Name "$($resourceGroup)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules
