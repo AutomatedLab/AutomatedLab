@@ -130,8 +130,6 @@
         'Get-LabAzureLocation',
         'Get-LabAzureDefaultLocation',
         'Set-LabAzureDefaultLocation',
-        'Get-LabAzureDefaultAffinityGroup',
-        'Set-LabAzureDefaultAffinityGroup',
         'Get-LabAzureDefaultStorageAccount',
         'Set-LabAzureDefaultStorageAccount',
 		'Get-LabAzureResourceGroup',

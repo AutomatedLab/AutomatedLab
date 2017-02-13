@@ -198,6 +198,9 @@ function Add-LabAzureSubscription
         New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
     }
 
+	Write-Verbose -Message 'Creating default availability set'
+	New-LabAzureAvailabilitySet
+
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
 	foreach($Account in $storageAccounts)
 	{
@@ -929,7 +932,7 @@ $ALStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($StorageA
 $ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzureRmStorageAccountKey)[0].Value
 
 $script:Lab.AzureSettings.LabSourcesStorageAccountName = $StorageAccountName
-if(($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
+if($script:Lab.AzureSettings.StorageAccounts -and ($script:Lab.AzureSettings.StorageAccounts.StorageAccountName).Contains($StorageAccountName))
 {
 	$existingGroup = $script:Lab.AzureSettings.StorageAccounts | Where-Object {$_.StorageAccountName -eq $StorageAccountName}
 	if($existingGroup)
@@ -1065,4 +1068,44 @@ foreach($File in (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -R
 
 	Write-LogFunctionExit
 }
+}
+
+function New-LabAzureAvailabilitySet
+{
+[CmdletBinding()]
+param
+(
+	[switch]$PassThru
+)
+	if(-not $Script:Lab.AzureSettings.DefaultAvailabilitySet)
+	{
+		$AvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $Script:Lab.Name -Name "lab$($Script:Lab.Name)avset" -Location  (Get-LabAzureDefaultLocation).Location
+		$Script:Lab.AzureSettings.DefaultAvailabilitySet = [AutomatedLab.Azure.AzureAvailabilitySet]::Create($AvailabilitySet)
+	}
+
+	if($PassThru)
+	{
+		$Script:Lab.AzureSettings.DefaultAvailabilitySet
+	}
+}
+
+function Get-LabAzureAvailabilitySet
+{
+[CmdletBinding()]
+param
+(
+)
+
+if(-not $Script:Lab.AzureSettings.DefaultAvailabilitySet)
+{
+	throw 'Get-LabAzureAvailabilitySet should only be called after a lab has been imported or Add-LabAzureSubscription has been called'	
+}
+
+$Script:Lab.AzureSettings.DefaultAvailabilitySet
+}
+
+Remove-LabAzureAvailabilitySet
+{
+	$Script:Lab.AzureSettings.DefaultAvailabilitySet | Remove-AzureRmAvailabilitySet
+	$Script:Lab.AzureSettings.DefaultAvailabilitySet = $null
 }
