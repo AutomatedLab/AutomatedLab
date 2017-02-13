@@ -1137,8 +1137,9 @@ function Get-LWAzureVMConnectionInfo
 	
     Write-LogFunctionEntry
 
-	$azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName
 	$resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+	$azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
+	
 
     foreach ($name in $ComputerName)
     {
@@ -1156,9 +1157,9 @@ function Get-LWAzureVMConnectionInfo
             DnsName = $ip.DnsSettings.Fqdn
             HttpsName = $ip.DnsSettings.Fqdn
             VIP = $ip.IpAddress
-            Port = $name.AzureProperties.LoadBalancerWinrmHttpPort
-			HttpsPort = $name.AzureProperties.LoadBalancerWinrmHttpsPort
-            RdpPort = $name.AzureProperties.LoadBalancerRdpPort
+            Port = $name.LoadBalancerWinrmHttpPort
+			HttpsPort = $name.LoadBalancerWinrmHttpsPort
+            RdpPort = $name.LoadBalancerRdpPort
             ResourceGroupName = $azureVM.ResourceGroupName
         }
     }
