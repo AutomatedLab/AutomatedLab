@@ -2142,24 +2142,6 @@ function Add-LabMachineDefinition
             
             #throw 'No virtual network is defined. Please call Add-LabVirtualNetworkDefinition before adding machines but after calling New-LabDefinition'
         }
-				
-		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerRdpPort'))
-		{
-			$Machine.AzureProperties.Add('LoadBalancerRdpPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
-			$lab.AzureSettings.LoadBalancerPortCounter ++
-		}
-
-		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerWinRmHttpPort'))
-		{
-			$Machine.AzureProperties.Add('LoadBalancerWinRmHttpPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
-			$lab.AzureSettings.LoadBalancerPortCounter ++
-		}
-
-		if(-not $Machine.AzureProperties.ContainsKey('LoadBalancerWinRmHttpsPort'))
-		{
-			$Machine.AzureProperties.Add('LoadBalancerWinRmHttpsPort', $script:lab.AzureSettings.LoadBalancerPortCounter)
-			$lab.AzureSettings.LoadBalancerPortCounter ++
-		}
     }
     elseif ($VirtualizationHost -eq 'HyperV')
     {
