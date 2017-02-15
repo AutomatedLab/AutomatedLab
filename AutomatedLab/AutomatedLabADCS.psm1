@@ -86,7 +86,7 @@ namespace Pki.CATemplate
         RemoveInvalidFromStore = 1024,// This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048,//This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
         IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section §4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
-        ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card–based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
+        ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768,//This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536,//This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
         IssuancePoliciesFromRequest = 131072,//This flag indicates that the certificate issuance policies to be included in the issued certificate come from the request rather than from the template. The template contains a list of all of the issuance policies that the request is allowed to specify; if the request contains policies that are not listed in the template, then the request is rejected. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -428,8 +428,8 @@ $gpoType = @'
                 /// <summary>
                 /// Constructor.
                 /// </summary>
-                /// <param name=”remoteMachineName”>Target machine name to operate group policy</param>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <param name="remoteMachineName">Target machine name to operate group policy</param>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public GroupPolicyObjectHandler(String remoteMachineName)
                 {
                     groupPolicyObject = new GroupPolicyObject();
@@ -459,7 +459,7 @@ $gpoType = @'
                 /// Retrieves the display name for the GPO.
                 /// </summary>
                 /// <returns>Display name</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetDisplayName()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -478,7 +478,7 @@ $gpoType = @'
                 /// Retrieves the computer name of the remote GPO.
                 /// </summary>
                 /// <returns>Machine name</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetMachineName()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -497,7 +497,7 @@ $gpoType = @'
                 /// Retrieves the options for the GPO.
                 /// </summary>
                 /// <returns>Options flag</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public Int32 GetOptions()
                 {
                     try
@@ -514,7 +514,7 @@ $gpoType = @'
                 /// Retrieves the path to the GPO.
                 /// </summary>
                 /// <returns>The path to the GPO</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetPath()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -533,7 +533,7 @@ $gpoType = @'
                 /// Retrieves a handle to the root of the registry key for the machine section.
                 /// </summary>
                 /// <returns>A handle to the root of the registry key for the specified GPO computer section</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public UInt32 GetMachineRegistryKey()
                 {
                     UInt32 handle;
@@ -552,7 +552,7 @@ $gpoType = @'
                 /// Retrieves a handle to the root of the registry key for the user section.
                 /// </summary>
                 /// <returns>A handle to the root of the registry key for the specified GPO user section</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public UInt32 GetUserRegistryKey()
                 {
                     UInt32 handle;
@@ -570,9 +570,9 @@ $gpoType = @'
                 /// <summary>
                 /// Saves the specified registry policy settings to disk and updates the revision number of the GPO.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-                /// <param name=”isAdd”>Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+                /// <param name="isAdd">Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public void Save(bool isMachine, bool isAdd)
                 {
                     try
@@ -592,10 +592,10 @@ $gpoType = @'
                 /// <summary>
                 /// Set the group policy value.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-                /// <param name=”subKey”>Group policy config full path</param>
-                /// <param name=”valueName”>Group policy config key name</param>
-                /// <param name=”value”>If value is null, it will envoke the delete method</param>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+                /// <param name="subKey">Group policy config full path</param>
+                /// <param name="valueName">Group policy config key name</param>
+                /// <param name="value">If value is null, it will envoke the delete method</param>
                 /// <returns>Whether the config is successfully set</returns>
                 public ResultCode SetGroupPolicy(bool isMachine, String subKey, String valueName, object value)
                 {
@@ -606,7 +606,7 @@ $gpoType = @'
 
                     if (null == value)
                     {
-                        // check the key’s existance
+                        // check the key's existance
                         if (RegOpenKeyEx((UIntPtr)gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                         {
                             RegCloseKey((UInt32)hKey);
@@ -697,9 +697,9 @@ $gpoType = @'
                 /// <summary>
                 /// Get the config of the group policy.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
-                /// <param name=”subKey”>Group policy config full path</param>
-                /// <param name=”valueName”>Group policy config key name</param>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
+                /// <param name="subKey">Group policy config full path</param>
+                /// <param name="valueName">Group policy config key name</param>
                 /// <returns>The setting of the specified config</returns>
                 public object GetGroupPolicy(bool isMachine, String subKey, String valueName)
                 {
@@ -711,7 +711,7 @@ $gpoType = @'
                     if (RegOpenKeyEx(gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                     {
                         UInt32 type;
-                        byte[] data = new byte[size];  // to store retrieved the value’s data
+                        byte[] data = new byte[size];  // to store retrieved the value's data
 
                         if (RegQueryValueEx(hKey, valueName, 0, out type, data, ref size) == 234)
                         {
@@ -788,10 +788,10 @@ $gpoType = @'
             /// Set policy config
             /// It will start a single thread to set group policy.
             /// </summary>
-            /// <param name=”isMachine”>Whether is machine config</param>
-            /// <param name=”configFullPath”>The full path configuration</param>
-            /// <param name=”configKey”>The configureation key name</param>
-            /// <param name=”value”>The value to set, boxed with proper type [ String, Int32 ]</param>
+            /// <param name="isMachine">Whether is machine config</param>
+            /// <param name="configFullPath">The full path configuration</param>
+            /// <param name="configKey">The configureation key name</param>
+            /// <param name="value">The value to set, boxed with proper type [ String, Int32 ]</param>
             /// <returns>Whether the config is successfully set</returns>
             [MethodImplAttribute(MethodImplOptions.Synchronized)]
             public static ResultCode SetGroupPolicy(bool isMachine, String configFullPath, String configKey, object value)
@@ -807,11 +807,11 @@ $gpoType = @'
             /// Thread start for seting group policy.
             /// Called by public static ResultCode SetGroupPolicy(bool isMachine, WinRMGPConfigName configName, object value)
             /// </summary>
-            /// <param name=”values”>
-            /// values[0] – isMachine<br/>
-            /// values[1] – configFullPath<br/>
-            /// values[2] – configKey<br/>
-            /// values[3] – value<br/>
+            /// <param name="values">
+            /// values[0] - isMachine<br/>
+            /// values[1] - configFullPath<br/>
+            /// values[2] - configKey<br/>
+            /// values[3] - value<br/>
             /// </param>
             private static void SetGroupPolicy(object values)
             {
@@ -830,9 +830,9 @@ $gpoType = @'
             /// Get policy config.
             /// It will start a single thread to get group policy
             /// </summary>
-            /// <param name=”isMachine”>Whether is machine config</param>
-            /// <param name=”configFullPath”>The full path configuration</param>
-            /// <param name=”configKey”>The configureation key name</param>
+            /// <param name="isMachine">Whether is machine config</param>
+            /// <param name="configFullPath">The full path configuration</param>
+            /// <param name="configKey">The configureation key name</param>
             /// <returns>The group policy setting</returns>
             [MethodImplAttribute(MethodImplOptions.Synchronized)]
             public static object GetGroupPolicy(bool isMachine, String configFullPath, String configKey)
@@ -848,10 +848,10 @@ $gpoType = @'
             /// Thread start for geting group policy.
             /// Called by public static object GetGroupPolicy(bool isMachine, WinRMGPConfigName configName)
             /// </summary>
-            /// <param name=”values”>
-            /// values[0] – isMachine<br/>
-            /// values[1] – configFullPath<br/>
-            /// values[2] – configKey<br/>
+            /// <param name="values">
+            /// values[0] - isMachine<br/>
+            /// values[1] - configFullPath<br/>
+            /// values[2] - configKey<br/>
             /// </param>
             public static void GetGroupPolicy(object values)
             {
@@ -1404,7 +1404,7 @@ function Get-CertificatePfx
 
     Write-Verbose "$($certs.Count) certificates remaining after applying filter"
 
-    $password = ConvertTo-SecureString -String 'AL' -Force –AsPlainText
+    $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
 
     foreach ($cert in $certs)
     {
@@ -1460,7 +1460,7 @@ function Add-CertificatePfx
 
     begin
     {
-        $password = ConvertTo-SecureString -String 'AL' -Force –AsPlainText
+        $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
     }
 
     process
