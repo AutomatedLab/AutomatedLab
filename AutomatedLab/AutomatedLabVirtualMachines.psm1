@@ -932,9 +932,9 @@ function Remove-LabVM
 #region Get-LabVMStatus
 function Get-LabVMStatus
 {
+    [cmdletBinding()]
     # .ExternalHelp AutomatedLab.Help.xml
     param (
-        [Parameter(Mandatory)]
         [string[]]$ComputerName,
 
         [switch]$AsHashTable
@@ -945,7 +945,14 @@ function Get-LabVMStatus
     #required to suporess verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    $vms = Get-LabMachine -ComputerName $ComputerName
+    if ($ComputerName)
+    {
+        $vms = Get-LabMachine -ComputerName $ComputerName
+    }
+    else
+    {
+        $vms = Get-LabMachine
+    }
     
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
     if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.Name }
@@ -1503,3 +1510,120 @@ function Test-LabMachineInternetConnectivity
     }
 }
 #endregion Test-LabMachineInternetConnectivity
+
+#region Get-LabVM
+function Get-LabVM
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
+    [OutputType([AutomatedLab.Machine])]
+    param (
+        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ParameterSetName = 'ByRole')]
+        [AutomatedLab.Roles]$Role,
+        
+        [Parameter(Mandatory, ParameterSetName = 'All')]
+        [switch]$All,
+        
+        [switch]$IsRunning
+    )
+    
+    begin
+    {
+        #required to suporess verbose messages, warnings and errors
+        Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+
+        Write-LogFunctionEntry
+        
+        $result = @()
+        if (-not $script:data)
+        {
+            $script:data = Get-Lab
+        }
+    }
+    
+    process
+    {
+        if ($PSCmdlet.ParameterSetName -eq 'ByName')
+        {
+            if ($ComputerName)
+            {
+                foreach ($n in $ComputerName)
+                {
+                    $machine = $Script:data.Machines | Where-Object Name -in $n
+                    if (-not $machine)
+                    {
+                        continue
+                    }
+                
+                    $result += $machine
+                }
+            }
+            else
+            {
+                $result = $Script:data.Machines
+            }
+        }
+        
+        if ($PSCmdlet.ParameterSetName -eq 'ByRole')
+        {
+            $result = $Script:data.Machines |
+            Where-Object { $_.Roles.Name } |
+            Where-Object { $_.Roles | Where-Object { $Role.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            
+            if (-not $result)
+            {
+                return
+            }
+        }
+        
+        if ($PSCmdlet.ParameterSetName -eq 'All')
+        {
+            $result = $Script:data.Machines
+        }
+    }
+    
+    end
+    {
+        #Add Azure Connection Info
+        $azureVMs = $Script:data.Machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
+        if ($azureVMs)
+        {
+            $azureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $azureVMs
+
+            if ($azureConnectionInfo)
+            {
+                foreach ($azureVM in $azureVMs)
+                {
+                    $azureVM | Add-Member -Name AzureConnectionInfo -MemberType NoteProperty -Value ($azureConnectionInfo | Where-Object ComputerName -eq $azureVM) -Force
+                }
+            }
+        }
+
+        if ($IsRunning)
+        {
+            if ($result.Count -eq 1)
+            {
+                if ((Get-LabVMStatus -ComputerName $result) -eq 'Started')
+                {
+                    $result
+                }
+            }
+            else
+            {
+                $startedMachines = (Get-LabVMStatus -ComputerName $result).GetEnumerator() | Where-Object Value -eq 'Started'
+                $Script:data.Machines | Where-Object { $_.Name -in $startedMachines.Name }
+            }
+        }
+        else
+        {
+            $result
+        }
+    }
+}
+#endregion Get-LabVM
+
+New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global

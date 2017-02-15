@@ -56,7 +56,7 @@
     FunctionsToExport = @('Get-Lab',
         'Clear-Lab',
         'Set-LabHost',
-        'Get-LabMachine',
+        'Get-LabVM',
         'Get-LabVMStatus',
         'Get-LabSoftwarePackage',
         'Get-LabAvailableOperatingSystem',
