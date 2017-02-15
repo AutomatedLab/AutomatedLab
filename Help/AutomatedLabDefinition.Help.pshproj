@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ModuleObject xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fVersion="1.1" type="Script" mclass="Module" useSupports="false">
   <Name>AutomatedLabDefinition</Name>
-  <Version>3.9.0.2</Version>
+  <Version>3.9.2.0</Version>
   <Description>The module creates the lab and machine definition for the AutomatedLab module saved in XML</Description>
   <HasManifest>true</HasManifest>
   <OverridePostCount>false</OverridePostCount>
