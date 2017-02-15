@@ -193,3 +193,47 @@ param
     }
 }
 #endregion
+#endregion Remove-LWNetworkSwitch
+#region New-LWAzureLoadBalancer
+function New-LWAzureLoadBalancer
+{
+param
+(
+	[AutomatedLab.Machine[]]$ConnectedMachines,
+	[switch]$PassThru,
+	[switch]$Wait
+)
+
+$lab = Get-Lab
+$resourceGroup = $lab.Name
+$location = $lab.AzureSettings.DefaultLocation.DisplayName
+
+$publicIp = Get-AzureRmPublicIpAddress -Name "$($resourceGroup)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
+if(-not $publicIp)
+{
+    $publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)lbfrontendip" -ResourceGroupName $resourceGroup -Location $location -AllocationMethod Static -IpAddressVersion IPv4 -DomainNameLabel $resourceGroup.ToLower()
+}
+
+$frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)lbfrontendconfig" -PublicIpAddress $publicIp
+$backendConfig = New-AzureRmLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)backendpoolconfig"
+
+$inboundRules = @()
+foreach($machine in $ConnectedMachines)
+{
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
+	$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
+}
+
+$loadBalancer = New-AzureRmLoadBalancer -Name "$($resourceGroup)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules
+
+# TODO use machine props, create backend pool
+
+}
+#endregion
+#region Remove-LWAzureLoadBalancer
+function Remove-LWAzureLoadBalancer
+{
+	throw "Not implemented"
+}
+#endregion
