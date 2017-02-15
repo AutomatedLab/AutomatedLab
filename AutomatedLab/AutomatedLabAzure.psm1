@@ -1243,7 +1243,7 @@ if(-not $Script:Lab.AzureSettings.DefaultAvailabilitySet)
 $Script:Lab.AzureSettings.DefaultAvailabilitySet
 }
 
-Remove-LabAzureAvailabilitySet
+function Remove-LabAzureAvailabilitySet
 {
 	$Script:Lab.AzureSettings.DefaultAvailabilitySet | Remove-AzureRmAvailabilitySet
 	$Script:Lab.AzureSettings.DefaultAvailabilitySet = $null

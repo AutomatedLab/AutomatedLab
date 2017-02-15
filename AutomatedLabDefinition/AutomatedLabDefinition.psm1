@@ -1711,10 +1711,6 @@ function Add-LabMachineDefinition
         [ValidateSet('af', 'af-ZA', 'am', 'am-ET', 'ar', 'ar-AE', 'ar-BH', 'ar-DZ', 'ar-EG', 'ar-IQ', 'ar-JO', 'ar-KW', 'ar-LB', 'ar-LY', 'ar-MA', 'ar-OM', 'ar-QA', 'ar-SA', 'ar-SY', 'ar-TN', 'ar-YE', 'arn', 'arn-CL', 'as', 'as-IN', 'az', 'az-Cyrl', 'az-Cyrl-AZ', 'az-Latn', 'az-Latn-AZ', 'ba', 'ba-RU', 'be', 'be-BY', 'bg', 'bg-BG', 'bn', 'bn-BD', 'bn-IN', 'bo', 'bo-CN', 'br', 'br-FR', 'bs', 'bs-Cyrl', 'bs-Cyrl-BA', 'bs-Latn', 'bs-Latn-BA', 'ca', 'ca-ES', 'ca-ES-valencia', 'chr', 'chr-Cher', 'chr-Cher-US', 'co', 'co-FR', 'cs', 'cs-CZ', 'cy', 'cy-GB', 'da', 'da-DK', 'de', 'de-AT', 'de-CH', 'de-DE', 'de-LI', 'de-LU', 'dsb', 'dsb-DE', 'dv', 'dv-MV', 'el', 'el-GR', 'en', 'en-029', 'en-AU', 'en-BZ', 'en-CA', 'en-GB', 'en-HK', 'en-IE', 'en-IN', 'en-JM', 'en-MY', 'en-NZ', 'en-PH', 'en-SG', 'en-TT', 'en-US', 'en-ZA', 'en-ZW', 'es', 'es-419', 'es-AR', 'es-BO', 'es-CL', 'es-CO', 'es-CR', 'es-DO', 'es-EC', 'es-ES', 'es-GT', 'es-HN', 'es-MX', 'es-NI', 'es-PA', 'es-PE', 'es-PR', 'es-PY', 'es-SV', 'es-US', 'es-UY', 'es-VE', 'et', 'et-EE', 'eu', 'eu-ES', 'fa', 'fa-IR', 'ff', 'ff-Latn', 'ff-Latn-SN', 'fi', 'fi-FI', 'fil', 'fil-PH', 'fo', 'fo-FO', 'fr', 'fr-BE', 'fr-CA', 'fr-CD', 'fr-CH', 'fr-CI', 'fr-CM', 'fr-FR', 'fr-HT', 'fr-LU', 'fr-MA', 'fr-MC', 'fr-ML', 'fr-RE', 'fr-SN', 'fy', 'fy-NL', 'ga', 'ga-IE', 'gd', 'gd-GB', 'gl', 'gl-ES', 'gn', 'gn-PY', 'gsw', 'gsw-FR', 'gu', 'gu-IN', 'ha', 'ha-Latn', 'ha-Latn-NG', 'haw', 'haw-US', 'he', 'he-IL', 'hi', 'hi-IN', 'hr', 'hr-BA', 'hr-HR', 'hsb', 'hsb-DE', 'hu', 'hu-HU', 'hy', 'hy-AM', 'id', 'id-ID', 'ig', 'ig-NG', 'ii', 'ii-CN', 'is', 'is-IS', 'it', 'it-CH', 'it-IT', 'iu', 'iu-Cans', 'iu-Cans-CA', 'iu-Latn', 'iu-Latn-CA', 'ja', 'ja-JP', 'ka', 'ka-GE', 'kk', 'kk-KZ', 'kl', 'kl-GL', 'km', 'km-KH', 'kn', 'kn-IN', 'ko', 'ko-KR', 'kok', 'kok-IN', 'ku', 'ku-Arab', 'ku-Arab-IQ', 'ky', 'ky-KG', 'lb', 'lb-LU', 'lo', 'lo-LA', 'lt', 'lt-LT', 'lv', 'lv-LV', 'mi', 'mi-NZ', 'mk', 'mk-MK', 'ml', 'ml-IN', 'mn', 'mn-Cyrl', 'mn-MN', 'mn-Mong', 'mn-Mong-CN', 'mn-Mong-MN', 'moh', 'moh-CA', 'mr', 'mr-IN', 'ms', 'ms-BN', 'ms-MY', 'mt', 'mt-MT', 'my', 'my-MM', 'nb', 'nb-NO', 'ne', 'ne-IN', 'ne-NP', 'nl', 'nl-BE', 'nl-NL', 'nn', 'nn-NO', 'no', 'nso', 'nso-ZA', 'oc', 'oc-FR', 'om', 'om-ET', 'or', 'or-IN', 'pa', 'pa-Arab', 'pa-Arab-PK', 'pa-IN', 'pl', 'pl-PL', 'prs', 'prs-AF', 'ps', 'ps-AF', 'pt', 'pt-BR', 'pt-PT', 'qut', 'qut-GT', 'quz', 'quz-BO', 'quz-EC', 'quz-PE', 'rm', 'rm-CH', 'ro', 'ro-MD', 'ro-RO', 'ru', 'ru-RU', 'rw', 'rw-RW', 'sa', 'sa-IN', 'sah', 'sah-RU', 'sd', 'sd-Arab', 'sd-Arab-PK', 'se', 'se-FI', 'se-NO', 'se-SE', 'si', 'si-LK', 'sk', 'sk-SK', 'sl', 'sl-SI', 'sma', 'sma-NO', 'sma-SE', 'smj', 'smj-NO', 'smj-SE', 'smn', 'smn-FI', 'sms', 'sms-FI', 'so', 'so-SO', 'sq', 'sq-AL', 'sr', 'sr-Cyrl', 'sr-Cyrl-BA', 'sr-Cyrl-CS', 'sr-Cyrl-ME', 'sr-Cyrl-RS', 'sr-Latn', 'sr-Latn-BA', 'sr-Latn-CS', 'sr-Latn-ME', 'sr-Latn-RS', 'st', 'st-ZA', 'sv', 'sv-FI', 'sv-SE', 'sw', 'sw-KE', 'syr', 'syr-SY', 'ta', 'ta-IN', 'ta-LK', 'te', 'te-IN', 'tg', 'tg-Cyrl', 'tg-Cyrl-TJ', 'th', 'th-TH', 'ti', 'ti-ER', 'ti-ET', 'tk', 'tk-TM', 'tn', 'tn-BW', 'tn-ZA', 'tr', 'tr-TR', 'ts', 'ts-ZA', 'tt', 'tt-RU', 'tzm', 'tzm-Latn', 'tzm-Latn-DZ', 'tzm-Tfng', 'tzm-Tfng-MA', 'ug', 'ug-CN', 'uk', 'uk-UA', 'ur', 'ur-IN', 'ur-PK', 'uz', 'uz-Cyrl', 'uz-Cyrl-UZ', 'uz-Latn', 'uz-Latn-UZ', 'vi', 'vi-VN', 'wo', 'wo-SN', 'xh', 'xh-ZA', 'yo', 'yo-NG', 'zh', 'zh-CN', 'zh-Hans', 'zh-Hant', 'zh-HK', 'zh-MO', 'zh-SG', 'zh-TW', 'zu', 'zu-ZA')]
         [string]$UserLocale,
         
-        #Created ValidateSet using: "'" + (([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object) -join "', '") + "'" | clip
-        [ValidateSet('Afghanistan Standard Time', 'Alaskan Standard Time', 'Arab Standard Time', 'Arabian Standard Time', 'Arabic Standard Time', 'Argentina Standard Time', 'Atlantic Standard Time', 'AUS Central Standard Time', 'AUS Eastern Standard Time', 'Azerbaijan Standard Time', 'Azores Standard Time', 'Bahia Standard Time', 'Bangladesh Standard Time', 'Belarus Standard Time', 'Canada Central Standard Time', 'Cape Verde Standard Time', 'Caucasus Standard Time', 'Cen. Australia Standard Time', 'Central America Standard Time', 'Central Asia Standard Time', 'Central Brazilian Standard Time', 'Central Europe Standard Time', 'Central European Standard Time', 'Central Pacific Standard Time', 'Central Standard Time', 'Central Standard Time (Mexico)', 'China Standard Time', 'Dateline Standard Time', 'E. Africa Standard Time', 'E. Australia Standard Time', 'E. Europe Standard Time', 'E. South America Standard Time', 'Eastern Standard Time', 'Egypt Standard Time', 'Ekaterinburg Standard Time', 'Fiji Standard Time', 'FLE Standard Time', 'Georgian Standard Time', 'GMT Standard Time', 'Greenland Standard Time', 'Greenwich Standard Time', 'GTB Standard Time', 'Hawaiian Standard Time', 'India Standard Time', 'Iran Standard Time', 'Israel Standard Time', 'Jordan Standard Time', 'Kaliningrad Standard Time', 'Kamchatka Standard Time', 'Korea Standard Time', 'Libya Standard Time', 'Line Islands Standard Time', 'Magadan Standard Time', 'Mauritius Standard Time', 'Mid-Atlantic Standard Time', 'Middle East Standard Time', 'Montevideo Standard Time', 'Morocco Standard Time', 'Mountain Standard Time', 'Mountain Standard Time (Mexico)', 'Myanmar Standard Time', 'N. Central Asia Standard Time', 'Namibia Standard Time', 'Nepal Standard Time', 'New Zealand Standard Time', 'Newfoundland Standard Time', 'North Asia East Standard Time', 'North Asia Standard Time', 'Pacific SA Standard Time', 'Pacific Standard Time', 'Pacific Standard Time (Mexico)', 'Pakistan Standard Time', 'Paraguay Standard Time', 'Romance Standard Time', 'Russia Time Zone 10', 'Russia Time Zone 11', 'Russia Time Zone 3', 'Russian Standard Time', 'SA Eastern Standard Time', 'SA Pacific Standard Time', 'SA Western Standard Time', 'Samoa Standard Time', 'SE Asia Standard Time', 'Singapore Standard Time', 'South Africa Standard Time', 'Sri Lanka Standard Time', 'Syria Standard Time', 'Taipei Standard Time', 'Tasmania Standard Time', 'Tokyo Standard Time', 'Tonga Standard Time', 'Turkey Standard Time', 'Ulaanbaatar Standard Time', 'US Eastern Standard Time', 'US Mountain Standard Time', 'UTC', 'UTC+12', 'UTC-02', 'UTC-11', 'Venezuela Standard Time', 'Vladivostok Standard Time', 'W. Australia Standard Time', 'W. Central Africa Standard Time', 'W. Europe Standard Time', 'West Asia Standard Time', 'West Pacific Standard Time', 'Yakutsk Standard Time')]
-        [string]$TimeZone,
-        
         [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
         
         [string]$ToolsPath,
@@ -1736,16 +1732,46 @@ function Add-LabMachineDefinition
         [hashtable]$HypervProperties,
 
         [hashtable]$Notes,
-        
-        #Created ValidateSet using: "'" + ((Get-AzureRMVmSize -Location 'central us' | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}) -join "', '")  + "'" | clip
-        [ValidateSet('Basic_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Basic_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Basic_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Basic_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Basic_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Standard_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Standard_A1_v2 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Standard_A2_v2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_A2m_v2 (2 Cores, 16384 Mb, 4 max data disks)', 'Standard_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Standard_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A4_v2 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_A4m_v2 (4 Cores, 32768 Mb, 8 max data disks)', 'Standard_A5 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_A6 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_A7 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_A8_v2 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_A8m_v2 (8 Cores, 65536 Mb, 16 max data disks)', 'Standard_D1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_D2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_DS1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_DS2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_F1 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F16 (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F16s (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F1s (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F2s (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F4 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F4s (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F8 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_F8s (8 Cores, 16384 Mb, 16 max data disks)')]
-        [string]$AzureRoleSize,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+		[string]$FriendlyName
     )
-    
+DynamicParam {
+		$RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+
+        $ParameterName = 'AzureRoleSize'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-AzureRMVmSize -Location (Get-LabAzureDefaultLocation).Location -ErrorAction SilentlyContinue | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"})
+        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        $AttributeCollection.Add($ValidateSetAttribute)
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+		$ParameterName = 'TimeZone'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = ([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object)
+        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        $AttributeCollection.Add($ValidateSetAttribute)
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+        return $RuntimeParameterDictionary
+}
+
+begin
+{    
     Write-LogFunctionEntry
-    
+	$AzureRoleSize = $PsBoundParameters['AzureRoleSize']
+	$TimeZone = $PsBoundParameters['TimeZone']
+}
+
+process
+{
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
@@ -2499,7 +2525,10 @@ function Add-LabMachineDefinition
             $machine.Disks.Add($labDisk)
         }
     }
-    
+}
+
+end
+{
     if ($Notes)
     {
         $machine.Notes = $Notes
@@ -2513,6 +2542,7 @@ function Add-LabMachineDefinition
     }
     
     Write-LogFunctionExit
+}
 }
 #endregion Add-LabMachineDefinition
 
