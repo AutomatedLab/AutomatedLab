@@ -483,10 +483,10 @@ function Get-LabVolumesOnPhysicalDisks
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
 
-    $physicalDisks = Get-PhysicalDisk | Where-Object { $_.BusType -ne 'File Backed Virtual' }
-    $disks = Get-CimInstance -Class Win32_DiskDrive |
-    Where-Object { $_.SerialNumber } |
-    Where-Object { $_.SerialNumber.Trim() -in $physicalDisks.SerialNumber }
+    $physicalDisks = Get-PhysicalDisk #| Where-Object { $_.BusType -ne 'File Backed Virtual' }
+    #$disks = Get-CimInstance -Class Win32_DiskDrive |
+    #Where-Object { $_.SerialNumber } |
+    #Where-Object { $_.SerialNumber.Trim() -in $physicalDisks.SerialNumber }
 
     $labVolumes = foreach ($disk in $disks) 
     {
