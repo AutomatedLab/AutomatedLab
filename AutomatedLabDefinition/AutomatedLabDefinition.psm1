@@ -483,10 +483,8 @@ function Get-LabVolumesOnPhysicalDisks
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
 
-    $physicalDisks = Get-PhysicalDisk #| Where-Object { $_.BusType -ne 'File Backed Virtual' }
-    #$disks = Get-CimInstance -Class Win32_DiskDrive |
-    #Where-Object { $_.SerialNumber } |
-    #Where-Object { $_.SerialNumber.Trim() -in $physicalDisks.SerialNumber }
+    $physicalDisks = Get-PhysicalDisk
+    $disks = Get-CimInstance -Class Win32_DiskDrive
 
     $labVolumes = foreach ($disk in $disks) 
     {
@@ -1744,9 +1742,14 @@ DynamicParam {
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
-        $arrSet = (Get-AzureRMVmSize -Location (Get-LabAzureDefaultLocation).Location -ErrorAction SilentlyContinue | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"})
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-        $AttributeCollection.Add($ValidateSetAttribute)
+        $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
+		if($defaultLocation)
+		{
+			$vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
+			$arrSet = $vmSizes | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}
+			$ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+			$AttributeCollection.Add($ValidateSetAttribute)
+		}
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
 
