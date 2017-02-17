@@ -26,14 +26,11 @@ function New-LabVM
     
     if ($Name)
     {
-        $machines = $lab.Machines | Where-Object Name -in $Name
+        $machines = Get-LabVM -ComputerName $Name
     }
     else
     {
-        $machines = @()
-        $machines += $lab.Machines | Where-Object { $_.Roles.Name -contains 'RootDC' }
-        $machines += $lab.Machines | Where-Object { $_.OperatingSystem -notlike '*Server*' }
-        $machines += $lab.Machines | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.OperatingSystem -like '*Server*' }
+        $machines += Get-LabVM
     }
     
     if (-not $machines)
@@ -45,10 +42,10 @@ function New-LabVM
     
     $jobs = @()
 
-	if($Lab.DefaultVirtualizationEngine -eq 'Azure')
+	if($lab.DefaultVirtualizationEngine -eq 'Azure')
 	{		
 		Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
-		New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({$_.HostType -eq 'Azure'})) -Wait
+		New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
 		Write-ScreenInfo -Message 'Done' -TaskEnd
 	}
 
@@ -60,9 +57,9 @@ function New-LabVM
         {		
             $result = New-LWHypervVM -Machine $machine
             
-            if ('RootDC' -in $Machine.Roles.Name)
+            if ('RootDC' -in $machine.Roles.Name)
             {
-                Start-LabVM -ComputerName $Machine.Name
+                Start-LabVM -ComputerName $machine.Name
             }
             
             if ($result)
