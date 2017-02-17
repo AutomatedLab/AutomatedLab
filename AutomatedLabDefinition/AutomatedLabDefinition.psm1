@@ -1733,27 +1733,27 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-		[string]$FriendlyName
+        [string]$FriendlyName
     )
 DynamicParam {
-		$RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
         $ParameterName = 'AzureRoleSize'        
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
-		if($defaultLocation)
-		{
-			$vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
-			$arrSet = $vmSizes | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}
-			$ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-			$AttributeCollection.Add($ValidateSetAttribute)
-		}
+        if($defaultLocation)
+        {
+            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
+            $arrSet = $vmSizes | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
 
-		$ParameterName = 'TimeZone'        
+        $ParameterName = 'TimeZone'        
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
@@ -1769,8 +1769,8 @@ DynamicParam {
 begin
 {    
     Write-LogFunctionEntry
-	$AzureRoleSize = $PsBoundParameters['AzureRoleSize']
-	$TimeZone = $PsBoundParameters['TimeZone']
+    $AzureRoleSize = $PsBoundParameters['AzureRoleSize']
+    $TimeZone = $PsBoundParameters['TimeZone']
 }
 
 process
@@ -1865,15 +1865,15 @@ process
         $VirtualizationHost = (Get-LabDefinition).DefaultVirtualizationEngine
     }
 
-	if($VirtualizationHost -eq 'Azure')
-	{
-		$script:lab.AzureSettings.LoadBalancerPortCounter++
-		$machine.LoadBalancerRdpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
-		$script:lab.AzureSettings.LoadBalancerPortCounter++
-		$machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
-		$script:lab.AzureSettings.LoadBalancerPortCounter++
-		$machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter	
-	}
+    if($VirtualizationHost -eq 'Azure')
+    {
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerRdpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter	
+    }
     
     if ($InstallationUserCredential)
     {
@@ -2772,6 +2772,11 @@ function Get-DiskSpeed
     )
 
     Write-LogFunctionEntry
+
+    if (-not $labSources)
+    {
+        $labSources = Get-LabSourcesLocation
+    }
 
     Write-ScreenInfo -Message "Measuring speed of drive $DriveLetter" -Type Info
     
