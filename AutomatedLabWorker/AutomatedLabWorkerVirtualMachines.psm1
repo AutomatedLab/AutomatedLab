@@ -207,7 +207,7 @@ function New-LWHypervVM
     if ($Machine.Roles.Name -contains 'RootDC' -or 
         $Machine.Roles.Name -contains 'FirstChildDC' -or 
         $Machine.Roles.Name -contains 'DC' -or 
-        $Machine.OperatingSystem.Installation -eq 'Nano Server')
+    $Machine.OperatingSystem.Installation -eq 'Nano Server')
     {
         #machine will not be added to domain or workgroup
     }
@@ -273,7 +273,7 @@ function New-LWHypervVM
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
         LabName = (Get-Lab).Name
-        InitState = 0
+        InitState = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
     $isUefi = try
@@ -628,7 +628,7 @@ workflow Wait-LWHypervVM
             {
                 Write-Verbose -Message "'$machine' is online and reachable by WinRM"
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                InlineScript { $machineMetadata.InitState = '1' }
+                InlineScript { $machineMetadata.InitState = 1 } #ReachedByAutomatedLab
                 
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
             }
@@ -835,10 +835,11 @@ function Start-LWHypervVM
         {
             Start-VM -Name $Name -ErrorAction Stop
 
-            if ($machine.NetworkAdapters.Count -gt 1 -and $machineMetadata.InitState -lt 5)
+            if ($machine.NetworkAdapters.Count -gt 1 -and 
+            ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -eq [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
             {            
                 Repair-LWHypervNetworkConfig -ComputerName $Name
-                $machineMetadata.InitState = 5
+                $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
             }            
         }

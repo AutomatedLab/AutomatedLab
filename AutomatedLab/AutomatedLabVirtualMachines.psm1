@@ -9,10 +9,10 @@ function New-LabVM
         
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
-		
+        
         [switch]$CreateCheckPoints,
 
-		[int]$ProgressIndicator = 20
+        [int]$ProgressIndicator = 20
     )
     
     Write-LogFunctionEntry
@@ -42,12 +42,12 @@ function New-LabVM
     
     $jobs = @()
 
-	if($lab.DefaultVirtualizationEngine -eq 'Azure')
-	{		
-		Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
-		New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
-		Write-ScreenInfo -Message 'Done' -TaskEnd
-	}
+    if($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {		
+        Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
+        New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
 
     foreach ($machine in $machines.GetEnumerator())
     {
@@ -95,11 +95,11 @@ function New-LabVM
     }
     
     #test if the machine creation jobs succeeded
-	Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
+    Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     $jobs | Wait-Job | Out-Null
     $failedJobs = $jobs | Where-Object State -eq 'Failed'
     $completedJobs = $jobs | Where-Object State -eq 'Completed'
-	Write-ScreenInfo -Message 'Done' -TaskEnd
+    Write-ScreenInfo -Message 'Done' -TaskEnd
 
     if ($failedJobs)
     {
@@ -717,28 +717,65 @@ function Wait-LabVM
             
             foreach ($machine in $completed)
             {
-                if((Get-LabMachine $machine).HostType -eq 'HyperV')
+                if ((Get-LabVM -ComputerName $machine).HostType -eq 'HyperV')
                 {
                     $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                    if ($machineMetadata.InitState -lt 1)
+                    if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                     {
-                        $machineMetadata.InitState = 1
+                        $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
+                    }
+
+                    if ($DoNotUseCredSsp)
+                    {
+                        $credSspEnabled = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+
+                            if ($PSVersionTable.PSVersion.Major = 2)
+                            {
+                                $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
+                                $jobName = "t1"
+                                $Path = 'PowerShell'
+                                $CommandLine = '-Command Enable-WSManCredSSP -Role Server -Force'
+                                schtasks.exe /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine"
+                                schtasks.exe /Run /TN $jobName
+
+                                while ((schtasks.exe /Query /TN $jobName) -like '*Running*')
+                                {
+                                    Write-Host '.' -NoNewline
+                                    Start-Sleep -Seconds 1
+                                }
+
+                                schtasks.exe /Delete /TN $jobName /F
+                            }
+                            else
+                            {
+                                Enable-WSManCredSSP -Role Server -Force | Out-Null
+                            }
+
+                            [bool](Get-WSManCredSSP | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
+                        } -PassThru -DoNotUseCredSsp
+                        
+                        if ($credSspEnabled)
+                        {
+                            $machineMetadata.InitState = $machineMetadata.InitState -bor [AutomatedLab.LabVMInitState]::EnabledCredSsp
+                        }
+                        else
+                        {
+                            Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
+                        }
                     }
                     Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
                 }
-            }            
+            }
             
             Write-LogFunctionExit
         }
-        
-        
+    
         if ($PostDelaySeconds)
         {
             $job = Start-Job -Name "Wait $PostDelaySeconds seconds" -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
             Wait-LWLabJob -Job $job -ProgressIndicator $ProgressIndicator -NoDisplay -NoNewLine:$NoNewLine
         }
     }
-
 }
 #endregion Wait-LabVM
 
