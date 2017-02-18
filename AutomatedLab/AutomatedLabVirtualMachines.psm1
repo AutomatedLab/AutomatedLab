@@ -729,10 +729,10 @@ function Wait-LabVM
                     {
                         $credSspEnabled = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
-                            if ($PSVersionTable.PSVersion.Major = 2)
+                            if ($PSVersionTable.PSVersion.Major -eq 2)
                             {
                                 $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
-                                $jobName = "t1"
+                                $jobName = "AL_EnableCredSsp"
                                 $Path = 'PowerShell'
                                 $CommandLine = '-Command Enable-WSManCredSSP -Role Server -Force'
                                 schtasks.exe /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine"
@@ -752,7 +752,7 @@ function Wait-LabVM
                             }
 
                             [bool](Get-WSManCredSSP | Where-Object { $_ -eq 'This computer is configured to receive credentials from a remote client computer.' })
-                        } -PassThru -DoNotUseCredSsp
+                        } -PassThru -DoNotUseCredSsp -NoDisplay
                         
                         if ($credSspEnabled)
                         {
