@@ -196,8 +196,8 @@ function Invoke-LWCommand
         }
     }
     
-    $parameters.Add('Verbose', $Verbose)
-    $parameters.Add('Debug', $Debug)
+    if ($VerbosePreference -eq 'Continue') { $parameters.Add('Verbose', $VerbosePreference) }
+    if ($DebugPreference -eq 'Continue') { $parameters.Add('Debug', $DebugPreference) }
 
     $result = New-Object System.Collections.ArrayList
 
@@ -225,7 +225,8 @@ function Invoke-LWCommand
                 $internalSession.Remove($nonAvailableSession)
             }
 
-            $result.AddRange([System.Collections.ArrayList]@(Invoke-Command @parameters -ErrorAction SilentlyContinue -ErrorVariable invokeError))
+            #$result.AddRange(@(Invoke-Command @parameters))
+            $result.AddRange(@(Invoke-Command -Session $parameters.Session -ScriptBlock $parameters.ScriptBlock))
 
             #remove all sessions for machines successfully invoked the command
             foreach ($machineFinished in ($result | Where-Object { $_ -like 'LABHOSTNAME*' }))
@@ -261,14 +262,6 @@ function Invoke-LWCommand
         $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         $resultVariable.Value = $result
         Write-Verbose "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
-    }
-    
-    if ($invokeError.Count -and -not $AsJob)
-    {
-        foreach ($e in $invokeError)
-        {
-            Write-Error -ErrorRecord $e
-        }
     }
     
     Write-Verbose -Message "Finished Installation Activity '$ActivityName'"
