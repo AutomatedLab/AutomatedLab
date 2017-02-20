@@ -249,7 +249,7 @@
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
 
-        DoNotUseGetHostEntryInNewLabPSSession = $false
+        DoNotUseGetHostEntryInNewLabPSSession = $true
 
         #General VM settings
         DisableWindowsDefender = $true
