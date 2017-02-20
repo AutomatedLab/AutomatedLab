@@ -226,7 +226,7 @@ function Invoke-LWCommand
             }
 
             #$result.AddRange(@(Invoke-Command @parameters))
-            $result.AddRange(@(Invoke-Command -Session $parameters.Session -ScriptBlock $parameters.ScriptBlock))
+            $result.AddRange(@(Invoke-Command @parameters))
 
             #remove all sessions for machines successfully invoked the command
             foreach ($machineFinished in ($result | Where-Object { $_ -like 'LABHOSTNAME*' }))
