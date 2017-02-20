@@ -663,7 +663,7 @@ function Install-LabRootDcs
     
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName RootDC -DoNotUseCredSsp -ProgressIndicator 10 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName RootDC -Wait -DoNotUseCredSsp -ProgressIndicator 10 -PostDelaySeconds 5
     
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
@@ -870,7 +870,7 @@ function Install-LabFirstChildDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName FirstChildDC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName FirstChildDC -Wait -DoNotUseCredSsp -ProgressIndicator 15 -PostDelaySeconds 5
     
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
@@ -1088,7 +1088,7 @@ function Install-LabDcs
     }
     
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-    Start-LabVM -RoleName DC -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+    Start-LabVM -RoleName DC -Wait -DoNotUseCredSsp -ProgressIndicator 15 -PostDelaySeconds 5
 
     #Determine if any machines are already installed as Domain Controllers and exclude these
     $machinesAlreadyInstalled = foreach ($machine in $machines)
