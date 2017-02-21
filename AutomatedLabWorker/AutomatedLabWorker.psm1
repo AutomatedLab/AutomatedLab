@@ -137,7 +137,7 @@ function Invoke-LWCommand
             $parameters = @{ }
             $parameters.Add('Session', $internalSession)
             $parameters.Add('ScriptBlock', [scriptblock]::Create($cmd))
-            $parameters.Add('ArgumentList', $arguments)
+            $parameters.Add('ArgumentList', $ArgumentList)
             if ($AsJob)
             {
                 $parameters.Add('AsJob', $AsJob)
