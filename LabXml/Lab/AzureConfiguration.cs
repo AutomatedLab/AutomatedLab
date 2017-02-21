@@ -26,14 +26,6 @@ namespace AutomatedLab
         private string labSourcesStorageAccountName;
         private string labSourcesResourceGroupName;
         private int loadBalancerPortCounter;
-        private AzureAvailabilitySet defaultAvailabilitySet;
-
-        public AzureAvailabilitySet DefaultAvailabilitySet
-        {
-            get { return defaultAvailabilitySet; }
-            set { defaultAvailabilitySet = value; }
-        }
-
 
         public int LoadBalancerPortCounter
         {

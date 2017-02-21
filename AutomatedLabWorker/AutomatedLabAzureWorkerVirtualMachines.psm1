@@ -308,8 +308,7 @@ function New-LWAzureVM
     $lab.Name,
     $publisherName,
     $offerName,
-    $skusName,
-	$lab.AzureSettings.DefaultAvailabilitySet.Id `
+    $skusName `
     -ScriptBlock {
         param
         (
@@ -332,8 +331,7 @@ function New-LWAzureVM
             [string]$LabName,
             [string]$PublisherName,
             [string]$OfferName,
-            [string]$SkusName,
-			[string]$availabilitySetId
+            [string]$SkusName
         )
 
         $VerbosePreference = 'Continue'
@@ -357,7 +355,6 @@ function New-LWAzureVM
         Write-Verbose "Publisher: $PublisherName"
         Write-Verbose "Offer: $OfferName"
         Write-Verbose "Skus: $SkusName"
-		Write-Verbose "AVSet: $availabilitySetId"
         Write-Verbose '-------------------------------------------------------'
                 
         Select-AzureRmProfile -Path $SubscriptionPath
@@ -376,7 +373,13 @@ function New-LWAzureVM
         $securePassword = ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force
         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($AdminUserName, $securePassword)
 
-        $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $availabilitySetId
+		$machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
+		if(-not ($machineAvailabilitySet))
+		{
+			$machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
+		}
+
+        $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $machineAvailabilitySet.Id
         $vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
                            
         Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
@@ -388,7 +391,7 @@ function New-LWAzureVM
         Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
 
 		Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
-		$LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
+		$LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
 		
 		$inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
 		$inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
@@ -1061,7 +1064,7 @@ function Get-LWAzureVMConnectionInfo
         { return }		
 
         $nic = Get-AzureRmNetworkInterface | Where {$_.virtualmachine.id -eq ($azureVM.Id)}
-        $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)lbfrontendip" -ResourceGroupName $resourceGroupName
+        $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName
 
         # TODO Get Load Balancer Public IP and Load Balancer DNS Name
         New-Object PSObject -Property @{
