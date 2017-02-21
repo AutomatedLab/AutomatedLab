@@ -18,7 +18,8 @@ function New-LWAzureNetworkSwitch
 
     $lab = Get-Lab
     $jobs = @()
-    
+
+    Write-ScreenInfo -Message "Creating Azure virtual networks '$($VirtualNetwork.Name -join ',')'" -TaskStart
     foreach ($network in $VirtualNetwork)
     {
 
@@ -27,7 +28,7 @@ function New-LWAzureNetworkSwitch
             Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
             continue
         }
-        Write-ScreenInfo -Message "Creating Azure virtual network '$($network.Name)'" -TaskStart
+        
              
         $azureNetworkParameters = @{
             Name = $network.Name
@@ -213,14 +214,14 @@ foreach($vNet in $lab.VirtualNetworks)
 	$publicIp = Get-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
 	if(-not $publicIp)
 	{
-		$publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -Location $location -AllocationMethod Static -IpAddressVersion IPv4 -DomainNameLabel $resourceGroup.ToLower()
+		$publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -Location $location -AllocationMethod Static -IpAddressVersion IPv4 -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())"
 	}
 
 	$frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
 	$backendConfig = New-AzureRmLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)$($vNet.Name)backendpoolconfig"
 
 	$inboundRules = @()
-	foreach($machine in $ConnectedMachines)
+	foreach($machine in ($ConnectedMachines | Where-Object -Property Network -EQ $vNet.Name))
 	{
 		$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
 		$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
