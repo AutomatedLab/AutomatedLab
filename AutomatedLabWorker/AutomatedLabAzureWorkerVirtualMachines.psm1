@@ -788,6 +788,8 @@ function Start-LWAzureVM
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
+	$lab = Get-Lab
+
     $machinesToJoin = @()
 
 	$jobs = @()		
@@ -803,7 +805,7 @@ function Start-LWAzureVM
             )
             Import-Module -Name Azure*
             Select-AzureRmProfile -Path $SubscriptionPath
-            $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+            $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
             if ($result.Status -ne 'Succeeded')
             {
