@@ -788,24 +788,47 @@ function Start-LWAzureVM
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
-    $retries = 5
     $machinesToJoin = @()
+
+	$jobs = @()		
+
+    foreach ($name in $ComputerName)
+    {
+        $vm = $azureVms | Where-Object Name -eq $name			
+        $jobs += Start-Job -Name "StartAzureVm_$name" -ScriptBlock {
+            param
+            (
+                [object]$Machine,
+                [string]$SubscriptionPath
+            )
+            Import-Module -Name Azure*
+            Select-AzureRmProfile -Path $SubscriptionPath
+            $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+
+            if ($result.Status -ne 'Succeeded')
+            {
+                Write-Error -Message 'Could not start Azure VM' -TargetObject $Machine.Name
+            }
+        } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
+		
+		Start-Sleep -Seconds $DelayBetweenComputers
+    }
+
+    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
     
+
+	$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    if (-not $azureVms)
+    {
+        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+    }
+    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
+
     foreach ($name in $ComputerName)
     {
         $vm = $azureVms | Where-Object Name -eq $name
-
-        do {
-            $result = $vm | Start-AzureRmVM -ErrorAction SilentlyContinue
-            if ($result.Status -ne 'Succeeded')
-            {
-                Start-Sleep -Seconds 10
-            }
-            $retries--
-        }
-        until ($retries -eq 0 -or $result.Status -eq 'Succeeded')
-        
-        if ($result.Status -ne 'Succeeded')
+		        
+        if (-not $vm.PowerState -eq 'VM Running')
         {
             throw "Could not start machine '$name'"
         }
@@ -818,8 +841,6 @@ function Start-LWAzureVM
                 $machinesToJoin += $machine
             }
         }
-
-        Start-Sleep -Seconds $DelayBetweenComputers
     }
 
     if ($machinesToJoin)
