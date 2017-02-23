@@ -718,6 +718,7 @@ function Install-LabRootDcs
             -ActivityName "Install Root DC ($($machine.name))" `
             -AsJob `
             -UseLocalCredential `
+            -DoNotUseCredSsp `
             -PassThru `
             -NoDisplay `
             -ScriptBlock  $scriptblock -ArgumentList $machine.DomainName, 
@@ -737,16 +738,16 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabMachine | Where-Object { -not $_.IsDomainJoined }
         }
 
-        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
+        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
         
         Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
-        #Wait a little to be able to connect in first attempt
-        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {Start-Sleep -Seconds 60}) -ProgressIndicator 30 -NoDisplay -NoNewLine
-        
-        Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
+        Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
         
+        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $machines -ScriptBlock {
+            dnscmd /ResetForwarders 168.63.129.16
+        } -DoNotUseCredSsp -NoDisplay
         
         #Create reverse lookup zone (forest scope)
         foreach ($network in ((Get-LabVirtualNetworkDefinition).AddressSpace.IpAddress.AddressAsString))
@@ -1272,7 +1273,7 @@ function Wait-LabADReady
     $machines | Add-Member -Name AdRetries -MemberType NoteProperty -Value 2 -Force
     
     $ProgressIndicatorTimer = (Get-Date)
-    Do
+    do
     {
         foreach ($machine in $machines)
         {

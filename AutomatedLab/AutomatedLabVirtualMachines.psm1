@@ -798,6 +798,8 @@ function Wait-LabVMRestart
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
+
+        [switch]$DoNotUseCredSsp,
         
         [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
         
@@ -827,7 +829,7 @@ function Wait-LabVMRestart
     $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
     $start = Get-Date
     
-    if ($azureVms)  { Wait-LWAzureRestartVM -ComputerName $azureVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError }
+    if ($azureVms)  { Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError }
     if ($hypervVms) { Wait-LWHypervVMRestart -ComputerName $hypervVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -StartMachinesWhileWaiting $StartMachinesWhileWaiting -ErrorAction SilentlyContinue -ErrorVariable hypervWaitError -MonitorJob $MonitorJob}
     if ($vmwareVms) { Wait-LWVMWareRestartVM -ComputerName $vmwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable vmwareWaitError }
     

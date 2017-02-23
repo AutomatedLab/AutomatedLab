@@ -373,11 +373,11 @@ function New-LWAzureVM
         $securePassword = ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force
         $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($AdminUserName, $securePassword)
 
-		$machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
-		if(-not ($machineAvailabilitySet))
-		{
-			$machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
-		}
+        $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
+        if(-not ($machineAvailabilitySet))
+        {
+            $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
+        }
 
         $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $machineAvailabilitySet.Id
         $vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
@@ -390,23 +390,23 @@ function New-LWAzureVM
 
         Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
 
-		Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
-		$LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
+        Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
+        $LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
 		
-		$inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
-		$inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
-		$inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
+        $inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
+        $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
+        $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
 
-		$nicProperties = @{
-			Name = "$($Machine.Name.ToLower())nic0"
-			ResourceGroupName = $ResourceGroupName
-			Location = $Location
-			Subnet = $subnet
-			PrivateIpAddress = $defaultIPv4Address
-			LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
-			LoadBalancerInboundNatRule = $inboundNatRules
-			ErrorAction = "Stop"
-		}
+        $nicProperties = @{
+            Name = "$($Machine.Name.ToLower())nic0"
+            ResourceGroupName = $ResourceGroupName
+            Location = $Location
+            Subnet = $subnet
+            PrivateIpAddress = $defaultIPv4Address
+            LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
+            LoadBalancerInboundNatRule = $inboundNatRules
+            ErrorAction = "Stop"
+        }
         
         Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
         $networkInterface = New-AzureRmNetworkInterface @nicProperties
@@ -788,11 +788,11 @@ function Start-LWAzureVM
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
-	$lab = Get-Lab
+    $lab = Get-Lab
 
     $machinesToJoin = @()
 
-	$jobs = @()		
+    $jobs = @()		
 
     foreach ($name in $ComputerName)
     {
@@ -813,13 +813,13 @@ function Start-LWAzureVM
             }
         } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
 		
-		Start-Sleep -Seconds $DelayBetweenComputers
+        Start-Sleep -Seconds $DelayBetweenComputers
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
     
 
-	$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
     if (-not $azureVms)
     {
         throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
@@ -941,6 +941,8 @@ function Wait-LWAzureRestartVM
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
         
+        [switch]$DoNotUseCredSsp,
+        
         [double]$TimeoutInMinutes = 15,
 
         [int]$ProgressIndicator,
@@ -983,11 +985,11 @@ function Wait-LWAzureRestartVM
                 $ProgressIndicatorTimer = (Get-Date)
             }
             
-            $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -UseLocalCredential -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
             if (-not $events)
             {
-                $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                $events = Invoke-LabCommand -ComputerName $machine -ActivityName WaitForRestartEvent -ScriptBlock $cmd -ArgumentList $start.Ticks -DoNotUseCredSsp:$DoNotUseCredSsp -PassThru -Verbose:$false -NoDisplay -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
             }
             
             if ($events)
@@ -996,6 +998,7 @@ function Wait-LWAzureRestartVM
             }
             else
             {
+                Start-Sleep -Seconds 10
                 $machine
             }
         }
@@ -1075,8 +1078,8 @@ function Get-LWAzureVMConnectionInfo
     
     Write-LogFunctionEntry
 
-	$resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-	$azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
+    $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
 	
 
     foreach ($name in $ComputerName)
@@ -1096,7 +1099,7 @@ function Get-LWAzureVMConnectionInfo
             HttpsName = $ip.DnsSettings.Fqdn
             VIP = $ip.IpAddress
             Port = $name.LoadBalancerWinrmHttpPort
-			HttpsPort = $name.LoadBalancerWinrmHttpsPort
+            HttpsPort = $name.LoadBalancerWinrmHttpsPort
             RdpPort = $name.LoadBalancerRdpPort
             ResourceGroupName = $azureVM.ResourceGroupName
         }
@@ -1195,23 +1198,35 @@ function Connect-LWAzureLabSourcesDrive
 
         #remove all drive connected to an Azure LabSources share that are no longer available
         $drives = net.exe use
+        $netRemoveResult = @()
         foreach ($line in $drives)
         {
-                if ($line -match $pattern)
-                {
-                        net.exe use "$($Matches.DriveLetter):" /d | Out-Null
-                }
+            if ($line -match $pattern)
+            {
+                $netRemoveResult += net.exe use "$($Matches.DriveLetter):" /d
+            }
         }
     
         $cmd = 'net.exe use * {0} /u:{1} {2}' -f $args[0], $args[1], $args[2]
         $cmd = [scriptblock]::Create($cmd)
-        &$cmd 2>&1 | Out-Null
+        $netConnectResult = &$cmd 2>&1
         
-        if (-not $LASTEXITCODE) { $ALLabSourcesMapped = $true }
-        $ALLabSourcesMapped
+        if (-not $LASTEXITCODE)
+        {
+            $ALLabSourcesMapped = $true
+        }
+
+        New-Object PSObject -Property @{
+            ReturnCode = $LASTEXITCODE
+            ALLabSourcesMapped = [bool](-not $LASTEXITCODE)
+            NetConnectResult = $netConnectResult
+            NetRemoveResult = $netRemoveResult
+        }
+        
     } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
     
-    $Session | Add-Member -Name ALLabSourcesMapped -Value $result -MemberType NoteProperty
+    $Session | Add-Member -Name ALLabSourcesMappingResult -Value $result -MemberType NoteProperty
+    $Session | Add-Member -Name ALLabSourcesMapped -Value $result.ALLabSourcesMapped -MemberType NoteProperty
     
     Write-LogFunctionExit
 }
