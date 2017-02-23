@@ -1914,7 +1914,7 @@ function Install-LabDnsForwarder
     $azureRootDCs = Get-LabMachine -Role RootDC | Where-Object HostType -eq Azure
     if ($azureRootDCs)
     {
-        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $rootDcs -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $azureRootDCs -ScriptBlock {
             dnscmd /ResetForwarders 168.63.129.16
         }
     }
