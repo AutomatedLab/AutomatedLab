@@ -1190,7 +1190,7 @@ function Connect-LWAzureLabSourcesDrive
 
     $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage
     
-    Invoke-Command -Session $Session -ScriptBlock {
+    $result = Invoke-Command -Session $Session -ScriptBlock {
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
 
         #remove all drive connected to an Azure LabSources share that are no longer available
@@ -1208,7 +1208,10 @@ function Connect-LWAzureLabSourcesDrive
         &$cmd 2>&1 | Out-Null
         
         if (-not $LASTEXITCODE) { $ALLabSourcesMapped = $true }
+        $ALLabSourcesMapped
     } -ArgumentList $labSourcesStorageAccount.Path, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
+    
+    $Session | Add-Member -Name ALLabSourcesMapped -Value $result -MemberType NoteProperty
     
     Write-LogFunctionExit
 }
