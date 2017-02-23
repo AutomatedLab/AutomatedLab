@@ -586,9 +586,9 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
 
         #turn off the Windows firewall
-        #netsh.exe advfirewall set domain state off
-        #netsh.exe advfirewall set private state off
-        #netsh.exe advfirewall set public state off
+        netsh.exe advfirewall set domain state off
+        netsh.exe advfirewall set private state off
+        netsh.exe advfirewall set public state off
         
         if(($MachineSettings."$computerName")[6])
         {
