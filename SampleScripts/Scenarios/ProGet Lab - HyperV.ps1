@@ -1,5 +1,5 @@
 $labName = 'ProGet'
-$proGetLink = 'http://inedo.com/proget/download/nosql/4.6.7'
+$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.3'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
