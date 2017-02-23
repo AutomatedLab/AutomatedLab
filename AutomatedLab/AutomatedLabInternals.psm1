@@ -290,8 +290,8 @@ namespace GPO
             /// <summary>
             /// Constructor.
             /// </summary>
-            /// <param name=”remoteMachineName”>Target machine name to operate group policy</param>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <param name="remoteMachineName">Target machine name to operate group policy</param>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public GroupPolicyObjectHandler(String remoteMachineName)
             {
                 groupPolicyObject = new GroupPolicyObject();
@@ -321,7 +321,7 @@ namespace GPO
             /// Retrieves the display name for the GPO.
             /// </summary>
             /// <returns>Display name</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetDisplayName()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -340,7 +340,7 @@ namespace GPO
             /// Retrieves the computer name of the remote GPO.
             /// </summary>
             /// <returns>Machine name</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetMachineName()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -359,7 +359,7 @@ namespace GPO
             /// Retrieves the options for the GPO.
             /// </summary>
             /// <returns>Options flag</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public Int32 GetOptions()
             {
                 try
@@ -376,7 +376,7 @@ namespace GPO
             /// Retrieves the path to the GPO.
             /// </summary>
             /// <returns>The path to the GPO</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetPath()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -395,7 +395,7 @@ namespace GPO
             /// Retrieves a handle to the root of the registry key for the machine section.
             /// </summary>
             /// <returns>A handle to the root of the registry key for the specified GPO computer section</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public UInt32 GetMachineRegistryKey()
             {
                 UInt32 handle;
@@ -414,7 +414,7 @@ namespace GPO
             /// Retrieves a handle to the root of the registry key for the user section.
             /// </summary>
             /// <returns>A handle to the root of the registry key for the specified GPO user section</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public UInt32 GetUserRegistryKey()
             {
                 UInt32 handle;
@@ -432,9 +432,9 @@ namespace GPO
             /// <summary>
             /// Saves the specified registry policy settings to disk and updates the revision number of the GPO.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-            /// <param name=”isAdd”>Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+            /// <param name="isAdd">Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public void Save(bool isMachine, bool isAdd)
             {
                 try
@@ -454,10 +454,10 @@ namespace GPO
             /// <summary>
             /// Set the group policy value.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-            /// <param name=”subKey”>Group policy config full path</param>
-            /// <param name=”valueName”>Group policy config key name</param>
-            /// <param name=”value”>If value is null, it will envoke the delete method</param>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+            /// <param name="subKey">Group policy config full path</param>
+            /// <param name="valueName">Group policy config key name</param>
+            /// <param name="value">If value is null, it will envoke the delete method</param>
             /// <returns>Whether the config is successfully set</returns>
             public ResultCode SetGroupPolicy(bool isMachine, String subKey, String valueName, object value)
             {
@@ -468,7 +468,7 @@ namespace GPO
 
                 if (null == value)
                 {
-                    // check the key’s existance
+                    // check the key's existance
                     if (RegOpenKeyEx((UIntPtr)gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                     {
                         RegCloseKey((UInt32)hKey);
@@ -559,9 +559,9 @@ namespace GPO
             /// <summary>
             /// Get the config of the group policy.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
-            /// <param name=”subKey”>Group policy config full path</param>
-            /// <param name=”valueName”>Group policy config key name</param>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
+            /// <param name="subKey">Group policy config full path</param>
+            /// <param name="valueName">Group policy config key name</param>
             /// <returns>The setting of the specified config</returns>
             public object GetGroupPolicy(bool isMachine, String subKey, String valueName)
             {
@@ -573,7 +573,7 @@ namespace GPO
                 if (RegOpenKeyEx(gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                 {
                     UInt32 type;
-                    byte[] data = new byte[size];  // to store retrieved the value’s data
+                    byte[] data = new byte[size];  // to store retrieved the value's data
 
                     if (RegQueryValueEx(hKey, valueName, 0, out type, data, ref size) == 234)
                     {
@@ -650,10 +650,10 @@ namespace GPO
         /// Set policy config
         /// It will start a single thread to set group policy.
         /// </summary>
-        /// <param name=”isMachine”>Whether is machine config</param>
-        /// <param name=”configFullPath”>The full path configuration</param>
-        /// <param name=”configKey”>The configureation key name</param>
-        /// <param name=”value”>The value to set, boxed with proper type [ String, Int32 ]</param>
+        /// <param name="isMachine">Whether is machine config</param>
+        /// <param name="configFullPath">The full path configuration</param>
+        /// <param name="configKey">The configureation key name</param>
+        /// <param name="value">The value to set, boxed with proper type [ String, Int32 ]</param>
         /// <returns>Whether the config is successfully set</returns>
         [MethodImplAttribute(MethodImplOptions.Synchronized)]
         public static ResultCode SetGroupPolicy(bool isMachine, String configFullPath, String configKey, object value)
@@ -669,11 +669,11 @@ namespace GPO
         /// Thread start for seting group policy.
         /// Called by public static ResultCode SetGroupPolicy(bool isMachine, WinRMGPConfigName configName, object value)
         /// </summary>
-        /// <param name=”values”>
-        /// values[0] – isMachine<br/>
-        /// values[1] – configFullPath<br/>
-        /// values[2] – configKey<br/>
-        /// values[3] – value<br/>
+        /// <param name="values">
+        /// values[0] - isMachine<br/>
+        /// values[1] - configFullPath<br/>
+        /// values[2] - configKey<br/>
+        /// values[3] - value<br/>
         /// </param>
         private static void SetGroupPolicy(object values)
         {
@@ -692,9 +692,9 @@ namespace GPO
         /// Get policy config.
         /// It will start a single thread to get group policy
         /// </summary>
-        /// <param name=”isMachine”>Whether is machine config</param>
-        /// <param name=”configFullPath”>The full path configuration</param>
-        /// <param name=”configKey”>The configureation key name</param>
+        /// <param name="isMachine">Whether is machine config</param>
+        /// <param name="configFullPath">The full path configuration</param>
+        /// <param name="configKey">The configureation key name</param>
         /// <returns>The group policy setting</returns>
         [MethodImplAttribute(MethodImplOptions.Synchronized)]
         public static object GetGroupPolicy(bool isMachine, String configFullPath, String configKey)
@@ -710,10 +710,10 @@ namespace GPO
         /// Thread start for geting group policy.
         /// Called by public static object GetGroupPolicy(bool isMachine, WinRMGPConfigName configName)
         /// </summary>
-        /// <param name=”values”>
-        /// values[0] – isMachine<br/>
-        /// values[1] – configFullPath<br/>
-        /// values[2] – configKey<br/>
+        /// <param name="values">
+        /// values[0] - isMachine<br/>
+        /// values[1] - configFullPath<br/>
+        /// values[2] - configKey<br/>
         /// </param>
         public static void GetGroupPolicy(object values)
         {
@@ -1522,75 +1522,103 @@ function Get-LabInternetFile
         [switch]$PassThru
     )
     
-    $start = Get-Date
-    
-    $internalUri = New-Object System.Uri($Uri)
-    $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-    
-    if (Test-Path -Path $Path -PathType Container)
+    function Get-LabInternetFileInternal
     {
-        $Path = Join-Path -Path $Path -ChildPath $fileName
-    }
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Uri,
 
-    if ((Test-Path -Path $Path) -and -not $Force)
-    {
-        Write-ScreenInfo "The file '$Path' does already exist, skipping the download" -Type Warning
-        return
-    }
+            [Parameter(Mandatory = $true)]
+            [string]$Path,
 
-    if ((Test-Path -Path $Path) -and $Force)
-    {
-        Remove-Item -Path $Path -Force
-    }
-    
-    Write-Verbose "Uri is '$Uri'"
-    Write-Verbose "Path os '$Path'"
-
-    try
-    {
-        $bytesProcessed = 0
-        $request = [System.Net.WebRequest]::Create($Uri)
+            [switch]$Force
+        )
         
-        if ($request)
+        $internalUri = New-Object System.Uri($Uri)
+        $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+    
+        if (Test-Path -Path $Path -PathType Container)
         {
-            Write-Verbose 'WebRequest created'
-            $response = $request.GetResponse()
-            if ($response)
+            $Path = Join-Path -Path $Path -ChildPath $fileName
+        }
+
+        if ((Test-Path -Path $Path) -and -not $Force)
+        {
+            Write-ScreenInfo "The file '$Path' does already exist, skipping the download" -Type Warning
+            return
+        }
+
+        if ((Test-Path -Path $Path) -and $Force)
+        {
+            Remove-Item -Path $Path -Force
+        }
+    
+        Write-Verbose "Uri is '$Uri'"
+        Write-Verbose "Path os '$Path'"
+
+        try
+        {
+            $bytesProcessed = 0
+            $request = [System.Net.WebRequest]::Create($Uri)
+        
+            if ($request)
             {
-                Write-Verbose 'Responce received'
-                $remoteStream = $response.GetResponseStream()
- 
-                $localStream = [System.IO.File]::Create($Path)
- 
-                $buffer = New-Object System.Byte[] 1024
-                $bytesRead = 0
- 
-                do
+                Write-Verbose 'WebRequest created'
+                $response = $request.GetResponse()
+                if ($response)
                 {
-                    Write-Verbose '.'
-                    $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
-                    $localStream.Write($buffer, 0, $bytesRead)
-                    $bytesProcessed += $bytesRead
+                    Write-Verbose 'Responce received'
+                    $remoteStream = $response.GetResponseStream()
+ 
+                    $localStream = [System.IO.File]::Create($Path)
+ 
+                    $buffer = New-Object System.Byte[] 1024
+                    $bytesRead = 0
+ 
+                    do
+                    {
+                        $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                        $localStream.Write($buffer, 0, $bytesRead)
+                        $bytesProcessed += $bytesRead
                         
-                    $percentageCompleted = $bytesProcessed / $response.ContentLength
-                    Write-Progress -Activity "Downloading file '$fileName'" `
-                    -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                    -PercentComplete ($percentageCompleted * 100)
+                        $percentageCompleted = $bytesProcessed / $response.ContentLength
+                        Write-Progress -Activity "Downloading file '$fileName'" `
+                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                        -PercentComplete ($percentageCompleted * 100)
                         
-                } while ($bytesRead -gt 0)
+                    } while ($bytesRead -gt 0)
+                }
+                
+                $response
             }
         }
-    }
-    catch
-    {
-        Write-Error -Exception $_.Exception
-    }
-    finally
-    {
+        catch
+        {
+            Write-Error -Exception $_.Exception
+        }
+        finally
+        {
     
-        if ($response) { $response.Close() }
-        if ($remoteStream) { $remoteStream.Close() }
-        if ($localStream) { $localStream.Close() }
+            if ($response) { $response.Close() }
+            if ($remoteStream) { $remoteStream.Close() }
+            if ($localStream) { $localStream.Close() }
+        }
+    }
+    
+    $start = Get-Date
+    
+    if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
+    {
+        $machine = Get-LabMachine -IsRunning | Select-Object -First 1
+        Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+
+        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru -Verbose
+    }
+    else
+    {
+        Write-Verbose "Target path is local, invoking the copy job locally."
+        $PSBoundParameters.Remove('PassThru')
+        $result = Get-LabInternetFileInternal @PSBoundParameters
     }
     
     $end = Get-Date
@@ -1601,7 +1629,7 @@ function Get-LabInternetFile
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            Length = $response.ContentLength
+            Length = $result.ContentLength
         }
     }
 }
