@@ -470,7 +470,8 @@ function Copy-LabFileItem
     {
         $cred = $machine.GetCredential((Get-Lab))
 		
-        if (-not $UseAzureLabSourcesOnAzureVm)
+        if ($machine.HostType -eq 'HyperV' -or
+        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure'))
         {
             try
             {
