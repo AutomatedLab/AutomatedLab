@@ -199,7 +199,7 @@ function Invoke-LWCommand
     if ($VerbosePreference -eq 'Continue') { $parameters.Add('Verbose', $VerbosePreference) }
     if ($DebugPreference -eq 'Continue') { $parameters.Add('Debug', $DebugPreference) }
 
-    $result = New-Object System.Collections.ArrayList
+    [System.Collections.ArrayList]$result = New-Object System.Collections.ArrayList
 
     if (-not $AsJob -and $parameters.ScriptBlock)
     {
@@ -225,7 +225,6 @@ function Invoke-LWCommand
                 $internalSession.Remove($nonAvailableSession)
             }
 
-            #$result.AddRange(@(Invoke-Command @parameters))
             $result.AddRange(@(Invoke-Command @parameters))
 
             #remove all sessions for machines successfully invoked the command
@@ -234,7 +233,7 @@ function Invoke-LWCommand
                 $machineFinishedName = $machineFinished.Substring($machineFinished.IndexOf(':') + 1)
                 $internalSession.Remove(($internalSession | Where-Object LabMachineName -eq $machineFinishedName))
             }
-            $result = $result | Where-Object { $_ -notlike 'LABHOSTNAME*' }
+            $result = @($result | Where-Object { $_ -notlike 'LABHOSTNAME*' })
 
             $Retries--
 
