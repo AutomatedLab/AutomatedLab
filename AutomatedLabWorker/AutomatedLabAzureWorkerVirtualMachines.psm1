@@ -1214,6 +1214,7 @@ function Connect-LWAzureLabSourcesDrive
         if (-not $LASTEXITCODE)
         {
             $ALLabSourcesMapped = $true
+			Get-ChildItem -Path z:\ | Out-Null #required, otherwise sometimes accessing the UNC path did not work
         }
 
         New-Object PSObject -Property @{
