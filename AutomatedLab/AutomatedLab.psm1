@@ -2834,10 +2834,11 @@ function Invoke-LabCommand
         [Parameter(Mandatory, ParameterSetName = 'Script')]
         [string]$FilePath,
 
-		[Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
+		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'Script')]
 		[string]$FileName,
         
+		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [string]$DependencyFolderPath,
@@ -3018,7 +3019,7 @@ function Invoke-LabCommand
         if ($Retries)                { $param.Add('Retries', $Retries) }
         if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
         if ($FilePath)               { $param.Add('ScriptFilePath', $FilePath) }
-		if($FileName)                 { $param.Add('ScriptFileName', $FileName) }
+		if($FileName)                 { $param.Add('ScriptFile', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
         if ($DependencyFolderPath)   { $param.Add('DependencyFolderPath', $DependencyFolderPath) }
