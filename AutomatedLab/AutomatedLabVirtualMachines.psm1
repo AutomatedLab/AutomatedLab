@@ -30,7 +30,7 @@ function New-LabVM
     }
     else
     {
-        $machines += Get-LabVM
+        $machines = Get-LabVM
     }
     
     if (-not $machines)
