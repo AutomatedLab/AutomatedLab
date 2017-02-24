@@ -1,7 +1,7 @@
 @{
 	RootModule = 'PSFileTransfer.psm1'
 	
-	ModuleVersion = '3.9.3.0'
+	ModuleVersion = '4.0.0.0'
 	
 	GUID = '789c9c76-4756-4489-a74f-31ca64488c7b'
 	
