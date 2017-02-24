@@ -1800,7 +1800,14 @@ process
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
+        try
+		{
+			Add-LabAzureSubscription
+		}
+		catch
+		{
+			throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
+		}
     }
     
     if ($Global:labExported)

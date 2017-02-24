@@ -58,21 +58,20 @@ function Add-LabAzureSubscription
     
     if (-not $Path)
     {
-        $Path = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*.azurermsettings' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
-        
-        Write-ScreenInfo -Message "No ARM profile file specified. Auto-detected and using ARM profile file '$Path'" -Type Warning
+        $tempPath = (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Filter '*.azurermsettings' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
+
+		if($tempPath)
+		{
+			$Path = $tempPath        
+			Write-ScreenInfo -Message "No ARM profile file specified. Auto-detected and using ARM profile file '$Path'" -Type Warning
+		}
     }
     
     if (-not $script:lab)
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
- 
-    if (-not (Test-Path -Path $Path))
-    {
-        throw "The ARM profile file '$Path' could not be found"
-    }
-    
+
     #This needs to be loaded manually to import the required DLLs
     $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
     if (-not (Get-Module -Name Azure -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
@@ -81,14 +80,38 @@ function Add-LabAzureSubscription
     }
     
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
+
+	if(-not $Path)
+	{
+		# Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
+		$null = Get-AzureRmResource -ErrorAction Stop
+        
+        $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
+        $tempFolder = New-Item -ItemType Directory -Path ($tempFile.FullName -replace $tempFile.Extension,'') -Force
+
+		$Path = Join-Path $tempFolder.FullName -ChildPath "$($Lab.Name).azurermprofile"
+
+		Save-AzureRmProfile -Path $Path
+	}
     
     try
     {
+		if(-not (Test-Path $Path))
+		{
+			throw 'No Azure Resource Manager profile could be found'
+		}
+
         $AzureRmProfile = Select-AzureRmProfile -Path $Path -ErrorAction Stop
+
+		$context = Get-AzureRmContext -ErrorAction SilentlyContinue
+		if(-not $context)
+		{
+			throw 'Your Azure Resource Manager profile has expired. Please use Login-AzureRmAccount to log in and optionally Save-AzureRmProfile to persist your settings'
+		}
     }
     catch
     {
-        throw "The Azure Resource Manager Profile $Path could not be loaded or is outdated. $($_.Exception.Message)"
+        throw "The Azure Resource Manager Profile $Path could not be loaded. $($_.Exception.Message)"
     }
 
     Update-LabAzureSettings
