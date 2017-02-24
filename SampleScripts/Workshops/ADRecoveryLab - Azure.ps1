@@ -55,11 +55,9 @@ if ($addMemberServer)
 #Defining child.contoso.com machines
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 `
-    -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
 
-Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 `
-    -DomainName child.contoso.com  -Roles DC
+Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 -DomainName child.contoso.com  -Roles DC
 
 #Now the actual work begins
 Install-Lab
@@ -80,7 +78,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabPostInstallActivity -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 
