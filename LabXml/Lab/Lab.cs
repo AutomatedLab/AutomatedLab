@@ -230,8 +230,15 @@ namespace AutomatedLab
 
         public Domain GetParentDomain(string domainName)
         {
+            domainName = domainName.ToLower();
+
+            if (Domains.Where(d => d.Name.ToLower() == domainName).Count() == 0)
+                throw new ArgumentException($"The domain {domainName} could not be found in the lab.");
+
             var rootDCs = Machines.Where(m => m.Roles.Where(r => r.Name == Roles.RootDC).Count() == 1);
             var firstChildDcs = Machines.Where(m => m.Roles.Where(r => r.Name == Roles.FirstChildDC).Count() == 1);
+
+
 
             if (IsRootDomain(domainName))
             {
@@ -239,8 +246,8 @@ namespace AutomatedLab
             }
             else
             {
-                var parentDomainName = firstChildDcs.Where(m => m.DomainName.ToLower() == domainName.ToLower()).FirstOrDefault().Roles.Where(r => r.Name == Roles.FirstChildDC).FirstOrDefault().Properties["ParentDomain"];
-                return domains.Where(d => d.Name == parentDomainName).FirstOrDefault();
+                var parentDomainName = firstChildDcs.Where(m => m.DomainName == domainName).FirstOrDefault().Roles.Where(r => r.Name == Roles.FirstChildDC).FirstOrDefault().Properties["ParentDomain"];
+                return domains.Where(d => d.Name.ToLower() == parentDomainName).FirstOrDefault();
             }
         }
     }

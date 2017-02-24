@@ -86,7 +86,7 @@ namespace Pki.CATemplate
         RemoveInvalidFromStore = 1024,// This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048,//This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
         IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section §4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
-        ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card–based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
+        ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768,//This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536,//This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
         IssuancePoliciesFromRequest = 131072,//This flag indicates that the certificate issuance policies to be included in the issued certificate come from the request rather than from the template. The template contains a list of all of the issuance policies that the request is allowed to specify; if the request contains policies that are not listed in the template, then the request is rejected. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -428,8 +428,8 @@ $gpoType = @'
                 /// <summary>
                 /// Constructor.
                 /// </summary>
-                /// <param name=”remoteMachineName”>Target machine name to operate group policy</param>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <param name="remoteMachineName">Target machine name to operate group policy</param>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public GroupPolicyObjectHandler(String remoteMachineName)
                 {
                     groupPolicyObject = new GroupPolicyObject();
@@ -459,7 +459,7 @@ $gpoType = @'
                 /// Retrieves the display name for the GPO.
                 /// </summary>
                 /// <returns>Display name</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetDisplayName()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -478,7 +478,7 @@ $gpoType = @'
                 /// Retrieves the computer name of the remote GPO.
                 /// </summary>
                 /// <returns>Machine name</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetMachineName()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -497,7 +497,7 @@ $gpoType = @'
                 /// Retrieves the options for the GPO.
                 /// </summary>
                 /// <returns>Options flag</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public Int32 GetOptions()
                 {
                     try
@@ -514,7 +514,7 @@ $gpoType = @'
                 /// Retrieves the path to the GPO.
                 /// </summary>
                 /// <returns>The path to the GPO</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public String GetPath()
                 {
                     StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -533,7 +533,7 @@ $gpoType = @'
                 /// Retrieves a handle to the root of the registry key for the machine section.
                 /// </summary>
                 /// <returns>A handle to the root of the registry key for the specified GPO computer section</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public UInt32 GetMachineRegistryKey()
                 {
                     UInt32 handle;
@@ -552,7 +552,7 @@ $gpoType = @'
                 /// Retrieves a handle to the root of the registry key for the user section.
                 /// </summary>
                 /// <returns>A handle to the root of the registry key for the specified GPO user section</returns>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public UInt32 GetUserRegistryKey()
                 {
                     UInt32 handle;
@@ -570,9 +570,9 @@ $gpoType = @'
                 /// <summary>
                 /// Saves the specified registry policy settings to disk and updates the revision number of the GPO.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-                /// <param name=”isAdd”>Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
-                /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+                /// <param name="isAdd">Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
+                /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
                 public void Save(bool isMachine, bool isAdd)
                 {
                     try
@@ -592,10 +592,10 @@ $gpoType = @'
                 /// <summary>
                 /// Set the group policy value.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-                /// <param name=”subKey”>Group policy config full path</param>
-                /// <param name=”valueName”>Group policy config key name</param>
-                /// <param name=”value”>If value is null, it will envoke the delete method</param>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+                /// <param name="subKey">Group policy config full path</param>
+                /// <param name="valueName">Group policy config key name</param>
+                /// <param name="value">If value is null, it will envoke the delete method</param>
                 /// <returns>Whether the config is successfully set</returns>
                 public ResultCode SetGroupPolicy(bool isMachine, String subKey, String valueName, object value)
                 {
@@ -606,7 +606,7 @@ $gpoType = @'
 
                     if (null == value)
                     {
-                        // check the key’s existance
+                        // check the key's existance
                         if (RegOpenKeyEx((UIntPtr)gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                         {
                             RegCloseKey((UInt32)hKey);
@@ -697,9 +697,9 @@ $gpoType = @'
                 /// <summary>
                 /// Get the config of the group policy.
                 /// </summary>
-                /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
-                /// <param name=”subKey”>Group policy config full path</param>
-                /// <param name=”valueName”>Group policy config key name</param>
+                /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
+                /// <param name="subKey">Group policy config full path</param>
+                /// <param name="valueName">Group policy config key name</param>
                 /// <returns>The setting of the specified config</returns>
                 public object GetGroupPolicy(bool isMachine, String subKey, String valueName)
                 {
@@ -711,7 +711,7 @@ $gpoType = @'
                     if (RegOpenKeyEx(gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                     {
                         UInt32 type;
-                        byte[] data = new byte[size];  // to store retrieved the value’s data
+                        byte[] data = new byte[size];  // to store retrieved the value's data
 
                         if (RegQueryValueEx(hKey, valueName, 0, out type, data, ref size) == 234)
                         {
@@ -788,10 +788,10 @@ $gpoType = @'
             /// Set policy config
             /// It will start a single thread to set group policy.
             /// </summary>
-            /// <param name=”isMachine”>Whether is machine config</param>
-            /// <param name=”configFullPath”>The full path configuration</param>
-            /// <param name=”configKey”>The configureation key name</param>
-            /// <param name=”value”>The value to set, boxed with proper type [ String, Int32 ]</param>
+            /// <param name="isMachine">Whether is machine config</param>
+            /// <param name="configFullPath">The full path configuration</param>
+            /// <param name="configKey">The configureation key name</param>
+            /// <param name="value">The value to set, boxed with proper type [ String, Int32 ]</param>
             /// <returns>Whether the config is successfully set</returns>
             [MethodImplAttribute(MethodImplOptions.Synchronized)]
             public static ResultCode SetGroupPolicy(bool isMachine, String configFullPath, String configKey, object value)
@@ -807,11 +807,11 @@ $gpoType = @'
             /// Thread start for seting group policy.
             /// Called by public static ResultCode SetGroupPolicy(bool isMachine, WinRMGPConfigName configName, object value)
             /// </summary>
-            /// <param name=”values”>
-            /// values[0] – isMachine<br/>
-            /// values[1] – configFullPath<br/>
-            /// values[2] – configKey<br/>
-            /// values[3] – value<br/>
+            /// <param name="values">
+            /// values[0] - isMachine<br/>
+            /// values[1] - configFullPath<br/>
+            /// values[2] - configKey<br/>
+            /// values[3] - value<br/>
             /// </param>
             private static void SetGroupPolicy(object values)
             {
@@ -830,9 +830,9 @@ $gpoType = @'
             /// Get policy config.
             /// It will start a single thread to get group policy
             /// </summary>
-            /// <param name=”isMachine”>Whether is machine config</param>
-            /// <param name=”configFullPath”>The full path configuration</param>
-            /// <param name=”configKey”>The configureation key name</param>
+            /// <param name="isMachine">Whether is machine config</param>
+            /// <param name="configFullPath">The full path configuration</param>
+            /// <param name="configKey">The configureation key name</param>
             /// <returns>The group policy setting</returns>
             [MethodImplAttribute(MethodImplOptions.Synchronized)]
             public static object GetGroupPolicy(bool isMachine, String configFullPath, String configKey)
@@ -848,10 +848,10 @@ $gpoType = @'
             /// Thread start for geting group policy.
             /// Called by public static object GetGroupPolicy(bool isMachine, WinRMGPConfigName configName)
             /// </summary>
-            /// <param name=”values”>
-            /// values[0] – isMachine<br/>
-            /// values[1] – configFullPath<br/>
-            /// values[2] – configKey<br/>
+            /// <param name="values">
+            /// values[0] - isMachine<br/>
+            /// values[1] - configFullPath<br/>
+            /// values[2] - configKey<br/>
             /// </param>
             public static void GetGroupPolicy(object values)
             {
@@ -871,6 +871,7 @@ $gpoType = @'
 
 function Get-NextOid
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [string]$Oid
@@ -883,6 +884,7 @@ function Get-NextOid
 
 function Find-CertificateAuthority
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [string]$DomainName
@@ -937,6 +939,7 @@ function Find-CertificateAuthority
 
 function Get-CATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -995,6 +998,7 @@ $KeyUsages = @{
 
 function New-CATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1121,6 +1125,7 @@ function New-CATemplate
 
 function Publish-CATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1174,6 +1179,7 @@ function Publish-CATemplate
 
 function Test-CATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1189,6 +1195,7 @@ function Test-CATemplate
 
 function Add-CATemplateStandardPermission
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory = $true)]
@@ -1231,6 +1238,7 @@ function Add-CATemplateStandardPermission
 
 function Request-Certificate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1351,6 +1359,7 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
 
 function Get-CertificatePfx
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'DnsName')]
@@ -1395,7 +1404,7 @@ function Get-CertificatePfx
 
     Write-Verbose "$($certs.Count) certificates remaining after applying filter"
 
-    $password = ConvertTo-SecureString -String 'AL' -Force –AsPlainText
+    $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
 
     foreach ($cert in $certs)
     {
@@ -1436,6 +1445,7 @@ function Get-CertificatePfx
 
 function Add-CertificatePfx
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1450,7 +1460,7 @@ function Add-CertificatePfx
 
     begin
     {
-        $password = ConvertTo-SecureString -String 'AL' -Force –AsPlainText
+        $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
     }
 
     process
@@ -1475,6 +1485,7 @@ function Add-CertificatePfx
 #region Get-LabCertificatePfx
 function Get-LabCertificatePfx
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'DnsName')]
@@ -1502,7 +1513,7 @@ function Get-LabCertificatePfx
             Sync-Parameter -Command (Get-Command -Name Get-CertificatePfx)
             Get-CertificatePfx @ALBoundParameters
             
-        } -Variable $variables -Function $functions -UseCredSsp -PassThru
+        } -Variable $variables -Function $functions -PassThru
     }
     
     Write-LogFunctionExit
@@ -1512,6 +1523,7 @@ function Get-LabCertificatePfx
 #region Add-LabCertificatePfx
 function Add-LabCertificatePfx
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding(DefaultParameterSetName = 'DnsName')]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
@@ -1566,6 +1578,7 @@ function Add-LabCertificatePfx
 #region New-LabCATemplate
 function New-LabCATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1625,7 +1638,7 @@ function New-LabCATemplate
             $p = Sync-Parameter -Command (Get-Command -Name Add-CATemplateStandardPermission) -Parameters $ALBoundParameters
             Add-CATemplateStandardPermission @p | Out-Null
         }
-    } -UseCredSsp -Variable $variables -Function $functions -PassThru
+    } -Variable $variables -Function $functions -PassThru
     
     Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
 
@@ -1634,13 +1647,14 @@ function New-LabCATemplate
         $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
         Publish-CATemplate @p
 
-    } -UseCredSsp -Function $functions -Variable $variables
+    } -Function $functions -Variable $variables
 }
 #endregion New-LabCATemplate
 
 #region Test-LabCATemplate
 function Test-LabCATemplate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1673,7 +1687,7 @@ function Test-LabCATemplate
         $p = Sync-Parameter -Command (Get-Command -Name Test-CATemplate) -Parameters $ALBoundParameters
         Test-CATemplate @p
 
-    } -UseCredSsp -Function $functions -Variable $variables -PassThru -NoDisplay
+    } -Function $functions -Variable $variables -PassThru -NoDisplay
 }
 #endregion Test-LabCATemplate
 
@@ -1681,6 +1695,7 @@ function Test-LabCATemplate
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
     
@@ -1703,7 +1718,7 @@ function Get-LabIssuingCA
         {
             $env:COMPUTERNAME
         }
-    } -PassThru -UseCredSsp -NoDisplay
+    } -PassThru -NoDisplay
     
     if (-not $issuingCAs)
     {
@@ -1724,6 +1739,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1757,7 +1773,7 @@ function Request-LabCertificate
             Sync-Parameter -Command (Get-Command -Name Request-Certificate)
             Request-Certificate @ALBoundParameters
             
-        } -UseCredSsp -Variable $variables -Function $functions -PassThru:$PassThru
+        } -Variable $variables -Function $functions -PassThru:$PassThru
     }
     
     Write-LogFunctionExit
@@ -1767,6 +1783,7 @@ function Request-LabCertificate
 #region Install-LabCA
 function Install-LabCA
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
     
@@ -1923,6 +1940,7 @@ function Install-LabCA
 #region Install-LabCAMachine
 function Install-LabCAMachine
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     
     param (
@@ -2541,7 +2559,7 @@ function Install-LabCAMachine
     #region - If DatabaseDirectory or LogDirectory is specified, Check for drive existence in the VM
     if (($param.DatabaseDirectory -ne '<auto>') -or ($param.LogDirectory -ne '<auto>'))
     {
-        $caSession = New-LabPSSession -ComputerName $Machine -UseCredSsp
+        $caSession = New-LabPSSession -ComputerName $Machine
         
         if ($param.DatabaseDirectory -ne '<auto>')
         {
@@ -2672,7 +2690,7 @@ function Install-LabCAMachine
             }
             
             #Check if Parent CA is valid			
-            $caSession = New-LabPSSession -ComputerName $param.ComputerName -UseCredSsp
+            $caSession = New-LabPSSession -ComputerName $param.ComputerName
             
             Write-Debug -Message "Testing ParentCA with command: 'certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)'"
             
@@ -2689,7 +2707,7 @@ function Install-LabCAMachine
                         [string]$ParentCALogicalName
                     )
                     Invoke-Expression -Command "certutil -ping $ParentCA\$ParentCALogicalName"
-                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -UseCredSsp -PassThru
+                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -PassThru
                 
                 if (-not ($result | Where-Object { $_ -like '*interface is alive*' }))
                 {
@@ -2730,7 +2748,7 @@ function Install-LabCAMachine
             {
                 $name.Split('=')[1].Trim()
             }
-        } -UseCredSsp -NoDisplay -PassThru
+        } -NoDisplay -PassThru
         $num = 0
         do
         {
@@ -3107,6 +3125,7 @@ function Install-LabCAMachine
 #region Get-LabCAInstallCertificates
 function Get-LabCAInstallCertificates
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [AutomatedLab.Machine[]]$Machines
@@ -3147,6 +3166,7 @@ function Get-LabCAInstallCertificates
 #region Publish-LabCAInstallCertificates
 function Publish-LabCAInstallCertificates
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [switch]$PassThru
     )
@@ -3174,7 +3194,7 @@ function Publish-LabCAInstallCertificates
     
     foreach ($machine in $targetMachines)
     {
-        $machineSession = New-LabPSSession -ComputerName $machine -UseCredSsp
+        $machineSession = New-LabPSSession -ComputerName $machine
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
@@ -3274,6 +3294,7 @@ function Publish-LabCAInstallCertificates
 #region Enable-LabCertificateAutoenrollment
 function Enable-LabCertificateAutoenrollment
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     
     param
@@ -3320,7 +3341,7 @@ function Enable-LabCertificateAutoenrollment
     if ($Computer)
     {
         Write-ScreenInfo -Message 'Configuring permissions for computer certificates' -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Configure permissions on workstation authentication template on CAs' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock `
+        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Configure permissions on workstation authentication template on CAs' -NoDisplay -AsJob -PassThru -ScriptBlock `
         {
             $domainName = ([adsi]'LDAP://RootDSE').DefaultNamingContext
                 
@@ -3331,7 +3352,7 @@ function Enable-LabCertificateAutoenrollment
         Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay -NoNewLine
             
             
-        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publish workstation authentication certificate template on CAs' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publish workstation authentication certificate template on CAs' -NoDisplay -AsJob -PassThru -ScriptBlock {
             certutil.exe -SetCAtemplates +Workstation
             #Add-CATemplate -Name 'Workstation' -Confirm:$false
         }
@@ -3341,7 +3362,7 @@ function Enable-LabCertificateAutoenrollment
     if ($CodeSigning)
     {
         Write-ScreenInfo -Message "Enabling code signing certificate and enabling auto enrollment of these. Code signing certificate template name: '$CodeSigningTemplateName'" -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Create certificate template for Code Signing' -AsJob -PassThru -UseCredSsp -NoDisplay -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $dcsToProcess -ActivityName 'Create certificate template for Code Signing' -AsJob -PassThru -NoDisplay -ScriptBlock {
             param ($NewCodeSigningTemplateName)
                 
             $ConfigContext = ([adsi]'LDAP://RootDSE').ConfigurationNamingContext 
@@ -3409,7 +3430,7 @@ function Enable-LabCertificateAutoenrollment
         
         
         Write-ScreenInfo -Message 'Publishing Code Signing certificate template on all issuing CAs' -NoNewLine
-        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publishing code signing certificate template' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock {
+        $job = Invoke-LabCommand -ComputerName $issuingCAsToProcess -ActivityName 'Publishing code signing certificate template' -NoDisplay -AsJob -PassThru -ScriptBlock {
             param ($NewCodeSigningTemplateName)
                 
             $ConfigContext = ([ADSI]'LDAP://RootDSE').ConfigurationNamingContext 
@@ -3468,7 +3489,7 @@ function Enable-LabCertificateAutoenrollment
     }
 
     Write-ScreenInfo -Message "Enabling auto enrollment of $out certificates" -NoNewLine
-    $job = Invoke-LabCommand -ComputerName $machines -ActivityName 'Configuring machines for auto enrollment and performing auto enrollment of certificates' -UseCredSsp -NoDisplay -AsJob -PassThru -ScriptBlock `
+    $job = Invoke-LabCommand -ComputerName $machines -ActivityName 'Configuring machines for auto enrollment and performing auto enrollment of certificates' -NoDisplay -AsJob -PassThru -ScriptBlock `
     {
         param
         (

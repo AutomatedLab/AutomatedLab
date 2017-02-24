@@ -18,6 +18,7 @@ namespace AutomatedLab.Azure
         public SerializableDictionary<string, string> Tags { get; set; }
         public string StatusOfPrimary { get; set; }
         public string StatusOfSecondary { get; set; }
+        public string StorageAccountKey { get; set; }
 
         public AzureRmStorageAccount()
         { }

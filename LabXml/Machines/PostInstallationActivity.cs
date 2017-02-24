@@ -11,7 +11,7 @@ namespace AutomatedLab
         private string scriptFilePath;
         private bool keepFolder;
         private Path isoImage;
-        private bool useCredSsp;
+        private bool doNotUseCredSsp;
         private bool asJob;
 
         public Path DependencyFolder
@@ -57,10 +57,10 @@ namespace AutomatedLab
             set { isoImage = value; }
         }
 
-        public bool UseCredSsp
+        public bool DoNotUseCredSsp
         {
-            get { return useCredSsp; }
-            set { useCredSsp = value; }
+            get { return doNotUseCredSsp; }
+            set { doNotUseCredSsp = value; }
         }
 
         public bool AsJob

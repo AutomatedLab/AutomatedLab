@@ -1,6 +1,7 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -9,7 +10,6 @@ function Install-LabDscPullServer
     Write-LogFunctionEntry
     
     $lab = Get-Lab
-    $labSources = Get-LabSourcesLocation
     $roleName = [AutomatedLab.Roles]::DSCPullServer
     
     if (-not (Get-LabMachine))
@@ -146,6 +146,7 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -156,8 +157,6 @@ function Install-LabDscClient
         
         [string[]]$PullServer
     )
-    
-    $labSources = Get-LabSourcesLocation
     
     if ($All)
     {

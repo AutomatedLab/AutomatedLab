@@ -51,11 +51,11 @@ Configuration SetupDscPullServer
             Port                    = 8080
             PhysicalPath            = "$env:SystemDrive\inetpub\PSDSCPullServer"
             CertificateThumbPrint   = $certificateThumbPrint
-			#CertificateThumbPrint   = 'AllowUnencryptedTraffic'
+            #CertificateThumbPrint   = 'AllowUnencryptedTraffic'
             ModulePath              = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
             ConfigurationPath       = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
             State                   = 'Started'
-			UseSecurityBestPractices = $false
+            UseSecurityBestPractices = $false
             DependsOn               = '[WindowsFeature]DSCServiceFeature'
         } 
 

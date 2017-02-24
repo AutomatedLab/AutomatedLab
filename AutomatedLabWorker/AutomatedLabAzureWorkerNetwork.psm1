@@ -10,79 +10,83 @@ function New-LWAzureNetworkSwitch
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork,
-		
+        
         [switch]$PassThru
     )
-	
+    
     Write-LogFunctionEntry
 
-	$lab = Get-Lab
-	
+    $lab = Get-Lab
+    $jobs = @()
+
+    Write-ScreenInfo -Message "Creating Azure virtual networks '$($VirtualNetwork.Name -join ',')'" -TaskStart
     foreach ($network in $VirtualNetwork)
     {
-        Write-ScreenInfo -Message "Creating Azure virtual network '$($network.Name)'" -TaskStart
-             
-		$azureNetworkParameters = @{
-			Name = $network.Name
-			ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
-			Location = (Get-LabAzureDefaultLocation)
-			AddressPrefix = $network.AddressSpace
-			ErrorAction = 'Stop'
-		}		
 
-		if ($network.DnsServers)
+        if(Get-LWAzureNetworkSwitch -VirtualNetwork $network)
+        {
+            Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
+            continue
+        }
+        
+             
+        $azureNetworkParameters = @{
+            Name = $network.Name
+            ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
+            Location = (Get-LabAzureDefaultLocation)
+            AddressPrefix = $network.AddressSpace
+            ErrorAction = 'Stop'
+            Tag = @{ 
+                AutomatedLab = $script:lab.Name
+                CreationTime = Get-Date	
+            }
+        }
+        
+        if ($network.DnsServers)
         {
             $azureNetworkParameters.Add('DnsServer', $network.DnsServers)
         }
-		
-		Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
-		param
-		(
-			$profilePath,
-			$Subscription,
-			$azureNetworkParameters,
-			$Subnets,
-			$network
-		)
-			Import-Module -Name Azure*
-			Select-AzureRmProfile -Path $profilePath
-			Select-AzureRmSubscription -SubscriptionName $Subscription
+        
+        $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
+            param
+            (
+                $ProfilePath,
+                $Subscription,
+                $azureNetworkParameters,
+                $Subnets,
+                $Network
+            )
+            
+            Select-AzureRmProfile -Path $ProfilePath
+            Set-AzureRmContext -SubscriptionName $Subscription
 
-			$AzureSubnets = @()
+            $azureSubnets = @()
 
-			# Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
-			if($Subnets)
-			{
-				$AzureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix "$($subnet.Address)/$($subnet.Prefix)"
-			}
+            # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
+            if ($Subnets)
+            {
+                $azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnets.Name -AddressPrefix "$($subnets.Address)/$($subnets.Prefix)"
+            }
 
-			if(-not $AzureSubnets)
-			{
-				# Add default subnet for machine
-				$AzureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name 'default' -AddressPrefix $network.AddressSpace
-			}
+            if (-not $azureSubnets)
+            {
+                # Add default subnet for machine
+                $azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name 'default' -AddressPrefix $Network.AddressSpace
+            }
 
-			if($AzureSubnets)
-			{
-				$azureNetworkParameters.Add('Subnet',$AzureSubnets)
-			}
-			
-			$AzureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
-		} -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName,$azureNetworkParameters,$network.Subnets,$network
-
-		Write-ScreenInfo -Message "Done" -TaskEnd
+            if ($azureSubnets)
+            {
+                $azureNetworkParameters.Add('Subnet',$azureSubnets)
+            }
+            
+            $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $azureNetworkParameters, $network.Subnets,$network
     }
     
-    # Wait for network creation jobs and configure vnet peering
-
-    
-    while(Get-Job -Name 'NewAzureVnet*' | Where-Object -Property State -EQ Running)
-	{
-		Write-Verbose 'Waiting for Azure virtual network creation to finish before enabling virtual network peering'
-		Start-Sleep -Seconds 1
-	}
-
-	Write-ProgressIndicator
+    #Wait for network creation jobs and configure vnet peering    
+    Wait-LWLabJob -Job $jobs
+    Write-ScreenInfo -Message "Done" -TaskEnd
+    Write-ProgressIndicator
 
     foreach ($network in $VirtualNetwork)
     {
@@ -94,26 +98,43 @@ function New-LWAzureNetworkSwitch
         {
             $sourceNetwork = Get-AzureRmVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
-			foreach($connectedNetwork in $network.ConnectToVnets)
-			{
-				# Configure bidirectional access
-				$remoteNetwork = Get-AzureRmVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+            foreach($connectedNetwork in $network.ConnectToVnets)
+            {
+                # Configure bidirectional access
+                $remoteNetwork = Get-AzureRmVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
-				Write-Verbose -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
-				if(-not (Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $sourceNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)))
-				{
-					$null = Add-AzureRmVirtualNetworkPeering -Name "$($network.Name)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop
-				}
+                Write-Verbose -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
+                
+                $existingPeerings = Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $sourceNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+                $alreadyExists = foreach ($existingPeering in $existingPeerings)
+                {
+                    $targetVirtualNetwork = Get-AzureRmResource -ResourceId $existingPeering.RemoteVirtualNetwork.Id
+                    
+                    $existingPeering.VirtualNetworkName -eq $sourceNetwork.Name -and $targetVirtualNetwork.Name -eq $remoteNetwork.Name
+                }
+                
+                if(-not $alreadyExists)
+                {
+                    Add-AzureRmVirtualNetworkPeering -Name "$($network.Name)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                }
+                
+                $existingPeerings = Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+                $alreadyExists = foreach ($existingPeering in $existingPeerings)
+                {
+                    $targetVirtualNetwork = Get-AzureRmResource -ResourceId $existingPeering.RemoteVirtualNetwork.Id
+                    
+                    $existingPeering.VirtualNetworkName -eq $remoteNetwork.Name -and $targetVirtualNetwork.Name -eq $sourceNetwork.Name
+                }
 
-				if(-not (Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)))
-				{
-					$null = Add-AzureRmVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop
-				}
-				Write-Verbose -Message 'Peering successfully configured'
-			}			
+                if(-not (Get-AzureRmVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)))
+                {
+                    Add-AzureRmVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                }
+                Write-Verbose -Message 'Peering successfully configured'
+            }			
         }
     }    
-	
+    
     Write-LogFunctionExit
 }
 #endregion New-LWNetworkSwitch
@@ -124,26 +145,97 @@ function Remove-LWAzureNetworkSwitch
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
     )
-	
+    
     Write-LogFunctionEntry
 
     $lab = Get-Lab
-	
+    
     Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning
-	
+    
     foreach ($network in $VirtualNetwork)
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
-		
+        
         $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Select-AzureRmProfile -Path $($lab.AzureSettings.AzureProfilePath);Select-AzureRmSubscription -SubscriptionName $($lab.AzureSettings.DefaultSubscription.SubscriptionName); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
         Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
     }
     $jobs = Get-Job -Name RemoveAzureVNet*
     Write-Verbose "Waiting on the removal of $($jobs.Count)"
     $jobs | Wait-Job | Out-Null
-	
+    
     Write-Verbose "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
-	
+    
     Write-LogFunctionExit
 }
 #endregion Remove-LWNetworkSwitch
+
+#region Get-LWAzureNetworkSwitch
+function Get-LWAzureNetworkSwitch
+{
+param
+(
+    [Parameter(Mandatory)]
+    [AutomatedLab.VirtualNetwork[]]$virtualNetwork
+)
+    $lab = Get-Lab
+    $jobs = @()
+    
+    foreach ($network in $VirtualNetwork)
+    {
+        Write-ScreenInfo -Message "Locating Azure virtual network '$($network.Name)'" -TaskStart
+         
+        $azureNetworkParameters = @{
+            Name = $network.Name
+            ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
+            ErrorAction = 'SilentlyContinue'
+        }
+        
+        Get-AzureRmVirtualNetwork @azureNetworkParameters
+    }
+}
+#endregion
+#endregion Remove-LWNetworkSwitch
+#region New-LWAzureLoadBalancer
+function New-LWAzureLoadBalancer
+{
+param
+(
+	[AutomatedLab.Machine[]]$ConnectedMachines,
+	[switch]$PassThru,
+	[switch]$Wait
+)
+
+$lab = Get-Lab
+$resourceGroup = $lab.Name
+$location = $lab.AzureSettings.DefaultLocation.DisplayName
+
+foreach($vNet in $lab.VirtualNetworks)
+{
+	$publicIp = Get-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
+	if(-not $publicIp)
+	{
+		$publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -Location $location -AllocationMethod Static -IpAddressVersion IPv4 -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())"
+	}
+
+	$frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
+	$backendConfig = New-AzureRmLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)$($vNet.Name)backendpoolconfig"
+
+	$inboundRules = @()
+	foreach($machine in ($ConnectedMachines | Where-Object -Property Network -EQ $vNet.Name))
+	{
+		$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
+		$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
+		$inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
+	}
+
+	$loadBalancer = New-AzureRmLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force
+}
+
+}
+#endregion
+#region Remove-LWAzureLoadBalancer
+function Remove-LWAzureLoadBalancer
+{
+	throw "Not implemented"
+}
+#endregion

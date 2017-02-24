@@ -1,6 +1,7 @@
 #region New-LabBaseImages
 function New-LabBaseImages
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	[cmdletBinding()]
 	param ()
 	
@@ -91,6 +92,7 @@ function New-LabBaseImages
 
 function Stop-ShellHWDetectionService
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
 
     $backupErrorActionPreference = $ErrorActionPreference
@@ -122,6 +124,7 @@ function Stop-ShellHWDetectionService
 
 function Start-ShellHWDetectionService
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	if ((Get-Service -Name ShellHWDetection).Status -eq 'Running')
     {
         Write-Verbose -Message 'ShellHWDetectionService is already running.'
@@ -148,6 +151,7 @@ function Start-ShellHWDetectionService
 #region New-LabVHDX
 function New-LabVHDX
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	[cmdletBinding()]
 	param (
 		[Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
@@ -202,6 +206,7 @@ function New-LabVHDX
 #region Get-LabVHDX
 function Get-LabVHDX
 {
+	# .ExternalHelp AutomatedLab.Help.xml
 	[OutputType([AutomatedLab.Machine])]
 	param (
 		[Parameter(Mandatory = $true, ParameterSetName = 'ByName')]

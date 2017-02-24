@@ -1,6 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
     
@@ -154,6 +155,7 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
     
@@ -168,12 +170,12 @@ function Install-LabOffice2016
   </Add>
   <Updates Enabled="TRUE" />
   <Display Level="None" AcceptEULA="TRUE" />
+  <Property Name="SharedComputerLicensing" Value="1" />
   <Logging Level="Standard" Path="%temp%" />
   <!--Silent install of 32-Bit Office 365 ProPlus with Updates and Logging enabled-->
 </Configuration>
 '@
-    
-    $labSources = Get-LabSourcesLocation
+
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::Office2016
     
@@ -213,7 +215,7 @@ function Install-LabOffice2016
     
     foreach ($machine in $machines)
     {
-        Write-ScreenInfo "Preparing Office 206 installation on '$machine'..." -NoNewLine
+        Write-ScreenInfo "Preparing Office 2016 installation on '$machine'..." -NoNewLine
         $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
         
         Invoke-LabCommand -ActivityName 'Copy Office to C' -ComputerName $machine -ScriptBlock {

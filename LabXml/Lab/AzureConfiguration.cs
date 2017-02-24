@@ -22,7 +22,32 @@ namespace AutomatedLab
         private List<AzureRmVmSize> roleSizes;
         private List<AzureResourceGroup> resourceGroups;
         private List<string> vmDisks;
-        private string defaultRoleSize;        
+        private string defaultRoleSize;
+        private string labSourcesStorageAccountName;
+        private string labSourcesResourceGroupName;
+        private int loadBalancerPortCounter;
+
+        public int LoadBalancerPortCounter
+        {
+            get { return loadBalancerPortCounter; }
+            set { loadBalancerPortCounter = value; }
+        }
+
+
+
+        public string LabSourcesResourceGroupName
+        {
+            get { return labSourcesResourceGroupName; }
+            set { labSourcesResourceGroupName = value; }
+        }
+
+
+        public string LabSourcesStorageAccountName
+        {
+            get { return labSourcesStorageAccountName; }
+            set { labSourcesStorageAccountName = value; }
+        }
+
 
         public List<AzureRmStorageAccount> StorageAccounts
         {
@@ -130,6 +155,9 @@ namespace AutomatedLab
             this.resourceGroups = new List<AzureResourceGroup>();
             this.subscriptions = new List<AzureSubscription>();
             this.vmDisks = new List<string>();
+
+            // Start port counter above well-known ports
+            this.LoadBalancerPortCounter = 5000;
         }
 
         protected List<T> NonEmptyList<T>(List<T> value)

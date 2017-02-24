@@ -51,6 +51,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Azure\AzureAccount.cs" />
+    <Compile Include="Azure\AzureAvailabilitySet.cs" />
     <Compile Include="Azure\AzureLocation.cs" />
     <Compile Include="Azure\AzureOSImage.cs" />
     <Compile Include="Azure\AzureResourceGroup.cs" />
@@ -62,6 +63,7 @@
     <Compile Include="Disks\Disk.cs" />
     <Compile Include="Disks\ISO.cs" />
     <Compile Include="Disks\LocalDisk.cs" />
+    <Compile Include="DynamicVariable.cs" />
     <Compile Include="Enums.cs" />
     <Compile Include="Extensions\Extensions.cs" />
     <Compile Include="Lab\AzureConfiguration.cs" />

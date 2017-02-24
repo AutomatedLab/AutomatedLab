@@ -13,19 +13,11 @@ function Invoke-LWCommand
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyScriptBlock')]
-        [ValidateScript({
-                    [System.IO.Directory]::Exists($_) -or [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$DependencyFolderPath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        [ValidateScript({
-                    [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$ScriptFilePath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -73,10 +65,28 @@ function Invoke-LWCommand
         [switch]$PassThru
     )
     
-    #required to suporess verbose messages, warnings and errors
+    Write-LogFunctionEntry
+    
+    #required to supress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    Write-LogFunctionEntry
+    if ($DependencyFolderPath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) -and -not (Test-Path -Path $DependencyFolderPath))
+        {
+            Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
+            return
+        }
+    }
+    
+    if ($ScriptFilePath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath) -and -not (Test-Path -Path $ScriptFilePath -PathType Leaf))
+        {
+            Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
+            return
+        }
+    }
 
     $internalSession = New-Object System.Collections.ArrayList
     $internalSession.AddRange($Session)
@@ -92,19 +102,26 @@ function Invoke-LWCommand
     {
         Write-Verbose -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
         
-        try
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
-            Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
+            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination C:\ -Recurse -Force } -ArgumentList $DependencyFolderPath
         }
-        catch
+        else
         {
-            if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+            try
             {
-                Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
             }
-            else
+            catch
             {
-                Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+                {
+                    Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
+                else
+                {
+                    Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
             }
         }
         
@@ -120,7 +137,7 @@ function Invoke-LWCommand
             $parameters = @{ }
             $parameters.Add('Session', $internalSession)
             $parameters.Add('ScriptBlock', [scriptblock]::Create($cmd))
-            $parameters.Add('ArgumentList', $arguments)
+            $parameters.Add('ArgumentList', $ArgumentList)
             if ($AsJob)
             {
                 $parameters.Add('AsJob', $AsJob)
@@ -179,10 +196,10 @@ function Invoke-LWCommand
         }
     }
     
-    $parameters.Add('Verbose', $Verbose)
-    $parameters.Add('Debug', $Debug)
+    if ($VerbosePreference -eq 'Continue') { $parameters.Add('Verbose', $VerbosePreference) }
+    if ($DebugPreference -eq 'Continue') { $parameters.Add('Debug', $DebugPreference) }
 
-    $result = New-Object System.Collections.ArrayList
+    [System.Collections.ArrayList]$result = New-Object System.Collections.ArrayList
 
     if (-not $AsJob -and $parameters.ScriptBlock)
     {
@@ -208,7 +225,7 @@ function Invoke-LWCommand
                 $internalSession.Remove($nonAvailableSession)
             }
 
-            $result.AddRange([System.Collections.ArrayList]@(Invoke-Command @parameters -ErrorAction SilentlyContinue -ErrorVariable invokeError))
+            $result.AddRange(@(Invoke-Command @parameters))
 
             #remove all sessions for machines successfully invoked the command
             foreach ($machineFinished in ($result | Where-Object { $_ -like 'LABHOSTNAME*' }))
@@ -216,7 +233,7 @@ function Invoke-LWCommand
                 $machineFinishedName = $machineFinished.Substring($machineFinished.IndexOf(':') + 1)
                 $internalSession.Remove(($internalSession | Where-Object LabMachineName -eq $machineFinishedName))
             }
-            $result = $result | Where-Object { $_ -notlike 'LABHOSTNAME*' }
+            $result = @($result | Where-Object { $_ -notlike 'LABHOSTNAME*' })
 
             $Retries--
 
@@ -244,14 +261,6 @@ function Invoke-LWCommand
         $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         $resultVariable.Value = $result
         Write-Verbose "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
-    }
-    
-    if ($invokeError.Count -and -not $AsJob)
-    {
-        foreach ($e in $invokeError)
-        {
-            Write-Error -ErrorRecord $e
-        }
     }
     
     Write-Verbose -Message "Finished Installation Activity '$ActivityName'"
@@ -316,11 +325,6 @@ function Install-LWSoftwarePackage
     }
     #endregion New-InstallProcess
 
-    if ($AsScheduledJob -and $PSVersionTable.PSVersion -lt '3.0')
-    {
-        throw 'The AsScheduledJob feature requires at least PowerShell V3'
-    }
-
     if (-not (Test-Path -Path $Path -PathType Leaf))
     {
         Write-Error "The file '$Path' could not found"
@@ -381,17 +385,42 @@ function Install-LWSoftwarePackage
 
     if ($AsScheduledJob)
     {
-        $jobName = "AL_$(New-Guid)"
+        $jobName = "AL_$([guid]::NewGuid())"
         Write-Verbose "In the AsScheduledJob mode, creating scheduled job named '$jobName'"
-        $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
-        Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
-        
-        while (-not $job)
+            
+        if ($PSVersionTable.PSVersion -lt '3.0')
         {
-            $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
-        }        
-        $job | Wait-Job | Out-Null
-        $result = $job | Receive-Job
+            $processName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+            $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
+            SCHTASKS /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine" /RU "SYSTEM" | Out-Null
+            while (-not ($p))
+            {
+                Start-Sleep -Milliseconds 200
+                $p = Get-Process -Name $processName -ErrorAction SilentlyContinue
+            }
+
+            $p.WaitForExit()
+            Write-Verbose -Message 'Process exited. Reading output'
+
+            $params = @{ Process = $p }
+            $params.Add('Output', "Output cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            $params.Add('Error', "Errors cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            New-Object -TypeName PSObject -Property $params
+
+            
+        }
+        else
+        {
+            $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
+            Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
+            
+            while (-not $job)
+            {
+                $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+            }        
+            $job | Wait-Job | Out-Null
+            $result = $job | Receive-Job
+        }
     }
     else
     {
@@ -402,8 +431,15 @@ function Install-LWSoftwarePackage
     
     if ($AsScheduledJob)
     {
-        Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
-        $scheduledJob | Unregister-ScheduledJob
+        if ($PSVersionTable.PSVersion -lt '3.0')
+        {
+            schtasks.exe /DELETE /TN $jobName /F | Out-Null
+        }
+        else
+        {
+            Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
+            $scheduledJob | Unregister-ScheduledJob
+        }
     }
 
     if ($installationMethod -eq '.msu')
@@ -457,7 +493,7 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -468,7 +504,7 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -521,7 +557,7 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -532,7 +568,7 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {

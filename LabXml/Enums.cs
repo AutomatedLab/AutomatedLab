@@ -72,4 +72,13 @@ namespace AutomatedLab
         Enabled,
         Disabled
     }
+
+    [Flags]
+    public enum LabVMInitState
+    {
+        Uninitialized = 0,
+        ReachedByAutomatedLab = 1,
+        EnabledCredSsp = 2,
+        NetworkAdapterBindingCorrected = 4
+    }
 }
