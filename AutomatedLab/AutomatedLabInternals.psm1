@@ -1544,64 +1544,65 @@ function Get-LabInternetFile
 
         if ((Test-Path -Path $Path) -and -not $Force)
         {
-            Write-ScreenInfo "The file '$Path' does already exist, skipping the download" -Type Warning
-            return
+            Write-Warning "The file '$Path' does already exist, skipping the download"
         }
-
-        if ((Test-Path -Path $Path) -and $Force)
+        else
         {
-            Remove-Item -Path $Path -Force
-        }
-    
-        Write-Verbose "Uri is '$Uri'"
-        Write-Verbose "Path os '$Path'"
-
-        try
-        {
-            $bytesProcessed = 0
-            $request = [System.Net.WebRequest]::Create($Uri)
-        
-            if ($request)
+            if ((Test-Path -Path $Path) -and $Force)
             {
-                Write-Verbose 'WebRequest created'
-                $response = $request.GetResponse()
-                if ($response)
-                {
-                    Write-Verbose 'Responce received'
-                    $remoteStream = $response.GetResponseStream()
- 
-                    $localStream = [System.IO.File]::Create($Path)
- 
-                    $buffer = New-Object System.Byte[] 1024
-                    $bytesRead = 0
- 
-                    do
-                    {
-                        $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
-                        $localStream.Write($buffer, 0, $bytesRead)
-                        $bytesProcessed += $bytesRead
-                        
-                        $percentageCompleted = $bytesProcessed / $response.ContentLength
-                        Write-Progress -Activity "Downloading file '$fileName'" `
-                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                        -PercentComplete ($percentageCompleted * 100)
-                        
-                    } while ($bytesRead -gt 0)
-                }
-                
-                $response
+                Remove-Item -Path $Path -Force
             }
-        }
-        catch
-        {
-            Write-Error -Exception $_.Exception
-        }
-        finally
-        {
     
-            if ($response) { $response.Close() }
-            if ($remoteStream) { $remoteStream.Close() }
-            if ($localStream) { $localStream.Close() }
+            Write-Verbose "Uri is '$Uri'"
+            Write-Verbose "Path os '$Path'"
+
+            try
+            {
+                $bytesProcessed = 0
+                $request = [System.Net.WebRequest]::Create($Uri)
+        
+                if ($request)
+                {
+                    Write-Verbose 'WebRequest created'
+                    $response = $request.GetResponse()
+                    if ($response)
+                    {
+                        Write-Verbose 'Responce received'
+                        $remoteStream = $response.GetResponseStream()
+ 
+                        $localStream = [System.IO.File]::Create($Path)
+ 
+                        $buffer = New-Object System.Byte[] 1024
+                        $bytesRead = 0
+ 
+                        do
+                        {
+                            $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                            $localStream.Write($buffer, 0, $bytesRead)
+                            $bytesProcessed += $bytesRead
+                        
+                            $percentageCompleted = $bytesProcessed / $response.ContentLength
+                            Write-Progress -Activity "Downloading file '$fileName'" `
+                            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                            -PercentComplete ($percentageCompleted * 100)
+                        
+                        } while ($bytesRead -gt 0)
+                    }
+                
+                    $response
+                }
+            }
+            catch
+            {
+                Write-Error -Exception $_.Exception
+            }
+            finally
+            {
+    
+                if ($response) { $response.Close() }
+                if ($remoteStream) { $remoteStream.Close() }
+                if ($localStream) { $localStream.Close() }
+            }
         }
     }
     
@@ -1612,12 +1613,12 @@ function Get-LabInternetFile
         $machine = Get-LabMachine -IsRunning | Select-Object -First 1
         Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru -Verbose
+        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru
     }
     else
     {
         Write-Verbose "Target path is local, invoking the copy job locally."
-        $PSBoundParameters.Remove('PassThru')
+        $PSBoundParameters.Remove('PassThru') | Out-Null
         $result = Get-LabInternetFileInternal @PSBoundParameters
     }
     
