@@ -282,6 +282,7 @@ function Add-LabAzureSubscription
         }
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
         
+        # Server
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
         Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
         Get-AzureRmVMImageOffer |
@@ -290,6 +291,7 @@ function Add-LabAzureSubscription
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
+        # SQL
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
         Where-Object PublisherName -eq 'MicrosoftSQLServer' |
         Get-AzureRmVMImageOffer |
@@ -299,12 +301,23 @@ function Add-LabAzureSubscription
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
+        # VisualStudio
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
         Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
         Get-AzureRmVMImageOffer |
         Get-AzureRmVMImageSku |
         Get-AzureRmVMImage |
         Where-Object Offer -eq 'VisualStudio' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+        # Client OS
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'Windows' |
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
