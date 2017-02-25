@@ -452,6 +452,7 @@ function Install-Lab
         [switch]$ConfigManager2012R2,
         [switch]$VisualStudio,
         [switch]$Office2013,
+		[switch]$Office2016,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
