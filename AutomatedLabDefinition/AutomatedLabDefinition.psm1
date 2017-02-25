@@ -2084,11 +2084,6 @@ process
             $role.Properties = @{ 'OrganizationName' = 'ExOrg' }
         }
 
-        $exchangeInstallUri = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2013DownloadLink)
-        $exchangeInstallFileName = $ExchangeInstallUri.Segments[$ExchangeInstallUri.Segments.Count-1]
-        $ucmaInstallUri = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
-        $ucmaInstallFileName = $ucmaInstallUri.Segments[$ucmaInstallUri.Segments.Count-1]
-
         if ($machine.HostType -eq 'HyperV')
         {
             if (-not (Test-Path -Path "$(Get-LabSourcesLocation)\SoftwarePackages\$ucmaInstallFileName"))
