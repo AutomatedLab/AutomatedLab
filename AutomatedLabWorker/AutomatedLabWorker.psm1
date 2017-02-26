@@ -269,7 +269,6 @@ function Invoke-LWCommand
 }
 #endregion Invoke-LWCommand
 
-#region Install-LWSoftwarePackage
 function Install-LWSoftwarePackage
 {
     param (
@@ -309,7 +308,7 @@ function Install-LWSoftwarePackage
 
         $p = New-Object -TypeName System.Diagnostics.Process
         $p.StartInfo = $pInfo
-        Write-Verbose -Message "Starting process $($pInfo.FileName) $($pInfo.Arguments)"
+        Write-Verbose -Message "Starting process: $($pInfo.FileName) $($pInfo.Arguments)"
         $p.Start() | Out-Null
         Write-Verbose "The installation process ID is $($p.Id)"
         $p.WaitForExit()
@@ -345,7 +344,7 @@ function Install-LWSoftwarePackage
         
         if (-not $CommandLine)
         {
-            $CommandLine =
+            [string]$CommandLine =
             @(
                 "/I `"$Path`"", # Install this MSI
                 '/QN', # Quietly, without a UI
@@ -354,12 +353,14 @@ function Install-LWSoftwarePackage
         }
         else
         {
-            $CommandLine += ' ' + "/I `"$Path`"" # Install this MSI
+            $CommandLine = '/I {0} {1}' -f $Path, $CommandLine # Install this MSI
         }
         
         Write-Verbose -Message 'Installation arguments for MSI are:'
         Write-Verbose -Message "`tPath: $Path"
         Write-Verbose -Message "`tLog File: '`t$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetFileNameWithoutExtension($Path)).log'"
+        
+        $Path = 'msiexec.exe'
     }
     elseif ($installationMethod -eq '.msu')
     {
