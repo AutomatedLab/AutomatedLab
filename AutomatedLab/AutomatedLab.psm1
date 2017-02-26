@@ -2243,6 +2243,18 @@ function Install-LabSoftwarePackage
     if ($parameterSetName -like 'Single*')
     {
         $Machine = Get-LabMachine -ComputerName $ComputerName
+
+        if (-not $Machine)
+        {
+            Write-Error "The machine '$ComputerName' could not be found."
+            return
+        }
+
+        $unknownMachines = (Compare-Object -ReferenceObject $ComputerName -DifferenceObject $Machine.Name).InputObject
+        if ($unknownMachines)
+        {
+            Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+        }
     }
     
     if ($Path)
