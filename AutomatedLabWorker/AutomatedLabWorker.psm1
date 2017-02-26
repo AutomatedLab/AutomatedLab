@@ -342,9 +342,8 @@ function Install-LWSoftwarePackage
     {
         Write-Verbose -Message 'Starting installation of MSI file'
         
-        if (-not $CommandLine)
+        [string]$CommandLine = if (-not $CommandLine)
         {
-            [string]$CommandLine =
             @(
                 "/I `"$Path`"", # Install this MSI
                 '/QN', # Quietly, without a UI
@@ -353,7 +352,7 @@ function Install-LWSoftwarePackage
         }
         else
         {
-            $CommandLine = '/I {0} {1}' -f $Path, $CommandLine # Install this MSI
+            '/I {0} {1}' -f $Path, $CommandLine # Install this MSI
         }
         
         Write-Verbose -Message 'Installation arguments for MSI are:'
