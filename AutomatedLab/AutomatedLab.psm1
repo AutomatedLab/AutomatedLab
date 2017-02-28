@@ -452,7 +452,7 @@ function Install-Lab
         [switch]$ConfigManager2012R2,
         [switch]$VisualStudio,
         [switch]$Office2013,
-		[switch]$Office2016,
+        [switch]$Office2016,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
@@ -2220,14 +2220,14 @@ function Install-LabSoftwarePackage
     Write-LogFunctionEntry
     $parameterSetName = $PSCmdlet.ParameterSetName
 
-	if ($Path)
-	{
-		if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
-		{
-			$parameterSetName = 'SingleLocalPackage'
-			$LocalPath = $Path
-		}
-	}
+    if ($Path)
+    {
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
+        {
+            $parameterSetName = 'SingleLocalPackage'
+            $LocalPath = $Path
+        }
+    }
     
     if ($parameterSetName -eq 'SinglePackage')
     {
@@ -2259,16 +2259,16 @@ function Install-LabSoftwarePackage
     
     if ($Path)
     {
-        Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart
+        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart }
     }
     else
     {
-        Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart
+        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart }
     }
     
     if ('Stopped' -in (Get-LabVMStatus $ComputerName -AsHashTable).Values)
     {
-        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine }
         Start-LabVM -ComputerName $ComputerName -Wait -ProgressIndicator 30 -NoNewline
     }
     
@@ -2325,25 +2325,25 @@ function Install-LabSoftwarePackage
         
     $parameters.Add('NoDisplay', $True)
         
-    if (-not $AsJob) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
+    if (-not $AsJob -and -not $NoDisplay) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
         
     $results += Invoke-LabCommand @parameters
         
     if (-not $AsJob)
     {
         Write-Verbose "Waiting on job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')'"
-        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 30 -NoDisplay
+        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 30 -NoDisplay:$NoDisplay
         $results = $results | Receive-Job
         Write-Verbose "Job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')' finished"
     }
     
     if ($AsJob)
     {
-        Write-ScreenInfo -Message 'Installation started in background' -TaskEnd
+        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation started in background' -TaskEnd }
     }
     else
     {
-        Write-ScreenInfo -Message 'Installation done' -TaskEnd
+        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation done' -TaskEnd }
     }
     
     if ($PassThru)
@@ -2834,7 +2834,7 @@ function Invoke-LabCommand
 
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency', Position = 0)]
-		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency', Position = 0)]
+        [Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'Script', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlock', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'PostInstallationActivity', Position = 0)]
@@ -2848,10 +2848,10 @@ function Invoke-LabCommand
         [Parameter(Mandatory, ParameterSetName = 'Script')]
         [string]$FilePath,
 
-		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
-		[string]$FileName,
+        [Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
+        [string]$FileName,
         
-		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
+        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [string]$DependencyFolderPath,
@@ -2872,7 +2872,7 @@ function Invoke-LabCommand
         [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
-		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
+        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'ScriptBlock')]
@@ -2922,18 +2922,18 @@ function Invoke-LabCommand
         return
     }
 
-	if ($FilePath)
-	{
-		if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
-		{
-			Write-Verbose "$FilePath is on Azure. Skipping test."
-		}
-		elseif(-not (Test-Path -Path $FilePath))
-		{
-			Write-LogFunctionExitWithError -Message "$FilePath is not on Azure and does not exist"
-			return
-		}
-	}
+    if ($FilePath)
+    {
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
+        {
+            Write-Verbose "$FilePath is on Azure. Skipping test."
+        }
+        elseif (-not (Test-Path -Path $FilePath))
+        {
+            Write-LogFunctionExitWithError -Message "$FilePath is not on Azure and does not exist"
+            return
+        }
+    }
     
     if ($PostInstallationActivity)
     {
@@ -3037,7 +3037,7 @@ function Invoke-LabCommand
         if ($Retries)                { $param.Add('Retries', $Retries) }
         if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
         if ($FilePath)               { $param.Add('ScriptFilePath', $FilePath) }
-		if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
+        if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
         if ($DependencyFolderPath)   { $param.Add('DependencyFolderPath', $DependencyFolderPath) }
