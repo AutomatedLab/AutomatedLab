@@ -3327,8 +3327,8 @@ function Set-LabInstallationCredential
 }
 #endregion Set-LabInstallationCredential
 
-#region Show-LabInstallationTime
-function Show-LabInstallationTime
+#region Show-LabDeploymentSummary
+function Show-LabDeploymentSummary
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [OutputType([System.TimeSpan])]
@@ -3369,7 +3369,7 @@ function Show-LabInstallationTime
     Write-ScreenInfo -Message "- Get-LabInternetFile downloads files from the internet and places them on LabSources (locally or on Azure)"
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'
 }
-#endregion Show-LabInstallationTime
+#endregion Show-LabDeploymentSummary
 
 #region Set-LabGlobalNamePrefix
 function Set-LabGlobalNamePrefix
