@@ -128,7 +128,7 @@ function Invoke-LWCommand
         if ($PSCmdlet.ParameterSetName -eq 'FileContentDependencyRemoteScript')
         {
             $cmd = @"
-                $(if ($ScriptFileName) { "&'$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
+                $(if ($ScriptFileName) { "&' $(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
                 $(if (-not $KeepFolder) { "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" } )
 "@
             

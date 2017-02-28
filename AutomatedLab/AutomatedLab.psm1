@@ -2834,6 +2834,7 @@ function Invoke-LabCommand
 
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency', Position = 0)]
+		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'Script', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlock', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'PostInstallationActivity', Position = 0)]
@@ -2845,12 +2846,14 @@ function Invoke-LabCommand
         
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'Script')]
-        [ValidateScript({[System.IO.File]::Exists($_)})]
         [string]$FilePath,
+
+		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
+		[string]$FileName,
         
+		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
-        [ValidateScript({[System.IO.Directory]::Exists($_) -or [System.IO.File]::Exists($_)})]
         [string]$DependencyFolderPath,
         
         [object[]]$ArgumentList,
@@ -2869,6 +2872,7 @@ function Invoke-LabCommand
         [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
+		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'ScriptBlock')]
@@ -2888,7 +2892,7 @@ function Invoke-LabCommand
     
     Write-LogFunctionEntry
 
-    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency')
+    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
         if (-not $Retries) { $Retries = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetries }
         if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetryIntervalInSeconds }
@@ -2917,6 +2921,19 @@ function Invoke-LabCommand
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
+
+	if ($FilePath)
+	{
+		if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
+		{
+			Write-Verbose "$FilePath is on Azure. Skipping test."
+		}
+		elseif(-not (Test-Path -Path $FilePath))
+		{
+			Write-LogFunctionExitWithError -Message "$FilePath is not on Azure and does not exist"
+			return
+		}
+	}
     
     if ($PostInstallationActivity)
     {
@@ -3020,6 +3037,7 @@ function Invoke-LabCommand
         if ($Retries)                { $param.Add('Retries', $Retries) }
         if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
         if ($FilePath)               { $param.Add('ScriptFilePath', $FilePath) }
+		if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
         if ($DependencyFolderPath)   { $param.Add('DependencyFolderPath', $DependencyFolderPath) }
