@@ -31,4 +31,4 @@ Install-Lab
 
 Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName DevClient1
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary

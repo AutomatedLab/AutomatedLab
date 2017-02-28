@@ -5406,13 +5406,13 @@ c:\DeployDebug</Description>
       <Publish>false</Publish>
     </CmdletObject>
     <CmdletObject verb="Show" noun="LabInstallationTime">
-      <Name>Show-LabInstallationTime</Name>
+      <Name>Show-LabDeploymentSummary</Name>
       <Syntax>
-        <string>Show-LabInstallationTime</string>
+        <string>Show-LabDeploymentSummary</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Show installation time</Synopsis>
-        <Description>Shows the lab installation time. AutomatedLab keeps track of the time it took from the first lab command to the execution of Show-LabInstallationTime</Description>
+        <Description>Shows the lab installation time. AutomatedLab keeps track of the time it took from the first lab command to the execution of Show-LabDeploymentSummary</Description>
         <Notes />
         <InputType />
         <InputUrl />
