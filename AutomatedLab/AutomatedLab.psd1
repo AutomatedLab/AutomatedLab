@@ -104,7 +104,7 @@
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
         'Set-LabInstallationCredential',
-        'Show-LabInstallationTime',
+        'Show-LabDeploymentSummary',
         'Set-LabGlobalNamePrefix',
         'Wait-LabADReady',
         'Add-LabAzureSubscription',

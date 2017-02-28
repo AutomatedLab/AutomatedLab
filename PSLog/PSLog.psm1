@@ -6,12 +6,12 @@ function Start-Log
     (
         [Parameter(Position = 0, Mandatory = $true, ParameterSetName = 'UserDefined')]
         [ValidateScript({
-            if (-not $_.Exists)
-            {
-                throw 'LogPath does not exist'
-            }
-            return $true
-        }
+                    if (-not $_.Exists)
+                    {
+                        throw 'LogPath does not exist'
+                    }
+                    return $true
+                }
         )]
         [System.IO.DirectoryInfo]$LogPath,
         
@@ -124,11 +124,11 @@ function Write-LogEntry
     
     $caller = (Get-PSCallStack)[1]
     if ($caller.Command -eq 'Write-Host' -or
-    $caller.Command -eq 'Write-Warning' -or
-    $caller.Command -eq 'Write-Verbose' -or
-    $caller.Command -eq 'Write-Debug' -or
-    $caller.Command -eq 'Write-Error' -or
-    $caller.Command -eq 'Start-Log' -or
+        $caller.Command -eq 'Write-Warning' -or
+        $caller.Command -eq 'Write-Verbose' -or
+        $caller.Command -eq 'Write-Debug' -or
+        $caller.Command -eq 'Write-Error' -or
+        $caller.Command -eq 'Start-Log' -or
     $caller.Command -eq 'Stop-Log')
     {
         $caller = (Get-PSCallStack)[2]
@@ -354,9 +354,9 @@ function Write-LogFunctionExit
 function Write-LogFunctionExitWithError
 {
     [CmdletBinding(
-                   ConfirmImpact = 'Low',
-                   DefaultParameterSetName = 'Message'
-                   )]
+            ConfirmImpact = 'Low',
+            DefaultParameterSetName = 'Message'
+    )]
     
     param
     (
@@ -445,9 +445,9 @@ function Write-LogFunctionExitWithError
 function Write-LogError
 {
     [CmdletBinding(
-                   ConfirmImpact = 'Low',
-                   DefaultParameterSetName = 'Name'
-                   )]
+            ConfirmImpact = 'Low',
+            DefaultParameterSetName = 'Name'
+    )]
     param
     (
         [Parameter(Position = 0, Mandatory = $true, ParameterSetName = 'Message')]
@@ -538,7 +538,7 @@ function Write-Host
         ${ForegroundColor},
         
         [System.ConsoleColor]
-        ${BackgroundColor})
+    ${BackgroundColor})
     
     begin
     {
@@ -586,12 +586,12 @@ function Write-Host
             throw
         }
     }
-  <#
+    <#
 
-    .ForwardHelpTargetName Write-Host
-    .ForwardHelpCategory Cmdlet
+            .ForwardHelpTargetName Write-Host
+            .ForwardHelpCategory Cmdlet
 
-  #>
+    #>
 }
 #endregion
 
@@ -604,7 +604,7 @@ function Write-Warning
         [Alias('Msg')]
         [AllowEmptyString()]
         [System.String]
-        ${Message})
+    ${Message})
     
     begin
     {
@@ -653,12 +653,12 @@ function Write-Warning
             throw
         }
     }
-  <#
+    <#
 
-    .ForwardHelpTargetName Write-Warning
-    .ForwardHelpCategory Cmdlet
+            .ForwardHelpTargetName Write-Warning
+            .ForwardHelpCategory Cmdlet
 
-  #>
+    #>
 }
 #endregion
 
@@ -671,7 +671,7 @@ function Write-Verbose
         [Alias('Msg')]
         [AllowEmptyString()]
         [System.String]
-        ${Message})
+    ${Message})
     
     begin
     {
@@ -723,12 +723,12 @@ function Write-Verbose
             throw
         }
     }
-  <#
+    <#
 
-    .ForwardHelpTargetName Write-Verbose
-    .ForwardHelpCategory Cmdlet
+            .ForwardHelpTargetName Write-Verbose
+            .ForwardHelpCategory Cmdlet
 
-  #>
+    #>
 }
 #endregion
 
@@ -785,7 +785,7 @@ function Write-Error
         
         [Alias('TargetType')]
         [System.String]
-        ${CategoryTargetType})
+    ${CategoryTargetType})
     
     begin
     {
@@ -835,12 +835,12 @@ function Write-Error
             throw
         }
     }
-  <#
+    <#
 
-    .ForwardHelpTargetName Write-Error
-    .ForwardHelpCategory Cmdlet
+            .ForwardHelpTargetName Write-Error
+            .ForwardHelpCategory Cmdlet
 
-  #>
+    #>
 }
 #endregion
 
@@ -853,7 +853,7 @@ function Write-Debug
         [Alias('Msg')]
         [AllowEmptyString()]
         [string]
-        ${Message})
+    ${Message})
     
     begin
     {
@@ -902,12 +902,12 @@ function Write-Debug
             throw
         }
     }
-  <#
+    <#
 
-    .ForwardHelpTargetName Write-Debug
-    .ForwardHelpCategory Cmdlet
+            .ForwardHelpTargetName Write-Debug
+            .ForwardHelpCategory Cmdlet
 
-  #>
+    #>
 }
 #endregion
 
@@ -915,42 +915,42 @@ function Write-Debug
 function Get-CallerPreference
 {
     <#
-    .Synopsis
-       Fetches "Preference" variable values from the caller's scope.
-    .DESCRIPTION
-       Script module functions do not automatically inherit their caller's variables, but they can be
-       obtained through the $PSCmdlet variable in Advanced Functions.  This function is a helper function
-       for any script module Advanced Function; by passing in the values of $ExecutionContext.SessionState
-       and $PSCmdlet, Get-CallerPreference will set the caller's preference variables locally.
-    .PARAMETER Cmdlet
-       The $PSCmdlet object from a script module Advanced Function.
-    .PARAMETER SessionState
-       The $ExecutionContext.SessionState object from a script module Advanced Function.  This is how the
-       Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
-       script module.
-    .PARAMETER Name
-       Optional array of parameter names to retrieve from the caller's scope.  Default is to retrieve all
-       Preference variables as defined in the about_Preference_Variables help file (as of PowerShell 4.0)
-       This parameter may also specify names of variables that are not in the about_Preference_Variables
-       help file, and the function will retrieve and set those as well.
-    .EXAMPLE
-       Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+            .Synopsis
+            Fetches "Preference" variable values from the caller's scope.
+            .DESCRIPTION
+            Script module functions do not automatically inherit their caller's variables, but they can be
+            obtained through the $PSCmdlet variable in Advanced Functions.  This function is a helper function
+            for any script module Advanced Function; by passing in the values of $ExecutionContext.SessionState
+            and $PSCmdlet, Get-CallerPreference will set the caller's preference variables locally.
+            .PARAMETER Cmdlet
+            The $PSCmdlet object from a script module Advanced Function.
+            .PARAMETER SessionState
+            The $ExecutionContext.SessionState object from a script module Advanced Function.  This is how the
+            Get-CallerPreference function sets variables in its callers' scope, even if that caller is in a different
+            script module.
+            .PARAMETER Name
+            Optional array of parameter names to retrieve from the caller's scope.  Default is to retrieve all
+            Preference variables as defined in the about_Preference_Variables help file (as of PowerShell 4.0)
+            This parameter may also specify names of variables that are not in the about_Preference_Variables
+            help file, and the function will retrieve and set those as well.
+            .EXAMPLE
+            Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-       Imports the default PowerShell preference variables from the caller into the local scope.
-    .EXAMPLE
-       Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -Name 'ErrorActionPreference','SomeOtherVariable'
+            Imports the default PowerShell preference variables from the caller into the local scope.
+            .EXAMPLE
+            Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -Name 'ErrorActionPreference','SomeOtherVariable'
 
-       Imports only the ErrorActionPreference and SomeOtherVariable variables into the local scope.
-    .EXAMPLE
-       'ErrorActionPreference','SomeOtherVariable' | Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
+            Imports only the ErrorActionPreference and SomeOtherVariable variables into the local scope.
+            .EXAMPLE
+            'ErrorActionPreference','SomeOtherVariable' | Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-       Same as Example 2, but sends variable names to the Name parameter via pipeline input.
-    .INPUTS
-       String
-    .OUTPUTS
-       None.  This function does not produce pipeline output.
-    .LINK
-       about_Preference_Variables
+            Same as Example 2, but sends variable names to the Name parameter via pipeline input.
+            .INPUTS
+            String
+            .OUTPUTS
+            None.  This function does not produce pipeline output.
+            .LINK
+            about_Preference_Variables
     #>
 
     [CmdletBinding(DefaultParameterSetName = 'AllVariables')]
@@ -1025,7 +1025,7 @@ function Get-CallerPreference
         foreach ($entry in $vars.GetEnumerator())
         {
             if (([string]::IsNullOrEmpty($entry.Value) -or -not $Cmdlet.MyInvocation.BoundParameters.ContainsKey($entry.Value)) -and
-                ($PSCmdlet.ParameterSetName -eq 'AllVariables' -or $filterHash.ContainsKey($entry.Name)))
+            ($PSCmdlet.ParameterSetName -eq 'AllVariables' -or $filterHash.ContainsKey($entry.Name)))
             {
                 $variable = $Cmdlet.SessionState.PSVariable.Get($entry.Key)
                 
@@ -1092,7 +1092,7 @@ function Write-ScreenInfo
     # .ExternalHelp AutomatedLab.Help.xml
     param
     (
-        [Parameter(Mandatory, Position = 1)]
+        [Parameter(Position = 1)]
         [string[]]$Message,
         
         [Parameter(Position = 2)]
@@ -1108,16 +1108,14 @@ function Write-ScreenInfo
         
         [int]$Indent,
         
-        [switch]$DeployStart,
-        
         [switch]$TaskStart,
         
         [switch]$TaskEnd
     )
     
-    if ($DeployStart)
+    if (-not $Global:AL_DeploymentStart)
     {
-        $Global:scriptStart = (Get-Date)
+        $Global:AL_DeploymentStart = (Get-Date)
     }
     if (-not $Global:taskStart)
     {
@@ -1138,8 +1136,14 @@ function Write-ScreenInfo
     }
     
     
-    if (-not $TimeDelta -and $Global:scriptStart)  { [timespan]$TimeDelta  = (Get-Date) - $Global:scriptStart }
-    if (-not $TimeDelta2 -and $Global:taskStart[-1]) { [timespan]$TimeDelta2 = (Get-Date) - $Global:taskStart[-1] }
+    if (-not $TimeDelta -and $Global:AL_DeploymentStart)
+    {
+        $TimeDelta  = (Get-Date) - $Global:AL_DeploymentStart
+    }
+    if (-not $TimeDelta2 -and $Global:taskStart[-1])
+    {
+        $TimeDelta2 = (Get-Date) - $Global:taskStart[-1]
+    }
     
     $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f ($TimeDelta.Hours), ($TimeDelta.Minutes), ($TimeDelta.Seconds)
     $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f ($TimeDelta2.Hours), ($TimeDelta2.Minutes), ($TimeDelta2.Seconds), ($TimeDelta2.Milliseconds)

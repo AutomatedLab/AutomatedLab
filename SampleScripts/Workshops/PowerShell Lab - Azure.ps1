@@ -29,7 +29,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-	'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }
 
 #the first machine is the root domain controller
@@ -99,4 +99,4 @@ Install-LabWindowsFeature -ComputerName PoshClient1 -FeatureName RSAT -IncludeAl
 #stop all machines to save money
 Stop-LabVM -All -Wait
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary

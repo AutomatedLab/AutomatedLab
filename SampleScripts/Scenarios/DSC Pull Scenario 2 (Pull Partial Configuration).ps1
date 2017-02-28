@@ -83,4 +83,4 @@ Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Install-LabDscClient -All
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary

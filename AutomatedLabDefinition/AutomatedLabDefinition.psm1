@@ -579,13 +579,16 @@ function New-LabDefinition
         '***************************************************************************'
     }
     
-    $Global:scriptStart = Get-Date
+    #settings for a new log
+
+	#reset the log and its format
+    $Global:AL_DeploymentStart = $null
     $Global:taskStart = @()
     $Global:indent = 0
     
     $Global:labDeploymentNoNewLine = $false
 
-    $script:reservedAddressSpaces = $null
+    $Script:reservedAddressSpaces = $null
     
     Write-ScreenInfo -Message 'Initialization' -TimeDelta ([timespan]0) -TimeDelta2 ([timespan]0) -TaskStart
 
