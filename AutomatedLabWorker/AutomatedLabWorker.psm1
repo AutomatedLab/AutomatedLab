@@ -610,7 +610,7 @@ function Wait-LWLabJob
     
     Write-LogFunctionEntry
     
-    if ($ProgressIndicator) { Write-ProgressIndicator }
+    if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
 
     if (-not $Job -and -not $Name)
     {
@@ -641,14 +641,14 @@ function Wait-LWLabJob
             Start-Sleep -Seconds 1
             if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
             {
-                if ($ProgressIndicator) { Write-ProgressIndicator }
+                if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
                 $ProgressIndicatorTimer = (Get-Date)
             }
         }
         until (($jobs.State -notcontains 'Running' -and $jobs.State -notcontains 'AtBreakPoint') -or ((Get-Date) -gt ($Start.AddMinutes($Timeout))))
     }
     
-    if (-not $NoNewLine -and $ProgressIndicator) { Write-ProgressIndicatorEnd }
+    if (-not $NoNewLine -and $ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicatorEnd }
     
     if ((Get-Date) -gt ($Start.AddMinutes($Timeout)))
     {
