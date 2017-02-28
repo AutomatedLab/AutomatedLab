@@ -131,7 +131,7 @@ function Install-LabExchange2016
 
     Write-LogFunctionEntry
     
-    $exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2013DownloadLink)
+    $exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2016DownloadLink)
     $ucmaDownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
     $dotnet452DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet452DownloadLink)
     
