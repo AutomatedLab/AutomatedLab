@@ -2836,10 +2836,9 @@ function Invoke-LabCommand
         [string]$FilePath,
 
 		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
-        [Parameter(Mandatory, ParameterSetName = 'Script')]
 		[string]$FileName,
         
-		[Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency')]
+		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [string]$DependencyFolderPath,
@@ -2860,6 +2859,7 @@ function Invoke-LabCommand
         [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
+		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'ScriptBlock')]
@@ -2879,7 +2879,7 @@ function Invoke-LabCommand
     
     Write-LogFunctionEntry
 
-    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency')
+    if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
         if (-not $Retries) { $Retries = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetries }
         if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetryIntervalInSeconds }
@@ -2909,14 +2909,18 @@ function Invoke-LabCommand
         return
     }
 
-	<#if ($FilePath) TODO VALIDATION!
+	if ($FilePath)
 	{
-		if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
+		if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
 		{
-			$parameterSetName = 'SingleLocalPackage'
-			$LocalPath = $Path
+			Write-Verbose "$FilePath is on Azure. Skipping test."
 		}
-	}#>
+		elseif(-not (Test-Path -Path $FilePath))
+		{
+			Write-LogFunctionExitWithError -Message "$FilePath is not on Azure and does not exist"
+			return
+		}
+	}
     
     if ($PostInstallationActivity)
     {
@@ -3020,7 +3024,7 @@ function Invoke-LabCommand
         if ($Retries)                { $param.Add('Retries', $Retries) }
         if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
         if ($FilePath)               { $param.Add('ScriptFilePath', $FilePath) }
-		if($FileName)                 { $param.Add('ScriptFileName', $FileName) }
+		if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
         if ($DependencyFolderPath)   { $param.Add('DependencyFolderPath', $DependencyFolderPath) }
