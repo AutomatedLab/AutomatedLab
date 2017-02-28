@@ -122,13 +122,6 @@ function Import-Lab
 
     Clear-Lab
     
-    $global:start = Get-Date
-
-    if (-not (Get-LabDefinition))
-    {
-        $Global:scriptStart = (Get-Date)
-    }
-    
     if ($PSCmdlet.ParameterSetName -in 'ByPath', 'ByName')
     {
         if ($Name)
@@ -461,8 +454,6 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
-    Unblock-LabSources
-    
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin 'NoValidation', 'DelayBetweenComputers' }).Count
     
@@ -489,6 +480,10 @@ function Install-Lab
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
     }
+    
+    Unblock-LabSources
+    
+    $Global:AL_DeploymentStart = Get-Date
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -818,12 +813,6 @@ function Remove-Lab
 
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
-        $Global:scriptStart = Get-Date
-        $Global:taskStart = @()
-        $Global:indent = 0
-    
-        $Global:labDeploymentNoNewLine = $False
-        
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
     
         Write-ScreenInfo -Message 'Removing lab sessions'
@@ -3346,16 +3335,39 @@ function Show-LabInstallationTime
     [Cmdletbinding()]
     Param ()
     
-    $ts = New-TimeSpan -Start $($global:scriptStart) -End (Get-Date)
-    $HoursPlural = ''
-    $MinutesPlural = ''
-    $SecondsPlural = ''
-    if ($ts.Hours   -gt 1) { $HoursPlural   = 's' }
-    if ($ts.minutes -gt 1) { $MinutesPlural = 's' }
-    if ($ts.Seconds -gt 1) { $SecondsPlural = 's' }
-    Write-ScreenInfo -Message '-------------------------------------------------------------------'
-    Write-ScreenInfo -Message ("Setting up the lab took {0} hour$HoursPlural, {1} minute$MinutesPlural and {2} second$SecondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
-    Write-ScreenInfo -Message '-------------------------------------------------------------------'
+    $ts = New-TimeSpan -Start $Global:AL_DeploymentStart -End (Get-Date)
+    $hoursPlural = ''
+    $minutesPlural = ''
+    $secondsPlural = ''
+    
+    if ($ts.Hours   -gt 1) { $hoursPlural   = 's' }
+    if ($ts.minutes -gt 1) { $minutesPlural = 's' }
+    if ($ts.Seconds -gt 1) { $secondsPlural = 's' }
+
+    $lab = Get-Lab
+    $machines = Get-LabVM
+    
+    Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+    Write-ScreenInfo -Message ("Setting up the lab took {0} hour$hoursPlural, {1} minute$minutesPlural and {2} second$secondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
+    Write-ScreenInfo -Message "Lab name is '$($lab.Name)' and is hosted on '$($lab.DefaultVirtualizationEngine)'. There are $($machines.Count) machine(s) and $($lab.VirtualNetworks.Count) network(s) defined."
+    Write-ScreenInfo
+    Write-ScreenInfo -Message '----------------------------- Network Summary -----------------------------'
+    ($lab.VirtualNetworks | Format-Table -Property Name, AddressSpace, SwitchType, AdapterName, @{ Name = 'IssuedIpAddresses'; Expression = { $_.IssuedIpAddresses.Count } } | Out-String) -split "`n" | ForEach-Object {
+        if ($_) { Write-ScreenInfo -Message $_ }
+    }
+        
+    Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
+    (Get-LabVM | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem -AutoSize | Out-String) -split "`n", [char]34 | ForEach-Object {
+        if ($_) { Write-ScreenInfo -Message $_ }
+    }
+
+    Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+    Write-ScreenInfo -Message "Please use the following cmdlets to interact with the machines:"
+    Write-ScreenInfo -Message "- Get-LabVMStatus, Get, Start, Restart, Stop, Wait, Connect, Save-LabVM and Wait-LabVMRestart (some of them provide a Wait switch)"
+    Write-ScreenInfo -Message "- Invoke-LabCommand, Enter-LabPSSession, Install-LabSoftwarePackage and Install-LabWindowsFeature (do not require credentials and work the same way with Hyper-V and Azure)"
+    Write-ScreenInfo -Message "- Checkpoint-LabVM, Restore-LabVMSnapshot and Get-LabVMSnapshot (only for Hyper-V)"
+    Write-ScreenInfo -Message "- Get-LabInternetFile downloads files from the internet and places them on LabSources (locally or on Azure)"
+    Write-ScreenInfo -Message '---------------------------------------------------------------------------'
 }
 #endregion Show-LabInstallationTime
 
