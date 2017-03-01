@@ -246,8 +246,8 @@ namespace AutomatedLab
             }
             else
             {
-                var parentDomainName = firstChildDcs.Where(m => m.DomainName == domainName).FirstOrDefault().Roles.Where(r => r.Name == Roles.FirstChildDC).FirstOrDefault().Properties["ParentDomain"];
-                return domains.Where(d => d.Name.ToLower() == parentDomainName).FirstOrDefault();
+                var parentDomainName = firstChildDcs.Where(m => m.DomainName.ToLower() == domainName.ToLower()).FirstOrDefault().Roles.Where(r => r.Name == Roles.FirstChildDC).FirstOrDefault().Properties["ParentDomain"];
+                return domains.Where(d => d.Name.ToLower() == parentDomainName.ToLower()).FirstOrDefault();
             }
         }
     }
