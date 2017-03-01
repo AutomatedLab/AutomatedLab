@@ -63,7 +63,7 @@ function Start-ExchangeInstallSequence
 
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
     }
     catch
@@ -78,7 +78,7 @@ function Start-ExchangeInstallSequence
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
             }
             catch
@@ -86,7 +86,7 @@ function Start-ExchangeInstallSequence
                 Write-ScreenInfo "Activity '$Activity' did not succeed, but did not ask for a reboot, retrying the last time" -Type Warning
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                     $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults
                 }
             }
