@@ -118,7 +118,7 @@ GO
             $installFrameworkJobs = @()
             foreach ($m in $machinesBatch)
             {
-                Write-ScreenInfo -Message "Waiting for machine '$m' to be ready" -NoNewLine -Type Info
+                Write-ScreenInfo -Message "Waiting for machine '$m' to be ready" -Type Info
                 Wait-LabVM -ComputerName $m -ProgressIndicator 30
                 Write-ScreenInfo -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$m'" -Type Info
                 $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $m -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru                
