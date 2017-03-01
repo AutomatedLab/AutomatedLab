@@ -2868,7 +2868,7 @@ function Invoke-LabCommand
         [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
-		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
+        [Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$RetryIntervalInSeconds,
         
         [int]$ThrottleLimit = 32,
@@ -3334,7 +3334,9 @@ function Show-LabDeploymentSummary
     # .ExternalHelp AutomatedLab.Help.xml
     [OutputType([System.TimeSpan])]
     [Cmdletbinding()]
-    Param ()
+    param (
+        [switch]$Detailed
+    )
     
     $ts = New-TimeSpan -Start $Global:AL_DeploymentStart -End (Get-Date)
     $hoursPlural = ''
@@ -3351,24 +3353,50 @@ function Show-LabDeploymentSummary
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'
     Write-ScreenInfo -Message ("Setting up the lab took {0} hour$hoursPlural, {1} minute$minutesPlural and {2} second$secondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
     Write-ScreenInfo -Message "Lab name is '$($lab.Name)' and is hosted on '$($lab.DefaultVirtualizationEngine)'. There are $($machines.Count) machine(s) and $($lab.VirtualNetworks.Count) network(s) defined."
-    Write-ScreenInfo
-    Write-ScreenInfo -Message '----------------------------- Network Summary -----------------------------'
-    ($lab.VirtualNetworks | Format-Table -Property Name, AddressSpace, SwitchType, AdapterName, @{ Name = 'IssuedIpAddresses'; Expression = { $_.IssuedIpAddresses.Count } } | Out-String) -split "`n" | ForEach-Object {
-        if ($_) { Write-ScreenInfo -Message $_ }
-    }
+    
+    if (-not $Detailed)
+    {
+        Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+    }    
+    else
+    {
+        Write-ScreenInfo
+        Write-ScreenInfo -Message '----------------------------- Network Summary -----------------------------'
+        $networkInfo = $lab.VirtualNetworks | Format-Table -Property Name, AddressSpace, SwitchType, AdapterName, @{ Name = 'IssuedIpAddresses'; Expression = { $_.IssuedIpAddresses.Count } } | Out-String
+        $networkInfo -split "`n" | ForEach-Object {
+            if ($_) { Write-ScreenInfo -Message $_ }
+        }
         
-    Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-    (Get-LabVM | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem -AutoSize | Out-String) -split "`n", [char]34 | ForEach-Object {
-        if ($_) { Write-ScreenInfo -Message $_ }
-    }
+        Write-ScreenInfo -Message '----------------------------- Domain Summary ------------------------------'
+        $domainInfo = $lab.Domains | Format-Table -Property Name,
+        @{ Name = 'Administrator'; Expression = { $_.Administrator.UserName } },
+        @{ Name = 'Password'; Expression = { $_.Administrator.Password } },
+        @{ Name = 'RootDomain'; Expression = { if ($lab.GetParentDomain($_.Name).Name -ne $_.Name) { $lab.GetParentDomain($_.Name) } } } |
+        Out-String
+        
+        $domainInfo -split "`n" | ForEach-Object {
+            if ($_) { Write-ScreenInfo -Message $_ }
+        }
+        
+        Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
+        $vmInfo = Get-LabVM | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
+        @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
+        Out-String
+        
+        $vmInfo -split "`n" | ForEach-Object {
+            if ($_) { Write-ScreenInfo -Message $_ }
+        }
 
-    Write-ScreenInfo -Message '---------------------------------------------------------------------------'
-    Write-ScreenInfo -Message "Please use the following cmdlets to interact with the machines:"
-    Write-ScreenInfo -Message "- Get-LabVMStatus, Get, Start, Restart, Stop, Wait, Connect, Save-LabVM and Wait-LabVMRestart (some of them provide a Wait switch)"
-    Write-ScreenInfo -Message "- Invoke-LabCommand, Enter-LabPSSession, Install-LabSoftwarePackage and Install-LabWindowsFeature (do not require credentials and work the same way with Hyper-V and Azure)"
-    Write-ScreenInfo -Message "- Checkpoint-LabVM, Restore-LabVMSnapshot and Get-LabVMSnapshot (only for Hyper-V)"
-    Write-ScreenInfo -Message "- Get-LabInternetFile downloads files from the internet and places them on LabSources (locally or on Azure)"
-    Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+        Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+        Write-ScreenInfo -Message 'Please use the following cmdlets to interact with the machines:'
+        Write-ScreenInfo -Message '- Get-LabVMStatus, Get, Start, Restart, Stop, Wait, Connect, Save-LabVM and Wait-LabVMRestart (some of them provide a Wait switch)'
+        Write-ScreenInfo -Message '- Invoke-LabCommand, Enter-LabPSSession, Install-LabSoftwarePackage and Install-LabWindowsFeature (do not require credentials and'
+        Write-ScreenInfo -Message '  work the same way with Hyper-V and Azure)'
+        Write-ScreenInfo -Message '- Checkpoint-LabVM, Restore-LabVMSnapshot and Get-LabVMSnapshot (only for Hyper-V)'
+        Write-ScreenInfo -Message '- Get-LabInternetFile downloads files from the internet and places them on LabSources (locally or on Azure)'
+        Write-ScreenInfo -Message '---------------------------------------------------------------------------'
+    }
 }
 #endregion Show-LabDeploymentSummary
 

@@ -56,7 +56,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Show-LabDeploymentSummary
+Show-LabDeploymentSummary -Detailed
 
 #region ProGet Installation
 Checkpoint-LabVM -All -SnapshotName 'Before ProGetInstallation'
