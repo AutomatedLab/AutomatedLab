@@ -2868,6 +2868,7 @@ function Invoke-LabCommand
         [Parameter(ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(ParameterSetName = 'ScriptFileContentDependency')]
         [Parameter(ParameterSetName = 'Script')]
+		[Parameter(ParameterSetName = 'ScriptFileNameContentDependency')]
         [int]$RetryIntervalInSeconds,
         
         [int]$ThrottleLimit = 32,
