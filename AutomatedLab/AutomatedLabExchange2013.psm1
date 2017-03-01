@@ -269,7 +269,7 @@ function Install-LabExchange2013
             $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2013).Properties.OrganizationName
 
             #FINALLY INSTALL EXCHANGE
-            Write-ScreenInfo -Message 'Install Exchange Server 2013' -NoNewLine
+            Write-ScreenInfo -Message 'Install Exchange Server 2013'
        
             $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop

@@ -284,7 +284,7 @@ function Install-LabExchange2016
             $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2016).Properties.OrganizationName
 
             #FINALLY INSTALL EXCHANGE
-            Write-ScreenInfo -Message 'Install Exchange Server 2016' -NoNewLine
+            Write-ScreenInfo -Message 'Install Exchange Server 2016'
        
             $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
