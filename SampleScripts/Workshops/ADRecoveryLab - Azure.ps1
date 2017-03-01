@@ -101,4 +101,4 @@ Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
 
 Stop-LabVM -All -Wait
 
-Show-LabDeploymentSummary
+Show-LabDeploymentSummary -Detailed
