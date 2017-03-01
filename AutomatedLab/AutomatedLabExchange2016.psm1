@@ -63,27 +63,34 @@ function Start-ExchangeInstallSequence
         [string]$CommandLine
     )
     
-    Write-ScreenInfo -Message $Activity -TaskStart -NoNewLine
+    Write-LogFunctionEntry
+
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
     }
     catch
     {
         if ($_ -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
         {
-            Restart-LabVM -ComputerName $ComputerName
+            Write-ScreenInfo "Activity '$Activity' did not succeed, Exchange Server '$ComputerName' needs to be restarted first." -Type Warning
+            Restart-LabVM -ComputerName $ComputerName -Wait
+            Start-Sleep -Seconds 30 #as the feature installation can trigger a 2nd reboot, wait for the machine after 30 seconds again
+            Wait-LabVM -ComputerName $ComputerName
+            
             try
             {
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                Write-ScreenInfo "Calling activity '$Activity' agian."
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
             }
             catch
             {
+                Write-ScreenInfo "Activity '$Activity' did not succeed, but did not ask for a reboot, retrying the last time" -Type Warning
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                     $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
                 }
             }
@@ -92,13 +99,15 @@ function Start-ExchangeInstallSequence
         {
             $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
             $resultVariable.Value = $exchangeError
-            Write-Error "Exchange Schema Update failed on server '$ComputerName'. See content of $($resultVariable.Name) for details."
+            Write-Error "Exchange task '$Activity' failed on '$ComputerName'. See content of $($resultVariable.Name) for details."
         }
     }
 
     Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
     
     $result
+    
+    Write-LogFunctionExit
 }
 
 #region Install-LabExchange2016
@@ -138,7 +147,7 @@ function Install-LabExchange2016
     $exchangeServers = Get-LabMachine -Role Exchange2016
     if (-not $exchangeServers)
     {
-        Write-Verbose 'No Exchange 2016 servers defined in the lab. Skipping installation'
+        Write-Error 'No Exchange 2016 servers defined in the lab. Skipping installation'
         return
     }
     
@@ -198,27 +207,30 @@ function Install-LabExchange2016
     {
         $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
-    
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru -NoDisplay
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru -NoDisplay
+
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
-        
+
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 45
+        Restart-LabVM -ComputerName $exchangeRootDCs -Wait -ProgressIndicator 10
         
         Sync-LabActiveDirectory -ComputerName $exchangeRootDCs
     }
     
     Write-ScreenInfo -Message "Finished preparing machines: '$($exchangeServers -join ', ')'" -TaskEnd
     
-    
-    foreach ($machine in $exchangeServers)
+    $exchangeServersByDomain = Get-LabVM -Role Exchange2016 | Group-Object -Property DomainName
+    foreach ($machine in ($exchangeServersByDomain.Group | Select-Object -First 1))
     {
-        Write-ScreenInfo -Message "Performing pre-requisites for machine '$machine'" -TaskStart
-        
         $rootDomain = $lab.GetParentDomain($machine.DomainName)
         $rootDc = $lab.Machines | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $rootDomain } | Select-Object -First 1
         $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2016).Properties.OrganizationName
+        if (-not $exchangeOrganization)
+        {
+            Write-Error "The Exchange Organization is not set for machine '$machine'. Skipping installation"
+            continue
+        }
 
         if ($machine.DomainName -ne $rootDc.DomainName)
         {
@@ -228,6 +240,8 @@ function Install-LabExchange2016
         {
             $prepMachine = $machine
         }
+        
+        Write-ScreenInfo -Message "Performing AD prerequisites on machine '$prepMachine'" -TaskStart
 
         # PREPARE SCHEMA
         if ($PrepareSchema -or $All)
@@ -247,17 +261,18 @@ function Install-LabExchange2016
         {
             $global:AL_Result_PrepareAllDomains = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms' -ErrorAction Stop
         }
-        
-        if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
-        {
-            Write-ScreenInfo -Message 'Triggering replication' -NoNewLine
-            Get-LabMachine -Role RootDC | ForEach-Object {
-                Sync-LabActiveDirectory -ComputerName $_
-            }
+    }
     
-            Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-            Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 5
+    if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
+    {
+        Write-ScreenInfo -Message 'Triggering AD replication'
+        Get-LabMachine -Role RootDC | ForEach-Object {
+            Sync-LabActiveDirectory -ComputerName $_
         }
+    
+        Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
+        Restart-LabVM -ComputerName $exchangeRootDCs -Wait -ProgressIndicator 10
+        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 10
     }
     
     if ($InstallExchange -or $All)
@@ -269,15 +284,21 @@ function Install-LabExchange2016
             $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2016).Properties.OrganizationName
 
             #FINALLY INSTALL EXCHANGE
-            Write-ScreenInfo -Message 'Install Exchange Server 2016' -NoNewLine
+            Write-ScreenInfo -Message 'Install Exchange Server 2016'
        
             $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
-            $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
+            $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
             
-            Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $AL_Result_PrepareAllDomains -Scope Global 
+            Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $result -Scope Global 
         
             Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$machine'" -TaskEnd
         }
+    }
+    
+    if ($InstallExchange -or $All)
+    {    
+        Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
+        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 5
     }
     
     Write-LogFunctionExit

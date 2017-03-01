@@ -12,8 +12,6 @@ function Copy-LabExchange2013InstallationFiles
     Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
-    Write-ScreenInfo -Message "Downloading .net Framework 4.5.2 from '$dotnet452DownloadLink'"
-    Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
         
     Write-ScreenInfo 'finished' -TaskEnd
     
@@ -25,7 +23,6 @@ function Copy-LabExchange2013InstallationFiles
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -36,7 +33,6 @@ function Copy-LabExchange2013InstallationFiles
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'Finished copying file to RootDCs' -TaskEnd
@@ -63,28 +59,35 @@ function Start-ExchangeInstallSequence
         [string]$CommandLine
     )
     
-    Write-ScreenInfo -Message $Activity -TaskStart -NoNewLine
+    Write-LogFunctionEntry
+
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
     }
     catch
     {
         if ($_ -match '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
         {
-            Restart-LabVM -ComputerName $ComputerName
+            Write-ScreenInfo "Activity '$Activity' did not succeed, Exchange Server '$ComputerName' needs to be restarted first." -Type Warning
+            Restart-LabVM -ComputerName $ComputerName -Wait
+            Start-Sleep -Seconds 30 #as the feature installation can trigger a 2nd reboot, wait for the machine after 30 seconds again
+            Wait-LabVM -ComputerName $ComputerName
+            
             try
             {
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                Write-ScreenInfo "Calling activity '$Activity' agian."
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
             }
             catch
             {
+                Write-ScreenInfo "Activity '$Activity' did not succeed, but did not ask for a reboot, retrying the last time" -Type Warning
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -PassThru -ErrorAction Stop -ErrorVariable exchangeError
-                    $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults -ErrorAction Stop
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -ReturnResults
                 }
             }
         }
@@ -92,13 +95,15 @@ function Start-ExchangeInstallSequence
         {
             $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
             $resultVariable.Value = $exchangeError
-            Write-Error "Exchange Schema Update failed on server '$ComputerName'. See content of $($resultVariable.Name) for details."
+            Write-Error "Exchange task '$Activity' failed on '$ComputerName'. See content of $($resultVariable.Name) for details."
         }
-    }
 
-    Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
+        Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
     
-    $result
+        $result
+    
+        Write-LogFunctionExit
+    }
 }
 
 #region Install-LabExchange2013
@@ -124,11 +129,9 @@ function Install-LabExchange2013
     
     $exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2013DownloadLink)
     $ucmaDownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
-    $dotnet452DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet452DownloadLink)
     
     $exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
     $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaDownloadLink.Segments.Count-1]
-    $dotnet452InstallFileName = $dotnet452DownloadLink.Segments[$dotnet452DownloadLink.Segments.Count-1]
 
     $start = Get-Date
     $lab = Get-Lab
@@ -138,7 +141,7 @@ function Install-LabExchange2013
     $exchangeServers = Get-LabMachine -Role Exchange2013
     if (-not $exchangeServers)
     {
-        Write-Verbose 'No Exchange 2013 servers defined in the lab. Skipping installation'
+        Write-Error 'No Exchange 2013 servers defined in the lab. Skipping installation'
         return
     }
     
@@ -200,18 +203,16 @@ function Install-LabExchange2013
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
         
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 45
+        Restart-LabVM -ComputerName $exchangeRootDCs -Wait -ProgressIndicator 10
         
         Sync-LabActiveDirectory -ComputerName $exchangeRootDCs
     }
     
     Write-ScreenInfo -Message "Finished preparing machines: '$($exchangeServers -join ', ')'" -TaskEnd
     
-    
-    foreach ($machine in $exchangeServers)
+    $exchangeServersByDomain = Get-LabVM -Role Exchange2013 | Group-Object -Property DomainName
+    foreach ($machine in ($exchangeServersByDomain.Group | Select-Object -First 1))
     {
-        Write-ScreenInfo -Message "Performing pre-requisites for machine '$machine'" -TaskStart
-        
         $rootDomain = $lab.GetParentDomain($machine.DomainName)
         $rootDc = $lab.Machines | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $rootDomain } | Select-Object -First 1
         $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2013).Properties.OrganizationName
@@ -224,6 +225,8 @@ function Install-LabExchange2013
         {
             $prepMachine = $machine
         }
+        
+        Write-ScreenInfo -Message "Performing AD prerequisites on machine '$prepMachine'" -TaskStart
 
         # PREPARE SCHEMA
         if ($PrepareSchema -or $All)
@@ -243,17 +246,18 @@ function Install-LabExchange2013
         {
             $global:AL_Result_PrepareAllDomains = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $prepMachine -CommandLine '/PrepareAllDomains /IAcceptExchangeServerLicenseTerms' -ErrorAction Stop
         }
-        
-        if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
-        {
-            Write-ScreenInfo -Message 'Triggering replication' -NoNewLine
-            Get-LabMachine -Role RootDC | ForEach-Object {
-                Sync-LabActiveDirectory -ComputerName $_
-            }
+    }
     
-            Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-            Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 5
+    if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
+    {
+        Write-ScreenInfo -Message 'Triggering AD replication'
+        Get-LabMachine -Role RootDC | ForEach-Object {
+            Sync-LabActiveDirectory -ComputerName $_
         }
+    
+        Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
+        Restart-LabVM -ComputerName $exchangeRootDCs -Wait -ProgressIndicator 10
+        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 10
     }
     
     if ($InstallExchange -or $All)
@@ -265,15 +269,21 @@ function Install-LabExchange2013
             $exchangeOrganization = ($machine.Roles | Where-Object Name -eq Exchange2013).Properties.OrganizationName
 
             #FINALLY INSTALL EXCHANGE
-            Write-ScreenInfo -Message 'Install Exchange Server 2013' -NoNewLine
+            Write-ScreenInfo -Message 'Install Exchange Server 2013'
        
             $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
-            $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAllDomains' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
+            $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
             
-            Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $AL_Result_PrepareAllDomains -Scope Global 
+            Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $result -Scope Global 
         
             Write-ScreenInfo -Message "Finished installing Exchange Server 2013 on machine '$machine'" -TaskEnd
         }
+    }
+    
+    if ($InstallExchange -or $All)
+    {    
+        Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
+        Restart-LabVM -ComputerName $exchangeServers -Wait -ProgressIndicator 5
     }
     
     Write-LogFunctionExit
