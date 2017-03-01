@@ -1,5 +1,5 @@
 $labName = 'ProGet'
-$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.3'
+$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.4'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -42,7 +42,7 @@ Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 19
 
 
 #SQL server
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2012_standard_edition_with_service_pack_2_x64_dvd_4692562.iso
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564.iso
 Add-LabMachineDefinition -Name PGSql1 -Memory 2GB -Roles SQLServer2014 -IpAddress 192.168.110.52
 
 #client
