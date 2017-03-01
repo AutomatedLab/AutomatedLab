@@ -581,7 +581,7 @@ function New-LabDefinition
     
     #settings for a new log
 
-	#reset the log and its format
+    #reset the log and its format
     $Global:AL_DeploymentStart = $null
     $Global:taskStart = @()
     $Global:indent = 0
@@ -1804,13 +1804,13 @@ process
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
         try
-		{
-			Add-LabAzureSubscription
-		}
-		catch
-		{
-			throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
-		}
+        {
+            Add-LabAzureSubscription
+        }
+        catch
+        {
+            throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
+        }
     }
     
     if ($Global:labExported)
@@ -2072,7 +2072,7 @@ process
         }
     }
     
-    $role = $roles | Where-Object Name -eq Exchange2013
+    $role = $roles | Where-Object Name -in Exchange2013, Excahnge2016
     if ($role)
     {
         if ($role.Properties)
@@ -2085,18 +2085,6 @@ process
         else
         {
             $role.Properties = @{ 'OrganizationName' = 'ExOrg' }
-        }
-
-        if ($machine.HostType -eq 'HyperV')
-        {
-            if (-not (Test-Path -Path "$(Get-LabSourcesLocation)\SoftwarePackages\$ucmaInstallFileName"))
-            {
-                throw "Could not find the Microsoft Unified Communications Managed API 4.0 file '$ucmaInstallFileName'. Please download it and pleace it in LabSources\SoftwarePackages"
-            }
-            if (-not (Test-Path -Path "$(Get-LabSourcesLocation)\SoftwarePackages\$exchangeInstallFileName"))
-            {
-                throw "Could not find the Microsoft Exchange 2013 installation file '$exchangeInstallFileName'. Please download it and pleace it in LabSources\SoftwarePackages"
-            }
         }
     }
     
