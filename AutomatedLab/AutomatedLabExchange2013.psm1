@@ -250,7 +250,7 @@ function Install-LabExchange2013
     
     if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
     {
-        Write-ScreenInfo -Message 'Triggering replication' -NoNewLine
+        Write-ScreenInfo -Message 'Triggering AD replication'
         Get-LabMachine -Role RootDC | ForEach-Object {
             Sync-LabActiveDirectory -ComputerName $_
         }
