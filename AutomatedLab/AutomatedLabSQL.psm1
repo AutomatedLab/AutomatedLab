@@ -1,14 +1,14 @@
 ﻿#region Install-LabSqlServers
 function Install-LabSqlServers
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_Sql2012Installation,
-		
+        
         [switch]$CreateCheckPoints
     )
-	
+    
     function Write-ArgumentVerbose
     {
         param
@@ -23,7 +23,7 @@ function Install-LabSqlServers
     Write-LogFunctionEntry
     
     $lab = Get-Lab -ErrorAction SilentlyContinue
-	
+    
     if (-not $lab)
     {
         Write-LogFunctionExitWithError -Message 'No lab definition imported, so there is nothing to do. Please use the Import-Lab cmdlet first'
@@ -180,7 +180,7 @@ GO
                 
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
-				    
+                    
                     $dvdDrive = ''
                     $startTime = (Get-Date)
                     while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
@@ -299,7 +299,7 @@ GO
             
         }
         until ($machineIndex -ge $hypervMachines.Count)
-	    
+        
         $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
@@ -316,7 +316,7 @@ GO
             Checkpoint-LabVM -ComputerName $machines -SnapshotName 'Post SQL Server Installation'
         }
     }
-	
+    
     Write-LogFunctionExit
 }
 #endregion Install-LabSqlServers

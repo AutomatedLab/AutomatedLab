@@ -392,7 +392,7 @@ function New-LWAzureVM
 
         Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
         $LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
-		
+        
         $inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
         $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
         $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
@@ -812,7 +812,7 @@ function Start-LWAzureVM
                 Write-Error -Message 'Could not start Azure VM' -TargetObject $Machine.Name
             }
         } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
-		
+        
         Start-Sleep -Seconds $DelayBetweenComputers
     }
 
@@ -829,7 +829,7 @@ function Start-LWAzureVM
     foreach ($name in $ComputerName)
     {
         $vm = $azureVms | Where-Object Name -eq $name
-		        
+                
         if (-not $vm.PowerState -eq 'VM Running')
         {
             throw "Could not start machine '$name'"
@@ -1080,7 +1080,7 @@ function Get-LWAzureVMConnectionInfo
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
-	
+    
 
     foreach ($name in $ComputerName)
     {
@@ -1214,7 +1214,7 @@ function Connect-LWAzureLabSourcesDrive
         if (-not $LASTEXITCODE)
         {
             $ALLabSourcesMapped = $true
-			Get-ChildItem -Path z:\ | Out-Null #required, otherwise sometimes accessing the UNC path did not work
+            Get-ChildItem -Path z:\ | Out-Null #required, otherwise sometimes accessing the UNC path did not work
         }
 
         New-Object PSObject -Property @{
