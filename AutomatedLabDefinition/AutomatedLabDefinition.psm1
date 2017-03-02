@@ -2072,7 +2072,7 @@ process
         }
     }
     
-    $role = $roles | Where-Object Name -in Exchange2013, Excahnge2016
+    $role = $roles | Where-Object Name -in Exchange2013, Exchange2016
     if ($role)
     {
         if ($role.Properties)
