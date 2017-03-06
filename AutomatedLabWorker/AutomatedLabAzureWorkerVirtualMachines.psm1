@@ -134,7 +134,7 @@ function New-LWAzureVM
             Write-Warning 'SQL Server image could not be found. The following combinations are currently supported by Azure:'
             foreach ($sqlServerImage in $sqlServerImages)
             {
-                Write-Host $sqlServerImage.Label
+                Write-Host $sqlServerImage.Offer
             }
 
             throw "There is no Azure VM image for '$sqlServerRoleName' on operating system '$($machine.OS)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -174,7 +174,7 @@ function New-LWAzureVM
             Write-Warning 'Visual Studio image could not be found. The following combinations are currently supported by Azure:'
             foreach ($visualStudioImage in $visualStudioImages)
             {
-                Write-Host $visualStudioImage.Label
+                Write-Host $visualStudioImage.Offer
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -213,7 +213,7 @@ function New-LWAzureVM
             Write-Warning 'SharePoint image could not be found. The following combinations are currently supported by Azure:'
             foreach ($sharePointImage in $sharePointImages)
             {
-                Write-Host $sharePointImage.Label $sharePointImage.ImageFamily
+                Write-Host $sharePointImage.Offer $sharePointImage.Skus
             }
 
             throw "There is no Azure VM image for '$sharePointRoleName' on operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."

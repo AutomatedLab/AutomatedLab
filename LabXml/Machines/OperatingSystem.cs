@@ -102,8 +102,14 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "2016-Datacenter";
 
+                    case "Windows Server 2016 SERVERDATACENTERNANO":
+                        return "2016-Nano-Server";
+
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
+
+                    case "Windows 10 Pro":
+                        return "Windows-10-N-x64";
 
                     case "Windows 10 Enterprise":
                         return "Windows-10-N-x64";
