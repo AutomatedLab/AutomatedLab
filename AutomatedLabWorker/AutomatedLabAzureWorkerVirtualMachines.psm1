@@ -137,7 +137,7 @@ function New-LWAzureVM
                 Write-Host $sqlServerImage.Offer
             }
 
-            throw "There is no Azure VM image for '$sqlServerRoleName' on operating system '$($machine.OS)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
+            throw "There is no Azure VM image for '$sqlServerRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
         }
     }
     elseif ($visualStudioRoleName)
