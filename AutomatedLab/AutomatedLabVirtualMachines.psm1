@@ -1548,14 +1548,18 @@ function Test-LabMachineInternetConnectivity
     param (
         [Parameter(Mandatory)]
         [string]$ComputerName,
+
+        [int]$Count = 3,
         
         [switch]$AsJob
     )
     
     $cmd = {
-        $result = 1..5 | 
-        ForEach-Object { Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
-        Start-Sleep -Seconds 1 }
+        $result = 1..$Count | 
+        ForEach-Object {
+            Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
+            Start-Sleep -Seconds 1
+        }
             
         #if two results are positive, return the first positive result, if all are negative, return the first negative result
         if (($result.TcpTestSucceeded | Where-Object { $_ -eq $true }).Count -ge 2)
@@ -1571,14 +1575,14 @@ function Test-LabMachineInternetConnectivity
     if ($AsJob)
     {
         $job = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" `
-        -ScriptBlock $cmd -PassThru -NoDisplay -AsJob
+        -ScriptBlock $cmd -Variable (Get-Variable -Name Count) -PassThru -NoDisplay -AsJob
     
         return $job
     }
     else
     {
         $result = Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Testing Internet Connectivity of '$ComputerName'" `
-        -ScriptBlock $cmd -PassThru -NoDisplay
+        -ScriptBlock $cmd -Variable (Get-Variable -Name Count) -PassThru -NoDisplay
     
         return $result.TcpTestSucceeded
     }
@@ -1588,7 +1592,7 @@ function Test-LabMachineInternetConnectivity
 #region Get-LabVM
 function Get-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml 
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
     param (
