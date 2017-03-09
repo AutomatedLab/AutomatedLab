@@ -68,8 +68,11 @@ function New-LWHypervVM
         Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
         Select-Object -First 1
         
-        $adapters.Remove($domainAdapter)
-        $adapters.Insert(0, $domainAdapter)
+        if ($domainAdapter)
+        {
+            $adapters.Remove($domainAdapter)
+            $adapters.Insert(0, $domainAdapter)
+        }
     }
     
     foreach ($adapter in $adapters)
