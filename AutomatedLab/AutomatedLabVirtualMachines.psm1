@@ -804,7 +804,7 @@ function Wait-LabVMRestart
         [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
         
         [ValidateRange(1, 300)]
-        [int]$ProgressIndicator,
+        [int]$ProgressIndicator = 10,
         
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
         
@@ -829,9 +829,21 @@ function Wait-LabVMRestart
     $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
     $start = Get-Date
     
-    if ($azureVms)  { Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError }
-    if ($hypervVms) { Wait-LWHypervVMRestart -ComputerName $hypervVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -StartMachinesWhileWaiting $StartMachinesWhileWaiting -ErrorAction SilentlyContinue -ErrorVariable hypervWaitError -MonitorJob $MonitorJob}
-    if ($vmwareVms) { Wait-LWVMWareRestartVM -ComputerName $vmwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable vmwareWaitError }
+    if ($azureVms)
+    {
+        Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes `
+        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError
+    }
+
+    if ($hypervVms)
+    {
+        Wait-LWHypervVMRestart -ComputerName $hypervVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -StartMachinesWhileWaiting $StartMachinesWhileWaiting -ErrorAction SilentlyContinue -ErrorVariable hypervWaitError -MonitorJob $MonitorJob
+    }
+    
+    if ($vmwareVms)
+    {
+        Wait-LWVMWareRestartVM -ComputerName $vmwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable vmwareWaitError
+    }
     
     $waitError = New-Object System.Collections.ArrayList
     if ($azureWaitError) { $waitError.AddRange($azureWaitError) }

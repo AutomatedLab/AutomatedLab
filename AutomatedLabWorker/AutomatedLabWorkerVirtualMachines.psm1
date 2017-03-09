@@ -671,7 +671,7 @@ function Wait-LWHypervVMRestart
         $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
     }
     
-    $vMdrive = ((Get-Lab).Target.Path)[0]
+    $vmDrive = ((Get-Lab).Target.Path)[0]
     $start = (Get-Date)
     $progressIndicatorStart = (Get-Date)
     $diskTime = @()
@@ -688,7 +688,7 @@ function Wait-LWHypervVMRestart
             $progressIndicatorStart = (Get-Date)
         }
                 
-        $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vMdrive`:*"}).CookedValue))
+        $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vmDrive`:*"}).CookedValue))
                 
         if ($StartMachinesWhileWaiting)
         {
