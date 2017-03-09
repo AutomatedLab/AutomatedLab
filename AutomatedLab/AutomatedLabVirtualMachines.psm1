@@ -1700,4 +1700,4 @@ function Get-LabVM
 }
 #endregion Get-LabVM
 
-New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global
+New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global -Force
