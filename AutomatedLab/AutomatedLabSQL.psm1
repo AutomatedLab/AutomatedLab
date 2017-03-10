@@ -160,6 +160,7 @@ GO
                 if ($result)
                 {
                     Write-ScreenInfo -Message "Machine '$machine' already has SQL Server installed with requested instance name '$instanceName'" -Type Warning
+                    $machine | Add-Member -Name SqlAlreadyInstalled -Value $true -MemberType NoteProperty
                     $machineIndex++
                     continue
                 }
@@ -282,9 +283,10 @@ GO
                     Write-Verbose -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
                 
-                Wait-LabVMRestart -ComputerName $machinesBatch -TimeoutInMinutes $InstallationTimeout -ProgressIndicator 120
+                $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }
+                Wait-LabVMRestart -ComputerName $installMachines -TimeoutInMinutes $InstallationTimeout -ProgressIndicator 120
                 
-                Wait-LabVM -ComputerName $machinesBatch -PostDelaySeconds 30
+                Wait-LabVM -ComputerName $installMachines -PostDelaySeconds 30
                 
                 Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
                 
