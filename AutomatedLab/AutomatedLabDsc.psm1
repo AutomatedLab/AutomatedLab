@@ -100,8 +100,8 @@ function Install-LabDscPullServer
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
-            Install-Module -Name $using:requiredModules -Force
-        } -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
+            Install-Module -Name $requiredModules -Force
+        } -Variable (Get-Variable -Name requiredModules) -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
     }
     else
     {
@@ -120,8 +120,11 @@ function Install-LabDscPullServer
     $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
     Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
     $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-    Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
-    Write-ScreenInfo 'finished'
+    if ($modulePaths)
+    {
+        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
+        Write-ScreenInfo 'finished'
+    }
 
     $jobs = @()
 
