@@ -100,15 +100,22 @@ function Install-LabDscPullServer
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
-            Install-Module -Name $requiredModules -Force
-        } -Variable (Get-Variable -Name requiredModules) -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
+            Install-Module -Name $using:requiredModules -Force
+        } -AsJob -PassThru | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
     }
     else
     {
-        Write-ScreenInfo "Downloading the modules '$($requiredModules -join ', ')' locally and copying them to the DSC Pull Servers."
+        if ((Get-Module -ListAvailable -Name $requiredModules).Count -eq 2)
+        {
+            Write-ScreenInfo "The required modules to install DSC ($($requiredModules -join ', ')) are found in PSModulePath"
+        }
+        else
+        {
+            Write-ScreenInfo "Downloading the modules '$($requiredModules -join ', ')' locally and copying them to the DSC Pull Servers."
         
-        Install-PackageProvider -Name NuGet -Force | Out-Null
-        Install-Module -Name $requiredModules -Force
+            Install-PackageProvider -Name NuGet -Force | Out-Null
+            Install-Module -Name $requiredModules -Force
+        }
 
         $modulePaths = Get-Module -Name $requiredModules -ListAvailable | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
         Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
@@ -120,11 +127,8 @@ function Install-LabDscPullServer
     $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
     Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
     $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-    if ($modulePaths)
-    {
-        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
-        Write-ScreenInfo 'finished'
-    }
+    Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
+    Write-ScreenInfo 'finished'
 
     $jobs = @()
 
