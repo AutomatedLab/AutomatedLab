@@ -68,8 +68,11 @@ function New-LWHypervVM
         Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
         Select-Object -First 1
         
-        $adapters.Remove($domainAdapter)
-        $adapters.Insert(0, $domainAdapter)
+        if ($domainAdapter)
+        {
+            $adapters.Remove($domainAdapter)
+            $adapters.Insert(0, $domainAdapter)
+        }
     }
     
     foreach ($adapter in $adapters)
@@ -207,7 +210,7 @@ function New-LWHypervVM
     if ($Machine.Roles.Name -contains 'RootDC' -or 
         $Machine.Roles.Name -contains 'FirstChildDC' -or 
         $Machine.Roles.Name -contains 'DC' -or 
-        $Machine.OperatingSystem.Installation -eq 'Nano Server')
+    $Machine.OperatingSystem.Installation -eq 'Nano Server')
     {
         #machine will not be added to domain or workgroup
     }
@@ -273,7 +276,7 @@ function New-LWHypervVM
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
         LabName = (Get-Lab).Name
-        InitState = 0
+        InitState = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
     $isUefi = try
@@ -628,7 +631,7 @@ workflow Wait-LWHypervVM
             {
                 Write-Verbose -Message "'$machine' is online and reachable by WinRM"
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                InlineScript { $machineMetadata.InitState = '1' }
+                InlineScript { $machineMetadata.InitState = 1 } #ReachedByAutomatedLab
                 
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
             }
@@ -668,7 +671,7 @@ function Wait-LWHypervVMRestart
         $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
     }
     
-    $vMdrive = ((Get-Lab).Target.Path)[0]
+    $vmDrive = ((Get-Lab).Target.Path)[0]
     $start = (Get-Date)
     $progressIndicatorStart = (Get-Date)
     $diskTime = @()
@@ -685,7 +688,7 @@ function Wait-LWHypervVMRestart
             $progressIndicatorStart = (Get-Date)
         }
                 
-        $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vMdrive`:*"}).CookedValue))
+        $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vmDrive`:*"}).CookedValue))
                 
         if ($StartMachinesWhileWaiting)
         {
@@ -835,10 +838,11 @@ function Start-LWHypervVM
         {
             Start-VM -Name $Name -ErrorAction Stop
 
-            if ($machine.NetworkAdapters.Count -gt 1 -and $machineMetadata.InitState -lt 5)
+            if ($machine.NetworkAdapters.Count -gt 1 -and 
+            ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
             {            
                 Repair-LWHypervNetworkConfig -ComputerName $Name
-                $machineMetadata.InitState = 5
+                $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
             }            
         }
@@ -1215,7 +1219,7 @@ function Enable-LWHypervVMRemoting
         $cred = $machine.GetCredential((Get-Lab))
         try
         {
-            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -NoDisplay -ScriptBlock $script `
+            Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay  `
             -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
         }
         catch

@@ -12,8 +12,6 @@ $createCheckpoint = $false
 #----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
 #--------------------------------------------------------------------------------------------------------------------
 
-$labSources = Get-LabSourcesLocation
-
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
@@ -49,21 +47,17 @@ Add-LabMachineDefinition -Name ContosoDC2 -DiskName BackupRoot -IpAddress 192.16
     
 if ($addMemberServer)
 {
-    Add-LabMachineDefinition -Name ContosoMember1 -IpAddress 192.168.41.12 `
-        -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com
+    Add-LabMachineDefinition -Name ContosoMember1 -IpAddress 192.168.41.12 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com
 }
 
 #Defining child.contoso.com machines
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 `
-    -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
 
-Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 `
-    -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles DC
+Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName child.contoso.com -Roles DC
 
-#Now the actual work begins. First the virtual network adapter is created and then the base images per OS
-#All VMs are diffs from the base.
+#Now the actual work begins
 Install-Lab
 
 #Installs RSAT on ContosoMember1 if the optional machine is part of the lab
@@ -82,7 +76,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabPostInstallActivity -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -UseCredSsp -ScriptBlock {
+Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 
@@ -109,4 +103,4 @@ if ($createCheckpoint)
     Checkpoint-LabVM -All -SnapshotName 'AfterSetupComplete'
 }
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary -Detailed

@@ -54,6 +54,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabWorker", "Autom
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "AutomatedLabDefinition", "{688118CF-DFF0-484C-B9DA-EE9B99B6CBD6}"
 	ProjectSection(SolutionItems) = preProject
+		AutomatedLabDefinition\AutomatedLabDefinition.Help.xml = AutomatedLabDefinition\AutomatedLabDefinition.Help.xml
 		AutomatedLabDefinition\AutomatedLabDefinition.init.ps1 = AutomatedLabDefinition\AutomatedLabDefinition.init.ps1
 		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
 		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
@@ -80,7 +81,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSLog", "PSLog", "{81D0BB90
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLab", "{03FEFD6A-B999-4BBA-875B-6CFA083E43CC}"
 	ProjectSection(SolutionItems) = preProject
-		AutomatedLab\AutmatedLab.format.ps1xml = AutomatedLab\AutmatedLab.format.ps1xml
+		AutomatedLab\AutomatedLab.format.ps1xml = AutomatedLab\AutomatedLab.format.ps1xml
+		AutomatedLab\AutomatedLab.Help.xml = AutomatedLab\AutomatedLab.Help.xml
 		AutomatedLab\AutomatedLab.init.ps1 = AutomatedLab\AutomatedLab.init.ps1
 		AutomatedLab\AutomatedLab.psd1 = AutomatedLab\AutomatedLab.psd1
 		AutomatedLab\AutomatedLab.psm1 = AutomatedLab\AutomatedLab.psm1
@@ -91,6 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
+		AutomatedLab\AutomatedLabExchange2016.psm1 = AutomatedLab\AutomatedLabExchange2016.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
 		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
 		AutomatedLab\AutomatedLabOffice.psm1 = AutomatedLab\AutomatedLabOffice.psm1
@@ -257,14 +260,21 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 	ProjectSection(SolutionItems) = preProject
 		SampleScripts\Introduction\01 Single Win10 Client.ps1 = SampleScripts\Introduction\01 Single Win10 Client.ps1
 		SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1 = SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1
-		SampleScripts\Introduction\03 Single domain-joined server.ps1 = SampleScripts\Introduction\03 Single domain-joined server.ps1
-		SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1 = SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1
-		SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1
-		SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1 = SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1
-		SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1 = SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1
-		SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1 = SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1
-		SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1 = SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1
-		SampleScripts\Introduction\10 ISO Offline Patching.ps1 = SampleScripts\Introduction\10 ISO Offline Patching.ps1
+		SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1 = SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1
+		SampleScripts\Introduction\04 Single domain-joined server.ps1 = SampleScripts\Introduction\04 Single domain-joined server.ps1
+		SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1 = SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1
+		SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1
+		SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1 = SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1
+		SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1 = SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1
+		SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
+		SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
+		SampleScripts\Introduction\11 ISO Offline Patching.ps1 = SampleScripts\Introduction\11 ISO Offline Patching.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-EDE3-4069-9B4C-310FDE3EDF19}"
+	ProjectSection(SolutionItems) = preProject
+		Help\AutomatedLab.Help.pshproj = Help\AutomatedLab.Help.pshproj
+		Help\AutomatedLabDefinition.Help.pshproj = Help\AutomatedLabDefinition.Help.pshproj
 	EndProjectSection
 EndProject
 Global

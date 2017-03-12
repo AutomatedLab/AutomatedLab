@@ -1,6 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
     
@@ -154,12 +155,13 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
     
     Write-LogFunctionEntry
     
-    $config2016Xml = @'
+    $config2016XmlTemplate = @"
 <Configuration>
   <Add OfficeClientEdition="32">
     <Product ID="O365ProPlusRetail">
@@ -168,13 +170,12 @@ function Install-LabOffice2016
   </Add>
   <Updates Enabled="TRUE" />
   <Display Level="None" AcceptEULA="TRUE" />
-  <Property Name="SharedComputerLicensing" Value="1" />
+  <Property Name="SharedComputerLicensing" Value="{0}" />
   <Logging Level="Standard" Path="%temp%" />
   <!--Silent install of 32-Bit Office 365 ProPlus with Updates and Logging enabled-->
 </Configuration>
-'@
-    
-    $labSources = Get-LabSourcesLocation
+"@
+
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::Office2016
     
@@ -214,6 +215,11 @@ function Install-LabOffice2016
     
     foreach ($machine in $machines)
     {
+        $sharedComputerLicense = $false
+        $officeRole = $machine.Roles | Where-Object Name -eq 'Office2016'
+        $sharedComputerLicense = [int]($officeRole.Properties.SharedComputerLicensing)
+        $config2016Xml = $config2016XmlTemplate -f $sharedComputerLicense
+        
         Write-ScreenInfo "Preparing Office 2016 installation on '$machine'..." -NoNewLine
         $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
         

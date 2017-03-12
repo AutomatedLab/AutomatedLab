@@ -1,20 +1,21 @@
 ﻿#region Install-LabAdfs
 function Install-LabAdfs
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
-	
+    
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message 'Configuring ADFS roles...'
-	
+    
     if (-not (Get-LabMachine))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
         return
     }
-	
+    
     $machines = Get-LabMachine -Role ADFS
     
     if (-not $machines)
@@ -27,7 +28,7 @@ function Install-LabAdfs
         Write-Error "There are ADFS Server defined in the lab that are not domain joined. ADFS must be joined to a domain."
         return
     }
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -ComputerName $machines -Wait -ProgressIndicator 15
 
@@ -105,7 +106,7 @@ function Install-LabAdfs
 
             $certificate = Get-Item -Path "Cert:\LocalMachine\My\$certThumbprint"
             Install-AdfsFarm -CertificateThumbprint $certificate.Thumbprint -FederationServiceDisplayName $adfsDisplayName -FederationServiceName $certificate.SubjectName.Name.Substring(3) -ServiceAccountCredential $cred
-        } -Variable (Get-Variable -Name certThumbprint, adfsDisplayName, adfsServiceName, adfsServicePassword) -UseCredSsp -PassThru
+        } -Variable (Get-Variable -Name certThumbprint, adfsDisplayName, adfsServiceName, adfsServicePassword) -PassThru
         
         if ($result.Status -ne 'Success')
         {
@@ -119,7 +120,7 @@ function Install-LabAdfs
                 $cred = New-Object pscredential("$($env:USERDNSDOMAIN)\$adfsServiceName", ($adfsServicePassword | ConvertTo-SecureString -AsPlainText -Force))
 
                 Add-AdfsFarmNode -CertificateThumbprint $certThumbprint -PrimaryComputerName $1stAdfsServer.Name -ServiceAccountCredential $cred -OverwriteConfiguration
-            } -Variable (Get-Variable -Name certThumbprint, 1stAdfsServer, adfsServiceName, adfsServicePassword)  -UseCredSsp -PassThru
+            } -Variable (Get-Variable -Name certThumbprint, 1stAdfsServer, adfsServiceName, adfsServicePassword) -PassThru
             
             if ($result.Status -ne 'Success')
             {
@@ -136,29 +137,30 @@ function Install-LabAdfs
 #region Install-LabAdfsProxy
 function Install-LabAdfsProxy
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
-	
+    
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message 'Configuring ADFS roles...'
     
     $lab = Get-Lab
-	
+    
     if (-not (Get-LabMachine))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
         return
     }
-	
+    
     $machines = Get-LabMachine -Role ADFSProxy
     
     if (-not $machines)
     {
         return
     }
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName ADFSProxy -Wait -ProgressIndicator 15
 
@@ -193,7 +195,7 @@ function Install-LabAdfsProxy
 
         $result = Invoke-LabCommand -ActivityName 'Configuring ADFS Proxy Servers' -ComputerName $labAdfsProxy -ScriptBlock {
             Install-WebApplicationProxy -FederationServiceTrustCredential $cred -CertificateThumbprint $certThumbprint -FederationServiceName $adfsFullName
-        } -Variable (Get-Variable -Name certThumbprint, cred, adfsFullName) -UseCredSsp -PassThru
+        } -Variable (Get-Variable -Name certThumbprint, cred, adfsFullName) -PassThru
         
     }
     
