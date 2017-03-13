@@ -149,7 +149,7 @@ function Add-LabAzureSubscription
     }
     catch
     {
-        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message)"
+        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Login-AzureRmAccount and Save-AzureRmProfile."
     }
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
