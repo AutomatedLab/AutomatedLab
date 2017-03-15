@@ -199,7 +199,9 @@ function New-LWVHDX
 		
         #Size of the reference VHD
         [Parameter(Mandatory = $true)]
-        [int]$SizeInGB
+        [int]$SizeInGB,
+
+		[switch]$SkipInitialize
     )
 	
     Write-LogFunctionEntry
@@ -207,6 +209,12 @@ function New-LWVHDX
     $VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
     Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
 	
+	if ($SkipInitialize)
+	{
+		Write-Verbose -Message "Skipping the initialization of '$($vmDisk.Path)'"
+		Write-LogFunctionExit
+	}
+
     $mountedVhd = $VmDisk | Mount-VHD -PassThru
 	
     $mountedVhd | Initialize-Disk

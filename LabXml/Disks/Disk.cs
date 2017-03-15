@@ -5,6 +5,7 @@
         private string path;
         private string name;
         private int diskSize;
+        public bool SkipInitialization { get; set; }
 
         public string Path
         {

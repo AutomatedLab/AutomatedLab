@@ -1580,6 +1580,8 @@ function Add-LabDiskDefinition
         [ValidateRange(20, 1024)]
         [ValidateNotNullOrEmpty()]
         [int]$DiskSizeInGb = 60,
+
+		[switch]$SkipInitialize,
         
         [switch]$PassThru
     )
@@ -1608,7 +1610,9 @@ function Add-LabDiskDefinition
     
     $disk = New-Object -TypeName AutomatedLab.Disk
     $disk.Name = $Name
-    $disk.DiskSize = $DiskSizeInGb
+    $disk.DiskSize = $DiskSizeInGb	
+	$disk.SkipInitialization = [bool]$SkipInitialize
+	
     
     $script:disks.Add($disk)
     

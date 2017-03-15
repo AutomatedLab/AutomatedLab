@@ -193,7 +193,7 @@ function New-LabVHDX
 	
 	foreach ($disk in $disks)
 	{
-		New-LWVHDX -VhdxPath (Join-Path -Path $diskPath -ChildPath ($disk.Name + '.vhdx')) -SizeInGB $disk.DiskSize
+		New-LWVHDX -VhdxPath (Join-Path -Path $diskPath -ChildPath ($disk.Name + '.vhdx')) -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
 	}
 	
 	Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
