@@ -1089,8 +1089,8 @@ function Get-LWAzureVMConnectionInfo
         if (-not $azureVM)
         { return }		
 
-        $nic = Get-AzureRmNetworkInterface | Where {$_.virtualmachine.id -eq ($azureVM.Id)}
-        $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName
+        $nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where {$_.virtualmachine.id -eq ($azureVM.Id)}
+        $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
         # TODO Get Load Balancer Public IP and Load Balancer DNS Name
         New-Object PSObject -Property @{
