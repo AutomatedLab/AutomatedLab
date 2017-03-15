@@ -213,6 +213,7 @@ function New-LWVHDX
 	{
 		Write-Verbose -Message "Skipping the initialization of '$($vmDisk.Path)'"
 		Write-LogFunctionExit
+		return
 	}
 
     $mountedVhd = $VmDisk | Mount-VHD -PassThru
