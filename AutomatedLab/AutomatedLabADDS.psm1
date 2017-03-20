@@ -763,7 +763,7 @@ function Install-LabRootDcs
                 dnscmd . /ZoneAdd "$zoneName" /DsPrimary /DP /forest
                 dnscmd . /Config "$zoneName" /AllowUpdate 2
                 ipconfig.exe -registerdns
-            } -ArgumentList $network #-PassThru
+            } -ArgumentList $network
         }
         
 
@@ -789,6 +789,14 @@ function Install-LabRootDcs
         }
         $dnsCmd += "Restart-Service -Name DNS -WarningAction SilentlyContinue`n"	
         Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Register non domain joined machines in DNS' -NoDisplay -ScriptBlock ([scriptblock]::Create($dnsCmd))
+
+        Invoke-LabCommand -ComputerName $machines -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -NoDisplay -ScriptBlock {
+            $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
+            dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
+        } -ArgumentList $machines
+
+        Restart-LabVM -ComputerName $machines -Wait
+        Wait-LabADReady -ComputerName $machines
         
         Enable-LabVMRemoting -ComputerName $machines
         
@@ -807,7 +815,6 @@ function Install-LabRootDcs
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -NoDisplay -NoNewLine
         Write-ProgressIndicatorEnd
-        
         
         foreach ($machine in $machines)
         {
@@ -1012,6 +1019,14 @@ function Install-LabFirstChildDcs
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user
         }
         Invoke-LabCommand -ComputerName $machines -ActivityName 'Make installation user Domain Admin' -NoDisplay -ScriptBlock $cmd -ErrorAction SilentlyContinue
+
+        Invoke-LabCommand -ComputerName $machines -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -NoDisplay -ScriptBlock {
+            $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
+            dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
+        } -ArgumentList $machines
+
+        Restart-LabVM -ComputerName $machines -Wait
+        Wait-LabADReady -ComputerName $machines
         
         Enable-LabVMRemoting -ComputerName $machines
         
