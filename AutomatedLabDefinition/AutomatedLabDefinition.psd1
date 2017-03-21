@@ -68,6 +68,8 @@
                 Office2016 = 'SharedComputerLicensing'
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
+
+				DSCPullServer = 'DoNotPushLocalModules'
             }
 
             MandatoryRoleProperties = @{

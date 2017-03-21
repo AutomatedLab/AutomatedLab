@@ -128,11 +128,20 @@ function Install-LabDscPullServer
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
 
-    $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
-    Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
-    $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-    Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell'
-    Write-ScreenInfo 'finished'
+    foreach ($machine in $machines)
+    {
+        $role = $machine.Roles | Where-Object Name -eq $roleName
+        $doNotPushLocalModules = [bool]$role.Properties.DoNotPushLocalModules
+
+        if (-not $doNotPushLocalModules)
+        {
+            $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
+            Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
+            $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
+            Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
+            Write-ScreenInfo 'finished'
+        }
+    }
 
     $jobs = @()
 
