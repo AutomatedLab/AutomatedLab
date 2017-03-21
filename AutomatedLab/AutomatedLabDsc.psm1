@@ -122,7 +122,7 @@ function Install-LabDscPullServer
         }
 
         $modulePaths = Get-Module -Name $requiredModules -ListAvailable | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell'
+        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
     }
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
