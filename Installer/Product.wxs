@@ -230,7 +230,7 @@
 
           </Directory>-->
 
-          <Directory Id="SAMPLESDIR" Name="AutomatedLab Sample Scripts">
+          <Directory Id="SAMPLESDIR" Name="Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
               <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesComponent" />
 
