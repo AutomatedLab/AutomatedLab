@@ -45,8 +45,7 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
@@ -54,8 +53,7 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
         [int]$RetryIntervalInSeconds,
         
         [int]$ThrottleLimit = 32,
@@ -605,7 +603,7 @@ function Wait-LWLabJob
         [int]$Timeout = 60,
         [switch]$NoNewLine,
         [switch]$NoDisplay,
-        [switch]$ReturnResults
+        [switch]$PassThru
     )
     
     Write-LogFunctionEntry
@@ -662,7 +660,7 @@ function Wait-LWLabJob
             Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
         }
 
-        if ($ReturnResults)
+        if ($PassThru)
         {
             $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
 
