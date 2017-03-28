@@ -1218,18 +1218,16 @@ function Add-CATemplateStandardPermission
    
     foreach ($name in $SamAccountName)
     {
-        $ds = New-Object System.DirectoryServices.DirectorySearcher
-        $ds.PageSize = 1000
-        $ds.Filter = "(&(samAccountName=$name)(|(objectCategory=person)(objectCategory=computer)(objectCategory=group)))"
-        $result = $ds.FindOne()
-        
-        if ($result)
+        try
         {
+            $sid = ([System.Security.Principal.NTAccount]$name).Translate([System.Security.Principal.SecurityIdentifier])
+            $name = $sid.Translate([System.Security.Principal.NTAccount])
+
             dsacls $template.DistinguishedName /G "$($name):GR"
             dsacls $template.DistinguishedName /G "$($name):CA;Enroll"
             dsacls $template.DistinguishedName /G "$($name):CA;AutoEnrollment"
         }
-        else
+        catch
         {
             Write-Error "The principal '$name' could not be found"
         }
@@ -1254,12 +1252,6 @@ function Request-Certificate
         [Parameter(Mandatory = $true, HelpMessage = 'Please enter the Online Certificate Authority')]
         [string]$TemplateName
     )
-    
-    if (-not (Get-CATemplate -TemplateName $TemplateName))
-    {
-        Write-Error "The template '$TemplateName' does not exist"
-        return
-    }
 
     $infFile = [System.IO.Path]::GetTempFileName()
     $requestFile = [System.IO.Path]::GetTempFileName()
@@ -1762,6 +1754,15 @@ function Request-LabCertificate
     )
     
     Write-LogFunctionEntry
+
+    $onlienCAVM = Get-LabVM -ComputerName $OnlineCA
+
+    #machine was found so only the machine name was given. Get the full CA path.
+    if ($onlienCAVM)
+    {
+        #$OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
+        $PSBoundParameters.OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
+    }
     
     $variables = Get-Variable -Name PSBoundParameters
     $functions = Get-Command -Name Get-CATemplate, Request-Certificate, Find-CertificateAuthority, Sync-Parameter
