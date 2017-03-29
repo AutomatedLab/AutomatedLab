@@ -120,11 +120,11 @@ function New-LabVM
         Write-Verbose -Message 'Calling Enable-PSRemoting on machines'
         Enable-LWAzureWinRm -Machine $azureVMs -Wait
 
-        Write-Verbose -Message 'Executing initialization script on machines'
-        Initialize-LWAzureVM -Machine $azureVMs        
-
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
+
+        Write-Verbose -Message 'Executing initialization script on machines'
+        Initialize-LWAzureVM -Machine $azureVMs        
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

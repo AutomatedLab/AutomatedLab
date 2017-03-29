@@ -695,11 +695,11 @@ function Initialize-LWAzureVM
     
     if ($machinesToStop)
     {
-        Write-ScreenInfo -Message "$($Machine.Count) new Azure machines was configured. Some machines were stopped as they are not to be domain controllers '$($machinesToStop -join ', ')'"
+        Write-ScreenInfo -Message "$($Machine.Count) new Azure machines were configured. Some machines were stopped as they are not to be domain controllers '$($machinesToStop -join ', ')'"
     }
     else
     {
-        Write-ScreenInfo -Message "($($Machine.Count)) new Azure machines was configured"
+        Write-ScreenInfo -Message "($($Machine.Count)) new Azure machines were configured"
     }
 
     Write-Verbose "Removing all sessions after VmInit"
