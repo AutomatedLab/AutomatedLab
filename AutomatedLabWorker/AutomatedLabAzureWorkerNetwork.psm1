@@ -271,7 +271,7 @@ function Set-LWAzureDnsServer
         }
 
         $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
-        $azureVnet.DhcpOptions.DnsServers.AddRange($network.DnsServers.AddressAsString)
+        $network.DnsServers.AddressAsString | ForEach-Object { $azureVnet.DhcpOptions.DnsServers.Add($PSItem)}
         $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction SilentlyContinue
 
         if ($PassThru)
