@@ -1193,6 +1193,7 @@ function Enable-LWAzureWinRm
 
     Write-LogFunctionEntry
 
+    $lab = Get-Lab
     $jobs = @()
 
     foreach($m in $Machine)
@@ -1226,7 +1227,7 @@ function Enable-LWAzureWinRm
             $vmExtension = Set-AzureRmVMCustomScriptExtension -VMName $MachineName -ContainerName 'labsources' `
             -FileName 'Enable-WinRm.ps1' -StorageAccountName $storageAccount.StorageAccountName `
             -StorageAccountKey ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value -Run Enable-WinRm.ps1 `
-            -ResourceGroupName poshjhp -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
+            -ResourceGroupName $ResourceGroup -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
 
             if (-not $vmExtension -or -not $vmExtension.IsSuccessStatusCode)
             {
