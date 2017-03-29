@@ -1089,10 +1089,9 @@ function Get-LWAzureVMConnectionInfo
         if (-not $azureVM)
         { return }		
 
-        $nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where {$_.virtualmachine.id -eq ($azureVM.Id)}
+        $nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where-Object {$_.virtualmachine.id -eq ($azureVM.Id)}
         $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
-        # TODO Get Load Balancer Public IP and Load Balancer DNS Name
         New-Object PSObject -Property @{
             ComputerName = $name.Name
             DnsName = $ip.DnsSettings.Fqdn
@@ -1175,6 +1174,80 @@ function Enable-LWAzureVMRemoting
     }
 }
 #endregion Enable-LWAzureVMRemoting
+
+#region Enable-LWAzureWinRm
+function Enable-LWAzureWinRm
+{
+    param
+    (        
+        [Parameter(Mandatory)]
+        [AutomatedLab.Machine[]]
+        $Machine,
+
+        [switch]
+        $PassThru,
+
+        [switch]
+        $Wait
+    )
+
+    Write-LogFunctionEntry
+
+    $jobs = @()
+
+    foreach($m in $Machine)
+    {
+        $jobs += Start-Job -Name "AzureRemotingActivation ($($m.Name))" -ScriptBlock {
+            param
+            (
+                $ProfilePath,
+                $Subscription,
+                $MachineName,
+                $ResourceGroup,
+                $Location
+            )
+            
+            Select-AzureRmProfile -Path $ProfilePath
+            Set-AzureRmContext -SubscriptionName $Subscription
+
+            $azureVm = Get-AzureRmVM -Name $machineName -Resourcegroup $ResourceGroup
+            $storageAccount = @(Get-AzureRmStorageAccount -ResourceGroupName AutomatedLabSources)[0]
+            $scriptFile = Get-AzureStorageBlob -Blob Enable-WinRm.ps1 -Container labsources -Context $storageAccount.Context -ErrorAction SilentlyContinue
+
+            if(-not $scriptFile)
+            {
+                New-AzureStorageContainer -Name labsources -Permission Container -Context $storageAccount.Context
+                $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile
+                'Enable-PSRemoting -Force' | Out-File $tempFileName -Force -Encoding utf8
+                $null = Set-AzureStorageBlobContent -File $tempFileName -Container labsources -Blob Enable-WinRm.ps1 -BlobType Block -Context $storageAccount.Context
+                Remove-Item $tempFileName -Force -ErrorAction SilentlyContinue
+            }
+            
+            $vmExtension = Set-AzureRmVMCustomScriptExtension -VMName $MachineName -ContainerName 'labsources' `
+            -FileName 'Enable-WinRm.ps1' -StorageAccountName $storageAccount.StorageAccountName `
+            -StorageAccountKey ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value -Run Enable-WinRm.ps1 `
+            -ResourceGroupName poshjhp -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
+
+            if (-not $vmExtension -or -not $vmExtension.IsSuccessStatusCode)
+            {
+                throw "Setting up WinRm on $machineName failed!"
+            }
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
+    }
+
+    if ($Wait)
+    {
+        Wait-LWLabJob -Job $jobs
+    }
+
+    if ($PassThru)
+    {
+        $jobs
+    }
+
+    Write-LogFunctionExit
+}
+#endregion
 
 #region Connect-LWAzureLabSourcesDrive
 function Connect-LWAzureLabSourcesDrive
