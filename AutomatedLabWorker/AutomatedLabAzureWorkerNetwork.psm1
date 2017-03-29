@@ -256,6 +256,12 @@ function Set-LWAzureDnsServer
 
     foreach ($network in $VirtualNetwork)
     {
+        if ($network.DnsServers.Count -eq 0)
+        {
+            Write-Verbose -Message "Skipping $($network.Name) because no DNS servers are configured"
+            continue
+        }
+
         Write-ScreenInfo -Message "Setting DNS servers for $($network.Name)" -TaskStart
         $azureVnet = Get-LWAzureNetworkSwitch -VirtualNetwork $network -ErrorAction SilentlyContinue
         if (-not $azureVnet)
@@ -264,8 +270,8 @@ function Set-LWAzureDnsServer
             continue
         }
 
-        $azureVnet.DhcpOptions.DnsServers.Clear()
-        $azureVnet.DhcpOptions.DnsServers.AddRange($network.DnsServers)
+        $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
+        $azureVnet.DhcpOptions.DnsServers.AddRange($network.DnsServers.AddressAsString)
         $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction SilentlyContinue
 
         if ($PassThru)
