@@ -116,7 +116,16 @@ function New-LabVM
     if ($azureVMs)
     {
         Write-ScreenInfo -Message 'Initializing machines' -TaskStart
-        Initialize-LWAzureVM -Machine $azureVMs
+
+        Write-Verbose -Message 'Calling Enable-PSRemoting on machines'
+        Enable-LWAzureWinRm -Machine $azureVMs -Wait
+
+        Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
+        Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
+
+        Write-Verbose -Message 'Executing initialization script on machines'
+        Initialize-LWAzureVM -Machine $azureVMs        
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
@@ -1413,7 +1422,7 @@ function Set-MachineUacStatus
     $currentSettings = Get-MachineUacStatus -ComputerName $ComputerName
     $uacStatusChanges = $false
     
-    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
+    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
     $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
     
     $subkey = $openRegistry.OpenSubKey($registryPath,$true)
@@ -1445,18 +1454,18 @@ function Set-MachineUacStatus
 function Get-MachineUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
     )
     
-    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
-    $uacStatus = $false
+    $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
+    $uacStatus = $false
     
-    $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
-    $subkey = $openRegistry.OpenSubKey($registryPath, $false)
+    $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
+    $subkey = $openRegistry.OpenSubKey($registryPath, $false)
     
-    $uacStatus = $subkey.GetValue('EnableLUA')
+    $uacStatus = $subkey.GetValue('EnableLUA')
     $consentPromptBehaviorUser = $subkey.GetValue('ConsentPromptBehaviorUser')
     $consentPromptBehaviorAdmin = $subkey.GetValue('ConsentPromptBehaviorAdmin')
     
