@@ -93,17 +93,21 @@ function New-LabBaseImages
 function Stop-ShellHWDetectionService
 {
 	# .ExternalHelp AutomatedLab.Help.xml
-	Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
 
-    $backupErrorActionPreference = $ErrorActionPreference
-    $backupWarningPreference     = $WarningPreference
-    $backupVebosePreference      = $VerbosePreference
-    $ErrorActionPreference = 'SilentlyContinue'
-    $WarningPreference     = 'SilentlyContinue'
-    $VerbosePreference     = 'SilentlyContinue'
+    Write-LogFunctionEntry
+
+    $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
+    if (-not $service)
+    {
+        Write-Verbose "The service 'ShellHWDetection' is not installed, exiting."
+        Write-LogFunctionExit
+        return
+    }
+
+    Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
 
     $retries = 5
-    while ($retries -gt 0 -and ((Get-Service -Name 'ShellHWDetection').Status -ne 'Stopped'))
+    while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Stopped'))
     {
         Write-Debug -Message 'Trying to stop ShellHWDetection'
         
@@ -116,24 +120,35 @@ function Stop-ShellHWDetectionService
         }
         $retries--
     }
-    
-    $ErrorActionPreference = $backupErrorActionPreference
-    $WarningPreference = $backupWarningPreference
-    $VerbosePreference = $backupVebosePreference
+
+    Write-LogFunctionExit
 }	
 
 function Start-ShellHWDetectionService
 {
 	# .ExternalHelp AutomatedLab.Help.xml
+
+    Write-LogFunctionEntry
+
+    $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
+    if (-not $service)
+    {
+        Write-Verbose "The service 'ShellHWDetection' is not installed, exiting."
+        Write-LogFunctionExit
+        return
+    }
+
 	if ((Get-Service -Name ShellHWDetection).Status -eq 'Running')
     {
-        Write-Verbose -Message 'ShellHWDetectionService is already running.'
+        Write-Verbose -Message "'ShellHWDetection' Service is already running."
+        Write-LogFunctionExit
         return
     }
     
     Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+
     $retries = 5
-    while ($retries -gt 0 -and ((Get-Service -Name 'ShellHWDetection').Status -ne 'Running'))
+    while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Running'))
     {
         Write-Debug -Message 'Trying to start ShellHWDetection'
         Start-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
@@ -145,7 +160,9 @@ function Start-ShellHWDetectionService
         }
         $retries--
     }
-}	
+
+    Write-LogFunctionExit
+}
 
 
 #region New-LabVHDX
