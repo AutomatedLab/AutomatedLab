@@ -227,6 +227,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
 		SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
 		SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+		SampleScripts\Scenarios\WinRM clients with SSL.ps1 = SampleScripts\Scenarios\WinRM clients with SSL.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSUpdates", "OSUpdates", "{BB2F6956-209C-40CB-8877-07E3F5C79F76}"
