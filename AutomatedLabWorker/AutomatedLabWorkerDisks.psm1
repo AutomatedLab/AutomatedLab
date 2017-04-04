@@ -32,7 +32,7 @@ function New-LWReferenceVHDX
 	
     # Get start time
     $start = Get-Date
-    Write-Verbose "Beginning at $StartTime"
+    Write-Verbose "Beginning at $start"
     
     $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
     Write-Verbose "The Windows Image list contains $($imageList.Count) items"
@@ -165,13 +165,13 @@ exit
         $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages -File
         foreach ($package in $packages)
         {
-            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
         }
         
         $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages\en-US -File
         foreach ($package in $packages)
         {
-            Add-WindowsPackage –Path $vhdWindowsVolume –PackagePath $package.FullName | Out-Null
+            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
         }
     }
 	
@@ -191,91 +191,100 @@ exit
 #region New-LWVHDX
 function New-LWVHDX
 {
-	[Cmdletbinding()]
-	Param (
-		#Path to reference VHD
-		[Parameter(Mandatory = $true)]
-		[string]$VhdxPath,
+    [Cmdletbinding()]
+    Param (
+        #Path to reference VHD
+        [Parameter(Mandatory = $true)]
+        [string]$VhdxPath,
 		
-		#Size of the reference VHD
-		[Parameter(Mandatory = $true)]
-		[int]$SizeInGB
-	)
+        #Size of the reference VHD
+        [Parameter(Mandatory = $true)]
+        [int]$SizeInGB,
+
+		[switch]$SkipInitialize
+    )
 	
-	Write-LogFunctionEntry
+    Write-LogFunctionEntry
 	
-	$VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
-	Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
+    $VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
+    Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
 	
-	$mountedVhd = $VmDisk | Mount-VHD -PassThru
+	if ($SkipInitialize)
+	{
+		Write-Verbose -Message "Skipping the initialization of '$($vmDisk.Path)'"
+		Write-LogFunctionExit
+		return
+	}
+
+    $mountedVhd = $VmDisk | Mount-VHD -PassThru
 	
-	$mountedVhd | Initialize-Disk
-	$mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
-	Format-Volume -FileSystem NTFS -NewFileSystemLabel Data -Force -Confirm:$false |
-	Out-Null
+    $mountedVhd | Initialize-Disk
+    $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
+    Format-Volume -FileSystem NTFS -NewFileSystemLabel Data -Force -Confirm:$false |
+    Out-Null
 	
-	$VmDisk | Dismount-VHD
+    $VmDisk | Dismount-VHD
 	
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
 #endregion New-LWVHDX
 
 #region Remove-LWVHDX
 function Remove-LWVHDX
 {
-	[Cmdletbinding()]
-	Param (
-		#Path to reference VHD
-		[Parameter(Mandatory = $true)]
-		[string]$VhdxPath
-	)
+    [Cmdletbinding()]
+    Param (
+        #Path to reference VHD
+        [Parameter(Mandatory = $true)]
+        [string]$VhdxPath
+    )
 	
-	Write-LogFunctionEntry
+    Write-LogFunctionEntry
 	
-	$VmDisk = Get-VHD -Path $VhdxPath -ErrorAction SilentlyContinue
-	if (-not $VmDisk)
-	{
-		Write-Warning -Message "VHDX '$VhdxPath' does not exist, cannot remove it"
-	}
-	else
-	{
-		$VmDisk | Remove-Item
-		Write-Verbose "VHDX '$($vmDisk.Path)' removed"
-	}
+    $VmDisk = Get-VHD -Path $VhdxPath -ErrorAction SilentlyContinue
+    if (-not $VmDisk)
+    {
+        Write-Warning -Message "VHDX '$VhdxPath' does not exist, cannot remove it"
+    }
+    else
+    {
+        $VmDisk | Remove-Item
+        Write-Verbose "VHDX '$($vmDisk.Path)' removed"
+    }
 	
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
 #endregion Remove-LWVHDX
 
 #region Add-LWVMVHDX
 function Add-LWVMVHDX
 {
-	[Cmdletbinding()]
-	Param (
-		[Parameter(Mandatory = $true)]
-		[string]$VMName,
+    [Cmdletbinding()]
+    Param (
+        [Parameter(Mandatory = $true)]
+        [string]$VMName,
 		
-		[Parameter(Mandatory = $true)]
-		[string]$VhdxPath
-	)
+        [Parameter(Mandatory = $true)]
+        [string]$VhdxPath
+    )
 	
-	Write-LogFunctionEntry
+    Write-LogFunctionEntry
 	
-	if (-not (Test-Path -Path $VhdxPath))
-	{
-		Write-Error 'VHDX cannot be found'
-		return
-	}
+    if (-not (Test-Path -Path $VhdxPath))
+    {
+        Write-Error 'VHDX cannot be found'
+        return
+    }
 	
-	$vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
-	if (-not $vm)
-	{
-		Write-Error 'VM cannot be found'
-		return
-	}
+    $vm = Get-VM -Name $VMName -ErrorAction SilentlyContinue
+    if (-not $vm)
+    {
+        Write-Error 'VM cannot be found'
+        return
+    }
 	
-	Add-VMHardDiskDrive -VM $vm -Path $VhdxPath
+    Add-VMHardDiskDrive -VM $vm -Path $VhdxPath
 	
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
 #endregion Add-LWVMVHDX

@@ -13,19 +13,11 @@ function Invoke-LWCommand
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyScriptBlock')]
-        [ValidateScript({
-                    [System.IO.Directory]::Exists($_) -or [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$DependencyFolderPath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        [ValidateScript({
-                    [System.IO.File]::Exists($_)
-                }
-        )]
         [string]$ScriptFilePath,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -53,8 +45,7 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
         [int]$Retries,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
@@ -62,8 +53,7 @@ function Invoke-LWCommand
         [Parameter(ParameterSetName = 'NoDependencyScriptBlock')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
-        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]
-        
+        [Parameter(Mandatory, ParameterSetName = 'NoDependencyLocalScript')]        
         [int]$RetryIntervalInSeconds,
         
         [int]$ThrottleLimit = 32,
@@ -73,10 +63,28 @@ function Invoke-LWCommand
         [switch]$PassThru
     )
     
-    #required to suporess verbose messages, warnings and errors
+    Write-LogFunctionEntry
+    
+    #required to supress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    Write-LogFunctionEntry
+    if ($DependencyFolderPath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) -and -not (Test-Path -Path $DependencyFolderPath))
+        {
+            Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
+            return
+        }
+    }
+    
+    if ($ScriptFilePath)
+    {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath) -and -not (Test-Path -Path $ScriptFilePath -PathType Leaf))
+        {
+            Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
+            return
+        }
+    }
 
     $internalSession = New-Object System.Collections.ArrayList
     $internalSession.AddRange($Session)
@@ -92,26 +100,33 @@ function Invoke-LWCommand
     {
         Write-Verbose -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
         
-        try
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
-            Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
+            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination C:\ -Recurse -Force } -ArgumentList $DependencyFolderPath
         }
-        catch
+        else
         {
-            if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+            try
             {
-                Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                Copy-LabFileItem -Path $DependencyFolderPath -ComputerName $ComputerName -ErrorAction Stop
             }
-            else
+            catch
             {
-                Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
+                {
+                    Send-Directory -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
+                else
+                {
+                    Send-File -Source $DependencyFolderPath -Destination (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                }
             }
         }
         
         if ($PSCmdlet.ParameterSetName -eq 'FileContentDependencyRemoteScript')
         {
             $cmd = @"
-                $(if ($ScriptFileName) { "&'$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
+                $(if ($ScriptFileName) { "&' $(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
                 $(if (-not $KeepFolder) { "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" } )
 "@
             
@@ -120,7 +135,7 @@ function Invoke-LWCommand
             $parameters = @{ }
             $parameters.Add('Session', $internalSession)
             $parameters.Add('ScriptBlock', [scriptblock]::Create($cmd))
-            $parameters.Add('ArgumentList', $arguments)
+            $parameters.Add('ArgumentList', $ArgumentList)
             if ($AsJob)
             {
                 $parameters.Add('AsJob', $AsJob)
@@ -179,10 +194,10 @@ function Invoke-LWCommand
         }
     }
     
-    $parameters.Add('Verbose', $Verbose)
-    $parameters.Add('Debug', $Debug)
+    if ($VerbosePreference -eq 'Continue') { $parameters.Add('Verbose', $VerbosePreference) }
+    if ($DebugPreference -eq 'Continue') { $parameters.Add('Debug', $DebugPreference) }
 
-    $result = New-Object System.Collections.ArrayList
+    [System.Collections.ArrayList]$result = New-Object System.Collections.ArrayList
 
     if (-not $AsJob -and $parameters.ScriptBlock)
     {
@@ -208,7 +223,7 @@ function Invoke-LWCommand
                 $internalSession.Remove($nonAvailableSession)
             }
 
-            $result.AddRange([System.Collections.ArrayList]@(Invoke-Command @parameters -ErrorAction SilentlyContinue -ErrorVariable invokeError))
+            $result.AddRange(@(Invoke-Command @parameters))
 
             #remove all sessions for machines successfully invoked the command
             foreach ($machineFinished in ($result | Where-Object { $_ -like 'LABHOSTNAME*' }))
@@ -216,7 +231,7 @@ function Invoke-LWCommand
                 $machineFinishedName = $machineFinished.Substring($machineFinished.IndexOf(':') + 1)
                 $internalSession.Remove(($internalSession | Where-Object LabMachineName -eq $machineFinishedName))
             }
-            $result = $result | Where-Object { $_ -notlike 'LABHOSTNAME*' }
+            $result = @($result | Where-Object { $_ -notlike 'LABHOSTNAME*' })
 
             $Retries--
 
@@ -246,21 +261,12 @@ function Invoke-LWCommand
         Write-Verbose "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
     }
     
-    if ($invokeError.Count -and -not $AsJob)
-    {
-        foreach ($e in $invokeError)
-        {
-            Write-Error -ErrorRecord $e
-        }
-    }
-    
     Write-Verbose -Message "Finished Installation Activity '$ActivityName'"
     
     Write-LogFunctionExit -ReturnValue $resultVariable
 }
 #endregion Invoke-LWCommand
 
-#region Install-LWSoftwarePackage
 function Install-LWSoftwarePackage
 {
     param (
@@ -270,23 +276,58 @@ function Install-LWSoftwarePackage
         
         [string]$CommandLine,
         
-        [int]$Timeout = 10,
+        [bool]$AsScheduledJob,
         
-        [ValidateNotNullOrEmpty()]
-        [string]$ProcessName,
-        
-        [ValidateNotNullOrEmpty()]
-        [string]$ProcessDescription        
+        [bool]$UseShellExecute
     )
     
-    if (-not $ProcessName)
+    #region New-InstallProcess
+    function New-InstallProcess
     {
-        $ProcessName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Path,
+
+            [string]$CommandLine,
+            
+            [bool]$UseShellExecute
+        )
+    
+        $pInfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
+        $pInfo.FileName = $Path
+        
+        $pInfo.UseShellExecute = $UseShellExecute
+        if (-not $UseShellExecute)
+        {
+            $pInfo.RedirectStandardError = $true
+            $pInfo.RedirectStandardOutput = $true
+        }
+        $pInfo.Arguments = $CommandLine
+
+        $p = New-Object -TypeName System.Diagnostics.Process
+        $p.StartInfo = $pInfo
+        Write-Verbose -Message "Starting process: $($pInfo.FileName) $($pInfo.Arguments)"
+        $p.Start() | Out-Null
+        Write-Verbose "The installation process ID is $($p.Id)"
+        $p.WaitForExit()
+        Write-Verbose -Message 'Process exited. Reading output'
+
+        $params = @{ Process = $p }
+        if (-not $UseShellExecute)
+        {
+            $params.Add('Output', $p.StandardOutput.ReadToEnd())
+            $params.Add('Error', $p.StandardError.ReadToEnd())
+        }
+        New-Object -TypeName PSObject -Property $params
     }
-    $cmd = $Path + ' ' + $CommandLine
-    
-    #--------------------------------------------------------------------------------------
-    
+    #endregion New-InstallProcess
+
+    if (-not (Test-Path -Path $Path -PathType Leaf))
+    {
+        Write-Error "The file '$Path' could not found"
+        return        
+    }
+        
     $start = Get-Date
     Write-Verbose -Message "Starting setup of '$ProcessName' with the following command"
     Write-Verbose -Message "`t$cmd"
@@ -295,75 +336,12 @@ function Install-LWSoftwarePackage
     $installationMethod = [System.IO.Path]::GetExtension($Path)
     $installationFile = [System.IO.Path]::GetFileName($Path)
     
-    if ($installationMethod -eq '.exe')
-    {
-        Write-Verbose -Message 'Starting installation of Exe file'
-        
-        $args = @{ }
-        $args.Add('FilePath', $Path)
-        if ($CommandLine)
-        {
-            $args.Add('ArgumentList', $CommandLine)
-        }
-        $args.Add('PassThru', $true)
-        
-        $p = Start-Process @args
-        Write-Verbose -Message "The installation process ID is $($p.Id)"
-        
-        $queryExpression = "`$_.Name -eq '$ProcessName'"
-        if ($ProcessDescription)
-        {
-            $queryExpression += "-and `$_.Description -eq '$processDescription'"
-        }
-        $queryExpression = [scriptblock]::Create($queryExpression)
-        
-        Write-Verbose -Message 'Query expression for looking for the setup process:'
-        Write-Verbose -Message "`t$queryExpression"
-        
-        if (-not (Get-Process | Where-Object -FilterScript $queryExpression))
-        {
-            Write-Error -Message "Installation of '$ProcessName' did not start"
-            return
-        }
-        else
-        {
-            $p = Get-Process | Where-Object -FilterScript $queryExpression
-            Write-Verbose -Message "Installation process is '$($p.Name)' with ID $($p.Id)"
-        }
-        
-        while (Get-Process | Where-Object -FilterScript $queryExpression)
-        {
-            if ((Get-Date).AddMinutes(-$Timeout) -gt $start)
-            {
-                Write-Error -Message "Installation of '$ProcessName' hit the timeout of $Timeout minutes. Killing the setup process"
-                
-                if ($ProcessDescription)
-                {
-                    Get-Process |
-                    Where-Object -FilterScript {
-                        $_.Name -eq $ProcessName -and $_.Description -eq $ProcessDescription
-                    } |
-                    Stop-Process -Force
-                }
-                else
-                {
-                    Get-Process -Name $ProcessName | Stop-Process -Force
-                }
-                
-                Write-Error -Message "Installation of '$installationFile' was not successfull"
-                return
-            }
-            
-            Start-Sleep -Seconds 5
-        }
-    }
-    elseif ($installationMethod -eq '.msi')
+    if ($installationMethod -eq '.msi')
     {
         Write-Verbose -Message 'Starting installation of MSI file'
         
-        if (-not $CommandLine)
+        [string]$CommandLine = if (-not $CommandLine)
         {
-            $CommandLine =
             @(
                 "/I `"$Path`"", # Install this MSI
                 '/QN', # Quietly, without a UI
@@ -372,16 +350,14 @@ function Install-LWSoftwarePackage
         }
         else
         {
-            $CommandLine += ' ' + "/I `"$Path`"" # Install this MSI
+            '/I {0} {1}' -f $Path, $CommandLine # Install this MSI
         }
         
         Write-Verbose -Message 'Installation arguments for MSI are:'
         Write-Verbose -Message "`tPath: $Path"
         Write-Verbose -Message "`tLog File: '`t$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetFileNameWithoutExtension($Path)).log'"
         
-        $p = Start-Process -FilePath 'msiexec' -ArgumentList $CommandLine -PassThru
-        Write-Verbose "The installation process ID is $($p.Id)"
-        $p.WaitForExit()
+        $Path = 'msiexec.exe'
     }
     elseif ($installationMethod -eq '.msu')
     {
@@ -393,48 +369,92 @@ function Install-LWSoftwarePackage
         expand.exe -F:* $Path $tempRemoteFolder
         
         $cabFile = (Get-ChildItem -Path $tempRemoteFolder\*.cab -Exclude WSUSSCAN.cab).FullName
-        
-        $pinfo = New-Object -TypeName System.Diagnostics.ProcessStartInfo
-        $pinfo.FileName = 'dism.exe'
-        $pinfo.RedirectStandardError = $true
-        $pinfo.RedirectStandardOutput = $true
-        $pinfo.UseShellExecute = $false
-        $pinfo.Arguments = "/Online /Add-Package /PackagePath:""$cabFile"" /NoRestart /Quiet"
-        
-        $p = New-Object -TypeName System.Diagnostics.Process
-        $p.StartInfo = $pinfo
-        Write-Verbose -Message "Starting process $($pinfo.FileName) $($pinfo.Arguments)"
-        $null = $p.Start()
-        Write-Verbose "The installation process ID is $($p.Id)"
-        $p.WaitForExit()
-        Write-Verbose -Message 'Process exited. Reading output'
-        $p.StandardOutput.ReadToEnd()
-        $p.StandardError.ReadToEnd()
-        Write-Verbose -Message 'Reading output done'
-        
-        Write-Verbose -Message 'Cleaning up source and temp files'
-        
-        Remove-Item -Path $tempRemoteFolder -Recurse -Confirm:$false
-        Remove-Item -Path $Path -Confirm:$false
-        Write-Verbose -Message 'Cleaning up source and temp files done'
+
+        $Path = 'dism.exe'
+        $CommandLine = "/Online /Add-Package /PackagePath:""$cabFile"" /NoRestart /Quiet"
     }
+    elseif ($installationMethod -eq '.exe')
+    { }
     else
     {
         Write-Error -Message 'The extension of the file to install is unknown'
         return
     }
-    
-    Write-Verbose "Exit code of installation process is '$($p.ExitCode)'"
-    if ($p.ExitCode -ne 0 -and $p.ExitCode -ne 3010 -and $p.ExitCode -ne $null)
+
+    if ($AsScheduledJob)
     {
-        Write-Error -Message "Installation process returned error code: $($p.ExitCode). See the log file for more information"
+        $jobName = "AL_$([guid]::NewGuid())"
+        Write-Verbose "In the AsScheduledJob mode, creating scheduled job named '$jobName'"
+            
+        if ($PSVersionTable.PSVersion -lt '3.0')
+        {
+            $processName = [System.IO.Path]::GetFileNameWithoutExtension($Path)
+            $d = "{0:HH:mm}" -f (Get-Date).AddMinutes(1)
+            SCHTASKS /Create /SC ONCE /ST $d /TN $jobName /TR "$Path $CommandLine" /RU "SYSTEM" | Out-Null
+            while (-not ($p))
+            {
+                Start-Sleep -Milliseconds 200
+                $p = Get-Process -Name $processName -ErrorAction SilentlyContinue
+            }
+
+            $p.WaitForExit()
+            Write-Verbose -Message 'Process exited. Reading output'
+
+            $params = @{ Process = $p }
+            $params.Add('Output', "Output cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            $params.Add('Error', "Errors cannot be retrieved using this AsScheduledJob on PowerShell 2.0")
+            New-Object -TypeName PSObject -Property $params
+
+            
+        }
+        else
+        {
+            $scheduledJob = Register-ScheduledJob -ScriptBlock (Get-Command -Name New-InstallProcess).ScriptBlock -ArgumentList $Path, $CommandLine, $UseShellExecute -Name $jobName -RunNow
+            Write-Verbose "ScheduledJob object registered with the ID $($scheduledJob.Id)"
+            
+            while (-not $job)
+            {
+                $job = Get-Job -Name $jobName -ErrorAction SilentlyContinue
+            }        
+            $job | Wait-Job | Out-Null
+            $result = $job | Receive-Job
+        }
+    }
+    else
+    {
+        $result = New-InstallProcess -Path $Path -CommandLine $CommandLine -UseShellExecute $UseShellExecute
+    }
+    
+    Start-Sleep -Seconds 5
+    
+    if ($AsScheduledJob)
+    {
+        if ($PSVersionTable.PSVersion -lt '3.0')
+        {
+            schtasks.exe /DELETE /TN $jobName /F | Out-Null
+        }
+        else
+        {
+            Write-Verbose "Unregistering scheduled job with ID $($scheduledJob.Id)"
+            $scheduledJob | Unregister-ScheduledJob
+        }
+    }
+
+    if ($installationMethod -eq '.msu')
+    {
+        Remove-Item -Path $tempRemoteFolder -Recurse -Confirm:$false
+    }
+        
+    Write-Verbose "Exit code of installation process is '$($result.Process.ExitCode)'"
+    if ($result.Process.ExitCode -ne 0 -and $result.Process.ExitCode -ne 3010 -and $result.Process.ExitCode -ne $null)
+    {
+        throw $result.Error
     }
     else
     {
         Write-Verbose -Message "Installation of '$installationFile' finished successfully"
+        $result.Output
     }
-    
-    Write-Verbose -Message 'Exiting'
 }
 #endregion Install-LWSoftwarePackage
 
@@ -471,7 +491,7 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -482,7 +502,7 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -535,7 +555,7 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -546,7 +566,7 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -NoRestart")
             }
             else
             {
@@ -583,12 +603,12 @@ function Wait-LWLabJob
         [int]$Timeout = 60,
         [switch]$NoNewLine,
         [switch]$NoDisplay,
-        [switch]$ReturnResults
+        [switch]$PassThru
     )
     
     Write-LogFunctionEntry
     
-    if ($ProgressIndicator) { Write-ProgressIndicator }
+    if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
 
     if (-not $Job -and -not $Name)
     {
@@ -619,14 +639,14 @@ function Wait-LWLabJob
             Start-Sleep -Seconds 1
             if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
             {
-                if ($ProgressIndicator) { Write-ProgressIndicator }
+                if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
                 $ProgressIndicatorTimer = (Get-Date)
             }
         }
         until (($jobs.State -notcontains 'Running' -and $jobs.State -notcontains 'AtBreakPoint') -or ((Get-Date) -gt ($Start.AddMinutes($Timeout))))
     }
     
-    if (-not $NoNewLine -and $ProgressIndicator) { Write-ProgressIndicatorEnd }
+    if (-not $NoNewLine -and $ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicatorEnd }
     
     if ((Get-Date) -gt ($Start.AddMinutes($Timeout)))
     {
@@ -640,7 +660,7 @@ function Wait-LWLabJob
             Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
         }
 
-        if ($ReturnResults)
+        if ($PassThru)
         {
             $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
 

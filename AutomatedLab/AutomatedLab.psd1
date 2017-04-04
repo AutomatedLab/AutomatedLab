@@ -1,47 +1,28 @@
 @{
-    # Script module or binary module file associated with this manifest
-    ModuleToProcess = 'AutomatedLab.psm1'
+    RootModule = 'AutomatedLab.psm1'
     
-    # Version number of this module.
-    ModuleVersion = '3.9.0.0'
+    ModuleVersion = '4.0.1.1'
     
-    # ID used to uniquely identify this module
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
-    # Author of this module
-    Author = 'Raimund Andree, Per Pedersen'
+    Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
-    # Company or vendor of this module
     CompanyName = 'AutomatedLab Team'
     
-    # Copyright statement for this module
     Copyright = '2016'
     
-    # Description of the functionality provided by this module
     Description = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
-    # Minimum version of the Windows PowerShell engine required by this module
-    PowerShellVersion = '4.0'
+    PowerShellVersion = '5.0'
     
-    # Name of the Windows PowerShell host required by this module
-    PowerShellHostName = ''
-    
-    # Minimum version of the Windows PowerShell host required by this module
-    PowerShellHostVersion = ''
-    
-    # Minimum version of the .NET Framework required by this module
     DotNetFrameworkVersion = '4.0'
     
-    # Minimum version of the common language runtime (CLR) required by this module
     CLRVersion = '4.0'
     
-    # Script files (.ps1) that are run in the caller's environment prior to importing this module
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
-    # Format files (.ps1xml) to be loaded when importing this module
-    FormatsToProcess = @('AutmatedLab.format.ps1xml')
+    FormatsToProcess = @('AutomatedLab.format.ps1xml')
     
-    # Modules to import as nested modules of the module specified in ModuleToProcess
     NestedModules = @(
         'AutomatedLab.dll',
         'AutomatedLabADDS.psm1',
@@ -51,6 +32,7 @@
         'AutomatedLabInternals.psm1',
         'AutomatedLabVirtualMachines.psm1',
         'AutomatedLabExchange2013.psm1',
+        'AutomatedLabExchange2016.psm1', 
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabNetwork.psm1',
@@ -60,12 +42,21 @@
         'AutomatedLabDsc.psm1'
         'AutomatedLabOffice.psm1'
     )
+
+    RequiredModules = @(
+        'AutomatedLabDefinition',
+        'PSLog',
+        'PSFileTransfer',
+        'AutomatedLabWorker',
+        'HostsFile',
+        'AutomatedLabUnattended'
+    )
     
     # Functions to export from this module
-    FunctionsToExport = 'Get-Lab',
+    FunctionsToExport = @('Get-Lab',
         'Clear-Lab',
         'Set-LabHost',
-        'Get-LabMachine',
+        'Get-LabVM',
         'Get-LabVMStatus',
         'Get-LabSoftwarePackage',
         'Get-LabAvailableOperatingSystem',
@@ -99,10 +90,8 @@
         'Enter-LabPSSession',
         'Get-LabPSSession',
         'New-LabADSubnet',
-        'Install-LabExchange2013Schema',
-        'Install-LabExchange2013DomainPrep',
-        'Install-LabExchange2013Server',
-        'Install-LabExchange2013Prerequisites',
+        'Install-LabExchange2013',
+        'Install-LabExchange2016',
         'Install-LabSqlServers',
         'Install-LabSqlServers2008',
         'Install-LabSqlServers2012',
@@ -115,7 +104,7 @@
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
         'Set-LabInstallationCredential',
-        'Show-LabInstallationTime',
+        'Show-LabDeploymentSummary',
         'Set-LabGlobalNamePrefix',
         'Wait-LabADReady',
         'Add-LabAzureSubscription',
@@ -124,12 +113,10 @@
         'Get-LabAzureLocation',
         'Get-LabAzureDefaultLocation',
         'Set-LabAzureDefaultLocation',
-        'Get-LabAzureDefaultAffinityGroup',
-        'Set-LabAzureDefaultAffinityGroup',
         'Get-LabAzureDefaultStorageAccount',
         'Set-LabAzureDefaultStorageAccount',
-		'Get-LabAzureResourceGroup',
-		'Update-LabAzureSettings',
+        'Get-LabAzureResourceGroup',
+        'Update-LabAzureSettings',
         'Wait-LabVMRestart',
         'Get-LabVMUptime',
         'Install-LabRootDcs',
@@ -151,6 +138,7 @@
         'Set-LabDefaultVirtualizationEngine',
         'Set-LabGlobalNamePrefix',
         'Get-LabSourcesLocation',
+        'Get-LabSourcesLocationInternal',
         'Get-LabVariable',
         'Remove-LabVariable',
         '*-LabAzureService',
@@ -182,13 +170,12 @@
         'Disable-LabVMFirewallGroup',
         'Dismount-LabIsoImage',
         'Test-Port',
-        'Add-LabAzureProfile',
         'Install-LabDnsForwarder',
-		'Install-LabADDSTrust',
+        'Install-LabADDSTrust',
         'Get-LabVirtualNetwork',
         'Set-LabGlobalInstallationCredential',
         'Get-StringSection',
-		'Add-StringIncrement',
+        'Add-StringIncrement',
         'Get-LabInternetFile',
         'Get-FullMesh',
         'Get-NextOid',
@@ -198,29 +185,21 @@
         'Add-FunctionToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
-        'Test-LabMachineInternetConnectivity'
-    
-    # List of all modules packaged with this module
-    ModuleList = @(
-        'AutomatedLab.psm1',
-        'AutomatedLabADDS.psm1',
-        'AutomatedLabADCS.psm1',
-        'AutomatedLabDisks.psm1',
-        'AutomatedLabInternals.psm1',
-        'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabExchange2013.psm1',
-        'AutomatedLabSQL.psm1',
-        'AutomatedLabNetwork.psm1',
-        'AutomatedLabAzure.psm1',
-        'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1'
+        'Test-LabMachineInternetConnectivity',
+        'Add-LabAzureProfile',
+        'New-LabAzureLabSourcesStorage',
+        'Get-LabAzureLabSourcesStorage',
+        'Remove-LabAzureLabSourcesStorage',
+        'Test-LabAzureLabSourcesStorage',
+        'Sync-LabAzureLabSources',
+        'Test-LabSourcesOnAzureStorage',
+        'Test-LabPathIsOnLabAzureLabSourcesStorage',
+        'Remove-LabAzureResourceGroup'
     )
     
     # List of all files packaged with this module
     FileList = @(
-        'AutmatedLab.format.ps1xml',
+        'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
         'AutomatedLab.psd1', 
         'AutomatedLab.psm1', 
@@ -229,7 +208,8 @@
         'AutomatedLabDisks.psm1',
         'AutomatedLabInternals.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabExchange.psm1',
+        'AutomatedLabExchange2013.psm1',
+        'AutomatedLabExchange2016.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabNetwork.psm1',
         'AutomatedLabAzure.psm1', 
@@ -239,7 +219,7 @@
         'AutomatedLabOffice.psm1'
     )
     
-    # Private data to pass to the module specified in ModuleToProcess
+    # Private data to pass to the module specified in RootModule
     PrivateData = @{
         #Timeouts
         Timeout_WaitLabMachine_Online = 60
@@ -262,7 +242,7 @@
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
 
-        DoNotUseGetHostEntryInNewLabPSSession = $false
+        DoNotUseGetHostEntryInNewLabPSSession = $true
 
         #General VM settings
         DisableWindowsDefender = $true
@@ -285,5 +265,10 @@
         #SysInternals
         SysInternalsUrl = 'https://technet.microsoft.com/en-us/sysinternals/bb842062'
         SysInternalsDownloadUrl = 'https://download.sysinternals.com/files/SysinternalsSuite.zip'
+
+        #.net Framework
+        dotnet452DownloadLink = 'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
+        dotnet46DownloadLink = 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe'
+        dotnet462DownloadLink = 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
     }
 }

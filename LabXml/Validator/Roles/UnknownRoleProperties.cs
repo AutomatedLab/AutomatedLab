@@ -23,10 +23,16 @@ namespace AutomatedLab
             {
                 foreach (var role in machine.Roles.Where(r => validRoleProperties.ContainsKey(r.Name.ToString())))
                 {
-                    var unknownProperties = role.Properties.Keys.Where(p =>
-                        ((object[])validRoleProperties[role.Name.ToString()])
-                        .Cast<string>()
-                        .Where(vp => vp == p).Count() == 0);
+                    var validKeys = new List<string>();
+                    var keysFromModule = validRoleProperties[role.Name.ToString()];
+
+                    if (keysFromModule.GetType().IsArray)
+                        validKeys.AddRange(((object[])keysFromModule).Cast<string>());
+                    else
+                        validKeys.Add((string)keysFromModule);
+
+
+                    var unknownProperties = role.Properties.Keys.Where(k => !validKeys.Contains(k));
 
                     foreach (var unknownProperty in unknownProperties)
                     {

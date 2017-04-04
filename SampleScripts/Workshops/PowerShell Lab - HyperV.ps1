@@ -6,8 +6,6 @@ $labName = 'POSH'
 #----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
 #--------------------------------------------------------------------------------------------------------------------
 
-$labSources = Get-LabSourcesLocation
-
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
@@ -47,7 +45,7 @@ Add-LabMachineDefinition -Name POSHWeb1 -Memory 512MB -Roles WebServer -IpAddres
 
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB
 #SQL server with demo databases
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564.iso
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
 Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles SQLServer2014 -IpAddress 192.168.30.52 -PostInstallationActivity $postInstallActivity
 #>
@@ -88,6 +86,11 @@ $cmd = {
 Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabMachine -ComputerName POSHFS1) -ScriptBlock $cmd
 #endregion
 
-Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName PoshClient1
+if (Get-LabMachine -ComputerName POSHClient1)
+{
+	Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
+	Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1
+	Restart-LabVM -ComputerName POSHClient1 -Wait
+}
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary -Detailed

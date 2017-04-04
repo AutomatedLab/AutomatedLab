@@ -290,8 +290,8 @@ namespace GPO
             /// <summary>
             /// Constructor.
             /// </summary>
-            /// <param name=”remoteMachineName”>Target machine name to operate group policy</param>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <param name="remoteMachineName">Target machine name to operate group policy</param>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public GroupPolicyObjectHandler(String remoteMachineName)
             {
                 groupPolicyObject = new GroupPolicyObject();
@@ -321,7 +321,7 @@ namespace GPO
             /// Retrieves the display name for the GPO.
             /// </summary>
             /// <returns>Display name</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetDisplayName()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -340,7 +340,7 @@ namespace GPO
             /// Retrieves the computer name of the remote GPO.
             /// </summary>
             /// <returns>Machine name</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetMachineName()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -359,7 +359,7 @@ namespace GPO
             /// Retrieves the options for the GPO.
             /// </summary>
             /// <returns>Options flag</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public Int32 GetOptions()
             {
                 try
@@ -376,7 +376,7 @@ namespace GPO
             /// Retrieves the path to the GPO.
             /// </summary>
             /// <returns>The path to the GPO</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public String GetPath()
             {
                 StringBuilder pszName = new StringBuilder(Byte.MaxValue);
@@ -395,7 +395,7 @@ namespace GPO
             /// Retrieves a handle to the root of the registry key for the machine section.
             /// </summary>
             /// <returns>A handle to the root of the registry key for the specified GPO computer section</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public UInt32 GetMachineRegistryKey()
             {
                 UInt32 handle;
@@ -414,7 +414,7 @@ namespace GPO
             /// Retrieves a handle to the root of the registry key for the user section.
             /// </summary>
             /// <returns>A handle to the root of the registry key for the specified GPO user section</returns>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public UInt32 GetUserRegistryKey()
             {
                 UInt32 handle;
@@ -432,9 +432,9 @@ namespace GPO
             /// <summary>
             /// Saves the specified registry policy settings to disk and updates the revision number of the GPO.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-            /// <param name=”isAdd”>Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
-            /// <exception cref=”System.Runtime.InteropServices.COMException”>Throw when com execution throws exceptions</exception>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+            /// <param name="isAdd">Specifies whether this is an add or delete operation. If this parameter is FALSE, the last policy setting for the specified extension pGuidExtension is removed. In all other cases, this parameter is TRUE.</param>
+            /// <exception cref="System.Runtime.InteropServices.COMException">Throw when com execution throws exceptions</exception>
             public void Save(bool isMachine, bool isAdd)
             {
                 try
@@ -454,10 +454,10 @@ namespace GPO
             /// <summary>
             /// Set the group policy value.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
-            /// <param name=”subKey”>Group policy config full path</param>
-            /// <param name=”valueName”>Group policy config key name</param>
-            /// <param name=”value”>If value is null, it will envoke the delete method</param>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, the computer policy settings are saved. Otherwise, the user policy settings are saved.</param>
+            /// <param name="subKey">Group policy config full path</param>
+            /// <param name="valueName">Group policy config key name</param>
+            /// <param name="value">If value is null, it will envoke the delete method</param>
             /// <returns>Whether the config is successfully set</returns>
             public ResultCode SetGroupPolicy(bool isMachine, String subKey, String valueName, object value)
             {
@@ -468,7 +468,7 @@ namespace GPO
 
                 if (null == value)
                 {
-                    // check the key’s existance
+                    // check the key's existance
                     if (RegOpenKeyEx((UIntPtr)gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                     {
                         RegCloseKey((UInt32)hKey);
@@ -559,9 +559,9 @@ namespace GPO
             /// <summary>
             /// Get the config of the group policy.
             /// </summary>
-            /// <param name=”isMachine”>Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
-            /// <param name=”subKey”>Group policy config full path</param>
-            /// <param name=”valueName”>Group policy config key name</param>
+            /// <param name="isMachine">Specifies the registry policy settings to be saved. If this parameter is TRUE, get from the computer policy settings. Otherwise, get from the user policy settings.</param>
+            /// <param name="subKey">Group policy config full path</param>
+            /// <param name="valueName">Group policy config key name</param>
             /// <returns>The setting of the specified config</returns>
             public object GetGroupPolicy(bool isMachine, String subKey, String valueName)
             {
@@ -573,7 +573,7 @@ namespace GPO
                 if (RegOpenKeyEx(gphKey, subKey, 0, RegSAM.QueryValue, out hKey) == 0)
                 {
                     UInt32 type;
-                    byte[] data = new byte[size];  // to store retrieved the value’s data
+                    byte[] data = new byte[size];  // to store retrieved the value's data
 
                     if (RegQueryValueEx(hKey, valueName, 0, out type, data, ref size) == 234)
                     {
@@ -650,10 +650,10 @@ namespace GPO
         /// Set policy config
         /// It will start a single thread to set group policy.
         /// </summary>
-        /// <param name=”isMachine”>Whether is machine config</param>
-        /// <param name=”configFullPath”>The full path configuration</param>
-        /// <param name=”configKey”>The configureation key name</param>
-        /// <param name=”value”>The value to set, boxed with proper type [ String, Int32 ]</param>
+        /// <param name="isMachine">Whether is machine config</param>
+        /// <param name="configFullPath">The full path configuration</param>
+        /// <param name="configKey">The configureation key name</param>
+        /// <param name="value">The value to set, boxed with proper type [ String, Int32 ]</param>
         /// <returns>Whether the config is successfully set</returns>
         [MethodImplAttribute(MethodImplOptions.Synchronized)]
         public static ResultCode SetGroupPolicy(bool isMachine, String configFullPath, String configKey, object value)
@@ -669,11 +669,11 @@ namespace GPO
         /// Thread start for seting group policy.
         /// Called by public static ResultCode SetGroupPolicy(bool isMachine, WinRMGPConfigName configName, object value)
         /// </summary>
-        /// <param name=”values”>
-        /// values[0] – isMachine<br/>
-        /// values[1] – configFullPath<br/>
-        /// values[2] – configKey<br/>
-        /// values[3] – value<br/>
+        /// <param name="values">
+        /// values[0] - isMachine<br/>
+        /// values[1] - configFullPath<br/>
+        /// values[2] - configKey<br/>
+        /// values[3] - value<br/>
         /// </param>
         private static void SetGroupPolicy(object values)
         {
@@ -692,9 +692,9 @@ namespace GPO
         /// Get policy config.
         /// It will start a single thread to get group policy
         /// </summary>
-        /// <param name=”isMachine”>Whether is machine config</param>
-        /// <param name=”configFullPath”>The full path configuration</param>
-        /// <param name=”configKey”>The configureation key name</param>
+        /// <param name="isMachine">Whether is machine config</param>
+        /// <param name="configFullPath">The full path configuration</param>
+        /// <param name="configKey">The configureation key name</param>
         /// <returns>The group policy setting</returns>
         [MethodImplAttribute(MethodImplOptions.Synchronized)]
         public static object GetGroupPolicy(bool isMachine, String configFullPath, String configKey)
@@ -710,10 +710,10 @@ namespace GPO
         /// Thread start for geting group policy.
         /// Called by public static object GetGroupPolicy(bool isMachine, WinRMGPConfigName configName)
         /// </summary>
-        /// <param name=”values”>
-        /// values[0] – isMachine<br/>
-        /// values[1] – configFullPath<br/>
-        /// values[2] – configKey<br/>
+        /// <param name="values">
+        /// values[0] - isMachine<br/>
+        /// values[1] - configFullPath<br/>
+        /// values[2] - configKey<br/>
         /// </param>
         public static void GetGroupPolicy(object values)
         {
@@ -734,6 +734,7 @@ namespace GPO
 #region Get-Type (helper function for creating generic types)
 function Get-Type
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param (
         [Parameter(Position = 0, Mandatory = $true)]
         [string] $GenericType,
@@ -759,6 +760,7 @@ function Get-Type
 #region Invoke-Ternary
 function Invoke-Ternary 
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param
     (
         [scriptblock]
@@ -786,6 +788,7 @@ Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary 
 #region Test-IsAdministrator
 function Test-IsAdministrator
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param ()
     
     $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
@@ -796,165 +799,24 @@ function Test-IsAdministrator
 #region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
 
-#region Write-ProgressIndicator
-function Write-ProgressIndicator
-{
-    Write-ScreenInfo -Message '.' -NoNewline
-}
-#endregion Write-ProgressIndicator
-
-#region Write-ProgressIndicatorEnd
-function Write-ProgressIndicatorEnd
-{
-    Write-ScreenInfo -Message '.'
-}
-#endregion Write-ProgressIndicatorEnd
-
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     Remove-Lab
     Remove-Module *
 }
 #endregion Reset-AutomatedLab
 
-#region Write-ScreenInfo
-function Write-ScreenInfo
-{
-    param
-    (
-        [Parameter(Mandatory, Position = 1)]
-        [string[]]$Message,
-        
-        [Parameter(Position = 2)]
-        [timespan]$TimeDelta,
-        
-        [Parameter(Position = 3)]
-        [timespan]$TimeDelta2,
-        
-        [ValidateSet('Error', 'Warning', 'Info', 'Verbose', 'Debug')]
-        [string]$Type = 'Info',
-        
-        [switch]$NoNewLine,
-        
-        [int]$Indent,
-        
-        [switch]$DeployStart,
-        
-        [switch]$TaskStart,
-        
-        [switch]$TaskEnd
-    )
-    
-    if ($DeployStart)
-    {
-        $Global:scriptStart = (Get-Date)
-    }
-    if (-not $Global:taskStart)
-    {
-        [datetime[]]$Global:taskStart = @()
-        $Global:taskStart += (Get-Date)
-    }
-    elseif ($TaskStart)
-    {
-        $Global:taskStart += (Get-Date)
-    }
-    elseif ($TaskEnd)
-    {
-        $TimeDelta2 = ((Get-Date) - $Global:taskStart[-1])
-        
-        $newSize = ($Global:taskStart).Length-1
-        if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length-1)
-    }
-    
-    
-    if (-not $TimeDelta -and $Global:scriptStart)  { [timespan]$TimeDelta  = (Get-Date) - $Global:scriptStart }
-    if (-not $TimeDelta2 -and $Global:taskStart[-1]) { [timespan]$TimeDelta2 = (Get-Date) - $Global:taskStart[-1] }
-    
-    $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f ($TimeDelta.Hours), ($TimeDelta.Minutes), ($TimeDelta.Seconds)
-    $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f ($TimeDelta2.Hours), ($TimeDelta2.Minutes), ($TimeDelta2.Seconds), ($TimeDelta2.Milliseconds)
-    
-    $TimeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f ((Get-Date).Hour), ((Get-Date).Minute), ((Get-Date).Second)
-    
-    if ($NoNewLine)
-    {
-        if ($Global:labDeploymentNoNewLine)
-        {
-            switch ($Type)
-            {
-                Error   { Write-Host $message -NoNewline -ForegroundColor Red}
-                Warning { Write-Host $message -NoNewline -ForegroundColor DarkYellow }
-                Info    { Write-Host $message -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
-            }
-        }
-        else
-        {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
-
-            switch ($Type)
-            {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
-            }
-
-        }
-        $Global:labDeploymentNoNewLine = $True
-    }
-    else
-    {
-        if ($Global:labDeploymentNoNewLine)
-        {
-            switch ($Type)
-            {
-                Error   { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red } }
-                Warning { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow } }
-                Info    { $Message | ForEach-Object { Write-Host $_ } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
-                Debug   { if ($DebugPreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
-            }
-        }
-        else
-        {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
-            switch ($Type)
-            {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
-            }
-        }
-        $Global:labDeploymentNoNewLine = $False
-    }
-
-    if ($TaskStart)
-    {
-        $Global:indent++
-    }
-    
-    if ($TaskEnd)
-    {
-        $Global:indent--
-        if ($Global:indent -lt 0) { $Global:indent = 0 }
-    }
-    
-}
-#endregion function Write-ScreenInfo
-
 #region Save-Hashes
 function Save-Hashes
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -983,6 +845,7 @@ function Save-Hashes
 #region Test-FileHashes
 function Test-FileHashes
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1018,6 +881,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1031,6 +895,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1054,6 +919,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1070,6 +936,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1086,6 +953,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1255,6 +1123,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     Invoke-LabCommand -ComputerName (Get-LabMachine) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path c:\unattend.xml
@@ -1267,6 +1136,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1304,6 +1174,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param
     (
@@ -1341,6 +1212,7 @@ function Disable-LabVMFirewallGroup
 #region Test-Port
 function Test-Port
 {  
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
 
     Param(  
@@ -1354,8 +1226,8 @@ function Test-Port
 
         [int]$Delay = 500,
         
-        [int]$TcpTimeout=1000,
-        [int]$UdpTimeout=1000,
+        [int]$TcpTimeout = 1000,
+        [int]$UdpTimeout = 1000,
         [switch]$Tcp,
         [switch]$Udp
     )
@@ -1476,6 +1348,7 @@ function Test-Port
 #region Get-StringSection
 function Get-StringSection
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$String,
@@ -1496,6 +1369,7 @@ function Get-StringSection
 #region Add-StringIncrement
 function Add-StringIncrement
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [string]$String
@@ -1597,6 +1471,7 @@ $meshType = @"
 "@
 function Get-FullMesh
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
         [Parameter(Mandatory = $true)]
         [ValidateNotNullOrEmpty()]
@@ -1634,79 +1509,129 @@ function Get-FullMesh
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [string]$Uri,
 
-        [Parameter(Mandatory)]
-        $Path,
+        [Parameter(Mandatory = $true)]
+        [string]$Path,
 
-        [switch]$Force
+        [switch]$Force,
+        
+        [switch]$PassThru
     )
     
-    Write-LogFunctionEntry
-
-    if ((Test-Path -Path $Path) -and -not $Force)
+    function Get-LabInternetFileInternal
     {
-        Write-Error "The file '$Path' does already exist"
-        return
-    }
+        param(
+            [Parameter(Mandatory = $true)]
+            [string]$Uri,
 
-    if ((Test-Path -Path $Path) -and $Force)
-    {
-        Remove-Item -Path $Path -Force
+            [Parameter(Mandatory = $true)]
+            [string]$Path,
+
+            [switch]$Force
+        )
+        
+        $internalUri = New-Object System.Uri($Uri)
+        $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+    
+        if (Test-Path -Path $Path -PathType Container)
+        {
+            $Path = Join-Path -Path $Path -ChildPath $fileName
+        }
+
+        if ((Test-Path -Path $Path) -and -not $Force)
+        {
+            Write-Warning "The file '$Path' does already exist, skipping the download"
+        }
+        else
+        {
+            if ((Test-Path -Path $Path) -and $Force)
+            {
+                Remove-Item -Path $Path -Force
+            }
+    
+            Write-Verbose "Uri is '$Uri'"
+            Write-Verbose "Path os '$Path'"
+
+            try
+            {
+                $bytesProcessed = 0
+                $request = [System.Net.WebRequest]::Create($Uri)
+        
+                if ($request)
+                {
+                    Write-Verbose 'WebRequest created'
+                    $response = $request.GetResponse()
+                    if ($response)
+                    {
+                        Write-Verbose 'Responce received'
+                        $remoteStream = $response.GetResponseStream()
+ 
+                        $localStream = [System.IO.File]::Create($Path)
+ 
+                        $buffer = New-Object System.Byte[] 1024
+                        $bytesRead = 0
+ 
+                        do
+                        {
+                            $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                            $localStream.Write($buffer, 0, $bytesRead)
+                            $bytesProcessed += $bytesRead
+                        
+                            $percentageCompleted = $bytesProcessed / $response.ContentLength
+                            Write-Progress -Activity "Downloading file '$fileName'" `
+                            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                            -PercentComplete ($percentageCompleted * 100)
+                        
+                        } while ($bytesRead -gt 0)
+                    }
+                
+                    $response
+                }
+            }
+            catch
+            {
+                Write-Error -Exception $_.Exception
+            }
+            finally
+            {
+    
+                if ($response) { $response.Close() }
+                if ($remoteStream) { $remoteStream.Close() }
+                if ($localStream) { $localStream.Close() }
+            }
+        }
     }
     
-    $internalUri = New-Object System.Uri($Uri)
-    $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-
-    try
+    $start = Get-Date
+    
+    if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
-        $start = Get-Date
-        
-        #Determine length of the file to download
-        $webclient = New-Object System.Net.WebClient
-        $webclient.OpenRead($internalUri) | Out-Null
-        $fileLength = $webclient.ResponseHeaders['Content-Length']
-        Write-Verbose ("File Size of '{0}' is {1:N2}MB" -f $fileName, $fileLength)
-        $webclient.Dispose()
-        
-        Write-Verbose 'Starting download'
-        $job = Start-Job -Name "File Download" -ScriptBlock {
-            $webclient = New-Object System.Net.WebClient
-            $webclient.DownloadFile($args[0], $args[1])
-            $webclient.Dispose()
-        } -ArgumentList $internalUri, $Path
-        
-        Start-Sleep -Milliseconds 500 #to allow the WebClient create the file
-        
-        Write-Verbose 'Entering wait loop'
-        do
-        {
-            $currentLength = (Get-Item -Path $Path).Length
-            $percentageCompleted = $currentLength / $fileLength
-            Write-Progress -Activity "Downloading file '$fileName'" `
-            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($currentLength / 1MB), ($fileLength / 1MB)) `
-            -PercentComplete ($percentageCompleted * 100)
-            
-            Start-Sleep -Milliseconds 200
-        } while ((Get-Item -Path $Path).Length -lt $fileLength)
-        Write-Verbose 'Wait loop finished'
-        
-        $result = $job | Receive-Job
-        
-        $end = Get-Date
-        Write-Verbose "Web Client Sync: $($end - $start)"
+        $machine = Get-LabMachine -IsRunning | Select-Object -First 1
+        Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
+        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru
+    }
+    else
+    {
+        Write-Verbose "Target path is local, invoking the copy job locally."
+        $PSBoundParameters.Remove('PassThru') | Out-Null
+        $result = Get-LabInternetFileInternal @PSBoundParameters
+    }
+    
+    $end = Get-Date
+    Write-Verbose "Download has taken: $($end - $start)"
+
+    if ($PassThru)
+    {
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            Length = $fileLength
+            Length = $result.ContentLength
         }
-    }
-    catch
-    {
-        Write-Error -Exception $_.Exception
     }
 }
 #endregion Get-LabInternetFile
@@ -1714,11 +1639,24 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     param(
-        [string]$Path = (Get-LabSourcesLocation)
+        [string]$Path = $global:labSources
     )
 
     Write-LogFunctionEntry
+
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+    if(-not $lab)
+    {
+        $lab = Get-LabDefinition -ErrorAction SilentlyContinue
+    }
+
+    if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
+    {
+        Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
+        return
+    }
 
     if (-not (Test-Path -Path $Path))
     {
@@ -1759,25 +1697,7 @@ function Unblock-LabSources
 #region Add-FunctionToPSSession
 function Add-FunctionToPSSession
 {
-    <#
-            .SYNOPSIS
-            Creates a function in the remote sessions based on the local definition of the specified function.
-                        
-            .PARAMETER Session
-            Session(s) to define the function in
-            .PARAMETER FunctionInfo
-            The function info as returned by Get-Command that defines the function
-        
-            .EXAMPLE
-            function test-fubar { write "cool" }
-            $session = New-PSSession -ComputerName someserver
-            Get-Command test-fubar | Add-FunctionToPSSession $session
-            Invoke-Command -session $session { test-fubar }
-        
-            .NOTES
-            Author: Dan Thompson, Tim Bertalot
-    #>
-
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'
@@ -1832,22 +1752,7 @@ function Add-FunctionToPSSession
 #region Add-VariableToPSSession
 function Add-VariableToPSSession
 {
-    <#
-            .SYNOPSIS
-            Creates a variable in the remote sessions based on the local definition of the specified variable.
-                        
-            .PARAMETER Session
-            Session(s) to define the function in
-            .PARAMETER FunctionInfo
-            The function info as returned by Get-Command that defines the function
-        
-            .EXAMPLE
-            function test-fubar { write "cool" }
-            $session = New-PSSession -ComputerName someserver
-            Get-Command test-fubar | Add-FunctionToPSSession $session
-            Invoke-Command -session $session { test-fubar }
-    #>
-
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None'
@@ -1909,6 +1814,7 @@ function Add-VariableToPSSession
 #region Sync-Parameter
 function Sync-Parameter
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
     param (
         [Parameter(Mandatory)]
@@ -1953,6 +1859,7 @@ function Sync-Parameter
 
 function Set-LabVMDescription
 {
+    # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,
@@ -1982,8 +1889,53 @@ function Set-LabVMDescription
     Write-LogFunctionExit
 }
 
+function Get-LabSourcesLocationInternal
+{
+    param
+    (
+        [switch]$Local
+    )
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+    $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
+
+    $defaultEngine = 'HyperV'
+    if ($lab)
+    {
+        $defaultEngine = $lab.DefaultVirtualizationEngine
+    }
+    elseif ($labDefinition)
+    {
+        $defaultEngine = $labDefinition.DefaultVirtualizationEngine
+    }
+
+    if ($defaultEngine -eq 'HyperV' -or $Local)
+    {
+        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
+
+        foreach ($drive in $hardDrives)
+        {
+            if (Test-Path -Path "$drive\LabSources")
+            {
+                "$drive\LabSources"
+            }
+        }
+    }
+    elseif ($defaultEngine -eq 'Azure')
+    {
+        try
+        {
+            (Get-LabAzureLabSourcesStorage -ErrorAction Stop).Path
+        }
+        catch
+        {
+            Get-LabSourcesLocationInternal -Local
+        }
+    }
+    else
+    {
+        Get-LabSourcesLocationInternal -Local
+    }
+}
+
 Add-Type -TypeDefinition $meshType
-
-New-Alias -Name ral -Value Reset-AutomatedLab -Scope Global -ErrorAction SilentlyContinue
-
 Add-Type -TypeDefinition $gpoType -IgnoreWarnings

@@ -1,6 +1,7 @@
 #region New-LabNetworkSwitches
 function New-LabNetworkSwitches
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
 	
@@ -53,6 +54,7 @@ function New-LabNetworkSwitches
 #region Remove-LabNetworkSwitches
 function Remove-LabNetworkSwitches
 {
+	# .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param ()
 	
@@ -87,12 +89,6 @@ function Remove-LabNetworkSwitches
             Remove-LWNetworkSwitch -Name $virtualNetwork.Name
         }
         Write-Verbose '...done'
-    }
-            
-    $virtualNetworks = $Script:data.VirtualNetworks | Where-Object HostType -eq Azure
-    if ($virtualNetworks)
-    {
-        Remove-LWAzureNetworkSwitch -VirtualNetwork $virtualNetworks
     }
 		
     Write-Verbose 'done'

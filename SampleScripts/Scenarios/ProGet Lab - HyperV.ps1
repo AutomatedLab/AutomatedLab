@@ -1,5 +1,5 @@
 $labName = 'ProGet'
-$proGetLink = 'http://inedo.com/proget/download/nosql/4.6.4'
+$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.4'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -7,19 +7,14 @@ $proGetLink = 'http://inedo.com/proget/download/nosql/4.6.4'
 #----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
 #--------------------------------------------------------------------------------------------------------------------
 
-$labSources = Get-LabSourcesLocation
 
-#create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
-#make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.110.0/24
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
-#and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
-#these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 Set-LabInstallationCredential -Username Install -Password Somepass1
 
 #defining default parameter values, as these ones are the same for all the machines
@@ -28,35 +23,27 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.110.10'
-    'Add-LabMachineDefinition:DnsServer2' = '192.168.110.11'
     'Add-LabMachineDefinition:Gateway' = '192.168.110.50'
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
 }
 
-#The PostInstallationActivity is just creating some users
-$postInstallActivity = @()
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
-Add-LabMachineDefinition -Name PGDC1 -Memory 512MB `
--Roles RootDC -IpAddress 192.168.110.10 -PostInstallationActivity $postInstallActivity
+#DC
+$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+Add-LabMachineDefinition -Name PGDC1 -Memory 512MB -Roles RootDC -IpAddress 192.168.110.10 -PostInstallationActivity $postInstallActivity
 
 #router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.110.50
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
-Add-LabMachineDefinition -Name PGRouter -Memory 512MB `
--Roles Routing -NetworkAdapter $netAdapter
+Add-LabMachineDefinition -Name PGRouter -Memory 512MB -Roles Routing -NetworkAdapter $netAdapter
 
 #web server
-Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB `
--Roles WebServer -IpAddress 192.168.110.51
+Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 192.168.110.51
 
 
 #SQL server
 Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564.iso
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
-Add-LabMachineDefinition -Name PGSql1 -Memory 2GB `
--Roles SQLServer2014 -IpAddress 192.168.110.52 -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name PGSql1 -Memory 2GB -Roles SQLServer2014 -IpAddress 192.168.110.52
 
 #client
 Add-LabMachineDefinition -Name PGClient1 -Memory 2GB -OperatingSystem 'Windows 10 Pro' -IpAddress 192.168.110.54
@@ -68,10 +55,12 @@ $machines = Get-LabMachine
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
-Checkpoint-LabVM -All -SnapshotName 1
-Show-LabInstallationTime
+
+Show-LabDeploymentSummary -Detailed
 
 #region ProGet Installation
+Checkpoint-LabVM -All -SnapshotName 'Before ProGetInstallation'
+
 $webServer = Get-LabMachine -Role WebServer | Select-Object -First 1
 $sqlServer = Get-LabMachine -Role SQLServer2014, SQLServer2012 | Select-Object -First 1
 $client = Get-LabMachine | Where-Object { $_.OperatingSystem.Version.Major -eq 10 }
@@ -98,7 +87,7 @@ if (-not (Test-Path -Path $labSources\SoftwarePackages\ProGetSetup.exe))
     Invoke-WebRequest -Uri $proGetLink -OutFile $installPath
 }
 
-Install-LabSoftwarePackage -ComputerName $webServer -Path $installPath -CommandLine $installArgs -UseCredSsp
+Install-LabSoftwarePackage -ComputerName $webServer -Path $installPath -CommandLine $installArgs
 
 $sqlQuery = @'
 USE [ProGet]
@@ -119,31 +108,31 @@ GO
 DECLARE @roleId int
 
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles] 
-	WHERE [Role_Name] = 'Administer'
+    FROM [ProGet].[dbo].[Roles] 
+    WHERE [Role_Name] = 'Administer'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
+    VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Domain Users the 'Publish Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles] 
-	WHERE [Role_Name] = 'Publish Packages'
+    FROM [ProGet].[dbo].[Roles] 
+    WHERE [Role_Name] = 'Publish Packages'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
+    VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Anonymous access the 'View & Download Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-	FROM [ProGet].[dbo].[Roles]
-	WHERE [Role_Name] = 'View & Download Packages'
+    FROM [ProGet].[dbo].[Roles]
+    WHERE [Role_Name] = 'View & Download Packages'
 
 INSERT INTO [ProGet].[dbo].[Privileges] 
-	VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
+    VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
 
 --INSERT INTO [ProGet].[dbo].[Configuration] 
@@ -151,14 +140,14 @@ GO
 
 -- Change user directory to 'Active Directory with Multiple Domains user directory'
 UPDATE [ProGet].[dbo].[Configuration]
-	SET [Value_Text] = 3
-	WHERE [Key_Name] = 'Web.UserDirectoryId'
+    SET [Value_Text] = 3
+    WHERE [Key_Name] = 'Web.UserDirectoryId'
 GO
 
 -- remove the connector to the public PowerShell Gallery on the default feed
 DELETE FROM [ProGet].[dbo].[FeedConnectors] WHERE [Feed_Id] = (SELECT [Feed_Id]
-	FROM [ProGet].[dbo].[Feeds]
-	WHERE [ProGet].[dbo].[Feeds].[Feed_Name] = 'Default')
+    FROM [ProGet].[dbo].[Feeds]
+    WHERE [ProGet].[dbo].[Feeds].[Feed_Name] = 'Default')
 GO
 '@ -f $webServer, $webServer.DomainName, $flatDomainName
 
@@ -167,9 +156,8 @@ Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -Script
     $args[0] | Out-File C:\ProGetQuery.sql
 
     #for some reason the user is added to the ProGet database when this is only invoked once
-    Invoke-Sqlcmd -Query (Get-Content C:\ProGetQuery.sql -Raw)
-    Invoke-Sqlcmd -Query (Get-Content C:\ProGetQuery.sql -Raw)
-} -UseCredSsp -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
+    sqlcmd.exe -i C:\ProGetQuery.sql | Out-Null
+} -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
 
 Write-Host "Restarting '$webServer'"
 Restart-LabVM -ComputerName $webServer -Wait
@@ -228,5 +216,5 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName $client -Scri
     (New-ScriptFileInfo -Path C:\SomeScript2.ps1 -Version 1.0 -Author Me -Description Test -PassThru -Force) + 'Get-Date' | Out-File C:\SomeScript.ps1
     Publish-Script -Path C:\SomeScript.ps1 -Repository Internal -NuGetApiKey 'Install@Contoso.com:Somepass1'
 
-} -ArgumentList $webServer -UseCredSsp
+} -ArgumentList $webServer
 #endregion ProGet Installation

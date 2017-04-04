@@ -1,12 +1,33 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
 
-  <Product Name='AutomatedLab !(bind.FileVersion.AutomatedLabDll)' Id='cd5019ad-4d53-440c-8772-6f152405ed36' UpgradeCode='a6ec942f-a805-4d87-a87c-9d5a0916d06f'
-  Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='Raimund Andree, Per Pedersen'>
+  <Product
+    Name='AutomatedLab'
+    Id='*'
+    UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149'
+    Language='1033'
+    Codepage='1252'
+    Version='!(bind.FileVersion.AutomatedLabDll)'
+    Manufacturer='AutomatedLab Team' >
 
-    <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer"
-      Comments='AutomatedLab Modules Installer' Manufacturer='Raimund Andree, Per Pedersen'
-      InstallerVersion='100' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
+    <Package Id='*'
+      Keywords='Installer'
+      Description="AutomatedLab Installer"
+      Comments='AutomatedLab Modules Installer'
+      Manufacturer='AutomatedLabTeam'
+      InstallerVersion='200'
+      Languages='1033'
+      Compressed='yes'
+      SummaryCodepage='1252'
+      InstallScope='perMachine' />
+
+    <Property Id='LABSOURCESDIR'>
+      <RegistrySearch Id='LabSourcesDirRegSearch' Root='HKLM'
+                      Key='SOFTWARE\[Manufacturer]\[ProductName]'
+                      Name='LabSourcesFolder' Type='raw' />
+    </Property>
+    
+    <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
 
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
     <Directory Id='TARGETDIR' Name='SourceDir'>
@@ -20,14 +41,12 @@
             <Directory Id="InstallFolder_PSFileTransfer" Name="PSFileTransfer">
               <Component Id="PSFileTransferComponent" Guid="d7f9e425-2cb5-4c6e-ac47-12e820650e92">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Install" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSFileTransferComponent"/>
 
                 <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psm1" />
                 <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psd1" />
 
-                <RemoveFolder Id="RemoveFolderPSFileTransfer" Directory="InstallFolder_PSFileTransfer" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderPSFileTransfer" Directory="InstallFolder_PSFileTransfer" On="both"/>
 
               </Component>
             </Directory>
@@ -35,14 +54,12 @@
             <Directory Id="InstallFolder_PSLog" Name="PSLog">
               <Component Id="PSLogComponent" Guid="1c759c12-ecfd-4a09-b82c-5c8c4ab4266b">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Install" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSLogComponent" />
 
                 <File Source="$(var.SolutionDir)PSLog\PSLog.psm1" />
                 <File Source="$(var.SolutionDir)PSLog\PSLog.psd1" />
 
-                <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="both"/>
 
               </Component>
             </Directory>
@@ -50,14 +67,12 @@
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
               <Component Id="HostsFileComponent" Guid="0d760600-ad78-43c0-8b19-4eb2cc9b11b4">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Install" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="HostsFileComponent"/>
 
                 <File Source="$(var.SolutionDir)HostsFile\HostsFile.psm1" />
                 <File Source="$(var.SolutionDir)HostsFile\HostsFile.psd1" />
 
-                <RemoveFolder Id="RemoveFolderHostsFile" Directory="InstallFolder_HostsFile" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderHostsFile" Directory="InstallFolder_HostsFile" On="both"/>
 
               </Component>
             </Directory>
@@ -65,9 +80,7 @@
             <Directory Id="InstallFolder_AutomatedLabWorker" Name="AutomatedLabWorker">
               <Component Id="AutomatedLabWorkerComponent" Guid="1111e993-5d1a-4c08-b7a0-f888687c129e">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Install" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabWorkerComponent"/>
 
                 <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psm1" />
@@ -81,7 +94,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1" />
 
-                <RemoveFolder Id="RemoveFolderAutomatedLabWorker" Directory="InstallFolder_AutomatedLabWorker" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderAutomatedLabWorker" Directory="InstallFolder_AutomatedLabWorker" On="both"/>
 
               </Component>
             </Directory>
@@ -91,14 +104,12 @@
             <Directory Id="InstallFolder_AutomatedLabUnattended" Name="AutomatedLabUnattended">
               <Component Id="AutomatedLabUnattendedComponent" Guid="6e6be339-e857-4d44-8e05-82753b2121b7">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabUnattendedComponent"/>
 
                 <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psd1" />
 
-                <RemoveFolder Id="RemoveFolderAutomatedLabUnattended" Directory="InstallFolder_AutomatedLabUnattended" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderAutomatedLabUnattended" Directory="InstallFolder_AutomatedLabUnattended" On="both"/>
 
               </Component>
             </Directory>
@@ -108,15 +119,13 @@
             <Directory Id="InstallFolder_AutomatedLabTest" Name="AutomatedLabTest">
               <Component Id="AutomatedLabTestComponent" Guid="15227a83-5f7c-4eb4-b2d1-73c380fa6660">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabTestComponent"/>
 
                 <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.format.ps1xml" />
 
-                <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="both"/>
 
               </Component>
             </Directory>
@@ -126,16 +135,15 @@
             <Directory Id="InstallFolder_AutomatedLabDefinition" Name="AutomatedLabDefinition">
               <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabDefinitionComponent"/>
 
+                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.init.ps1" />
 
-                <RemoveFolder Id="RemoveFolderAutomatedLabDefinition" Directory="InstallFolder_AutomatedLabDefinition" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderAutomatedLabDefinition" Directory="InstallFolder_AutomatedLabDefinition" On="both"/>
 
               </Component>
             </Directory>
@@ -143,17 +151,17 @@
             <Directory Id="InstallFolder_AutomatedLab" Name="AutomatedLab">
               <Component Id="AutomatedLabComponent" Guid="a5d9490b-1c1b-4d5d-bb00-6ded6afa0bd4">
 
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabComponent"/>
 
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutmatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
@@ -169,11 +177,11 @@
 
                 <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
 
-                <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="uninstall"/>
-                <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="uninstall"/>
-                <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="uninstall"/>
-                <RemoveFolder Id="RemoveAutomatedLabTools" Directory="InstallFolder_AutomatedLabTools" On="uninstall"/>
-                <RemoveFolder Id="RemoveAutomatedLabToolsHyperV" Directory="InstallFolder_AutomatedLabToolsHyperV" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="both"/>
+                <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="both"/>
+                <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="both"/>
+                <RemoveFolder Id="RemoveAutomatedLabTools" Directory="InstallFolder_AutomatedLabTools" On="both"/>
+                <RemoveFolder Id="RemoveAutomatedLabToolsHyperV" Directory="InstallFolder_AutomatedLabToolsHyperV" On="both"/>
 
               </Component>
 
@@ -181,9 +189,7 @@
                 <Directory Id="InstallFolder_AutomatedLabToolsHyperV" Name="HyperV">
                   <Component Id="AutomatedLabToolsComponent" Guid="d69dc781-80ad-4fd5-9b36-6908fae51e50">
 
-                    <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                      <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                    </RegistryKey>
+                    <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabToolsComponent" />
 
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
@@ -203,13 +209,11 @@
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
 
-          <Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
+          <!--<Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation">
 
             <Component Id='DocumentationComponent' Guid='ec60d79b-cf47-457b-bfd8-b1e2c98e096a'>
 
-              <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-              </RegistryKey>
+              <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" />
 
               <File Id='AutomatedLabDocumentationDocx' Name='AutomatedLab Documentation.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AutomatedLab Documentation.docx' />
 
@@ -220,26 +224,22 @@
               <File Id='ALTutorialSeriesPart5' Name='AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' />
               <File Id='ALTutorialSeriesPart6' Name='AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' />
 
-              <RemoveFolder Id="RemoveFolderDOCUMENTATIONDIR" Directory="DOCUMENTATIONDIR" On="uninstall"/>
+              <RemoveFolder Id="RemoveFolderDOCUMENTATIONDIR" Directory="DOCUMENTATIONDIR" On="both"/>
 
             </Component>
 
-          </Directory>
+          </Directory>-->
 
-          <Directory Id="SAMPLESDIR" Name="AutomatedLab Sample Scripts">
+          <Directory Id="SAMPLESDIR" Name="Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
-              <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-              </RegistryKey>
+              <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesComponent" />
 
-              <RemoveFolder Id="RemoveFolderSamplesDir" Directory="SAMPLESDIR" On="uninstall"/>
+              <RemoveFolder Id="RemoveFolderSamplesDir" Directory="SAMPLESDIR" On="both"/>
             </Component>
 
             <Directory Id="SamplesHypervDir" Name="HyperV">
               <Component Id='SamplesHypervComponent' Guid='c3b77aa7-5024-4be3-b82c-a742b6bc203c'>
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesHypervComponent"/>
 
                 <File Id='Sample_Single2012R2Server' Name='Single 2012R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server.ps1' />
                 <File Id='Sample_Single2012R2ServerDCSQL2014WebCA' Name='Single 2012R2 Server DC SQL2014 Web CA.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1' />
@@ -267,25 +267,23 @@
                 <File Id='Sample_PKISimple' Name='PKI Simple.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Simple.ps1' />
                 <File Id='Sample_PKICustom' Name='PKI Custom.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Custom.ps1' />
 
-                <RemoveFolder Id="RemoveFolderSamplesHypervDir" Directory="SamplesHypervDir" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderSamplesHypervDir" Directory="SamplesHypervDir" On="both"/>
               </Component>
             </Directory>
 
             <Directory Id="SamplesAzureDir" Name="Azure">
               <Component Id='SamplesAzureComponent' Guid='2904ea2b-6964-47ba-b912-f4c47b1cd6a4'>
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesAzureComponent"/>
+
                 <File Id='Sample_MultiForestLab12012R2Azure' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Azure\MultiForestLab 2012R2.ps1' />
-                <RemoveFolder Id="RemoveFolderSamplesAzureDir" Directory="SamplesAzureDir" On="uninstall"/>
+
+                <RemoveFolder Id="RemoveFolderSamplesAzureDir" Directory="SamplesAzureDir" On="both"/>
               </Component>
             </Directory>
 
             <Directory Id="SAMPLESWORKSHOPSDIR" Name="Workshop Labs">
               <Component Id='SamplesWorkshopComponent' Guid='09b8b205-a1a4-4038-8b82-db45356e511f'>
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesWorkshopComponent"/>
 
                 <File Id='Sample_ADPowerShellLab' Name='ADPowerShellWorkshopLab.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1' />
                 <File Id='Sample_ADRecoveryLabAzure' Name='ADRecoveryLab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADRecoveryLab - Azure.ps1' />
@@ -297,42 +295,40 @@
                 <File Id='Sample_PowerShellLabHyperVwithInternet' Name='PowerShell Lab - HyperV with Internet.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1' />
                 <File Id='Sample_PowerShellLabHyperV' Name='PowerShell Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\PowerShell Lab - HyperV.ps1' />
 
-                <RemoveFolder Id="RemoveFolderSAMPLESWORKSHOPSDIR" Directory="SAMPLESWORKSHOPSDIR" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderSAMPLESWORKSHOPSDIR" Directory="SAMPLESWORKSHOPSDIR" On="both"/>
               </Component>
             </Directory>
 
             <Directory Id="SAMPLESSCENARIOSDIR" Name="Scenarios">
               <Component Id='SamplesScenariosComponent' Guid='973e631b-bb24-4634-83ae-28a53ace65bf'>
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesScenariosComponent"/>
 
                 <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
+                <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
                 <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
 
-                <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="uninstall"/>
+                <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>
 
             <Directory Id="SAMPLESINSTRODUCTIONDIR" Name="Introduction">
               <Component Id='SamplesIntroductionComponent' Guid='42526be0-5995-4cff-bf97-5949c26c1288'>
-                <RegistryKey Root="HKCU" Key="Software\AutomatedLab">
-                  <RegistryValue Value="Test" Type="string" KeyPath="yes" />
-                </RegistryKey>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesIntroductionComponent"/>
 
                 <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\01 Single Win10 Client.ps1' />
                 <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
-                <File Id='Sample_Intro03' Name='03 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 Single domain-joined server.ps1' />
-                <File Id='Sample_Intro04' Name='04 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server (internet facing).ps1' />
-                <File Id='Sample_Intro05' Name='05 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 SQL Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro06' Name='06 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 Exchange Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro07' Name='07 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Standalone Root CA, Sub Ca domain joined.ps1' />
-                <File Id='Sample_Intro08' Name='08 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Web Servers with SSL certs, Root CA, domain joined.ps1' />
-                <File Id='Sample_Intro09' Name='09 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Development Client, domain joined (internet facing).ps1' />
-                <File Id='Sample_Intro10' Name='10 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 ISO Offline Patching.ps1' />
-                <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="uninstall"/>
+                <File Id='Sample_Intro03' Name='03 PowerShell 5 on Windows 7.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1' />
+                <File Id='Sample_Intro04' Name='04 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server.ps1' />
+                <File Id='Sample_Intro05' Name='05 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1' />
+                <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro07' Name='07 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
+                <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
+                <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
+                <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
+                <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="both"/>
               </Component>
             </Directory>
 
@@ -345,7 +341,7 @@
     <SetDirectory Id="LABSOURCESVOLUME" Value="C:\" />
 
     <Feature Id='Complete' Title='AutomatedLab' Description='The complete package.'  Display='expand' Level='1'>
-      <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1' ConfigurableDirectory='INSTALLDIR'>
+      <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
         <ComponentRef Id='HostsFileComponent'/>
@@ -361,9 +357,13 @@
       <Feature Id='LabSources' Title='Lab Sources' Description='Creates a folder structure that all samples scripts are based on and provides some lab preparation scripts.' Level='1' ConfigurableDirectory='LABSOURCESDIR'>
         <ComponentGroupRef Id='LabSourcesComponentGroup'/>
 
-        <Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
+        <Component Id="LabSourcesFolderRegistry" Directory='LABSOURCESDIR'>
+          <RegistryValue Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Value='[LABSOURCESDIR]' Type='string' KeyPath="yes" />
+        </Component>
+
+        <!--<Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'>
           <ComponentRef Id='DocumentationComponent' />
-        </Feature>
+        </Feature>-->
 
         <Feature Id='Samples' Title='Sample Scripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
           <ComponentRef Id='SamplesComponent' />
@@ -382,7 +382,7 @@
       <Property Id="DefaultUIFont">DlgFont8</Property>
       <Property Id="ErrorDialog">ErrorDlg</Property>
 
-      <Dialog Id="PrepareDlg" Width="370" Height="270" Title="[ProductName] [Setup]" Modeless="yes">
+      <Dialog Id="PrepareDlg" Width="370" Height="270" Title="[ProductName] [ProductVersion] [Setup]" Modeless="yes">
         <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="[ButtonText_Cancel]">
           <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
         </Control>
@@ -397,14 +397,14 @@
         <Control Id="Back" Type="PushButton" X="180" Y="243" Width="56" Height="17" Disabled="yes" TabSkip="yes" Text="[ButtonText_Back]" />
         <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
         <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
-          <Text>{\VerdanaBold13}Welcome to the [ProductName] [Wizard]</Text>
+          <Text>{\VerdanaBold13}Welcome to the [ProductName] [ProductVersion] [Wizard]</Text>
         </Control>
         <Control Id="ActionData" Type="Text" X="135" Y="125" Width="220" Height="30" Transparent="yes" NoPrefix="yes">
           <Subscribe Event="ActionData" Attribute="Text" />
         </Control>
       </Dialog>
 
-      <Dialog Id="ProgressDlg" Width="370" Height="270" Title="[ProductName] [Setup]" Modeless="yes">
+      <Dialog Id="ProgressDlg" Width="370" Height="270" Title="[ProductName] [ProductVersion] [Setup]" Modeless="yes">
         <Control Id="Cancel" Type="PushButton" X="304" Y="243" Width="56" Height="17" Default="yes" Cancel="yes" Text="[ButtonText_Cancel]">
           <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
         </Control>
@@ -745,14 +745,14 @@
           <Text>Allows users to change the way features are installed.</Text>
         </Control>
         <Control Id="RemoveText" Type="Text" X="105" Y="176" Width="230" Height="20">
-          <Text>Removes [ProductName] from your computer.</Text>
+          <Text>Removes [ProductName] [ProductVersion] from your computer.</Text>
         </Control>
         <Control Id="RepairText" Type="Text" X="105" Y="127" Width="230" Height="30">
           <Text>Repairs errors in the most recent installation state - fixes missing or corrupt files, shortcuts and registry entries.</Text>
         </Control>
       </Dialog>
 
-      <Dialog Id="MaintenanceWelcomeDlg" Width="370" Height="270" Title="[ProductName] [Setup]" NoMinimize="yes">
+      <Dialog Id="MaintenanceWelcomeDlg" Width="370" Height="270" Title="[ProductName] [ProductVersion] [Setup]" NoMinimize="yes">
         <Control Id="Next" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="[ButtonText_Next]">
           <Publish Event="SpawnWaitDialog" Value="WaitForCostingDlg">CostingComplete = 1</Publish>
           <Publish Event="NewDialog" Value="MaintenanceTypeDlg">1</Publish>
@@ -944,16 +944,16 @@
           <Text>You have chosen to remove the program from your computer.</Text>
         </Control>
         <Control Id="Text" Type="Text" X="25" Y="70" Width="320" Height="30">
-          <Text>Click Remove to remove [ProductName] from your computer. If you want to review or change any of your installation settings, click Back. Click Cancel to exit the wizard.</Text>
+          <Text>Click Remove to remove [ProductName] [ProductVersion] from your computer. If you want to review or change any of your installation settings, click Back. Click Cancel to exit the wizard.</Text>
         </Control>
         <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
         <Control Id="Title" Type="Text" X="15" Y="6" Width="200" Height="15" Transparent="yes" NoPrefix="yes">
-          <Text>{\DlgTitleFont}Remove [ProductName]</Text>
+          <Text>{\DlgTitleFont}Remove [ProductName] [ProductVersion]</Text>
         </Control>
         <Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
       </Dialog>
 
-      <Dialog Id="VerifyRepairDlg" Width="370" Height="270" Title="[ProductName] [Setup]" NoMinimize="yes" TrackDiskSpace="yes">
+      <Dialog Id="VerifyRepairDlg" Width="370" Height="270" Title="[ProductName] [ProductVersion] [Setup]" NoMinimize="yes" TrackDiskSpace="yes">
         <Control Id="Repair" Type="PushButton" X="236" Y="243" Width="56" Height="17" Default="yes" Text="[ButtonText_Repair]">
           <Publish Event="ReinstallMode" Value="ecmus"><![CDATA[OutOfDiskSpace <> 1]]></Publish>
           <Publish Event="Reinstall" Value="All"><![CDATA[OutOfDiskSpace <> 1]]></Publish>
@@ -1007,7 +1007,7 @@
         </Control>
         <Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
         <Control Id="Title" Type="Text" X="135" Y="20" Width="220" Height="60" Transparent="yes" NoPrefix="yes">
-          <Text>{\VerdanaBold13}Welcome to the [ProductName] [Wizard]</Text>
+          <Text>{\VerdanaBold13}Welcome to the [ProductName] [ProductVersion] [Wizard]</Text>
         </Control>
       </Dialog>
 
@@ -1086,7 +1086,7 @@
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />
 
-    <CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />
+    <!--<CustomAction Id='LaunchFile' FileKey='AutomatedLabDocumentationDocx' ExeCommand='' Return="asyncNoWait" />-->
   </Product>
 
   <Fragment>

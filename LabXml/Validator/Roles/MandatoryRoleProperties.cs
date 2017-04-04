@@ -23,7 +23,16 @@ namespace AutomatedLab
             {
                 foreach (var role in machine.Roles.Where(r => mandatoryRoleProperties.ContainsKey(r.Name.ToString())))
                 {
-                    foreach (string mandatoryRoleProperty in (object[])mandatoryRoleProperties[role.Name.ToString()])
+                    var mandatoryKeys = new List<string>();
+                    var keysFromModule = mandatoryRoleProperties[role.Name.ToString()];
+
+                    if (keysFromModule.GetType().IsArray)
+                        mandatoryKeys.AddRange(((object[])keysFromModule).Cast<string>());
+                    else
+                        mandatoryKeys.Add((string)keysFromModule);
+
+
+                    foreach (string mandatoryRoleProperty in mandatoryKeys)
                     {
                         if (!role.Properties.ContainsKey(mandatoryRoleProperty) || string.IsNullOrEmpty(role.Properties[mandatoryRoleProperty]))
                         {

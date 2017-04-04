@@ -1,7 +1,7 @@
 ﻿$labName = 'ADRES<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
 $azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU HAVE NO PROFILE FILE, CALL Save-AzureRmProfile
-$azureDefaultLocation = 'North Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
+$azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #setting addMemberServer to $true installes an additional server in the lab
 $addMemberServer = $false
@@ -11,8 +11,6 @@ $addMemberServer = $false
 #----------------------- + EXCEPT FOR THE LINES STARTING WITH: REMOVE THE COMMENT TO --------------------------------
 #----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
 #--------------------------------------------------------------------------------------------------------------------
-
-$labSources = Get-LabSourcesLocation
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
@@ -26,7 +24,7 @@ Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Some
 Add-LabDomainDefinition -Name child.contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
-$installationCredential = New-Object PSCredential('install', ('Somepass2014' | ConvertTo-SecureString -AsPlainText -Force))
+$installationCredential = New-Object PSCredential('install', ('Somepass1' | ConvertTo-SecureString -AsPlainText -Force))
 
 #Backup disks
 Add-LabDiskDefinition -Name BackupRoot -DiskSizeInGb 40
@@ -42,7 +40,6 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.41.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.41.11'
-    'Add-LabMachineDefinition:VirtualizationHost' = 'Azure'
 }
 
 #Defining contoso.com machines
@@ -58,24 +55,12 @@ if ($addMemberServer)
 #Defining child.contoso.com machines
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 `
-    -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name ChildDC1 -IpAddress 192.168.41.20 -DomainName child.contoso.com -Roles $role -PostInstallationActivity $postInstallActivity
 
-Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 `
-    -DomainName child.contoso.com  -Roles DC
+Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168.41.21 -DomainName child.contoso.com  -Roles DC
 
-#Now the actual work begins. First the virtual network adapter is created and then the base images per OS
-#All VMs are diffs from the base.
-Install-Lab -NetworkSwitches -BaseImages -VMs
-
-#This sets up all domains / domain controllers
-Install-Lab -Domains
-
-#Start remaining member machines
-Install-Lab -StartRemainingMachines
-
-#Finally the PostInstallActivities are invoked to do any kind of customization
-Install-Lab -PostInstallations
+#Now the actual work begins
+Install-Lab
 
 #Installs RSAT on ContosoMember1 if the optional machine is part of the lab
 if (Get-LabMachine -ComputerName ContosoMember1 -ErrorAction SilentlyContinue)
@@ -93,7 +78,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabPostInstallActivity -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -UseCredSsp -ScriptBlock {
+Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 
@@ -116,4 +101,4 @@ Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
 
 Stop-LabVM -All -Wait
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary -Detailed

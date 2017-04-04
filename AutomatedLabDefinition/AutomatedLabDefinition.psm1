@@ -478,10 +478,13 @@ function Invoke-Ternary
 Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary Operator like '?' in C#"
 #endregion
 #region Get-LabVolumesOnPhysicalDisks
+
 function Get-LabVolumesOnPhysicalDisks
 {
-    $physicalDisks = Get-PhysicalDisk | Where-Object {$_.BusType -ne 'File Backed Virtual'}
-    $disks = Get-CimInstance -Class Win32_DiskDrive | Where-Object { $_.SerialNumber } | Where-Object { $_.SerialNumber.Trim() -in $physicalDisks.SerialNumber }
+    # .ExternalHelp AutomatedLabDefinition.Help.xml
+
+    $physicalDisks = Get-PhysicalDisk
+    $disks = Get-CimInstance -Class Win32_DiskDrive
 
     $labVolumes = foreach ($disk in $disks) 
     {
@@ -495,7 +498,7 @@ function Get-LabVolumesOnPhysicalDisks
 
             foreach ($volume in $volumes)
             {
-                Get-Volume -DriveLetter $volumes.DeviceId[0] | 
+                Get-Volume -DriveLetter $volume.DeviceId[0] | 
                 Add-Member -Name Serial -MemberType NoteProperty -Value $disk.SerialNumber -PassThru |
                 Add-Member -Name Signature -MemberType NoteProperty -Value $disk.Signature -PassThru
             }
@@ -576,13 +579,16 @@ function New-LabDefinition
         '***************************************************************************'
     }
     
-    $Global:scriptStart = Get-Date
+    #settings for a new log
+
+    #reset the log and its format
+    $Global:AL_DeploymentStart = $null
     $Global:taskStart = @()
     $Global:indent = 0
     
     $Global:labDeploymentNoNewLine = $false
 
-    $script:reservedAddressSpaces = $null
+    $Script:reservedAddressSpaces = $null
     
     Write-ScreenInfo -Message 'Initialization' -TimeDelta ([timespan]0) -TimeDelta2 ([timespan]0) -TaskStart
 
@@ -686,8 +692,13 @@ function New-LabDefinition
         $lastChecked = Get-Date -Year 1601
         $timestamps = New-Object $type
     }
+
+    if ($lastChecked)
+    {
+        $lastChecked = $lastChecked.AddDays(7)
+    }
     
-    if ((Get-Date) -gt $lastChecked.AddDays(7))
+    if ((Get-Date) -gt $lastChecked)
     {
         Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
         
@@ -757,7 +768,6 @@ function New-LabDefinition
                     Unblock-File -Path $filePath
         
                     #Extract files to Tools folder
-                    $labSources = Get-LabSourcesLocation
                     if (-not (Test-Path -Path "$labSources\Tools"))
                     {
                         Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
@@ -808,7 +818,7 @@ function New-LabDefinition
     $diskDefinitionFile.Path = $diskDefinitionFilePath
     $script:lab.DiskDefinitionFiles.Add($diskDefinitionFile)
     
-    Write-ScreenInfo -Message "Location of LabSources folder is '$(Get-LabSourcesLocation)'"
+    Write-ScreenInfo -Message "Location of LabSources folder is '($labSources)'"
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {
@@ -1163,7 +1173,7 @@ function Test-LabDefinition
     #we need to get the machine config files as well
     try
     {
-        $machineDefinitionFiles = ([xml](Get-Content -Path $Path) | Select-Xml -XPath '//MachineDefinitionFile' -ErrorAction Stop).Node.Path
+        $machineDefinitionFiles = ([xml](Get-Content -Path $Path -Encoding UTF8) | Select-Xml -XPath '//MachineDefinitionFile' -ErrorAction Stop).Node.Path
     }
     catch
     {
@@ -1575,6 +1585,8 @@ function Add-LabDiskDefinition
         [ValidateRange(20, 1024)]
         [ValidateNotNullOrEmpty()]
         [int]$DiskSizeInGb = 60,
+
+		[switch]$SkipInitialize,
         
         [switch]$PassThru
     )
@@ -1603,7 +1615,9 @@ function Add-LabDiskDefinition
     
     $disk = New-Object -TypeName AutomatedLab.Disk
     $disk.Name = $Name
-    $disk.DiskSize = $DiskSizeInGb
+    $disk.DiskSize = $DiskSizeInGb	
+	$disk.SkipInitialization = [bool]$SkipInitialize
+	
     
     $script:disks.Add($disk)
     
@@ -1707,10 +1721,6 @@ function Add-LabMachineDefinition
         [ValidateSet('af', 'af-ZA', 'am', 'am-ET', 'ar', 'ar-AE', 'ar-BH', 'ar-DZ', 'ar-EG', 'ar-IQ', 'ar-JO', 'ar-KW', 'ar-LB', 'ar-LY', 'ar-MA', 'ar-OM', 'ar-QA', 'ar-SA', 'ar-SY', 'ar-TN', 'ar-YE', 'arn', 'arn-CL', 'as', 'as-IN', 'az', 'az-Cyrl', 'az-Cyrl-AZ', 'az-Latn', 'az-Latn-AZ', 'ba', 'ba-RU', 'be', 'be-BY', 'bg', 'bg-BG', 'bn', 'bn-BD', 'bn-IN', 'bo', 'bo-CN', 'br', 'br-FR', 'bs', 'bs-Cyrl', 'bs-Cyrl-BA', 'bs-Latn', 'bs-Latn-BA', 'ca', 'ca-ES', 'ca-ES-valencia', 'chr', 'chr-Cher', 'chr-Cher-US', 'co', 'co-FR', 'cs', 'cs-CZ', 'cy', 'cy-GB', 'da', 'da-DK', 'de', 'de-AT', 'de-CH', 'de-DE', 'de-LI', 'de-LU', 'dsb', 'dsb-DE', 'dv', 'dv-MV', 'el', 'el-GR', 'en', 'en-029', 'en-AU', 'en-BZ', 'en-CA', 'en-GB', 'en-HK', 'en-IE', 'en-IN', 'en-JM', 'en-MY', 'en-NZ', 'en-PH', 'en-SG', 'en-TT', 'en-US', 'en-ZA', 'en-ZW', 'es', 'es-419', 'es-AR', 'es-BO', 'es-CL', 'es-CO', 'es-CR', 'es-DO', 'es-EC', 'es-ES', 'es-GT', 'es-HN', 'es-MX', 'es-NI', 'es-PA', 'es-PE', 'es-PR', 'es-PY', 'es-SV', 'es-US', 'es-UY', 'es-VE', 'et', 'et-EE', 'eu', 'eu-ES', 'fa', 'fa-IR', 'ff', 'ff-Latn', 'ff-Latn-SN', 'fi', 'fi-FI', 'fil', 'fil-PH', 'fo', 'fo-FO', 'fr', 'fr-BE', 'fr-CA', 'fr-CD', 'fr-CH', 'fr-CI', 'fr-CM', 'fr-FR', 'fr-HT', 'fr-LU', 'fr-MA', 'fr-MC', 'fr-ML', 'fr-RE', 'fr-SN', 'fy', 'fy-NL', 'ga', 'ga-IE', 'gd', 'gd-GB', 'gl', 'gl-ES', 'gn', 'gn-PY', 'gsw', 'gsw-FR', 'gu', 'gu-IN', 'ha', 'ha-Latn', 'ha-Latn-NG', 'haw', 'haw-US', 'he', 'he-IL', 'hi', 'hi-IN', 'hr', 'hr-BA', 'hr-HR', 'hsb', 'hsb-DE', 'hu', 'hu-HU', 'hy', 'hy-AM', 'id', 'id-ID', 'ig', 'ig-NG', 'ii', 'ii-CN', 'is', 'is-IS', 'it', 'it-CH', 'it-IT', 'iu', 'iu-Cans', 'iu-Cans-CA', 'iu-Latn', 'iu-Latn-CA', 'ja', 'ja-JP', 'ka', 'ka-GE', 'kk', 'kk-KZ', 'kl', 'kl-GL', 'km', 'km-KH', 'kn', 'kn-IN', 'ko', 'ko-KR', 'kok', 'kok-IN', 'ku', 'ku-Arab', 'ku-Arab-IQ', 'ky', 'ky-KG', 'lb', 'lb-LU', 'lo', 'lo-LA', 'lt', 'lt-LT', 'lv', 'lv-LV', 'mi', 'mi-NZ', 'mk', 'mk-MK', 'ml', 'ml-IN', 'mn', 'mn-Cyrl', 'mn-MN', 'mn-Mong', 'mn-Mong-CN', 'mn-Mong-MN', 'moh', 'moh-CA', 'mr', 'mr-IN', 'ms', 'ms-BN', 'ms-MY', 'mt', 'mt-MT', 'my', 'my-MM', 'nb', 'nb-NO', 'ne', 'ne-IN', 'ne-NP', 'nl', 'nl-BE', 'nl-NL', 'nn', 'nn-NO', 'no', 'nso', 'nso-ZA', 'oc', 'oc-FR', 'om', 'om-ET', 'or', 'or-IN', 'pa', 'pa-Arab', 'pa-Arab-PK', 'pa-IN', 'pl', 'pl-PL', 'prs', 'prs-AF', 'ps', 'ps-AF', 'pt', 'pt-BR', 'pt-PT', 'qut', 'qut-GT', 'quz', 'quz-BO', 'quz-EC', 'quz-PE', 'rm', 'rm-CH', 'ro', 'ro-MD', 'ro-RO', 'ru', 'ru-RU', 'rw', 'rw-RW', 'sa', 'sa-IN', 'sah', 'sah-RU', 'sd', 'sd-Arab', 'sd-Arab-PK', 'se', 'se-FI', 'se-NO', 'se-SE', 'si', 'si-LK', 'sk', 'sk-SK', 'sl', 'sl-SI', 'sma', 'sma-NO', 'sma-SE', 'smj', 'smj-NO', 'smj-SE', 'smn', 'smn-FI', 'sms', 'sms-FI', 'so', 'so-SO', 'sq', 'sq-AL', 'sr', 'sr-Cyrl', 'sr-Cyrl-BA', 'sr-Cyrl-CS', 'sr-Cyrl-ME', 'sr-Cyrl-RS', 'sr-Latn', 'sr-Latn-BA', 'sr-Latn-CS', 'sr-Latn-ME', 'sr-Latn-RS', 'st', 'st-ZA', 'sv', 'sv-FI', 'sv-SE', 'sw', 'sw-KE', 'syr', 'syr-SY', 'ta', 'ta-IN', 'ta-LK', 'te', 'te-IN', 'tg', 'tg-Cyrl', 'tg-Cyrl-TJ', 'th', 'th-TH', 'ti', 'ti-ER', 'ti-ET', 'tk', 'tk-TM', 'tn', 'tn-BW', 'tn-ZA', 'tr', 'tr-TR', 'ts', 'ts-ZA', 'tt', 'tt-RU', 'tzm', 'tzm-Latn', 'tzm-Latn-DZ', 'tzm-Tfng', 'tzm-Tfng-MA', 'ug', 'ug-CN', 'uk', 'uk-UA', 'ur', 'ur-IN', 'ur-PK', 'uz', 'uz-Cyrl', 'uz-Cyrl-UZ', 'uz-Latn', 'uz-Latn-UZ', 'vi', 'vi-VN', 'wo', 'wo-SN', 'xh', 'xh-ZA', 'yo', 'yo-NG', 'zh', 'zh-CN', 'zh-Hans', 'zh-Hant', 'zh-HK', 'zh-MO', 'zh-SG', 'zh-TW', 'zu', 'zu-ZA')]
         [string]$UserLocale,
         
-        #Created ValidateSet using: "'" + (([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object) -join "', '") + "'" | clip
-        [ValidateSet('Afghanistan Standard Time', 'Alaskan Standard Time', 'Arab Standard Time', 'Arabian Standard Time', 'Arabic Standard Time', 'Argentina Standard Time', 'Atlantic Standard Time', 'AUS Central Standard Time', 'AUS Eastern Standard Time', 'Azerbaijan Standard Time', 'Azores Standard Time', 'Bahia Standard Time', 'Bangladesh Standard Time', 'Belarus Standard Time', 'Canada Central Standard Time', 'Cape Verde Standard Time', 'Caucasus Standard Time', 'Cen. Australia Standard Time', 'Central America Standard Time', 'Central Asia Standard Time', 'Central Brazilian Standard Time', 'Central Europe Standard Time', 'Central European Standard Time', 'Central Pacific Standard Time', 'Central Standard Time', 'Central Standard Time (Mexico)', 'China Standard Time', 'Dateline Standard Time', 'E. Africa Standard Time', 'E. Australia Standard Time', 'E. Europe Standard Time', 'E. South America Standard Time', 'Eastern Standard Time', 'Egypt Standard Time', 'Ekaterinburg Standard Time', 'Fiji Standard Time', 'FLE Standard Time', 'Georgian Standard Time', 'GMT Standard Time', 'Greenland Standard Time', 'Greenwich Standard Time', 'GTB Standard Time', 'Hawaiian Standard Time', 'India Standard Time', 'Iran Standard Time', 'Israel Standard Time', 'Jordan Standard Time', 'Kaliningrad Standard Time', 'Kamchatka Standard Time', 'Korea Standard Time', 'Libya Standard Time', 'Line Islands Standard Time', 'Magadan Standard Time', 'Mauritius Standard Time', 'Mid-Atlantic Standard Time', 'Middle East Standard Time', 'Montevideo Standard Time', 'Morocco Standard Time', 'Mountain Standard Time', 'Mountain Standard Time (Mexico)', 'Myanmar Standard Time', 'N. Central Asia Standard Time', 'Namibia Standard Time', 'Nepal Standard Time', 'New Zealand Standard Time', 'Newfoundland Standard Time', 'North Asia East Standard Time', 'North Asia Standard Time', 'Pacific SA Standard Time', 'Pacific Standard Time', 'Pacific Standard Time (Mexico)', 'Pakistan Standard Time', 'Paraguay Standard Time', 'Romance Standard Time', 'Russia Time Zone 10', 'Russia Time Zone 11', 'Russia Time Zone 3', 'Russian Standard Time', 'SA Eastern Standard Time', 'SA Pacific Standard Time', 'SA Western Standard Time', 'Samoa Standard Time', 'SE Asia Standard Time', 'Singapore Standard Time', 'South Africa Standard Time', 'Sri Lanka Standard Time', 'Syria Standard Time', 'Taipei Standard Time', 'Tasmania Standard Time', 'Tokyo Standard Time', 'Tonga Standard Time', 'Turkey Standard Time', 'Ulaanbaatar Standard Time', 'US Eastern Standard Time', 'US Mountain Standard Time', 'UTC', 'UTC+12', 'UTC-02', 'UTC-11', 'Venezuela Standard Time', 'Vladivostok Standard Time', 'W. Australia Standard Time', 'W. Central Africa Standard Time', 'W. Europe Standard Time', 'West Asia Standard Time', 'West Pacific Standard Time', 'Yakutsk Standard Time')]
-        [string]$TimeZone,
-        
         [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
         
         [string]$ToolsPath,
@@ -1732,20 +1742,55 @@ function Add-LabMachineDefinition
         [hashtable]$HypervProperties,
 
         [hashtable]$Notes,
-        
-        #Created ValidateSet using: "'" + ((Get-AzureRMVmSize -Location 'central us' | Sort-Object -Property Name | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}) -join "', '")  + "'" | clip
-        [ValidateSet('Basic_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Basic_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Basic_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Basic_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Basic_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A0 (1 Cores, 768 Mb, 1 max data disks)', 'Standard_A1 (1 Cores, 1792 Mb, 2 max data disks)', 'Standard_A1_v2 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_A2 (2 Cores, 3584 Mb, 4 max data disks)', 'Standard_A2_v2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_A2m_v2 (2 Cores, 16384 Mb, 4 max data disks)', 'Standard_A3 (4 Cores, 7168 Mb, 8 max data disks)', 'Standard_A4 (8 Cores, 14336 Mb, 16 max data disks)', 'Standard_A4_v2 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_A4m_v2 (4 Cores, 32768 Mb, 8 max data disks)', 'Standard_A5 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_A6 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_A7 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_A8_v2 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_A8m_v2 (8 Cores, 65536 Mb, 16 max data disks)', 'Standard_D1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_D11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_D12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_D13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_D14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_D15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_D2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_D3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_D4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_D5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_DS1 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS1_v2 (1 Cores, 3584 Mb, 2 max data disks)', 'Standard_DS11 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS11_v2 (2 Cores, 14336 Mb, 4 max data disks)', 'Standard_DS12 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS12_v2 (4 Cores, 28672 Mb, 8 max data disks)', 'Standard_DS13 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS13_v2 (8 Cores, 57344 Mb, 16 max data disks)', 'Standard_DS14 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS14_v2 (16 Cores, 114688 Mb, 32 max data disks)', 'Standard_DS15_v2 (20 Cores, 143360 Mb, 40 max data disks)', 'Standard_DS2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS2_v2 (2 Cores, 7168 Mb, 4 max data disks)', 'Standard_DS3 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS3_v2 (4 Cores, 14336 Mb, 8 max data disks)', 'Standard_DS4 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS4_v2 (8 Cores, 28672 Mb, 16 max data disks)', 'Standard_DS5_v2 (16 Cores, 57344 Mb, 32 max data disks)', 'Standard_F1 (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F16 (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F16s (16 Cores, 32768 Mb, 32 max data disks)', 'Standard_F1s (1 Cores, 2048 Mb, 2 max data disks)', 'Standard_F2 (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F2s (2 Cores, 4096 Mb, 4 max data disks)', 'Standard_F4 (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F4s (4 Cores, 8192 Mb, 8 max data disks)', 'Standard_F8 (8 Cores, 16384 Mb, 16 max data disks)', 'Standard_F8s (8 Cores, 16384 Mb, 16 max data disks)')]
-        [string]$AzureRoleSize,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [string]$FriendlyName
     )
-    
+DynamicParam {
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+
+        $ParameterName = 'AzureRoleSize'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
+        if($defaultLocation)
+        {
+            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
+            $arrSet = $vmSizes | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+        $ParameterName = 'TimeZone'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = ([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object)
+        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        $AttributeCollection.Add($ValidateSetAttribute)
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+        return $RuntimeParameterDictionary
+}
+
+begin
+{    
     Write-LogFunctionEntry
-    
+    $AzureRoleSize = $PsBoundParameters['AzureRoleSize']
+    $TimeZone = $PsBoundParameters['TimeZone']
+}
+
+process
+{
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
-    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'
+    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort'
     
     if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
     {
@@ -1767,7 +1812,14 @@ function Add-LabMachineDefinition
     $script:lab = Get-LabDefinition
     if (($script:lab.DefaultVirtualizationEngine -eq 'Azure' -or $VirtualizationHost -eq 'Azure') -and -not $script:lab.AzureSettings)
     {
-        Add-LabAzureProfile
+        try
+        {
+            Add-LabAzureSubscription
+        }
+        catch
+        {
+            throw "No Azure subscription added yet. Please run 'Add-LabAzureSubscription' first."
+        }
     }
     
     if ($Global:labExported)
@@ -1830,6 +1882,16 @@ function Add-LabMachineDefinition
     if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
     {
         $VirtualizationHost = (Get-LabDefinition).DefaultVirtualizationEngine
+    }
+
+    if($VirtualizationHost -eq 'Azure')
+    {
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerRdpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerWinRmHttpPort = $script:lab.AzureSettings.LoadBalancerPortCounter
+        $script:lab.AzureSettings.LoadBalancerPortCounter++
+        $machine.LoadBalancerWinrmHttpsPort = $script:lab.AzureSettings.LoadBalancerPortCounter	
     }
     
     if ($InstallationUserCredential)
@@ -2019,7 +2081,7 @@ function Add-LabMachineDefinition
         }
     }
     
-    $role = $roles | Where-Object Name -eq Exchange2013
+    $role = $roles | Where-Object Name -in Exchange2013, Exchange2016
     if ($role)
     {
         if ($role.Properties)
@@ -2033,23 +2095,6 @@ function Add-LabMachineDefinition
         {
             $role.Properties = @{ 'OrganizationName' = 'ExOrg' }
         }
-
-        $exchangeInstallUri = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2013DownloadLink)
-        $exchangeInstallFileName = $ExchangeInstallUri.Segments[$ExchangeInstallUri.Segments.Count-1]
-        $ucmaInstallUri = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
-        $ucmaInstallFileName = $ucmaInstallUri.Segments[$ucmaInstallUri.Segments.Count-1]
-
-        if ($machine.HostType -eq 'HyperV')
-        {
-            if (-not (Test-Path -Path "$(Get-LabSourcesLocation)\SoftwarePackages\$ucmaInstallFileName"))
-            {
-                throw "Could not find the Microsoft Unified Communications Managed API 4.0 file '$ucmaInstallFileName'. Please download it and pleace it in LabSources\SoftwarePackages"
-            }
-            if (-not (Test-Path -Path "$(Get-LabSourcesLocation)\SoftwarePackages\$exchangeInstallFileName"))
-            {
-                throw "Could not find the Microsoft Exchange 2013 installation file '$exchangeInstallFileName'. Please download it and pleace it in LabSources\SoftwarePackages"
-            }
-        }
     }
     
     #Virtual network detection and automatic creation
@@ -2062,27 +2107,27 @@ function Add-LabMachineDefinition
             Write-ScreenInfo -Message 'No virtual networks specified. Creating a network automatically' -Type Warning
             if (-not ($Global:existingAzureNetworks))
             {
-                $Global:existingAzureNetworks = [xml]((Get-AzureVNetConfig).XMLConfiguration)
+                $Global:existingAzureNetworks = Get-AzureRmVirtualNetwork
             }
             
             #Virtual network name will be same as lab name
             $autoNetworkName = (Get-LabDefinition).Name
             
             #Priority 1. Check for existence of an Azure virtual network with same name as network name
-            $existingNetwork = $Global:existingAzureNetworks.NetworkConfiguration.VirtualNetworkConfiguration.VirtualNetworkSites.VirtualNetworkSite | Where-Object {$_.name -eq $autoNetworkName}
+            $existingNetwork = $Global:existingAzureNetworks | Where-Object { $_.Name -eq $autoNetworkName }
             if ($existingNetwork)
             {
                 Write-Verbose -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
-                $addressSpace = $existingNetwork.AddressSpace.AddressPrefix
+                $addressSpace = $existingNetwork.AddressSpace.AddressPrefixes
                 
                 Write-ScreenInfo -Message "Creating virtual network '$autoNetworkName' with address spacee '$addressSpace'" -Type Warning
-                Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace
+                Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $addressSpace[0]
                 
                 #First automatically assigned IP address will be following+1
                 $addressSpaceIpAddress = "$($addressSpace.Split('/')[0].Split('.')[0..2] -Join '.').5"
                 $script:autoIPAddress = [AutomatedLab.IPAddress]$addressSpaceIpAddress
 
-                $notDone = $false                
+                $notDone = $false
             }
             else
             {
@@ -2095,7 +2140,7 @@ function Add-LabMachineDefinition
                     $octet++
                     
                     $azureInUse = $false
-                    foreach ($azureNetwork in $Global:existingAzureNetworks.NetworkConfiguration.VirtualNetworkConfiguration.VirtualNetworkSites.VirtualNetworkSite.AddressSpace.AddressPrefix)
+                    foreach ($azureNetwork in $Global:existingAzureNetworks.AddressSpace.AddressPrefixes)
                     {
                         if (Test-IpInSameSameNetwork -Ip1 "192.168.$octet.0/24" -Ip2 $azureNetwork)
                         {
@@ -2107,14 +2152,6 @@ function Add-LabMachineDefinition
                         Write-Verbose -Message "Network '192.168.$octet.0/24' is in use by an existing Azure virtual network"
                         continue
                     }
-                    
-                    <# Save for later when doing VPN
-                            if (Get-NetRoute -DestinationPrefix "192.168.$octet.0/24" -ErrorAction SilentlyContinue)
-                            {
-                            Write-Verbose -Message "Network '192.168.$octet.0/24' is routable"
-                            continue
-                            }
-                    #>
                     
                     $networkFound = $true
                 }
@@ -2493,7 +2530,10 @@ function Add-LabMachineDefinition
             $machine.Disks.Add($labDisk)
         }
     }
-    
+}
+
+end
+{
     if ($Notes)
     {
         $machine.Notes = $Notes
@@ -2507,6 +2547,7 @@ function Add-LabMachineDefinition
     }
     
     Write-LogFunctionExit
+}
 }
 #endregion Add-LabMachineDefinition
 
@@ -2676,7 +2717,7 @@ function Get-LabPostInstallationActivity
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [string]$ScriptFilePath,
         
-        [switch]$UseCredSsp
+        [switch]$DoNotUseCredSsp
     )
     
     Write-LogFunctionEntry
@@ -2709,7 +2750,7 @@ function Get-LabPostInstallationActivity
         }
     }
     
-    $activity.UseCredSsp = $UseCredSsp
+    $activity.DoNotUseCredSsp = $DoNotUseCredSsp
     
     Write-LogFunctionExit -ReturnValue $activity
     return $activity
@@ -2734,10 +2775,14 @@ function Get-DiskSpeed
 
     Write-LogFunctionEntry
 
+    if (-not $labSources)
+    {
+        $labSources = Get-LabSourcesLocation
+    }
+
     Write-ScreenInfo -Message "Measuring speed of drive $DriveLetter" -Type Info
     
     $tempFileName = [System.IO.Path]::GetTempFileName()
-    $labSources = Get-LabSourcesLocation
     
     & "$labSources\Tools\WinSAT.exe" disk -ran -read -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
     $readThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
@@ -2761,6 +2806,7 @@ function Get-DiskSpeed
 #region Set-LabLocalVirtualMachineDiskAuto
 function Set-LabLocalVirtualMachineDiskAuto
 {
+    # .ExternalHelp AutomatedLabDefinition.Help.xml
     [cmdletBinding()]
     param
     (
@@ -2899,6 +2945,7 @@ function Get-LabVirtualNetwork
 #region Get-LabAvailableAddresseSpace
 function Get-LabAvailableAddresseSpace
 {
+    # .ExternalHelp AutomatedLabDefinition.Help.xml
     $defaultAddressSpace = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultAddressSpace
     
     if (-not $defaultAddressSpace)
@@ -2955,6 +3002,7 @@ function Get-LabAvailableAddresseSpace
 #region Internal
 function Repair-LabDuplicateIpAddresses
 {
+    # .ExternalHelp AutomatedLabDefinition.Help.xml
     foreach ($machine in (Get-LabMachineDefinition))
     {
         foreach ($adapter in $machine.NetworkAdapters)

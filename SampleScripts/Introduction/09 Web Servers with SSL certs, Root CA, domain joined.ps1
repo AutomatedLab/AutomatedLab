@@ -30,4 +30,4 @@ Invoke-LabCommand -ActivityName 'Setup SSL Binding' -ComputerName Web1 -ScriptBl
     Get-Item -Path "Cert:\LocalMachine\My\$($args[0].Thumbprint)" | New-Item -Path IIS:\SslBindings\0.0.0.0!443
 } -ArgumentList $cert
 
-Show-LabInstallationTime
+Show-LabDeploymentSummary -Detailed
