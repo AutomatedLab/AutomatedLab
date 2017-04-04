@@ -30,7 +30,7 @@ $adInstallRootDcScriptPre2012 = {
       ;RebootOnCompletion=No
 "@
     
-    if ($Verbose) { $VerbosePreference = 'Continue' }
+    $VerbosePreference = $using:VerbosePreference
     
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
     
@@ -59,6 +59,8 @@ $adInstallRootDcScript2012 = {
         [string]$ForestFunctionalLevel,
         [string]$DomainFunctionalLevel
     )
+
+    $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
@@ -110,6 +112,8 @@ $adInstallFirstChildDc2012 = {
         [int]$SecondsBetweenRetries,
         [string]$SiteName = 'Default-First-Site-Name'
     )
+
+    $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
@@ -232,6 +236,8 @@ $adInstallFirstChildDcPre2012 = {
         [int]$SecondsBetweenRetries,
         [string]$SiteName = 'Default-First-Site-Name'
     )
+
+    $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
@@ -373,6 +379,8 @@ $adInstallDc2012 = {
         [string]$SiteName = 'Default-First-Site-Name'
     )
 
+    $VerbosePreference = $using:VerbosePreference
+
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
@@ -497,6 +505,8 @@ $adInstallDcPre2012 = {
         [int]$SecondsBetweenRetries,
         [string]$SiteName = 'Default-First-Site-Name'
     )
+
+    $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
@@ -721,7 +731,8 @@ function Install-LabRootDcs
             -DoNotUseCredSsp `
             -PassThru `
             -NoDisplay `
-            -ScriptBlock  $scriptblock -ArgumentList $machine.DomainName, 
+            -ScriptBlock $scriptblock `
+            -ArgumentList $machine.DomainName, 
             $machine.InstallationUser.Password, 
             $forestFunctionalLevel, 
             $domainFunctionalLevel
@@ -966,7 +977,8 @@ function Install-LabFirstChildDcs
             -PassThru `
             -UseLocalCredential `
             -NoDisplay `
-            -ScriptBlock $scriptBlock -ArgumentList $newDomainName,
+            -ScriptBlock $scriptBlock `
+            -ArgumentList $newDomainName,
             $parentDomainName,
             $rootCredential,
             $domainFunctionalLevel,
@@ -1184,7 +1196,8 @@ function Install-LabDcs
             -PassThru `
             -UseLocalCredential `
             -NoDisplay `
-            -ScriptBlock $scriptblock -ArgumentList $machine.DomainName,
+            -ScriptBlock $scriptblock `
+            -ArgumentList $machine.DomainName,
             $parentCredential,
             $isReadOnly,
             7,
