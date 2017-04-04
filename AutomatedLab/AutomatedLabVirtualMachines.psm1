@@ -692,7 +692,8 @@ function Wait-LabVM
                     [bool]$DoNotUseCredSsp
                 )
 
-                #$VerbosePreference = 2
+                $VerbosePreference = $using:VerbosePreference
+
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                 Import-Lab -LabBytes $LabBytes
