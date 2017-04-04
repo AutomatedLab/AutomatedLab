@@ -692,8 +692,13 @@ function New-LabDefinition
         $lastChecked = Get-Date -Year 1601
         $timestamps = New-Object $type
     }
+
+    if ($lastChecked)
+    {
+        $lastChecked = $lastChecked.AddDays(7)
+    }
     
-    if ((Get-Date) -gt $lastChecked.AddDays(7))
+    if ((Get-Date) -gt $lastChecked)
     {
         Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
         
