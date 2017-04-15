@@ -375,7 +375,7 @@ function Get-Lab
     {
         $labsPath = '{0}\AutomatedLab-Labs' -f [System.Environment]::GetFolderPath('MyDocuments')
         
-        foreach ($path in Get-ChildItem -Path $labsPath -Directory)
+        foreach ($path in Get-ChildItem -Path $labsPath -Directory -ErrorAction SilentlyContinue)
         {
             $labXmlPath = Join-Path -Path $path.FullName -ChildPath Lab.xml
             if (Test-Path -Path $labXmlPath)
