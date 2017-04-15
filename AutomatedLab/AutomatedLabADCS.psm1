@@ -1755,7 +1755,14 @@ function Request-LabCertificate
     
     Write-LogFunctionEntry
 
-    $onlienCAVM = Get-LabVM -ComputerName $OnlineCA
+    if ($OnlineCA)
+    {
+        $onlienCAVM = Get-LabVM -ComputerName $OnlineCA
+    }
+    else
+    {
+        $onlienCAVM = Get-LabIssuingCA
+    }
 
     #machine was found so only the machine name was given. Get the full CA path.
     if ($onlienCAVM)
@@ -2184,11 +2191,11 @@ function Install-LabCAMachine
     Write-Debug -Message '---------------------------------------------------------------------------------------'
     if ($machine.Roles.Properties.GetEnumerator().Count)
     {
-        foreach ($role in $machine.Roles)
+        foreach ($r in $machine.Roles)
         {
-            if (([AutomatedLab.Roles]$role.Name -band $roles) -ne 0) #if this is a CA role
+            if (([AutomatedLab.Roles]$r.Name -band $roles) -ne 0) #if this is a CA role
             {
-                foreach ($key in ($role.Properties.GetEnumerator() | Sort-Object -Property Key))
+                foreach ($key in ($r.Properties.GetEnumerator() | Sort-Object -Property Key))
                 {
                     Write-Debug -Message "  $($key.Key.PadRight(27)) $($key.Value)"
                 }
