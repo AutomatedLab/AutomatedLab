@@ -12,7 +12,7 @@ function Install-LabDscPullServer
     $online = $true
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::DSCPullServer
-    $requiredModules = 'xPSDesiredStateConfiguration', 'xDscDiagnostics'
+    $requiredModules = 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'
     
     if (-not (Get-LabVM))
     {
@@ -98,10 +98,10 @@ function Install-LabDscPullServer
     if ($Online)
     {        
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
-		param
-		(
-			[string[]]$requiredModules
-		)
+            param
+            (
+                [string[]]$requiredModules
+            )
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
             Install-Module -Name $requiredModules -Force
@@ -125,7 +125,8 @@ function Install-LabDscPullServer
         Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
     }
     
-    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1,
+    Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
+    $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
 
     foreach ($machine in $machines)
@@ -147,6 +148,16 @@ function Install-LabDscPullServer
 
     foreach ($machine in $machines)
     {
+        $role = $machine.Roles | Where-Object Name -eq $roleName
+        if ($role.Properties.DatabaseEngine = 'mdb')
+        {
+            $databaseEngine = 'mdb'
+        }
+        else
+        {
+            $databaseEngine = 'edb'
+        }
+
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $guid = (New-Guid).Guid
@@ -161,23 +172,38 @@ function Install-LabDscPullServer
                 [string]$CertificateThumbPrint,
 
                 [Parameter(Mandatory)]
-                [string] $RegistrationKey
+                [string] $RegistrationKey,
+
+                [string]$DatabaseEngine
             )
     
-            C:\SetupDscPullServer.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+            if ($DatabaseEngine -eq 'edb')
+            {
+                C:\SetupDscPullServerEdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+            }
+            elseif ($DatabaseEngine -eq 'mdb')
+            {
+                C:\SetupDscPullServerMdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+                Copy-Item -Path C:\Windows\System32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PullServer\Devices.mdb -Destination 'C:\Program Files\WindowsPowerShell\DscService\Devices.mdb'
+            }
+            else
+            {
+                Write-Error "The database engine is unknown"
+                return
+            }
     
             C:\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
     
-        } -ArgumentList $machine, $cert.Thumbprint, $guid -AsJob -PassThru
+        } -ArgumentList $machine, $cert.Thumbprint, $guid, $databaseEngine -AsJob -PassThru
     }
     
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
-	$jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
-	Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
-	Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
+    Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
     
     foreach ($machine in $machines)
     {

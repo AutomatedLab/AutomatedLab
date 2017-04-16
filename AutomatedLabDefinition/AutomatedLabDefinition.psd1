@@ -69,7 +69,7 @@
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
-				DSCPullServer = 'DoNotPushLocalModules'
+				DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
             }
 
             MandatoryRoleProperties = @{

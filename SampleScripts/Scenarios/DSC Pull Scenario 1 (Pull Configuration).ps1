@@ -53,7 +53,8 @@ Add-LabMachineDefinition -Name DRouter -Roles Routing -NetworkAdapter $netAdapte
 Add-LabMachineDefinition -Name DCA1 -Roles CaRoot
 
 #DSC Pull Server
-Add-LabMachineDefinition -Name DPull1 -Roles DSCPullServer
+$role = Get-LabMachineRoleDefinition -Role DSCPullServer -Properties @{ DatabaseEngine = 'mdb' }
+Add-LabMachineDefinition -Name DPull1 -Roles $role
 
 #DSC Pull Clients
 Add-LabMachineDefinition -Name DServer1
