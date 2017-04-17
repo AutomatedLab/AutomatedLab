@@ -12,7 +12,7 @@ You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/rel
 ### Supported products
 This solution supports setting up virtual machines with the following products
 * Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016
-* SQL Server 2008, 2008R2, 2012, 2014
+* SQL Server 2008, 2008R2, 2012, 2014, 2016
 * Visual Studio 2012, 2013, 2015
 * Exchange 2013, Exchange 2016
 * System Center Orchestrator 2012
