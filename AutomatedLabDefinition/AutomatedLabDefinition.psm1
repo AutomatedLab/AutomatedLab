@@ -1497,7 +1497,13 @@ function Add-LabIsoImageDefinition
     
     foreach ($iso in $isos)
     {
-        $script:lab.Sources.ISOs.Remove($iso) | Out-Null
+        $isosToRemove = $script:lab.Sources.ISOs | Where-Object { $_.Name -eq $iso.Name -or $_.Path -eq $iso.Path }
+        foreach ($isoToRemove in $isosToRemove)
+        {
+            $script:lab.Sources.ISOs.Remove($isoToRemove) | Out-Null
+        }
+
+        #$script:lab.Sources.ISOs.Remove($iso) | Out-Null
         $script:lab.Sources.ISOs.Add($iso)
         if (-not $NoDisplay)
         {
