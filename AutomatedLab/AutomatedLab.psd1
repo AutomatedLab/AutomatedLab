@@ -270,5 +270,8 @@
         dotnet452DownloadLink = 'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
         dotnet46DownloadLink = 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe'
         dotnet462DownloadLink = 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
+
+        #SQL Server 2016 Management Studio
+        Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
     }
 }

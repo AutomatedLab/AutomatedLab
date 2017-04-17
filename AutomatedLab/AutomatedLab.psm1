@@ -649,7 +649,7 @@ function Install-Lab
         if (Get-LabMachine -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabMachine -Role SQLServer2008R2).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabMachine -Role SQLServer2012).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
+        if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2016).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
