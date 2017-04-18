@@ -1306,3 +1306,31 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionExit
 }
 #endregion Connect-LWAzureLabSourcesDrive
+
+#region Mount-LWAzureIsoImage
+function Mount-LWAzureIsoImage
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory, Position = 0)]
+        [string[]]
+        $ComputerName,
+
+        [Parameter(Mandatory, Position = 1)]
+        [string]
+        $IsoPath,
+
+        [switch]$PassThru
+    )
+
+    $machines = Get-LabMachine -ComputerName $ComputerName
+
+    # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
+    $azureIsoPath = $IsoPath -replace '/','\' -replace 'https:'
+
+    Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
+        Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+    } -ArgumentList $azureIsoPath -PassThru:$PassThru
+}
+#endregion
