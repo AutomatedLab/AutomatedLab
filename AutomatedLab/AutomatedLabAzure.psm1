@@ -1254,7 +1254,7 @@ function Get-LabAzureLabSourcesContent
     
     $content = Get-LabAzureLabSourcesContentRecursive -StorageContext $azureShare
 
-    if (-not [string]::IsNullOrWhiteSpace($Filter))
+    if (-not [string]::IsNullOrWhiteSpace($RegexFilter))
     {
         $content = $content | Where-Object -FilterScript { $PSItem.Name -match $RegexFilter }        
     }
