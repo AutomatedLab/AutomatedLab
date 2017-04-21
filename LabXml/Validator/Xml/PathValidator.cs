@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Xml;
 
 namespace AutomatedLab
@@ -24,6 +23,18 @@ namespace AutomatedLab
 
                 foreach (var path in paths)
                 {
+                    if (path.StartsWith("http"))
+                    {
+                        yield return new ValidationMessage()
+                        {
+                            Message = "URI skipped",
+                            TargetObject = path,
+                            Type = MessageType.Verbose
+                        };
+
+                        continue;
+                    }
+
                     if (!File.Exists(path) & !Directory.Exists(path))
                     {
                         yield return new ValidationMessage()
@@ -45,6 +56,5 @@ namespace AutomatedLab
                 }
             }
         }
-
     }
 }

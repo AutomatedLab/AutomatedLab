@@ -1352,11 +1352,11 @@ function Mount-LabIsoImage
 
     $machines = Get-LabMachine -ComputerName $ComputerName
 
-    $machines | Where-Object HostType -ne HyperV | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs. Skipping machine '$($_.Name)'"
+    $machines | Where-Object HostType -notin HyperV,Azure | ForEach-Object {
+        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
-    $machines = $machines | Where-Object HostType -eq HyperV
+    $machines = $machines | Where-Object HostType -in HyperV,Azure
 
     foreach ($machine in $machines)
     {
@@ -1365,7 +1365,14 @@ function Mount-LabIsoImage
             Write-ScreenInfo -Message "Mounting ISO image '$IsoPath' to computer '$machine'" -Type Info
         }
         
-        Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
+        if ($machine.HostType -eq 'HyperV')
+        {
+            Mount-LWIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
+        }
+        else 
+        {
+            Mount-LWAzureIsoImage -ComputerName $machine -IsoPath $IsoPath -PassThru:$PassThru
+        }
     }
 
     Write-LogFunctionExit
