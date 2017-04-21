@@ -832,15 +832,7 @@ function New-LabDefinition
         {
             Write-ScreenInfo -Message "No ISO files found in $(Get-LabSourcesLocation)\ISOs folder. If using Hyper-V for lab machines, please add ISO files manually using 'Add-LabIsoImageDefinition'" -Type Warning
         }
-    }
-    
-    # Azure
-    if(-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -eq 'Azure')
-    {
-        Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
-        Add-LabIsoImageDefinition -Path "$labSources\ISOs"
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
+    }    
     
     if ($DefaultVirtualizationEngine)
     {
