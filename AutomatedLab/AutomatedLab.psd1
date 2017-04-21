@@ -194,7 +194,8 @@
         'Sync-LabAzureLabSources',
         'Test-LabSourcesOnAzureStorage',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
-        'Remove-LabAzureResourceGroup'
+        'Remove-LabAzureResourceGroup',
+        'Get-LabAzureLabSourcesContent'
     )
     
     # List of all files packaged with this module
