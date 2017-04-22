@@ -109,7 +109,7 @@ function Install-LabDscPullServer
     }
     else
     {
-        if ((Get-Module -ListAvailable -Name $requiredModules).Count -eq 2)
+        if ((Get-Module -ListAvailable -Name $requiredModules).Count -eq $requiredModules.Count)
         {
             Write-ScreenInfo "The required modules to install DSC ($($requiredModules -join ', ')) are found in PSModulePath"
         }
