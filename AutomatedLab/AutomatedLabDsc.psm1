@@ -121,8 +121,15 @@ function Install-LabDscPullServer
             Install-Module -Name $requiredModules -Force
         }
 
-        $modulePaths = Get-Module -Name $requiredModules -ListAvailable | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
+        foreach ($module in $requiredModules)
+        {
+            $moduleBase = Get-Module -Name $module -ListAvailable | 
+                Sort-Object -Property Version -Descending | 
+                Select-Object -First 1 -ExpandProperty ModuleBase
+            $moduleDestination = Split-Path -Path $moduleBase -Parent
+            
+            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+        }
     }
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
@@ -136,9 +143,19 @@ function Install-LabDscPullServer
 
         if (-not $doNotPushLocalModules)
         {
-            $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
-            Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
-            $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
+            $moduleNames = (Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }).Name
+            Write-ScreenInfo "Publishing local DSC resources: $($moduleNames -join ', ')..." -NoNewLine
+
+            foreach ($module in $moduleNames)
+            {
+                $moduleBase = Get-Module -Name $module -ListAvailable | 
+                    Sort-Object -Property Version -Descending | 
+                    Select-Object -First 1 -ExpandProperty ModuleBase
+                $moduleDestination = Split-Path -Path $moduleBase -Parent
+                
+                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+            }
+            
             Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
             Write-ScreenInfo 'finished'
         }
