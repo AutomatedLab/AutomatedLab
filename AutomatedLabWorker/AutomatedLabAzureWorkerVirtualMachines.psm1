@@ -779,12 +779,17 @@ function Start-LWAzureVM
     
     Write-LogFunctionEntry
     
-    # This is ugly and will likely change in one of the next AzureRM module updates. PowerState is indeed a string literal instead of an Enum
-    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
@@ -819,11 +824,17 @@ function Start-LWAzureVM
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
     
 
-    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     foreach ($name in $ComputerName)
@@ -1038,11 +1049,17 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $resourceGroups = (Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
     
