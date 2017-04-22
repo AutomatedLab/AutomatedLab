@@ -201,6 +201,11 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
+	if ($jobs | Where-Object -Property State -eq 'Failed')
+	{
+		throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
+	}
+
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
