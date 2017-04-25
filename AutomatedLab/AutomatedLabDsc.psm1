@@ -109,7 +109,7 @@ function Install-LabDscPullServer
     }
     else
     {
-        if ((Get-Module -ListAvailable -Name $requiredModules).Count -eq 2)
+        if ((Get-Module -ListAvailable -Name $requiredModules).Count -eq $requiredModules.Count)
         {
             Write-ScreenInfo "The required modules to install DSC ($($requiredModules -join ', ')) are found in PSModulePath"
         }
@@ -121,8 +121,15 @@ function Install-LabDscPullServer
             Install-Module -Name $requiredModules -Force
         }
 
-        $modulePaths = Get-Module -Name $requiredModules -ListAvailable | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
-        Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
+        foreach ($module in $requiredModules)
+        {
+            $moduleBase = Get-Module -Name $module -ListAvailable | 
+                Sort-Object -Property Version -Descending | 
+                Select-Object -First 1 -ExpandProperty ModuleBase
+            $moduleDestination = Split-Path -Path $moduleBase -Parent
+            
+            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+        }
     }
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
@@ -136,9 +143,19 @@ function Install-LabDscPullServer
 
         if (-not $doNotPushLocalModules)
         {
-            $dscResources = Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }
-            Write-ScreenInfo "Publishing local DSC resources: $($dscResources.Name -join ', ')..." -NoNewLine
-            $modulePaths = $dscResources | Select-Object -ExpandProperty ModuleBase | ForEach-Object { Split-Path -Path $_ -Parent }
+            $moduleNames = (Get-Module -ListAvailable | Where-Object { $_.Tags -contains 'DSCResource' -and $_.Name -notin $requiredModules }).Name
+            Write-ScreenInfo "Publishing local DSC resources: $($moduleNames -join ', ')..." -NoNewLine
+
+            foreach ($module in $moduleNames)
+            {
+                $moduleBase = Get-Module -Name $module -ListAvailable | 
+                    Sort-Object -Property Version -Descending | 
+                    Select-Object -First 1 -ExpandProperty ModuleBase
+                $moduleDestination = Split-Path -Path $moduleBase -Parent
+                
+                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+            }
+            
             Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
             Write-ScreenInfo 'finished'
         }
@@ -200,6 +217,11 @@ function Install-LabDscPullServer
     
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+
+	if ($jobs | Where-Object -Property State -eq 'Failed')
+	{
+		throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
+	}
 
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline

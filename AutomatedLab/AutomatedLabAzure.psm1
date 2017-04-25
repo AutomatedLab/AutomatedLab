@@ -249,6 +249,11 @@ function Add-LabAzureSubscription
     # Add LabSources storage
     New-LabAzureLabSourcesStorage
 
+    # Add ISOs
+    Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
+    Add-LabIsoImageDefinition -Path "$labSources\ISOs"
+    Write-ScreenInfo -Message 'Done' -TaskEnd
+
     $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
     
@@ -1228,6 +1233,78 @@ function Sync-LabAzureLabSources
     Write-ScreenInfo "LabSources Sync complete" -TaskEnd
     
     Write-LogFunctionExit
+}
+
+function Get-LabAzureLabSourcesContent
+{
+    [CmdletBinding()]
+    param
+    (
+        [string]
+        $RegexFilter,
+
+        [switch]
+        $File,
+
+        [switch]
+        $Directory
+    )
+
+    $azureShare = Get-AzureStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
+    
+    $content = Get-LabAzureLabSourcesContentRecursive -StorageContext $azureShare
+
+    if (-not [string]::IsNullOrWhiteSpace($RegexFilter))
+    {
+        $content = $content | Where-Object -FilterScript { $PSItem.Name -match $RegexFilter }        
+    }
+
+    if ($File)
+    {
+        $content = $content | Where-Object -FilterScript {$PSItem -is [Microsoft.WindowsAzure.Storage.File.CloudFile]}
+    }
+
+    if ($Directory)
+    {
+        $content = $content | Where-Object -FilterScript {$PSItem -is [Microsoft.WindowsAzure.Storage.File.CloudFileDirectory]}
+    }
+
+    $content = $content |
+        Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
+        Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
+        
+    return $content
+}
+
+function Get-LabAzureLabSourcesContentRecursive
+{
+    [CmdletBinding()]
+    param
+    (
+        $StorageContext
+    )
+
+    $content = @()
+
+    $temporaryContent = $StorageContext | Get-AzureStorageFile
+    foreach($item in $temporaryContent)
+    {
+        if($item -is [Microsoft.WindowsAzure.Storage.File.CloudFileDirectory])
+        {
+            $content += $item
+            $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
+        }
+        elseif ($item -is [Microsoft.WindowsAzure.Storage.File.CloudFile])
+        {
+            $content += $item    
+        }
+        else
+        {
+            continue    
+        }
+    }
+
+    return $content
 }
 
 function Test-LabAzureSubscription

@@ -287,13 +287,17 @@ GO
         Wait-LabVM -ComputerName $hypervMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
         $sql2016 = Get-LabVM -Role SQLServer2016
-        $ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
 
-        Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
-        Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
+		if ($sql2016)
+		{
+			$ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
 
-        $jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
-        Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
+			Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
+			Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
+
+			$jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
+			Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
+		}
 
         if ($CreateCheckPoints)
         {
