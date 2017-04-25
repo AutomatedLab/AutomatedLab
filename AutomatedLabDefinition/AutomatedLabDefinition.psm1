@@ -190,6 +190,7 @@ $unattendedXmlDefaultContent2012 = @'
         <ProtectYourPC>3</ProtectYourPC>
         <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
         <HideLocalAccountScreen>true</HideLocalAccountScreen>
+        <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
       </OOBE>
       <RegisteredOrganization>vm.net</RegisteredOrganization>
       <RegisteredOwner>NA</RegisteredOwner>
