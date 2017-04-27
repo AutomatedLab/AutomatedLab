@@ -1,5 +1,5 @@
 $labName = 'ProGet'
-$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.4'
+$proGetLink = 'http://inedo.com/proget/download/nosql/4.7.11'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -80,6 +80,10 @@ if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabMachine -Rol
     return
 }
 
+Invoke-LabCommand -ActivityName 'Uninstalling the WebDAV feature' -ScriptBlock {
+    Uninstall-WindowsFeature -Name Web-DAV-Publishing
+} -ComputerName $webServer #https://github.com/NuGet/NuGetGallery/issues/514
+
 #download ProGet
 if (-not (Test-Path -Path $labSources\SoftwarePackages\ProGetSetup.exe))
 {
@@ -144,10 +148,11 @@ UPDATE [ProGet].[dbo].[Configuration]
     WHERE [Key_Name] = 'Web.UserDirectoryId'
 GO
 
--- remove the connector to the public PowerShell Gallery on the default feed
-DELETE FROM [ProGet].[dbo].[FeedConnectors] WHERE [Feed_Id] = (SELECT [Feed_Id]
-    FROM [ProGet].[dbo].[Feeds]
-    WHERE [ProGet].[dbo].[Feeds].[Feed_Name] = 'Default')
+-- add a internal PowerShell feed
+INSERT INTO [dbo].[Feeds] ([Feed_Name] ,[Feed_Description],[Active_Indicator],[Cache_Connectors_Indicator],[DropPath_Text],[FeedPathOverride_Text],
+[FeedType_Name],[PackageStoreConfiguration_Xml],[SyncToken_Bytes],[SyncTarget_Url],[LastSync_Date],[AllowUnknownLicenses_Indicator])
+VALUES('Internal','Sample Feed','Y','Y',null,null,'PowerShell',null,null,null,null,'Y')
+
 GO
 '@ -f $webServer, $webServer.DomainName, $flatDomainName
 
@@ -208,7 +213,7 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName $client -Scri
     $targetNugetExe = Join-Path -Path $targetPath -ChildPath NuGet.exe
     Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
     
-    $path = "http://$($args[0]):81/nuget/Default"    
+    $path = "http://$($args[0]):81/nuget/Internal"
     Register-PSRepository -Name Internal -SourceLocation $path -PublishLocation $path -InstallationPolicy Trusted
 
     #--------------------------------------------------------------------------------
