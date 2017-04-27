@@ -16,6 +16,8 @@
     PowerShellVersion = '4.0'
     
     DotNetFrameworkVersion = '4.0'
+
+	ModuleList = @('AutomatedLabDefinition')
     
     ScriptsToProcess = @('AutomatedLabDefinition.init.ps1')
     

@@ -17,6 +17,8 @@
     
     DotNetFrameworkVersion = '4.0'
 
+	ModuleList = @('AutomatedLabWorker')
+
     RequiredModules = @(
         'AutomatedLabUnattended',
         'PSLog',

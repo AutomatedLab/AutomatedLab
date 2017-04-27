@@ -18,6 +18,8 @@
     DotNetFrameworkVersion = '4.0'
     
     CLRVersion = '4.0'
+
+	ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     

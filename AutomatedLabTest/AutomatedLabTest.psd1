@@ -23,7 +23,7 @@
 	
 	FunctionsToExport = @('Test-LabDeployment', 'Import-LabTestResult')
 	
-	ModuleList = @('AutomatedLabTest.psm1')
+	ModuleList = @('AutomatedLabTest')
 	
 	FileList = @('AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
 	
