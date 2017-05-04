@@ -17,5 +17,7 @@
 
 	DotNetFrameworkVersion = '4.0'
 
+	ModuleList = @('AutomatedLabUnattended')
+
 	FileList = @('AutomatedLabUnattended.psm1')
 }

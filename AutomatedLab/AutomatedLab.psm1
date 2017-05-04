@@ -649,7 +649,7 @@ function Install-Lab
         if (Get-LabMachine -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabMachine -Role SQLServer2008R2).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabMachine -Role SQLServer2012).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
+        if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2016).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -3069,24 +3069,25 @@ function Update-LabMemorySettings
     Write-LogFunctionEntry
     
     $machines = Get-LabMachine -All
+    $lab = Get-LabDefinition
 
-    if ($machines | Where-Object { $_.Memory -lt 32 })
+    if ($machines | Where-Object Memory -lt 32)
     {
-        $totalMemoryAlreadyReservedAndClaimed = [int](((Get-VM -Name $machines -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property memorystartup).Sum / 1MB)
+        $totalMemoryAlreadyReservedAndClaimed = ((Get-VM -Name $machines -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
         $machinesNotCreated = $machines | Where-Object { (-not (Get-VM -Name $_ -ErrorAction SilentlyContinue)) }
     
-        $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) } | Measure-Object -Property Memory -sum).sum
+        $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and $_.Name -notin $machinesNotCreated.Name } | Measure-Object -Property Memory -Sum).Sum
     
-        $totalMemory = [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).FreePhysicalMemory / 100 * 80 / 1KB) - $totalMemoryAlreadyReserved + $totalMemoryAlreadyReservedAndClaimed)
+        $totalMemory = (Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).FreePhysicalMemory * 1KB * 0.8 - $totalMemoryAlreadyReserved + $totalMemoryAlreadyReservedAndClaimed
     
-        if ((Get-LabDefinition).MaxMemory -ne 0 -and (Get-LabDefinition).MaxMemory -le $totalMemory)
+        if ($lab.MaxMemory -ne 0 -and $lab.MaxMemory -le $totalMemory)
         {
-            $totalMemory = (Get-LabDefinition).MaxMemory
+            $totalMemory = $lab.MaxMemory
             Write-Debug -Message "Memory in lab is manually limited to: $totalmemory MB"
         }
         else
         {
-            Write-Debug -Message "80% of total available (free) physical memory minus memory already reserved by machines where memory is defined: $totalmemory MB"
+            Write-Debug -Message "80% of total available (free) physical memory minus memory already reserved by machines where memory is defined: $totalmemory bytes"
         }
         
         
@@ -3094,16 +3095,16 @@ function Update-LabMemorySettings
         
         ForEach ($machine in $machines | Where-Object Memory -ge 128)
         {
-            Write-Debug -Message "$($machine.Name.PadRight(20)) $($machine.Memory) MB (set manually)"
+            Write-Debug -Message "$($machine.Name.PadRight(20)) $($machine.Memory / 1GB)GB (set manually)"
         }
         
         #Test if necessary to limit memory at all
         $memoryUsagePrediction = $totalMemoryAlreadyReserved
-        ForEach ($machine in $machines | Where-Object Memory -lt 32)
+        foreach ($machine in $machines | Where-Object Memory -lt 32)
         {
             switch ($machine.Memory)
             {
-                1 { if ((Get-LabDefinition).UseStaticMemory)
+                1 { if ($lab.UseStaticMemory)
                     {
                         $memoryUsagePrediction += 768
                     }
@@ -3112,7 +3113,7 @@ function Update-LabMemorySettings
                         $memoryUsagePrediction += 512
                     }
                 }
-                2 { if ((Get-LabDefinition).UseStaticMemory)
+                2 { if ($lab.UseStaticMemory)
                     {
                         $memoryUsagePrediction += 1024
                     }
@@ -3121,7 +3122,7 @@ function Update-LabMemorySettings
                         $memoryUsagePrediction += 512
                     }
                 }
-                3 { if ((Get-LabDefinition).UseStaticMemory)
+                3 { if ($lab.UseStaticMemory)
                     {
                         $memoryUsagePrediction += 2048
                     }
@@ -3130,7 +3131,7 @@ function Update-LabMemorySettings
                         $memoryUsagePrediction += 1024
                     }
                 }
-                4 { if ((Get-LabDefinition).UseStaticMemory)
+                4 { if ($lab.UseStaticMemory)
                     {
                         $memoryUsagePrediction += 4096
                     }
@@ -3147,79 +3148,79 @@ function Update-LabMemorySettings
             $memoryCalculated = [int]($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)
             {
-                (Get-LabMachine -ComputerName $machine.Name).Memory = $memoryCalculated
-                if (-not (Get-LabDefinition).UseStaticMemory)
+                $machine.Memory = $memoryCalculated
+                if (-not $lab.UseStaticMemory)
                 {
-                    (Get-LabMachine -ComputerName $machine.Name).MaxMemory = $memoryCalculated * 4
+                    $machine.MaxMemory = $memoryCalculated * 4
                 }
             }
             else
             {
-                if ((Get-Lab).MaxMemory -eq 4TB)
+                if ($lab.MaxMemory -eq 4TB)
                 {
                     #If parameter UseAllMemory was used for New-LabDefinition
-                    (Get-LabMachine -ComputerName $machine.Name).Memory = $memoryCalculated
+                    $machine.Memory = $memoryCalculated
                 }
                 else
                 {
                     switch ($machine.Memory)
                     {
-                        1 { if ((Get-LabDefinition).UseStaticMemory)
+                        1 { if ($lab.UseStaticMemory)
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).Memory = 768MB
+                                $machine.Memory = 768MB
                             }
                             else
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).MinMemory = 384MB
-                                (Get-LabMachine -ComputerName $machine.Name).Memory    = 512MB
-                                (Get-LabMachine -ComputerName $machine.Name).MaxMemory = 1.25GB
+                                $machine.MinMemory = 384MB
+                                $machine.Memory    = 512MB
+                                $machine.MaxMemory = 1.25GB
                             }
                         }
-                        2 { if ((Get-LabDefinition).UseStaticMemory)
+                        2 { if ($lab.UseStaticMemory)
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).Memory = 1GB
+                                $machine.Memory = 1GB
                             }
                             else
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).MinMemory = 384MB
-                                (Get-LabMachine -ComputerName $machine.Name).Memory    = 512MB
-                                (Get-LabMachine -ComputerName $machine.Name).MaxMemory = 2GB
+                                $machine.MinMemory = 384MB
+                                $machine.Memory    = 512MB
+                                $machine.MaxMemory = 2GB
                             }
                         }
-                        3 { if ((Get-LabDefinition).UseStaticMemory)
+                        3 { if ($lab.UseStaticMemory)
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).Memory = 2GB
+                                $machine.Memory = 2GB
                             }
                             else
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).MinMemory = 384MB
-                                (Get-LabMachine -ComputerName $machine.Name).Memory    = 1GB
-                                (Get-LabMachine -ComputerName $machine.Name).MaxMemory = 4GB
+                                $machine.MinMemory = 384MB
+                                $machine.Memory    = 1GB
+                                $machine.MaxMemory = 4GB
                             }
                         }
-                        4 { if ((Get-LabDefinition).UseStaticMemory)
+                        4 { if ($lab.UseStaticMemory)
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).Memory = 4GB
+                                $machine.Memory = 4GB
                             }
                             else
                             {
-                                (Get-LabMachine -ComputerName $machine.Name).MinMemory = 384MB
-                                (Get-LabMachine -ComputerName $machine.Name).Memory    = 1GB
-                                (Get-LabMachine -ComputerName $machine.Name).MaxMemory = 8GB
+                                $machine.MinMemory = 384MB
+                                $machine.Memory    = 1GB
+                                $machine.MaxMemory = 8GB
                             }
                         }
                     }
                 }
             }
-            Write-Debug -Message "$("Memory in $($machine.Name)".padright(30)) $((Get-LabMachine -ComputerName $machine.Name).Memory) MB (calculated)"
-            if ((Get-LabMachine -ComputerName $machine.Name).MaxMemory)
+            Write-Debug -Message "$("Memory in $($machine)".PadRight(30)) $($machine.Memory / 1GB)GB (calculated)"
+            if ($machine.MaxMemory)
             {
-                Write-Debug -Message "$("MaxMemory in $($machine.Name)".padright(30)) $((Get-LabMachine -ComputerName $machine.Name).MaxMemory) MB (calculated)"
+                Write-Debug -Message "$("MaxMemory in $($machine)".PadRight(30)) $($machine.MaxMemory / 1GB)GB (calculated)"
             }
             
             if ($memoryCalculated -lt 256)
             {
-                Write-Warning -Message "Machine '$($machine.Name)' is now auto-configured with $memoryCalculated MB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab"
+                Write-Warning -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab"
             }
         }
         
@@ -3271,7 +3272,7 @@ function Set-LabInstallationCredential
     }   
     else
     {
-        $promptUser     = Read-Host "Type desired username for admin user (or leave blank for 'Install'. Username cannot be 'Administrator' is deploying in Azure)"
+        $promptUser = Read-Host "Type desired username for admin user (or leave blank for 'Install'. Username cannot be 'Administrator' is deploying in Azure)"
         
         if (-not $promptUser)
         {

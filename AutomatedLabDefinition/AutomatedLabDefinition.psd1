@@ -1,7 +1,7 @@
 ﻿@{
     RootModule = 'AutomatedLabDefinition.psm1'
     
-    ModuleVersion = '4.0.1.1'
+    ModuleVersion = '4.1.0.0'
     
     GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
@@ -16,6 +16,8 @@
     PowerShellVersion = '4.0'
     
     DotNetFrameworkVersion = '4.0'
+
+	ModuleList = @('AutomatedLabDefinition')
     
     ScriptsToProcess = @('AutomatedLabDefinition.init.ps1')
     
@@ -69,7 +71,7 @@
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
-				DSCPullServer = 'DoNotPushLocalModules'
+				DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
             }
 
             MandatoryRoleProperties = @{

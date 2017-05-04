@@ -1434,7 +1434,10 @@
         <File Id="filbIpqgMiPeMf9o8VczJogg183xN0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1" />
       </Component>
       <Component Id="cmpNEktzdDa7PxfNjHMtZlDCp1o9oA" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="ac60dc64-7ab8-490b-a3a2-08a22c55bcc3">
-        <File Id="filwCnKGukvwP7cp5pRjch9ziry8xk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1" />
+        <File Id="filwCnKGukvwP7cp5pRjch9ziry8xk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1" />
+      </Component>
+      <Component Id="cmpCEktzdDa7PxfNjHctZiDCp1o9oJ" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="912262f5-7625-46ee-aaa2-0bb6ea42c2b0">
+        <File Id="filwCvKGukvwP8cp5pRjch9ziry8yk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
       </Component>
       <Component Id="cmpZtptSdfdc_4EfGPo3bsMVo0s8Ys" Directory="dirMSSpwAehkfJ4VCtltYuupdp_7Z4" Guid="679d610f-de03-4675-8b2d-ec61ae520063">
         <File Id="filGESobCBdah.C4zdibUFQ04gPUYE" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />

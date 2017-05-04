@@ -779,12 +779,17 @@ function Start-LWAzureVM
     
     Write-LogFunctionEntry
     
-    # This is ugly and will likely change in one of the next AzureRM module updates. PowerState is indeed a string literal instead of an Enum
-    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
@@ -819,11 +824,17 @@ function Start-LWAzureVM
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
     
 
-    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     foreach ($name in $ComputerName)
@@ -1038,11 +1049,17 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-        throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		Start-Sleep -Seconds 2
+		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+		if (-not $azureVms)
+		{
+			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+		}
     }
+
     $resourceGroups = (Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
     
@@ -1306,3 +1323,31 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionExit
 }
 #endregion Connect-LWAzureLabSourcesDrive
+
+#region Mount-LWAzureIsoImage
+function Mount-LWAzureIsoImage
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory, Position = 0)]
+        [string[]]
+        $ComputerName,
+
+        [Parameter(Mandatory, Position = 1)]
+        [string]
+        $IsoPath,
+
+        [switch]$PassThru
+    )
+
+    $machines = Get-LabMachine -ComputerName $ComputerName
+
+    # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
+    $azureIsoPath = $IsoPath -replace '/','\' -replace 'https:'
+
+    Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
+        Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+    } -ArgumentList $azureIsoPath -PassThru:$PassThru
+}
+#endregion

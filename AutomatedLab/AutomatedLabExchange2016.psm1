@@ -8,12 +8,14 @@ function Copy-LabExchange2016InstallationFiles
     
     Write-ScreenInfo 'Downloading the files to the local or Azure LabSources folder...' -TaskStart
         
-    Write-ScreenInfo -Message "Downloading Exchange 2016 from '$exchangeDownloadLink'"
-    Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+    #Write-ScreenInfo -Message "Downloading Exchange 2016 from '$exchangeDownloadLink'"
+    #Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading .net Framework 4.5.2 from '$dotnet452DownloadLink'"
     Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet452DownloadLink'"
+    Get-LabInternetFile -Uri $dotnet462DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
         
     Write-ScreenInfo 'finished' -TaskEnd
     
@@ -23,9 +25,10 @@ function Copy-LabExchange2016InstallationFiles
     foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq HyperV)
     {
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -35,18 +38,19 @@ function Copy-LabExchange2016InstallationFiles
     foreach ($rootDc in $exchangeRootDCs)
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'Finished copying file to RootDCs' -TaskEnd
 
-    Write-ScreenInfo 'Finished downloading Exchange 2016 requirements' -TaskEnd
+    #Write-ScreenInfo 'Finished downloading Exchange 2016 requirements' -TaskEnd
 
-    Write-ScreenInfo 'Exctracting Exchange Installation files on all machines' -TaskStart
-    $machines = (@($exchangeServers) + $exchangeRootDCs)
-    $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$ExchangeInstallFileName" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $machines -AsJob -PassThru -NoDisplay
-    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicatorForJob -NoDisplay
+    #Write-ScreenInfo 'Exctracting Exchange Installation files on all machines' -TaskStart
+    #$machines = (@($exchangeServers) + $exchangeRootDCs)
+    #$jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$ExchangeInstallFileName" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $machines -AsJob -PassThru -NoDisplay
+    #Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicatorForJob -NoDisplay
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -67,8 +71,10 @@ function Start-ExchangeInstallSequence
 
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+        $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorAction Stop
+        Dismount-LabIsoImage -ComputerName $machine -SupressOutput
     }
     catch
     {
@@ -82,7 +88,7 @@ function Start-ExchangeInstallSequence
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorAction Stop
             }
             catch
@@ -90,7 +96,7 @@ function Start-ExchangeInstallSequence
                 Write-ScreenInfo "Activity '$Activity' did not succeed, but did not ask for a reboot, retrying the last time" -Type Warning
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                     $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorAction Stop
                 }
             }
@@ -98,7 +104,7 @@ function Start-ExchangeInstallSequence
         else
         {
             $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
-            $resultVariable.Value = $exchangeError
+            $resultVariable.Value = $_.Exception
             Write-Error "Exchange task '$Activity' failed on '$ComputerName'. See content of $($resultVariable.Name) for details."
         }
     }
@@ -131,14 +137,17 @@ function Install-LabExchange2016
 
     Write-LogFunctionEntry
     
-    $exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2016DownloadLink)
+    #$exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2016DownloadLink)
     $ucmaDownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
     $dotnet452DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet452DownloadLink)
+    $dotnet462DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet462DownloadLink)
     
-    $exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
+    #$exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
     $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaDownloadLink.Segments.Count-1]
     $dotnet452InstallFileName = $dotnet452DownloadLink.Segments[$dotnet452DownloadLink.Segments.Count-1]
+    $dotnet462InstallFileName = $dotnet462DownloadLink.Segments[$dotnet462DownloadLink.Segments.Count-1]
 
+    $roleName = [AutomatedLab.Roles]::Exchange2016
     $start = Get-Date
     $lab = Get-Lab
     $jobs = @()
@@ -148,6 +157,13 @@ function Install-LabExchange2016
     if (-not $exchangeServers)
     {
         Write-Error 'No Exchange 2016 servers defined in the lab. Skipping installation'
+        return
+    }
+
+    $isoImage = $lab.Sources.ISOs | Where-Object Name -eq $roleName
+    if (-not $isoImage)
+    {
+        Write-LogFunctionExitWithError -Message "There is no ISO image available to install the role '$roleName'. Please add the required ISO to the lab and name it '$roleName'"
         return
     }
     
@@ -208,8 +224,10 @@ function Install-LabExchange2016
         $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine

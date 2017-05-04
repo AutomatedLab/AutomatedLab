@@ -16,6 +16,8 @@
 	PowerShellVersion = '3.0'
 	
 	DotNetFrameworkVersion = '2.0'
+
+	ModuleList = @('PSFileTransfer')
 	
 	FunctionsToExport = 'Copy-LabFileItem', 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
 	
