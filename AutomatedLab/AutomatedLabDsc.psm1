@@ -98,14 +98,10 @@ function Install-LabDscPullServer
     if ($Online)
     {        
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
-            param
-            (
-                [string[]]$requiredModules
-            )
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
             Install-Module -Name $requiredModules -Force
-        } -AsJob -PassThru -ArgumentList @($requiredModules) | Receive-Job -AutoRemoveJob -Wait | Out-Null #only interested in errors
+        } -Variable (Get-Variable -Name requiredModules) -AsJob -PassThru | Wait-Job | Receive-Job -Keep | Out-Null #only interested in errors
     }
     else
     {
@@ -156,7 +152,6 @@ function Install-LabDscPullServer
                 Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
             }
             
-            Copy-LabFileItem -Path $modulePaths -ComputerName $machines -DestinationFolder 'C:\Program Files\WindowsPowerShell\Modules'
             Write-ScreenInfo 'finished'
         }
     }
