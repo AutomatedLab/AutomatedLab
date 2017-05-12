@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-	ModuleList = @('AutomatedLab')
+    ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -63,6 +63,7 @@
         'Get-LabSoftwarePackage',
         'Get-LabAvailableOperatingSystem',
         'Update-LabIsoImage',
+        'Update-LabBaseImage',
         'Import-Lab',
         'Export-Lab',
         'Install-Lab',
