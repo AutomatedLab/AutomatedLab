@@ -8,15 +8,6 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{3662119A-C291-4BEC-8C6C-EBE802042E7B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F53EE2B3-B14E-4266-9018-18CDEC02D2DA}"
-	ProjectSection(SolutionItems) = preProject
-		Documentation\AL Tutorial Series Part 1 - Architecture.docx = Documentation\AL Tutorial Series Part 1 - Architecture.docx
-		Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx = Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx
-		Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx = Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx
-		Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx = Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx
-		Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx = Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx
-		Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx = Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx
-		Documentation\AutomatedLab Documentation.docx = Documentation\AutomatedLab Documentation.docx
-	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Scripts", "Sample Scripts", "{0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}"
 EndProject
