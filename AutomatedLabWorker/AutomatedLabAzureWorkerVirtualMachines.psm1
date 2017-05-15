@@ -357,7 +357,7 @@ function New-LWAzureVM
         Write-Verbose "Skus: $SkusName"
         Write-Verbose '-------------------------------------------------------'
                 
-        Select-AzureRmProfile -Path $SubscriptionPath
+        Import-AzureRmContext -Path $SubscriptionPath
         Set-AzureRmContext -SubscriptionName $SubscriptionName
         
         $VerbosePreference = 'Continue'
@@ -737,7 +737,7 @@ function Remove-LWAzureVM
             )
             
             Import-Module -Name Azure*
-            Select-AzureRmProfile -Path $SubscriptionPath
+            Import-AzureRmContext -Path $SubscriptionPath
 
             $resourceGroup = ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
 
@@ -809,7 +809,7 @@ function Start-LWAzureVM
                 [string]$SubscriptionPath
             )
             Import-Module -Name Azure*
-            Select-AzureRmProfile -Path $SubscriptionPath
+            Import-AzureRmContext -Path $SubscriptionPath
             $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
             if ($result.Status -ne 'Succeeded')
@@ -915,7 +915,7 @@ function Stop-LWAzureVM
                     [string]$SubscriptionPath
                 )
                 Import-Module -Name Azure*
-                Select-AzureRmProfile -Path $SubscriptionPath
+                Import-AzureRmContext -Path $SubscriptionPath
                 $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
 
                 if ($result.Status -ne 'Succeeded')
@@ -1225,7 +1225,7 @@ function Enable-LWAzureWinRm
                 $Location
             )
             
-            Select-AzureRmProfile -Path $ProfilePath
+            Import-AzureRmContext -Path $ProfilePath
             Set-AzureRmContext -SubscriptionName $Subscription
 
             $azureVm = Get-AzureRmVM -Name $machineName -Resourcegroup $ResourceGroup

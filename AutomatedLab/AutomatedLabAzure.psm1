@@ -91,7 +91,7 @@ function Add-LabAzureSubscription
 
 		$Path = Join-Path $tempFolder.FullName -ChildPath "$($Lab.Name).azurermprofile"
 
-		Save-AzureRmProfile -Path $Path
+		Save-AzureRmContext -Path $Path
 	}
     
     try
@@ -101,12 +101,12 @@ function Add-LabAzureSubscription
 			throw 'No Azure Resource Manager profile could be found'
 		}
 
-        $AzureRmProfile = Select-AzureRmProfile -Path $Path -ErrorAction Stop
+        $AzureRmProfile = Import-AzureRmContext -Path $Path -ErrorAction Stop
 
 		$context = Get-AzureRmContext -ErrorAction SilentlyContinue
 		if(-not $context)
 		{
-			throw 'Your Azure Resource Manager profile has expired. Please use Login-AzureRmAccount to log in and optionally Save-AzureRmProfile to persist your settings'
+			throw 'Your Azure Resource Manager profile has expired. Please use Login-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
 		}
     }
     catch
@@ -149,7 +149,7 @@ function Add-LabAzureSubscription
     }
     catch
     {
-        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Login-AzureRmAccount and Save-AzureRmProfile."
+        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Login-AzureRmAccount and Save-AzureRmContext."
     }
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
@@ -1315,6 +1315,6 @@ function Test-LabAzureSubscription
     }
     catch
     {
-        throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Select-AzureRmProfile ' first"
+        throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Import-AzureRmContext ' first"
     }
 }
