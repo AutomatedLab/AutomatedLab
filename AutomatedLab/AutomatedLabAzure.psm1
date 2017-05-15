@@ -129,7 +129,7 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
     Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
     
-    if ($SubscriptionName -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object SubscriptionName -eq $SubscriptionName))
+    if ($SubscriptionName -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object Name -eq $SubscriptionName))
     {
         throw "A subscription named '$SubscriptionName' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription name"
     }
@@ -137,11 +137,11 @@ function Add-LabAzureSubscription
     #select default subscription subscription
     if (-not $SubscriptionName)
     {
-        $SubscriptionName = $AzureRmProfile.Context.Subscription.SubscriptionName
+        $SubscriptionName = $AzureRmProfile.Context.Subscription.Name
     }
 
     Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
-    $selectedSubscription = $Subscriptions | Where-Object{$_.SubscriptionName -eq $SubscriptionName}
+    $selectedSubscription = $Subscriptions | Where-Object{$_.Name -eq $SubscriptionName}
 
     try
     {
@@ -990,7 +990,7 @@ function New-LabAzureLabSourcesStorage
     }
 
     $currentSubscription = (Get-AzureRmContext).Subscription
-    Write-ScreenInfo "Looking for Azure LabSources inside subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
+    Write-ScreenInfo "Looking for Azure LabSources inside subscription '$($currentSubscription.Name)'" -TaskStart
 
     $resourceGroup = Get-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue
     if (-not $resourceGroup)
@@ -1045,7 +1045,7 @@ function Get-LabAzureLabSourcesStorage
 
     $storageAccount | Add-Member -MemberType NoteProperty -Name StorageAccountKey -Value ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value -Force
     $storageAccount | Add-Member -MemberType NoteProperty -Name Path -Value "\\$($storageAccount.StorageAccountName).file.core.windows.net\labsources" -Force
-    $storageAccount | Add-Member -MemberType NoteProperty -Name SubscriptionName -Value (Get-AzureRmContext).Subscription.SubscriptionName -Force
+    $storageAccount | Add-Member -MemberType NoteProperty -Name SubscriptionName -Value (Get-AzureRmContext).Subscription.Name -Force
 
     $storageAccount
 }
@@ -1122,12 +1122,12 @@ function Sync-LabAzureLabSources
     
     if (-not (Test-LabAzureLabSourcesStorage))
     {
-        Write-Error "There is no LabSources share available in the current subscription '$((Get-AzureRmContext).Subscription.SubscriptionName)'. To create one, please call 'New-LabAzureLabSourcesStorage'."
+        Write-Error "There is no LabSources share available in the current subscription '$((Get-AzureRmContext).Subscription.Name)'. To create one, please call 'New-LabAzureLabSourcesStorage'."
         return
     }
     
     $currentSubscription = (Get-AzureRmContext).Subscription
-    Write-ScreenInfo -Message "Syncing LabSources in subscription '$($currentSubscription.SubscriptionName)'" -TaskStart
+    Write-ScreenInfo -Message "Syncing LabSources in subscription '$($currentSubscription.Name)'" -TaskStart
 
     # Retrieve storage context
     $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????

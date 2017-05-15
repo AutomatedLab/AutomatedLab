@@ -304,7 +304,7 @@ function New-LWAzureVM
     $resourceGroupName,
     $lab.AzureSettings.DefaultLocation.DisplayName,
     $lab.AzureSettings.AzureProfilePath,
-    $lab.AzureSettings.DefaultSubscription.SubscriptionName,
+    $lab.AzureSettings.DefaultSubscription.Name,
     $lab.Name,
     $publisherName,
     $offerName,
@@ -1250,7 +1250,7 @@ function Enable-LWAzureWinRm
             {
                 throw "Setting up WinRm on $machineName failed!"
             }
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
     }
 
     if ($Wait)
