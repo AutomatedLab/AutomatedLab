@@ -6,15 +6,9 @@ namespace AutomatedLab.Azure
     [Serializable]
     public class AzureSubscription : CopiedObject<AzureSubscription>
     {
-        public AzureAccount[] Accounts { get; set; }
-        public string CurrentStorageAccountName { get; set; }
-        public string DefaultAccount { get; set; }
-        public string Environment { get; set; }
-        public bool IsCurrent { get; set; }
-        public bool IsDefault { get; set; }
-        public string SubscriptionId { get; set; }
-        public string SubscriptionName { get; set; }
-        public string SupportedModes { get; set; }
+        public string Id { get; set; }
+        public string Name { get; set; }
+        public string State { get; set; }
         public string TenantId { get; set; }
 
         public AzureSubscription()
@@ -42,7 +36,7 @@ namespace AutomatedLab.Azure
 
         public override string ToString()
         {
-            return SubscriptionName;
+            return Name;
         }
     }
 }
