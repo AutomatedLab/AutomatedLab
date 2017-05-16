@@ -91,6 +91,12 @@ function Add-LabAzureSubscription
 
 		$Path = Join-Path $tempFolder.FullName -ChildPath "$($Lab.Name).azurermprofile"
 
+		# Select the proper subscription before saving the profile
+		if ($SubscriptionName)
+		{
+			[void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+		}
+
 		Save-AzureRmContext -Path $Path
 	}
     
