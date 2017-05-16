@@ -809,7 +809,7 @@ function Start-LWAzureVM
                 [string]$SubscriptionPath
             )
             Import-Module -Name Azure*
-            Import-AzureRmContext -Path $SubscriptionPath
+            [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
             $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
             if ($result.Status -ne 'Succeeded')
@@ -915,7 +915,7 @@ function Stop-LWAzureVM
                     [string]$SubscriptionPath
                 )
                 Import-Module -Name Azure*
-                Import-AzureRmContext -Path $SubscriptionPath
+                [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
                 $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
 
                 if ($result.Status -ne 'Succeeded')
