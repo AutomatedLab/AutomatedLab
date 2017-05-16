@@ -9,13 +9,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\Te
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F53EE2B3-B14E-4266-9018-18CDEC02D2DA}"
 	ProjectSection(SolutionItems) = preProject
-		Documentation\AL Tutorial Series Part 1 - Architecture.docx = Documentation\AL Tutorial Series Part 1 - Architecture.docx
-		Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx = Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx
-		Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx = Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx
-		Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx = Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx
-		Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx = Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx
-		Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx = Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx
-		Documentation\AutomatedLab Documentation.docx = Documentation\AutomatedLab Documentation.docx
+		Documentation\AL Tutorial Series Part 1 - Architecture.md = Documentation\AL Tutorial Series Part 1 - Architecture.md
+		Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.md = Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.md
+		Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.md = Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.md
+		Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.md = Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.md
+		Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.md = Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.md
+		Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.md = Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.md
+		Documentation\AutomatedLab Documentation.md = Documentation\AutomatedLab Documentation.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Scripts", "Sample Scripts", "{0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}"
@@ -253,6 +253,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDsc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{2E4C28D0-0A96-453D-AE4B-22ED3284966C}"
 	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb = LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb
 		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
@@ -277,6 +278,55 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-E
 	ProjectSection(SolutionItems) = preProject
 		Help\AutomatedLab.Help.pshproj = Help\AutomatedLab.Help.pshproj
 		Help\AutomatedLabDefinition.Help.pshproj = Help\AutomatedLabDefinition.Help.pshproj
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "media", "media", "{99649F48-1216-41A4-9315-22EA5706AAA4}"
+	ProjectSection(SolutionItems) = preProject
+		Documentation\media\al2_image1.png = Documentation\media\al2_image1.png
+		Documentation\media\AL2_image2.png = Documentation\media\AL2_image2.png
+		Documentation\media\AL2_image3.png = Documentation\media\AL2_image3.png
+		Documentation\media\AL2_image4.png = Documentation\media\AL2_image4.png
+		Documentation\media\al3_image1.png = Documentation\media\al3_image1.png
+		Documentation\media\al3_image2.png = Documentation\media\al3_image2.png
+		Documentation\media\al4_image1.png = Documentation\media\al4_image1.png
+		Documentation\media\al4_image10.png = Documentation\media\al4_image10.png
+		Documentation\media\al4_image11.png = Documentation\media\al4_image11.png
+		Documentation\media\al4_image12.png = Documentation\media\al4_image12.png
+		Documentation\media\al4_image13.png = Documentation\media\al4_image13.png
+		Documentation\media\al4_image14.png = Documentation\media\al4_image14.png
+		Documentation\media\al4_image15.png = Documentation\media\al4_image15.png
+		Documentation\media\al4_image16.png = Documentation\media\al4_image16.png
+		Documentation\media\al4_image17.png = Documentation\media\al4_image17.png
+		Documentation\media\al4_image18.png = Documentation\media\al4_image18.png
+		Documentation\media\al4_image19.png = Documentation\media\al4_image19.png
+		Documentation\media\al4_image2.png = Documentation\media\al4_image2.png
+		Documentation\media\al4_image20.png = Documentation\media\al4_image20.png
+		Documentation\media\al4_image21.png = Documentation\media\al4_image21.png
+		Documentation\media\al4_image22.png = Documentation\media\al4_image22.png
+		Documentation\media\al4_image23.png = Documentation\media\al4_image23.png
+		Documentation\media\al4_image24.png = Documentation\media\al4_image24.png
+		Documentation\media\al4_image25.png = Documentation\media\al4_image25.png
+		Documentation\media\al4_image26.png = Documentation\media\al4_image26.png
+		Documentation\media\al4_image27.png = Documentation\media\al4_image27.png
+		Documentation\media\al4_image28.png = Documentation\media\al4_image28.png
+		Documentation\media\al4_image29.png = Documentation\media\al4_image29.png
+		Documentation\media\al4_image3.png = Documentation\media\al4_image3.png
+		Documentation\media\al4_image30.png = Documentation\media\al4_image30.png
+		Documentation\media\al4_image31.png = Documentation\media\al4_image31.png
+		Documentation\media\al4_image32.png = Documentation\media\al4_image32.png
+		Documentation\media\al4_image33.png = Documentation\media\al4_image33.png
+		Documentation\media\al4_image34.png = Documentation\media\al4_image34.png
+		Documentation\media\al4_image35.png = Documentation\media\al4_image35.png
+		Documentation\media\al4_image36.png = Documentation\media\al4_image36.png
+		Documentation\media\al4_image37.png = Documentation\media\al4_image37.png
+		Documentation\media\al4_image38.png = Documentation\media\al4_image38.png
+		Documentation\media\al4_image39.png = Documentation\media\al4_image39.png
+		Documentation\media\al4_image4.png = Documentation\media\al4_image4.png
+		Documentation\media\al4_image5.png = Documentation\media\al4_image5.png
+		Documentation\media\al4_image6.png = Documentation\media\al4_image6.png
+		Documentation\media\al4_image7.png = Documentation\media\al4_image7.png
+		Documentation\media\al4_image8.png = Documentation\media\al4_image8.png
+		Documentation\media\al4_image9.png = Documentation\media\al4_image9.png
 	EndProjectSection
 EndProject
 Global
@@ -346,5 +396,6 @@ Global
 		{42F1CA14-387C-4DC0-BF14-0DFEA2681105} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{2E4C28D0-0A96-453D-AE4B-22ED3284966C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{99649F48-1216-41A4-9315-22EA5706AAA4} = {F53EE2B3-B14E-4266-9018-18CDEC02D2DA}
 	EndGlobalSection
 EndGlobal

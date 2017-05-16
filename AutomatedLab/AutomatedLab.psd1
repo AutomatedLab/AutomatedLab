@@ -254,7 +254,7 @@
         SetLocalIntranetSites = 'All' #All, Forest, Domain, None
 
         #Azure
-        MinimumAzureModuleVersion = '0.9.3'
+        MinimumAzureModuleVersion = '4.0.0'
         DefaultAzureRoleSize = 'A'
 
         #Exchange

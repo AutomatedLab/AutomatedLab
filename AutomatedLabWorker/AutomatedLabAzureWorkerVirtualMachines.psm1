@@ -304,7 +304,7 @@ function New-LWAzureVM
     $resourceGroupName,
     $lab.AzureSettings.DefaultLocation.DisplayName,
     $lab.AzureSettings.AzureProfilePath,
-    $lab.AzureSettings.DefaultSubscription.SubscriptionName,
+    $lab.AzureSettings.DefaultSubscription.Name,
     $lab.Name,
     $publisherName,
     $offerName,
@@ -357,7 +357,7 @@ function New-LWAzureVM
         Write-Verbose "Skus: $SkusName"
         Write-Verbose '-------------------------------------------------------'
                 
-        Select-AzureRmProfile -Path $SubscriptionPath
+        Import-AzureRmContext -Path $SubscriptionPath
         Set-AzureRmContext -SubscriptionName $SubscriptionName
         
         $VerbosePreference = 'Continue'
@@ -737,7 +737,7 @@ function Remove-LWAzureVM
             )
             
             Import-Module -Name Azure*
-            Select-AzureRmProfile -Path $SubscriptionPath
+            Import-AzureRmContext -Path $SubscriptionPath
 
             $resourceGroup = ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
 
@@ -809,12 +809,12 @@ function Start-LWAzureVM
                 [string]$SubscriptionPath
             )
             Import-Module -Name Azure*
-            Select-AzureRmProfile -Path $SubscriptionPath
+            [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
             $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
 
             if ($result.Status -ne 'Succeeded')
             {
-                Write-Error -Message 'Could not start Azure VM' -TargetObject $Machine.Name
+                Write-Error -Message ('Could not start Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error)-TargetObject $Machine.Name -ErrorAction Stop
             }
         } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
         
@@ -915,12 +915,12 @@ function Stop-LWAzureVM
                     [string]$SubscriptionPath
                 )
                 Import-Module -Name Azure*
-                Select-AzureRmProfile -Path $SubscriptionPath
+                [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
                 $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
 
                 if ($result.Status -ne 'Succeeded')
                 {
-                    Write-Error -Message 'Could not stop Azure VM' -TargetObject $Machine.Name
+                    Write-Error -Message ('Could not stop Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error) -TargetObject $Machine.Name -ErrorAction Stop
                 }
             } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
         }
@@ -1225,7 +1225,7 @@ function Enable-LWAzureWinRm
                 $Location
             )
             
-            Select-AzureRmProfile -Path $ProfilePath
+            Import-AzureRmContext -Path $ProfilePath
             Set-AzureRmContext -SubscriptionName $Subscription
 
             $azureVm = Get-AzureRmVM -Name $machineName -Resourcegroup $ResourceGroup
@@ -1250,7 +1250,7 @@ function Enable-LWAzureWinRm
             {
                 throw "Setting up WinRm on $machineName failed!"
             }
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
     }
 
     if ($Wait)
