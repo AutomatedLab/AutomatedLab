@@ -814,7 +814,7 @@ function Start-LWAzureVM
 
             if ($result.Status -ne 'Succeeded')
             {
-                Write-Error -Message 'Could not start Azure VM' -TargetObject $Machine.Name
+                Write-Error -Message ('Could not start Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error)-TargetObject $Machine.Name -ErrorAction Stop
             }
         } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
         
@@ -920,7 +920,7 @@ function Stop-LWAzureVM
 
                 if ($result.Status -ne 'Succeeded')
                 {
-                    Write-Error -Message 'Could not stop Azure VM' -TargetObject $Machine.Name
+                    Write-Error -Message ('Could not stop Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error) -TargetObject $Machine.Name -ErrorAction Stop
                 }
             } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
         }
