@@ -19,7 +19,7 @@ function New-LabBaseImages
     
 	if (-not $lab.Sources.AvailableOperatingSystems)
 	{
-		throw "There isn't a single operating system ISO available in the lab. Please add one and use the switch 'IsOperatingSystem' to mark it as an OS image"
+		throw "There isn't a single operating system ISO available in the lab. Please call 'Get-LabAvailableOperatingSystem' to see what AutomatedLab has found and check the LabSources folder location by calling 'Get-LabSourcesLocation'."
 	}
 
 	$osesProcessed = @()
