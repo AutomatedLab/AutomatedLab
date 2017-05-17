@@ -12,6 +12,8 @@ function Copy-LabExchange2013InstallationFiles
     Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
+    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet452DownloadLink'"
+    Get-LabInternetFile -Uri $dotnet462DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
         
     Write-ScreenInfo 'finished' -TaskEnd
     
@@ -23,6 +25,7 @@ function Copy-LabExchange2013InstallationFiles
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -33,6 +36,8 @@ function Copy-LabExchange2013InstallationFiles
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
         Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'Finished copying file to RootDCs' -TaskEnd
@@ -129,9 +134,11 @@ function Install-LabExchange2013
     
     $exchangeDownloadLink =  New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.Exchange2013DownloadLink)
     $ucmaDownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.ExchangeUcmaDownloadLink)
+    $dotnet462DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet462DownloadLink)
     
     $exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
     $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaDownloadLink.Segments.Count-1]
+    $dotnet462DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet462DownloadLink)
 
     $start = Get-Date
     $lab = Get-Lab
@@ -200,6 +207,10 @@ function Install-LabExchange2013
     if ($InstallRequirements -or $All)
     {
         $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
+
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
         
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
