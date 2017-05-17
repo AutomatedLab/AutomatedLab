@@ -256,9 +256,23 @@ function Add-LabAzureSubscription
     New-LabAzureLabSourcesStorage
 
     # Add ISOs
-    Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
-    Add-LabIsoImageDefinition -Path "$labSources\ISOs"
-    Write-ScreenInfo -Message 'Done' -TaskEnd
+    
+	try
+	{
+		Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
+		Add-LabIsoImageDefinition -Path "$labSources\ISOs" -ErrorAction Stop
+	}
+	catch
+	{
+		Write-ScreenInfo -Message 'No ISO files have been found in your Azure labsources share. Please make sure that they are present when you try mounting them.' -Type Warning
+	}
+	finally
+	{
+		Write-ScreenInfo -Message 'Done' -TaskEnd
+	}
+	
+
+    
 
     $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
