@@ -462,10 +462,6 @@ function Get-LabAzureLocation
     
     Write-LogFunctionEntry
     
-    #Update-LabAzureSettings
-    
-    Import-Module -Name Azure*
-
     $azureLocations = Get-AzureRmLocation
     
     if ($LocationName)
