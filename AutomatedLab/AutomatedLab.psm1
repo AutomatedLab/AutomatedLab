@@ -455,7 +455,7 @@ function Install-Lab
     Write-LogFunctionEntry
 
     #perform full install if no role specific installation is requested
-    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin 'NoValidation', 'DelayBetweenComputers' }).Count
+    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
     if (-not $Global:labExported -and -not (Get-Lab -ErrorAction SilentlyContinue))
     {
