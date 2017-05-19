@@ -1918,7 +1918,7 @@ function Install-VisualStudio2015
         $parameters.Add('ActivityName', 'InstallationVisualStudio2015')
         $parameters.Add('Verbose', $VerbosePreference)
         $parameters.Add('Scriptblock', {
-                Write-Verbose 'Installing Visual Studio 2013'
+                Write-Verbose 'Installing Visual Studio 2015'
             
                 Push-Location
                 Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
