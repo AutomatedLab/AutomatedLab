@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.1.0.0'
+    ModuleVersion = '4.1.1.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -254,7 +254,7 @@
         SetLocalIntranetSites = 'All' #All, Forest, Domain, None
 
         #Azure
-        MinimumAzureModuleVersion = '0.9.3'
+        MinimumAzureModuleVersion = '4.0.0'
         DefaultAzureRoleSize = 'A'
 
         #Exchange

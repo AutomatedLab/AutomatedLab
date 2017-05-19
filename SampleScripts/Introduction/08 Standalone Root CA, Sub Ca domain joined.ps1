@@ -14,7 +14,7 @@ Add-LabMachineDefinition -Name DC1 -Roles RootDC
 
 Add-LabMachineDefinition -Name CA1 -Roles CaRoot
 
-Add-LabMachineDefinition -Name Client1 -OperatingSystem 'Windows 10 Pro'
+Add-LabMachineDefinition -Name Client1 -OperatingSystem 'Windows 10 Enterprise'
 
 Install-Lab
 

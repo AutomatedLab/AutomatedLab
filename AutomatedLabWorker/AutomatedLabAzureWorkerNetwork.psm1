@@ -55,7 +55,7 @@ function New-LWAzureNetworkSwitch
                 $Network
             )
             
-            Select-AzureRmProfile -Path $ProfilePath
+            Import-AzureRmContext -Path $ProfilePath
             Set-AzureRmContext -SubscriptionName $Subscription
 
             $azureSubnets = @()
@@ -78,7 +78,7 @@ function New-LWAzureNetworkSwitch
             }
             
             $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $azureNetworkParameters, $network.Subnets, $network
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $azureNetworkParameters, $network.Subnets, $network
     }
     
     #Wait for network creation jobs and configure vnet peering    
@@ -154,7 +154,7 @@ function Remove-LWAzureNetworkSwitch
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
         
-        $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Select-AzureRmProfile -Path $($lab.AzureSettings.AzureProfilePath);Select-AzureRmSubscription -SubscriptionName $($lab.AzureSettings.DefaultSubscription.SubscriptionName); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
+        $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Import-AzureRmContext -Path $($lab.AzureSettings.AzureProfilePath);Select-AzureRmSubscription -SubscriptionName $($lab.AzureSettings.DefaultSubscription.Name); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
         Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
     }
     $jobs = Get-Job -Name RemoveAzureVNet*
