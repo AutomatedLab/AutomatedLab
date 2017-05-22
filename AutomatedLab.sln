@@ -224,6 +224,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
 		SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
+		SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
 		SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
 		SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
 		SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
@@ -253,7 +254,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDsc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{2E4C28D0-0A96-453D-AE4B-22ED3284966C}"
 	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb = LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb
+		LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix = LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix
 		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1

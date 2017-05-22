@@ -224,10 +224,11 @@ function Install-LabExchange2016
         $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
+		#.net 4.5.2 is not needed for Exchange 2016
         #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
