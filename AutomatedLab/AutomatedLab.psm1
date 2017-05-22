@@ -1284,6 +1284,87 @@ function Update-LabIsoImage
 }
 #endregion Update-LabIsoImage
 
+#region Update-LabBaseImage
+function Update-LabBaseImage
+{
+    [CmdletBinding(PositionalBinding = $false)]
+    param(
+        [Parameter(Mandatory)]
+        [string]$BaseImagePath,
+
+        [Parameter(Mandatory)]
+        [string]$UpdateFolderPath
+    )
+
+    if (-not (Test-Path -Path $BaseImagePath -PathType Leaf))
+    {
+        Write-Error "The specified image '$BaseImagePath' could not be found"
+        return
+    }
+
+    if ([System.IO.Path]::GetExtension($BaseImagePath) -ne '.vhdx')
+    {
+        Write-Error "The specified image must have the extension '.vhdx'"
+        return
+    }
+
+    $patchesCab = Get-ChildItem -Path $UpdateFolderPath\* -Include *.cab -ErrorAction SilentlyContinue
+    $patchesMsu = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu -ErrorAction SilentlyContinue
+
+    if (($patchesCab -eq $null) -and ($patchesMsu -eq $null))
+    {
+        Write-Error "No .cab and .msu files found in '$UpdateFolderPath'"
+        return
+    }
+
+    Write-Host 'Updating base image'
+    Write-Host $BaseImagePath
+    Write-Host "with $($patchesCab.Count + $patchesMsu.Count) updates from"
+    Write-Host $UpdateFolderPath
+    Write-Host
+    Write-Host 'This process can take a long time, depending on the number of updates'
+
+    $start = Get-Date
+    Write-Host "Start time: $start"
+
+    Write-Host 'Creating temp folder (mount point)'
+    $mountTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
+
+    Write-Host "Mounting Windows Image '$BaseImagePath'"
+    Write-Host "to folder '$mountTempFolder'"
+    Mount-WindowsImage -Path $mountTempFolder -ImagePath $BaseImagePath -Index 1
+
+    Write-Host 'Adding patches to the mounted Windows Image.'
+    $patchesCab | ForEach-Object {
+
+        $UpdateReady = Get-WindowsPackage -PackagePath $_ -Path $mountTempFolder | Select-Object -Property PackageState, PackageName, Applicable
+
+        if ($UpdateReady.PackageState -eq 'Installed')
+        {
+            Write-Host "$($UpdateReady.PackageName) is already installed"
+        }
+        elseif ($UpdateReady.Applicable -eq $true)
+        {
+            Add-WindowsPackage -PackagePath $_.FullName -Path $mountTempFolder
+        }
+    }
+    $patchesMsu | ForEach-Object {
+
+        Add-WindowsPackage -PackagePath $_.FullName -Path $mountTempFolder
+    }
+
+    Write-Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
+    Dismount-WindowsImage -Path $mountTempFolder -Save
+    Write-Host 'finished'
+
+    Write-Host "Deleting temp folder '$mountTempFolder'"
+    Remove-Item -Path $mountTempFolder -Recurse -Force
+    
+    $end = Get-Date
+    Write-Host "finished at $end. Runtime: $($end - $start)"
+}
+#endregion Update-LabBaseImage
+
 #region Enable-LabVMRemoting
 function Enable-LabVMRemoting
 {
