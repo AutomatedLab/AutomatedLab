@@ -279,7 +279,7 @@ function Set-LWAzureDnsServer
             $azureVnet
         }
         
-        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.Name)" -TaskStart
+        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.Name)" -TaskEnd
     }
 
     Write-LogFunctionExit
