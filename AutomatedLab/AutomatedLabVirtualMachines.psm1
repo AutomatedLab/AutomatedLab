@@ -123,6 +123,9 @@ function New-LabVM
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
+		Write-Verbose -Message 'Restarting machines to apply DNS settings'
+		Restart-LabVM -ComputerName $azureVMs -Wait
+
         Write-Verbose -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs        
 
