@@ -1,13 +1,22 @@
-﻿# Redirect $env:PSmodulepath to develop AutomatedLab modules
+﻿<# Prerequisites :
+    - VMware environment with vCenter server
+    - ResourcePool 'Test'
+    - A powered down VM named 'AL_WindowsServer2012R2DataCenter', fully installed with said OS, and VMware tools installed.\
+    - A snapshot of the VM above (this is to be used as master to the linked clones)
+#>
+
+# Redirect $env:PSmodulepath to develop AutomatedLab modules
 $path = "C:\Users\Jos\Documents\GitHub\AutomatedLab"
 $env:PSModulePath += ";$path"
 
 # Save a credential for VMware access
-#$cred = (get-credential administrator@vsphere.local)
+$cred = (get-credential administrator@vsphere.local)
 
 # Import VMware modules to current session
 get-module -ListAvailable vmware* | import-module
 
+# unload Hyper-V
+get-module hyper-v | Remove-Module
 
 New-LabDefinition -Name VMWareLab -VmPath C:\AutomatedLab-VMs\ -DefaultVirtualizationEngine VMWare 
 
