@@ -543,7 +543,7 @@ function New-LabDefinition
 
         [switch]$UseStaticMemory = $false,
 
-        [ValidateSet('Azure', 'HyperV')]
+        [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
         
         [switch]$NoAzurePublishSettingsFile,
@@ -2498,7 +2498,11 @@ process
     {
         $machine.OperatingSystem = $OperatingSystem
     }
-    
+    elseif ($machine.HostType -eq 'VMWare')
+    {
+        $machine.OperatingSystem = $OperatingSystem
+    }
+
     if (-not $TimeZone)   { $TimeZone = tzutil.exe /g }
     $machine.Timezone = $TimeZone
     
