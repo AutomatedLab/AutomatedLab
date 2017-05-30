@@ -1,7 +1,8 @@
 ﻿<# Prerequisites :
     - VMware environment with vCenter server
     - ResourcePool 'Test'
-    - A powered down VM named 'AL_WindowsServer2012R2DataCenter', fully installed with said OS, and VMware tools installed.\
+    - A VM folder named Templates
+    - In that folder, a powered down VM named 'AL_WindowsServer2012R2DataCenter', fully installed with said OS, and VMware tools installed.\
     - A snapshot of the VM above (this is to be used as master to the linked clones)
 #>
 
