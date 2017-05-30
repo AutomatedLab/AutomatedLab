@@ -1,11 +1,53 @@
+<# 
+    An AutomatedLab user could have a VMWare environment on premisis _and_ have Hyper-V enabled on his own device.
+    When the user has both Hyper-V and VMWare modules loaded in one session, this can cause unwanted behaviour.
+    
+    This may need to be mitigated in AutomatedLab in some cases. There are two main approaches:
+    1) Prepending conflicting CmdLets with the name of the intende module of origin, e.g.:
+        VMware.VimAutomatiion.Core\Get-VM 
+
+    2) Theoretically, one should be able to load modules using the -Prefix parameter:
+        Import-Module VMWare* -Prefix "VW"
+    This _should_ result in all the VMWare CmdLets being imported with the prefix VW:
+        Get-VWVM 
+    Unfortunately, this does not work in PowerCLI 6.0R2 - 6.5.0 , because of the way the underlying PSSnapin is loaded.
+    See here for more information: 
+        https://communities.vmware.com/thread/520601
+    This will be solved in PowerCLI version 6.5.1 R1:
+        https://blogs.vmware.com/PowerCLI/2016/11/saying-farewell-snapins.html
+
+    For now, approach 1) is probably the way to go, or we should force users to require version 6.5.1R1 or greater for the VMware module.
+    
+    Get a list of CmdLets whith the same name in Hyper-V and VMWare:
+    Compare-Object (get-command -Module vmware.vimautomation.core) (Get-Command -Module Hyper-v) -IncludeEqual -ExcludeDifferent
+    Retrieved 30-5-2017, Vmware module version:6.3.0.0, Hyper-V module version 2.0.0.0
+
+        InputObject SideIndicator
+        ----------- -------------
+        Get-VM      ==
+        Get-VMHost  ==
+        Move-VM     ==
+        New-VM      ==
+        Remove-VM   ==
+        Restart-VM  ==
+        Set-VM      ==
+        Set-VMHost  ==
+        Start-VM    ==
+        Stop-VM     ==
+        Suspend-VM  ==
+#>
+
 trap
 {
     if ((($_.Exception.Message -like '*Get-VM*') -or `
          ($_.Exception.Message -like '*Save-VM*') -or `
          ($_.Exception.Message -like '*Get-VMSnapshot*') -or `
          ($_.Exception.Message -like '*Suspend-VM*') -or `
-         ($_.Exception.Message -like '*CheckPoint-VM*')) -and (-not (Get-Module -ListAvailable Hyper-V)))
+         ($_.Exception.Message -like '*CheckPoint-VM*')) -and `
+         (-not (Get-Module -ListAvailable Hyper-V))) 
     {
+        # What is the exact purpose of this error trap? 
+        # Errors concerning certain CmdLets are to be ignored, if Hyper-V is not an available module. Why?
     }
     else
     {
@@ -45,7 +87,14 @@ function New-LWVMWareVM
 	Write-LogFunctionEntry
 	
 	$lab = Get-Lab
-	$folderName = 'Microsoft Workshop'
+	
+    if (-not (Get-Folder -Name "AutomatedLab_$($lab.Name)" -ErrorAction SilentlyContinue))
+    {
+        New-Folder -Name "AutomatedLab_$($lab.Name)" -Location VM
+    }
+    $folderName = "AutomatedLab_$($lab.Name)"
+
+    $referenceSnapshot = (Get-Snapshot -VM (get-vm $ReferenceVM)).Name | select -last 1
 	
 	$parameters = @{
 		Name = $Name
@@ -60,7 +109,7 @@ function New-LWVMWareVM
 	if ($AsJob)
 	{
 		$job = Start-Job -ScriptBlock {
-			throw 'Not implemented yet'
+			throw 'Not implemented yet'  # TODO: implement
 		} -ArgumentList $parameters
 		
 		
@@ -89,15 +138,34 @@ function New-LWVMWareVM
 										       -OSType Windows -Type NonPersistent -OrgName AutomatedLab -Domain $parameters.DomainName -DomainCredentials $DomainJoinCredential -ChangeSid
 	    }
 
-        $referenceVM = Get-VM -Name $parameters.ReferenceVM
-        if (-not $referenceVM)
+        $ReferenceVM_int = Get-VM -Name $parameters.ReferenceVM
+        if (-not $ReferenceVM_int)
         {
 	        Write-Error "Reference VM '$($parameters.ReferenceVM)' could not be found, cannot create the machine '$($machine.Name)'"
 	        return
         }
 
-        $result = New-VM -Name $parameters.Name -VM $referenceVM -ResourcePool $lab.VMWareSettings.ResourcePool `
-				         -Datastore $lab.VMWareSettings.DataStore -Location (Get-Folder -Name $parameters.FolderName) -OSCustomizationSpec $osSpecs
+        # Create Linked Clone
+        $result = New-VM `
+            -Name $parameters.Name `
+            -ResourcePool $lab.VMWareSettings.ResourcePool `
+		    -Datastore $lab.VMWareSettings.DataStore `
+            -Location (Get-Folder -Name $parameters.FolderName) `
+            -OSCustomizationSpec $osSpecs `
+            -VM $ReferenceVM_int `
+            -LinkedClone `
+            -ReferenceSnapshot $referenceSnapshot `
+        
+        #TODO: logic to switch to full clone for AD recovery scenario's etc.
+        <# Create full clone
+        $result = New-VM `
+            -Name $parameters.Name `
+            -ResourcePool $lab.VMWareSettings.ResourcePool `
+		    -Datastore $lab.VMWareSettings.DataStore `
+            -Location (Get-Folder -Name $parameters.FolderName) `
+            -OSCustomizationSpec $osSpecs `
+            -VM $ReferenceVM_int    
+        #>    
     }
 
     if ($PassThru)
@@ -181,9 +249,11 @@ function Start-LWVMWareVM
 	
 	foreach ($name in $ComputerName)
 	{
-		if (Get-VM -Name $name)
+    	$vm = $null
+        $vm = Get-VM -Name $name 
+        if ($vm)
 		{
-			$result = Start-VM $name -ErrorAction SilentlyContinue
+			$result = Start-VM $vm -ErrorAction SilentlyContinue
 			if ($result.PowerState -ne "PoweredOn")
 			{
 				Write-Error "Could not start machine '$name'"
