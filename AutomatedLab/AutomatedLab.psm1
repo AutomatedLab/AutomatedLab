@@ -255,7 +255,7 @@ function Import-Lab
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
         }
 
-        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 2))
+        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
         {
             throw 'The VMWare snapin was not loaded. Maybe it is missing'
         }
