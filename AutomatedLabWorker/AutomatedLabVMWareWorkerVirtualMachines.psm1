@@ -88,11 +88,25 @@ function New-LWVMWareVM
 	
 	$lab = Get-Lab
 	
-    if (-not (Get-Folder -Name "AutomatedLab_$($lab.Name)" -ErrorAction SilentlyContinue))
+    #TODO: add logic to determine if machine already exists
+    <#
+    if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
     {
-        New-Folder -Name "AutomatedLab_$($lab.Name)" -Location VM
+        Write-ProgressIndicatorEnd
+        Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
+        return $false
     }
+
+    Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
+
+    #>
+    
     $folderName = "AutomatedLab_$($lab.Name)"
+    if (-not (Get-Folder -Name $folderName -ErrorAction SilentlyContinue))
+    {
+        New-Folder -Name $folderName -Location VM | out-null
+    }
+    
 
     $referenceSnapshot = (Get-Snapshot -VM (get-vm $ReferenceVM)).Name | select -last 1
 	
@@ -253,7 +267,8 @@ function Start-LWVMWareVM
         $vm = Get-VM -Name $name 
         if ($vm)
 		{
-			$result = Start-VM $vm -ErrorAction SilentlyContinue
+            Start-VM $vm -ErrorAction SilentlyContinue | out-null
+            $result = Get-VM $vm
 			if ($result.PowerState -ne "PoweredOn")
 			{
 				Write-Error "Could not start machine '$name'"
