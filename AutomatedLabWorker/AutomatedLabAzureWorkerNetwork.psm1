@@ -181,7 +181,7 @@ function Get-LWAzureNetworkSwitch
     
     foreach ($network in $VirtualNetwork)
     {
-        Write-ScreenInfo -Message "Locating Azure virtual network '$($network.Name)'" -TaskStart
+        Write-Verbose -Message "Locating Azure virtual network '$($network.Name)'"
          
         $azureNetworkParameters = @{
             Name = $network.Name
@@ -272,7 +272,7 @@ function Set-LWAzureDnsServer
 
         $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
         $network.DnsServers.AddressAsString | ForEach-Object { $azureVnet.DhcpOptions.DnsServers.Add($PSItem)}
-        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction SilentlyContinue
+        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
 
         if ($PassThru)
         {
