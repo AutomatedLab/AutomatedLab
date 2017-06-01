@@ -108,7 +108,7 @@ function New-LWVMWareVM
     }
     
 
-    $referenceSnapshot = (Get-Snapshot -VM (get-vm $ReferenceVM)).Name | select -last 1
+    $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | select -last 1
 	
 	$parameters = @{
 		Name = $Name
@@ -152,7 +152,7 @@ function New-LWVMWareVM
 										       -OSType Windows -Type NonPersistent -OrgName AutomatedLab -Domain $parameters.DomainName -DomainCredentials $DomainJoinCredential -ChangeSid
 	    }
 
-        $ReferenceVM_int = Get-VM -Name $parameters.ReferenceVM
+        $ReferenceVM_int = VMware.VimAutomation.Core\Get-VM -Name $parameters.ReferenceVM
         if (-not $ReferenceVM_int)
         {
 	        Write-Error "Reference VM '$($parameters.ReferenceVM)' could not be found, cannot create the machine '$($machine.Name)'"
@@ -160,7 +160,7 @@ function New-LWVMWareVM
         }
 
         # Create Linked Clone
-        $result = New-VM `
+        $result = VMware.VimAutomation.Core\New-VM `
             -Name $parameters.Name `
             -ResourcePool $lab.VMWareSettings.ResourcePool `
 		    -Datastore $lab.VMWareSettings.DataStore `
@@ -215,14 +215,14 @@ function Remove-LWVMWareVM
 			
 			Add-PSSnapin -Name VMware.VimAutomation.Core, VMware.VimAutomation.Vds
 			
-			$vm = Get-VM -Name $ComputerName
+			$vm = VMware.VimAutomation.Core\Get-VM -Name $ComputerName
 			if ($vm)
 			{
 				if ($vm.PowerState -eq "PoweredOn")
 				{
-					Stop-vm -VM $vm -Confirm:$false
+					VMware.VimAutomation.Core\Stop-vm -VM $vm -Confirm:$false
 				}
-				Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
+				VMware.VimAutomation.Core\Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
 			}
 		} -ArgumentList $ComputerName
 		
@@ -234,14 +234,14 @@ function Remove-LWVMWareVM
 	}
 	else
 	{
-		$vm = Get-VM -Name $ComputerName
+		$vm = VMware.VimAutomation.Core\Get-VM -Name $ComputerName
 		if ($vm)
 		{
 			if ($vm.PowerState -eq "PoweredOn")
 			{
-				Stop-vm -VM $vm -Confirm:$false
+				VMware.VimAutomation.Core\Stop-vm -VM $vm -Confirm:$false
 			}
-			Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
+			VMware.VimAutomation.Core\Remove-VM -DeletePermanently -VM $ComputerName -Confirm:$false
 		}
 	}
 	
@@ -264,11 +264,11 @@ function Start-LWVMWareVM
 	foreach ($name in $ComputerName)
 	{
     	$vm = $null
-        $vm = Get-VM -Name $name 
+        $vm = VMware.VimAutomation.Core\Get-VM -Name $name 
         if ($vm)
 		{
-            Start-VM $vm -ErrorAction SilentlyContinue | out-null
-            $result = Get-VM $vm
+            VMware.VimAutomation.Core\Start-VM $vm -ErrorAction SilentlyContinue | out-null
+            $result = VMware.VimAutomation.Core\Get-VM $vm
 			if ($result.PowerState -ne "PoweredOn")
 			{
 				Write-Error "Could not start machine '$name'"
@@ -295,7 +295,7 @@ workflow Save-LWVMWareVM
 		
 		foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
 		{
-			Suspend-VM -VM $Name -ErrorAction SilentlyContinue -Confirm:$false
+			VMware.VimAutomation.Core\Suspend-VM -VM $Name -ErrorAction SilentlyContinue -Confirm:$false
 		}
 		
 		Write-LogFunctionExit
@@ -315,7 +315,7 @@ function Stop-LWVMWareVM
 	
 	foreach ($name in $ComputerName)
 	{
-		if (Get-VM -Name $name)
+		if (VMware.VimAutomation.Core\Get-VM -Name $name)
 		{
 			$result = Shutdown-VMGuest -VM $name -ErrorAction SilentlyContinue -Confirm:$false
 			if ($result.PowerState -ne "PoweredOff")
@@ -411,7 +411,7 @@ function Get-LWVMWareVMStatus
 	
 	foreach ($name in $ComputerName)
 	{
-		$vm = Get-VM -Name $name
+		$vm = VMware.VimAutomation.Core\Get-VM -Name $name
 		if ($vm)
 		{
 			if ($vm.PowerState -eq 'PoweredOn')
