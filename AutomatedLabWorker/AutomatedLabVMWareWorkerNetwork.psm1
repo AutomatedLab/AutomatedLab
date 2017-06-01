@@ -8,9 +8,9 @@ function Get-LWVMWareNetworkSwitch
 	
     Write-LogFunctionEntry
 
-    foreach ($name in $VirtualNetwork)
+    foreach ($network in $VirtualNetwork)
     {
-        $network = Get-VDPortgroup -Name $Name
+        $network = Get-VDPortgroup -Name $network.Name
 
         if (-not $network)
         {
