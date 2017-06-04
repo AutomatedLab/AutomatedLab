@@ -22,4 +22,4 @@ Fixing issues also does not require a lot of administrative work. The basic step
 5. Sit back and wait for us to take credit for your code - just kidding. All the fame and glory is yours.
 
 ## Reviews
-We are using [Reviewable.io](https://reviewable.io) for our code reviews. Anytime a pull request is opened, reviewable kicks in and adds a little link to your pull request. From there either we, the AutomatedLab team, or you, the community, will review the changes and add comments. The author of the pull request can then go through all issues, fix them and click done. When all issues are fixed and there is nothing else to do, we will gladly merge your pull request.
+We are using GitHub's internal capabilites for our code reviews. Either we, the AutomatedLab team, or you, the community, can review the changes and add comments. The author of the pull request can then go through all issues, fix them and add commits to his branch, which will show up in the pull request. When all issues are fixed and there is nothing else to do, we will gladly merge your pull request.

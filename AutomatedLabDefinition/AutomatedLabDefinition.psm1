@@ -938,7 +938,7 @@ function Export-LabDefinition
     
     if ($firstRootDc -or $firstRouter)
     {
-        foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -ne Azure))
+        foreach ($machine in (Get-LabMachineDefinition))
         {
             if ($firstRouter)
             {
