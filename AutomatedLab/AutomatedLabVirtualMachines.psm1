@@ -1124,7 +1124,7 @@ function Connect-LabVM
             $cred = $machine.GetCredential($lab)
         }
         
-        if ($machine.HostType = 'Azure')
+        if ($machine.HostType -eq 'Azure')
         {
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
