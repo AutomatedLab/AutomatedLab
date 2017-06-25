@@ -91,8 +91,14 @@ function Install-LabDscPullServer
     
     if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
     {
-        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
+        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy clie `
         -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+    }
+
+    if (-not (Test-LabCATemplate -TemplateName DscMofEncryption  -ComputerName $ca))
+    {
+        New-LabCATemplate -TemplateName DscMofEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
+        -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
     }
 
     if ($Online)
