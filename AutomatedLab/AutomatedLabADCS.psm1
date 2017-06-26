@@ -1453,11 +1453,11 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
     Copy-Item -Path $certFile -Destination c:\cert.cer -Force
     Copy-Item -Path $infFile -Destination c:\request.inf -Force
 
-    Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile -Force
-    
-    $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
     $certPrint.Import('C:\cert.cer')
     $certPrint
+
+	Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile, 'C:\cert.cer' -Force
 }
 
 function Get-CertificatePfx
