@@ -1639,7 +1639,7 @@ function Add-LabCertificatePfx
         [System.Security.Cryptography.X509Certificates.StoreName]$Store,
         
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [string]$ComputerName
+        [string[]]$ComputerName
     )
     
     begin
