@@ -954,19 +954,120 @@ function Get-CATemplate
 }
 
 $ApplicationPolicies = @{
-    ServerAuthentication = '1.3.6.1.5.5.7.3.1'
-    ClientAuthentication = '1.3.6.1.5.5.7.3.2'
-    CodeSigning = '1.3.6.1.5.5.7.3.3'
-    EmailProtection = '1.3.6.1.5.5.7.3.4'
-    IpsecEndSystem  = '1.3.6.1.5.5.7.3.5'
-    IpsecTunnel = '1.3.6.1.5.5.7.3.6'
-    IpsecUser = '1.3.6.1.5.5.7.3.7'
-    TimeStamping = '1.3.6.1.5.5.7.3.8'
-    OCSPSigning = '1.3.6.1.5.5.7.3.9'
-    CapWap = '1.3.6.1.5.5.7.3.19'
+    # Remote Desktop
+    'Remote Desktop' = '1.3.6.1.4.1.311.54.1.2'
+    # Windows Update
+    'Windows Update' = '1.3.6.1.4.1.311.76.6.1'
+    # Windows Third Party Applicaiton Component
+    'Windows Third Party Application Component' = '1.3.6.1.4.1.311.10.3.25'
+    # Windows TCB Component
+    'Windows TCB Component' = '1.3.6.1.4.1.311.10.3.23'
+    # Windows Store
+    'Windows Store' = '1.3.6.1.4.1.311.76.3.1'
+    # Windows Software Extension verification
+    ' Windows Software Extension Verification' = '1.3.6.1.4.1.311.10.3.26'
+    # Windows RT Verification
+    'Windows RT Verification' = '1.3.6.1.4.1.311.10.3.21'
+    # Windows Kits Component
+    'Windows Kits Component' = '1.3.6.1.4.1.311.10.3.20'
+    # ROOT_PROGRAM_NO_OCSP_FAILOVER_TO_CRL
+    'No OCSP Failover to CRL' = '1.3.6.1.4.1.311.60.3.3'
+    # ROOT_PROGRAM_AUTO_UPDATE_END_REVOCATION
+    'Auto Update End Revocation' = '1.3.6.1.4.1.311.60.3.2'
+    # ROOT_PROGRAM_AUTO_UPDATE_CA_REVOCATION
+    'Auto Update CA Revocation' = '1.3.6.1.4.1.311.60.3.1'
+    # Revoked List Signer
+    'Revoked List Signer' = '1.3.6.1.4.1.311.10.3.19'
+    # Protected Process Verification
+    'Protected Process Verification' = '1.3.6.1.4.1.311.10.3.24'
+    # Protected Process Light Verification
+    'Protected Process Light Verification' = '1.3.6.1.4.1.311.10.3.22'
+    # Platform Certificate
+    'Platform Certificate' = '2.23.133.8.2'
+    # Microsoft Publisher
+    'Microsoft Publisher' = '1.3.6.1.4.1.311.76.8.1'
+    # Kernel Mode Code Signing
+    'Kernel Mode Code Signing' = '1.3.6.1.4.1.311.6.1.1'
+    # HAL Extension
+    'HAL Extension' = '1.3.6.1.4.1.311.61.5.1'
+    # Endorsement Key Certificate
+    'Endorsement Key Certificate' = '2.23.133.8.1'
+    # Early Launch Antimalware Driver
+    'Early Launch Antimalware Driver' = '1.3.6.1.4.1.311.61.4.1'
+    # Dynamic Code Generator
+    'Dynamic Code Generator' = '1.3.6.1.4.1.311.76.5.1'
+    # Domain Name System (DNS) Server Trust
+    'DNS Server Trust' = '1.3.6.1.4.1.311.64.1.1'
+    # Document Encryption
+    'Document Encryption' = '1.3.6.1.4.1.311.80.1'
+    # Disallowed List
+    'Disallowed List' = '1.3.6.1.4.1.10.3.30'
+    # Attestation Identity Key Certificate
+    # System Health Authentication
+    'System Health Authentication' = '1.3.6.1.4.1.311.47.1.1'
+    # Smartcard Logon
+    'IdMsKpScLogon' = '1.3.6.1.4.1.311.20.2.2'
+    # Certificate Request Agent
+    'ENROLLMENT_AGENT' = '1.3.6.1.4.1.311.20.2.1'
+    # CTL Usage
+    'AUTO_ENROLL_CTL_USAGE' = '1.3.6.1.4.1.311.20.1'
+    # Private Key Archival
+    'KP_CA_EXCHANGE' = '1.3.6.1.4.1.311.21.5'
+    # Key Recovery Agent
+    'KP_KEY_RECOVERY_AGENT' = '1.3.6.1.4.1.311.21.6'
+    # Secure Email
+    'PKIX_KP_EMAIL_PROTECTION' = '1.3.6.1.5.5.7.3.4'
+    # IP Security End System
+    'PKIX_KP_IPSEC_END_SYSTEM' = '1.3.6.1.5.5.7.3.5'
+    # IP Security Tunnel Termination
+    'PKIX_KP_IPSEC_TUNNEL' = '1.3.6.1.5.5.7.3.6'
+    # IP Security User
+    'PKIX_KP_IPSEC_USER' = '1.3.6.1.5.5.7.3.7'
+    # Time Stamping
+    'PKIX_KP_TIMESTAMP_SIGNING' = '1.3.6.1.5.5.7.3.8'
+    # OCSP Signing
+    'KP_OCSP_SIGNING' = '1.3.6.1.5.5.7.3.9'
+    # IP security IKE intermediate
+    'IPSEC_KP_IKE_INTERMEDIATE' = '1.3.6.1.5.5.8.2.2'
+    # Microsoft Trust List Signing
+    'KP_CTL_USAGE_SIGNING' = '1.3.6.1.4.1.311.10.3.1'
+    # Microsoft Time Stamping
+    'KP_TIME_STAMP_SIGNING' = '1.3.6.1.4.1.311.10.3.2'
+    # Windows Hardware Driver Verification
+    'WHQL_CRYPTO' = '1.3.6.1.4.1.311.10.3.5'
+    # Windows System Component Verification
+    'NT5_CRYPTO' = '1.3.6.1.4.1.311.10.3.6'
+    # OEM Windows System Component Verification
+    'OEM_WHQL_CRYPTO' = '1.3.6.1.4.1.311.10.3.7'
+    # Embedded Windows System Component Verification
+    'EMBEDDED_NT_CRYPTO' = '1.3.6.1.4.1.311.10.3.8'
+    # Root List Signer
+    'ROOT_LIST_SIGNER' = '1.3.6.1.4.1.311.10.3.9'
+    # Qualified Subordination
+    'KP_QUALIFIED_SUBORDINATION' = '1.3.6.1.4.1.311.10.3.10'
+    # Key Recovery
+    'KP_KEY_RECOVERY' = '1.3.6.1.4.1.311.10.3.11'
+    # Document Signing
+    'KP_DOCUMENT_SIGNING' = '1.3.6.1.4.1.311.10.3.12'
+    # Lifetime Signing
+    'KP_LIFETIME_SIGNING' = '1.3.6.1.4.1.311.10.3.13'
+    'DRM' = '1.3.6.1.4.1.311.10.5.1'
+    'DRM_INDIVIDUALIZATION' = '1.3.6.1.4.1.311.10.5.2'
+    # Key Pack Licenses
+    'LICENSES' = '1.3.6.1.4.1.311.10.6.1'
+    # License Server Verification
+    'LICENSE_SERVER' = '1.3.6.1.4.1.311.10.6.2'
+    'Server Authentication' = '1.3.6.1.5.5.7.3.1' #The certificate can be used for OCSP authentication.            
+    KP_IPSEC_USER = '1.3.6.1.5.5.7.3.7' #The certificate can be used for an IPSEC user.            
+    'Code Signing' = '1.3.6.1.5.5.7.3.3' #The certificate can be used for signing code.
+    'Client Authentication' = '1.3.6.1.5.5.7.3.2' #The certificate can be used for authenticating a client.
+    KP_EFS = '1.3.6.1.4.1.311.10.3.4' #The certificate can be used to encrypt files by using the Encrypting File System.
+    EFS_RECOVERY = '1.3.6.1.4.1.311.10.3.4.1' #The certificate can be used for recovery of documents protected by using Encrypting File System (EFS).
+    DS_EMAIL_REPLICATION = '1.3.6.1.4.1.311.21.19' #The certificate can be used for Directory Service email replication.         
+    ANY_APPLICATION_POLICY = '1.3.6.1.4.1.311.10.12.1' #The applications that can use the certificate are not restricted.
 }
 
-$KeyUsages = @{
+$ExtendedKeyUsages = @{
     OldAuthorityKeyIdentifier = '.29.1'
     OldPrimaryKeyAttributes = '2.5.29.2'
     OldCertificatePolicies = '2.5.29.3'
@@ -1009,12 +1110,14 @@ function New-CATemplate
         [Parameter(Mandatory = $true)]
         [string]$SourceTemplateName,
         
-        [ValidateSet('EmailProtection', 'OCSPSigning', 'CodeSigning', 'ClientAuthentication', 'IpsecTunnel', 'TimeStamping', 'IpsecUser', 'IpsecEndSystem', 'ServerAuthentication', 'CapWap')]
+        [ValidateSet('EFS_RECOVERY', 'Auto Update CA Revocation', 'No OCSP Failover to CRL', 'OEM_WHQL_CRYPTO', 'Windows TCB Component', 'DNS Server Trust', 'Windows Third Party Application Component', 'ANY_APPLICATION_POLICY', 'KP_LIFETIME_SIGNING', 'Disallowed List', 'DS_EMAIL_REPLICATION', 'LICENSE_SERVER', 'KP_KEY_RECOVERY', 'Windows Kits Component', 'AUTO_ENROLL_CTL_USAGE', 'PKIX_KP_TIMESTAMP_SIGNING', 'Windows Update', 'Document Encryption', 'KP_CTL_USAGE_SIGNING', 'IPSEC_KP_IKE_INTERMEDIATE', 'PKIX_KP_IPSEC_TUNNEL', 'Code Signing', 'KP_KEY_RECOVERY_AGENT', 'KP_QUALIFIED_SUBORDINATION', 'Early Launch Antimalware Driver', 'Remote Desktop', 'WHQL_CRYPTO', 'EMBEDDED_NT_CRYPTO', 'System Health Authentication', 'DRM', 'PKIX_KP_EMAIL_PROTECTION', 'KP_TIME_STAMP_SIGNING', 'Protected Process Light Verification', 'Endorsement Key Certificate', 'KP_IPSEC_USER', 'PKIX_KP_IPSEC_END_SYSTEM', 'LICENSES', 'Protected Process Verification', 'IdMsKpScLogon', 'HAL Extension', 'KP_OCSP_SIGNING', 'Server Authentication', 'Auto Update End Revocation', 'KP_EFS', 'KP_DOCUMENT_SIGNING', 'Windows Store', 'Kernel Mode Code Signing', 'ENROLLMENT_AGENT', 'ROOT_LIST_SIGNER', 'Windows RT Verification', 'NT5_CRYPTO', 'Revoked List Signer', 'Microsoft Publisher', 'Platform Certificate', ' Windows Software Extension Verification', 'KP_CA_EXCHANGE', 'PKIX_KP_IPSEC_USER', 'Dynamic Code Generator', 'Client Authentication', 'DRM_INDIVIDUALIZATION')]
         [string[]]$ApplicationPolicy,
 
         [Pki.CATemplate.EnrollmentFlags]$EnrollmentFlags,
 
         [Pki.CATemplate.PrivateKeyFlags]$PrivateKeyFlags = 0,
+
+        [Pki.CATemplate.KeyUsage]$KeyUsage = 0,
         
         [int]$Version,
 
@@ -1061,8 +1164,8 @@ function New-CATemplate
     $newCertTemplate.put('pKIMaxIssuingDepth', $sourceTemplate.pKIMaxIssuingDepth.Value)
     $newCertTemplate.put('pKICriticalExtensions', $sourceTemplate.pKICriticalExtensions.Value)
     
-    $ku = @($sourceTemplate.pKIExtendedKeyUsage.Value)
-    $newCertTemplate.put('pKIExtendedKeyUsage', $ku)
+    $eku = @($sourceTemplate.pKIExtendedKeyUsage.Value)
+    $newCertTemplate.put('pKIExtendedKeyUsage', $eku)
     
     #$newCertTemplate.put('pKIDefaultCSPs','2,Microsoft Base Cryptographic Provider v1.0, 1,Microsoft Enhanced Cryptographic Provider v1.0')
     $newCertTemplate.put('msPKI-RA-Signature', '0')
@@ -1101,7 +1204,15 @@ function New-CATemplate
     }
     
     $newCertTemplate.SetInfo()
-    $newCertTemplate.pKIKeyUsage = $sourceTemplate.pKIKeyUsage
+
+    if ($KeyUsage)
+    {
+        $newCertTemplate.pKIKeyUsage = $KeyUsage
+    }
+    else
+    {
+        $newCertTemplate.pKIKeyUsage = $sourceTemplate.pKIKeyUsage
+    }
     
     if ($ValidityPeriod)
     {
@@ -1342,11 +1453,11 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
     Copy-Item -Path $certFile -Destination c:\cert.cer -Force
     Copy-Item -Path $infFile -Destination c:\request.inf -Force
 
-    Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile -Force
-    
-    $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
     $certPrint.Import('C:\cert.cer')
     $certPrint
+
+	Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile, 'C:\cert.cer' -Force
 }
 
 function Get-CertificatePfx
@@ -1528,7 +1639,7 @@ function Add-LabCertificatePfx
         [System.Security.Cryptography.X509Certificates.StoreName]$Store,
         
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [string]$ComputerName
+        [string[]]$ComputerName
     )
     
     begin
@@ -1581,12 +1692,14 @@ function New-LabCATemplate
         [Parameter(Mandatory)]
         [string]$SourceTemplateName,
         
-        [ValidateSet('EmailProtection', 'OCSPSigning', 'CodeSigning', 'ClientAuthentication', 'IpsecTunnel', 'TimeStamping', 'IpsecUser', 'IpsecEndSystem', 'ServerAuthentication', 'CapWap')]
+        [ValidateSet('EFS_RECOVERY', 'Auto Update CA Revocation', 'No OCSP Failover to CRL', 'OEM_WHQL_CRYPTO', 'Windows TCB Component', 'DNS Server Trust', 'Windows Third Party Application Component', 'ANY_APPLICATION_POLICY', 'KP_LIFETIME_SIGNING', 'Disallowed List', 'DS_EMAIL_REPLICATION', 'LICENSE_SERVER', 'KP_KEY_RECOVERY', 'Windows Kits Component', 'AUTO_ENROLL_CTL_USAGE', 'PKIX_KP_TIMESTAMP_SIGNING', 'Windows Update', 'Document Encryption', 'KP_CTL_USAGE_SIGNING', 'IPSEC_KP_IKE_INTERMEDIATE', 'PKIX_KP_IPSEC_TUNNEL', 'Code Signing', 'KP_KEY_RECOVERY_AGENT', 'KP_QUALIFIED_SUBORDINATION', 'Early Launch Antimalware Driver', 'Remote Desktop', 'WHQL_CRYPTO', 'EMBEDDED_NT_CRYPTO', 'System Health Authentication', 'DRM', 'PKIX_KP_EMAIL_PROTECTION', 'KP_TIME_STAMP_SIGNING', 'Protected Process Light Verification', 'Endorsement Key Certificate', 'KP_IPSEC_USER', 'PKIX_KP_IPSEC_END_SYSTEM', 'LICENSES', 'Protected Process Verification', 'IdMsKpScLogon', 'HAL Extension', 'KP_OCSP_SIGNING', 'Server Authentication', 'Auto Update End Revocation', 'KP_EFS', 'KP_DOCUMENT_SIGNING', 'Windows Store', 'Kernel Mode Code Signing', 'ENROLLMENT_AGENT', 'ROOT_LIST_SIGNER', 'Windows RT Verification', 'NT5_CRYPTO', 'Revoked List Signer', 'Microsoft Publisher', 'Platform Certificate', ' Windows Software Extension Verification', 'KP_CA_EXCHANGE', 'PKIX_KP_IPSEC_USER', 'Dynamic Code Generator', 'Client Authentication', 'DRM_INDIVIDUALIZATION')]
         [string[]]$ApplicationPolicy,
 
         [Pki.CATemplate.EnrollmentFlags]$EnrollmentFlags,
 
         [Pki.CATemplate.PrivateKeyFlags]$PrivateKeyFlags = 0,
+
+        [Pki.CATemplate.KeyUsage]$KeyUsage = 0,
         
         [int]$Version = 2,
 
@@ -1603,7 +1716,7 @@ function New-LabCATemplate
 
     Write-LogFunctionEntry
     
-    $computer = Get-LabMachine -ComputerName $ComputerName
+    $computer = Get-LabVM -ComputerName $ComputerName
     if (-not $computer)
     {
         Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
@@ -1616,7 +1729,7 @@ function New-LabCATemplate
         return
     }
     
-    $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
+    $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
 
     Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
@@ -1714,7 +1827,7 @@ function Get-LabIssuingCA
     
     if (-not $issuingCAs)
     {
-        Write-Error "There was no issuing CA found"
+        Write-Error 'There was no issuing CA found'
         return
     }
 
