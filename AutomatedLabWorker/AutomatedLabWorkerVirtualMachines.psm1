@@ -62,16 +62,19 @@ function New-LWHypervVM
         #move the adapter that connects the machine to the domain to the top
         $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
-        #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
-        #the network ordering
-        $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
-        Select-Object -First 1
-        
-        if ($domainAdapter)
+        if ($dc)
         {
-            $adapters.Remove($domainAdapter)
-            $adapters.Insert(0, $domainAdapter)
+            #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
+            #the network ordering
+            $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
+            Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
+            Select-Object -First 1
+        
+            if ($domainAdapter)
+            {
+                $adapters.Remove($domainAdapter)
+                $adapters.Insert(0, $domainAdapter)
+            }
         }
     }
     
