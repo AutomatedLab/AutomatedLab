@@ -24,7 +24,7 @@ function Get-ALTypeComplete_OperatingSystemName
     (Get-LabAvailableOperatingSystem -Path $global:labSources).OperatingSystemName
 }
 
-Register-ArgumentCompleter -CommandName Import-Lab -ParameterName Name -ScriptBlock (Get-Command -Name Get-ALTypeComplete_AvailableLabs).ScriptBlock
+Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock (Get-Command -Name Get-ALTypeComplete_AvailableLabs).ScriptBlock
 
 $commands = Get-Command -Module AutomatedLab, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
 Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock (Get-Command -Name Get-ALTypeComplete_LabVMs).ScriptBlock
