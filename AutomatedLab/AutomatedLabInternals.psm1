@@ -1811,6 +1811,259 @@ function Add-VariableToPSSession
 }
 #endregion Add-VariableToPSSession
 
+#region Send-ModuleToPSSession
+function Send-ModuleToPSSession
+{
+    #Requires -Version 3
+    <#
+            .SYNOPSIS
+            Copies/moves a module to a given set of computers using a PSSession.
+            The destination path will mirror the source path.
+            
+            .DESCRIPTION
+            This cmdlet uses standard PS remoting to send modules stored on your
+            local machine to a remote machine. If the required module and assembly
+            properties have been populated, you may optionally have it try to include
+            those dependencies for you by specifying the IncludeDependencies parameter.
+            
+            .PARAMETER Module
+            The module to copy/move to the remote computers
+            .PARAMETER Session
+            The session(s) to send the files to.
+            .PARAMETER IncludeDependencies
+            Determines whether the command attempts to send the module's enumerated
+            dependencies after the module has been sent. 
+            .PARAMETER Move
+            Causes the source file to be deleted if all session sends are successful
+            .PARAMETER MaxBufferSize
+            The maximum chunk size to send to a session at one time.
+            Note: 10MB seems to be the default maximum sized allowed in Powershell V4,
+            however in testing the practical limit appears to be 7.4MB. This may 
+            be due to the overhead of serialization or a consequence of the
+            default compression
+            .PARAMETER Encrypt
+            Attempts to use the NT filesystem's EFS attribute to encrypt the
+            destination file when it is written.
+            .PARAMETER NoWriteBuffer
+            Causes the destination file to get written without using any intermediate 
+            buffer other than the storage of the received data into a powershell variable. 
+            .PARAMETER NoClobber
+            Does not allow a destination file to be overwritten
+            .PARAMETER Verify
+            Checks the md5 hash of each sessions's destination file against the source.
+            Note that for large files this may greatly increase the memory requirements
+            on both the source computer and destination sessions. 
+
+        
+            .EXAMPLE
+            #Send the PoWu module installed on the local machine to all remote $sessions, verify and encrypt their contents
+            Get-Module -ListAvailable -Name "PoWu" | Send-ModuleToPSSession -Session $sessions -verify -encrypt -IncludeDependencies -Verbose
+
+            .OUTPUTS
+            System.IO.FileInfo objects representing the successfully copied module files			
+
+            .NOTES
+            Author: Tim Bertalot / Raimund Andree
+    #> 
+    
+    [CmdletBinding(  
+            RemotingCapability		= 'PowerShell',  #V3 and above, values documented here: http://msdn.microsoft.com/en-us/library/system.management.automation.remotingcapability(v=vs.85).aspx
+            SupportsShouldProcess   = $false,
+            ConfirmImpact           = 'None',
+            DefaultParameterSetName = ''
+    )]
+    
+    [OutputType([System.IO.FileInfo])] #OutputType is supported in 3.0 and above
+     
+    param
+    (
+        [Parameter(
+                HelpMessage						= 'Provide the source module info object',
+                Position						= 0,
+                Mandatory						= $true, 
+                ValueFromPipeline				= $true
+        )]
+        [ValidateNotNullOrEmpty()]
+        [PSModuleInfo]
+        $Module,
+
+        [Parameter(
+                HelpMessage						= 'Enter the destination path on the remote computer',
+                Position						= 1,
+                Mandatory						= $true, 
+                ValueFromPipelineByPropertyName = $true
+        )]
+        [System.Management.Automation.Runspaces.PSSession[]] 
+        $Session,
+        
+        [ValidateSet('AllUsers', 'CurrentUser')]
+        [string]
+        $Scope = 'AllUsers',
+
+        [switch]
+        $IncludeDependencies,
+
+        [switch]
+        $Move,
+
+        [switch]
+        $Encrypt,
+
+        [switch]
+        $NoWriteBuffer,
+
+        [switch]
+        $Verify,
+
+        [switch]
+        $NoClobber,
+
+        [ValidateRange(1KB,7.4MB)] #might be good to have much higher top end as the underlying max is controlled by New-PSSessionOption
+        [uint32]
+        $MaxBufferSize = 1MB
+    )
+
+    begin
+    {
+        Write-LogFunctionEntry
+        $isCalledRecursivly = (Get-PSCallStack | Where-Object Command -eq $MyInvocation.InvocationName | Measure-Object | Select-Object -ExpandProperty Count) -gt 1
+    }
+    
+    process
+    {
+        $fileParams = ([hashtable]$PSBoundParameters).Clone()
+        [void]$fileParams.Remove('Module')
+        [void]$fileParams.Remove('Scope')
+        [void]$fileParams.Remove('IncludeDependencies')
+        
+        if ($Local:Module.ModuleType -eq 'Script' -and ($Local:Module.Path -notmatch '\.psd1$'))
+        {
+            Write-Error "Cannot send the module '$($Module.Name)' that is not described by a .psd1 file"
+            return
+        }
+
+        #Remove any sessions where the same or newer module version already exists
+        if (-not $Force)
+        {
+            Write-Verbose 'Filtering out target sessions that do not need the module'
+            $Session = 
+            foreach ($item in $PSBoundParameters.Session)
+            {
+                #recursive calls will need to refresh the cached module list because we may have just placed new modules there
+                if ($isCalledRecursivly)
+                {
+                    $modules = Get-Module -PSSession $item -ListAvailable -Name $Local:Module.Name -Refresh
+                }
+                else
+                {
+                    $modules = Get-Module -PSSession $item -ListAvailable -Name $Local:Module.Name
+                }
+                    
+                #no version of the module installed, select for sending
+                if (-not $modules)
+                {
+                    $item
+                }
+                else
+                {
+                    #determine what versions we have
+                    $versions = $modules | ForEach-Object { [System.Version]$_.Version } | Sort-Object -Unique -Descending
+                    $highestVersion = $versions | Select-Object -First 1
+
+                    #if the version we are sending is newer than the highest installed version, select for sending
+                    if ([System.Version]$Local:Module.Version -gt $highestVersion)
+                    {
+                        $item
+                    }
+                    elseif ($highestVersion -gt [System.Version]$Local:Module.Version)
+                    {
+                        write-Warning "Skipping $($item.ComputerName) which has a higher version $highestVersion of the module installed"
+                    }
+                    else
+                    {
+                        write-Verbose  "Skipping $($item.ComputerName) because the same version of the module is installed already"
+                    }
+                }
+            }
+        }
+
+        if ($Session)
+        {
+            $destination = if ($Scope -eq 'AllUsers')
+            {
+                Invoke-Command -Session $Session -ScriptBlock {
+                    $destination = Join-Path -Path ([System.Environment]::GetFolderPath('ProgramFiles')) -ChildPath WindowsPowerShell\Modules
+                    if (-not (Test-Path -Path $destination))
+                    {
+                        mkdir -Path $destination -Force | Out-Null
+                    }
+                    $destination
+                }
+            }
+            else
+            {
+                Invoke-Command -Session $Session -ScriptBlock { 
+                    $destination = Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath WindowsPowerShell\Modules
+                    if (-not (Test-Path -Path $destination))
+                    {
+                        mkdir -Path $destination -Force | Out-Null
+                    }
+                    $destination
+                }
+            }
+            
+            #manifest modules are typically contained within a directory, other than the dependencies
+            #which are handled with recursive calls. Future versions should process the "FileList" property
+            #if it has been populated
+            Write-Verbose "Sending psd1 manifest module in directory $($Local:Module.ModuleBase)"
+            Get-ChildItem -Path $Local:Module.ModuleBase -Force -Recurse -File | ForEach-Object {
+                
+                if ($_.FullName -match '[\w\\: ]+\\Modules')
+                {
+                    $filePath = $Matches[0]
+                    $filePath = $_.FullName.Replace($filePath, $destination)
+                }
+                
+                Send-File -SourceFilePath $_.FullName -DestinationFolderPath $filePath @fileParams -Force
+            }
+            #if the sends are successful is better to capture the output and return an object from get-module -PSSession?
+
+            if ($PSBoundParameters.IncludeDependencies -and ($Local:Module.RequiredAssemblies -or $Local:Module.RequiredModules))
+            {
+                foreach ($requiredModule in $Module.RequiredModules)
+                {
+                    $requiredModule = Get-Module -ListAvailable $requiredModule | Sort-Object Version -Descending | Select-Object -First 1
+                    $params = ([hashtable]$PSBoundParameters).Clone()
+                    [void]$params.Remove('Module')
+                    Send-ModuleToPSSession -Module $requiredModule @params
+                }
+
+                foreach ($requiredAssembly in $Local:Module.RequiredAssemblies)
+                {
+                    if (Test-Path -Path $requiredAssembly)
+                    {
+                        Send-FileToPSSession -Source (Get-Item -Path $requiredAssembly -Force).FullName @fileParams
+                    }
+                    else
+                    {
+                        write-Warning "Sending required assemblies that do not have the full path information is not currently supported, $requiredAssembly not sent"
+                    }
+                }
+            }
+        }
+        else
+        {
+            Write-Verbose 'All session(s) seem to have a suitable version of the module installed'
+        }
+    }
+    
+    end
+    {
+        Write-LogFunctionExit
+    }
+}
+#endregion Send-ModuleToPSSession
+
 #region Sync-Parameter
 function Sync-Parameter
 {

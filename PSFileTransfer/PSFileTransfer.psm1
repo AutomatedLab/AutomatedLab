@@ -19,7 +19,7 @@ function Get-Type
         $generic = [type]($GenericType + '`' + $T.Count)
         $generic.MakeGenericType($T)
     }
-    catch [Exception]
+    catch
     {
         throw New-Object -TypeName System.Exception -ArgumentList ('Cannot create generic type', $_.Exception)
     }
@@ -58,21 +58,22 @@ function Send-File
 	
     param (
         [Parameter(Mandatory = $true)]
-        [string]$Source,
+        [string]$SourceFilePath,
 		
         [Parameter(Mandatory = $true)]
-        [string]$Destination,
+        [string]$DestinationFolderPath,
 		
         [Parameter(Mandatory = $true)]
-        [System.Management.Automation.Runspaces.PSSession[]]$Session
+        [System.Management.Automation.Runspaces.PSSession[]]$Session,
+        
+        [switch]$Force
     )
-	
-    #Set-StrictMode -Version Latest
+
     $firstChunk = $true
 	
-    Write-Verbose "PSFileTransfer: Sending file $Source to $Destination on $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
+    Write-Verbose "PSFileTransfer: Sending file $SourceFilePath to $DestinationFolderPath on $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
 	
-    $sourcePath = (Resolve-Path $Source -ErrorAction SilentlyContinue).Path
+    $sourcePath = (Resolve-Path $SourceFilePath -ErrorAction SilentlyContinue).Path
     if (-not $sourcePath)
     {
         Write-Error 'Source file could not be found'
@@ -83,27 +84,22 @@ function Send-File
 	
     for ($position = 0; $position -lt $sourceFileStream.Length; $position += $chunkSize)
     {
-        <#
-                Write-Progress -Activity "Send file $Source to $Destination on $($Session.ComputerName)" `
-                -Status 'Transmitting file' `
-                -PercentComplete ($position / $sourceFileStream.Length * 100)
-        #>
-        
         $remaining = $sourceFileStream.Length - $position
         $remaining = [Math]::Min($remaining, $chunkSize)
 		
         $chunk = New-Object -TypeName byte[] -ArgumentList $remaining
         [void]$sourceFileStream.Read($chunk, 0, $remaining)
 		
+        $destinationFullName = Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $SourceFilePath -Leaf)
+        
         try
         {
-            #Write-File -DestinationFile $Destination -Bytes $chunk -Erase $firstChunk
             Invoke-Command -Session $Session -ScriptBlock (Get-Command Write-File).ScriptBlock `
-            -ArgumentList $Destination, $chunk, $firstChunk -ErrorAction Stop
+            -ArgumentList $destinationFullName, $chunk, $firstChunk, $Force -ErrorAction Stop
         }
-        catch [System.Exception]
+        catch
         {
-            Write-Error -Message 'Could not write destination file' -Exception $_.Exception
+            Write-Error -Message "Could not write destination file. The error was '$($_.Exception.Message)'. Please use the Force switch if the destination folder does not exist" -Exception $_.Exception
             return
         }
 		
@@ -112,7 +108,7 @@ function Send-File
 	
     $sourceFileStream.Close()
 	
-    Write-Verbose "PSFileTransfer: Finished sending file $Source"
+    Write-Verbose "PSFileTransfer: Finished sending file $SourceFilePath"
 }
 #endregion Send-File
 
@@ -140,41 +136,32 @@ function Receive-File
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
-	
-    Set-StrictMode -Version Latest
+
     $firstChunk = $true
 	
     Write-Verbose "PSFileTransfer: Receiving file $Source to $Destination from $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
 	
     $sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Get-FileLength).ScriptBlock `
     -ArgumentList $Source -ErrorAction Stop
-    #$sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Read-File).ScriptBlock `
-    #        -ArgumentList $Source, 0 -ErrorAction Stop
 	
     for ($position = 0; $position -lt $sourceLength; $position += $chunkSize)
     {
-        <#
-                Write-Progress -Activity "Receive file $Source to $Destination from $($Session.ComputerName)" `
-                -Status 'Transmitting file' `
-                -PercentComplete ($position / $sourceLength * 100)
-        #>
         
         $remaining = $sourceLength - $position
         $remaining = [Math]::Min($remaining, $chunkSize)
 		
         try
         {
-            #$chunk = Read-File -SourceFile $Source -Offset $position -Length $remaining
             $chunk = Invoke-Command -Session $Session -ScriptBlock (Get-Command Read-File).ScriptBlock `
             -ArgumentList $Source, $position, $chunkSize -ErrorAction Stop
         }
-        catch [System.Exception]
+        catch
         {
             Write-Error -Message 'Could not read destination file' -Exception $_.Exception
             return
         }
 		
-        Write-File -DestinationFile $Destination -Bytes $chunk.Bytes -Erase $firstChunk
+        Write-File -DestinationFullName $Destination -Bytes $chunk.Bytes -Erase $firstChunk
 		
         $firstChunk = $false
     }
@@ -200,11 +187,6 @@ function Receive-Directory
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
     Write-Verbose "Receive-Directory $($env:COMPUTERNAME): remote source $Source, local destination $Destination, session $($Session.ComputerName)"
-	
-    <#
-            Write-Progress -Activity "Receive directory $Destination from $Source on $($Session.ComputerName)" `
-            -Status 'Checking destination'
-    #>
     
     $remoteDir = Invoke-Command -Session $Session -ScriptBlock {
         param ($Source)
@@ -225,11 +207,6 @@ function Receive-Directory
     {
         throw "$Destination exists and is not a directory"
     }
-	
-    <#
-            Write-Progress -Activity "Receive directory $Destination from $Source on $($Session.ComputerName)" `
-            -Status 'Reading remote content list'
-    #>
     
     $remoteItems = Invoke-Command -Session $Session -ScriptBlock {
         param ($remoteDir)
@@ -241,11 +218,6 @@ function Receive-Directory
     foreach ($remoteItem in $remoteItems)
     {
         $itemSource = Join-Path -Path $Source -ChildPath $remoteItem.Name
-        <#
-                Write-Progress -Activity "Receive directory $Destination from $Source on $($Session.ComputerName)" `
-                -Status "Copying $itemSource" `
-                -PercentComplete ($position * 100 / @($remoteItems).Count)
-        #>
         
         $itemDestination = Join-Path -Path $Destination -ChildPath $remoteItem.Name
         if ($remoteItem.PSIsContainer)
@@ -258,10 +230,6 @@ function Receive-Directory
         }
         $position++
     }
-    <#
-            Write-Progress -Activity "Receive directory $Destination from $Source on $($Session.ComputerName)" `
-            -Status 'Completed' -Completed
-    #>
 }
 #endregion Receive-Directory
 
@@ -275,103 +243,112 @@ function Send-Directory
 		
         ## The target path on the remote computer
         [Parameter(Mandatory = $true)]
-        $Destination,
+        $DestinationFolderPath,
 		
         ## The session that represents the remote computer
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession[]]$Session
     )
+    
+    $isCalledRecursivly = (Get-PSCallStack | Where-Object Command -eq $MyInvocation.InvocationName | Measure-Object | Select-Object -ExpandProperty Count) -gt 1
+    if (-not $DestinationFolderPath.EndsWith('\')) { $DestinationFolderPath = $DestinationFolderPath + '\' }
+    
+    if (-not $isCalledRecursivly)
+    {
+        $initialDestinationFolderPath = $DestinationFolderPath
+        $initialSource = $Source
+        $initialSourceParent = Split-Path -Path $initialSource -Parent
+    }
 	
-    Write-Verbose "Send-Directory $($env:COMPUTERNAME): local source $Source, remote destination $Destination, session $($Session.ComputerName)"
-	
-    #Write-Progress -Activity "Send directory $Source to $Destination on $($Session.ComputerName)" -Status 'Checking source'
+    Write-Verbose "Send-Directory $($env:COMPUTERNAME): local source $Source, remote destination $DestinationFolderPath, session $($Session.ComputerName)"
 	
     $localDir = Get-Item $Source -ErrorAction Stop
     if (-not $localDir.PSIsContainer)
     {
-        Send-File -Source $Source -Destination $Destination -Session $Session
+        Send-File -SourceFilePath $Source -DestinationFolderPath $DestinationFolderPath -Session $Session -Force
         return
     }
 	
     Invoke-Command -Session $Session -ScriptBlock {
-        param ($Destination)
+        param ($DestinationPath)
 		
-        if (-not (Test-Path $Destination))
+        if (-not (Test-Path $DestinationPath))
         {
-            $null = New-Item $Destination -ItemType Container -ErrorAction Stop
+            $null = mkdir -Path $DestinationPath -ErrorAction Stop
         }
-        elseif (-not (Test-Path $Destination -PathType Container))
+        elseif (-not (Test-Path $DestinationPath -PathType Container))
         {
-            throw "$Destination exists and is not a directory"
+            throw "$DestinationPath exists and is not a directory"
         }
-    } -ArgumentList $Destination -ErrorAction Stop
-	
-    <#
-            Write-Progress -Activity "Send directory $Source to $Destination on $($Session.ComputerName)" `
-            -Status 'Reading local content list'
-    #>
+    } -ArgumentList $DestinationFolderPath -ErrorAction Stop
     
-    $localItems = Get-ChildItem $localDir -ErrorAction Stop
+    $localItems = Get-ChildItem -Path $localDir -ErrorAction Stop
     $position = 0
 	
     foreach ($localItem in $localItems)
     {
         $itemSource = Join-Path -Path $Source -ChildPath $localItem.Name
-        <#
-                Write-Progress -Activity "Send directory $Source to $Destination on $($Session.ComputerName)" `
-                -Status "Copying $itemSource" `
-                -PercentComplete ($position * 100 / @($localItems).Count)
-        #>
+        $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath)
         
-        $itemDestination = Join-Path -Path $Destination -ChildPath $localItem.Name
         if ($localItem.PSIsContainer)
         {
-            $null = Send-Directory -Source $itemSource -Destination $itemDestination -Session $Session
+            $null = Send-Directory -Source $itemSource -DestinationFolderPath $newDestinationFolder -Session $Session
         }
         else
         {
-            $null = Send-File -Source $itemSource -Destination $itemDestination -Session $Session
+            $newDestinationFolder = Split-Path -Path $newDestinationFolder -Parent
+            $null = Send-File -SourceFilePath $itemSource -DestinationFolderPath $newDestinationFolder -Session $Session -Force
         }
         $position++
     }
-    <#
-            Write-Progress -Activity "Send directory $Source from $Destination on $($Session.ComputerName)" `
-            -Status 'Completed' -Completed
-    #>
 }
 #endregion Send-Directory
 #endregion File Transfer Functions
 
+#region Write-File
 function Write-File
 {
     param (
         [Parameter(Mandatory = $true)]
-        [string]$DestinationFile,
+        [string]$DestinationFullName,
 		
         [Parameter(Mandatory = $true)]
         [byte[]]$Bytes,
 		
-        [bool]$Erase
+        [bool]$Erase,
+        
+        [bool]$Force
     )
 	
-    Write-Debug "Send-File $($env:COMPUTERNAME): writing $DestinationFile length $($Bytes.Length)"
+    Write-Debug "Send-File $($env:COMPUTERNAME): writing $DestinationFullName length $($Bytes.Length)"
+    $VerbosePreference=2
 	
     #Convert the destination path to a full filesytem path (to support relative paths)
     try
     {
-        $DestinationFile = $executionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($DestinationFile)
+        $DestinationFullName = $executionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($DestinationFullName)
     }
-    catch [System.Exception]
+    catch
     {
         throw New-Object -TypeName System.IO.FileNotFoundException -ArgumentList ('Could not set destination path', $_)
     }
 	
     if ($Erase)
     {
-        Remove-Item $DestinationFile -Force -ErrorAction SilentlyContinue
+        Remove-Item $DestinationFullName -Force -ErrorAction SilentlyContinue
+    }
+    
+    if ($Force)
+    {
+        $parentPath = Split-Path -Path $DestinationFullName -Parent
+        if (-not (Test-Path -Path $parentPath))
+        {
+            Write-Verbose "Force is set and destination folder '$parentPath' does not exist, creating it."
+            mkdir -Path $parentPath -Force | Out-Null
+        }
     }
 	
-    $destFileStream = [IO.File]::OpenWrite($DestinationFile)
+    $destFileStream = [IO.File]::OpenWrite($DestinationFullName)
     $destBinaryWriter = New-Object -TypeName System.IO.BinaryWriter -ArgumentList ($destFileStream)
 	
     [void]$destBinaryWriter.Seek(0, 'End')
@@ -383,7 +360,9 @@ function Write-File
     $Bytes = $null
     [GC]::Collect()
 }
+#endregion Write-File
 
+#region Read-File
 function Read-File
 {
     [OutputType([Byte[]])]
@@ -402,7 +381,7 @@ function Read-File
     {
         $sourcePath = $executionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($SourceFile)
     }
-    catch [System.Exception]
+    catch
     {
         throw New-Object -TypeName System.IO.FileNotFoundException
     }
@@ -414,7 +393,7 @@ function Read-File
 	
     $sourceFileStream = [IO.File]::OpenRead($sourcePath)
 	
-    $chunk = New-Object -TypeName byte[] -ArgumentList $Length
+    $chunk = NeFileject -TypeName byte[] -ArgumentList $Fength
     [void]$sourceFileStream.Seek($Offset, 'Begin')
     [void]$sourceFileStream.Read($chunk, 0, $Length)
 	
@@ -422,6 +401,7 @@ function Read-File
 	
     return @{ Bytes = $chunk }
 }
+#endregion Read-File
 
 function Get-FileLength
 {
@@ -435,7 +415,7 @@ function Get-FileLength
     {
         $File = $executionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($File)
     }
-    catch [System.Exception]
+    catch
     {
         throw $_
     }
@@ -452,7 +432,7 @@ function Copy-LabFileItem
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
 
-        [string]$DestinationFolder,
+        [string]$DestinationFolderPath,
 		
         [switch]$Recurse,
         
@@ -463,7 +443,7 @@ function Copy-LabFileItem
 	
     Write-LogFunctionEntry
 	
-    $machines = Get-LabMachine -ComputerName $ComputerName -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $ComputerName -ErrorAction Stop
     $connectedMachines = @{ }
 	
     foreach ($machine in $machines)
@@ -490,15 +470,15 @@ function Copy-LabFileItem
                 foreach ($p in $Path)
                 {
                     $session = New-LabPSSession -ComputerName $machine
-                    $destination = if (-not $DestinationFolder)
+                    $destination = if (-not $DestinationFolderPath)
                     {
                         Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
                     }
                     else
                     {
-                        Join-Path -Path $DestinationFolder -ChildPath (Split-Path -Path $p -Leaf)
+                        Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
                     }
-                    Send-Directory -Source $p -Session $session -Destination $destination
+                    Send-Directory -Source $p -Session $session -DestinationFolderPath $destination
                 }
             }
         }
@@ -507,13 +487,13 @@ function Copy-LabFileItem
             foreach ($p in $Path)
             {
                 $session = New-LabPSSession -ComputerName $machine
-                $destination = if (-not $DestinationFolder)
+                $destination = if (-not $DestinationFolderPath)
                 {
                     Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
                 }
                 else
                 {
-                    Join-Path -Path $DestinationFolder -ChildPath (Split-Path -Path $p -Leaf)
+                    Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
                 }
                 
                 Invoke-LabCommand -ComputerName $ComputerName -ActivityName Copy-LabFileItem -ScriptBlock {
@@ -532,23 +512,23 @@ function Copy-LabFileItem
     {
         Write-Debug "Starting copy job for machine '$($machine.Name)'..."
         
-        if ($DestinationFolder)
+        if ($DestinationFolderPath)
         {
             $drive = "$($machine.Value):"
-            $DestinationFolder = Split-Path -Path $DestinationFolder -NoQualifier
-            $DestinationFolder = Join-Path -Path $drive -ChildPath $DestinationFolder
+            $DestinationFolderPath = Split-Path -Path $DestinationFolderPath -NoQualifier
+            $DestinationFolderPath = Join-Path -Path $drive -ChildPath $DestinationFolderPath
 
-            if (-not (Test-Path -Path $DestinationFolder))
+            if (-not (Test-Path -Path $DestinationFolderPath))
             {
-                mkdir -Path $DestinationFolder | Out-Null
+                mkdir -Path $DestinationFolderPath | Out-Null
             }
         }
         else
         {
-            $DestinationFolder = "$($machine.Value):\"
+            $DestinationFolderPath = "$($machine.Value):\"
         }
 
-        Copy-Item -Path $Path -Destination $DestinationFolder -Recurse -Force
+        Copy-Item -Path $Path -Destination $DestinationFolderPath -Recurse -Force
         Write-Debug '...finished'
 		
         $machine.Value | Remove-PSDrive

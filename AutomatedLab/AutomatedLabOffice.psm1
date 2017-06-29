@@ -233,7 +233,7 @@ function Install-LabOffice2016
         $tempFile = (Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'Configuration.xml')
     
         $config2016Xml | Out-File -FilePath $tempFile -Force
-        Copy-LabFileItem -Path $tempFile -ComputerName $machine -DestinationFolder C:\Office
+        Copy-LabFileItem -Path $tempFile -ComputerName $machine -DestinationFolderPath C:\Office
     
         Remove-Item -Path $tempFile
     
