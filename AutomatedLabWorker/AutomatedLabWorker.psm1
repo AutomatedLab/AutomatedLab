@@ -114,7 +114,7 @@ function Invoke-LWCommand
             {
                 if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
                 {
-                    Send-Directory -Source $DependencyFolderPath -DestinationFolder (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                    Send-Directory -SourceFolderPath $DependencyFolderPath -DestinationFolder (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
                 }
                 else
                 {

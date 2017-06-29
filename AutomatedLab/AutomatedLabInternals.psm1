@@ -2024,7 +2024,7 @@ function Send-ModuleToPSSession
                     $filePath = $_.FullName.Replace($filePath, $destination)
                 }
                 
-                Send-File -Source $_.FullName -Destination $filePath @fileParams -Force
+                Send-File -SourceFilePath $_.FullName -DestinationFolderPath $filePath @fileParams -Force
             }
             #if the sends are successful is better to capture the output and return an object from get-module -PSSession?
 
