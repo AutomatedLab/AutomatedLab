@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-    ModuleList = @('AutomatedLab')
+	ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -81,6 +81,7 @@
         'Enable-LabHostRemoting',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
+        'Remove-LabDscLocalConfigurationManagerConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
