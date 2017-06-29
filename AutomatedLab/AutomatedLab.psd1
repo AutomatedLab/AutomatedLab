@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-	ModuleList = @('AutomatedLab')
+    ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -80,6 +80,7 @@
         'Enable-LabVMRemoting',
         'Enable-LabHostRemoting',
         'Invoke-LabCommand',
+        'Invoke-LabDscConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
@@ -185,6 +186,7 @@
         'Unblock-LabSources',
         'Add-VariableToPSSession',
         'Add-FunctionToPSSession',
+        'Send-ModuleToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
         'Test-LabMachineInternetConnectivity',
@@ -244,6 +246,8 @@
 
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
+
+        DscMofPath = '"$labSources\DscConfigurations"'
 
         DoNotUseGetHostEntryInNewLabPSSession = $true
 
