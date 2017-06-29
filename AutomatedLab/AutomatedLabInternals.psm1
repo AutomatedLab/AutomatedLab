@@ -1819,13 +1819,13 @@ function Send-ModuleToPSSession
             .SYNOPSIS
             Copies/moves a module to a given set of computers using a PSSession.
             The destination path will mirror the source path.
-			
+            
             .DESCRIPTION
             This cmdlet uses standard PS remoting to send modules stored on your
             local machine to a remote machine. If the required module and assembly
             properties have been populated, you may optionally have it try to include
             those dependencies for you by specifying the IncludeDependencies parameter.
-			
+            
             .PARAMETER Module
             The module to copy/move to the remote computers
             .PARAMETER Session
@@ -1854,7 +1854,7 @@ function Send-ModuleToPSSession
             Note that for large files this may greatly increase the memory requirements
             on both the source computer and destination sessions. 
 
-		
+        
             .EXAMPLE
             #Send the PoWu module installed on the local machine to all remote $sessions, verify and encrypt their contents
             Get-Module -ListAvailable -Name "PoWu" | Send-ModuleToPSSession -Session $sessions -verify -encrypt -IncludeDependencies -Verbose
@@ -1865,16 +1865,16 @@ function Send-ModuleToPSSession
             .NOTES
             Author: Tim Bertalot / Raimund Andree
     #> 
-	
+    
     [CmdletBinding(  
             RemotingCapability		= 'PowerShell',  #V3 and above, values documented here: http://msdn.microsoft.com/en-us/library/system.management.automation.remotingcapability(v=vs.85).aspx
             SupportsShouldProcess   = $false,
             ConfirmImpact           = 'None',
             DefaultParameterSetName = ''
     )]
-	
+    
     [OutputType([System.IO.FileInfo])] #OutputType is supported in 3.0 and above
-	 
+     
     param
     (
         [Parameter(
@@ -1928,7 +1928,7 @@ function Send-ModuleToPSSession
         Write-LogFunctionEntry
         $isCalledRecursivly = (Get-PSCallStack | Where-Object Command -eq $MyInvocation.InvocationName | Measure-Object | Select-Object -ExpandProperty Count) -gt 1
     }
-	
+    
     process
     {
         $fileParams = ([hashtable]$PSBoundParameters).Clone()
@@ -1958,7 +1958,7 @@ function Send-ModuleToPSSession
                 {
                     $modules = Get-Module -PSSession $item -ListAvailable -Name $Local:Module.Name
                 }
-					
+                    
                 #no version of the module installed, select for sending
                 if (-not $modules)
                 {
@@ -2011,22 +2011,10 @@ function Send-ModuleToPSSession
                     $destination
                 }
             }
-            
-            #manifest modules are typically contained within a directory, other than the dependencies
-            #which are handled with recursive calls. Future versions should process the "FileList" property
-            #if it has been populated
+
             Write-Verbose "Sending psd1 manifest module in directory $($Local:Module.ModuleBase)"
-            Get-ChildItem -Path $Local:Module.ModuleBase -Force -Recurse -File | ForEach-Object {
-                
-                if ($_.FullName -match '[\w\\: ]+\\Modules')
-                {
-                    $filePath = $Matches[0]
-                    $filePath = $_.FullName.Replace($filePath, $destination)
-                }
-                
-                Send-File -SourceFilePath $_.FullName -DestinationFolderPath $filePath @fileParams -Force
-            }
-            #if the sends are successful is better to capture the output and return an object from get-module -PSSession?
+            
+            Send-Directory -SourceFolderPath $Local:Module.ModuleBase -DestinationFolderPath $destination -Session $Session
 
             if ($PSBoundParameters.IncludeDependencies -and ($Local:Module.RequiredAssemblies -or $Local:Module.RequiredModules))
             {
@@ -2056,7 +2044,7 @@ function Send-ModuleToPSSession
             Write-Verbose 'All session(s) seem to have a suitable version of the module installed'
         }
     }
-	
+    
     end
     {
         Write-LogFunctionExit
