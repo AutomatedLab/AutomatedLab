@@ -23,9 +23,9 @@ function Copy-LabExchange2013InstallationFiles
     foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq HyperV)
     {
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -35,8 +35,8 @@ function Copy-LabExchange2013InstallationFiles
     foreach ($rootDc in $exchangeRootDCs)
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
 
         Write-ScreenInfo 'finished'
     }

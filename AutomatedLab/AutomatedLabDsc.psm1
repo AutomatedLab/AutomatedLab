@@ -130,7 +130,7 @@ function Install-LabDscPullServer
                 Select-Object -First 1 -ExpandProperty ModuleBase
             $moduleDestination = Split-Path -Path $moduleBase -Parent
             
-            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
         }
     }
     
@@ -155,7 +155,7 @@ function Install-LabDscPullServer
                     Select-Object -First 1 -ExpandProperty ModuleBase
                 $moduleDestination = Split-Path -Path $moduleBase -Parent
                 
-                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
             }
             
             Write-ScreenInfo 'finished'
@@ -220,10 +220,10 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
-	if ($jobs | Where-Object -Property State -eq 'Failed')
-	{
-		throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
-	}
+    if ($jobs | Where-Object -Property State -eq 'Failed')
+    {
+        throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
+    }
 
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline

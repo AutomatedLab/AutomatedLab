@@ -1457,7 +1457,7 @@ szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
     $certPrint.Import('C:\cert.cer')
     $certPrint
 
-	Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile, 'C:\cert.cer' -Force
+    Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile, 'C:\cert.cer' -Force
 }
 
 function Get-CertificatePfx
@@ -3319,7 +3319,7 @@ function Publish-LabCAInstallCertificates
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
-            Send-File -Source $certfile.FullName -Destination "C:\Windows\$($certfile.BaseName).crt" -Session $machineSession
+            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath C:\Windows -Session $machineSession
         }
         
         $scriptBlock = {
