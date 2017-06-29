@@ -123,6 +123,9 @@ function New-LabVM
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
+		Write-Verbose -Message 'Restarting machines to apply DNS settings'
+		Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+
         Write-Verbose -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs        
 
@@ -1121,7 +1124,7 @@ function Connect-LabVM
             $cred = $machine.GetCredential($lab)
         }
         
-        if ($machine.HostType = 'Azure')
+        if ($machine.HostType -eq 'Azure')
         {
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password

@@ -91,8 +91,14 @@ function Install-LabDscPullServer
     
     if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
     {
-        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
+        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy 'Server Authentication' `
         -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+    }
+
+    if (-not (Test-LabCATemplate -TemplateName DscMofEncryption  -ComputerName $ca))
+    {
+        New-LabCATemplate -TemplateName DscMofEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
+        -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
     }
 
     if ($Online)
@@ -120,11 +126,11 @@ function Install-LabDscPullServer
         foreach ($module in $requiredModules)
         {
             $moduleBase = Get-Module -Name $module -ListAvailable | 
-                Sort-Object -Property Version -Descending | 
-                Select-Object -First 1 -ExpandProperty ModuleBase
+            Sort-Object -Property Version -Descending | 
+            Select-Object -First 1 -ExpandProperty ModuleBase
             $moduleDestination = Split-Path -Path $moduleBase -Parent
             
-            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
         }
     }
     
@@ -145,11 +151,11 @@ function Install-LabDscPullServer
             foreach ($module in $moduleNames)
             {
                 $moduleBase = Get-Module -Name $module -ListAvailable | 
-                    Sort-Object -Property Version -Descending | 
-                    Select-Object -First 1 -ExpandProperty ModuleBase
+                Sort-Object -Property Version -Descending | 
+                Select-Object -First 1 -ExpandProperty ModuleBase
                 $moduleDestination = Split-Path -Path $moduleBase -Parent
                 
-                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
             }
             
             Write-ScreenInfo 'finished'
@@ -170,6 +176,7 @@ function Install-LabDscPullServer
             $databaseEngine = 'edb'
         }
 
+        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $guid = (New-Guid).Guid
@@ -213,10 +220,10 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
-	if ($jobs | Where-Object -Property State -eq 'Failed')
-	{
-		throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
-	}
+    if ($jobs | Where-Object -Property State -eq 'Failed')
+    {
+        throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
+    }
 
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
@@ -305,3 +312,240 @@ function Install-LabDscClient
     }
 }
 #endregion Install-LabDscClient
+
+#region Get-DscConfigurationImportedResource
+function Get-DscConfigurationImportedResource
+{
+    param(
+        [Parameter(Mandatory, ParameterSetName = 'ByFile')]
+        [string]$FilePath,
+        
+        [Parameter(Mandatory, ParameterSetName = 'ByName')]
+        [string]$Name
+    )
+    
+    $modules = New-Object System.Collections.ArrayList
+
+    if ($Name)
+    {
+        $ast = (Get-Command -Name $Name).ScriptBlock.Ast
+        $FilePath = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ScriptBlockAst] }, $true)[0].Extent.File
+    }
+    
+    $ast = [scriptblock]::Create((Get-Content -Path $FilePath -Raw)).Ast
+    
+    $configurations = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ConfigurationDefinitionAst] }, $true)
+    Write-Verbose "Script knwos about $($configurations.Count) configurations"
+    foreach ($configuration in $configurations)
+    {
+        $importCmds = $configuration.Body.ScriptBlock.FindAll({ $args[0].Value -eq 'Import-DscResource' -and $args[0] -is [System.Management.Automation.Language.StringConstantExpressionAst] }, $true)
+        Write-Verbose "Configuration $($configuration.InstanceName) knows about $($importCmds.Count) Import-DscResource commands"
+    
+        foreach ($importCmd in $importCmds)
+        {
+            $commandElements = $importCmd.Parent.CommandElements | Select-Object -Skip 1 | Where-Object {$_ -is [System.Management.Automation.Language.ArrayLiteralAst] -or $_ -is [System.Management.Automation.Language.StringConstantExpressionAst] }     
+            
+            $moduleNames = $commandElements.SafeGetValue()
+            if ($moduleNames.GetType().IsArray)
+            {
+                $modules.AddRange($moduleNames)
+            }
+            else
+            {
+                [void]$modules.Add($moduleNames)
+            }
+        }
+    }
+    
+    $compositeResources = $modules | Where-Object { $_ -ne 'PSDesiredStateConfiguration' } | ForEach-Object { Get-DscResource -Module $_ } | Where-Object { $_.ImplementedAs -eq 'Composite' }
+    foreach ($compositeResource in $compositeResources)
+    {
+        $modulesInResource = Get-DscConfigurationImportedResource -FilePath $compositeResource.Path
+        if ($modulesInResource.GetType().IsArray)
+        {
+            $modules.AddRange($modulesInResource)
+        }
+        else
+        {
+            [void]$modules.Add($modulesInResource)
+        }
+    }
+    
+    $modules | Select-Object -Unique
+}
+#endregion Get-DscConfigurationImportedResource
+
+#region Invoke-LabDscConfiguration
+function Invoke-LabDscConfiguration
+{
+    param(
+        [Parameter(Mandatory)]
+        [System.Management.Automation.ConfigurationInfo]$Configuration,
+
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+
+        [hashtable]$ConfigurationData,
+        
+        [switch]$Wait
+    )
+    
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    if (-not $lab.Machines)
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $machines = Get-LabVM -ComputerName $ComputerName    
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        Write-Error -Message 'Not all machines specified could be found in the lab.'
+        Write-LogFunctionExit
+        return
+    }
+    
+    $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
+    if (-not (Test-Path -Path $outputPath))
+    {
+        mkdir -Path $outputPath -Force
+    }    
+    
+    $tempPath = [System.IO.Path]::GetTempFileName()
+    Remove-Item -Path $tempPath
+    mkdir -Path $tempPath | Out-Null  
+
+    $dscModules = @()
+
+    $null = foreach ($c in $ComputerName)
+    {
+        if ($ConfigurationData)
+        {
+            $adaptedConfig = $ConfigurationData.Clone()
+        }
+
+        Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
+        $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c
+        $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
+        $mof | Move-Item -Destination $outputPath -Force
+            
+        Remove-Item -Path $tempPath -Force
+    }
+
+    $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
+    
+    foreach ($c in $ComputerName)
+    {
+        foreach ($mofFile in $mofFiles)
+        {
+            if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
+            {
+                Send-File -Source $mofFiles.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+            }
+        }
+    }
+    
+    #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
+    #to find out all the reuqired modules we need to upload in total
+    $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name
+    foreach ($requiredDscModule in $requiredDscModules)
+    {
+        Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
+    }
+    
+    Invoke-LabCommand -ComputerName $ComputerName -ActivityName DSC -ScriptBlock {
+    
+        $path = "C:\AL Dsc\$($args[0])"
+        
+        Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
+        
+        $mofFiles = Get-ChildItem -Path $path -Filter *.mof
+        if ($mofFiles.Count -gt 1)
+        {
+            throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
+        }
+        
+        $mofFiles | Rename-Item -NewName localhost.mof
+        
+        Start-DscConfiguration -Path $path -Wait:$Wait
+    
+    } -ArgumentList $Configuration.Name
+}
+#endregion Invoke-LabDscConfiguration
+
+#region Remove-LabDscLocalConfigurationManagerConfiguration
+function Remove-LabDscLocalConfigurationManagerConfiguration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName
+    )
+    
+    Write-LogFunctionEntry
+    
+    function Remove-DscLocalConfigurationManagerConfiguration
+    {
+        param(
+            [string[]]$ComputerName = 'localhost'
+        )
+
+        [DSCLocalConfigurationManager()]
+        configuration LcmDefaultConfiguration
+        {
+            param(
+                [string[]]$ComputerName = 'localhost'
+            )
+    
+            Node $ComputerName
+            {
+                Settings
+                {
+                    RefreshMode = 'Push'
+                    ConfigurationModeFrequencyMins = 15
+                    ConfigurationMode = 'ApplyAndAutoCorrect'
+                    RebootNodeIfNeeded = $true
+                }
+            }
+        }
+
+        $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
+    
+        Remove-DscConfigurationDocument -Stage Current, Pending
+        LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
+        Set-DscLocalConfigurationManager -Path $path.FullName
+
+        Remove-Item -Path $path.FullName -Recurse -Force
+
+        try
+        {
+            Test-DscConfiguration -ErrorAction Stop
+            Write-Error 'There was a problem resetting the Local Configuration Manger configuration'
+        }
+        catch
+        {
+            Write-Host 'DSC Local Configuration Manger was reset to default values'
+        }
+    }
+    
+    $lab = Get-Lab
+    if (-not $lab.Machines)
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $machines = Get-LabVM -ComputerName $ComputerName    
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        Write-Error -Message 'Not all machines specified could be found in the lab.'
+        Write-LogFunctionExit
+        return
+    }
+    
+    Invoke-LabCommand -ActivityName 'Removing DSC LCM configuration' -ComputerName $ComputerName -ScriptBlock (Get-Command -Name Remove-DscLocalConfigurationManagerConfiguration).ScriptBlock
+    
+    Write-LogFunctionExit
+}
+#endregion Remove-LabDscLocalConfigurationManagerConfiguration

@@ -98,7 +98,7 @@ function Install-LabSharePoint2013
             }
             
             $client.DownloadFile($prereqUri, "$tempPrereqsFolderName\$prereqFileName")
-            Copy-LabFileItem -Path "$tempPrereqsFolderName\$prereqFileName" -DestinationFolder "C:\SPInstall\prerequisiteinstallerfiles" -ComputerName $vm
+            Copy-LabFileItem -Path "$tempPrereqsFolderName\$prereqFileName" -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles" -ComputerName $vm
         }
 
         # Installing Prereqs
@@ -127,7 +127,7 @@ function Install-LabSharePoint2013
             Remove-Item $setupConfigFilePath
         }
         New-Item -Path $tempPrereqsFolderName -Name 'al-config.xml' -ItemType File -Value $setupConfigFileContent
-        Copy-LabFileItem -Path $setupConfigFilePath -DestinationFolder "C:\SPInstall\files" -ComputerName $vm
+        Copy-LabFileItem -Path $setupConfigFilePath -DestinationFolderPath "C:\SPInstall\files" -ComputerName $vm
 
         Invoke-LabCommand -ComputerName $hypervMachines -ActivityName "Install SharePoint 2013" -ScriptBlock {
             Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"            

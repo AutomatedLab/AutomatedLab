@@ -7,6 +7,7 @@ You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/rel
 
 ### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
 ### [2. Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
+### [3. Contributing](https://github.com/AutomatedLab/AutomatedLab/blob/master/CONTRIBUTING.md)
 ### [Version History](https://github.com/AutomatedLab/AutomatedLab/wiki/Version-History)
 
 ### Supported products
