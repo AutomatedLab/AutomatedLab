@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-	ModuleList = @('AutomatedLab')
+    ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -245,12 +245,14 @@
         Timeout_VisualStudio2013Installation = 90
         Timeout_VisualStudio2015Installation = 90
 
+        #PSSession settings
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
-
-        DscMofPath = '"$labSources\DscConfigurations"'
-
+        MaxPSSessionsPerVM = 5
         DoNotUseGetHostEntryInNewLabPSSession = $true
+
+        #DSC
+        DscMofPath = '"$labSources\DscConfigurations"'
 
         #General VM settings
         DisableWindowsDefender = $true

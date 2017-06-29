@@ -2599,12 +2599,12 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip 1
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
             
                     Write-Verbose "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession[0]
+                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
                 }
             }
     
