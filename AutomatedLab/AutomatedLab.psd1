@@ -80,6 +80,8 @@
         'Enable-LabVMRemoting',
         'Enable-LabHostRemoting',
         'Invoke-LabCommand',
+        'Invoke-LabDscConfiguration',
+        'Remove-LabDscLocalConfigurationManagerConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
@@ -185,6 +187,7 @@
         'Unblock-LabSources',
         'Add-VariableToPSSession',
         'Add-FunctionToPSSession',
+        'Send-ModuleToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
         'Test-LabMachineInternetConnectivity',
@@ -244,6 +247,8 @@
 
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
+
+        DscMofPath = '"$labSources\DscConfigurations"'
 
         DoNotUseGetHostEntryInNewLabPSSession = $true
 
