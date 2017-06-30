@@ -243,8 +243,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDsc
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{1D008E01-0359-4EF9-AB13-ADC357240D25}"
 	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb = LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb
+		LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix = LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix
 		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
-		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServer.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDscClients", "{42F1CA14-387C-4DC0-BF14-0DFEA2681105}"
