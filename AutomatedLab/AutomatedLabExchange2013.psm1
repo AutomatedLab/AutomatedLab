@@ -138,7 +138,7 @@ function Install-LabExchange2013
     
     $exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
     $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaDownloadLink.Segments.Count-1]
-    $dotnet462DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet462DownloadLink)
+    $dotnet462InstallFileName = $dotnet462DownloadLink.Segments[$dotnet462DownloadLink.Segments.Count-1]
 
     $start = Get-Date
     $lab = Get-Lab
