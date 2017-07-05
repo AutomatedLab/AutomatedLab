@@ -82,6 +82,7 @@
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Remove-LabDscLocalConfigurationManagerConfiguration',
+        'Set-LabDscLocalConfigurationManagerConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
@@ -200,7 +201,8 @@
         'Test-LabSourcesOnAzureStorage',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
-        'Get-LabAzureLabSourcesContent'
+        'Get-LabAzureLabSourcesContent',
+        'Test-HashtableKeys'
     )
     
     # List of all files packaged with this module
