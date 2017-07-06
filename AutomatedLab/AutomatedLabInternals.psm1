@@ -1572,7 +1572,7 @@ function Get-LabInternetFile
  
                         $localStream = [System.IO.File]::Create($Path)
  
-                        $buffer = New-Object System.Byte[] 1024
+                        $buffer = New-Object System.Byte[] 5MB
                         $bytesRead = 0
  
                         do
