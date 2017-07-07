@@ -785,9 +785,7 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name,
-        
-        [switch]$RemoveReferenceDisks
+        [string]$Name
     )
     Write-LogFunctionEntry
     
@@ -909,22 +907,6 @@ function Remove-Lab
             {
                 Remove-Item -Path $Script:data.LabPath
             }
-        }
-        
-        if ($RemoveReferenceDisks)
-        {
-            Write-ScreenInfo -Message 'Removing Reference Disks'
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ServerReferenceDiskPath -Confirm:$false
-            }
-        
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ClientReferenceDiskPath -Confirm:$false
-            }
-        
-            Remove-Item -Path (Split-Path -Path $Script:data.ClientReferenceDiskPath -Parent) -Confirm:$false -Recurse
         }
 
         $Script:data = $null
