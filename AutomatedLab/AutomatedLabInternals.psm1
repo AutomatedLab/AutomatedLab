@@ -1986,11 +1986,11 @@ function Send-ModuleToPSSession
             }
         }
 
-        if ($Session)
+        foreach ($s in $Session)
         {
             $destination = if ($Scope -eq 'AllUsers')
             {
-                Invoke-Command -Session $Session -ScriptBlock {
+                Invoke-Command -Session $s -ScriptBlock {
                     $destination = Join-Path -Path ([System.Environment]::GetFolderPath('ProgramFiles')) -ChildPath WindowsPowerShell\Modules
                     if (-not (Test-Path -Path $destination))
                     {
@@ -2001,7 +2001,7 @@ function Send-ModuleToPSSession
             }
             else
             {
-                Invoke-Command -Session $Session -ScriptBlock { 
+                Invoke-Command -Session $s -ScriptBlock { 
                     $destination = Join-Path -Path ([System.Environment]::GetFolderPath('MyDocuments')) -ChildPath WindowsPowerShell\Modules
                     if (-not (Test-Path -Path $destination))
                     {
@@ -2023,7 +2023,7 @@ function Send-ModuleToPSSession
                 $Local:moduleParentFolder = $Local:Module.ModuleBase
             }
             
-            Send-Directory -SourceFolderPath $Local:moduleParentFolder -DestinationFolderPath $destination -Session $Session
+            Send-Directory -SourceFolderPath $Local:moduleParentFolder -DestinationFolderPath $destination -Session $s
 
             if ($PSBoundParameters.IncludeDependencies -and ($Local:Module.RequiredAssemblies -or $Local:Module.RequiredModules))
             {
@@ -2047,10 +2047,6 @@ function Send-ModuleToPSSession
                     }
                 }
             }
-        }
-        else
-        {
-            Write-Verbose 'All session(s) seem to have a suitable version of the module installed'
         }
     }
     
