@@ -378,14 +378,19 @@ function Get-DscConfigurationImportedResource
 #region Invoke-LabDscConfiguration
 function Invoke-LabDscConfiguration
 {
+    [CmdletBinding(DefaultParameterSetName = 'New')]
     param(
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory, ParameterSetName = 'New')]
         [System.Management.Automation.ConfigurationInfo]$Configuration,
 
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
 
+        [Parameter(ParameterSetName = 'New')]
         [hashtable]$ConfigurationData,
+
+        [Parameter(ParameterSetName = 'UseExisting')]
+        [switch]$UseExisting,
         
         [switch]$Wait
     )
@@ -407,71 +412,105 @@ function Invoke-LabDscConfiguration
         return
     }
     
-    $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
-    if (-not (Test-Path -Path $outputPath))
+    if ($PSCmdlet.ParameterSetName -eq 'New')
     {
-        mkdir -Path $outputPath -Force
-    }    
-    
-    $tempPath = [System.IO.Path]::GetTempFileName()
-    Remove-Item -Path $tempPath
-    mkdir -Path $tempPath | Out-Null  
+        $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
+        if (-not (Test-Path -Path $outputPath))
+        {
+            mkdir -Path $outputPath -Force
+        }
 
-    $dscModules = @()
-
-    $null = foreach ($c in $ComputerName)
-    {
         if ($ConfigurationData)
         {
-            $adaptedConfig = $ConfigurationData.Clone()
-        }
-
-        Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
-        $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c
-        $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
-        $mof | Move-Item -Destination $outputPath -Force
-            
-        Remove-Item -Path $tempPath -Force
-    }
-
-    $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
-    
-    foreach ($c in $ComputerName)
-    {
-        foreach ($mofFile in $mofFiles)
-        {
-            if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
+            $result = ValidateUpdate-ConfigurationData -ConfigurationData $ConfigurationData
+            if (-not $result)
             {
-                Send-File -Source $mofFiles.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                return
             }
         }
-    }
     
-    #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
-    #to find out all the reuqired modules we need to upload in total
-    $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name
-    foreach ($requiredDscModule in $requiredDscModules)
-    {
-        Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
-    }
-    
-    Invoke-LabCommand -ComputerName $ComputerName -ActivityName DSC -ScriptBlock {
-    
-        $path = "C:\AL Dsc\$($args[0])"
-        
-        Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
-        
-        $mofFiles = Get-ChildItem -Path $path -Filter *.mof
-        if ($mofFiles.Count -gt 1)
+        $tempPath = [System.IO.Path]::GetTempFileName()
+        Remove-Item -Path $tempPath
+        mkdir -Path $tempPath | Out-Null  
+
+        $dscModules = @()
+
+        $null = foreach ($c in $ComputerName)
         {
-            throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
+            if ($ConfigurationData)
+            {
+                $adaptedConfig = $ConfigurationData.Clone()
+            }
+
+            Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
+            if ($Configuration.Parameters.ContainsKey('ComputerName'))
+            {
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c
+            }
+            else
+            {
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig
+            }
+
+            if ($mof.Count -gt 1)
+            {
+                $mof = $mof | Where-Object { $_.Name -like "*$c*" }
+            }
+            $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
+            $mof | Move-Item -Destination $outputPath -Force
+            
+            Remove-Item -Path $tempPath -Force -Recurse
         }
-        
-        $mofFiles | Rename-Item -NewName localhost.mof
-        
-        Start-DscConfiguration -Path $path -Wait:$Wait
+
+        $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
     
-    } -ArgumentList $Configuration.Name
+        foreach ($c in $ComputerName)
+        {
+            foreach ($mofFile in $mofFiles)
+            {
+                if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
+                {
+                    Send-File -Source $mofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                }
+            }
+        }
+    
+        #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
+        #to find out all the reuqired modules we need to upload in total
+        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name
+        foreach ($requiredDscModule in $requiredDscModules)
+        {
+            Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
+        }
+    
+        Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
+    
+            $path = "C:\AL Dsc\$($args[0])"
+        
+            Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
+        
+            $mofFiles = Get-ChildItem -Path $path -Filter *.mof
+            if ($mofFiles.Count -gt 1)
+            {
+                throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
+            }
+        
+            $mofFiles | Rename-Item -NewName localhost.mof
+        
+            Start-DscConfiguration -Path $path -Wait:$Wait
+    
+        } -ArgumentList $Configuration.Name, $Wait
+    }
+    else
+    {
+        Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying existing DSC configuration' -ScriptBlock {
+            
+            Start-DscConfiguration -UseExisting -Wait:$Wait
+    
+        } -ArgumentList $Wait
+    }
+
+    Write-LogFunctionExit
 }
 #endregion Invoke-LabDscConfiguration
 
@@ -761,3 +800,80 @@ function Set-LabDscLocalConfigurationManagerConfiguration
     Write-LogFunctionExit
 }
 #endregion Set-LabDscLocalConfigurationManagerConfiguration
+
+#region ValidateUpdate-ConfigurationData
+#taken from C:\Windows\system32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PSDesiredStateConfiguration.psm1
+function ValidateUpdate-ConfigurationData
+{
+    param (
+        [Parameter(Mandatory)]
+        [hashtable]$ConfigurationData
+    )
+
+    if( -not $ConfigurationData.ContainsKey('AllNodes'))
+    {
+        $errorMessage = 'ConfigurationData parameter need to have property AllNodes.'
+        $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+        Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataNeedAllNodes
+        return $false
+    }
+
+    if($ConfigurationData.AllNodes -isnot [array])
+    {
+        $errorMessage = 'ConfigurationData parameter property AllNodes needs to be a collection.'
+        $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+        Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataAllNodesNeedHashtable
+        return $false
+    }
+
+    $nodeNames = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach($Node in $ConfigurationData.AllNodes)
+    { 
+        if($Node -isnot [hashtable] -or -not $Node.NodeName)
+        { 
+            $errorMessage = "all elements of AllNodes need to be hashtable and has a property 'NodeName'."
+            $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+            Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataAllNodesNeedHashtable
+            return $false
+        } 
+
+        if($nodeNames.Contains($Node.NodeName))
+        {
+            $errorMessage = "There are duplicated NodeNames '{0}' in the configurationData passed in." -f $Node.NodeName
+            $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+            Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId DuplicatedNodeInConfigurationData
+            return $false
+        }
+        
+        if($Node.NodeName -eq '*')
+        {
+            $AllNodeSettings = $Node
+        }
+        [void] $nodeNames.Add($Node.NodeName)
+    }
+    
+    if($AllNodeSettings)
+    {
+        foreach($Node in $ConfigurationData.AllNodes)
+        {
+            if($Node.NodeName -ne '*') 
+            {
+                foreach($nodeKey in $AllNodeSettings.Keys)
+                {
+                    if(-not $Node.ContainsKey($nodeKey))
+                    {
+                        $Node.Add($nodeKey, $AllNodeSettings[$nodeKey])
+                    }
+                }
+            }
+        }
+
+        $ConfigurationData.AllNodes = @($ConfigurationData.AllNodes | Where-Object -FilterScript {
+                $_.NodeName -ne '*'
+            }
+        )
+    }
+
+    return $true
+}
+#endregion ValidateUpdate-ConfigurationData
