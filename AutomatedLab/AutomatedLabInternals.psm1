@@ -1946,8 +1946,7 @@ function Send-ModuleToPSSession
         if (-not $Force)
         {
             Write-Verbose 'Filtering out target sessions that do not need the module'
-            $Session = 
-            foreach ($item in $PSBoundParameters.Session)
+            $Session = foreach ($item in $PSBoundParameters.Session)
             {
                 #recursive calls will need to refresh the cached module list because we may have just placed new modules there
                 if ($isCalledRecursivly)
@@ -2013,8 +2012,18 @@ function Send-ModuleToPSSession
             }
 
             Write-Verbose "Sending psd1 manifest module in directory $($Local:Module.ModuleBase)"
+
+            if ($Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}')
+            {
+                #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
+                $Local:moduleParentFolder = Split-Path -Path $Local:Module.ModuleBase -Parent
+            }
+            else
+            {
+                $Local:moduleParentFolder = $Local:Module.ModuleBase
+            }
             
-            Send-Directory -SourceFolderPath $Local:Module.ModuleBase -DestinationFolderPath $destination -Session $Session
+            Send-Directory -SourceFolderPath $Local:moduleParentFolder -DestinationFolderPath $destination -Session $Session
 
             if ($PSBoundParameters.IncludeDependencies -and ($Local:Module.RequiredAssemblies -or $Local:Module.RequiredModules))
             {
