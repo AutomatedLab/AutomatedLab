@@ -51,7 +51,7 @@ function New-LWAzureNetworkSwitch
                 $ProfilePath,
                 $Subscription,
                 $azureNetworkParameters,
-                $Subnets,
+                [object[]]$Subnets,
                 $Network
             )
             
@@ -65,7 +65,7 @@ function New-LWAzureNetworkSwitch
             {
 				foreach ($subnet in $Subnets)
 				{
-					$azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace
+					$azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
 				}
             }
 
@@ -86,6 +86,12 @@ function New-LWAzureNetworkSwitch
     
     #Wait for network creation jobs and configure vnet peering    
     Wait-LWLabJob -Job $jobs
+
+	if($jobs.State -contains 'Failed')
+	{
+		throw ('Creation of at least one Azure Vnet failed. Examine the jobs output. Failed jobs: {0}' -f (($jobs | Where-Object State -EQ 'Failed').Id -join ','))
+	}
+
     Write-ScreenInfo -Message "Done" -TaskEnd
     Write-ProgressIndicator
 
