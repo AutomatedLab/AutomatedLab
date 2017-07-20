@@ -63,7 +63,10 @@ function New-LWAzureNetworkSwitch
             # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
             if ($Subnets)
             {
-                $azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnets.Name -AddressPrefix "$($subnets.Address)/$($subnets.Prefix)"
+				foreach ($subnet in $Subnets)
+				{
+					$azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace
+				}
             }
 
             if (-not $azureSubnets)
