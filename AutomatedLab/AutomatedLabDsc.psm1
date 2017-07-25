@@ -551,9 +551,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
 
         $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
     
-        Remove-DscConfigurationDocument -Stage Current, Pending
+        Remove-DscConfigurationDocument -Stage Current, Pending -Force
         LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
-        Set-DscLocalConfigurationManager -Path $path.FullName
+        Set-DscLocalConfigurationManager -Path $path.FullName -Force
 
         Remove-Item -Path $path.FullName -Recurse -Force
 
