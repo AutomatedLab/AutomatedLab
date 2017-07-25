@@ -282,7 +282,7 @@ function Install-LabExchange2013
             #FINALLY INSTALL EXCHANGE
             Write-ScreenInfo -Message 'Install Exchange Server 2013'
        
-            $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
+            $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
             
             Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $result -Scope Global 
