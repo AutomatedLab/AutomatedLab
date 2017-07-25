@@ -341,7 +341,19 @@ RETURN
 	)) AS ResourceCountNotInDesiredState
 
 	,(
-	SELECT [value] FROM OPENJSON([StatusData])) AS RawStatusData
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(200) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage
+
+	,(
+	SELECT [value] FROM OPENJSON([StatusData])
+	) AS RawStatusData
 
 	FROM dbo.StatusReport INNER JOIN
 	(SELECT MAX(EndTime) AS MaxEndTime, NodeName
