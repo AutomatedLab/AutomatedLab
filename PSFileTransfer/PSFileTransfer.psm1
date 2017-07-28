@@ -76,7 +76,13 @@ function Send-File
     $sourcePath = (Resolve-Path $SourceFilePath -ErrorAction SilentlyContinue).Path
     if (-not $sourcePath)
     {
-        Write-Error -Message 'Source file could not be found'
+        Write-Error -Message 'Source file could not be found.'
+        return
+    }
+    
+    if (-not (Test-Path -Path $SourceFilePath -PathType Leaf))
+    {
+        Write-Error -Message 'Source path points to a directory and not a file.'
         return
     }
     
