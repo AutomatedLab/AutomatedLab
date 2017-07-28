@@ -150,16 +150,17 @@ function Receive-File
     $sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Get-FileLength).ScriptBlock `
     -ArgumentList $SourceFilePath -ErrorAction Stop
     
+    $chunkSize = [Math]::Min($sourceLength, $chunkSize)
+    
     for ($position = 0; $position -lt $sourceLength; $position += $chunkSize)
-    {
-        
+    {        
         $remaining = $sourceLength - $position
         $remaining = [Math]::Min($remaining, $chunkSize)
         
         try
         {
             $chunk = Invoke-Command -Session $Session -ScriptBlock (Get-Command Read-File).ScriptBlock `
-            -ArgumentList $SourceFilePath, $position, $chunkSize -ErrorAction Stop
+            -ArgumentList $SourceFilePath, $position, $remaining -ErrorAction Stop
         }
         catch
         {
@@ -167,7 +168,8 @@ function Receive-File
             return
         }
         
-        Write-File -DestinationFullName $DestinationFilePath -Bytes $chunk.Bytes -Erase $firstChunk
+        $destinationFullName = Join-Path -Path $DestinationFilePath -ChildPath (Split-Path -Path $SourceFilePath -Leaf)
+        Write-File -DestinationFullName $destinationFullName -Bytes $chunk.Bytes -Erase $firstChunk
         
         $firstChunk = $false
     }
