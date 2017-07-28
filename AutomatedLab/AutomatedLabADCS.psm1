@@ -1546,6 +1546,89 @@ function Get-CertificatePfx
     }
 }
 
+function Get-CertificateCert
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'DnsName')]
+        [string]$DnsName,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'Thumbprint')]
+        [string]$Thumbprint,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    $certs = foreach ($location in [Enum]::GetNames([System.Security.Cryptography.X509Certificates.StoreLocation]))
+    {
+        Write-Verbose "Enumerating store location '$location'"
+        foreach ($store in [System.Enum]::GetNames([System.Security.Cryptography.X509Certificates.StoreName]))
+        {
+            Write-Verbose "Enumerating store '$store'"
+            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($store, $location)
+            $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly)
+            $store.Certificates |
+            Add-Member -MemberType NoteProperty -Name Location -Value $location -PassThru | 
+            Add-Member -MemberType NoteProperty -Name Store -Value $store.Name -PassThru
+        }
+    }
+
+    Write-Verbose "Found $($certs.Count) certificates"
+
+    if ($DnsName)
+    {
+        $certs = $certs | Where-Object { $DnsName -in $_.DnsNameList } | Sort-Object NotBefore | Select-Object -Last 1
+    }
+    elseif ($Thumbprint)
+    {
+        $certs = $certs | Where-Object Thumbprint -eq $Thumbprint | Sort-Object NotBefore | Select-Object -Last 1
+    }
+    else
+    {
+        #nothing, all certs are kept
+    }
+
+    Write-Verbose "$($certs.Count) certificates remaining after applying filter"
+
+    foreach ($cert in $certs)
+    {
+        $tempFile = [System.IO.Path]::GetTempFileName()
+        Remove-Item -Path $tempFile
+
+        Write-Verbose "Current certificate is $($cert.Thumbprint)"
+
+        try
+        {
+            Write-Verbose 'Calling Export-PfxCertificate'
+            Export-Certificate -Cert $cert -FilePath $tempFile -ErrorAction SilentlyContinue | Out-Null
+            Write-Verbose 'Export finished'
+        }
+        catch
+        {
+            if ($DnsName -or $Thumbprint)
+            {
+                Write-Error $_
+            }
+            Write-Verbose 'Private key cannot be exported'
+            continue
+        }
+
+        $bytes = [System.IO.File]::ReadAllBytes($tempFile)
+        Remove-Item -Path $tempFile
+
+        New-Object -TypeName PSObject -Property @{
+            Thumbprint = $cert.Thumbprint
+            DnsNameList = $cert.DnsNameList
+            Location = $cert.Location
+            Store = $cert.Store
+            Computer = $env:COMPUTERNAME
+            Cert = $bytes
+        }
+    }
+}
+
 function Add-CertificatePfx
 {
     # .ExternalHelp AutomatedLab.Help.xml
@@ -1580,8 +1663,37 @@ function Add-CertificatePfx
         Import-PfxCertificate -FilePath $Path -Password $password -CertStoreLocation $certPath -Exportable
         Write-Verbose 'Certificate imported'
     }
+}
 
-    end { }
+function Add-CertificateCert
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [string]$Path,
+
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [System.Security.Cryptography.X509Certificates.StoreLocation]$Location,
+
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [System.Security.Cryptography.X509Certificates.StoreName]$Store
+    )
+
+    process
+    {
+        if (-not (Test-Path -Path $Path))
+        {
+            Write-Error "The path '$Path' does not exist"
+            continue
+        }
+
+        $certPath = 'cert:\{0}\{1}' -f $Location, $Store
+
+        Write-Verbose 'Calling Import-PfxCertificate '
+        Import-Certificate -FilePath $Path -CertStoreLocation $certPath
+        Write-Verbose 'Certificate imported'
+    }
 }
 #endregion Internals
 
@@ -1622,6 +1734,44 @@ function Get-LabCertificatePfx
     Write-LogFunctionExit
 }
 #endregion Get-LabCertificatePfx
+
+#region Get-LabCertificateCert
+function Get-LabCertificateCert
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
+    param (
+        [Parameter(Mandatory, ParameterSetName = 'DnsName')]
+        [string]$DnsName,
+
+        [Parameter(Mandatory, ParameterSetName = 'Thumbprint')]
+        [string]$Thumbprint,
+
+        [Parameter(Mandatory, ParameterSetName = 'All')]
+        [switch]$All,
+        
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName
+    )
+    
+    Write-LogFunctionEntry
+    
+    $variables = Get-Variable -Name PSBoundParameters
+    $functions = Get-Command -Name Get-CertificateCert, Sync-Parameter
+    
+    foreach ($computer in $ComputerName)
+    {
+        Invoke-LabCommand -ActivityName 'Exporting certificates with exportable private key' -ComputerName $computer -ScriptBlock {
+        
+            Sync-Parameter -Command (Get-Command -Name Get-CertificateCert)
+            Get-CertificateCert @ALBoundParameters
+            
+        } -Variable $variables -Function $functions -PassThru
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Get-LabCertificateCert
 
 #region Add-LabCertificatePfx
 function Add-LabCertificatePfx
@@ -1665,6 +1815,61 @@ function Add-LabCertificatePfx
             Sync-Parameter -Command (Get-Command -Name Add-CertificatePfx)
             $ALBoundParameters.Add('Path', $tempFile)
             Add-CertificatePfx @ALBoundParameters | Out-Null
+            Remove-Item -Path $tempFile
+            
+        } -Variable $variables -Function $functions -PassThru
+        
+    }
+    
+    end
+    {
+        Write-LogFunctionExit
+    }
+}
+#endregion Add-LabCertificatePfx
+
+#region Add-LabCertificateCert
+function Add-LabCertificateCert
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [byte[]]$Cert,
+
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [System.Security.Cryptography.X509Certificates.StoreLocation]$Location,
+
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [System.Security.Cryptography.X509Certificates.StoreName]$Store,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+        [string[]]$ComputerName
+    )
+    
+    begin
+    {
+        Write-LogFunctionEntry
+    }
+    
+    process
+    {
+        $variables = Get-Variable -Name PSBoundParameters
+        $functions = Get-Command -Name Add-CertificateCert, Sync-Parameter
+        
+        Invoke-LabCommand -ActivityName 'Storing Cert bytes on target machine' -ComputerName $ComputerName -ScriptBlock {
+        
+            $tempFile = [System.IO.Path]::GetTempFileName()
+            [System.IO.File]::WriteAllBytes($tempFile, $args[0])
+            Write-Verbose "Cert is written to '$tempFile'"
+            
+        } -ArgumentList (,$Cert) -Variable $variables
+    
+        Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -ScriptBlock {
+        
+            Sync-Parameter -Command (Get-Command -Name Add-CertificateCert)
+            $ALBoundParameters.Add('Path', $tempFile)
+            Add-CertificateCert @ALBoundParameters | Out-Null
             Remove-Item -Path $tempFile
             
         } -Variable $variables -Function $functions -PassThru
