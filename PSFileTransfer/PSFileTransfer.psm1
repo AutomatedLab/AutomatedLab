@@ -168,8 +168,7 @@ function Receive-File
             return
         }
         
-        $destinationFullName = Join-Path -Path $DestinationFilePath -ChildPath (Split-Path -Path $SourceFilePath -Leaf)
-        Write-File -DestinationFullName $destinationFullName -Bytes $chunk.Bytes -Erase $firstChunk
+        Write-File -DestinationFullName $DestinationFilePath -Bytes $chunk.Bytes -Erase $firstChunk
         
         $firstChunk = $false
     }
@@ -209,7 +208,7 @@ function Receive-Directory
     
     if (-not (Test-Path -Path $DestinationFolderPath))
     {
-        New-Item -Path $DestinationFolderPath -ItemType Container -ErrorAction Stop
+        New-Item -Path $DestinationFolderPath -ItemType Container -ErrorAction Stop | Out-Null
     }
     elseif (-not (Test-Path -Path $DestinationFolderPath -PathType Container))
     {
@@ -329,7 +328,6 @@ function Write-File
     )
     
     Write-Debug -Message "Send-File $($env:COMPUTERNAME): writing $DestinationFullName length $($Bytes.Length)"
-    $VerbosePreference=2
     
     #Convert the destination path to a full filesytem path (to support relative paths)
     try
@@ -339,6 +337,12 @@ function Write-File
     catch
     {
         throw New-Object -TypeName System.IO.FileNotFoundException -ArgumentList ('Could not set destination path', $_)
+    }
+    
+    if ((Test-Path -Path $DestinationFullName -PathType Container))
+    {
+        Write-Error "Please define the target file's full name. '$DestinationFullName' points to a folder."
+        return
     }
     
     if ($Erase)
@@ -356,7 +360,7 @@ function Write-File
         }
     }
     
-    $destFileStream = [IO.File]::OpenWrite($DestinationFullName)
+    $destFileStream = [IO.File]::Create($DestinationFullName)
     $destBinaryWriter = New-Object -TypeName System.IO.BinaryWriter -ArgumentList ($destFileStream)
     
     [void]$destBinaryWriter.Seek(0, 'End')
