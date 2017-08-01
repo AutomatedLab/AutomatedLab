@@ -448,6 +448,7 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
+        [switch]$VpnGateway,
         [int]$DelayBetweenComputers,
         [switch]$NoValidation
     )
@@ -554,6 +555,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Configuring routing' -TaskStart
         
         Install-LabRouting
+        
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($VpnGateway -or $performAll) -and (Get-LabMachine -Role VpnGateway))
+    {
+        Write-ScreenInfo -Message 'Configuring VPN gateway' -TaskStart
+        
+        Install-LabVpnGateway
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
