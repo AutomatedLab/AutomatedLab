@@ -484,6 +484,11 @@ function Install-Lab
     Unblock-LabSources
     
     $Global:AL_DeploymentStart = Get-Date
+
+	if ($PSVersionTable.BuildVersion.Major -ge 10)
+	{
+		Show-LabToastNotification -LabStarted
+	}
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -771,6 +776,10 @@ function Install-Lab
         $jobs | Wait-Job | Out-Null
     }
     
+	if ($PSVersionTable.BuildVersion.Major -ge 10)
+	{
+		Show-LabToastNotification -LabFinished
+	}
     Write-LogFunctionExit
 }
 #endregion Install-Lab

@@ -2223,5 +2223,39 @@ function Test-HashtableKeys
     $result
 }
 
+function Show-LabToastNotification
+{
+param
+(
+	[Parameter(Mandatory = $true, ParameterSetName = 'Start')]
+	[switch]
+	$LabStarted,
+
+	[Parameter(Mandatory = $true, ParameterSetName = 'Finish')]
+	[switch]
+	$LabFinished
+)
+
+$lab = Get-Lab -ErrorAction SilentlyContinue
+
+if (-not $lab)
+{
+	return
+}
+
+$template = "<toast><visual><binding template=`"ToastText02`"><text id=`"1`">AutomatedLab</text><text id=`"2`">Deployment of {0} on {1} {2}.</text></binding></visual></toast>" -f `
+	$lab.Name,$lab.DefaultVirtualizationEngine,(if($LabStarted){"started"}else{"finished"})
+
+
+[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+[Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime] > $null
+[Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
+$xml = New-Object Windows.Data.Xml.Dom.XmlDocument
+
+$xml.LoadXml($template)
+$toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+[Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("AL").Show($toast)
+}
+
 Add-Type -TypeDefinition $meshType
 Add-Type -TypeDefinition $gpoType -IgnoreWarnings
