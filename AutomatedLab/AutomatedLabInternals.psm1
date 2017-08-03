@@ -2243,8 +2243,9 @@ if (-not $lab)
 	return
 }
 
+$status = if($LabStarted){"started"}else{"finished"}
 $template = "<toast><visual><binding template=`"ToastText02`"><text id=`"1`">AutomatedLab</text><text id=`"2`">Deployment of {0} on {1} {2}.</text></binding></visual></toast>" -f `
-	$lab.Name,$lab.DefaultVirtualizationEngine,(if($LabStarted){"started"}else{"finished"})
+	$lab.Name,$lab.DefaultVirtualizationEngine,$status
 
 
 [Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null
