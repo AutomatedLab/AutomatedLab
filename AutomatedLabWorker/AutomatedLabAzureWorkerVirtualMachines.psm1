@@ -1,8 +1,4 @@
-$PSDefaultParameterValues = @{
-    '*-Azure*:Verbose' = $false
-    '*-Azure*:Warning' = $false
-    'Import-Module:Verbose' = $false
-}
+$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker).PrivateData.AzureRetryCount
 
 #region New-LWAzureVM
 function New-LWAzureVM
@@ -648,15 +644,15 @@ function Initialize-LWAzureVM
     }
     Write-ScreenInfo -Message "$($Machine.Count) new machine(s) has been created and now visible in Azure"
     Write-ScreenInfo -Message 'Waiting until all machines have a DNS name in Azure'
-    while ((Get-LabMachine).AzureConnectionInfo.DnsName.Count -ne (Get-LabMachine).Count)
+    while ((Get-LabVM).AzureConnectionInfo.DnsName.Count -ne (Get-LabVM).Count)
     {
         Start-Sleep -Seconds 10
         Write-ScreenInfo -Message 'Still waiting until all machines have a DNS name in Azure'
     }
-    Write-ScreenInfo -Message "DNS names found: $((Get-LabMachine).AzureConnectionInfo.DnsName.Count)"
+    Write-ScreenInfo -Message "DNS names found: $((Get-LabVM).AzureConnectionInfo.DnsName.Count)"
 
     #refresh the machine list to have also Azure meta date is available
-    $Machine = Get-LabMachine -ComputerName $Machine
+    $Machine = Get-LabVM -ComputerName $Machine
       
     #copy AL tools to lab machine and optionally the tools folder
     Write-ScreenInfo -Message "Waiting for machines '$($Machine -join ', ')' to be accessible" -NoNewLine
@@ -739,7 +735,7 @@ function Remove-LWAzureVM
             Import-Module -Name Azure*
             Import-AzureRmContext -Path $SubscriptionPath
 
-            $resourceGroup = ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
+            $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
 
             $vm = Get-AzureRmVM -ResourceGroupName $resourceGroup -Name $ComputerName -WarningAction SilentlyContinue
             
@@ -753,7 +749,7 @@ function Remove-LWAzureVM
     }
     else
     {
-        $resourceGroup = ((Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
+        $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
         $vm = Get-AzureRmVM -ResourceGroupName $resourceGroup -Name $ComputerName -WarningAction SilentlyContinue
         
         $result = $vm | Remove-AzureRmVM -Force
@@ -782,15 +778,15 @@ function Start-LWAzureVM
     $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-		Start-Sleep -Seconds 2
-		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-		if (-not $azureVms)
-		{
-			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
-		}
+        Start-Sleep -Seconds 2
+        $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        if (-not $azureVms)
+        {
+            throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+        }
     }
 
-    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $resourceGroups = (Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
     $lab = Get-Lab
@@ -806,33 +802,51 @@ function Start-LWAzureVM
             param
             (
                 [object]$Machine,
-                [string]$SubscriptionPath
+                [string]$SubscriptionPath,
+                [int]$AzureRetryCount
             )
-            Import-Module -Name Azure*
-            [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
-            $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+            #retry 3 times
+            $i = 0
+            while (-not $azureContext -and $i -le $AzureRetryCount)
+            {
+                $azureContext = Import-AzureRmContext -Path $SubscriptionPath -ErrorVariable azureContextError
+                $i++
+                Start-Sleep -Seconds 5
+            }
+
+            if (-not $azureContext)
+            {
+                throw (New-Object System.Exception("Azure Context could not be created using the file '$SubscriptionPath'", $azureContextError.Exception))
+            }
+
+            $i = 0
+            while ($result.Status -ne 'Succeeded' -and $i -lt $AzureRetryCount)
+            {
+                $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                $i++
+                Start-Sleep -Seconds 5
+            }
 
             if ($result.Status -ne 'Succeeded')
             {
                 Write-Error -Message ('Could not start Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error)-TargetObject $Machine.Name -ErrorAction Stop
             }
-        } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
+        } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount)
         
         Start-Sleep -Seconds $DelayBetweenComputers
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-    
 
     $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-		Start-Sleep -Seconds 2
-		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-		if (-not $azureVms)
-		{
-			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
-		}
+        Start-Sleep -Seconds 2
+        $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        if (-not $azureVms)
+        {
+            throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+        }
     }
 
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
@@ -847,7 +861,7 @@ function Start-LWAzureVM
         }
         else
         {
-            $machine = Get-LabMachine -ComputerName $name
+            $machine = Get-LabVM -ComputerName $name
             #if the machine should be domain-joined but has not yet joined and is not a domain controller 
             if ($machine.IsDomainJoined -and -not $machine.HasDomainJoined -and ($machine.Roles.Name -notcontains 'RootDC' -and $machine.Roles.Name -notcontains 'FirstChildDC' -and $machine.Roles.Name -notcontains 'DC'))
             {
@@ -887,7 +901,7 @@ function Stop-LWAzureVM
     
     $lab = Get-Lab
     $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue 
-    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $resourceGroups = (Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
     
     if ($ShutdownFromOperatingSystem)
@@ -912,24 +926,48 @@ function Stop-LWAzureVM
                 param
                 (
                     [object]$Machine,
-                    [string]$SubscriptionPath
+                    [string]$SubscriptionPath,
+                    [int]$AzureRetryCount
                 )
-                Import-Module -Name Azure*
-                [void](Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
-                $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+
+                $i = 0
+                while (-not $azureContext -and $i -le $AzureRetryCount)
+                {
+                    $azureContext = Import-AzureRmContext -Path $SubscriptionPath -ErrorVariable azureContextError
+                    $i++
+                    Start-Sleep -Seconds 5
+                }
+
+                if (-not $azureContext)
+                {
+                    throw (New-Object System.Exception("Azure Context could not be created using the file '$SubscriptionPath'", $azureContextError.Exception))
+                }
+
+                $i = 0
+                while ($result.Status -ne 'Succeeded' -and $i -lt $AzureRetryCount)
+                {
+                    $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+                    $i++
+                    Start-Sleep -Seconds 5
+                }
 
                 if ($result.Status -ne 'Succeeded')
                 {
                     Write-Error -Message ('Could not stop Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error) -TargetObject $Machine.Name -ErrorAction Stop
                 }
-            } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath)
+            } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount)
         }
 
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
         $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
         if ($failedJobs)
         {
-            $jobNames = ($failedJobs | foreach {if($_.Name.StartsWith("StopAzureVm_")){($_.Name -split "_")[1]}}) -join ", "
+            $jobNames = ($failedJobs | ForEach-Object {
+                    if ($_.Name.StartsWith("StopAzureVm_")){
+                        ($_.Name -split "_")[1]
+                    }
+            }) -join ", "
+            
             Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
         }
 
@@ -970,7 +1008,7 @@ function Wait-LWAzureRestartVM
     
     Write-Verbose -Message "Starting monitoring the servers at '$start'"
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
         
     $cmd = {
         param (
@@ -1052,15 +1090,15 @@ function Get-LWAzureVMStatus
     $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
-		Start-Sleep -Seconds 2
-		$azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-		if (-not $azureVms)
-		{
-			throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
-		}
+        Start-Sleep -Seconds 2
+        $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        if (-not $azureVms)
+        {
+            throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+        }
     }
 
-    $resourceGroups = (Get-LabMachine).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
+    $resourceGroups = (Get-LabVM).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
     
     foreach ($azureVm in $azureVms)
@@ -1095,19 +1133,19 @@ function Get-LWAzureVMConnectionInfo
     
     Write-LogFunctionEntry
 
-	$lab = Get-Lab -ErrorAction SilentlyContinue
+    $lab = Get-Lab -ErrorAction SilentlyContinue
 
-	if (-not $lab)
-	{
-		Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f `
-			($ComputerName.Name -join ','))
-	}
+    if (-not $lab)
+    {
+        Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f `
+        ($ComputerName.Name -join ','))
+    }
 
-	if (-not (Get-AzureRmContext).Subscription)
-	{
-		Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
+    if (-not (Get-AzureRmContext).Subscription)
+    {
+        Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
         Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscriptions
-	}
+    }
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
@@ -1151,11 +1189,11 @@ function Enable-LWAzureVMRemoting
 
     if ($ComputerName)
     {
-        $machines = Get-LabMachine -All | Where-Object Name -in $ComputerName
+        $machines = Get-LabVM -All | Where-Object Name -in $ComputerName
     }
     else
     {
-        $machines = Get-LabMachine -All
+        $machines = Get-LabVM -All
     }
     
     $script = {
@@ -1236,11 +1274,22 @@ function Enable-LWAzureWinRm
                 $Subscription,
                 $MachineName,
                 $ResourceGroup,
-                $Location
+                $Location,
+                $AzureRetryCount
             )
             
-            Import-AzureRmContext -Path $ProfilePath
-            Set-AzureRmContext -SubscriptionName $Subscription
+            $i = 0
+            while (-not $azureContext -and $i -le $AzureRetryCount)
+            {
+                $azureContext = Import-AzureRmContext -Path $ProfilePath -ErrorVariable azureContextError
+                $i++
+                Start-Sleep -Seconds 5
+            }
+
+            if (-not $azureContext)
+            {
+                throw (New-Object System.Exception("Azure Context could not be created using the file '$ProfilePath'", $azureContextError.Exception))
+            }
 
             $azureVm = Get-AzureRmVM -Name $machineName -Resourcegroup $ResourceGroup
             $storageAccount = @(Get-AzureRmStorageAccount -ResourceGroupName AutomatedLabSources)[0]
@@ -1251,6 +1300,7 @@ function Enable-LWAzureWinRm
                 New-AzureStorageContainer -Name labsources -Permission Container -Context $storageAccount.Context
                 $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile
                 'Enable-PSRemoting -Force' | Out-File $tempFileName -Force -Encoding utf8
+                'Enable-WSManCredSSP -Role Server -Force' | Out-File $tempFileName -Force -Encoding utf8 -Append
                 $null = Set-AzureStorageBlobContent -File $tempFileName -Container labsources -Blob Enable-WinRm.ps1 -BlobType Block -Context $storageAccount.Context
                 Remove-Item $tempFileName -Force -ErrorAction SilentlyContinue
             }
@@ -1264,7 +1314,7 @@ function Enable-LWAzureWinRm
             {
                 throw "Setting up WinRm on $machineName failed!"
             }
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation)
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation), $azureRetryCount
     }
 
     if ($Wait)
@@ -1355,7 +1405,7 @@ function Mount-LWAzureIsoImage
         [switch]$PassThru
     )
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
     $azureIsoPath = $IsoPath -replace '/','\' -replace 'https:'
