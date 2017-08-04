@@ -22,6 +22,9 @@ CREATE DATABASE [DSC]
 ( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
 GO
 
+ALTER DATABASE DSC SET RECOVERY SIMPLE
+GO
+
 ALTER DATABASE [DSC] SET COMPATIBILITY_LEVEL = 130
 GO
 
@@ -341,7 +344,19 @@ RETURN
 	)) AS ResourceCountNotInDesiredState
 
 	,(
-	SELECT [value] FROM OPENJSON([StatusData])) AS RawStatusData
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(200) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage
+
+	,(
+	SELECT [value] FROM OPENJSON([StatusData])
+	) AS RawStatusData
 
 	FROM dbo.StatusReport INNER JOIN
 	(SELECT MAX(EndTime) AS MaxEndTime, NodeName

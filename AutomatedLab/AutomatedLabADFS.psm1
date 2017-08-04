@@ -85,7 +85,7 @@ function Install-LabAdfs
         foreach ($otherAdfsServer in $otherAdfsServers)
         {
             Write-Verbose "Adding the SSL certificate to machine '$otherAdfsServer'"
-            Get-LabCertificatePfx -ComputerName $1stAdfsServer -Thumbprint $certThumbprint | Add-LabCertificatePfx -ComputerName $otherAdfsServer
+            Get-LabCertificate -ComputerName $1stAdfsServer -Thumbprint $certThumbprint | Add-LabCertificate -ComputerName $otherAdfsServer
         }    
 
         Invoke-LabCommand -ActivityName 'Add ADFS Service User and DNS record' -ComputerName $adfsDc -ScriptBlock {
@@ -179,7 +179,7 @@ function Install-LabAdfsProxy
         
         $someAdfsServer = Get-LabMachine -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
         Write-Verbose "Getting certificate from some ADFS server '$someAdfsServer'"
-        $cert = Get-LabCertificatePfx -ComputerName $someAdfsServer -DnsName $adfsFullName
+        $cert = Get-LabCertificate -ComputerName $someAdfsServer -DnsName $adfsFullName
         if (-not $cert)
         {
             Write-Error "Could not get certificate from '$someAdfsServer'. Cannot continue with ADFS Proxy setup."
@@ -188,7 +188,7 @@ function Install-LabAdfsProxy
         Write-Verbose "Got certificate with thumbprint '$($cert.Thumbprint)'"
         
         Write-Verbose "Adding certificate to '$labAdfsProxy'"
-        $cert | Add-LabCertificatePfx -ComputerName $labAdfsProxy
+        $cert | Add-LabCertificate -ComputerName $labAdfsProxy
         
         $certThumbprint = $cert.Thumbprint
         $cred = ($lab.Domains | Where-Object Name -eq $adfsDomainName).GetCredential()
