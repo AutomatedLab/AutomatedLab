@@ -77,6 +77,7 @@ namespace System.Security.Cryptography.X509Certificates
     }
 }
 '@
+Add-Type -TypeDefinition $certStoreTypes
 
 $pkiInternalsTypes = @'
 using System;
@@ -3924,4 +3925,3 @@ function Enable-LabCertificateAutoenrollment
 #endregion Enable-LabCertificateAutoenrollment
 
 Add-Type -TypeDefinition $pkiInternalsTypes
-Add-Type -TypeDefinition $certStoreTypes
