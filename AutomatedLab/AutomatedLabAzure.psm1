@@ -886,7 +886,7 @@ function Remove-LabAzureResourceGroup
         {
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
-                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
+                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
                 Write-Verbose "RG '$($name)' removed"
                 
                 $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
