@@ -888,13 +888,20 @@ function Stop-LWAzureVM
 {
     param (
         [Parameter(Mandatory)]
-        [string[]]$ComputerName,
+        [string[]]
+		$ComputerName,
 
-        [int]$ProgressIndicator,
+        [int]
+		$ProgressIndicator,
 
-        [switch]$NoNewLine,
+        [switch]
+		$NoNewLine,
 
-        [switch]$ShutdownFromOperatingSystem
+        [switch]
+		$ShutdownFromOperatingSystem,
+
+		[bool]
+		$StayProvisioned = $false
     )
     
     Write-LogFunctionEntry
@@ -927,7 +934,8 @@ function Stop-LWAzureVM
                 (
                     [object]$Machine,
                     [string]$SubscriptionPath,
-                    [int]$AzureRetryCount
+                    [int]$AzureRetryCount,
+					[bool]$StayProvisioned = $false
                 )
 
                 $i = 0
@@ -946,7 +954,7 @@ function Stop-LWAzureVM
                 $i = 0
                 while ($result.Status -ne 'Succeeded' -and $i -lt $AzureRetryCount)
                 {
-                    $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force
+                    $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force -StayProvisioned:$StayProvisioned
                     $i++
                     Start-Sleep -Seconds 5
                 }
@@ -955,7 +963,7 @@ function Stop-LWAzureVM
                 {
                     Write-Error -Message ('Could not stop Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error) -TargetObject $Machine.Name -ErrorAction Stop
                 }
-            } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount)
+            } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount, $StayProvisioned)
         }
 
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
