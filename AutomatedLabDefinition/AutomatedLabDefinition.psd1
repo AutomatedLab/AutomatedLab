@@ -60,8 +60,8 @@
                 CaRoot = 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
                 CaSubordinate = 'ParentCA', 'ParentCALogicalName', 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
 
-                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet'
-                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet'
+                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet', 'NetBiosDomainName'
+                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet', 'NetBIOSDomainName'
                 DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
 
                 Exchange2013 = 'OrganizationName'

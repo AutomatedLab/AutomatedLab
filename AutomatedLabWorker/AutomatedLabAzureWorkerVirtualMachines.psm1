@@ -1095,6 +1095,20 @@ function Get-LWAzureVMConnectionInfo
     
     Write-LogFunctionEntry
 
+	$lab = Get-Lab -ErrorAction SilentlyContinue
+
+	if (-not $lab)
+	{
+		Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f `
+			($ComputerName.Name -join ','))
+	}
+
+	if (-not (Get-AzureRmContext).Subscription)
+	{
+		Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
+        Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscriptions
+	}
+
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $azureVMs = Get-AzureRmVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
     

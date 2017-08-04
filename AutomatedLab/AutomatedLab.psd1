@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.1.1.0'
+    ModuleVersion = '4.2.0.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-	ModuleList = @('AutomatedLab')
+    ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -80,6 +80,9 @@
         'Enable-LabVMRemoting',
         'Enable-LabHostRemoting',
         'Invoke-LabCommand',
+        'Invoke-LabDscConfiguration',
+        'Remove-LabDscLocalConfigurationManagerConfiguration',
+        'Set-LabDscLocalConfigurationManagerConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
@@ -185,6 +188,7 @@
         'Unblock-LabSources',
         'Add-VariableToPSSession',
         'Add-FunctionToPSSession',
+        'Send-ModuleToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
         'Test-LabMachineInternetConnectivity',
@@ -197,7 +201,8 @@
         'Test-LabSourcesOnAzureStorage',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
-        'Get-LabAzureLabSourcesContent'
+        'Get-LabAzureLabSourcesContent',
+        'Test-HashtableKeys'
     )
     
     # List of all files packaged with this module
@@ -242,10 +247,14 @@
         Timeout_VisualStudio2013Installation = 90
         Timeout_VisualStudio2015Installation = 90
 
+        #PSSession settings
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
-
+        MaxPSSessionsPerVM = 5
         DoNotUseGetHostEntryInNewLabPSSession = $true
+
+        #DSC
+        DscMofPath = '"$labSources\DscConfigurations"'
 
         #General VM settings
         DisableWindowsDefender = $true

@@ -255,7 +255,7 @@ function Import-Lab
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
         }
 
-        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 2))
+        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
         {
             throw 'The VMWare snapin was not loaded. Maybe it is missing'
         }
@@ -785,9 +785,7 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name,
-        
-        [switch]$RemoveReferenceDisks
+        [string]$Name
     )
     Write-LogFunctionEntry
     
@@ -909,22 +907,6 @@ function Remove-Lab
             {
                 Remove-Item -Path $Script:data.LabPath
             }
-        }
-        
-        if ($RemoveReferenceDisks)
-        {
-            Write-ScreenInfo -Message 'Removing Reference Disks'
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ServerReferenceDiskPath -Confirm:$false
-            }
-        
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ClientReferenceDiskPath -Confirm:$false
-            }
-        
-            Remove-Item -Path (Split-Path -Path $Script:data.ClientReferenceDiskPath -Parent) -Confirm:$false -Recurse
         }
 
         $Script:data = $null
@@ -2599,12 +2581,12 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip 1
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
             
                     Write-Verbose "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession[0]
+                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
                 }
             }
     

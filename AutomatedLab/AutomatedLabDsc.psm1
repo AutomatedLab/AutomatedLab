@@ -91,8 +91,14 @@ function Install-LabDscPullServer
     
     if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
     {
-        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy ServerAuthentication `
+        New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy 'Server Authentication' `
         -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
+    }
+
+    if (-not (Test-LabCATemplate -TemplateName DscMofEncryption  -ComputerName $ca))
+    {
+        New-LabCATemplate -TemplateName DscMofEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
+        -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
     }
 
     if ($Online)
@@ -120,11 +126,11 @@ function Install-LabDscPullServer
         foreach ($module in $requiredModules)
         {
             $moduleBase = Get-Module -Name $module -ListAvailable | 
-                Sort-Object -Property Version -Descending | 
-                Select-Object -First 1 -ExpandProperty ModuleBase
+            Sort-Object -Property Version -Descending | 
+            Select-Object -First 1 -ExpandProperty ModuleBase
             $moduleDestination = Split-Path -Path $moduleBase -Parent
             
-            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+            Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
         }
     }
     
@@ -145,11 +151,11 @@ function Install-LabDscPullServer
             foreach ($module in $moduleNames)
             {
                 $moduleBase = Get-Module -Name $module -ListAvailable | 
-                    Sort-Object -Property Version -Descending | 
-                    Select-Object -First 1 -ExpandProperty ModuleBase
+                Sort-Object -Property Version -Descending | 
+                Select-Object -First 1 -ExpandProperty ModuleBase
                 $moduleDestination = Split-Path -Path $moduleBase -Parent
                 
-                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolder $moduleDestination -Recurse
+                Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
             }
             
             Write-ScreenInfo 'finished'
@@ -170,6 +176,7 @@ function Install-LabDscPullServer
             $databaseEngine = 'edb'
         }
 
+        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $guid = (New-Guid).Guid
@@ -213,10 +220,10 @@ function Install-LabDscPullServer
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
-	if ($jobs | Where-Object -Property State -eq 'Failed')
-	{
-		throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
-	}
+    if ($jobs | Where-Object -Property State -eq 'Failed')
+    {
+        throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
+    }
 
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
@@ -305,3 +312,568 @@ function Install-LabDscClient
     }
 }
 #endregion Install-LabDscClient
+
+#region Get-DscConfigurationImportedResource
+function Get-DscConfigurationImportedResource
+{
+    param(
+        [Parameter(Mandatory, ParameterSetName = 'ByFile')]
+        [string]$FilePath,
+        
+        [Parameter(Mandatory, ParameterSetName = 'ByName')]
+        [string]$Name
+    )
+    
+    $modules = New-Object System.Collections.ArrayList
+
+    if ($Name)
+    {
+        $ast = (Get-Command -Name $Name).ScriptBlock.Ast
+        $FilePath = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ScriptBlockAst] }, $true)[0].Extent.File
+    }
+    
+    $ast = [scriptblock]::Create((Get-Content -Path $FilePath -Raw)).Ast
+    
+    $configurations = $ast.FindAll({ $args[0] -is [System.Management.Automation.Language.ConfigurationDefinitionAst] }, $true)
+    Write-Verbose "Script knwos about $($configurations.Count) configurations"
+    foreach ($configuration in $configurations)
+    {
+        $importCmds = $configuration.Body.ScriptBlock.FindAll({ $args[0].Value -eq 'Import-DscResource' -and $args[0] -is [System.Management.Automation.Language.StringConstantExpressionAst] }, $true)
+        Write-Verbose "Configuration $($configuration.InstanceName) knows about $($importCmds.Count) Import-DscResource commands"
+    
+        foreach ($importCmd in $importCmds)
+        {
+            $commandElements = $importCmd.Parent.CommandElements | Select-Object -Skip 1 | Where-Object {$_ -is [System.Management.Automation.Language.ArrayLiteralAst] -or $_ -is [System.Management.Automation.Language.StringConstantExpressionAst] }     
+            
+            $moduleNames = $commandElements.SafeGetValue()
+            if ($moduleNames.GetType().IsArray)
+            {
+                $modules.AddRange($moduleNames)
+            }
+            else
+            {
+                [void]$modules.Add($moduleNames)
+            }
+        }
+    }
+    
+    $compositeResources = $modules | Where-Object { $_ -ne 'PSDesiredStateConfiguration' } | ForEach-Object { Get-DscResource -Module $_ } | Where-Object { $_.ImplementedAs -eq 'Composite' }
+    foreach ($compositeResource in $compositeResources)
+    {
+        $modulesInResource = Get-DscConfigurationImportedResource -FilePath $compositeResource.Path
+        if ($modulesInResource.GetType().IsArray)
+        {
+            $modules.AddRange($modulesInResource)
+        }
+        else
+        {
+            [void]$modules.Add($modulesInResource)
+        }
+    }
+    
+    $modules | Select-Object -Unique
+}
+#endregion Get-DscConfigurationImportedResource
+
+#region Invoke-LabDscConfiguration
+function Invoke-LabDscConfiguration
+{
+    [CmdletBinding(DefaultParameterSetName = 'New')]
+    param(
+        [Parameter(Mandatory, ParameterSetName = 'New')]
+        [System.Management.Automation.ConfigurationInfo]$Configuration,
+
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+
+        [Parameter(ParameterSetName = 'New')]
+        [hashtable]$ConfigurationData,
+
+        [Parameter(ParameterSetName = 'UseExisting')]
+        [switch]$UseExisting,
+        
+        [switch]$Wait
+    )
+    
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    if (-not $lab.Machines)
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $machines = Get-LabVM -ComputerName $ComputerName    
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        Write-Error -Message 'Not all machines specified could be found in the lab.'
+        Write-LogFunctionExit
+        return
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq 'New')
+    {
+        $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
+        if (-not (Test-Path -Path $outputPath))
+        {
+            mkdir -Path $outputPath -Force
+        }
+
+        if ($ConfigurationData)
+        {
+            $result = ValidateUpdate-ConfigurationData -ConfigurationData $ConfigurationData
+            if (-not $result)
+            {
+                return
+            }
+        }
+    
+        $tempPath = [System.IO.Path]::GetTempFileName()
+        Remove-Item -Path $tempPath
+        mkdir -Path $tempPath | Out-Null  
+
+        $dscModules = @()
+
+        $null = foreach ($c in $ComputerName)
+        {
+            if ($ConfigurationData)
+            {
+                $adaptedConfig = $ConfigurationData.Clone()
+            }
+
+            Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
+            if ($Configuration.Parameters.ContainsKey('ComputerName'))
+            {
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c
+            }
+            else
+            {
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig
+            }
+
+            if ($mof.Count -gt 1)
+            {
+                $mof = $mof | Where-Object { $_.Name -like "*$c*" }
+            }
+            $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
+            $mof | Move-Item -Destination $outputPath -Force
+            
+            Remove-Item -Path $tempPath -Force -Recurse
+        }
+
+        $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
+    
+        foreach ($c in $ComputerName)
+        {
+            foreach ($mofFile in $mofFiles)
+            {
+                if ($mofFile.Name -match "(?<ConfigurationName>$($Configuration.Name))_(?<ComputerName>$c)\.mof")
+                {
+                    Send-File -Source $mofFile.FullName -Session (New-LabPSSession -ComputerName $Matches.ComputerName) -Destination "C:\AL Dsc\$($Configuration.Name)" -Force
+                }
+            }
+        }
+    
+        #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
+        #to find out all the reuqired modules we need to upload in total
+        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name
+        foreach ($requiredDscModule in $requiredDscModules)
+        {
+            Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
+        }
+    
+        Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
+    
+            $path = "C:\AL Dsc\$($args[0])"
+        
+            Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
+        
+            $mofFiles = Get-ChildItem -Path $path -Filter *.mof
+            if ($mofFiles.Count -gt 1)
+            {
+                throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
+            }
+        
+            $mofFiles | Rename-Item -NewName localhost.mof
+        
+            Start-DscConfiguration -Path $path -Wait:$Wait
+    
+        } -ArgumentList $Configuration.Name, $Wait
+    }
+    else
+    {
+        Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying existing DSC configuration' -ScriptBlock {
+            
+            Start-DscConfiguration -UseExisting -Wait:$Wait
+    
+        } -ArgumentList $Wait
+    }
+
+    Write-LogFunctionExit
+}
+#endregion Invoke-LabDscConfiguration
+
+#region Remove-LabDscLocalConfigurationManagerConfiguration
+function Remove-LabDscLocalConfigurationManagerConfiguration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName
+    )
+    
+    Write-LogFunctionEntry
+    
+    function Remove-DscLocalConfigurationManagerConfiguration
+    {
+        param(
+            [string[]]$ComputerName = 'localhost'
+        )
+
+        [DSCLocalConfigurationManager()]
+        configuration LcmDefaultConfiguration
+        {
+            param(
+                [string[]]$ComputerName = 'localhost'
+            )
+    
+            Node $ComputerName
+            {
+                Settings
+                {
+                    RefreshMode = 'Push'
+                    ConfigurationModeFrequencyMins = 15
+                    ConfigurationMode = 'ApplyAndAutoCorrect'
+                    RebootNodeIfNeeded = $true
+                }
+            }
+        }
+
+        $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
+    
+        Remove-DscConfigurationDocument -Stage Current, Pending -Force
+        LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
+        Set-DscLocalConfigurationManager -Path $path.FullName -Force
+
+        Remove-Item -Path $path.FullName -Recurse -Force
+
+        try
+        {
+            Test-DscConfiguration -ErrorAction Stop
+            Write-Error 'There was a problem resetting the Local Configuration Manger configuration'
+        }
+        catch
+        {
+            Write-Host 'DSC Local Configuration Manger was reset to default values'
+        }
+    }
+    
+    $lab = Get-Lab
+    if (-not $lab.Machines)
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $machines = Get-LabVM -ComputerName $ComputerName    
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        Write-Error -Message 'Not all machines specified could be found in the lab.'
+        Write-LogFunctionExit
+        return
+    }
+    
+    Invoke-LabCommand -ActivityName 'Removing DSC LCM configuration' -ComputerName $ComputerName -ScriptBlock (Get-Command -Name Remove-DscLocalConfigurationManagerConfiguration).ScriptBlock
+    
+    Write-LogFunctionExit
+}
+#endregion Remove-LabDscLocalConfigurationManagerConfiguration
+
+#region Set-LabDscLocalConfigurationManagerConfiguration
+function Set-LabDscLocalConfigurationManagerConfiguration
+{
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+
+        [ValidateSet('ContinueConfiguration', 'StopConfiguration')]
+        [string]$ActionAfterReboot,
+
+        [string]$CertificateID,
+
+        [string]$ConfigurationID,
+
+        [int]$RefreshFrequencyMins,
+
+        [bool]$AllowModuleOverwrite,
+
+        [ValidateSet('ForceModuleImport','All', 'None')]
+        [string]$DebugMode,
+
+        [string[]]$ConfigurationNames,
+
+        [int]$StatusRetentionTimeInDays,
+
+        [ValidateSet('Push', 'Pull')]
+        [string]$RefreshMode,
+
+        [int]$ConfigurationModeFrequencyMins,
+
+        [ValidateSet('ApplyAndAutoCorrect', 'ApplyOnly', 'ApplyAndMonitor')]
+        [string]$ConfigurationMode,
+
+        [bool]$RebootNodeIfNeeded,
+
+        [hashtable[]]$ConfigurationRepositoryWeb,
+
+        [hashtable[]]$ReportServerWeb,
+
+        [hashtable[]]$PartialConfiguration
+    )
+    
+    Write-LogFunctionEntry
+
+    function Set-DscLocalConfigurationManagerConfiguration
+    {
+        param(
+            [string[]]$ComputerName = 'localhost',
+
+            [ValidateSet('ContinueConfiguration', 'StopConfiguration')]
+            [string]$ActionAfterReboot,
+
+            [string]$CertificateID,
+
+            [string]$ConfigurationID,
+
+            [int]$RefreshFrequencyMins,
+
+            [bool]$AllowModuleOverwrite,
+
+            [ValidateSet('ForceModuleImport','All', 'None')]
+            [string]$DebugMode,
+
+            [string[]]$ConfigurationNames,
+
+            [int]$StatusRetentionTimeInDays,
+
+            [ValidateSet('Push', 'Pull')]
+            [string]$RefreshMode,
+
+            [int]$ConfigurationModeFrequencyMins,
+
+            [ValidateSet('ApplyAndAutoCorrect', 'ApplyOnly', 'ApplyAndMonitor')]
+            [string]$ConfigurationMode,
+
+            [bool]$RebootNodeIfNeeded,
+
+            [hashtable[]]$ConfigurationRepositoryWeb,
+
+            [hashtable[]]$ReportServerWeb,
+
+            [hashtable[]]$PartialConfiguration
+        )
+
+        if ($PartialConfiguration)
+        {
+            throw (New-Object System.NotImplementedException)
+        }
+
+        if ($ConfigurationRepositoryWeb)
+        {
+            $validKeys = 'Name', 'ServerURL', 'RegistrationKey', 'ConfigurationNames', 'AllowUnsecureConnection'
+            foreach ($hashtable in $ConfigurationRepositoryWeb)
+            {
+
+                if (-not (Test-HashtableKeys -Hashtable $hashtable -ValidKeys $validKeys))
+                {
+                    Write-Error 'The parameter hashtable contains invalid keys. Check the previous error to see details'
+                    return
+                }
+            }
+        }
+
+        if ($ReportServerWeb)
+        {
+            $validKeys = 'Name', 'ServerURL', 'RegistrationKey', 'AllowUnsecureConnection'
+            foreach ($hashtable in $ReportServerWeb)
+            {
+
+                if (-not (Test-HashtableKeys -Hashtable $hashtable -ValidKeys $validKeys))
+                {
+                    Write-Error 'The parameter hashtable contains invalid keys. Check the previous error to see details'
+                    return
+                }
+            }
+        }
+
+        $sb = New-Object System.Text.StringBuilder
+
+        [void]$sb.AppendLine('[DSCLocalConfigurationManager()]')
+        [void]$sb.AppendLine('configuration LcmConfiguration')
+        [void]$sb.AppendLine('{')
+        [void]$sb.AppendLine('param([string[]]$ComputerName = "localhost")')
+        [void]$sb.AppendLine('Node $ComputerName')
+        [void]$sb.AppendLine('{')
+        [void]$sb.AppendLine('Settings')
+        [void]$sb.AppendLine('{')
+        if ($PSBoundParameters.ContainsKey('ActionAfterReboot')) { [void]$sb.AppendLine("ActionAfterReboot = '$ActionAfterReboot'") }
+        if ($PSBoundParameters.ContainsKey('RefreshMode')) { [void]$sb.AppendLine("RefreshMode = '$RefreshMode'") }
+        if ($PSBoundParameters.ContainsKey('ConfigurationModeFrequencyMins')) { [void]$sb.AppendLine("ConfigurationModeFrequencyMins = $ConfigurationModeFrequencyMins") }
+        if ($PSBoundParameters.ContainsKey('CertificateID')) { [void]$sb.AppendLine("CertificateID = $CertificateID") }
+        if ($PSBoundParameters.ContainsKey('ConfigurationID')) { [void]$sb.AppendLine("ConfigurationID = $ConfigurationID") }
+        if ($PSBoundParameters.ContainsKey('AllowModuleOverwrite')) { [void]$sb.AppendLine("AllowModuleOverwrite = `$$AllowModuleOverwrite") }
+        if ($PSBoundParameters.ContainsKey('RebootNodeIfNeeded')) { [void]$sb.AppendLine("RebootNodeIfNeeded = `$$RebootNodeIfNeeded") }
+        if ($PSBoundParameters.ContainsKey('DebugMode')) { [void]$sb.AppendLine("DebugMode = '$DebugMode'") }
+        if ($PSBoundParameters.ContainsKey('ConfigurationNames')) { [void]$sb.AppendLine("ConfigurationNames = @('$($ConfigurationNames -join "', '")')") }
+        if ($PSBoundParameters.ContainsKey('StatusRetentionTimeInDays')) { [void]$sb.AppendLine("StatusRetentionTimeInDays = $StatusRetentionTimeInDays") }
+        if ($PSBoundParameters.ContainsKey('ConfigurationMode')) { [void]$sb.AppendLine("ConfigurationMode = '$ConfigurationMode'") }
+        if ($PSBoundParameters.ContainsKey('RefreshFrequencyMins')) { [void]$sb.AppendLine("RefreshFrequencyMins = $RefreshFrequencyMins") }
+
+        [void]$sb.AppendLine('}')
+        foreach ($web in $ConfigurationRepositoryWeb)
+        {
+            [void]$sb.AppendLine("ConfigurationRepositoryWeb '$($web.Name)'")
+            [void]$sb.AppendLine('{')
+            [void]$sb.AppendLine("ServerURL = 'https://$($web.ServerURL):$($web.Port)/PSDSCPullServer.svc'")
+            [void]$sb.AppendLine("RegistrationKey = '$($Web.RegistrationKey)'")
+            [void]$sb.AppendLine("ConfigurationNames = @('$($Web.ConfigurationNames)')")
+            [void]$sb.AppendLine("AllowUnsecureConnection = `$$($web.AllowUnsecureConnection)")
+            [void]$sb.AppendLine('}')
+        }
+        [void]$sb.AppendLine('}')
+
+        [void]$sb.AppendLine('{')
+        foreach ($web in $ConfigurationRepositoryWeb)
+        {
+            [void]$sb.AppendLine("ReportServerWeb '$($web.Name)'")
+            [void]$sb.AppendLine('{')
+            [void]$sb.AppendLine("ServerURL = 'https://$($web.ServerURL):$($web.Port)/PSDSCPullServer.svc'")
+            [void]$sb.AppendLine("RegistrationKey = '$($Web.RegistrationKey)'")
+            [void]$sb.AppendLine("AllowUnsecureConnection = `$$($web.AllowUnsecureConnection)")
+            [void]$sb.AppendLine('}')
+        }
+        [void]$sb.AppendLine('}')
+
+        [void]$sb.AppendLine('}')
+
+        Invoke-Expression $sb.ToString()
+        $sb.ToString() | Out-File -FilePath c:\AL_DscLcm_Debug.txt
+
+        $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
+    
+        LcmConfiguration -OutputPath $path.FullName | Out-Null
+        Set-DscLocalConfigurationManager -Path $path.FullName
+
+        Remove-Item -Path $path.FullName -Recurse -Force
+
+        try
+        {
+            Test-DscConfiguration -ErrorAction Stop
+            Write-Error 'There was a problem resetting the Local Configuration Manger configuration'
+        }
+        catch
+        {
+            Write-Host 'DSC Local Configuration Manger was set to the new values'
+        }
+    }
+    
+    $lab = Get-Lab
+    if (-not $lab.Machines)
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $machines = Get-LabVM -ComputerName $ComputerName    
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        Write-Error -Message 'Not all machines specified could be found in the lab.'
+        Write-LogFunctionExit
+        return
+    }
+    
+    $params = ([hashtable]$PSBoundParameters).Clone()
+    Invoke-LabCommand -ActivityName 'Setting DSC LCM configuration' -ComputerName $ComputerName -ScriptBlock {
+        Set-DscLocalConfigurationManagerConfiguration @params
+    } -Function (Get-Command -Name Set-DscLocalConfigurationManagerConfiguration) -Variable (Get-Variable -Name params)
+    
+    Write-LogFunctionExit
+}
+#endregion Set-LabDscLocalConfigurationManagerConfiguration
+
+#region ValidateUpdate-ConfigurationData
+#taken from C:\Windows\system32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PSDesiredStateConfiguration.psm1
+function ValidateUpdate-ConfigurationData
+{
+    param (
+        [Parameter(Mandatory)]
+        [hashtable]$ConfigurationData
+    )
+
+    if( -not $ConfigurationData.ContainsKey('AllNodes'))
+    {
+        $errorMessage = 'ConfigurationData parameter need to have property AllNodes.'
+        $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+        Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataNeedAllNodes
+        return $false
+    }
+
+    if($ConfigurationData.AllNodes -isnot [array])
+    {
+        $errorMessage = 'ConfigurationData parameter property AllNodes needs to be a collection.'
+        $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+        Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataAllNodesNeedHashtable
+        return $false
+    }
+
+    $nodeNames = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
+    foreach($Node in $ConfigurationData.AllNodes)
+    { 
+        if($Node -isnot [hashtable] -or -not $Node.NodeName)
+        { 
+            $errorMessage = "all elements of AllNodes need to be hashtable and has a property 'NodeName'."
+            $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+            Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataAllNodesNeedHashtable
+            return $false
+        } 
+
+        if($nodeNames.Contains($Node.NodeName))
+        {
+            $errorMessage = "There are duplicated NodeNames '{0}' in the configurationData passed in." -f $Node.NodeName
+            $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
+            Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId DuplicatedNodeInConfigurationData
+            return $false
+        }
+        
+        if($Node.NodeName -eq '*')
+        {
+            $AllNodeSettings = $Node
+        }
+        [void] $nodeNames.Add($Node.NodeName)
+    }
+    
+    if($AllNodeSettings)
+    {
+        foreach($Node in $ConfigurationData.AllNodes)
+        {
+            if($Node.NodeName -ne '*') 
+            {
+                foreach($nodeKey in $AllNodeSettings.Keys)
+                {
+                    if(-not $Node.ContainsKey($nodeKey))
+                    {
+                        $Node.Add($nodeKey, $AllNodeSettings[$nodeKey])
+                    }
+                }
+            }
+        }
+
+        $ConfigurationData.AllNodes = @($ConfigurationData.AllNodes | Where-Object -FilterScript {
+                $_.NodeName -ne '*'
+            }
+        )
+    }
+
+    return $true
+}
+#endregion ValidateUpdate-ConfigurationData
