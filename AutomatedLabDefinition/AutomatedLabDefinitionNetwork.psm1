@@ -27,7 +27,7 @@ function Add-LabVirtualNetworkDefinition
         Add-LabAzureSubscription
     }
 
-    $azurePropertiesValidKeys = 'SubnetName', 'SubnetAddressPrefix', 'LocationName', 'DnsServers', 'ConnectToVnets'
+    $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName'
     
     if (-not (Get-LabDefinition))
@@ -113,28 +113,31 @@ function Add-LabVirtualNetworkDefinition
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }
     $network.HostType = $VirtualizationEngine
 
-    foreach ($hashtable in $AzureProperties)
-    {
-        if ($hashtable.ContainsKey('LocationName'))
-        {		
-            $network.LocationName = $hashtable.LocationName
-        }
-        
-        if ($hashtable.ContainsKey('ConnectToVnets'))
-        {
-            $network.ConnectToVnets = $hashtable.ConnectToVnets
-        }
+	if($AzureProperties.LocationName)
+	{
+		$network.LocationName = $AzureProperties.LocationName
+	}
 
-        if ($hashtable.ContainsKey('DnsServers'))
-        {
-            $network.DnsServers = $hashtable.DnsServers
-        }
+	if($AzureProperties.ConnectToVnets)
+	{
+		$network.ConnectToVnets = $AzureProperties.ConnectToVnets
+	}
 
-        if ($hashtable.ContainsKey('SubnetName') -and $hashtable.ContainsKey('SubnetAddressPrefix'))
-        {
-            $network.Subnets.Add([AutomatedLab.AzureSubnet]$hashtable)
-        }
-    }  
+	if($AzureProperties.DnsServers)
+	{
+		$network.DnsServers = $AzureProperties.DnsServers
+	}
+
+	if($AzureProperties.Subnets)
+	{
+		foreach($subnet in $AzureProperties.Subnets.GetEnumerator())
+		{
+			$temp = New-Object -TypeName AutomatedLab.AzureSubnet
+			$temp.Name = $subnet.Key
+			$temp.AddressSpace = $subnet.Value
+			$network.Subnets.Add($temp)
+		}
+	}
 
     if (-not $network.LocationName)
     {

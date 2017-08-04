@@ -362,9 +362,10 @@ function New-LWAzureVM
         
         $VerbosePreference = 'Continue'
 
-        $subnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
-        Where-Object { $_.AddressSpace.AddressPrefixes.Contains($Machine.IpAddress[0].ToString()) })[0] |
-        Get-AzureRmVirtualNetworkSubnetConfig
+        $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
+            Get-AzureRmVirtualNetworkSubnetConfig |
+            Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
+        
         
         Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
         
@@ -790,8 +791,7 @@ function Start-LWAzureVM
 		}
     }
 
-    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
-    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
+    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and  $_.Name -in $ComputerName}
 
     $lab = Get-Lab
 
@@ -835,7 +835,7 @@ function Start-LWAzureVM
 		}
     }
 
-    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
+    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName}
 
     foreach ($name in $ComputerName)
     {
@@ -886,9 +886,9 @@ function Stop-LWAzureVM
     Write-LogFunctionEntry
     
     $lab = Get-Lab
-    $azureVms = Get-AzureRmVM -WarningAction SilentlyContinue 
-    $resourceGroups = (Get-LabMachine -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
-    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
+    $azureVms = Get-AzureRmVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+
+    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName }
     
     if ($ShutdownFromOperatingSystem)
     {
@@ -1106,7 +1106,7 @@ function Get-LWAzureVMConnectionInfo
 	if (-not (Get-AzureRmContext).Subscription)
 	{
 		Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
-        Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscriptions
+        Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscription
 	}
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
@@ -1250,7 +1250,19 @@ function Enable-LWAzureWinRm
             {
                 New-AzureStorageContainer -Name labsources -Permission Container -Context $storageAccount.Context
                 $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile
-                'Enable-PSRemoting -Force' | Out-File $tempFileName -Force -Encoding utf8
+				$customScriptContent = @'
+Enable-PSRemoting -Force -ErrorAction SilentlyContinue
+try
+{
+    Enable-WSManCredSSP -Role Server -Force | Out-Null
+}
+catch
+{
+    New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name auth_credssp -Value 1 -PropertyType DWORD -Force
+    New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name allow_remote_requests -Value 1 -PropertyType DWORD -Force
+}
+'@
+                $customScriptContent | Out-File $tempFileName -Force -Encoding utf8
                 $null = Set-AzureStorageBlobContent -File $tempFileName -Container labsources -Blob Enable-WinRm.ps1 -BlobType Block -Context $storageAccount.Context
                 Remove-Item $tempFileName -Force -ErrorAction SilentlyContinue
             }
