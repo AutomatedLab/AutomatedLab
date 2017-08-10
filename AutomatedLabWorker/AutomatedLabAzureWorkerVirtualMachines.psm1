@@ -722,7 +722,7 @@ function Initialize-LWAzureVM
     $machinesToStop = $Machine | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDC' -and $_.Roles.Name -notcontains 'DC' -and $_.IsDomainJoined }
     if ($machinesToStop)
     {
-        Stop-LWAzureVM -ComputerName $machinesToStop
+        Stop-LWAzureVM -ComputerName $machinesToStop -StayProvisioned
         Wait-LabVMShutdown -ComputerName $machinesToStop
     }
     
