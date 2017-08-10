@@ -1323,20 +1323,20 @@ function Enable-LWAzureWinRm
     $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile
     $customScriptContent = @'
 New-Item -ItemType Directory -Path C:\ALAzure -ErrorAction SilentlyContinue
-'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log
+'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log -Append
 try
 {
 Enable-PSRemoting -Force -ErrorAction Stop
-"Successfully called Enable-PSRemoting" | Out-File C:\ALAzure\WinRmActivation.log
+"Successfully called Enable-PSRemoting" | Out-File C:\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
-"Error calling Enable-PSRemoting. $($_.Exception.Message)" | Out-File C:\ALAzure\WinRmActivation.log
+"Error calling Enable-PSRemoting. $($_.Exception.Message)" | Out-File C:\ALAzure\WinRmActivation.log -Append
 }
 try
 {
 Enable-WSManCredSSP -Role Server -Force | Out-Null
-"Successfully enabled CredSSP" | Out-File C:\ALAzure\WinRmActivation.log
+"Successfully enabled CredSSP" | Out-File C:\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
@@ -1344,11 +1344,11 @@ try
 {
 New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name auth_credssp -Value 1 -PropertyType DWORD -Force -ErrorACtion Stop
 New-ItemProperty -Path HKLM:\software\Microsoft\Windows\CurrentVersion\WSMAN\Service -Name allow_remote_requests -Value 1 -PropertyType DWORD -Force -ErrorAction Stop
-"Enabled CredSSP via Registry" | Out-File C:\ALAzure\WinRmActivation.log
+"Enabled CredSSP via Registry" | Out-File C:\ALAzure\WinRmActivation.log -Append
 }
 catch
 {
-"Could not enable CredSSP via cmdlet or registry!" | Out-File C:\ALAzure\WinRmActivation.log
+"Could not enable CredSSP via cmdlet or registry!" | Out-File C:\ALAzure\WinRmActivation.log -Append
 }
 }
 '@
