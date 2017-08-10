@@ -888,6 +888,19 @@ function Get-LabDefinition
 }
 #endregion Get-LabDefinition
 
+#region Set-LabDefinition
+function Set-Labdefinition
+{
+    param
+    (
+        [AutomatedLab.Lab]
+        $Lab
+    )
+
+    $script:lab = $Lab
+}
+#endregion
+
 #region Export-LabDefinition
 function Export-LabDefinition
 {
@@ -1808,7 +1821,7 @@ process
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
-    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort'
+    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName'
     
     if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
     {
@@ -2380,12 +2393,61 @@ process
             }
             elseif ($IpAddress)
             {
-                $adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $adapterVirtualNetwork.AddressSpace.Netmask))
+				if ($AzureProperties.SubnetName -and $adapterVirtualNetwork.Subnets.Count -gt 0)
+				{
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object Name -EQ $AzureProperties.SubnetName
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. Subnet {0} could not be found in the list of available subnets {1}' -f $AzureProperties.SubnetName, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $chosenSubnet.AddressSpace.Netmask))
+				}
+				elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
+				{
+					# No default subnet and no name selected. Chose fitting subnet.
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$IpAddress -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $chosenSubnet.AddressSpace.Netmask))
+				}
+				else
+				{
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $adapterVirtualNetwork.AddressSpace.Netmask))
+				}                
             }
             elseif (-not $adapter.UseDhcp)
             {
-                $ip = $adapterVirtualNetwork.NextIpAddress()
-                $adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $adapterVirtualNetwork.AddressSpace.Netmask))
+				$ip = $adapterVirtualNetwork.NextIpAddress()
+
+				if ($AzureProperties.SubnetName -and $adapterVirtualNetwork.Subnets.Count -gt 0)
+				{
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object Name -EQ $AzureProperties.SubnetName
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. Subnet {0} could not be found in the list of available subnets {1}' -f $AzureProperties.SubnetName, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $chosenSubnet.AddressSpace.Netmask))
+				}
+				elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
+				{
+					# No default subnet and no name selected. Chose fitting subnet.
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$ip -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $chosenSubnet.AddressSpace.Netmask))
+				}
+				else
+				{
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $adapterVirtualNetwork.AddressSpace.Netmask))
+				}
             }
         }
 

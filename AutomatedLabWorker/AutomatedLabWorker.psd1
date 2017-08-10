@@ -49,5 +49,6 @@
 
     PrivateData = @{
         SupportGen2VMs = $true
+        AzureRetryCount = 3
     }
 }

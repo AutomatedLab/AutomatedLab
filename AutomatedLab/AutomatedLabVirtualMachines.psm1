@@ -484,7 +484,7 @@ function Restart-LabVM
     }
     
     Write-Verbose "Stopping machine '$ComputerName' and waiting for shutdown"
-    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine
+    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine -KeepAzureVmProvisioned
     Write-Verbose "Machine '$ComputerName' is stopped"
 
     Write-Debug 'Waiting 10 seconds'
@@ -516,7 +516,9 @@ function Stop-LabVM
 
         [int]$ProgressIndicator,
 
-        [switch]$NoNewLine
+        [switch]$NoNewLine,
+
+		[switch]$KeepAzureVmProvisioned
     )
     
     Write-LogFunctionEntry
@@ -555,7 +557,10 @@ function Stop-LabVM
     $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
     
     if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
-    if ($azureVms) { Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue }
+    if ($azureVms) { 
+		$stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+		Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+		}
     if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
     
     $remainingTargets = @()
