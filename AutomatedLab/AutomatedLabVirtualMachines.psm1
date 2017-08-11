@@ -1315,7 +1315,7 @@ function Join-LabVMDomain
             $cred = $domain.GetCredential()
 
             Write-Verbose "Joining machine '$m' to domain '$domain'"
-            $jobs += Invoke-LabCommand -ComputerName $m -ActivityName DomainJoin -ScriptBlock (Get-Command Join-Computer).ScriptBlock `
+            $jobs += Invoke-LabCommand -ComputerName $m -ActivityName DomainJoin_$m -ScriptBlock (Get-Command Join-Computer).ScriptBlock `
             -UseLocalCredential -ArgumentList $domain, $cred -AsJob -PassThru -NoDisplay
         }
     }
@@ -1332,7 +1332,15 @@ function Join-LabVMDomain
     
     foreach ($m in $Machine)
     {
-        $m.HasDomainJoined = $true
+		if (($jobs | Where-Object -Property Name -EQ DomainJoin_$m).State -eq 'Failed')
+		{
+			Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
+			$m.HasDomainJoined = $false
+		}
+		else
+		{
+			$m.HasDomainJoined = $true
+		}
     }
     Export-Lab
     
