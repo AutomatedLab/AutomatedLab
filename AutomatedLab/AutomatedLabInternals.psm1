@@ -2255,7 +2255,7 @@ function Show-LabToastNotification
 
     $xml.LoadXml($template)
     $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
-    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("AL").Show($toast)
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("AutomatedLab").Show($toast)
 }
 
 Add-Type -TypeDefinition $meshType
