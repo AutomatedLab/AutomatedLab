@@ -94,7 +94,7 @@ function Add-LabAzureSubscription
 		# Select the proper subscription before saving the profile
 		if ($SubscriptionName)
 		{
-			[void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+			[void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
 		}
 
 		Save-AzureRmContext -Path $Path
@@ -151,7 +151,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
     }
     catch
     {
