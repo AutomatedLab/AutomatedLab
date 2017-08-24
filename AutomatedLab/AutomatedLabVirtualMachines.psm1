@@ -1347,7 +1347,7 @@ function Join-LabVMDomain
 				NoDisplay = $true
 			}
 
-			if ($m.VirtualizationHost -eq 'Azure')
+			if ($m.HostType -eq 'Azure')
 			{
 				$jobParameters.ArgumentList += $true
 			}
