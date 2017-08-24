@@ -828,7 +828,9 @@ function Wait-LabVMRestart
         
         [switch]$NoNewLine,
         
-        $MonitorJob
+        $MonitorJob,
+
+        [DateTime]$MonitoringStartTime = (Get-Date)
     )
     
     Write-LogFunctionEntry
@@ -845,12 +847,11 @@ function Wait-LabVMRestart
     $azureVms = $vms | Where-Object HostType -eq 'Azure'
     $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
     $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
-    $start = Get-Date
     
     if ($azureVms)
     {
         Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes `
-        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError
+        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError -MonitoringStartTime $MonitoringStartTime
     }
 
     if ($hypervVms)
@@ -1266,10 +1267,29 @@ function Join-LabVMDomain
             [string]$DomainName,
 
             [Parameter(Mandatory = $true)]
-            [System.Management.Automation.PSCredential]$Credential
+            [System.Management.Automation.PSCredential]$Credential,
+
+			[bool]$AlwaysReboot = $false
         )
 
-        Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop
+		try
+		{
+			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop
+			$true
+		}
+		catch
+		{
+			if ($AlwaysReboot)
+			{
+				$false
+				Start-Sleep -Seconds 1
+				Restart-Computer -Force
+			}
+			else
+			{
+				Write-Error -Exception $_.Exception -Message $_.Exception.Message -ErrorAction Stop
+			}
+		}
 
         $logonName = "$DomainName\$($Credential.UserName)"
         $password = $Credential.GetNetworkCredential().Password
@@ -1286,6 +1306,7 @@ function Join-LabVMDomain
 
     $lab = Get-Lab
     $jobs = @()
+    $startTime = Get-Date
 
     Write-Verbose "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
@@ -1315,8 +1336,22 @@ function Join-LabVMDomain
             $cred = $domain.GetCredential()
 
             Write-Verbose "Joining machine '$m' to domain '$domain'"
-            $jobs += Invoke-LabCommand -ComputerName $m -ActivityName DomainJoin_$m -ScriptBlock (Get-Command Join-Computer).ScriptBlock `
-            -UseLocalCredential -ArgumentList $domain, $cred -AsJob -PassThru -NoDisplay
+			$jobParameters = @{
+				ComputerName = $m
+				ActivityName = "DomainJoin_$m"
+				ScriptBlock = (Get-Command Join-Computer).ScriptBlock
+				UseLocalCredential = $true
+				ArgumentList = $domain, $cred
+				AsJob = $true
+				PassThru = $true
+				NoDisplay = $true
+			}
+
+			if ($m.VirtualizationHost -eq 'Azure')
+			{
+				$jobParameters.ArgumentList += $true
+			}
+            $jobs += Invoke-LabCommand @jobParameters
         }
     }
     
@@ -1327,12 +1362,14 @@ function Join-LabVMDomain
     
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message 'Waiting for machines to restart' -NoNewLine
-        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine
+        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine -MonitoringStartTime $startTime
     }
     
     foreach ($m in $Machine)
     {
-		if (($jobs | Where-Object -Property Name -EQ DomainJoin_$m).State -eq 'Failed')
+		$machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
+		$machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
+		if (($machineJob).State -eq 'Failed' -or -not $machineResult)
 		{
 			Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
 			$m.HasDomainJoined = $false

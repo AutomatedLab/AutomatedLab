@@ -1041,7 +1041,11 @@ function Wait-LWAzureRestartVM
 
         [int]$ProgressIndicator,
 
-        [switch]$NoNewLine
+        [switch]$NoNewLine,
+
+        [Parameter(Mandatory)]
+        [datetime]
+        $MonitoringStartTime
     )
 
     #required to suporess verbose messages, warnings and errors
@@ -1049,7 +1053,7 @@ function Wait-LWAzureRestartVM
     
     Write-LogFunctionEntry
     
-    $start = (Get-Date).ToUniversalTime()
+    $start = $MonitoringStartTime.ToUniversalTime()
     
     Write-Verbose -Message "Starting monitoring the servers at '$start'"
     
