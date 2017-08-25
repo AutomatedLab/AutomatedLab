@@ -10,7 +10,8 @@ function Send-ALNotification
         [System.String]
         $Message
     )
-    DynamicParam {
+    DynamicParam
+    {
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
         $ParameterName = 'Provider'        
@@ -24,28 +25,32 @@ function Send-ALNotification
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
         return $RuntimeParameterDictionary
-}
-
-begin
-{
-    $Provider = $PsBoundParameters['Provider']
-
-    if (-not (Get-Lab))
-    {
-        Write-Verbose -Message "No lab data available. Skipping notification."
-        return
     }
-}
 
-process
-{
-    foreach ($selectedProvider in $Provider)
+    begin
     {
-        $functionName = "Send-AL$($selectedProvider)Notification"
-        Write-Verbose $functionName
-
-        &$functionName -Activity $Activity -Message $Message
+        $Provider = $PsBoundParameters['Provider']
+        $lab = Get-Lab -ErrorAction SilentlyContinue
+        if (-not $lab)
+        {
+            Write-Verbose -Message "No lab data available. Skipping notification."
+        }
     }
-}
+
+    process
+    {
+        if (-not $lab)
+        {
+            return
+        }
+
+        foreach ($selectedProvider in $Provider)
+        {
+            $functionName = "Send-AL$($selectedProvider)Notification"
+            Write-Verbose $functionName
+
+            &$functionName -Activity $Activity -Message $Message
+        }
+    }
 
 }

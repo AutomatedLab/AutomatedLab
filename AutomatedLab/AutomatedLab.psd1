@@ -51,7 +51,8 @@
         'PSFileTransfer',
         'AutomatedLabWorker',
         'HostsFile',
-        'AutomatedLabUnattended'
+        'AutomatedLabUnattended',
+        'AutomatedLabNotifications'
     )
     
     # Functions to export from this module
@@ -285,5 +286,10 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+
+        # Notification settings - see AutomatedLabNotifications module manifest for provider settings
+        NotificationProviders = @(
+            'Toast'
+        )
     }
 }
