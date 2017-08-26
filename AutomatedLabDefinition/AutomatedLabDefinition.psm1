@@ -2814,7 +2814,7 @@ function Get-LabPostInstallationActivity
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute.ParameterSetName = 'CustomRole'
         $AttributeCollection.Add($ParameterAttribute)
-        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -Directory).Name
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
         $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
         $AttributeCollection.Add($ValidateSetAttribute)
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
