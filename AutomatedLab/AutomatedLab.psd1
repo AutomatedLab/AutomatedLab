@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.3.0.0'
+    ModuleVersion = '4.3.1.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
