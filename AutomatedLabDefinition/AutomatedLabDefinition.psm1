@@ -2791,6 +2791,7 @@ function Get-LabPostInstallationActivity
         
         [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(ParameterSetName = 'CustomRole')]
         [switch]$KeepFolder,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -2803,11 +2804,36 @@ function Get-LabPostInstallationActivity
         
         [switch]$DoNotUseCredSsp
     )
-    
+    DynamicParam {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path (Get-LabSourcesLocation)))
+        {        
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+
+        $ParameterName = 'CustomRole'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute.ParameterSetName = 'CustomRole'
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -Directory).Name
+        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        $AttributeCollection.Add($ValidateSetAttribute)
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+        return $RuntimeParameterDictionary
+    }
+}
+
+begin
+{    
     Write-LogFunctionEntry
-    
+    $CustomRole = $PsBoundParameters['CustomRole']
     $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+}
     
+    
+ process
+ {   
     if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
     {
         $activity.DependencyFolder = $DependencyFolder
@@ -2833,11 +2859,21 @@ function Get-LabPostInstallationActivity
             $activity.ScriptFileName = $ScriptFileName
         }
     }
+    elseif ($PSCmdlet.ParameterSetName -eq 'CustomRole')
+    {
+        $activity.DependencyFolder = Join-Path -Path (Get-LabSourcesLocation) -ChildPath $CustomRole
+        $activity.KeepFolder = $KeepFolder.ToBool()
+        $activity.ScriptFilePath = Join-Path -Path $activity.DependencyFolder -ChildPath "$CustomRole.ps1"
+    }
     
     $activity.DoNotUseCredSsp = $DoNotUseCredSsp
-    
+ }
+  
+ end
+ {
     Write-LogFunctionExit -ReturnValue $activity
     return $activity
+ }
 }
 #endregion Get-PostInstallationActivity
 #endregion Machine Definition Functions
