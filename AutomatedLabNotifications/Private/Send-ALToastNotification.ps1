@@ -10,7 +10,12 @@ function Send-ALToastNotification
         [System.String]
         $Message
     )
-    Write-Verbose -Message "Sending toast"
+    
+    if ($PSVersionTable.BuildVersion.Major -lt 10)
+	{
+        Write-Verbose -Message 'No toasts for OS version < 10'
+    }
+    
     $toastProvider = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Toast.Provider
     $lab = Get-Lab
 
