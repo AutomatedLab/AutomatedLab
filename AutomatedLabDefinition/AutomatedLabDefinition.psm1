@@ -2861,9 +2861,9 @@ begin
     }
     elseif ($PSCmdlet.ParameterSetName -eq 'CustomRole')
     {
-        $activity.DependencyFolder = Join-Path -Path (Get-LabSourcesLocation) -ChildPath $CustomRole
+        $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -ChildPath $CustomRole
         $activity.KeepFolder = $KeepFolder.ToBool()
-        $activity.ScriptFilePath = Join-Path -Path $activity.DependencyFolder -ChildPath "$CustomRole.ps1"
+        $activity.ScriptFileName = "$CustomRole.ps1"
     }
     
     $activity.DoNotUseCredSsp = $DoNotUseCredSsp
