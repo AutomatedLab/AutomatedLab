@@ -543,7 +543,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 {
                     RefreshMode = 'Push'
                     ConfigurationModeFrequencyMins = 15
-                    ConfigurationMode = 'ApplyAndAutoCorrect'
+                    ConfigurationMode = 'ApplyAndMonitor'
                     RebootNodeIfNeeded = $true
                 }
             }
