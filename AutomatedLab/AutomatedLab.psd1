@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.3.0.0'
+    ModuleVersion = '4.3.1.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -51,7 +51,8 @@
         'PSFileTransfer',
         'AutomatedLabWorker',
         'HostsFile',
-        'AutomatedLabUnattended'
+        'AutomatedLabUnattended',
+        'AutomatedLabNotifications'
     )
     
     # Functions to export from this module
@@ -285,5 +286,10 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+
+        # Notification settings - see AutomatedLabNotifications module manifest for provider settings
+        NotificationProviders = @(
+            'Toast'
+        )
     }
 }
