@@ -132,6 +132,25 @@
 
             <!--______________________________________________________________________________-->
 
+            <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
+              <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
+
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
+
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
+
+                <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
+
+              </Component>
+            </Directory>
+
+            <!--______________________________________________________________________________-->
+
             <Directory Id="InstallFolder_AutomatedLabDefinition" Name="AutomatedLabDefinition">
               <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
 
@@ -351,7 +370,7 @@
         <ComponentRef Id='AutomatedLabDefinitionComponent'/>
         <ComponentRef Id='AutomatedLabUnattendedComponent'/>
         <ComponentRef Id='AutomatedLabTestComponent'/>
-
+        <ComponentRef Id='AutomatedLabNotificationsComponent' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
       </Feature>
 
