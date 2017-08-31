@@ -26,7 +26,7 @@
                       Key='SOFTWARE\[Manufacturer]\[ProductName]'
                       Name='LabSourcesFolder' Type='raw' />
     </Property>
-    
+
     <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
 
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
@@ -134,19 +134,23 @@
 
             <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
               <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
-
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
-
                 <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
-
                 <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
-
               </Component>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPrivate" Name="Private">
+                <Component Id="AutomatedLabNotificationsComponentPrivate" Guid="bf814c6a-01f1-4a3c-b9dc-bb036cb37d0c">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                </Component>
+              </Directory>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
+                <Component Id ="AutomatedLabNotificationsComponentPublic" Guid="9873f179-5cfc-4dc2-8c80-203a4af81bf4">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
+                </Component>
+              </Directory>
             </Directory>
 
             <!--______________________________________________________________________________-->
@@ -371,6 +375,8 @@
         <ComponentRef Id='AutomatedLabUnattendedComponent'/>
         <ComponentRef Id='AutomatedLabTestComponent'/>
         <ComponentRef Id='AutomatedLabNotificationsComponent' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPublic' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPrivate' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
       </Feature>
 
