@@ -16,7 +16,7 @@ namespace AutomatedLab
         public override IEnumerable<ValidationMessage> Validate()
         {
             var pattern = "^([A-Za-z0-9])+$";
-            var azurePattern = "^([A-Za-z0-9$-_.+ !*'(),])+$";
+            var azurePattern = "^([A-Za-z0-9-_.])+(?<!\\.)$";
 
             if (!System.Text.RegularExpressions.Regex.IsMatch(lab.Name, pattern) ||
                 lab.DefaultVirtualizationEngine != "Azure" && !System.Text.RegularExpressions.Regex.IsMatch(lab.Name, azurePattern))
