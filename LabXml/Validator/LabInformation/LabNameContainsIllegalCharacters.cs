@@ -16,12 +16,14 @@ namespace AutomatedLab
         public override IEnumerable<ValidationMessage> Validate()
         {
             var pattern = "^([A-Za-z0-9])+$";
+            var azurePattern = "^([A-Za-z0-9$-_.+ !*'(),])+$";
 
-            if (!System.Text.RegularExpressions.Regex.IsMatch(lab.Name, pattern))
+            if (!System.Text.RegularExpressions.Regex.IsMatch(lab.Name, pattern) ||
+                lab.DefaultVirtualizationEngine != "Azure" && !System.Text.RegularExpressions.Regex.IsMatch(lab.Name, azurePattern))
             {
                 yield return new ValidationMessage()
                 {
-                    Message = "The lab name contains invalid characters. Only A-Z, a-z and 0-9 are allowed.",
+                    Message = $"The lab name contains invalid characters. Only A-Z, a-z and 0-9 are allowed. {azurePattern} if you are on Azure.",
                     TargetObject = lab.Name,
                     Type = MessageType.Error,
                 };
