@@ -17,6 +17,18 @@ Configuration PullClient
         [string[]] $RegistrationKey
     )
 
+    [string[]]$flatNames = foreach ($server in $PullServer)
+    {
+        if ($server.Contains('.'))
+        {
+            ($server -split '\.')[0]
+        }
+        else
+        {
+            $server
+        }
+    }
+
     Node localhost
     {
         Settings
@@ -34,7 +46,7 @@ Configuration PullClient
             {
                 ServerURL          = "https://$($PullServer[0]):8080/PSDSCPullServer.svc"
                 RegistrationKey    = $RegistrationKey[0]
-                ConfigurationNames = @("TestConfig$($PullServer[0])")
+                ConfigurationNames = @("TestConfig$($flatNames[0])")
                 #AllowUnsecureConnection = $true
             }
         }
@@ -46,7 +58,7 @@ Configuration PullClient
                 {
                     ServerURL          = "https://$($PullServer[$i]):8080/PSDSCPullServer.svc"
                     RegistrationKey    = $RegistrationKey[$i]
-                    ConfigurationNames = @("TestConfig$($PullServer[$i])")
+                    ConfigurationNames = @("TestConfig$($flatNames[$i])")
                     #AllowUnsecureConnection = $true
                 }
                 
