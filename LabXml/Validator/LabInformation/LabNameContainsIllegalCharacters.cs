@@ -18,6 +18,7 @@ namespace AutomatedLab
             var pattern = "^([A-Za-z0-9])+$";
             var azurePattern = "^([A-Za-z0-9-_.])+(?<!\\.)$";
 
+            if (!lab.DefaultVirtualizationEngine.Equals("Azure") && !System.Text.RegularExpressions.Regex.IsMatch(lab.Name, azurePattern))
             {
                 yield return new ValidationMessage()
                 {
