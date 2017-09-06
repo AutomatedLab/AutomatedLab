@@ -1788,7 +1788,7 @@ DynamicParam {
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
         if($defaultLocation)
         {
-            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
+            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
             $arrSet = $vmSizes | Select-Object -ExpandProperty Name
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
             $AttributeCollection.Add($ValidateSetAttribute)
