@@ -176,7 +176,7 @@ function New-LWAzureVM
             Write-Warning 'Visual Studio image could not be found. The following combinations are currently supported by Azure:'
             foreach ($visualStudioImage in $visualStudioImages)
             {
-                Write-Host $visualStudioImage.Offer
+                Write-Host ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
