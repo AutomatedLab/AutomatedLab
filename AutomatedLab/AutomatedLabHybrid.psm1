@@ -150,7 +150,7 @@ while (-not $gatewayNetworkAddressFound)
     
 
 
-    # Step 3: Import the HyperV/VMWare lab and install a Router if not already present
+    # Step 3: Import the HyperV lab and install a Router if not already present
     if ($sourceHypervisor -ne 'Azure')
     {
         Import-Lab $SourceLab
@@ -161,14 +161,22 @@ while (-not $gatewayNetworkAddressFound)
     }
 
     $lab = Get-Lab
+    $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
+    $externalNetwork = Get-LabVirtualNetwork | Where-Object {$_.SwitchType -eq 'External'}
 
+    if (-not $externalNetwork)
+    {
     Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+    }
 
+    if (-not $router)
+    {
     $netAdapter = @()
     $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $lab.Name
     $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 
     Add-LabMachineDefinition -Name "$($lab.Name)-ALS2SVPN" -Roles Routing -NetworkAdapter $netAdapter
+    }
 
     Install-Lab -NetworkSwitches
     Install-Lab -Routing

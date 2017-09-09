@@ -76,7 +76,13 @@ function Send-File
     $sourcePath = (Resolve-Path $SourceFilePath -ErrorAction SilentlyContinue).Path
     if (-not $sourcePath)
     {
-        Write-Error -Message 'Source file could not be found'
+        Write-Error -Message 'Source file could not be found.'
+        return
+    }
+    
+    if (-not (Test-Path -Path $SourceFilePath -PathType Leaf))
+    {
+        Write-Error -Message 'Source path points to a directory and not a file.'
         return
     }
     
@@ -144,16 +150,17 @@ function Receive-File
     $sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Get-FileLength).ScriptBlock `
     -ArgumentList $SourceFilePath -ErrorAction Stop
     
+    $chunkSize = [Math]::Min($sourceLength, $chunkSize)
+    
     for ($position = 0; $position -lt $sourceLength; $position += $chunkSize)
-    {
-        
+    {        
         $remaining = $sourceLength - $position
         $remaining = [Math]::Min($remaining, $chunkSize)
         
         try
         {
             $chunk = Invoke-Command -Session $Session -ScriptBlock (Get-Command Read-File).ScriptBlock `
-            -ArgumentList $SourceFilePath, $position, $chunkSize -ErrorAction Stop
+            -ArgumentList $SourceFilePath, $position, $remaining -ErrorAction Stop
         }
         catch
         {
@@ -201,7 +208,7 @@ function Receive-Directory
     
     if (-not (Test-Path -Path $DestinationFolderPath))
     {
-        New-Item -Path $DestinationFolderPath -ItemType Container -ErrorAction Stop
+        New-Item -Path $DestinationFolderPath -ItemType Container -ErrorAction Stop | Out-Null
     }
     elseif (-not (Test-Path -Path $DestinationFolderPath -PathType Container))
     {
@@ -321,7 +328,6 @@ function Write-File
     )
     
     Write-Debug -Message "Send-File $($env:COMPUTERNAME): writing $DestinationFullName length $($Bytes.Length)"
-    $VerbosePreference=2
     
     #Convert the destination path to a full filesytem path (to support relative paths)
     try
@@ -331,6 +337,12 @@ function Write-File
     catch
     {
         throw New-Object -TypeName System.IO.FileNotFoundException -ArgumentList ('Could not set destination path', $_)
+    }
+    
+    if ((Test-Path -Path $DestinationFullName -PathType Container))
+    {
+        Write-Error "Please define the target file's full name. '$DestinationFullName' points to a folder."
+        return
     }
     
     if ($Erase)
@@ -348,7 +360,7 @@ function Write-File
         }
     }
     
-    $destFileStream = [IO.File]::OpenWrite($DestinationFullName)
+    $destFileStream = [IO.File]::Create($DestinationFullName)
     $destBinaryWriter = New-Object -TypeName System.IO.BinaryWriter -ArgumentList ($destFileStream)
     
     [void]$destBinaryWriter.Seek(0, 'End')

@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.2.0.0'
+    ModuleVersion = '4.3.1.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -51,7 +51,8 @@
         'PSFileTransfer',
         'AutomatedLabWorker',
         'HostsFile',
-        'AutomatedLabUnattended'
+        'AutomatedLabUnattended',
+        'AutomatedLabNotifications'
     )
     
     # Functions to export from this module
@@ -132,8 +133,8 @@
         'Get-LabAzureCertificate',
         'Get-LabIssuingCA',
         'Request-LabCertificate',
-        'Get-LabCertificatePfx',
-        'Add-LabCertificatePfx',
+        'Get-LabCertificate',
+        'Add-LabCertificate',
         'Connect-LabVM',
         'Wait-LabVMShutdown',
         'Add-LabVMWareSettings',
@@ -268,7 +269,7 @@
 
         #Exchange
         ExchangeUcmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-        Exchange2013DownloadLink = 'https://download.microsoft.com/download/7/B/9/7B91E07E-21D6-407E-803B-85236C04D25D/Exchange2013-x64-cu16.exe'
+        Exchange2013DownloadLink = 'https://download.microsoft.com/download/D/E/1/DE1C3D22-28A6-4A30-9811-0A0539385E51/Exchange2013-x64-cu17.exe'
         #Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' the Exchange CUs are ISOs again
 
         #Office
@@ -285,5 +286,10 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+
+        # Notification settings - see AutomatedLabNotifications module manifest for provider settings
+        NotificationProviders = @(
+            'Toast'
+        )
     }
 }

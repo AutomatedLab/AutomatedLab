@@ -485,6 +485,8 @@ function Install-Lab
     Unblock-LabSources
     
     $Global:AL_DeploymentStart = Get-Date
+
+	Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -779,7 +781,9 @@ function Install-Lab
     {
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
         $jobs | Wait-Job | Out-Null
-    }
+    }    
+	
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
 }

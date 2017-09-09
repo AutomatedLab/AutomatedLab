@@ -102,6 +102,9 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "2016-Datacenter";
 
+                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                        return "2016-Datacenter-Server-Core";
+
                     case "Windows Server 2016 SERVERSTANDARDNANO":
                         return "2016-Nano-Server";
                         

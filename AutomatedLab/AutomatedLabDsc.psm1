@@ -308,7 +308,7 @@ function Install-LabDscClient
             )
     
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachines, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
+        } -ArgumentList $pullServerMachines.FQDN, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
     }
 }
 #endregion Install-LabDscClient
@@ -543,7 +543,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 {
                     RefreshMode = 'Push'
                     ConfigurationModeFrequencyMins = 15
-                    ConfigurationMode = 'ApplyAndAutoCorrect'
+                    ConfigurationMode = 'ApplyAndMonitor'
                     RebootNodeIfNeeded = $true
                 }
             }
@@ -551,9 +551,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
 
         $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
     
-        Remove-DscConfigurationDocument -Stage Current, Pending
+        Remove-DscConfigurationDocument -Stage Current, Pending -Force
         LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
-        Set-DscLocalConfigurationManager -Path $path.FullName
+        Set-DscLocalConfigurationManager -Path $path.FullName -Force
 
         Remove-Item -Path $path.FullName -Recurse -Force
 

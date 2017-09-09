@@ -26,7 +26,7 @@
                       Key='SOFTWARE\[Manufacturer]\[ProductName]'
                       Name='LabSourcesFolder' Type='raw' />
     </Property>
-    
+
     <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
 
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
@@ -128,6 +128,29 @@
                 <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="both"/>
 
               </Component>
+            </Directory>
+
+            <!--______________________________________________________________________________-->
+
+            <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
+              <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
+                <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
+              </Component>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPrivate" Name="Private">
+                <Component Id="AutomatedLabNotificationsComponentPrivate" Guid="bf814c6a-01f1-4a3c-b9dc-bb036cb37d0c">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                </Component>
+              </Directory>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
+                <Component Id ="AutomatedLabNotificationsComponentPublic" Guid="9873f179-5cfc-4dc2-8c80-203a4af81bf4">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
+                </Component>
+              </Directory>
             </Directory>
 
             <!--______________________________________________________________________________-->
@@ -351,7 +374,9 @@
         <ComponentRef Id='AutomatedLabDefinitionComponent'/>
         <ComponentRef Id='AutomatedLabUnattendedComponent'/>
         <ComponentRef Id='AutomatedLabTestComponent'/>
-
+        <ComponentRef Id='AutomatedLabNotificationsComponent' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPublic' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPrivate' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
       </Feature>
 
@@ -1377,6 +1402,9 @@
   <!--All references created using heat.exe-->
   <Fragment>
     <ComponentGroup Id="LabSourcesComponentGroup">
+      <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
+        <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\_Put custom role scripts here.txt" />
+      </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
       </Component>
@@ -1517,6 +1545,11 @@
   <Fragment>
     <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
       <Directory Id="dirBA4353D3575F96F525324853C216E37A" Name="DnsAndTrustSetup" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="LABSOURCESDIR">
+      <Directory Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Name="CustomRoles" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

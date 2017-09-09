@@ -94,7 +94,7 @@ function Add-LabAzureSubscription
 		# Select the proper subscription before saving the profile
 		if ($SubscriptionName)
 		{
-			[void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+			[void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
 		}
 
 		Save-AzureRmContext -Path $Path
@@ -151,7 +151,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
     }
     catch
     {
@@ -886,7 +886,7 @@ function Remove-LabAzureResourceGroup
         {
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
-                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
+                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
                 Write-Verbose "RG '$($name)' removed"
                 
                 $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
@@ -1008,7 +1008,7 @@ function New-LabAzureLabSourcesStorage
     if (-not $resourceGroup)
     {
         Write-ScreenInfo "Resoure Group '$azureLabSourcesResourceGroupName' could not be found, creating it"
-        New-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -Location $LocationName | Out-Null
+        $resourceGroup = New-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -Location $LocationName | Out-Null
     }
 
     $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like automatedlabsources?????
