@@ -308,7 +308,7 @@ function Install-LabDscClient
             )
     
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
-        } -ArgumentList $pullServerMachines, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
+        } -ArgumentList $pullServerMachines.FQDN, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
     }
 }
 #endregion Install-LabDscClient

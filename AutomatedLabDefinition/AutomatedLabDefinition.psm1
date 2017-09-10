@@ -1788,7 +1788,7 @@ DynamicParam {
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
         if($defaultLocation)
         {
-            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
+            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
             $arrSet = $vmSizes | Select-Object -ExpandProperty Name
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
             $AttributeCollection.Add($ValidateSetAttribute)
@@ -2815,12 +2815,16 @@ function Get-LabPostInstallationActivity
         $ParameterAttribute.ParameterSetName = 'CustomRole'
         $AttributeCollection.Add($ParameterAttribute)
         $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-        $AttributeCollection.Add($ValidateSetAttribute)
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
-        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-        return $RuntimeParameterDictionary
+		if ($arrSet)
+		{
+			$ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+			$AttributeCollection.Add($ValidateSetAttribute)
+			$RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+
+			$RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+			return $RuntimeParameterDictionary
+		}
     }
 }
 

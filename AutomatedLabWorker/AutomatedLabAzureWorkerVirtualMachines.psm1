@@ -176,7 +176,7 @@ function New-LWAzureVM
             Write-Warning 'Visual Studio image could not be found. The following combinations are currently supported by Azure:'
             foreach ($visualStudioImage in $visualStudioImages)
             {
-                Write-Host $visualStudioImage.Offer
+                Write-Host ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -1500,7 +1500,9 @@ function Mount-LWAzureIsoImage
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
-        Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+        $drive = Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+		$drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
+		$drive | Select-Object -Property *
     } -ArgumentList $azureIsoPath -PassThru:$PassThru
 }
 #endregion
