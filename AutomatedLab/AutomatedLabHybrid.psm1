@@ -107,6 +107,7 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
     $sourceMask = $targetNetwork.AddressSpace.Cidr
     $sourceMaskIp = $targetNetwork.AddressSpace.NetMask
     $superNetMask = $sourceMask - 1
+    $superNetIp = $targetNetwork.AddressSpace.IpAddress.AddressAsString
 
     $gatewayNetworkAddressFound = $false
     $incrementedIp = $targetNetwork.AddressSpace.IPAddress.Increment()
@@ -194,7 +195,7 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
     $onPremGatewayParameters = $genericParameters.Clone()
     $onPremGatewayParameters.Add('Name', 'onpremgw')
     $onPremGatewayParameters.Add('GatewayIpAddress', $labPublicIp)
-    $onPremGatewayParameters.Add('AddressPrefix', $azureAddressSpaces)
+    $onPremGatewayParameters.Add('AddressPrefix', $onPremAddressSpaces)
     
     # Gateway creation
     $gw = New-AzureRmVirtualNetworkGateway @remoteGatewayParameters

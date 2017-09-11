@@ -207,7 +207,8 @@
         'Test-HashtableKeys',
         'Connect-Lab',
         'Disconnect-Lab',
-        'Restore-LabConnection'
+        'Restore-LabConnection',
+        'Get-LabPublicIpAddress'
     )
     
     # List of all files packaged with this module
