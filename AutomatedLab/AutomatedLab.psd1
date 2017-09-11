@@ -41,8 +41,9 @@
         'AutomatedLabAzure.psm1',
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1'
-        'AutomatedLabOffice.psm1'
+        'AutomatedLabDsc.psm1',
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabHybrid'
     )
 
     RequiredModules = @(
@@ -203,7 +204,10 @@
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
         'Get-LabAzureLabSourcesContent',
-        'Test-HashtableKeys'
+        'Test-HashtableKeys',
+        'Connect-Lab',
+        'Disconnect-Lab',
+        'Restore-LabConnection'
     )
     
     # List of all files packaged with this module

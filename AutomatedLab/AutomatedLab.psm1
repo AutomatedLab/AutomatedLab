@@ -560,15 +560,6 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    if (($VpnGateway -or $performAll) -and (Get-LabMachine -Role VpnGateway))
-    {
-        Write-ScreenInfo -Message 'Configuring VPN gateway' -TaskStart
-        
-        Install-LabVpnGateway
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
     
     if (($DHCP -or $performAll) -and (Get-LabMachine -Role DHCP))
     {

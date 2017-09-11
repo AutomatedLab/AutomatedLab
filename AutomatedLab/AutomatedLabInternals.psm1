@@ -2258,5 +2258,24 @@ function Show-LabToastNotification
     [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("AutomatedLab").Show($toast)
 }
 
+function Get-LabPublicIpAddress
+{
+    $ipProviderUris = @(
+        'http://myip.dnsomatic.com/'
+        'http://ip4.host/'
+        'http://www.whatismypublicip.com'
+    )
+
+    foreach ($uri in $ipProviderUris)
+    {
+        $Matches = $null
+
+        if((Invoke-WebRequest -URI $uri).Content -match '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+        {
+            return $Matches[0]
+        }
+    }
+}
+
 Add-Type -TypeDefinition $meshType
 Add-Type -TypeDefinition $gpoType -IgnoreWarnings

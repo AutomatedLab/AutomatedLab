@@ -77,7 +77,10 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
     }
 
     $sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
+    $sourceRoutedAddressSpaces = ([xml](Get-Content $sourceFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" }
+    
     $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
+    $destinationRoutedAddressSpaces = ([xml](Get-Content $destinationFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" }
 
     if (-not ($sourceHypervisor -eq 'Azure' -or $destinationHypervisor -eq 'Azure'))
     {
@@ -87,11 +90,15 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
     # Step 2: Import the Azure lab and add Gateway-VNET
     if ($sourceHypervisor -eq 'Azure')
     {
-        Import-Lab $SourceLab
+        Import-Lab $SourceLab -NoValidation
+        $azureAddressSpaces = $sourceRoutedAddressSpaces
+        $onPremAddressSpaces = $destinationRoutedAddressSpaces
     }
     else 
     {
-        Import-Lab $DestinationLab
+        Import-Lab $DestinationLab -NoValidation
+        $azureAddressSpaces = $destinationRoutedAddressSpaces
+        $onPremAddressSpaces = $sourceRoutedAddressSpaces
     }
 
     $lab = Get-Lab
@@ -148,14 +155,63 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
 
     $vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
     $vnet.AddressSpace.AddressPrefixes[0] = "$($superNetIp)/$($superNetMask)"
-    [void] ($vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop)
-
-    [void] ($vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)" | Set-AzureRmVirtualNetwork -ErrorAction Stop)
-
-    # Network expanded. Now for the gateway subnet
+    $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
     
+    if (-not $gatewaySubnet)
+    {
+        $vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
+    }
 
+    $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop 
 
+    $labPublicIp = Get-LabPublicIpAddress
+    $rg = Get-LabAzureDefaultResourceGroup
+    $location = (Get-LabAzureDefaultLocation)
+
+    $genericParameters = @{
+        ResourceGroupName = $rg.ResourceGroupName
+        Location = $location
+    }
+
+    $publicIpParameters = $genericParameters.Clone()
+    $publicIpParameters.Add('Name', 's2sip')
+    $publicIpParameters.Add('AllocationMethod', 'Dynamic')
+    $publicIpParameters.Add('IpAddressVersion', 'IPv4')
+    $publicIpParameters.Add('DomainNameLabel', "$($lab.name)-s2s".ToLower())
+    $publicIpParameters.Add('Force', $true)
+
+    $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
+    $gatewayPublicIp = New-AzureRmPublicIpAddress @publicIpParameters    
+    $gatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id
+
+    $remoteGatewayParameters = $genericParameters.Clone()
+    $remoteGatewayParameters.Add('Name', 's2sgw')
+    $remoteGatewayParameters.Add('GatewayType', 'Vpn')
+    $remoteGatewayParameters.Add('VpnType', 'RouteBased')
+    $remoteGatewayParameters.Add('GatewaySku', 'VpnGw1')
+    $remoteGatewayParameters.Add('IpConfigurations', $gatewayIpConfiguration)
+
+    $onPremGatewayParameters = $genericParameters.Clone()
+    $onPremGatewayParameters.Add('Name', 'onpremgw')
+    $onPremGatewayParameters.Add('GatewayIpAddress', $labPublicIp)
+    $onPremGatewayParameters.Add('AddressPrefix', $azureAddressSpaces)
+    
+    # Gateway creation
+    $gw = New-AzureRmVirtualNetworkGateway @remoteGatewayParameters
+    $onPremisesGw = New-AzureRmLocalNetworkGateway @onPremGatewayParameters
+
+    # Connection creation
+    $connectionParameters = $genericParameters.Clone()
+    $connectionParameters.Add('Name', 's2sconnection')
+    $connectionParameters.Add('ConnectionType', 'IPsec')
+    $connectionParameters.Add('SharedKey', 'Somepass1')
+    $connectionParameters.Add('EnableBgp', $false)
+    $connectionParameters.Add('VirtualNetworkGateway1',$gw)
+    $connectionParameters.Add('LocalNetworkGateway2', $onPremisesGw) ## TO DO here as well --> Localnetworkgateway nicht verwenden wenn Azure to Azure
+    
+    $conn = New-AzureRmVirtualNetworkGatewayConnection @connectionParameters
+
+    # BREAKOUT FÜR AZURE 2 AZURE!!!
     # Step 3: Import the HyperV lab and install a Router if not already present
     if ($sourceHypervisor -ne 'Azure')
     {
@@ -185,11 +241,69 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
         $routerOs = (Get-LabMachine | Sort-Object {$_.OperatingSystem.Version} -Descending | Select-Object -First 1).OperatingSystem.OperatingSystemName
         Add-LabMachineDefinition -Name "$($lab.Name)-ALS2SVPN" -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem $routerOs
 
-        Install-Lab -VpnGateway
-    }    
+        Install-Lab -Routing
+    }
+    
+    $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
+    $externalNetwork = Get-LabVirtualNetwork | Where-Object {$_.SwitchType -eq 'External'}
 
     # Step 4: Configure S2S VPN Connection on Router
+    $externalAdapters = $router.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType -eq 'External' }
+    
+    if ($externalAdapters.Count -ne 1)
+    {
+        Write-Error "Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
+        continue
+    }
 
+    $externalAdapter = $externalAdapters[0]
+    $mac = $externalAdapter.MacAddress
+    $mac = ($mac | Get-StringSection -SectionSize 2) -join '-'
+
+    $scriptBlock = {
+        param
+        (
+            $AzureDnsEntry,
+            $RemoteAddressSpaces
+        )
+        
+        netsh.exe routing ip igmp install
+
+        Restart-Service RemoteAccess
+
+        $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
+
+        if (-not $azureConnection)
+        {
+            $parameters = @{
+                Name = 'AzureS2S'
+                Protocol = 'IKEv2'
+                Destination = $AzureDnsEntry
+                AuthenticationMethod = 'PskOnly'
+                SharedSecret = 'Somepass1'
+                NumberOfTries = 0
+                Persistent = $true
+                PassThru = $true
+            }
+            $azureConnection = Add-VpnS2SInterface @parameters
+        }        
+
+        $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
+
+        $dialupInterfaceIndex = (Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
+
+        foreach ($addressSpace in $RemoteAddressSpaces)
+        {
+            New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
+        }
+    }
+
+    Invoke-LabCommand -ActivityName 'Enabling IGMP and configuring S2S VPN connection' `
+    -ComputerName $router `
+    -UseLocalCredential `
+    -ScriptBlock $scriptBlock `
+    -ArgumentList @($gatewayPublicIp.DnsSettings.Fqdn, $azureAddressSpaces) `
+    
     # Step 5: Find someplace to store Lab Connection Info
 }
 
@@ -210,5 +324,5 @@ function Disconnect-Lab
 
 function Restore-LabConnection
 {
-    # Wenn der Hypervisor neu gestartet (und vielleicht eine neue öffentliche IP gezogen) wurde
+    throw (New-Object NotImplementedException)
 }
