@@ -1,19 +1,9 @@
 param (
     [Parameter(Mandatory)]
-    [string]$DomainName,
-
-    [Parameter(Mandatory)]
-    [string]$ComputerName
+    [string[]]$DomainAndComputerName
 )
 
-$query = @'
-USE [master]
-GO
-
-CREATE LOGIN [{0}\{1}] FROM WINDOWS WITH DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english]
-GO
-
-/****** Object:  Database [DSC]    Script Date: 4/15/2017 8:46:34 PM ******/
+$creatreDbQuery = @'
 CREATE DATABASE [DSC]
  CONTAINMENT = NONE
  ON  PRIMARY 
@@ -395,8 +385,18 @@ FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
 GO
+'@
 
+$addPermissionsQuery = @'
 -- Adding Permissions
+USE [master]
+GO
+
+CREATE LOGIN [{0}\{1}] FROM WINDOWS WITH DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english]
+GO
+
+USE [DSC]
+
 CREATE USER [{1}] FOR LOGIN [{0}\{1}] WITH DEFAULT_SCHEMA=[db_datareader]
 GO
 
@@ -407,36 +407,46 @@ ALTER ROLE [db_datawriter] ADD MEMBER [{1}]
 GO
 '@
 
-$account = New-Object System.Security.Principal.NTAccount($DomainName, "$ComputerName$")
-try
-{
-    $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
-}
-catch
-{
-    Write-Error "The account '$DomainName\$ComputerName' could not be found"
-    return
-}
-
 if (-not (Test-Path -Path C:\DSCDB))
 {
     mkdir -Path C:\DSCDB | Out-Null
 }
 
-if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
-{
-    $DomainName = 'NT AUTHORITY'
-    $ComputerName = 'SYSTEM'
-}
-else
-{
-    $ComputerName = $ComputerName + '$'
-}
-
 Write-Host "Creating the DSC database on the local default SQL instance..." -NoNewline
-$query = $query -f $DomainName, $ComputerName
 
-Invoke-Sqlcmd -Query $query -ServerInstance localhost
+Invoke-Sqlcmd -Query $creatreDbQuery -ServerInstance localhost
 
 Write-Host 'finished.'
 Write-Host 'Database is stored on C:\DSCDB'
+
+$DomainAndComputerName | ForEach-Object {
+
+    Write-Host "Adding permissions to DSC database for $DomainAndComputerName..." -NoNewline
+
+    $domain = ($_ -split '\\')[0]
+    $name = ($_ -split '\\')[1]
+
+    if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
+    {
+        $domain = 'NT AUTHORITY'
+        $name = 'SYSTEM'
+    }
+    $name = $name + '$'
+
+    $account = New-Object System.Security.Principal.NTAccount($domain, $name)
+    try
+    {
+        $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
+    }
+    catch
+    {
+        Write-Error "The account '$domain\$name' could not be found"
+        continue
+    }
+
+    $query = $addPermissionsQuery -f $domain, $name
+
+    Invoke-Sqlcmd -Query $query -ServerInstance localhost
+
+    Write-Host 'finished'
+}
