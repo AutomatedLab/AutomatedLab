@@ -374,15 +374,9 @@ function New-LWAzureVM
         
                 $VerbosePreference = 'Continue'
 
-<<<<<<< HEAD
-        $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
-            Get-AzureRmVirtualNetworkSubnetConfig |
-            Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
-=======
                 $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
                     Get-AzureRmVirtualNetworkSubnetConfig |
                     Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
->>>>>>> 32b410beebf204252111b5a52364f2d0489c9c13
         
         
                 Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"

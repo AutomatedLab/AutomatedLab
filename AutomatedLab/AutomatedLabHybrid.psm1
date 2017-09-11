@@ -11,11 +11,15 @@ function Connect-Lab
         [System.String]
         $DestinationLab,
 
-		[Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
-		$DestinationIpAddress,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
+        $DestinationIpAddress,
 
-		[Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
-		$PreSharedKey
+        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
+        $PreSharedKey,
+
+        [Parameter()]
+        [System.String]
+        $NetworkAdapterName = 'Ethernet'
     )
     <#
 	- Azure-Lab erhält GW Subnet + VPN Gateway
@@ -27,25 +31,25 @@ function Connect-Lab
 	- Neues Cmdlet: Disconnect-Lab -SourceLab -DestinationLab
 Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlagen#>
 
-# VALIDATOR!!! Wenn VNET Peerings vorhanden: Kein nachträgliches erweitern des AdressSpace möglich.
-# VALIDATOR!!! 
-# Routing Setup: Custom Config. VPN, LAN Routing, NAT
-# Neue Props nötig: DestinationIpAddress, PreSharedKey ( Braucht man das wirklich? Zumindest DestinationIP wäre gut, damit man Hybrides Lab überall hin anbinden kann)
-			# Azure GW einrichten
-			# Übergeordneten CIDR berechnen
+    # VALIDATOR!!! Wenn VNET Peerings vorhanden: Kein nachträgliches erweitern des AdressSpace möglich.
+    # VALIDATOR!!! 
+    # Routing Setup: Custom Config. VPN, LAN Routing, NAT
+    # Neue Props nötig: DestinationIpAddress, PreSharedKey ( Braucht man das wirklich? Zumindest DestinationIP wäre gut, damit man Hybrides Lab überall hin anbinden kann)
+    # Azure GW einrichten
+    # Übergeordneten CIDR berechnen
 			
-			# VNet Addressspace umkonfigurieren wenn nötig
-			Get-LWAzureNetworkSwitch -virtualNetwork
-			# GatewaySubnet erzeugen
-			# Gateway erzeugen
-			# Local Gateway erzeugen
-			# Addresse: meine eigene IP
-			# Remote Adresse: Azure Public IP
-			# COnnection hinzufügen VNET mit local gateway
-			# Enable RRAS for VPN
-			# Add Ikev2 dialup adapter (maybe persistent -to test)
-			# VPNtarget = Get-AzureRmPublicIp
-			# VPN IPv4 Address = Free address in destination net (?)
+    # VNet Addressspace umkonfigurieren wenn nötig
+    #Get-LWAzureNetworkSwitch -virtualNetwork
+    # GatewaySubnet erzeugen
+    # Gateway erzeugen
+    # Local Gateway erzeugen
+    # Addresse: meine eigene IP
+    # Remote Adresse: Azure Public IP
+    # COnnection hinzufügen VNET mit local gateway
+    # Enable RRAS for VPN
+    # Add Ikev2 dialup adapter (maybe persistent -to test)
+    # VPNtarget = Get-AzureRmPublicIp
+    # VPN IPv4 Address = Free address in destination net (?)
 
     if (Get-Lab -List -notcontains $SourceLab)
     {
@@ -92,22 +96,42 @@ Routing-Maschine/VPNGateway zerstören --> Muss sich in LabXml auch niederschlag
 
     $lab = Get-Lab
 
-$targetNetwork = $lab.VirtualNetworks | Select-Object -First 1
-$sourceMask = $targetNetwork.AddressSpace.Cidr
-$sourceMaskIp = $targetNetwork.AddressSpace.NetMask
-$superNetMask = $sourceMask - 1
+    $targetNetwork = $lab.VirtualNetworks | Select-Object -First 1
+    $sourceMask = $targetNetwork.AddressSpace.Cidr
+    $sourceMaskIp = $targetNetwork.AddressSpace.NetMask
+    $superNetMask = $sourceMask - 1
 
-$gatewayNetworkAddressFound = $false
-$incrementedIp = $targetNetwork.AddressSpace.IPAddress.Increment()
-$decrementedIp = $targetNetwork.AddressSpace.IPAddress.Decrement()
-$isDecrementing = $false
+    $gatewayNetworkAddressFound = $false
+    $incrementedIp = $targetNetwork.AddressSpace.IPAddress.Increment()
+    $decrementedIp = $targetNetwork.AddressSpace.IPAddress.Decrement()
+    $isDecrementing = $false
 
-while (-not $gatewayNetworkAddressFound)
-{
-    if (-not $isDecrementing)
+    while (-not $gatewayNetworkAddressFound)
     {
-        $incremendedIp = $incremendedIp.Increment()
-        $tempNetworkAdress = Get-NetworkAddress -IPAddress $incremendedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
+        if (-not $isDecrementing)
+        {
+            $incrementedIp = $incrementedIp.Increment()
+            $tempNetworkAdress = Get-NetworkAddress -IPAddress $incrementedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
+
+            if ($tempNetworkAdress -eq $targetNetwork.AddressSpace.Network.AddressAsString)
+            {
+                continue
+            }
+
+            $gatewayNetworkAddress = $tempNetworkAdress
+
+            if ($gatewayNetworkAddress -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
+            {
+                $gatewayNetworkAddressFound = $true
+            }
+            else
+            {
+                $isDecrementing = $true
+            }
+        }
+
+        $decrementedIp = $decrementedIp.Decrement()
+        $tempNetworkAdress = Get-NetworkAddress -IPAddress $decrementedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
 
         if ($tempNetworkAdress -eq $targetNetwork.AddressSpace.Network.AddressAsString)
         {
@@ -116,37 +140,19 @@ while (-not $gatewayNetworkAddressFound)
 
         $gatewayNetworkAddress = $tempNetworkAdress
 
-        if ($gatewayNetworkAddress -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
+        if (([AutomatedLab.IPAddress]$gatewayNetworkAddress).Increment().AddressAsString -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
         {
             $gatewayNetworkAddressFound = $true
         }
-        else
-        {
-            $isDecrementing = $true
-        }
     }
 
-    $decrementedIp = $decrementedIp.Decrement()
-    $tempNetworkAdress = Get-NetworkAddress -IPAddress $decrementedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
+    $vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
+    $vnet.AddressSpace.AddressPrefixes[0] = "$($superNetIp)/$($superNetMask)"
+    [void] ($vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop)
 
-    if ($tempNetworkAdress -eq $targetNetwork.AddressSpace.Network.AddressAsString)
-    {
-        continue
-    }
+    [void] ($vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)" | Set-AzureRmVirtualNetwork -ErrorAction Stop)
 
-    $gatewayNetworkAddress = $tempNetworkAdress
-
-    if (([AutomatedLab.IPAddress]$gatewayNetworkAddress).Increment().AddressAsString -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
-    {
-        $gatewayNetworkAddressFound = $true
-    }
-}
-
-	$vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
-	$vnet.AddressSpace.AddressPrefixes[0] = "$($gatewayNetworkAddress)/$($superNetMask)"
-	$vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
-
-	# Network expanded. Now for the gateway subnet
+    # Network expanded. Now for the gateway subnet
     
 
 
@@ -166,20 +172,21 @@ while (-not $gatewayNetworkAddressFound)
 
     if (-not $externalNetwork)
     {
-    Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+        Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = $NetworkAdapterName }
+        Install-Lab -NetworkSwitches
     }
 
     if (-not $router)
     {
-    $netAdapter = @()
-    $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $lab.Name
-    $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+        $netAdapter = @()
+        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $lab.Name
+        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 
-    Add-LabMachineDefinition -Name "$($lab.Name)-ALS2SVPN" -Roles Routing -NetworkAdapter $netAdapter
-    }
+        $routerOs = (Get-LabMachine | Sort-Object {$_.OperatingSystem.Version} -Descending | Select-Object -First 1).OperatingSystem.OperatingSystemName
+        Add-LabMachineDefinition -Name "$($lab.Name)-ALS2SVPN" -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem $routerOs
 
-    Install-Lab -NetworkSwitches
-    Install-Lab -Routing
+        Install-Lab -VpnGateway
+    }    
 
     # Step 4: Configure S2S VPN Connection on Router
 
@@ -203,5 +210,5 @@ function Disconnect-Lab
 
 function Restore-LabConnection
 {
-	# Wenn der Hypervisor neu gestartet (und vielleicht eine neue öffentliche IP gezogen) wurde
+    # Wenn der Hypervisor neu gestartet (und vielleicht eine neue öffentliche IP gezogen) wurde
 }
