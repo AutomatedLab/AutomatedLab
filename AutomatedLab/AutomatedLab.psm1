@@ -448,7 +448,6 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
-        [switch]$VpnGateway,
         [int]$DelayBetweenComputers,
         [switch]$NoValidation
     )

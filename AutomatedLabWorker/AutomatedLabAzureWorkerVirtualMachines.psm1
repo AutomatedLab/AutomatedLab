@@ -369,8 +369,8 @@ function New-LWAzureVM
                 Write-Verbose "Skus: $SkusName"
                 Write-Verbose '-------------------------------------------------------'
                 
-                Import-AzureRmContext -Path $SubscriptionPath
-                Set-AzureRmContext -SubscriptionName $SubscriptionName
+                [void] (Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
+                [void] (Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
         
                 $VerbosePreference = 'Continue'
 
@@ -378,7 +378,10 @@ function New-LWAzureVM
                     Get-AzureRmVirtualNetworkSubnetConfig |
                     Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
         
-        
+                if (-not $subnet)
+                {
+                    throw 'No subnet configuration found to fit machine in! Review the IP address of your machine and your lab virtual network.'
+                }
                 Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
         
                 Write-Verbose -Message "Calling 'New-AzureVMConfig'"
@@ -1501,8 +1504,8 @@ function Mount-LWAzureIsoImage
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
         $drive = Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
-		$drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
-		$drive | Select-Object -Property *
+        $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
+        $drive | Select-Object -Property *
     } -ArgumentList $azureIsoPath -PassThru:$PassThru
 }
 #endregion
