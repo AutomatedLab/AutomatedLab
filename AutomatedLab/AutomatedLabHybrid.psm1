@@ -61,10 +61,20 @@ function Connect-Lab
     }    
 
     $sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
-    $sourceRoutedAddressSpaces = ([xml](Get-Content $sourceFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" }    
+    $sourceRoutedAddressSpaces = ([xml](Get-Content $sourceFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { 
+        if (-not [System.String]::IsNullOrWhiteSpace($_.IpAddress.AddressAsString))
+        {
+            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" 
+        }
+    }
     
     $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
-    $destinationRoutedAddressSpaces = ([xml](Get-Content $destinationFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" }
+    $destinationRoutedAddressSpaces = ([xml](Get-Content $destinationFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { 
+        if (-not [System.String]::IsNullOrWhiteSpace($_.IpAddress.AddressAsString))
+        {
+            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" 
+        }
+    }
     
     Write-Verbose -Message ('Source Hypervisor: {0}, Destination Hypervisor: {1}' -f $sourceHypervisor, $destinationHypervisor)
 
@@ -318,11 +328,13 @@ function Connect-OnPremisesWithAzure
     $remoteGatewayParameters.Add('VpnType', 'RouteBased')
     $remoteGatewayParameters.Add('GatewaySku', 'VpnGw1')
     $remoteGatewayParameters.Add('IpConfigurations', $gatewayIpConfiguration)
+    $remoteGatewayParameters.Add('Force', $true)
     
     $onPremGatewayParameters = $genericParameters.Clone()
     $onPremGatewayParameters.Add('Name', 'onpremgw')
     $onPremGatewayParameters.Add('GatewayIpAddress', $labPublicIp)
     $onPremGatewayParameters.Add('AddressPrefix', $onPremAddressSpaces)
+    $onPremGatewayParameters.Add('Force', $true)
         
     # Gateway creation
     $gw = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
@@ -378,18 +390,39 @@ function Connect-OnPremisesWithAzure
         throw "Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
     }
     
-    $externalAdapter = $externalAdapters[0]
-    $mac = $externalAdapter.MacAddress
-    $mac = ($mac | Get-StringSection -SectionSize 2) -join '-'
+    if ($externalAdapters)
+    {
+        $mac = $externalAdapters | Select-Object -ExpandProperty MacAddress
+        $mac = ($mac | Get-StringSection -SectionSize 2) -join ':'
+
+        if (-not $mac)
+        {
+            throw ('Get-LabVm returned an empty MAC address for {0}. Cannot continue' -f $router.Name)
+        }
+    }
     
     $scriptBlock = {
         param
         (
             $AzureDnsEntry,
-            $RemoteAddressSpaces
+            $RemoteAddressSpaces,
+            $MacAddress
         )
-            
-        Install-RemoteAccess -VpnType VPNS2S
+        
+        $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
+        Select-Object -ExpandProperty NetConnectionID
+
+        netsh.exe routing ip nat install
+        netsh.exe routing ip nat add interface $externalAdapter
+        netsh.exe routing ip nat set interface $externalAdapter mode=full
+
+        if ((Get-RemoteAccess).VpnS2SStatus -eq 'Uninstalled')
+        {
+            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop
+        }
+
+        netsh.exe ras set conf confstate = enabled
+        netsh.exe routing ip dnsproxy install        
         
         Restart-Service -Name RemoteAccess
     
@@ -424,7 +457,7 @@ function Connect-OnPremisesWithAzure
         -ComputerName $router `
         -UseLocalCredential `
         -ScriptBlock $scriptBlock `
-        -ArgumentList @($gatewayPublicIp.DnsSettings.Fqdn, $AzureAddressSpaces)
+        -ArgumentList @($gatewayPublicIp.DnsSettings.Fqdn, $AzureAddressSpaces, $mac)
         
     Write-LogFunctionExit
 }
