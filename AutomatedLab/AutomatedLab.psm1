@@ -541,7 +541,7 @@ function Install-Lab
 
     #VMs created, export lab definition again to update MAC addresses
 	Set-LabDefinition -Machines $Script:data.Machines
-    Export-LabDefinition -Force -ExportDefaultUnattendedXml
+    Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabMachine -Role RootDC))

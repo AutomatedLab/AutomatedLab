@@ -929,9 +929,14 @@ function Export-LabDefinition
     
     [CmdletBinding()]
     param (
-        [switch]$Force,
+        [switch]
+		$Force,
                          
-        [switch]$ExportDefaultUnattendedXml = $true
+        [switch]
+		$ExportDefaultUnattendedXml = $true,
+
+		[switch]
+		$Silent
     )
             
     Write-LogFunctionEntry
@@ -960,7 +965,11 @@ function Export-LabDefinition
             {
                 (Get-LabVirtualNetworkDefinition)[0].DnsServers = $dnsServerIP 
                 $dnsServerName = (Get-LabMachineDefinition | Where-Object {$_.IpV4Address -eq $dnsServerIP}).Name
-                Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$dnsServerName'" -Type Warning
+
+				if (-not $Silent)
+				{
+					Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$dnsServerName'" -Type Warning
+				}
             }
         }
     }
@@ -1069,7 +1078,10 @@ function Export-LabDefinition
         Write-Verbose -Message "Space needed by HyperV base disks:                     $([int]($spaceNeededBaseDisks / 1GB))"
         Write-Verbose -Message "Space needed by HyperV base disks but already claimed: $([int]($spaceBaseDisksAlreadyClaimed / 1GB * -1))"
         Write-Verbose -Message "Space estimated for HyperV data:                       $([int]($spaceNeededData / 1GB))"
-        Write-ScreenInfo -Message "Estimated (additional) local drive space needed for all machines: $([System.Math]::Round(($spaceNeeded / 1GB),2)) GB" -Type Info
+        if (-not $Silent)
+		{
+			Write-ScreenInfo -Message "Estimated (additional) local drive space needed for all machines: $([System.Math]::Round(($spaceNeeded / 1GB),2)) GB" -Type Info
+		}
         
         $labTargetPath = (Get-LabDefinition).Target.Path
         if ($labTargetPath)
@@ -1089,7 +1101,11 @@ function Export-LabDefinition
                 Throw 'No local drive found matching requirements for free space'
             }
         }
-        Write-ScreenInfo -Message "Location of Hyper-V machines will be '$labTargetPath'"
+
+		if (-not $Silent)
+		{
+			Write-ScreenInfo -Message "Location of Hyper-V machines will be '$labTargetPath'"
+		}
         
         if (-not (Test-Path -Path $labTargetPath))
         {
