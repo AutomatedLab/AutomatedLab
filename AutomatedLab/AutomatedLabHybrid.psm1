@@ -412,17 +412,16 @@ function Connect-OnPremisesWithAzure
         $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
         Select-Object -ExpandProperty NetConnectionID
 
+        Uninstall-RemoteAccess -Force
+
+        Set-Service -Name RemoteAccess -StartupType Automatic
+        Start-Service -Name RemoteAccess
+
         netsh.exe routing ip nat install
         netsh.exe routing ip nat add interface $externalAdapter
         netsh.exe routing ip nat set interface $externalAdapter mode=full
 
-        if ((Get-RemoteAccess).VpnS2SStatus -eq 'Uninstalled')
-        {
-            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop
-        }
-
-        netsh.exe ras set conf confstate = enabled
-        netsh.exe routing ip dnsproxy install        
+        Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         
         Restart-Service -Name RemoteAccess
     
@@ -444,7 +443,12 @@ function Connect-OnPremisesWithAzure
         }        
     
         $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
-    
+
+        
+        netsh.exe ras set conf confstate = enabled
+        netsh.exe routing ip dnsproxy install  
+
+
         $dialupInterfaceIndex = (Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
     
         foreach ($addressSpace in $RemoteAddressSpaces)
@@ -457,7 +461,7 @@ function Connect-OnPremisesWithAzure
         -ComputerName $router `
         -UseLocalCredential `
         -ScriptBlock $scriptBlock `
-        -ArgumentList @($gatewayPublicIp.DnsSettings.Fqdn, $AzureAddressSpaces, $mac)
+        -ArgumentList @($gatewayPublicIp.IpAddress, $AzureAddressSpaces, $mac)
         
     Write-LogFunctionExit
 }
