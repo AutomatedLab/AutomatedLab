@@ -682,7 +682,8 @@ function Connect-AzureLab
         VirtualNetworkGateway2 = $sourceGateway
     }    
         
-    $conn = New-AzureRmVirtualNetworkGatewayConnection @connectionParameters
+    [void] (New-AzureRmVirtualNetworkGatewayConnection @sourceConnection)
+    [void] (New-AzureRmVirtualNetworkGatewayConnection @destinationConnection)
 
     Write-Verbose -Message 'Connection created - please allow some time for initial connection.'
     Write-LogFunctionExit
