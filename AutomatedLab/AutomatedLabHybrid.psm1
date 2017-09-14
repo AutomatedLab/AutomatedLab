@@ -612,7 +612,17 @@ function Connect-AzureLab
         IpAddressVersion  = 'IPv4'
         DomainNameLabel   = "$($SourceLab)-s2s".ToLower()
         Force             = $true
-    }    
+    }
+
+    $destinationPublicIpParameters = @{
+        ResourceGroupName = $destinationResourceGroupName
+        Location          = $destinationLocation
+        Name              = 's2sip'
+        AllocationMethod  = 'Dynamic'
+        IpAddressVersion  = 'IPv4'
+        DomainNameLabel   = "$($DestinationLab)-s2s".ToLower()
+        Force             = $true
+    }   
     
     $sourceGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $sourceVnet -ErrorAction SilentlyContinue
     $sourcePublicIp = New-AzureRmPublicIpAddress @sourcePublicIpParameters    
@@ -629,7 +639,7 @@ function Connect-AzureLab
     }
 
     $destinationGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $destinationVnet -ErrorAction SilentlyContinue
-    $destinationPublicIp = New-AzureRmPublicIpAddress @sourcePublicIpParameters    
+    $destinationPublicIp = New-AzureRmPublicIpAddress @destinationPublicIpParameters    
     $destinationGatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $destinationGatewaySubnet.Id -PublicIpAddressId $destinationPublicIp.Id
     
     $destinationGatewayParameters = @{
