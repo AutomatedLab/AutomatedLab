@@ -368,6 +368,12 @@ function Connect-OnPremisesWithAzure
     
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
+	$gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+
+	if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+	{
+		throw 'Public IP has either not been created or is currently unassigned.'
+	}
     
     if (-not $router)
     {
@@ -412,11 +418,13 @@ function Connect-OnPremisesWithAzure
         $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
         Select-Object -ExpandProperty NetConnectionID
 
+		netsh.exe routing ip dnsproxy uninstall
+		netsh.exe routing ip nat uninstall
         Uninstall-RemoteAccess -Force
 
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess
-
+		
         netsh.exe routing ip nat install
         netsh.exe routing ip nat add interface $externalAdapter
         netsh.exe routing ip nat set interface $externalAdapter mode=full
@@ -425,6 +433,11 @@ function Connect-OnPremisesWithAzure
         
         Restart-Service -Name RemoteAccess
     
+		while (-not (Get-Service RemoteAccess).Status -eq 'Running')
+		{
+			Start-Sleep -Milliseconds 100
+		}
+
         $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
     
         if (-not $azureConnection)
@@ -445,13 +458,18 @@ function Connect-OnPremisesWithAzure
         $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
 
         
-        netsh.exe ras set conf confstate = enabled
-        netsh.exe routing ip dnsproxy install  
+        netsh.exe ras set conf confstate = enabled		
+        netsh.exe routing ip dnsproxy install
 
 
-        $dialupInterfaceIndex = (Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
+        $dialupInterfaceIndex = Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'AzureS2S'
     
-        foreach ($addressSpace in $RemoteAddressSpaces)
+		if (-not $dialupInterfaceIndex)
+		{
+			throw "Connection to $AzureDnsEntry has not been established. Cannot add routes to $($addressSpace -join ',')."
+		}
+        
+		foreach ($addressSpace in $RemoteAddressSpaces)
         {
             New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
         }
