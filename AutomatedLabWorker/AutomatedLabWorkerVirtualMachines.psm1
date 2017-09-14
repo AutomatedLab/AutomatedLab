@@ -139,6 +139,8 @@ function New-LWHypervVM
                 
         Add-UnattendedNetworkAdapter @ipSettings
     }
+
+	$Machine.NetworkAdapters = $adapters
             
     Add-UnattendedRenameNetworkAdapters
     #endregion network adapter settings

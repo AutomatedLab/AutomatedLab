@@ -889,15 +889,36 @@ function Get-LabDefinition
 #endregion Get-LabDefinition
 
 #region Set-LabDefinition
-function Set-Labdefinition
+function Set-LabDefinition
 {
     param
     (
         [AutomatedLab.Lab]
-        $Lab
+        $Lab,
+
+		[AutomatedLab.Machine[]]
+		$Machines,
+
+		[AutomatedLab.Disk[]]
+		$Disks
     )
 
-    $script:lab = $Lab
+	if ($Lab)
+	{
+		$script:lab = $Lab
+	}
+
+	if ($Machines)
+	{
+		$script:Machines.Clear()
+        $Machines | Foreach-Object { $script:Machines.Add($_)}
+	}
+
+	if ($Disks)
+	{
+        $script:Disks.Clear()
+		$Disks | ForEach-Object { $script:Disks.Add($_) }
+	}
 }
 #endregion
 
