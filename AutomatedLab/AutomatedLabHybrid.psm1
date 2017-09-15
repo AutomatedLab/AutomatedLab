@@ -423,7 +423,7 @@ function Connect-OnPremisesWithAzure
         Uninstall-RemoteAccess -Force
 
         Set-Service -Name RemoteAccess -StartupType Automatic
-        Start-Service -Name RemoteAccess
+        Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue
 		
         netsh.exe routing ip nat install
         netsh.exe routing ip nat add interface $externalAdapter
@@ -455,14 +455,34 @@ function Connect-OnPremisesWithAzure
             $azureConnection = Add-VpnS2SInterface @parameters
         }        
     
-        $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
+        $count = 1
 
+        while ($count -le 3)
+        {
+            try
+            {
+                    $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
+                    $connectionEstablished = $true
+            }
+            catch
+            {
+                Write-Warning -Message "Could not connect to $AzureDnsEntry ($count/3)"
+                $connectionEstablished = $false
+            }
+
+            $count++
+        }
+
+        if (-not $connectionEstablished)
+        {
+            throw "Error establishing connection to $AzureDnsEntry after 3 tries. Check your NAT settings, internet connectivity and Azure resource group"
+        }
         
         netsh.exe ras set conf confstate = enabled		
         netsh.exe routing ip dnsproxy install
 
 
-        $dialupInterfaceIndex = Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'AzureS2S'
+        $dialupInterfaceIndex = Get-NetIPInterface -AddressFamily IPv4 | Where-Object -Property InterfaceAlias -eq 'AzureS2S'
     
 		if (-not $dialupInterfaceIndex)
 		{
@@ -674,7 +694,7 @@ function Connect-AzureLab
         ResourceGroupName      = $sourceResourceGroupName
         Location               = $sourceLocation
         Name                   = 's2sconnection'
-        ConnectionType         = 'IPsec'
+        ConnectionType         = 'Vnet2Vnet'
         SharedKey              = 'Somepass1'
         Force                  = $true
         VirtualNetworkGateway1 = $sourceGateway
@@ -685,7 +705,7 @@ function Connect-AzureLab
         ResourceGroupName      = $destinationResourceGroupName
         Location               = $destinationLocation
         Name                   = 's2sconnection'
-        ConnectionType         = 'IPsec'
+        ConnectionType         = 'Vnet2Vnet'
         SharedKey              = 'Somepass1'
         Force                  = $true
         VirtualNetworkGateway1 = $destinationGateway
