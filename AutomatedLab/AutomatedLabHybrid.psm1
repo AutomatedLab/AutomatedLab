@@ -1,28 +1,30 @@
 function Connect-Lab
 {
     #.ExternalHelp AutomatedLab.help.xml
-    [CmdletBinding()]
+    [CmdletBinding(DefaultParameterSetName = 'Lab2Lab')]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true, Position = 0)]
         [System.String]
         $SourceLab,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Lab2Lab')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Lab2Lab', Position = 1)]
         [System.String]
         $DestinationLab,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site', Position = 1)]
+        [System.String]
         $DestinationIpAddress,
 
-        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site')]
+        [Parameter(Mandatory = $true, ParameterSetName = 'Site2Site', Position = 2)]
+        [System.String]
         $PreSharedKey,
 
-        [Parameter(ParameterSetName = 'Site2Site')]
+        [Parameter(ParameterSetName = 'Site2Site', Position = 3)]
         [System.String[]]
         $AddressSpace,
 
-        [Parameter()]
+        [Parameter(Mandatory = $false)]
         [System.String]
         $NetworkAdapterName = 'Ethernet'
     )
