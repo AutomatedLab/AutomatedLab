@@ -466,7 +466,9 @@ function Copy-LabFileItem
         $cred = $machine.GetCredential((Get-Lab))
         
         if ($machine.HostType -eq 'HyperV' -or
-        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure'))
+        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or 
+        ($path -notlike "$labSources*" -and $machine.HostType -eq 'Azure')
+        )
         {
             try
             {
@@ -491,7 +493,7 @@ function Copy-LabFileItem
                     }
                     else
                     {
-                        Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
+                        $DestinationFolderPath
                     }
                     Send-Directory -SourceFolderPath $p -Session $session -DestinationFolderPath $destination
                 }
