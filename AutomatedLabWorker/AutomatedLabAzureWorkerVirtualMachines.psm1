@@ -1145,7 +1145,7 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $azureVms = Get-AzureRmVM -Status (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
         Start-Sleep -Seconds 2
