@@ -295,8 +295,8 @@ function Send-Directory
     foreach ($localItem in $localItems)
     {
         $itemSource = Join-Path -Path $SourceFolderPath -ChildPath $localItem.Name
-        $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath)
-        
+        $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath).Replace('\\', '\')
+
         if ($localItem.PSIsContainer)
         {
             $null = Send-Directory -SourceFolderPath $itemSource -DestinationFolderPath $newDestinationFolder -Session $Session
@@ -489,7 +489,7 @@ function Copy-LabFileItem
                     $session = New-LabPSSession -ComputerName $machine
                     $destination = if (-not $DestinationFolderPath)
                     {
-                        Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
+                        'C:\'
                     }
                     else
                     {
