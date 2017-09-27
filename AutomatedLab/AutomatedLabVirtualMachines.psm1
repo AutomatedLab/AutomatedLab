@@ -550,7 +550,7 @@ function Stop-LabVM
         }
     }
 
-    if (-not $maschines)
+    if (-not $machines)
     {
         return
     }
