@@ -54,7 +54,7 @@ function Add-LabAzureSubscription
     
     Write-LogFunctionEntry
     
-    Update-LabAzureSettings
+    Update-LabAzureSettings    
     
     if (-not $Path)
     {
@@ -70,6 +70,11 @@ function Add-LabAzureSubscription
     if (-not $script:lab)
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
+    }
+
+    if (-not $DefaultResourceGroupName)
+    {
+        $DefaultResourceGroupName = $script:lab.Name
     }
 
     #This needs to be loaded manually to import the required DLLs
