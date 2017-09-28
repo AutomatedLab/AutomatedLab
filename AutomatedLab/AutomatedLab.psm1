@@ -765,7 +765,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
-        Start-LabVM -All -DelayBetweenComputers ([int]((Get-LabMachine).HostType -contains 'HyperV')*30) -ProgressIndicator 30 -NoNewline
+        if ($null -eq $DelayBetweenComputers){
+            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV')*30)
+        }
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
         Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd

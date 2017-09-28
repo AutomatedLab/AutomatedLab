@@ -549,6 +549,11 @@ function Stop-LabVM
             Write-Debug "Machine $($vmState.Name) is already stopped, removing it from the list of machines to stop"
         }
     }
+
+    if (-not $machines)
+    {
+        return
+    }
     
     Remove-LabPSSession -ComputerName $machines
     
@@ -1277,7 +1282,7 @@ function Join-LabVMDomain
 
 		try
 		{
-			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop
+			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
 			$true
 		}
 		catch

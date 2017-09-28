@@ -295,8 +295,8 @@ function Send-Directory
     foreach ($localItem in $localItems)
     {
         $itemSource = Join-Path -Path $SourceFolderPath -ChildPath $localItem.Name
-        $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath)
-        
+        $newDestinationFolder = $itemSource.Replace($initialSourceParent, $initialDestinationFolderPath).Replace('\\', '\')
+
         if ($localItem.PSIsContainer)
         {
             $null = Send-Directory -SourceFolderPath $itemSource -DestinationFolderPath $newDestinationFolder -Session $Session
@@ -466,7 +466,9 @@ function Copy-LabFileItem
         $cred = $machine.GetCredential((Get-Lab))
         
         if ($machine.HostType -eq 'HyperV' -or
-        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure'))
+        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or 
+        ($path -notlike "$labSources*" -and $machine.HostType -eq 'Azure')
+        )
         {
             try
             {
@@ -487,11 +489,11 @@ function Copy-LabFileItem
                     $session = New-LabPSSession -ComputerName $machine
                     $destination = if (-not $DestinationFolderPath)
                     {
-                        Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
+                        'C:\'
                     }
                     else
                     {
-                        Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
+                        $DestinationFolderPath
                     }
                     Send-Directory -SourceFolderPath $p -Session $session -DestinationFolderPath $destination
                 }

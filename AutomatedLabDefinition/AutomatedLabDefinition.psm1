@@ -1726,7 +1726,7 @@ function Add-LabMachineDefinition
         [ValidateNotNullOrEmpty()]
         [int]$Processors = 0,
         
-        [ValidatePattern('^([a-zA-Z0-9-_]){2,15}$')]
+        [ValidatePattern('^([a-zA-Z0-9-_]){2,30}$')]
         [string[]]$DiskName,
         
         [ValidateSet(
