@@ -260,20 +260,42 @@ function Add-LabAzureSubscription
     # Add LabSources storage
     New-LabAzureLabSourcesStorage
 
-    # Add ISOs    
-	try
+    # Add ISOs
+	$type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
+    
+    try
+    {
+        Write-Verbose -Message 'Get last ISO update time'
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $lastChecked = $timestamps.AzureIsosLastChecked
+        Write-Verbose -Message "Last check was '$lastChecked'."
+    }
+    catch
+    {
+        Write-Verbose -Message 'Last check time could not be retrieved. Azure ISOs never updated'
+        $lastChecked = Get-Date -Year 1601
+        $timestamps = New-Object $type
+    }
+
+	if ($lastChecked -lt [datetime]::Now.AddDays(-7))
 	{
-		Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
-		Add-LabIsoImageDefinition -Path "$labSources\ISOs" -ErrorAction Stop
-	}
-	catch
-	{
-		Write-ScreenInfo -Message 'No ISO files have been found in your Azure labsources share. Please make sure that they are present when you try mounting them.' -Type Warning
-	}
-	finally
-	{
-		Write-ScreenInfo -Message 'Done' -TaskEnd
-	}    
+		Write-Verbose -Message 'ISO cache outdated. Updating ISO files.'
+		try
+		{
+			Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
+			Add-LabIsoImageDefinition -Path "$labSources\ISOs" -ErrorAction Stop
+		}
+		catch
+		{
+			Write-ScreenInfo -Message 'No ISO files have been found in your Azure labsources share. Please make sure that they are present when you try mounting them.' -Type Warning
+		}
+		finally
+		{
+			$timestamps['AzureIsosLastChecked'] = Get-Date
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+			Write-ScreenInfo -Message 'Done' -TaskEnd
+		}  
+	}	  
 
     $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"

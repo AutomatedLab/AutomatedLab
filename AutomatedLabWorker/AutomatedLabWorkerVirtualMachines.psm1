@@ -53,9 +53,10 @@ function New-LWHypervVM
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
-    $adapters = New-Object System.Collections.ArrayList
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] }))
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address }))
+	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
+    $adapters = New-Object $type
+	$Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
+	$Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {

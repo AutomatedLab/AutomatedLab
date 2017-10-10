@@ -137,6 +137,10 @@ function Disconnect-Lab
         Import-Lab -Name $SourceLab -ErrorAction Stop
         $lab = Get-Lab
 
+		Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+			Get-DnsServerZone | Where-Object -Property ZoneType -EQ Forwarder | Remove-DnsServerZone -Force
+		}
+
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {            
             $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
@@ -193,7 +197,28 @@ function Disconnect-Lab
 function Restore-LabConnection
 {
     #.ExternalHelp AutomatedLab.help.xml
-    throw (New-Object NotImplementedException)
+    param
+	(
+		[Parameter(Mandatory = $true)]
+		[System.String]
+		$AzureLab
+	)
+
+	Import-Lab -Name $AzureLab -NoValidation
+	$lab = Get-Lab
+
+	$localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+	try
+	{
+		$labIp = Get-LabPublicIpAddress -ErrorAction Stop
+	}
+	catch
+	{
+		Write-Warning -Message 'Could not reconnect lab. Public IP address could not be determined.'
+	}
+
+	$localGateway.GatewayIpAddress = $labIp
+	[void] ($localGateway | Set-AzureRmLocalNetworkGateway)
 }
 
 function Initialize-GatewayNetwork
@@ -296,6 +321,7 @@ function Connect-OnPremisesWithAzure
     $lab = Get-Lab
     $sourceResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $sourceLocation = Get-LabAzureDefaultLocation
+	$sourceDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
     
@@ -370,6 +396,7 @@ function Connect-OnPremisesWithAzure
     
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
+	$destinationDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
 	$gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
 
 	if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -484,7 +511,7 @@ function Connect-OnPremisesWithAzure
         netsh.exe routing ip dnsproxy install
 
 
-        $dialupInterfaceIndex = Get-NetIPInterface -AddressFamily IPv4 | Where-Object -Property InterfaceAlias -eq 'AzureS2S'
+        $dialupInterfaceIndex = (Get-NetIPInterface -AddressFamily IPv4 | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
     
 		if (-not $dialupInterfaceIndex)
 		{
@@ -502,6 +529,9 @@ function Connect-OnPremisesWithAzure
         -UseLocalCredential `
         -ScriptBlock $scriptBlock `
         -ArgumentList @($gatewayPublicIp.IpAddress, $AzureAddressSpaces, $mac)
+
+	# Configure DNS forwarding
+	Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
         
     Write-LogFunctionExit
 }
@@ -718,5 +748,62 @@ function Connect-AzureLab
     [void] (New-AzureRmVirtualNetworkGatewayConnection @destinationConnection)
 
     Write-Verbose -Message 'Connection created - please allow some time for initial connection.'
+
+	Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
+
     Write-LogFunctionExit
+}
+
+function Set-VpnDnsForwarders
+{
+	param
+	(
+		[Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceLab,
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DestinationLab
+	)
+
+	Import-Lab $SourceLab -NoValidation
+    $lab = Get-Lab
+	$sourceDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
+
+	Import-Lab $DestinationLab -NoValidation    
+    $lab = Get-Lab
+	$destinationDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
+
+	$forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName
+	$forwarders = Get-FullMesh -List $forestNames
+
+	foreach ($forwarder in $forwarders)
+    {
+        $targetMachine = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $forwarder.Source }
+		$machineExists = Get-LabMachine | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
+
+		if (-not $machineExists)
+		{
+			if ((Get-Lab).Name -eq $SourceLab)
+			{
+				Import-Lab -Name $DestinationLab -NoValidation
+			}
+			else
+			{
+				Import-Lab -Name $SourceLab -NoValidation
+			}
+		}
+
+        $masterServers = @($sourceDcs) + @($destinationDcs) | Where-Object { 
+				($_.Roles.Name -contains 'RootDC' -or $_.Roles.Name -contains 'FirstChildDC' -or $_.Roles.Name -contains 'DC') -and $_.DomainName -eq $forwarder.Destination
+			}
+    
+        $cmd = @"
+            Write-Verbose "Creating a DNS forwarder on server '$env:COMPUTERNAME'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
+            dnscmd localhost /ZoneAdd $($forwarder.Destination) /Forwarder $($masterServers.IpV4Address)
+            Write-Verbose '...done'
+"@
+
+        Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
+    }
 }

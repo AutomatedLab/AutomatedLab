@@ -2260,6 +2260,10 @@ function Show-LabToastNotification
 
 function Get-LabPublicIpAddress
 {
+	[CmdletBinding()]
+	param
+	()
+
     $ipProviderUris = @(
         'http://myip.dnsomatic.com/'
         'http://ip4.host/'
