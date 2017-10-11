@@ -201,24 +201,92 @@ function Restore-LabConnection
 	(
 		[Parameter(Mandatory = $true)]
 		[System.String]
-		$AzureLab
+		$SourceLab,
+
+		[Parameter(Mandatory = $true)]
+		[System.String]
+		$DestinationLab
 	)
 
-	Import-Lab -Name $AzureLab -NoValidation
-	$lab = Get-Lab
+	if ((Get-Lab -List) -notcontains $SourceLab)
+    {
+        throw "Source lab $SourceLab does not exist."
+    }
 
-	$localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    if ((Get-Lab -List) -notcontains $DestinationLab)
+    {
+        throw "Destination lab $DestinationLab does not exist."
+    }
+
+	$sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
+    if (-not $sourceFile)
+    {
+        throw "Lab.xml is missing for $SourceLab"
+    }
+    
+    $destinationFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $DestinationLab
+    $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
+    if (-not $destinationFile)
+    {
+        throw "Lab.xml is missing for $DestinationLab"
+    }  
+
+	$sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
+    $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
+
+	if ($sourceHypervisor -eq 'Azure')
+    {
+		$source = $SourceLab
+		$destination = $DestinationLab
+	}
+	else
+	{
+		$source = $DestinationLab
+		$destination = $SourceLab
+	}
+
+	Write-Verbose -Message "Checking Azure lab $source"
+	Import-Lab -Name $source -NoValidation
+	$resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+
+	$localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroup -ErrorAction Stop
+	$vpnGatewayIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroup -ErrorAction Stop
+
 	try
 	{
 		$labIp = Get-LabPublicIpAddress -ErrorAction Stop
 	}
 	catch
 	{
-		Write-Warning -Message 'Could not reconnect lab. Public IP address could not be determined.'
+		Write-Warning -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.'
 	}
 
-	$localGateway.GatewayIpAddress = $labIp
-	[void] ($localGateway | Set-AzureRmLocalNetworkGateway)
+	if ($localGateway.GatewayIpAddress -ne $labIp)
+	{
+		Write-Verbose -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
+		$localGateway.GatewayIpAddress = $labIp
+		[void] ($localGateway | Set-AzureRmLocalNetworkGateway)
+	}
+
+	Import-Lab -Name $destination -NoValidation
+	$router = Get-LabVm -Role Routing
+
+	Invoke-LabCommand -ActivityName 'Checking S2S connection' -ComputerName $router -ScriptBlock {
+	param
+	(
+		[System.String]
+		$azureDestination
+	)
+	
+	$s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
+
+	if ($s2sConnection.Destination -ne $azureDestination)
+	{
+		$s2sConnection.Destination = $azureDestination
+		$s2sConnection | Set-VpnS2SInterface -Verbose
+	}
+	} -ArgumentList @($vpnGatewayIp.IpAddress)
 }
 
 function Initialize-GatewayNetwork
