@@ -80,7 +80,7 @@ function New-LWAzureNetworkSwitch
                 $azureNetworkParameters.Add('Subnet', $azureSubnets)
             }
             
-            $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
+            $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue
         } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $azureNetworkParameters, $network.Subnets, $network
     }
     
