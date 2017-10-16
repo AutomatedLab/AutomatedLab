@@ -532,11 +532,17 @@ function Connect-OnPremisesWithAzure
 
         Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         
-        Restart-Service -Name RemoteAccess
+        Restart-Service -Name RemoteAccess -ErrorAction SilentlyContinue
     
-		while (-not (Get-Service RemoteAccess).Status -eq 'Running')
+		$startDate = (Get-Date)
+		while (-not (Get-Service RemoteAccess -ErrorAction SilentlyContinue).Status -eq 'Running')
 		{
 			Start-Sleep -Milliseconds 100
+
+			if((Get-Date) -gt $startDate.AddMinutes(5))
+			{
+				throw 'Routing and remote access not running after 5 minutes'
+			}
 		}
 
         $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
