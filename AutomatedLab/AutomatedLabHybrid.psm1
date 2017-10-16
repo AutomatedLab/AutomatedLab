@@ -134,7 +134,7 @@ function Disconnect-Lab
 
     foreach ($LabName in @($SourceLab, $DestinationLab))
     {
-        Import-Lab -Name $SourceLab -ErrorAction Stop
+        Import-Lab -Name $LabName -ErrorAction Stop -NoValidation
         $lab = Get-Lab
 
 		Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
@@ -186,7 +186,7 @@ function Disconnect-Lab
 
             Invoke-LabCommand -ActivityName "Disabling S2S on $($router.Name)" -ComputerName $router -ScriptBlock {
                 Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue | Remove-VpnS2SInterface -Force -ErrorAction SilentlyContinue
-                Uninstall-RemoteAccess -VpnType VPNS2S -Force
+                Uninstall-RemoteAccess -VpnType VPNS2S -Force -ErrorAction SilentlyContinue
             }
         }
     }
@@ -365,7 +365,7 @@ function Initialize-GatewayNetwork
     Write-LogFunctionExit
 
 	$vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
-	$vnet = Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork
+	$vnet = Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Select-Object -First 1
 
     return $vnet
 }
@@ -532,20 +532,20 @@ function Connect-OnPremisesWithAzure
 
         Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         
-        Restart-Service -Name RemoteAccess -ErrorAction SilentlyContinue
-    
-		$startDate = (Get-Date)
-		while (-not (Get-Service RemoteAccess -ErrorAction SilentlyContinue).Status -eq 'Running')
-		{
-			Start-Sleep -Milliseconds 100
-
-			if((Get-Date) -gt $startDate.AddMinutes(5))
-			{
-				throw 'Routing and remote access not running after 5 minutes'
-			}
-		}
-
-        $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
+        try
+        {
+            # Try/Catch to catch exception while we have to wait for Install-RemoteAccess to finish up
+            Start-Service RemoteAccess -ErrorAction SilentlyContinue
+            $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
+        }
+        catch
+        {
+            # If Get-VpnS2SInterface throws HRESULT 800703bc, wait even longer
+            Start-Sleep -Seconds 120
+            Start-Service RemoteAccess -ErrorAction SilentlyContinue
+            $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
+        }
+        
     
         if (-not $azureConnection)
         {
