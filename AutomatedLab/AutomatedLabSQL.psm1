@@ -305,6 +305,142 @@ GO
         }
     }
 	
+	foreach ($machine in $machines)
+	{
+        $role = $machine.Roles | Where-Object Name -like SQLServer*
+
+		if ($role.Properties['InstallSampleDatabase'])
+		{
+			Install-LabSqlSampleDatabases -Machine $machine
+		}
+	}
+
     Write-LogFunctionExit
 }
 #endregion Install-LabSqlServers
+
+#region Install-LabSqlSampleDatabases
+function Install-LabSqlSampleDatabases
+{
+param
+(
+	[AutomatedLab.Machine]		
+	$Machine
+)
+
+Write-LogFunctionEntry
+
+$roleName = ($Machine.Roles | Where-Object Name -like SQLServer*).Name
+$sqlLink = $MyInvocation.MyCommand.Module.PrivateData[$roleName]
+if (-not $sqlLink)
+{
+	throw "No SQL link found to download $roleName sample database"
+}
+
+$targetFolder = Join-Path -Path $global:labSources -ChildPath SoftwarePackages\SqlSampleDbs
+
+if (-not (Test-Path $targetFolder))
+{
+	[void] (New-Item -ItemType Directory -Path $targetFolder)
+}
+
+if ($roleName -eq 'SQLServer2016')
+{
+	$targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
+}
+else
+{
+	$targetFile = Join-Path -Path $targetFolder -ChildPath "$roleName.zip"
+}
+
+Get-LabInternetFile -Uri $sqlLink -Path $targetFile
+
+$dependencyFolder = Join-Path -Path $targetFolder -ChildPath $roleName
+
+switch ($roleName)
+{
+	'SQLServer2008' 
+	{
+		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+
+		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+			$mdf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
+			$ldf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
+			$query = 'CREATE DATABASE AdventureWorks2008 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+			Invoke-Sqlcmd -ServerInstance localhost -Query $query
+		} -DependencyFolderPath $dependencyFolder		
+	}
+	'SQLServer2008R2' 
+	{
+		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+
+		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+			$mdf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
+			$ldf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
+			$query = 'CREATE DATABASE AdventureWorks2008R2 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+			Invoke-Sqlcmd -ServerInstance localhost -Query $query
+		} -DependencyFolderPath $dependencyFolder	
+	}
+	'SQLServer2012' 
+	{
+		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+
+		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+			$mdf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
+			$ldf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
+			$query = 'CREATE DATABASE AdventureWorks2012 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+			Invoke-Sqlcmd -ServerInstance localhost -Query $query
+		} -DependencyFolderPath $dependencyFolder	
+	}
+	'SQLServer2014' 
+	{
+		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+		
+		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+			$backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
+			$query = @"
+		USE [master]
+
+		RESTORE DATABASE AdventureWorks2014
+		FROM disk= '$($backupFile.FullName)'
+		WITH MOVE 'AdventureWorks2014_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\AdventureWorks2014.mdf',
+		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\AdventureWorks2014.ldf'
+		,REPLACE
+"@
+		Invoke-Sqlcmd -ServerInstance localhost -Query $query
+		} -DependencyFolderPath $dependencyFolder	
+	}
+	'SQLServer2016' 
+	{
+		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+		
+		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+			$backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
+			$query = @"
+		USE master
+		RESTORE DATABASE WideWorldImporters
+		FROM disk = 
+		'$($backupFile.FullName)'
+		WITH MOVE 'WWI_Primary' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters.mdf',
+		MOVE 'WWI_UserData' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+		MOVE 'WWI_Log' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters.ldf',
+		MOVE 'WWI_InMemory_Data_1' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+		REPLACE
+"@
+		Invoke-Sqlcmd -ServerInstance localhost -Query $query
+		} -DependencyFolderPath $dependencyFolder	
+	}
+	default
+	{
+		Write-LogFunctionExitWithError -Exception (New-Object System.ArgumentException("$roleName has no sample scripts yet.",'roleName'))
+	}
+}
+
+Write-LogFunctionExit
+
+}
+#endregion

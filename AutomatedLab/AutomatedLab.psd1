@@ -276,5 +276,12 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+
+		#SQL Server sample database contents
+		SQLServer2008 = 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21062'
+		SQLServer2008R2 = 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478216&FileTime=129906742887770000&Build=21062'
+		SQLServer2012 = 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478214&FileTime=129906742867770000&Build=21062'
+		SQLServer2014 = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks2014/adventure-works-2014-oltp-full-database-backup.zip'
+		SQLServer2016 = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
     }
 }
