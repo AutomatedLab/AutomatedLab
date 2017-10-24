@@ -518,13 +518,6 @@ function Connect-OnPremisesWithAzure
         $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
             Select-Object -ExpandProperty NetConnectionID
         
-        try
-        {
-            Uninstall-RemoteAccess -Force -ErrorAction SilentlyContinue
-        }
-        catch {   }
-        
-
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue
 		
@@ -532,7 +525,11 @@ function Connect-OnPremisesWithAzure
         $null = netsh.exe routing ip nat add interface $externalAdapter
         $null = netsh.exe routing ip nat set interface $externalAdapter mode=full
 
-        Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
+        $status = Get-RemoteAccess -ErrorAction SilentlyContinue
+        if ($status.VpnS2SStatus -ne 'Installed' -and $status.RoutingStatus -ne 'Installed')
+        {
+            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
+        }
         
         try
         {
@@ -606,9 +603,9 @@ function Connect-OnPremisesWithAzure
     
     Invoke-LabCommand -ActivityName 'Enabling S2S VPN functionality and configuring S2S VPN connection' `
         -ComputerName $router `
-        -UseLocalCredential `
         -ScriptBlock $scriptBlock `
-        -ArgumentList @($gatewayPublicIp.IpAddress, $AzureAddressSpaces, $mac)
+        -ArgumentList @($gatewayPublicIp.IpAddress, $AzureAddressSpaces, $mac) `
+        -Retries 3 -RetryIntervalInSeconds 10
 
     # Configure DNS forwarding
     Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
@@ -671,7 +668,11 @@ function Connect-OnPremisesWithEndpoint
             $RemoteAddressSpaces
         )
             
-        Install-RemoteAccess -VpnType VPNS2S
+        $status = Get-RemoteAccess -ErrorAction SilentlyContinue
+        if ($status.VpnS2SStatus -ne 'Installed' -and $status.RoutingStatus -ne 'Installed')
+        {
+            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
+        }
         
         Restart-Service -Name RemoteAccess
     
@@ -704,9 +705,9 @@ function Connect-OnPremisesWithEndpoint
     
     Invoke-LabCommand -ActivityName 'Enabling S2S VPN functionality and configuring S2S VPN connection' `
         -ComputerName $router `
-        -UseLocalCredential `
         -ScriptBlock $scriptBlock `
-        -ArgumentList @($DestinationHost, $AddressSpace)
+        -ArgumentList @($DestinationHost, $AddressSpace) `
+        -Retries 3 -RetryIntervalInSeconds 10
 
     Write-LogFunctionExit
 }
