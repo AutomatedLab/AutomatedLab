@@ -137,9 +137,9 @@ function Disconnect-Lab
         Import-Lab -Name $LabName -ErrorAction Stop -NoValidation
         $lab = Get-Lab
 
-		Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
-			Get-DnsServerZone | Where-Object -Property ZoneType -EQ Forwarder | Remove-DnsServerZone -Force
-		}
+        Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+            Get-DnsServerZone | Where-Object -Property ZoneType -EQ Forwarder | Remove-DnsServerZone -Force
+        }
 
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
         {            
@@ -198,17 +198,17 @@ function Restore-LabConnection
 {
     #.ExternalHelp AutomatedLab.help.xml
     param
-	(
-		[Parameter(Mandatory = $true)]
-		[System.String]
-		$SourceLab,
+    (
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $SourceLab,
 
-		[Parameter(Mandatory = $true)]
-		[System.String]
-		$DestinationLab
-	)
+        [Parameter(Mandatory = $true)]
+        [System.String]
+        $DestinationLab
+    )
 
-	if ((Get-Lab -List) -notcontains $SourceLab)
+    if ((Get-Lab -List) -notcontains $SourceLab)
     {
         throw "Source lab $SourceLab does not exist."
     }
@@ -218,7 +218,7 @@ function Restore-LabConnection
         throw "Destination lab $DestinationLab does not exist."
     }
 
-	$sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
@@ -232,61 +232,61 @@ function Restore-LabConnection
         throw "Lab.xml is missing for $DestinationLab"
     }  
 
-	$sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
+    $sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
     $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
 
-	if ($sourceHypervisor -eq 'Azure')
+    if ($sourceHypervisor -eq 'Azure')
     {
-		$source = $SourceLab
-		$destination = $DestinationLab
-	}
-	else
-	{
-		$source = $DestinationLab
-		$destination = $SourceLab
-	}
+        $source = $SourceLab
+        $destination = $DestinationLab
+    }
+    else
+    {
+        $source = $DestinationLab
+        $destination = $SourceLab
+    }
 
-	Write-Verbose -Message "Checking Azure lab $source"
-	Import-Lab -Name $source -NoValidation
-	$resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    Write-Verbose -Message "Checking Azure lab $source"
+    Import-Lab -Name $source -NoValidation
+    $resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
-	$localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroup -ErrorAction Stop
-	$vpnGatewayIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroup -ErrorAction Stop
+    $localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroup -ErrorAction Stop
+    $vpnGatewayIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroup -ErrorAction Stop
 
-	try
-	{
-		$labIp = Get-LabPublicIpAddress -ErrorAction Stop
-	}
-	catch
-	{
-		Write-Warning -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.'
-	}
+    try
+    {
+        $labIp = Get-LabPublicIpAddress -ErrorAction Stop
+    }
+    catch
+    {
+        Write-Warning -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.'
+    }
 
-	if ($localGateway.GatewayIpAddress -ne $labIp)
-	{
-		Write-Verbose -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
-		$localGateway.GatewayIpAddress = $labIp
-		[void] ($localGateway | Set-AzureRmLocalNetworkGateway)
-	}
+    if ($localGateway.GatewayIpAddress -ne $labIp)
+    {
+        Write-Verbose -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
+        $localGateway.GatewayIpAddress = $labIp
+        [void] ($localGateway | Set-AzureRmLocalNetworkGateway)
+    }
 
-	Import-Lab -Name $destination -NoValidation
-	$router = Get-LabVm -Role Routing
+    Import-Lab -Name $destination -NoValidation
+    $router = Get-LabVm -Role Routing
 
-	Invoke-LabCommand -ActivityName 'Checking S2S connection' -ComputerName $router -ScriptBlock {
-	param
-	(
-		[System.String]
-		$azureDestination
-	)
+    Invoke-LabCommand -ActivityName 'Checking S2S connection' -ComputerName $router -ScriptBlock {
+        param
+        (
+            [System.String]
+            $azureDestination
+        )
 	
-	$s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
+        $s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
 
-	if ($s2sConnection.Destination -ne $azureDestination)
-	{
-		$s2sConnection.Destination = $azureDestination
-		$s2sConnection | Set-VpnS2SInterface -Verbose
-	}
-	} -ArgumentList @($vpnGatewayIp.IpAddress)
+        if ($s2sConnection.Destination -ne $azureDestination)
+        {
+            $s2sConnection.Destination = $azureDestination
+            $s2sConnection | Set-VpnS2SInterface -Verbose
+        }
+    } -ArgumentList @($vpnGatewayIp.IpAddress)
 }
 
 function Initialize-GatewayNetwork
@@ -360,12 +360,11 @@ function Initialize-GatewayNetwork
     if (-not $gatewaySubnet)
     {
         $vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
-    }
-
+        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
+    }    
+	
+    $vnet = (Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Where-Object -Property ID)[0]
     Write-LogFunctionExit
-
-	$vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
-	$vnet = Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Select-Object -First 1
 
     return $vnet
 }
@@ -393,7 +392,7 @@ function Connect-OnPremisesWithAzure
     $lab = Get-Lab
     $sourceResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $sourceLocation = Get-LabAzureDefaultLocation
-	$sourceDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
+    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
     
@@ -468,13 +467,13 @@ function Connect-OnPremisesWithAzure
     
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
-	$destinationDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
-	$gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
 
-	if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
-	{
-		throw 'Public IP has either not been created or is currently unassigned.'
-	}
+    if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
+    {
+        throw 'Public IP has either not been created or is currently unassigned.'
+    }
     
     if (-not $router)
     {
@@ -517,18 +516,21 @@ function Connect-OnPremisesWithAzure
         )
         
         $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
-        Select-Object -ExpandProperty NetConnectionID
-
-		netsh.exe routing ip dnsproxy uninstall
-		netsh.exe routing ip nat uninstall
-        Uninstall-RemoteAccess -Force
+            Select-Object -ExpandProperty NetConnectionID
+        
+        try
+        {
+            Uninstall-RemoteAccess -Force -ErrorAction SilentlyContinue
+        }
+        catch {   }
+        
 
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue
 		
-        netsh.exe routing ip nat install
-        netsh.exe routing ip nat add interface $externalAdapter
-        netsh.exe routing ip nat set interface $externalAdapter mode=full
+        $null = netsh.exe routing ip nat install
+        $null = netsh.exe routing ip nat add interface $externalAdapter
+        $null = netsh.exe routing ip nat set interface $externalAdapter mode=full
 
         Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         
@@ -568,8 +570,8 @@ function Connect-OnPremisesWithAzure
         {
             try
             {
-                    $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
-                    $connectionEstablished = $true
+                $azureConnection | Connect-VpnS2SInterface -ErrorAction Stop
+                $connectionEstablished = $true
             }
             catch
             {
@@ -585,20 +587,20 @@ function Connect-OnPremisesWithAzure
             throw "Error establishing connection to $AzureDnsEntry after 3 tries. Check your NAT settings, internet connectivity and Azure resource group"
         }
         
-        netsh.exe ras set conf confstate = enabled		
-        netsh.exe routing ip dnsproxy install
+        $null = netsh.exe ras set conf confstate = enabled		
+        $null = netsh.exe routing ip dnsproxy install
 
 
         $dialupInterfaceIndex = (Get-NetIPInterface -AddressFamily IPv4 | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
     
-		if (-not $dialupInterfaceIndex)
-		{
-			throw "Connection to $AzureDnsEntry has not been established. Cannot add routes to $($addressSpace -join ',')."
-		}
-        
-		foreach ($addressSpace in $RemoteAddressSpaces)
+        if (-not $dialupInterfaceIndex)
         {
-            New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
+            throw "Connection to $AzureDnsEntry has not been established. Cannot add routes to $($addressSpace -join ',')."
+        }
+        
+        foreach ($addressSpace in $RemoteAddressSpaces)
+        {
+            $null = New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
         }
     }
     
@@ -608,8 +610,8 @@ function Connect-OnPremisesWithAzure
         -ScriptBlock $scriptBlock `
         -ArgumentList @($gatewayPublicIp.IpAddress, $AzureAddressSpaces, $mac)
 
-	# Configure DNS forwarding
-	Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
+    # Configure DNS forwarding
+    Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
         
     Write-LogFunctionExit
 }
@@ -655,7 +657,7 @@ function Connect-OnPremisesWithEndpoint
         
     if ($externalAdapters.Count -ne 1)
     {
-        throw"Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
+        throw "Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
     }
     
     $externalAdapter = $externalAdapters[0]
@@ -827,54 +829,54 @@ function Connect-AzureLab
 
     Write-Verbose -Message 'Connection created - please allow some time for initial connection.'
 
-	Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
+    Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
 
     Write-LogFunctionExit
 }
 
 function Set-VpnDnsForwarders
 {
-	param
-	(
-		[Parameter(Mandatory = $true)]
+    param
+    (
+        [Parameter(Mandatory = $true)]
         [System.String]
         $SourceLab,
         [Parameter(Mandatory = $true)]
         [System.String]
         $DestinationLab
-	)
+    )
 
-	Import-Lab $SourceLab -NoValidation
+    Import-Lab $SourceLab -NoValidation
     $lab = Get-Lab
-	$sourceDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
+    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
 
-	Import-Lab $DestinationLab -NoValidation    
+    Import-Lab $DestinationLab -NoValidation    
     $lab = Get-Lab
-	$destinationDcs = Get-LabMachine -Role DC,RootDC,FirstChildDC
+    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
 
-	$forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName
-	$forwarders = Get-FullMesh -List $forestNames
+    $forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName
+    $forwarders = Get-FullMesh -List $forestNames
 
-	foreach ($forwarder in $forwarders)
+    foreach ($forwarder in $forwarders)
     {
         $targetMachine = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $forwarder.Source }
-		$machineExists = Get-LabMachine | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
+        $machineExists = Get-LabMachine | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
 
-		if (-not $machineExists)
-		{
-			if ((Get-Lab).Name -eq $SourceLab)
-			{
-				Import-Lab -Name $DestinationLab -NoValidation
-			}
-			else
-			{
-				Import-Lab -Name $SourceLab -NoValidation
-			}
-		}
+        if (-not $machineExists)
+        {
+            if ((Get-Lab).Name -eq $SourceLab)
+            {
+                Import-Lab -Name $DestinationLab -NoValidation
+            }
+            else
+            {
+                Import-Lab -Name $SourceLab -NoValidation
+            }
+        }
 
         $masterServers = @($sourceDcs) + @($destinationDcs) | Where-Object { 
-				($_.Roles.Name -contains 'RootDC' -or $_.Roles.Name -contains 'FirstChildDC' -or $_.Roles.Name -contains 'DC') -and $_.DomainName -eq $forwarder.Destination
-			}
+            ($_.Roles.Name -contains 'RootDC' -or $_.Roles.Name -contains 'FirstChildDC' -or $_.Roles.Name -contains 'DC') -and $_.DomainName -eq $forwarder.Destination
+        }
     
         $cmd = @"
             Write-Verbose "Creating a DNS forwarder on server '$env:COMPUTERNAME'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
