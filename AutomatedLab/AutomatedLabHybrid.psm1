@@ -280,10 +280,10 @@ function Restore-LabConnection
         )
 	
         $s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
-
-        if ($s2sConnection.Destination -ne $azureDestination)
+        
+        if ($s2sConnection.Destination -notcontains $azureDestination)
         {
-            $s2sConnection.Destination = $azureDestination
+            $s2sConnection.Destination += $azureDestination
             $s2sConnection | Set-VpnS2SInterface -Verbose
         }
     } -ArgumentList @($vpnGatewayIp.IpAddress)
