@@ -597,7 +597,7 @@ function Connect-OnPremisesWithAzure
         
         foreach ($addressSpace in $RemoteAddressSpaces)
         {
-            $null = New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
+            $null = New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore PersistentStore -RouteMetric 1
         }
     }
     
@@ -699,7 +699,7 @@ function Connect-OnPremisesWithEndpoint
     
         foreach ($addressSpace in $RemoteAddressSpaces)
         {
-            New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore ActiveStore -RouteMetric 1
+            New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -PolicyStore PersistentStore -RouteMetric 1
         }
     }
     
