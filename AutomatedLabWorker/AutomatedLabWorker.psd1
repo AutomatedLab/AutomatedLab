@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLabWorker.psm1'
     
-    ModuleVersion = '4.3.1.0'
+    ModuleVersion = '4.4.0.0'
     
     GUID = '3addac35-cd7a-4bd2-82f5-ab9c83a48246'
     
@@ -9,7 +9,7 @@
     
     CompanyName = 'AutomatedLab Team'
     
-    Copyright = '2016'
+    Copyright = '2017'
     
     Description = 'This module encapsulates all the work activities to prepare the lab'
     
