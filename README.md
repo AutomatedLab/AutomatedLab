@@ -18,6 +18,7 @@ This solution supports setting up virtual machines with the following products
 * Exchange 2013, Exchange 2016
 * System Center Orchestrator 2012
 * Office 2013, 2016
+* DSC Pull Server
 
 ### Feature List
 * AutomatedLab (AL) makes the setup of labs extremely easy. Setting up a lab with just a single machine is [only 3 lines](https://github.com/AutomatedLab/AutomatedLab/blob/master/SampleScripts/Introduction/01%20Single%20Win10%20Client.ps1). And even [complex labs](https://github.com/AutomatedLab/AutomatedLab/blob/master/SampleScripts/HyperV/BigLab%202012R2%20EX%20SQL%20ORCH%20VS%20OFF.ps1) can be defined with about 100 lines (see [sample scripts](https://github.com/AutomatedLab/AutomatedLab/tree/master/SampleScripts)).
