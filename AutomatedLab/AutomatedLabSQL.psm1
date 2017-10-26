@@ -61,7 +61,8 @@ GO
 EXEC master..sp_addsrvrolemember @loginame = N'BUILTIN\Administrators', @rolename = N'sysadmin'
 GO
 "@
-                if ((Get-PSSnapin -Registered -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue) -and -not (Get-PSSnapin -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue)) {
+                if ((Get-PSSnapin -Registered -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue) -and -not (Get-PSSnapin -Name SqlServerCmdletSnapin100 -ErrorAction SilentlyContinue))
+                {
                     Add-PSSnapin -Name SqlServerCmdletSnapin100
                 }
                 Invoke-Sqlcmd -Query $query
@@ -140,20 +141,20 @@ GO
                     continue
                 }
                 
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('Collation')}             { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" +          "$($role.Properties.Collation)") }             { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSvcAccount')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" +       """$($role.Properties.SQLSvcAccount)""") }       { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSvcPassword')}        { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" +      """$($role.Properties.SQLSvcPassword)""") }      { }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcAccount')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" +       """$($role.Properties.AgtSvcAccount)""") }       { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcPassword')}        { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" +      """$($role.Properties.AgtSvcPassword)""") }      { }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" +        """$($role.Properties.RsSvcAccount)""") }        { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcStartupType')}     { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" +     "$($role.Properties.AgtSvcStartupType)") }     { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('Collation')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" + "$($role.Properties.Collation)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" + """$($role.Properties.SQLSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" + """$($role.Properties.SQLSvcPassword)""") } { }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } { }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('BrowserSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcStartupType')}      { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" +      "$($role.Properties.RsSvcStartupType)") }      { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSysAdminAccounts')}    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" +    "$($role.Properties.AsSysAdminAccounts)") }    { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" +          "$($role.Properties.AsSvcAccount)") }          { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" +          "$($role.Properties.IsSvcAccount)") }          { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')}   { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" +   "$($role.Properties.SQLSysAdminAccounts)") }   { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
-                Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'}      { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') }                                         { }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
+                Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
@@ -227,15 +228,15 @@ GO
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
                 $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016 |
-                Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
+                    Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
                     
                     $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016 |
-                    Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
-                    Select-Object -First 2
+                        Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
+                        Select-Object -First 2
                     
                     while ($startTime.AddMinutes(5) -gt (Get-Date) -and $machinesToPrepare)
                     {
@@ -288,16 +289,16 @@ GO
 
         $sql2016 = Get-LabVM -Role SQLServer2016
 
-		if ($sql2016)
-		{
-			$ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
+        if ($sql2016)
+        {
+            $ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
 
-			Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
-			Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
+            Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
+            Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
 
-			$jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
-			Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
-		}
+            $jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
+            Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
+        }
 
         if ($CreateCheckPoints)
         {
@@ -305,15 +306,15 @@ GO
         }
     }
 	
-	foreach ($machine in $machines)
-	{
+    foreach ($machine in $machines)
+    {
         $role = $machine.Roles | Where-Object Name -like SQLServer*
 
-		if ($role.Properties['InstallSampleDatabase'])
-		{
-			Install-LabSqlSampleDatabases -Machine $machine
-		}
-	}
+        if ($role.Properties['InstallSampleDatabase'])
+        {
+            Install-LabSqlSampleDatabases -Machine $machine
+        }
+    }
 
     Write-LogFunctionExit
 }
@@ -322,83 +323,83 @@ GO
 #region Install-LabSqlSampleDatabases
 function Install-LabSqlSampleDatabases
 {
-param
-(
-	[AutomatedLab.Machine]		
-	$Machine
-)
+    param
+    (
+        [AutomatedLab.Machine]		
+        $Machine
+    )
 
-Write-LogFunctionEntry
+    Write-LogFunctionEntry
 
-$roleName = ($Machine.Roles | Where-Object Name -like SQLServer*).Name
-$sqlLink = $MyInvocation.MyCommand.Module.PrivateData[$roleName]
-if (-not $sqlLink)
-{
-	throw "No SQL link found to download $roleName sample database"
-}
+    $roleName = ($Machine.Roles | Where-Object Name -like SQLServer*).Name
+    $sqlLink = $MyInvocation.MyCommand.Module.PrivateData[$roleName]
+    if (-not $sqlLink)
+    {
+        throw "No SQL link found to download $roleName sample database"
+    }
 
-$targetFolder = Join-Path -Path $global:labSources -ChildPath SoftwarePackages\SqlSampleDbs
+    $targetFolder = Join-Path -Path $global:labSources -ChildPath SoftwarePackages\SqlSampleDbs
 
-if (-not (Test-Path $targetFolder))
-{
-	[void] (New-Item -ItemType Directory -Path $targetFolder)
-}
+    if (-not (Test-Path $targetFolder))
+    {
+        [void] (New-Item -ItemType Directory -Path $targetFolder)
+    }
 
-if ($roleName -eq 'SQLServer2016')
-{
-	$targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
-}
-else
-{
-	$targetFile = Join-Path -Path $targetFolder -ChildPath "$roleName.zip"
-}
+    if ($roleName -eq 'SQLServer2016')
+    {
+        $targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
+    }
+    else
+    {
+        $targetFile = Join-Path -Path $targetFolder -ChildPath "$roleName.zip"
+    }
 
-Get-LabInternetFile -Uri $sqlLink -Path $targetFile
+    Get-LabInternetFile -Uri $sqlLink -Path $targetFile
 
-$dependencyFolder = Join-Path -Path $targetFolder -ChildPath $roleName
+    $dependencyFolder = Join-Path -Path $targetFolder -ChildPath $roleName
 
-switch ($roleName)
-{
-	'SQLServer2008' 
-	{
-		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+    switch ($roleName)
+    {
+        'SQLServer2008' 
+        {
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder
 
-		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-			$mdf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
-			$ldf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
-			$query = 'CREATE DATABASE AdventureWorks2008 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
-			Invoke-Sqlcmd -ServerInstance localhost -Query $query
-		} -DependencyFolderPath $dependencyFolder		
-	}
-	'SQLServer2008R2' 
-	{
-		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $mdf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
+                $query = 'CREATE DATABASE AdventureWorks2008 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+            } -DependencyFolderPath $dependencyFolder		
+        }
+        'SQLServer2008R2' 
+        {
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder
 
-		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-			$mdf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
-			$ldf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
-			$query = 'CREATE DATABASE AdventureWorks2008R2 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
-			Invoke-Sqlcmd -ServerInstance localhost -Query $query
-		} -DependencyFolderPath $dependencyFolder	
-	}
-	'SQLServer2012' 
-	{
-		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $mdf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
+                $query = 'CREATE DATABASE AdventureWorks2008R2 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+            } -DependencyFolderPath $dependencyFolder	
+        }
+        'SQLServer2012' 
+        {
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder
 
-		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-			$mdf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
-			$ldf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
-			$query = 'CREATE DATABASE AdventureWorks2012 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
-			Invoke-Sqlcmd -ServerInstance localhost -Query $query
-		} -DependencyFolderPath $dependencyFolder	
-	}
-	'SQLServer2014' 
-	{
-		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $mdf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
+                $query = 'CREATE DATABASE AdventureWorks2012 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+            } -DependencyFolderPath $dependencyFolder	
+        }
+        'SQLServer2014' 
+        {
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder
 		
-		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-			$backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
-			$query = @"
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
+                $query = @"
 		USE [master]
 
 		RESTORE DATABASE AdventureWorks2014
@@ -407,16 +408,16 @@ switch ($roleName)
 		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\AdventureWorks2014.ldf'
 		,REPLACE
 "@
-		Invoke-Sqlcmd -ServerInstance localhost -Query $query
-		} -DependencyFolderPath $dependencyFolder	
-	}
-	'SQLServer2016' 
-	{
-		Expand-Archive $targetFile -DestinationPath $dependencyFolder
+                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+            } -DependencyFolderPath $dependencyFolder	
+        }
+        'SQLServer2016' 
+        {
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder
 		
-		Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-			$backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
-			$query = @"
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
+                $query = @"
 		USE master
 		RESTORE DATABASE WideWorldImporters
 		FROM disk = 
@@ -431,16 +432,16 @@ switch ($roleName)
 		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
 		REPLACE
 "@
-		Invoke-Sqlcmd -ServerInstance localhost -Query $query
-		} -DependencyFolderPath $dependencyFolder	
-	}
-	default
-	{
-		Write-LogFunctionExitWithError -Exception (New-Object System.ArgumentException("$roleName has no sample scripts yet.",'roleName'))
-	}
-}
+                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+            } -DependencyFolderPath $dependencyFolder	
+        }
+        default
+        {
+            Write-LogFunctionExitWithError -Exception (New-Object System.ArgumentException("$roleName has no sample scripts yet.", 'roleName'))
+        }
+    }
 
-Write-LogFunctionExit
+    Write-LogFunctionExit
 
 }
 #endregion
