@@ -102,6 +102,9 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "2016-Datacenter";
 
+                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                        return "2016-Datacenter-Server-Core";
+
                     case "Windows Server 2016 SERVERSTANDARDNANO":
                         return "2016-Nano-Server";
                         
@@ -211,6 +214,8 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Technical Preview":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise Evaluation":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise 2015 LTSB":
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";

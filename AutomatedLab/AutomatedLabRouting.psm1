@@ -1,7 +1,7 @@
 ﻿#region Install-LabRouting
 function Install-LabRouting
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -72,7 +72,7 @@ function Install-LabRouting
                 Write-Verbose 'Setting up NAT...'
 			
                 $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
-                Select-Object -ExpandProperty NetConnectionID
+                    Select-Object -ExpandProperty NetConnectionID
 
                 netsh.exe routing ip nat install
 
@@ -115,7 +115,7 @@ function Install-LabRouting
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
 
     Write-Verbose 'Setting DNS fowarder on all domain controllers in root domains'
 

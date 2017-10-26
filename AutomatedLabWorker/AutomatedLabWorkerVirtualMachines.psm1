@@ -53,25 +53,29 @@ function New-LWHypervVM
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
-    $adapters = New-Object System.Collections.ArrayList
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] }))
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address }))
+	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
+    $adapters = New-Object $type
+	$Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
+	$Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {
         #move the adapter that connects the machine to the domain to the top
         $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
-        #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
-        #the network ordering
-        $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
-        Select-Object -First 1
-        
-        if ($domainAdapter)
+        if ($dc)
         {
-            $adapters.Remove($domainAdapter)
-            $adapters.Insert(0, $domainAdapter)
+            #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
+            #the network ordering
+            $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
+            Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
+            Select-Object -First 1
+        
+            if ($domainAdapter)
+            {
+                $adapters.Remove($domainAdapter)
+                $adapters.Insert(0, $domainAdapter)
+            }
         }
     }
     
@@ -136,6 +140,8 @@ function New-LWHypervVM
                 
         Add-UnattendedNetworkAdapter @ipSettings
     }
+
+	$Machine.NetworkAdapters = $adapters
             
     Add-UnattendedRenameNetworkAdapters
     #endregion network adapter settings

@@ -543,7 +543,7 @@ function New-LabDefinition
 
         [switch]$UseStaticMemory = $false,
 
-        [ValidateSet('Azure', 'HyperV')]
+        [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
         
         [switch]$NoAzurePublishSettingsFile,
@@ -888,6 +888,40 @@ function Get-LabDefinition
 }
 #endregion Get-LabDefinition
 
+#region Set-LabDefinition
+function Set-LabDefinition
+{
+    param
+    (
+        [AutomatedLab.Lab]
+        $Lab,
+
+		[AutomatedLab.Machine[]]
+		$Machines,
+
+		[AutomatedLab.Disk[]]
+		$Disks
+    )
+
+	if ($Lab)
+	{
+		$script:lab = $Lab
+	}
+
+	if ($Machines)
+	{
+		$script:Machines.Clear()
+        $Machines | Foreach-Object { $script:Machines.Add($_)}
+	}
+
+	if ($Disks)
+	{
+        $script:Disks.Clear()
+		$Disks | ForEach-Object { $script:Disks.Add($_) }
+	}
+}
+#endregion
+
 #region Export-LabDefinition
 function Export-LabDefinition
 {
@@ -895,9 +929,14 @@ function Export-LabDefinition
     
     [CmdletBinding()]
     param (
-        [switch]$Force,
+        [switch]
+		$Force,
                          
-        [switch]$ExportDefaultUnattendedXml = $true
+        [switch]
+		$ExportDefaultUnattendedXml = $true,
+
+		[switch]
+		$Silent
     )
             
     Write-LogFunctionEntry
@@ -926,7 +965,11 @@ function Export-LabDefinition
             {
                 (Get-LabVirtualNetworkDefinition)[0].DnsServers = $dnsServerIP 
                 $dnsServerName = (Get-LabMachineDefinition | Where-Object {$_.IpV4Address -eq $dnsServerIP}).Name
-                Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$dnsServerName'" -Type Warning
+
+				if (-not $Silent)
+				{
+					Write-ScreenInfo -Message "No DNS server was defined for Azure virtual network while AD is being deployed. Setting DNS server to IP address of '$dnsServerName'" -Type Warning
+				}
             }
         }
     }
@@ -938,7 +981,7 @@ function Export-LabDefinition
     
     if ($firstRootDc -or $firstRouter)
     {
-        foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -ne Azure))
+        foreach ($machine in (Get-LabMachineDefinition))
         {
             if ($firstRouter)
             {
@@ -1035,7 +1078,10 @@ function Export-LabDefinition
         Write-Verbose -Message "Space needed by HyperV base disks:                     $([int]($spaceNeededBaseDisks / 1GB))"
         Write-Verbose -Message "Space needed by HyperV base disks but already claimed: $([int]($spaceBaseDisksAlreadyClaimed / 1GB * -1))"
         Write-Verbose -Message "Space estimated for HyperV data:                       $([int]($spaceNeededData / 1GB))"
-        Write-ScreenInfo -Message "Estimated (additional) local drive space needed for all machines: $([System.Math]::Round(($spaceNeeded / 1GB),2)) GB" -Type Info
+        if (-not $Silent)
+		{
+			Write-ScreenInfo -Message "Estimated (additional) local drive space needed for all machines: $([System.Math]::Round(($spaceNeeded / 1GB),2)) GB" -Type Info
+		}
         
         $labTargetPath = (Get-LabDefinition).Target.Path
         if ($labTargetPath)
@@ -1055,7 +1101,11 @@ function Export-LabDefinition
                 Throw 'No local drive found matching requirements for free space'
             }
         }
-        Write-ScreenInfo -Message "Location of Hyper-V machines will be '$labTargetPath'"
+
+		if (-not $Silent)
+		{
+			Write-ScreenInfo -Message "Location of Hyper-V machines will be '$labTargetPath'"
+		}
         
         if (-not (Test-Path -Path $labTargetPath))
         {
@@ -1676,7 +1726,7 @@ function Add-LabMachineDefinition
         [ValidateNotNullOrEmpty()]
         [int]$Processors = 0,
         
-        [ValidatePattern('^([a-zA-Z0-9-_]){2,15}$')]
+        [ValidatePattern('^([a-zA-Z0-9-_]){2,30}$')]
         [string[]]$DiskName,
         
         [ValidateSet(
@@ -1775,8 +1825,8 @@ DynamicParam {
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
         if($defaultLocation)
         {
-            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Sort-Object -Property Name
-            $arrSet = $vmSizes | %{"$($_.Name) ($($_.NumberOfCores) Cores, $($_.MemoryInMB) Mb, $($_.MaxDataDiskCount) max data disks)"}
+            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
+            $arrSet = $vmSizes | Select-Object -ExpandProperty Name
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
             $AttributeCollection.Add($ValidateSetAttribute)
         }
@@ -1808,7 +1858,7 @@ process
     $machineRoles = ''
     if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
-    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort'
+    $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName'
     
     if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
     {
@@ -2380,12 +2430,61 @@ process
             }
             elseif ($IpAddress)
             {
-                $adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $adapterVirtualNetwork.AddressSpace.Netmask))
+				if ($AzureProperties.SubnetName -and $adapterVirtualNetwork.Subnets.Count -gt 0)
+				{
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object Name -EQ $AzureProperties.SubnetName
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. Subnet {0} could not be found in the list of available subnets {1}' -f $AzureProperties.SubnetName, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $chosenSubnet.AddressSpace.Netmask))
+				}
+				elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
+				{
+					# No default subnet and no name selected. Chose fitting subnet.
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$IpAddress -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $chosenSubnet.AddressSpace.Netmask))
+				}
+				else
+				{
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($IpAddress, $adapterVirtualNetwork.AddressSpace.Netmask))
+				}                
             }
             elseif (-not $adapter.UseDhcp)
             {
-                $ip = $adapterVirtualNetwork.NextIpAddress()
-                $adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $adapterVirtualNetwork.AddressSpace.Netmask))
+				$ip = $adapterVirtualNetwork.NextIpAddress()
+
+				if ($AzureProperties.SubnetName -and $adapterVirtualNetwork.Subnets.Count -gt 0)
+				{
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object Name -EQ $AzureProperties.SubnetName
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. Subnet {0} could not be found in the list of available subnets {1}' -f $AzureProperties.SubnetName, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $chosenSubnet.AddressSpace.Netmask))
+				}
+				elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
+				{
+					# No default subnet and no name selected. Chose fitting subnet.
+					$chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$ip -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+					if (-not $chosenSubnet)
+					{
+						throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
+					}
+
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $chosenSubnet.AddressSpace.Netmask))
+				}
+				else
+				{
+					$adapter.Ipv4Address.Add([AutomatedLab.IPNetwork]::Parse($ip, $adapterVirtualNetwork.AddressSpace.Netmask))
+				}
             }
         }
 
@@ -2498,7 +2597,11 @@ process
     {
         $machine.OperatingSystem = $OperatingSystem
     }
-    
+    elseif ($machine.HostType -eq 'VMWare')
+    {
+        $machine.OperatingSystem = $OperatingSystem
+    }
+
     if (-not $TimeZone)   { $TimeZone = tzutil.exe /g }
     $machine.Timezone = $TimeZone
     
@@ -2725,6 +2828,7 @@ function Get-LabPostInstallationActivity
         
         [Parameter(ParameterSetName = 'FileContentDependencyRemoteScript')]
         [Parameter(ParameterSetName = 'FileContentDependencyLocalScript')]
+        [Parameter(ParameterSetName = 'CustomRole')]
         [switch]$KeepFolder,
         
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -2737,11 +2841,40 @@ function Get-LabPostInstallationActivity
         
         [switch]$DoNotUseCredSsp
     )
-    
+    DynamicParam {
+        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path (Get-LabSourcesLocation)))
+        {        
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+
+        $ParameterName = 'CustomRole'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute.ParameterSetName = 'CustomRole'
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
+
+		if ($arrSet)
+		{
+			$ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+			$AttributeCollection.Add($ValidateSetAttribute)
+			$RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+
+			$RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+			return $RuntimeParameterDictionary
+		}
+    }
+}
+
+begin
+{    
     Write-LogFunctionEntry
-    
+    $CustomRole = $PsBoundParameters['CustomRole']
     $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+}
     
+    
+ process
+ {   
     if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
     {
         $activity.DependencyFolder = $DependencyFolder
@@ -2767,11 +2900,21 @@ function Get-LabPostInstallationActivity
             $activity.ScriptFileName = $ScriptFileName
         }
     }
+    elseif ($PSCmdlet.ParameterSetName -eq 'CustomRole')
+    {
+        $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -ChildPath $CustomRole
+        $activity.KeepFolder = $KeepFolder.ToBool()
+        $activity.ScriptFileName = "$CustomRole.ps1"
+    }
     
     $activity.DoNotUseCredSsp = $DoNotUseCredSsp
-    
+ }
+  
+ end
+ {
     Write-LogFunctionExit -ReturnValue $activity
     return $activity
+ }
 }
 #endregion Get-PostInstallationActivity
 #endregion Machine Definition Functions
@@ -2798,18 +2941,29 @@ function Get-DiskSpeed
         $labSources = Get-LabSourcesLocation
     }
 
-    Write-ScreenInfo -Message "Measuring speed of drive $DriveLetter" -Type Info
+    $IsReadOnly = Get-Partition -DriveLetter ($DriveLetter.TrimEnd(':')) | Select-Object -ExpandProperty IsReadOnly
+    if ($IsReadOnly)
+    {
+        Write-ScreenInfo -Message "Drive $DriveLetter is read-only. Skipping disk speed test" -Type Warning
+
+        $readThroughoutRandom = 0
+        $writeThroughoutRandom = 0
+    }
+    else
+    {
+        Write-ScreenInfo -Message "Measuring speed of drive $DriveLetter" -Type Info
     
-    $tempFileName = [System.IO.Path]::GetTempFileName()
+        $tempFileName = [System.IO.Path]::GetTempFileName()
     
-    & "$labSources\Tools\WinSAT.exe" disk -ran -read -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
-    $readThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
+        & "$labSources\Tools\WinSAT.exe" disk -ran -read -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
+        $readThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
     
-    & "$labSources\Tools\WinSAT.exe" disk -ran -write -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
-    $writeThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
+        & "$labSources\Tools\WinSAT.exe" disk -ran -write -count $Interations -drive $DriveLetter -xml $tempFileName | Out-Null
+        $writeThroughoutRandom = (Select-Xml -Path $tempFileName -XPath '/WinSAT/Metrics/DiskMetrics/AvgThroughput').Node.'#text'
     
-    Remove-Item -Path $tempFileName
-    
+        Remove-Item -Path $tempFileName
+    }
+
     $result = New-Object PSObject -Property ([ordered]@{
             ReadRandom = $readThroughoutRandom
             WriteRandom = $writeThroughoutRandom

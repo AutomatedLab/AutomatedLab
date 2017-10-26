@@ -47,7 +47,8 @@ namespace AutomatedLab
         ADFS = 8388608,
         ADFSWAP = 16777216,
         ADFSProxy = 33554432,
-        DSCPullServer = 67108864
+        DSCPullServer = 67108864,
+        VpnGateway = 134217728
     }
 
     public enum ActiveDirectoryFunctionalLevel

@@ -23,9 +23,9 @@ function Copy-LabExchange2013InstallationFiles
     foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq HyperV)
     {
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -35,8 +35,8 @@ function Copy-LabExchange2013InstallationFiles
     foreach ($rootDc in $exchangeRootDCs)
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
 
         Write-ScreenInfo 'finished'
     }
@@ -138,7 +138,7 @@ function Install-LabExchange2013
     
     $exchangeInstallFileName = $exchangeDownloadLink.Segments[$exchangeDownloadLink.Segments.Count-1]
     $ucmaInstallFileName = $ucmaDownloadLink.Segments[$ucmaDownloadLink.Segments.Count-1]
-    $dotnet462DownloadLink = New-Object System.Uri((Get-Module AutomatedLab)[0].PrivateData.dotnet462DownloadLink)
+    $dotnet462InstallFileName = $dotnet462DownloadLink.Segments[$dotnet462DownloadLink.Segments.Count-1]
 
     $start = Get-Date
     $lab = Get-Lab
@@ -282,7 +282,7 @@ function Install-LabExchange2013
             #FINALLY INSTALL EXCHANGE
             Write-ScreenInfo -Message 'Install Exchange Server 2013'
        
-            $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:{0} /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
+            $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $exchangeOrganization
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $machine -CommandLine $commandLine -ErrorAction Stop
             
             Set-Variable -Name "AL_Result_ExchangeInstall_$machine" -Value $result -Scope Global 

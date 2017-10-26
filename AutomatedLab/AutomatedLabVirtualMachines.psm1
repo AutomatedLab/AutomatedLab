@@ -123,6 +123,9 @@ function New-LabVM
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
+		Write-Verbose -Message 'Restarting machines to apply DNS settings'
+		Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+
         Write-Verbose -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs        
 
@@ -481,7 +484,7 @@ function Restart-LabVM
     }
     
     Write-Verbose "Stopping machine '$ComputerName' and waiting for shutdown"
-    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine
+    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine -KeepAzureVmProvisioned
     Write-Verbose "Machine '$ComputerName' is stopped"
 
     Write-Debug 'Waiting 10 seconds'
@@ -513,7 +516,9 @@ function Stop-LabVM
 
         [int]$ProgressIndicator,
 
-        [switch]$NoNewLine
+        [switch]$NoNewLine,
+
+		[switch]$KeepAzureVmProvisioned
     )
     
     Write-LogFunctionEntry
@@ -544,6 +549,11 @@ function Stop-LabVM
             Write-Debug "Machine $($vmState.Name) is already stopped, removing it from the list of machines to stop"
         }
     }
+
+    if (-not $machines)
+    {
+        return
+    }
     
     Remove-LabPSSession -ComputerName $machines
     
@@ -552,7 +562,10 @@ function Stop-LabVM
     $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
     
     if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
-    if ($azureVms) { Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue }
+    if ($azureVms) { 
+		$stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+		Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+		}
     if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
     
     $remainingTargets = @()
@@ -661,11 +674,14 @@ function Wait-LabVM
         netsh.exe interface ip delete arpcache | Out-Null
         
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
-        $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
-        if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
-        {
-            Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
-        }
+		if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
+		{
+			$machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+			if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
+			{
+				Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
+			}
+		}        
  
         $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -Retries 1 -DoNotUseCredSsp:$DoNotUseCredSsp -ErrorAction SilentlyContinue
             
@@ -820,7 +836,9 @@ function Wait-LabVMRestart
         
         [switch]$NoNewLine,
         
-        $MonitorJob
+        $MonitorJob,
+
+        [DateTime]$MonitoringStartTime = (Get-Date)
     )
     
     Write-LogFunctionEntry
@@ -837,12 +855,11 @@ function Wait-LabVMRestart
     $azureVms = $vms | Where-Object HostType -eq 'Azure'
     $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
     $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
-    $start = Get-Date
     
     if ($azureVms)
     {
         Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes `
-        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError
+        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError -MonitoringStartTime $MonitoringStartTime
     }
 
     if ($hypervVms)
@@ -1121,7 +1138,7 @@ function Connect-LabVM
             $cred = $machine.GetCredential($lab)
         }
         
-        if ($machine.HostType = 'Azure')
+        if ($machine.HostType -eq 'Azure')
         {
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
@@ -1258,10 +1275,29 @@ function Join-LabVMDomain
             [string]$DomainName,
 
             [Parameter(Mandatory = $true)]
-            [System.Management.Automation.PSCredential]$Credential
+            [System.Management.Automation.PSCredential]$Credential,
+
+			[bool]$AlwaysReboot = $false
         )
 
-        Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop
+		try
+		{
+			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
+			$true
+		}
+		catch
+		{
+			if ($AlwaysReboot)
+			{
+				$false
+				Start-Sleep -Seconds 1
+				Restart-Computer -Force
+			}
+			else
+			{
+				Write-Error -Exception $_.Exception -Message $_.Exception.Message -ErrorAction Stop
+			}
+		}
 
         $logonName = "$DomainName\$($Credential.UserName)"
         $password = $Credential.GetNetworkCredential().Password
@@ -1278,6 +1314,7 @@ function Join-LabVMDomain
 
     $lab = Get-Lab
     $jobs = @()
+    $startTime = Get-Date
 
     Write-Verbose "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
@@ -1307,8 +1344,22 @@ function Join-LabVMDomain
             $cred = $domain.GetCredential()
 
             Write-Verbose "Joining machine '$m' to domain '$domain'"
-            $jobs += Invoke-LabCommand -ComputerName $m -ActivityName DomainJoin -ScriptBlock (Get-Command Join-Computer).ScriptBlock `
-            -UseLocalCredential -ArgumentList $domain, $cred -AsJob -PassThru -NoDisplay
+			$jobParameters = @{
+				ComputerName = $m
+				ActivityName = "DomainJoin_$m"
+				ScriptBlock = (Get-Command Join-Computer).ScriptBlock
+				UseLocalCredential = $true
+				ArgumentList = $domain, $cred
+				AsJob = $true
+				PassThru = $true
+				NoDisplay = $true
+			}
+
+			if ($m.HostType -eq 'Azure')
+			{
+				$jobParameters.ArgumentList += $true
+			}
+            $jobs += Invoke-LabCommand @jobParameters
         }
     }
     
@@ -1319,12 +1370,22 @@ function Join-LabVMDomain
     
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message 'Waiting for machines to restart' -NoNewLine
-        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine
+        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine -MonitoringStartTime $startTime
     }
     
     foreach ($m in $Machine)
     {
-        $m.HasDomainJoined = $true
+		$machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
+		$machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
+		if (($machineJob).State -eq 'Failed' -or -not $machineResult)
+		{
+			Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
+			$m.HasDomainJoined = $false
+		}
+		else
+		{
+			$m.HasDomainJoined = $true
+		}
     }
     Export-Lab
     

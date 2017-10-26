@@ -1,25 +1,18 @@
 param (
     [Parameter(Mandatory)]
-    [string]$DomainName,
-
-    [Parameter(Mandatory)]
-    [string]$ComputerName
+    [string[]]$DomainAndComputerName
 )
 
-$query = @'
-USE [master]
-GO
-
-CREATE LOGIN [{0}\{1}] FROM WINDOWS WITH DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english]
-GO
-
-/****** Object:  Database [DSC]    Script Date: 4/15/2017 8:46:34 PM ******/
+$creatreDbQuery = @'
 CREATE DATABASE [DSC]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
  LOG ON 
-( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 2048KB , MAXSIZE = 2048GB , FILEGROWTH = 10%)
+( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
+GO
+
+ALTER DATABASE DSC SET RECOVERY SIMPLE
 GO
 
 ALTER DATABASE [DSC] SET COMPATIBILITY_LEVEL = 130
@@ -184,6 +177,7 @@ CREATE TABLE [dbo].[StatusReport](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
+/*****
 CREATE TRIGGER [dbo].[DSCStatusReportOnUpdate]
    ON  [dbo].[StatusReport] 
    AFTER UPDATE
@@ -211,6 +205,7 @@ GO
 
 ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [DSCStatusReportOnUpdate]
 GO
+*****/
 
 --Adding functions
 CREATE FUNCTION [dbo].[Split] (
@@ -281,85 +276,83 @@ RETURNS TABLE
     AS
 RETURN
 (
-    SELECT dbo.StatusReport.NodeName, dbo.StatusReport.Id AS AgentId, dbo.StatusReport.Status, dbo.StatusReport.StartTime, dbo.StatusReport.EndTime
-    
-    ,(
-        SELECT SUM(DurationInSeconds) AS Duration
-        FROM OPENJSON ((SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesInDesiredState'))  
-        WITH (   
-            DurationInSeconds     float       '$.DurationInSeconds',
-            InDesiredState bit '$.InDesiredState'
-        ) GROUP BY InDesiredState
-    ) AS Duration
-    -- ,(
-    -- SELECT SUM(CAST(REPLACE(DurationInSeconds, ',','.') AS float)) AS Duration
-    -- 	FROM OPENJSON ((SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesInDesiredState'))  
-    -- 	WITH (   
-    -- 		DurationInSeconds     nvarchar(50)       '$.DurationInSeconds',
-    -- 		InDesiredState bit '$.InDesiredState'
-    -- 	) GROUP BY InDesiredState
-    -- ) AS Duration
-    ,(
-        SELECT COUNT(*) AS ResourceCount
-        FROM OPENJSON ((SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesInDesiredState'))  
-        WITH (
-            InDesiredState bit '$.InDesiredState'
-        ) GROUP BY InDesiredState
-    ) AS ResourceCountInDesiredState
-    ,(
-        SELECT COUNT(*) AS ResourceCount
-        FROM OPENJSON ((SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesNotInDesiredState'))  
-        WITH (
-            NotInDesiredState bit '$.NotInDesiredState'
-        ) GROUP BY NotInDesiredState
-    ) AS ResourceCountNotInDesiredState
-    ,(
-        SELECT [ResourceId] + ',' AS [text()]
-        FROM OPENJSON ((SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesNotInDesiredState'))  
-        WITH (
-            ResourceId nvarchar(100) '$.ResourceId'
-        ) FOR XML PATH ('')
-    ) AS ResourceIdsNotInDesiredState
-    ,(
-        SELECT [Value] FROM OPENJSON([StatusData]) WHERE [Key] = 'ResourcesInDesiredState'
-    ) AS RawStatusData
-    
-    ,(
-        SELECT [VersionString] FROM OPENJSON((
-            SELECT [Value] FROM OPENJSON([AdditionalData])
-            WITH(
-                [Key] nvarchar(100) '$.Key',
-                [Value] nvarchar(100) '$.Value'
-            )
-            WHERE [Key] = 'OSVersion'
-        ))
-        WITH(
-            [VersionString] nvarchar(100) '$.VersionString',
-            [ServicePack] nvarchar(100) '$.ServicePack',
-            [Platform] nvarchar(100) '$.Platform'
-        )
-    ) AS OSVersion
+    SELECT [dbo].[StatusReport].[NodeName]
+	,[dbo].[StatusReport].[Status]
+	,[dbo].[StatusReport].[Id] AS [AgentId]
+	,[dbo].[StatusReport].[EndTime] AS [Time]
+	,[dbo].[StatusReport].[RebootRequested]
+	,[dbo].[StatusReport].[OperationType]
 
-    ,(
-        SELECT [PSVersion] FROM OPENJSON((
-            SELECT [Value] FROM OPENJSON([AdditionalData])
-            WITH(
-                [Key] nvarchar(100) '$.Key',
-                [Value] nvarchar(100) '$.Value'
-            )
-            WHERE [Key] = 'PSVersion'
-        ))
-        WITH(
-            [CLRVersion] nvarchar(100) '$.CLRVersion',
-            [PSVersion] nvarchar(100) '$.PSVersion',
-            [BuildVersion] nvarchar(100) '$.BuildVersion'
-        )
-    ) AS PSVersion
+	,(
+	SELECT [HostName] FROM OPENJSON(
+		(SELECT [value] FROM OPENJSON([StatusData]))
+	) WITH (HostName nvarchar(200) '$.HostName')) AS HostName
 
-    FROM dbo.StatusReport INNER JOIN
-    (SELECT MAX(EndTime) AS MaxEndTime, NodeName
-    FROM dbo.StatusReport AS StatusReport_1
-    GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
+	,(
+	SELECT [ResourceId] + ',' AS [text()] 
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+	)
+	WITH (
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ResourcesInDesiredState
+
+	,(
+	SELECT [ResourceId] + ',' AS [text()] 
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+	)
+	WITH (
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ResourcesNotInDesiredState
+
+	,(
+	SELECT SUM(CAST(DurationInSeconds AS float)) AS Duration
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+	)
+	WITH (   
+			DurationInSeconds nvarchar(50) '$.DurationInSeconds',
+			InDesiredState bit '$.InDesiredState'
+		)
+	) AS Duration
+	,(
+	SELECT [DurationInSeconds] FROM OPENJSON(
+		(SELECT [value] FROM OPENJSON([StatusData]))
+	) WITH (DurationInSeconds nvarchar(200) '$.DurationInSeconds')) AS DurationWithOverhead
+
+	,(
+	SELECT COUNT(*)
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
+	)) AS ResourceCountInDesiredState
+	
+	,(
+	SELECT COUNT(*)
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+	)) AS ResourceCountNotInDesiredState
+
+	,(
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(200) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage
+
+	,(
+	SELECT [value] FROM OPENJSON([StatusData])
+	) AS RawStatusData
+
+	FROM dbo.StatusReport INNER JOIN
+	(SELECT MAX(EndTime) AS MaxEndTime, NodeName
+	FROM dbo.StatusReport AS StatusReport_1
+	WHERE EndTime > '1.1.2000'
+	GROUP BY [StatusReport_1].[NodeName]) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND [dbo].[StatusReport].[NodeName] = SubMax.NodeName
 )
 GO
 
@@ -392,8 +385,18 @@ FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
 GO
+'@
 
+$addPermissionsQuery = @'
 -- Adding Permissions
+USE [master]
+GO
+
+CREATE LOGIN [{0}\{1}] FROM WINDOWS WITH DEFAULT_DATABASE=[master], DEFAULT_LANGUAGE=[us_english]
+GO
+
+USE [DSC]
+
 CREATE USER [{1}] FOR LOGIN [{0}\{1}] WITH DEFAULT_SCHEMA=[db_datareader]
 GO
 
@@ -404,36 +407,46 @@ ALTER ROLE [db_datawriter] ADD MEMBER [{1}]
 GO
 '@
 
-$account = New-Object System.Security.Principal.NTAccount($DomainName, "$ComputerName$")
-try
-{
-    $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
-}
-catch
-{
-    Write-Error "The account '$DomainName\$ComputerName' could not be found"
-    return
-}
-
 if (-not (Test-Path -Path C:\DSCDB))
 {
     mkdir -Path C:\DSCDB | Out-Null
 }
 
-if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
-{
-    $DomainName = 'NT AUTHORITY'
-    $ComputerName = 'SYSTEM'
-}
-else
-{
-    $ComputerName = $ComputerName + '$'
-}
-
 Write-Host "Creating the DSC database on the local default SQL instance..." -NoNewline
-$query = $query -f $DomainName, $ComputerName
 
-Invoke-Sqlcmd -Query $query -ServerInstance localhost
+Invoke-Sqlcmd -Query $creatreDbQuery -ServerInstance localhost
 
 Write-Host 'finished.'
 Write-Host 'Database is stored on C:\DSCDB'
+
+$DomainAndComputerName | ForEach-Object {
+
+    Write-Host "Adding permissions to DSC database for $DomainAndComputerName..." -NoNewline
+
+    $domain = ($_ -split '\\')[0]
+    $name = ($_ -split '\\')[1]
+
+    if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
+    {
+        $domain = 'NT AUTHORITY'
+        $name = 'SYSTEM'
+    }
+    $name = $name + '$'
+
+    $account = New-Object System.Security.Principal.NTAccount($domain, $name)
+    try
+    {
+        $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
+    }
+    catch
+    {
+        Write-Error "The account '$domain\$name' could not be found"
+        continue
+    }
+
+    $query = $addPermissionsQuery -f $domain, $name
+
+    Invoke-Sqlcmd -Query $query -ServerInstance localhost
+
+    Write-Host 'finished'
+}

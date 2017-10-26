@@ -4,7 +4,8 @@ $adInstallRootDcScriptPre2012 = {
         [string]$DomainName,
         [string]$Password,
         [string]$ForestFunctionalLevel,
-        [string]$DomainFunctionalLevel
+        [string]$DomainFunctionalLevel,
+        [string]$NetBiosDomainName
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
@@ -16,7 +17,7 @@ $adInstallRootDcScriptPre2012 = {
       NewDomain=Forest
       NewDomainDNSName=$DomainName
       ForestLevel=$($ForestFunctionalLevel)
-      ; DomainNetbiosName=
+      DomainNetbiosName=$($NetBiosDomainName)
       DomainLevel=$($DomainFunctionalLevel)
       InstallDNS=Yes
       ConfirmGc=Yes
@@ -57,7 +58,8 @@ $adInstallRootDcScript2012 = {
         [string]$DomainName,
         [string]$Password,
         [string]$ForestFunctionalLevel,
-        [string]$DomainFunctionalLevel
+        [string]$DomainFunctionalLevel,
+        [string]$NetBiosDomainName
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -86,7 +88,8 @@ $adInstallRootDcScript2012 = {
     -InstallDNS `
     -DomainMode $DomainFunctionalLevel `
     -Force `
-    -ForestMode $ForestFunctionalLevel
+    -ForestMode $ForestFunctionalLevel `
+    -DomainNetbiosName $NetBiosDomainName
 
     if ($result.Status -eq 'Error')
     {
@@ -110,7 +113,8 @@ $adInstallFirstChildDc2012 = {
         [string]$DomainMode,
         [int]$Retries,
         [int]$SecondsBetweenRetries,
-        [string]$SiteName = 'Default-First-Site-Name'
+        [string]$SiteName = 'Default-First-Site-Name',
+        [string]$NetBiosDomainName
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -177,13 +181,19 @@ $adInstallFirstChildDc2012 = {
             #if there is a '.' inside the domain name, it is a new domain tree, otherwise a child domain
             if ($NewDomainName.Contains('.'))
             {
-                $newDomainNetBiosName = $NewDomainName.Substring(0, $NewDomainName.IndexOf('.'))
+                if (-not $NetBiosDomainName)
+                {
+                    $NetBiosDomainName = $NewDomainName.Substring(0, $NewDomainName.IndexOf('.'))
+                }
                 $domainType = 'TreeDomain'
                 $createDNSDelegation = $false
             }
             else
             {
-                $newDomainNetBiosName = $NewDomainName.ToUpper()
+                if (-not $NetBiosDomainName)
+                {
+                    $newDomainNetBiosName = $NewDomainName.ToUpper()
+                }
                 $domainType = 'ChildDomain'
                 $createDNSDelegation = $true
             }
@@ -191,7 +201,7 @@ $adInstallFirstChildDc2012 = {
             Start-Sleep -Seconds $SecondsBetweenRetries
             
             $result = Install-ADDSDomain -NewDomainName $NewDomainName `
-            -NewDomainNetbiosName $newDomainNetbiosName `
+            -NewDomainNetbiosName $NetBiosDomainName `
             -ParentDomainName $ParentDomainName `
             -SiteName $SiteName `
             -InstallDNS `
@@ -234,14 +244,13 @@ $adInstallFirstChildDcPre2012 = {
         [string]$DomainMode,
         [int]$Retries,
         [int]$SecondsBetweenRetries,
-        [string]$SiteName = 'Default-First-Site-Name'
+        [string]$SiteName = 'Default-First-Site-Name',
+        [string]$NetBiosDomainName
     )
-
-    $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
     
-    ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
+    ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($ParentDomainName) | Out-Null
     
     Write-Verbose -Message "Starting installation of First Child Domain Controller of domain '$NewDomainName' on '$(HOSTNAME.EXE)'"
     Write-Verbose -Message "NewDomainName is '$NewDomainName'"
@@ -287,10 +296,18 @@ $adInstallFirstChildDcPre2012 = {
     if ($tempName.Contains('.'))
     {
         $domainType = 'Tree'
+        if (-not $NetBiosDomainName)
+        {
+            $NetBiosDomainName = $NewDomainName.Substring(0, $NewDomainName.IndexOf('.')).ToUpper()
+        }
     }
     else
     {
         $domainType = 'Child'
+        if (-not $NetBiosDomainName)
+        {
+            $NetBiosDomainName = $NewDomainName.ToUpper()
+        }
     }
     
     $dcpromoAnswerFile = @"
@@ -299,9 +316,9 @@ $adInstallFirstChildDcPre2012 = {
       ReplicaOrNewDomain=Domain
       NewDomain=$domainType
       ParentDomainDNSName=$($ParentDomainName)
-      NewDomainDNSName=$($NewDomainName)
+      NewDomainDNSName=$($NetBiosDomainName)
       ChildName=$($NewDomainName)
-      ; DomainNetbiosName=<name>
+      DomainNetbiosName=$($NetBiosDomainName)
       DomainLevel=$($DomainMode)
       SiteName=$($SiteName)
       InstallDNS=Yes
@@ -662,7 +679,7 @@ function Install-LabRootDcs
         return
     }
     
-    $machines = Get-LabMachine -Role RootDC
+    $machines = Get-LabVM -Role RootDC
     
     if (-not $machines)
     {
@@ -721,6 +738,15 @@ function Install-LabRootDcs
                 $domainFunctionalLevel = $rootDcRole.Properties.DomainFunctionalLevel
             }
 
+            if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
+            {
+                $netBiosDomainName = $rootDcRole.Properties.NetBiosDomainName
+            }
+            else
+            {
+                $netBiosDomainName = $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
+            }
+
             #only print out warnings if verbose logging is enabled
             $WarningPreference = $VerbosePreference
             
@@ -732,10 +758,11 @@ function Install-LabRootDcs
             -PassThru `
             -NoDisplay `
             -ScriptBlock $scriptblock `
-            -ArgumentList $machine.DomainName, 
-            $machine.InstallationUser.Password, 
-            $forestFunctionalLevel, 
-            $domainFunctionalLevel
+            -ArgumentList $machine.DomainName,
+            $machine.InstallationUser.Password,
+            $forestFunctionalLevel,
+            $domainFunctionalLevel,
+            $netBiosDomainName
         }
         
         
@@ -853,6 +880,21 @@ function Install-LabRootDcs
         return
     }
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
+
+	#this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
+    $domains = $machines.DomainName
+    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+        -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
+    $retries = 3
+
+    while ((Get-LabVM | Where-Object -FilterScript $filterScript) -or $retries -le 0 )
+    {
+        $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
+
+        Write-ScreenInfo "Restarting the $($machinesToJoin.Count) machines to complete the domain join of ($($machinesToJoin.Name -join ', ')). Retries remaining = $retries"
+        Restart-LabVM -ComputerName $machinesToJoin -Wait
+        $retries--
+    }
     
     Write-LogFunctionExit
 }
@@ -984,7 +1026,8 @@ function Install-LabFirstChildDcs
             $domainFunctionalLevel,
             7,
             120,
-            $siteName
+            $siteName,
+            $dcRole.Properties.NetBiosDomainName
         }
         
         
@@ -1079,6 +1122,21 @@ function Install-LabFirstChildDcs
     }
     
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
+
+	#this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
+    $domains = $machines.DomainName
+    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+        -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
+    $retries = 3
+
+    while ((Get-LabVM | Where-Object -FilterScript $filterScript) -or $retries -le 0 )
+    {
+        $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
+
+        Write-ScreenInfo "Restarting the $($machinesToJoin.Count) machines to complete the domain join of ($($machinesToJoin.Name -join ', ')). Retries remaining = $retries"
+        Restart-LabVM -ComputerName $machinesToJoin -Wait
+        $retries--
+    }
     
     Write-LogFunctionExit
 }
