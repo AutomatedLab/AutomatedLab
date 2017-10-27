@@ -526,6 +526,11 @@ function Connect-OnPremisesWithAzure
         $null = netsh.exe routing ip nat set interface $externalAdapter mode=full
 
         $status = Get-RemoteAccess -ErrorAction SilentlyContinue
+        if (($status.VpnStatus -ne 'Uninstalled') -or ($status.DAStatus -ne 'Uninstalled') -or ($status.SstpProxyStatus -ne 'Uninstalled'))
+        {
+            Uninstall-RemoteAccess -Force
+        }
+
         if ($status.VpnS2SStatus -ne 'Installed' -and $status.RoutingStatus -ne 'Installed')
         {
             Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
