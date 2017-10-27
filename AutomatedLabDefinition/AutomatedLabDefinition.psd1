@@ -1,7 +1,7 @@
 ﻿@{
     RootModule = 'AutomatedLabDefinition.psm1'
     
-    ModuleVersion = '4.3.1.0'
+    ModuleVersion = '4.4.0.0'
     
     GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
@@ -9,7 +9,7 @@
     
     CompanyName = 'AutomatedLab Team'
     
-    Copyright = '2016'
+    Copyright = '2017'
     
     Description = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
     
