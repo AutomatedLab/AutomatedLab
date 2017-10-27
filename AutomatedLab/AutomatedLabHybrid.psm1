@@ -531,7 +531,7 @@ function Connect-OnPremisesWithAzure
             Uninstall-RemoteAccess -Force
         }
 
-        if ($status.VpnS2SStatus -ne 'Installed' -and $status.RoutingStatus -ne 'Installed')
+        if ($status.VpnS2SStatus -ne 'Installed' -or $status.RoutingStatus -ne 'Installed')
         {
             Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         }
@@ -674,7 +674,7 @@ function Connect-OnPremisesWithEndpoint
         )
             
         $status = Get-RemoteAccess -ErrorAction SilentlyContinue
-        if ($status.VpnS2SStatus -ne 'Installed' -and $status.RoutingStatus -ne 'Installed')
+        if ($status.VpnS2SStatus -ne 'Installed' -or $status.RoutingStatus -ne 'Installed')
         {
             Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
         }
