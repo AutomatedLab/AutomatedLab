@@ -2064,7 +2064,10 @@ function Sync-Parameter
     [Cmdletbinding()]
     param (
         [Parameter(Mandatory)]
-        [System.Management.Automation.FunctionInfo]$Command,
+        [ValidateScript({
+            $_ -is [System.Management.Automation.FunctionInfo] -or $_ -is [System.Management.Automation.CmdletInfo]
+        })]
+        [object]$Command,
         
         [hashtable]$Parameters
     )
