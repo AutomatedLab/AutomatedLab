@@ -470,6 +470,9 @@ Windows Registry Editor Version 5.00
     Write-Verbose "`tSettings RAM, start and stop actions"
     $param = @{}
     $param.Add('MemoryStartupBytes', $Machine.Memory)
+    $param.Add('AutomaticCheckpointsEnabled', $false)
+    $param.Add('CheckpointType', 'Production')
+
     if ($Machine.MaxMemory) { $param.Add('MemoryMaximumBytes', $Machine.MaxMemory) }
     if ($Machine.MinMemory) { $param.Add('MemoryMinimumBytes', $Machine.MinMemory) }
     
@@ -483,6 +486,8 @@ Windows Registry Editor Version 5.00
         Write-Verbose "`tSettings static memory to $($Machine.Memory)"
         $param.Add('StaticMemory', $true)
     }
+
+    $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
     Set-VM -Name $Machine.Name @param
     
