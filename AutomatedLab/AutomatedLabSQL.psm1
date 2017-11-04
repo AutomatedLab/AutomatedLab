@@ -332,7 +332,7 @@ function Install-LabSqlSampleDatabases
     Write-LogFunctionEntry
 
     $roleName = ($Machine.Roles | Where-Object Name -like SQLServer*).Name
-    $sqlLink = $MyInvocation.MyCommand.Module.PrivateData[$roleName]
+    $sqlLink = (Get-Module AutomatedLab)[0].PrivateData[$roleName.ToString()]
     if (-not $sqlLink)
     {
         throw "No SQL link found to download $roleName sample database"
@@ -442,6 +442,5 @@ function Install-LabSqlSampleDatabases
     }
 
     Write-LogFunctionExit
-
 }
 #endregion
