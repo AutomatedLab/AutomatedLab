@@ -362,40 +362,40 @@ function Install-LabSqlSampleDatabases
     {
         'SQLServer2008' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-                $mdf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
-                $ldf = Get-Item -Path C:\SQLServer2008 -ChildPath 'AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
+                $mdf = Get-Item -Path 'C:\SQLServer2008\AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path 'C:\SQLServer2008\AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
                 $query = 'CREATE DATABASE AdventureWorks2008 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
             } -DependencyFolderPath $dependencyFolder		
         }
         'SQLServer2008R2' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-                $mdf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
-                $ldf = Get-Item -Path C:\SQLServer2008R2 -ChildPath 'AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
+                $mdf = Get-Item -Path 'C:\SQLServer2008R2\AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path 'C:\SQLServer2008R2\AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
                 $query = 'CREATE DATABASE AdventureWorks2008R2 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
             } -DependencyFolderPath $dependencyFolder	
         }
         'SQLServer2012' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-                $mdf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
-                $ldf = Get-Item -Path C:\SQLServer2012 -ChildPath 'AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
+                $mdf = Get-Item -Path 'C:\SQLServer2012\AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
+                $ldf = Get-Item -Path 'C:\SQLServer2012\AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
                 $query = 'CREATE DATABASE AdventureWorks2012 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
             } -DependencyFolderPath $dependencyFolder	
         }
         'SQLServer2014' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 		
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
@@ -413,7 +413,7 @@ function Install-LabSqlSampleDatabases
         }
         'SQLServer2016' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder
+            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 		
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
