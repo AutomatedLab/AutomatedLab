@@ -21,7 +21,7 @@
 
     FunctionsToExport      = '*'
 
-    CmdletsToExport        = '*'
+    CmdletsToExport        = 'Send-ALNotification'
 
     VariablesToExport      = '*'
 
