@@ -43,7 +43,8 @@
         'AutomatedLabRouting.psm1',
         'AutomatedLabDsc.psm1',
         'AutomatedLabOffice.psm1',
-        'AutomatedLabHybrid'
+        'AutomatedLabHybrid.psm1',
+        'AutomatedLabFailover.psm1'
     )
 
     RequiredModules = @(
@@ -208,7 +209,8 @@
         'Connect-Lab',
         'Disconnect-Lab',
         'Restore-LabConnection',
-        'Get-LabPublicIpAddress'
+        'Get-LabPublicIpAddress',
+        'Install-LabFailoverCluster'
     )
     
     # List of all files packaged with this module
@@ -230,7 +232,9 @@
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
         'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1'
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabHybrid.psm1',
+        'AutomatedLabFailover.psm1'
     )
     
     # Private data to pass to the module specified in RootModule

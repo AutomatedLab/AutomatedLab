@@ -48,7 +48,8 @@ namespace AutomatedLab
         ADFSWAP = 16777216,
         ADFSProxy = 33554432,
         DSCPullServer = 67108864,
-        VpnGateway = 134217728
+        FailoverStorage = 134217728,
+        FailoverNode = 268435456
     }
 
     public enum ActiveDirectoryFunctionalLevel

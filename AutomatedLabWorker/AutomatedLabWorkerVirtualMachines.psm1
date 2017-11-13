@@ -1283,11 +1283,11 @@ function Mount-LWIsoImage
         {
             try
             {
-                $releaseId = Get-ItemPropertyValue -Path HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion -Name ReleaseId -ErrorAction SilentlyContinue
+                $releaseId = Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name ReleaseId -ErrorAction SilentlyContinue
 
                 if ($releaseId -eq 1709)
                 {
-                    Stop-LabVm $machine
+                    Stop-LabVm $machine -Wait
                 }
 
                 if ($machine.OperatingSystem.Version -ge '6.2')
@@ -1305,7 +1305,7 @@ function Mount-LWIsoImage
 
                 if ($releaseId -eq 1709)
                 {
-                    Start-LabVm $machine
+                    Start-LabVm $machine -Wait
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
