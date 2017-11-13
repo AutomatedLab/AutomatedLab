@@ -24,10 +24,15 @@ function Install-LabFailoverCluster
     foreach ($cluster in $clusters)
     {
         $firstNode = $cluster.Group | Select-Object -First 1
-        $clusterNodeNames = $cluster.Group.Name
+        $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
         $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']
-        #TODO If (-not $clusterIp)
+
+        if (-not $clusterIp)
+        {
+            $adapterVirtualNetwork = Get-LabVirtualNetworkDefinition -Name $firstNode.NetworkAdapters[0].VirtualSwitch
+            $clusterIp = $adapterVirtualNetwork.NextIpAddress()
+        }
 
         if (-not $clusterName)
         {
@@ -35,7 +40,8 @@ function Install-LabFailoverCluster
         }
         
         Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
-            New-Cluster –Name $clusterName –Node $clusterNodeNames –StaticAddress $clusterIp
+            New-Cluster –Name $clusterName –Node $env:COMPUTERNAME –StaticAddress $clusterIp
+            Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
         } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp)
     }    
 }
