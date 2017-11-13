@@ -310,7 +310,7 @@ GO
     {
         $role = $machine.Roles | Where-Object Name -like SQLServer*
 
-        if ($role.Properties['InstallSampleDatabase'])
+        if ([System.Convert]::ToBoolean($role.Properties['InstallSampleDatabase']))
         {
             Install-LabSqlSampleDatabases -Machine $machine
         }
