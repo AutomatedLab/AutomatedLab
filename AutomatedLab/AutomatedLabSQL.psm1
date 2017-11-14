@@ -388,9 +388,16 @@ function Install-LabSqlSampleDatabases
             Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
-                $mdf = Get-Item -Path 'C:\SQLServer2012\AdventureWorksLT2012_Data.mdf' -ErrorAction SilentlyContinue
-                $ldf = Get-Item -Path 'C:\SQLServer2012\AdventureWorksLT2012_Log.ldf' -ErrorAction SilentlyContinue
-                $query = 'CREATE DATABASE AdventureWorks2012 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2012
+                $query = @"
+                USE [master]
+        
+                RESTORE DATABASE AdventureWorks2012
+                FROM disk= '$($backupFile.FullName)'
+                WITH MOVE 'AdventureWorks2012_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\AdventureWorks2012.mdf',
+                MOVE 'AdventureWorks2012_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\AdventureWorks2012.ldf'
+                ,REPLACE
+"@
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
             } -DependencyFolderPath $dependencyFolder	
         }
