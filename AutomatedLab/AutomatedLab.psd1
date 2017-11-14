@@ -208,7 +208,8 @@
         'Connect-Lab',
         'Disconnect-Lab',
         'Restore-LabConnection',
-        'Get-LabPublicIpAddress'
+        'Get-LabPublicIpAddress',
+        'Install-LabSqlSampleDatabases'
     )
     
     # List of all files packaged with this module
