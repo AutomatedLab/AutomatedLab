@@ -336,7 +336,17 @@ function Install-LabSqlSampleDatabases
 
     Write-LogFunctionEntry
 
-    $roleName = ($Machine.Roles | Where-Object Name -like SQLServer*).Name
+    $role = $Machine.Roles | Where-Object Name -like SQLServer* | Sort-Object Name -Descending | Select-Object -First 1
+    $roleName = ($role).Name
+    $roleInstance = if ($role.Properties['InstanceName'])
+    {
+        $role.Properties['InstanceName']
+    }
+    else
+    {
+        'MSSQLSERVER'    
+    }
+
     $sqlLink = (Get-Module AutomatedLab)[0].PrivateData[$roleName.ToString()]
     if (-not $sqlLink)
     {
@@ -398,12 +408,12 @@ function Install-LabSqlSampleDatabases
         
                 RESTORE DATABASE AdventureWorks2012
                 FROM disk= '$($backupFile.FullName)'
-                WITH MOVE 'AdventureWorks2012_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\AdventureWorks2012.mdf',
-                MOVE 'AdventureWorks2012_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.MSSQLSERVER\MSSQL\DATA\AdventureWorks2012.ldf'
+                WITH MOVE 'AdventureWorks2012_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.$roleInstance\MSSQL\DATA\AdventureWorks2012.mdf',
+                MOVE 'AdventureWorks2012_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.$roleInstance\MSSQL\DATA\AdventureWorks2012.ldf'
                 ,REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
-            } -DependencyFolderPath $dependencyFolder	
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2014' 
         {
@@ -416,12 +426,12 @@ function Install-LabSqlSampleDatabases
 
 		RESTORE DATABASE AdventureWorks2014
 		FROM disk= '$($backupFile.FullName)'
-		WITH MOVE 'AdventureWorks2014_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\AdventureWorks2014.mdf',
-		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.MSSQLSERVER\MSSQL\DATA\AdventureWorks2014.ldf'
+		WITH MOVE 'AdventureWorks2014_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.mdf',
+		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.ldf'
 		,REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
-            } -DependencyFolderPath $dependencyFolder	
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2016' 
         {
@@ -435,17 +445,17 @@ function Install-LabSqlSampleDatabases
 		FROM disk = 
 		'$($backupFile.FullName)'
 		WITH MOVE 'WWI_Primary' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters.mdf',
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
 		MOVE 'WWI_UserData' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
 		MOVE 'WWI_Log' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters.ldf',
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
 		MOVE 'WWI_InMemory_Data_1' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.MSSQLSERVER\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
 		REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance localhost -Query $query
-            } -DependencyFolderPath $dependencyFolder	
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         default
         {
