@@ -532,7 +532,13 @@ function New-LabSqlAccount
             }
 
             Invoke-LabCommand -ComputerName $dc -ActivityName ('Creating {0} in {1}' -f $user,$domain) -ScriptBlock {
-                if (-not (Get-ADUser $user -ErrorAction SilentlyContinue))
+                try
+                {
+                    $existingUser = Get-ADUser $user -ErrorAction SilentlyContinue
+                }
+                catch { }
+                
+                if (-not ($existingUser))
                 {
                     New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
                 }
