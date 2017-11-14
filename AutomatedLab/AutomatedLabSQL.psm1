@@ -153,10 +153,14 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('AsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcPassword=" + "$($role.Properties.AsSvcPassword)") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
                 Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
+                New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
+
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
 				    
@@ -346,13 +350,13 @@ function Install-LabSqlSampleDatabases
         [void] (New-Item -ItemType Directory -Path $targetFolder)
     }
 
-    if ($roleName -eq 'SQLServer2016')
+    if ($roleName -like 'SQLServer2008*')
     {
-        $targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
+        $targetFile = Join-Path -Path $targetFolder -ChildPath "$roleName.zip"
     }
     else
     {
-        $targetFile = Join-Path -Path $targetFolder -ChildPath "$roleName.zip"
+        $targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
     }
 
     Get-LabInternetFile -Uri $sqlLink -Path $targetFile
@@ -450,5 +454,89 @@ function Install-LabSqlSampleDatabases
     }
 
     Write-LogFunctionExit
+}
+#endregion
+
+#region New-LabSqlAccount
+function New-LabSqlAccount
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [AutomatedLab.Machine]
+        $Machine,
+
+        [Parameter(Mandatory = $true)]
+        [hashtable]
+        $RoleProperties
+    )
+
+    $usersAndPasswords = @{}
+    if ($RoleProperties.ContainsKey('SQLSvcAccount') -and $RoleProperties.ContainsKey('SQLSvcPassword'))
+    {
+        $usersAndPasswords[$RoleProperties['SQLSvcAccount']] = $RoleProperties['SQLSvcPassword']
+    }
+
+    if ($RoleProperties.ContainsKey('AgtSvcAccount') -and $RoleProperties.ContainsKey('AgtSvcPassword'))
+    {
+        $usersAndPasswords[$RoleProperties['AgtSvcAccount']] = $RoleProperties['AgtSvcPassword']
+    } 
+
+    if ($RoleProperties.ContainsKey('RsSvcAccount') -and $RoleProperties.ContainsKey('RsSvcAccount'))
+    {
+        $usersAndPasswords[$RoleProperties['RsSvcAccount']] = $RoleProperties['RsSvcAccount']
+    } 
+
+    if ($RoleProperties.ContainsKey('AsSvcAccount') -and $RoleProperties.ContainsKey('AsSvcPassword'))
+    {
+        $usersAndPasswords[$RoleProperties['AsSvcAccount']] = $RoleProperties['AsSvcPassword']
+    } 
+
+    if ($RoleProperties.ContainsKey('IsSvcAccount') -and $RoleProperties.ContainsKey('IsSvcPassword'))
+    {
+        $usersAndPasswords[$RoleProperties['IsSvcAccount']] = $RoleProperties['IsSvcPassword']
+    }
+
+    foreach ( $kvp in $usersAndPasswords.GetEnumerator())
+    {
+        if ($kvp.Key.Contains("\"))
+        {
+            $domain = ($kvp.Key -split "\\")[0]
+            $user = ($kvp.Key -split "\\")[1]
+        }
+
+        if ($kvp.Key.Contains("@"))
+        {
+            $domain = ($kvp.Key -split "@")[1]
+            $user = ($kvp.Key -split "@")[0]
+        }
+
+        $password = $kvp.Value
+        
+        if ($domain -match 'NT Authority|BUILTIN')
+        {
+            continue
+        }
+        
+        if ($domain)
+        {
+            $dc = Get-LabVm -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+
+            if (-not $dc)
+            {
+                Write-Warning -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain)
+            }
+
+            Invoke-LabCommand -ComputerName $dc -ActivityName ('Creating {0} in {1}' -f $user,$domain) -ScriptBlock {
+                New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
+            } -Variable (Get-Variable user,password)
+        }
+        else
+        {
+            Invoke-LabCommand $Machine -ActivityName ('Creating local user {0}' -f $user) -ScriptBlock {
+                New-LocalUser -Name $user -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -Password ($password | ConvertTo-SecureString -AsPlainText -Force)
+            } -Variable (Get-Variable user,password)
+        }
+    }
 }
 #endregion
