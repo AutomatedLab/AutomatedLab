@@ -382,9 +382,10 @@ function Install-LabSqlSampleDatabases
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $mdf = Get-Item -Path 'C:\SQLServer2008\AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
                 $ldf = Get-Item -Path 'C:\SQLServer2008\AdventureWorksLT2008_Log.ldf' -ErrorAction SilentlyContinue
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = 'CREATE DATABASE AdventureWorks2008 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
-                Invoke-Sqlcmd -ServerInstance localhost -Query $query
-            } -DependencyFolderPath $dependencyFolder		
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2008R2' 
         {
@@ -393,14 +394,16 @@ function Install-LabSqlSampleDatabases
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $mdf = Get-Item -Path 'C:\SQLServer2008R2\AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
                 $ldf = Get-Item -Path 'C:\SQLServer2008R2\AdventureWorksLT2008R2_Log.ldf' -ErrorAction SilentlyContinue
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = 'CREATE DATABASE AdventureWorks2008R2 ON (FILENAME = "{0}"), (FILENAME = "{1}") FOR ATTACH;' -f $mdf.FullName, $ldf.FullName
-                Invoke-Sqlcmd -ServerInstance localhost -Query $query
-            } -DependencyFolderPath $dependencyFolder	
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2012' 
         {
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2012
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
                 USE [master]
         
@@ -410,13 +413,14 @@ function Install-LabSqlSampleDatabases
                 MOVE 'AdventureWorks2012_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL11.$roleInstance\MSSQL\DATA\AdventureWorks2012.ldf'
                 ,REPLACE
 "@
-                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2014' 
         {
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
 		USE [master]
 
@@ -426,13 +430,14 @@ function Install-LabSqlSampleDatabases
 		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.ldf'
 		,REPLACE
 "@
-                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         'SQLServer2016' 
         {
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
 		USE master
 		RESTORE DATABASE WideWorldImporters
@@ -448,7 +453,7 @@ function Install-LabSqlSampleDatabases
 		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
 		REPLACE
 "@
-                Invoke-Sqlcmd -ServerInstance localhost -Query $query
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
         }
         default
