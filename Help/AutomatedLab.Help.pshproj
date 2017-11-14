@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ModuleObject xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fVersion="1.1" type="Script" mclass="Module" useSupports="false">
   <Name>AutomatedLab</Name>
-  <Version>3.9.2.0</Version>
+  <Version>4.3.1.0</Version>
   <Description>The module creates a Hyper-V visual lab automatically as defined in the XML files.</Description>
   <HasManifest>true</HasManifest>
   <OverridePostCount>false</OverridePostCount>
@@ -154,79 +154,6 @@ $azurePublishingFile = 'C:\MyExportedProfile'
 $azureDefaultLocation = 'East US'
 Add-LabAzureSubscription -Path $azurePublishingFile -DefaultLocationName $azureDefaultLocation</Cmd>
           <Description>Adds the subscription selected in the exported profile and creates a lab resource group $labname in the default location</Description>
-          <Output />
-        </Example>
-      </Examples>
-      <RelatedLinks />
-      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
-      <Publish>false</Publish>
-    </CmdletObject>
-    <CmdletObject verb="Add" noun="LabCertificatePfx">
-      <Name>Add-LabCertificatePfx</Name>
-      <Syntax>
-        <string>Add-LabCertificatePfx [-Pfx] &lt;Byte[]&gt; [-Location] &lt;StoreLocation&gt; [-Store] &lt;StoreName&gt; [-ComputerName] &lt;String&gt;</string>
-      </Syntax>
-      <GeneralHelp>
-        <Synopsis>Install a certificate on a lab machine</Synopsis>
-        <Description>Installs a certificate from a pfx file to a lab machine by copying it to the machine and installing it to a specified certificate store.</Description>
-        <Notes />
-        <InputType />
-        <InputUrl />
-        <InputTypeDescription />
-        <ReturnType />
-        <ReturnUrl />
-        <ReturnTypeDescription />
-      </GeneralHelp>
-      <ParamSets>
-        <CommandParameterSetInfo2 Name="DnsName" Params="Pfx Location Store ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
-      </ParamSets>
-      <Parameters>
-        <ParameterDescription type="Byte[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="0" globbing="false">
-          <Name>Pfx</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The pfx byte content</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="StoreLocation" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="1" globbing="false">
-          <Name>Location</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The certificate store location</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="StoreName" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="2" globbing="false">
-          <Name>Store</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The certificate store name</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="3" globbing="false">
-          <Name>ComputerName</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The computer name to install the certificate on</Description>
-          <DefaultValue />
-        </ParameterDescription>
-      </Parameters>
-      <Examples>
-        <Example>
-          <Name>Example 1</Name>
-          <Cmd>Get-LabCertificatePfx -ComputerName 'FirstLabMachine' -Thumbprint $certThumbprint | Add-LabCertificatePfx -ComputerName 'AnotherLabMachine'</Cmd>
-          <Description>Finds a lab certificate by certificate thumbprint and adds it to 'AnotherLabMachine'</Description>
           <Output />
         </Example>
       </Examples>
@@ -1490,89 +1417,6 @@ South India            9999</Output>
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
     </CmdletObject>
-    <CmdletObject verb="Get" noun="LabCertificatePfx">
-      <Name>Get-LabCertificatePfx</Name>
-      <Syntax>
-        <string>Get-LabCertificatePfx -DnsName &lt;String&gt; -ComputerName &lt;String[]&gt;</string>
-        <string>Get-LabCertificatePfx -Thumbprint &lt;String&gt; -ComputerName &lt;String[]&gt;</string>
-        <string>Get-LabCertificatePfx -All &lt;SwitchParameter&gt; -ComputerName &lt;String[]&gt;</string>
-      </Syntax>
-      <GeneralHelp>
-        <Synopsis>Get PFX files</Synopsis>
-        <Description>Gets certificates with exportable private key for one or more lab machines by using the properties DnsName,Thumbprint, or by setting the switch parameter All. Found certificates are exported as a PSObject including the Bytes of the certificate</Description>
-        <Notes />
-        <InputType />
-        <InputUrl />
-        <InputTypeDescription />
-        <ReturnType />
-        <ReturnUrl />
-        <ReturnTypeDescription />
-      </GeneralHelp>
-      <ParamSets>
-        <CommandParameterSetInfo2 Name="DnsName" Params="DnsName ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
-        <CommandParameterSetInfo2 Name="Thumbprint" Params="Thumbprint ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
-        <CommandParameterSetInfo2 Name="All" Params="All ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
-      </ParamSets>
-      <Parameters>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>DnsName</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The DNS name of the certificate subject</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>ComputerName</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The computer name on which the certificates should be exported on</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>Thumbprint</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The thumbprint of the certificate that should be exported</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>All</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>Indicates whether all exportable certificates should be found</Description>
-          <DefaultValue />
-        </ParameterDescription>
-      </Parameters>
-      <Examples>
-        <Example>
-          <Name>Get-LabCertificatePfx</Name>
-          <Cmd>Get-LabCertificatePfx -All -ComputerName DC1</Cmd>
-          <Description>Gets all certificates with exportable private key from computer DC1</Description>
-          <Output>A custom object with the properties:
-Thumbprint = &lt;The certificate thumbprint&gt;
-DnsNameList = &lt;DNS name list in the certificate&gt;
-Location = &lt;Cert store location&gt;
-Store = &lt;Cert store name&gt;
-Computer = DC1
-Pfx = &lt;Byte content of the pfx file&gt;</Output>
-        </Example>
-      </Examples>
-      <RelatedLinks />
-      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
-      <Publish>false</Publish>
-    </CmdletObject>
     <CmdletObject verb="Get" noun="LabHyperVAvailableMemory">
       <Name>Get-LabHyperVAvailableMemory</Name>
       <Syntax>
@@ -2371,7 +2215,7 @@ kb-edge01                        Stopped
     <CmdletObject verb="Install" noun="Lab">
       <Name>Install-Lab</Name>
       <Syntax>
-        <string>Install-Lab [-NetworkSwitches] [-BaseImages] [-VMs] [-Domains] [-AdTrusts] [-DHCP] [-Routing] [-PostInstallations] [-SQLServers] [-Orchestrator2012] [-WebServers] [-Exchange2013] [-Exchange2016] [-Sharepoint2013] [-CA] [-ADFS] [-DSCPullServer] [-ConfigManager2012R2] [-VisualStudio] [-Office2013] [-StartRemainingMachines] [-CreateCheckPoints] [[-DelayBetweenComputers] &lt;Int32&gt;] [-NoValidation]</string>
+        <string>Install-Lab [-NetworkSwitches] [-BaseImages] [-VMs] [-Domains] [-AdTrusts] [-DHCP] [-Routing] [-PostInstallations] [-SQLServers] [-Orchestrator2012] [-WebServers] [-Exchange2013] [-Exchange2016] [-Sharepoint2013] [-CA] [-ADFS] [-DSCPullServer] [-ConfigManager2012R2] [-VisualStudio] [-Office2013] [-Office2016] [-StartRemainingMachines] [-CreateCheckPoints] [[-DelayBetweenComputers] &lt;Int32&gt;] [-NoValidation]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Starts the process of lab deployment</Synopsis>
@@ -2406,7 +2250,7 @@ kb-edge01                        Stopped
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="NetworkSwitches BaseImages VMs Domains AdTrusts DHCP Routing PostInstallations SQLServers Orchestrator2012 WebServers Exchange2013 Exchange2016 Sharepoint2013 CA ADFS DSCPullServer ConfigManager2012R2 VisualStudio Office2013 StartRemainingMachines CreateCheckPoints DelayBetweenComputers NoValidation Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="NetworkSwitches BaseImages VMs Domains AdTrusts DHCP Routing PostInstallations SQLServers Orchestrator2012 WebServers Exchange2013 Exchange2016 Sharepoint2013 CA ADFS DSCPullServer ConfigManager2012R2 VisualStudio Office2013 Office2016 StartRemainingMachines CreateCheckPoints DelayBetweenComputers NoValidation Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -2641,6 +2485,16 @@ kb-edge01                        Stopped
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Exchange2016</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Office2016</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
@@ -3596,6 +3450,7 @@ SQLServer2008
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-PostInstallationActivity] [-ComputerName] &lt;String[]&gt; [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; [-ScriptBlock] &lt;ScriptBlock&gt; [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; -FilePath &lt;String&gt; [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
+        <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; -FileName &lt;String&gt; [-DependencyFolderPath &lt;String&gt;] [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; -FilePath &lt;String&gt; -DependencyFolderPath &lt;String&gt; [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
         <string>Invoke-LabCommand [-ActivityName &lt;String&gt;] [-ComputerName] &lt;String[]&gt; [-ScriptBlock] &lt;ScriptBlock&gt; -DependencyFolderPath &lt;String&gt; [-ArgumentList &lt;Object[]&gt;] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential &lt;PSCredential&gt;] [-Variable &lt;PSVariable[]&gt;] [-Function &lt;FunctionInfo[]&gt;] [-Retries &lt;Int32&gt;] [-RetryIntervalInSeconds &lt;Int32&gt;] [-ThrottleLimit &lt;Int32&gt;] [-AsJob] [-PassThru] [-NoDisplay]</string>
       </Syntax>
@@ -3614,6 +3469,7 @@ SQLServer2008
         <CommandParameterSetInfo2 Name="PostInstallationActivity" Params="ActivityName PostInstallationActivity ComputerName ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
         <CommandParameterSetInfo2 Name="ScriptBlock" Params="ActivityName ComputerName ScriptBlock ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function Retries RetryIntervalInSeconds ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
         <CommandParameterSetInfo2 Name="Script" Params="ActivityName ComputerName FilePath ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function Retries RetryIntervalInSeconds ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="ScriptFileNameContentDependency" Params="ActivityName ComputerName FileName DependencyFolderPath ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function Retries RetryIntervalInSeconds ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
         <CommandParameterSetInfo2 Name="ScriptFileContentDependency" Params="ActivityName ComputerName FilePath DependencyFolderPath ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function Retries RetryIntervalInSeconds ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
         <CommandParameterSetInfo2 Name="ScriptBlockFileContentDependency" Params="ActivityName ComputerName ScriptBlock DependencyFolderPath ArgumentList DoNotUseCredSsp UseLocalCredential Credential Variable Function Retries RetryIntervalInSeconds ThrottleLimit AsJob PassThru NoDisplay Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
@@ -3641,6 +3497,7 @@ SQLServer2008
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
           <Name>ComputerName</Name>
           <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -3761,6 +3618,7 @@ SQLServer2008
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
@@ -3774,6 +3632,7 @@ SQLServer2008
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
@@ -3783,7 +3642,6 @@ SQLServer2008
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>FilePath</Name>
           <Attributes>
-            <string>System.Management.Automation.ValidateScriptAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
@@ -3792,10 +3650,10 @@ SQLServer2008
           <Description>The script file path if a script file should be used</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>DependencyFolderPath</Name>
           <Attributes>
-            <string>System.Management.Automation.ValidateScriptAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
@@ -3806,6 +3664,16 @@ SQLServer2008
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>DoNotUseCredSsp</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>FileName</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
@@ -3975,7 +3843,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
     <CmdletObject verb="New" noun="LabCATemplate">
       <Name>New-LabCATemplate</Name>
       <Syntax>
-        <string>New-LabCATemplate [-TemplateName] &lt;String&gt; [[-DisplayName] &lt;String&gt;] [-SourceTemplateName] &lt;String&gt; [[-ApplicationPolicy] &lt;String[]&gt; {EmailProtection | OCSPSigning | CodeSigning | ClientAuthentication | IpsecTunnel | TimeStamping | IpsecUser | IpsecEndSystem | ServerAuthentication | CapWap} ] [[-EnrollmentFlags] &lt;EnrollmentFlags&gt;] [[-PrivateKeyFlags] &lt;PrivateKeyFlags&gt;] [[-Version] &lt;Int32&gt;] [[-ValidityPeriod] &lt;TimeSpan&gt;] [[-RenewalPeriod] &lt;TimeSpan&gt;] [-SamAccountName] &lt;String[]&gt; [-ComputerName] &lt;String&gt;</string>
+        <string>New-LabCATemplate [-TemplateName] &lt;String&gt; [[-DisplayName] &lt;String&gt;] [-SourceTemplateName] &lt;String&gt; [[-ApplicationPolicy] &lt;String[]&gt; {EFS_RECOVERY | Auto Update CA Revocation | No OCSP Failover to CRL | OEM_WHQL_CRYPTO | Windows TCB Component | DNS Server Trust | Windows Third Party Application Component | ANY_APPLICATION_POLICY | KP_LIFETIME_SIGNING | Disallowed List | DS_EMAIL_REPLICATION | LICENSE_SERVER | KP_KEY_RECOVERY | Windows Kits Component | AUTO_ENROLL_CTL_USAGE | PKIX_KP_TIMESTAMP_SIGNING | Windows Update | Document Encryption | KP_CTL_USAGE_SIGNING | IPSEC_KP_IKE_INTERMEDIATE | PKIX_KP_IPSEC_TUNNEL | Code Signing | KP_KEY_RECOVERY_AGENT | KP_QUALIFIED_SUBORDINATION | Early Launch Antimalware Driver | Remote Desktop | WHQL_CRYPTO | EMBEDDED_NT_CRYPTO | System Health Authentication | DRM | PKIX_KP_EMAIL_PROTECTION | KP_TIME_STAMP_SIGNING | Protected Process Light Verification | Endorsement Key Certificate | KP_IPSEC_USER | PKIX_KP_IPSEC_END_SYSTEM | LICENSES | Protected Process Verification | IdMsKpScLogon | HAL Extension | KP_OCSP_SIGNING | Server Authentication | Auto Update End Revocation | KP_EFS | KP_DOCUMENT_SIGNING | Windows Store | Kernel Mode Code Signing | ENROLLMENT_AGENT | ROOT_LIST_SIGNER | Windows RT Verification | NT5_CRYPTO | Revoked List Signer | Microsoft Publisher | Platform Certificate |  Windows Software Extension Verification | KP_CA_EXCHANGE | PKIX_KP_IPSEC_USER | Dynamic Code Generator | Client Authentication | DRM_INDIVIDUALIZATION} ] [[-EnrollmentFlags] &lt;EnrollmentFlags&gt;] [[-PrivateKeyFlags] &lt;PrivateKeyFlags&gt;] [[-KeyUsage] &lt;KeyUsage&gt;] [[-Version] &lt;Int32&gt;] [[-ValidityPeriod] &lt;TimeSpan&gt;] [[-RenewalPeriod] &lt;TimeSpan&gt;] [-SamAccountName] &lt;String[]&gt; [-ComputerName] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Create CA template</Synopsis>
@@ -3989,7 +3857,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="TemplateName DisplayName SourceTemplateName ApplicationPolicy EnrollmentFlags PrivateKeyFlags Version ValidityPeriod RenewalPeriod SamAccountName ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="TemplateName DisplayName SourceTemplateName ApplicationPolicy EnrollmentFlags PrivateKeyFlags KeyUsage Version ValidityPeriod RenewalPeriod SamAccountName ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -4053,7 +3921,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Description>The private key usage flags</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="6" globbing="false">
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="7" globbing="false">
           <Name>Version</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -4063,7 +3931,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Description>The template version</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="7" globbing="false">
+        <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="8" globbing="false">
           <Name>ValidityPeriod</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -4073,7 +3941,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Description>The timespan certificates created from this template are valid for</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="8" globbing="false">
+        <ParameterDescription type="TimeSpan" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="9" globbing="false">
           <Name>RenewalPeriod</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -4083,7 +3951,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Description>The timespan after which certificates created by this template have to be renewed</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="9" globbing="false">
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="10" globbing="false">
           <Name>SamAccountName</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -4093,7 +3961,7 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           <Description>The SamAccountNames of users permitted to use the template</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="10" globbing="false">
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="11" globbing="false">
           <Name>ComputerName</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -4101,6 +3969,16 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
           </Attributes>
           <Aliases />
           <Description>The lab machine with the CA role</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="KeyUsage" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="6" globbing="false">
+          <Name>KeyUsage</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -4377,9 +4255,9 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Remove" noun="Lab">
       <Name>Remove-Lab</Name>
       <Syntax>
-        <string>Remove-Lab [-RemoveReferenceDisks] [-WhatIf] [-Confirm]</string>
-        <string>Remove-Lab -Path &lt;String&gt; [-RemoveReferenceDisks] [-WhatIf] [-Confirm]</string>
-        <string>Remove-Lab [-Name] &lt;String&gt; [-RemoveReferenceDisks] [-WhatIf] [-Confirm]</string>
+        <string>Remove-Lab [-WhatIf] [-Confirm]</string>
+        <string>Remove-Lab -Path &lt;String&gt; [-WhatIf] [-Confirm]</string>
+        <string>Remove-Lab [-Name] &lt;String&gt; [-WhatIf] [-Confirm]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Remove the lab</Synopsis>
@@ -4393,21 +4271,11 @@ c:\DeployDebug</Description>
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="Path" Params="RemoveReferenceDisks Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
-        <CommandParameterSetInfo2 Name="ByPath" Params="Path RemoveReferenceDisks Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
-        <CommandParameterSetInfo2 Name="ByName" Params="Name RemoveReferenceDisks Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="Path" Params="Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="ByPath" Params="Path Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
+        <CommandParameterSetInfo2 Name="ByName" Params="Name Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable WhatIf Confirm" />
       </ParamSets>
       <Parameters>
-        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>RemoveReferenceDisks</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>Indicates if the reference disks should be removed as well</Description>
-          <DefaultValue />
-        </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>WhatIf</Name>
           <Attributes>
@@ -4423,8 +4291,8 @@ c:\DeployDebug</Description>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
@@ -5408,7 +5276,7 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Show" noun="LabInstallationTime">
       <Name>Show-LabDeploymentSummary</Name>
       <Syntax>
-        <string>Show-LabDeploymentSummary</string>
+        <string>Show-LabDeploymentSummary [-Detailed]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Show installation time</Synopsis>
@@ -5422,9 +5290,20 @@ c:\DeployDebug</Description>
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Detailed Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
-      <Parameters />
+      <Parameters>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Detailed</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
       <Examples />
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
@@ -5613,8 +5492,8 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Stop" noun="LabVM">
       <Name>Stop-LabVM</Name>
       <Syntax>
-        <string>Stop-LabVM [-ComputerName] &lt;String[]&gt; [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-Wait] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine]</string>
-        <string>Stop-LabVM [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-All] [-Wait] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine]</string>
+        <string>Stop-LabVM [-ComputerName] &lt;String[]&gt; [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-Wait] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine] [-KeepAzureVmProvisioned]</string>
+        <string>Stop-LabVM [-ShutdownTimeoutInMinutes &lt;Double&gt;] [-All] [-Wait] [-ProgressIndicator &lt;Int32&gt;] [-NoNewLine] [-KeepAzureVmProvisioned]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Stop a machine</Synopsis>
@@ -5628,8 +5507,8 @@ c:\DeployDebug</Description>
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="ByName" Params="ComputerName ShutdownTimeoutInMinutes Wait ProgressIndicator NoNewLine Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
-        <CommandParameterSetInfo2 Name="All" Params="ShutdownTimeoutInMinutes All Wait ProgressIndicator NoNewLine Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="ByName" Params="ComputerName ShutdownTimeoutInMinutes Wait ProgressIndicator NoNewLine KeepAzureVmProvisioned Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="All" Params="ShutdownTimeoutInMinutes All Wait ProgressIndicator NoNewLine KeepAzureVmProvisioned Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -5690,6 +5569,16 @@ c:\DeployDebug</Description>
           </Attributes>
           <Aliases />
           <Description>Indicates that all lab machines should be stopped</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>KeepAzureVmProvisioned</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6013,7 +5902,7 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Test" noun="LabMachineInternetConnectivity">
       <Name>Test-LabMachineInternetConnectivity</Name>
       <Syntax>
-        <string>Test-LabMachineInternetConnectivity [-ComputerName] &lt;String&gt; [-AsJob]</string>
+        <string>Test-LabMachineInternetConnectivity [-ComputerName] &lt;String&gt; [[-Count] &lt;Int32&gt;] [-AsJob]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Check internet connection</Synopsis>
@@ -6027,7 +5916,7 @@ c:\DeployDebug</Description>
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName AsJob Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName Count AsJob Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
         <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -6048,6 +5937,16 @@ c:\DeployDebug</Description>
           </Attributes>
           <Aliases />
           <Description>Indicates that the test should be carried out as a background job</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>Count</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6445,7 +6344,7 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Wait" noun="LabVMRestart">
       <Name>Wait-LabVMRestart</Name>
       <Syntax>
-        <string>Wait-LabVMRestart [-ComputerName] &lt;String[]&gt; [-TimeoutInMinutes &lt;Double&gt;] [-ProgressIndicator &lt;Int32&gt;] [-StartMachinesWhileWaiting &lt;Machine[]&gt;] [-NoNewLine] [-MonitorJob &lt;Object&gt;]</string>
+        <string>Wait-LabVMRestart [-ComputerName] &lt;String[]&gt; [-DoNotUseCredSsp] [-TimeoutInMinutes &lt;Double&gt;] [-ProgressIndicator &lt;Int32&gt;] [-StartMachinesWhileWaiting &lt;Machine[]&gt;] [-NoNewLine] [-MonitorJob &lt;Object&gt;] [-MonitoringStartTime &lt;DateTime&gt;]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Wait for machine restart</Synopsis>
@@ -6459,7 +6358,7 @@ c:\DeployDebug</Description>
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName TimeoutInMinutes ProgressIndicator StartMachinesWhileWaiting NoNewLine MonitorJob Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName DoNotUseCredSsp TimeoutInMinutes ProgressIndicator StartMachinesWhileWaiting NoNewLine MonitorJob MonitoringStartTime Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
         <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
@@ -6520,6 +6419,26 @@ c:\DeployDebug</Description>
           </Attributes>
           <Aliases />
           <Description>not implemented</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>DoNotUseCredSsp</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="DateTime" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>MonitoringStartTime</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6726,8 +6645,8 @@ c:\DeployDebug</Description>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.AliasAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
@@ -7014,6 +6933,1237 @@ ChildDC2   child.contoso.com 192.168.41.21 Windows Server 2012 R2 SERVERDATACENT
           </Attributes>
           <Aliases />
           <Description>The path to check</Description>
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Add" noun="LabCertificate">
+      <Name>Add-LabCertificate</Name>
+      <Syntax>
+        <string>Add-LabCertificate -Cert &lt;Byte[]&gt; -Store &lt;StoreName&gt; -Location &lt;CertStoreLocation&gt; [-ServiceName &lt;String&gt;] [-CertificateType &lt;String&gt; {CER | PFX} ] [-Password &lt;String&gt;] -ComputerName &lt;String[]&gt;</string>
+        <string>Add-LabCertificate -Path &lt;String&gt; -Store &lt;StoreName&gt; -Location &lt;CertStoreLocation&gt; [-ServiceName &lt;String&gt;] [-CertificateType &lt;String&gt; {CER | PFX} ] [-Password &lt;String&gt;] -ComputerName &lt;String[]&gt;</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="ByteArray" Params="Cert Store Location ServiceName CertificateType Password ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="File" Params="Path Store Location ServiceName CertificateType Password ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="Byte[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>Cert</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="StoreName" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>Store</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="CertStoreLocation" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>Location</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>ServiceName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>CertificateType</Name>
+          <Attributes>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Password</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>ComputerName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="false" pos="named" globbing="false">
+          <Name>Path</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Connect" noun="Lab">
+      <Name>Connect-Lab</Name>
+      <Syntax>
+        <string>Connect-Lab -SourceLab &lt;String&gt; -DestinationLab &lt;String&gt; [-NetworkAdapterName &lt;String&gt;]</string>
+        <string>Connect-Lab -SourceLab &lt;String&gt; -DestinationIpAddress &lt;Object&gt; -PreSharedKey &lt;Object&gt; [-AddressSpace &lt;String[]&gt;] [-NetworkAdapterName &lt;String&gt;]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis>Connect two labs via VPN</Synopsis>
+        <Description>This cmdlet allows you to connect two labs through a persistent IPSEC VPN connection. Currently connections from Hyper-V labs to Azure labs, connections from Hyper-V labs to any VPN Gateway and connections of two Azure labs are possible.
+
+To make use of this cmdlet, your on-premises lab needs to contain a router, i.e. a machine with the Routing role and one external NIC.</Description>
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="Lab2Lab" Params="SourceLab DestinationLab NetworkAdapterName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="Site2Site" Params="SourceLab DestinationIpAddress PreSharedKey AddressSpace NetworkAdapterName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>SourceLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The source lab name</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>DestinationLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The destination lab name</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>NetworkAdapterName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>DestinationIpAddress</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The destination IP address if you are connecting to any VPN device</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PreSharedKey</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The pre-shared key to connect to the IPSEC VPN</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>AddressSpace</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>One or more address spaces to be routed in case you are connecting to an external VPN gateway and not to another lab. Example: 192.168.2.30/24</Description>
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples>
+        <Example>
+          <Name>On-Prem to Azure</Name>
+          <Cmd>Connect-Lab -SourceLab MyOnPremisesLab -DestinationLab MyAzureLab</Cmd>
+          <Description>This connects the two existing labs, MyOnPremisesLab - a Hyper-V lab with at least one router - and MyAzureLab, which is any Azure based lab.
+
+On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public IP Address and Virtual Network Connection will be created. On Hyper-V, S2SVPN will be enabled on the router.</Description>
+          <Output />
+        </Example>
+        <Example>
+          <Name>On-Prem to somewhere</Name>
+          <Cmd>Connect-Lab -SourceLab MyOnPremLab -DestinationIpAddress myvpngateway.mycompany.com -PreSharedKey VeryS3cureKey -AddressSpace @("192.168.30.0/24", "192.168.60.0/24", "192.168.90.0/24")</Cmd>
+          <Description>This command connects the Hyper-V lab MyOnPremLab to a VPN gateway listening on myvpngateway.mycompany.com. Requests to one of the address spaces "192.168.30.0/24", "192.168.60.0/24" and "192.168.90.0/24" will be routed through the VPN connection</Description>
+          <Output />
+        </Example>
+      </Examples>
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Disconnect" noun="Lab">
+      <Name>Disconnect-Lab</Name>
+      <Syntax>
+        <string>Disconnect-Lab [-SourceLab] &lt;Object&gt; [-DestinationLab] &lt;Object&gt;</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis>Disconnects two labs</Synopsis>
+        <Description>Takes the necessary steps to disconnect two previously connected labs. On Azure, it will remove all created ressources (s2sip, s2sgw, onpremgw and s2sconnection). On the on-premises router it will Uninstall-RemoteAccess -VpnType S2SVPN</Description>
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="SourceLab DestinationLab Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>SourceLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The source lab name</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>DestinationLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description>The destination lab name</Description>
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Get" noun="LabAzureLabSourcesContent">
+      <Name>Get-LabAzureLabSourcesContent</Name>
+      <Syntax>
+        <string>Get-LabAzureLabSourcesContent [[-RegexFilter] &lt;String&gt;] [-File] [-Directory]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="RegexFilter File Directory Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>RegexFilter</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>File</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Directory</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Get" noun="LabCertificate">
+      <Name>Get-LabCertificate</Name>
+      <Syntax>
+        <string>Get-LabCertificate -SearchString &lt;String&gt; -FindType &lt;X509FindType&gt; [-Location &lt;CertStoreLocation&gt;] [-Store &lt;StoreName&gt;] [-ServiceName &lt;String&gt;] [-Password &lt;String&gt;] -ComputerName &lt;String[]&gt;</string>
+        <string>Get-LabCertificate [-Location &lt;CertStoreLocation&gt;] [-Store &lt;StoreName&gt;] [-ServiceName &lt;String&gt;] -All &lt;SwitchParameter&gt; [-IncludeServices] [-Password &lt;String&gt;] -ComputerName &lt;String[]&gt;</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="Find" Params="SearchString FindType Location Store ServiceName Password ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="All" Params="Location Store ServiceName All IncludeServices Password ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>SearchString</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="X509FindType" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>FindType</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="CertStoreLocation" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Location</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="StoreName" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Store</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ServiceName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Password</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ComputerName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>All</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>IncludeServices</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Get" noun="LabPublicIpAddress">
+      <Name>Get-LabPublicIpAddress</Name>
+      <Syntax>
+        <string>Get-LabPublicIpAddress</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis>Retrieve the public IP address of the lab host</Synopsis>
+        <Description>Uses several public facing websites to retrieve the public IP address of the Hypervisor host.</Description>
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
+      </ParamSets>
+      <Parameters />
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Install" noun="LabExchange2013">
+      <Name>Install-LabExchange2013</Name>
+      <Syntax>
+        <string>Install-LabExchange2013 [-All] [-CopyExchange2013InstallationFiles] [-AddAdRightsInRootDomain] [-InstallWindowsFeatures] [-InstallRequirements] [-PrepareSchema] [-PrepareAD] [-PrepareAllDomains] [-InstallExchange] [-CreateCheckPoints]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="All CopyExchange2013InstallationFiles AddAdRightsInRootDomain InstallWindowsFeatures InstallRequirements PrepareSchema PrepareAD PrepareAllDomains InstallExchange CreateCheckPoints Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>All</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>CopyExchange2013InstallationFiles</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>AddAdRightsInRootDomain</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallWindowsFeatures</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallRequirements</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareSchema</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareAD</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareAllDomains</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallExchange</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>CreateCheckPoints</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Install" noun="LabExchange2016">
+      <Name>Install-LabExchange2016</Name>
+      <Syntax>
+        <string>Install-LabExchange2016 [-All] [-CopyExchange2016InstallationFiles] [-AddAdRightsInRootDomain] [-InstallWindowsFeatures] [-InstallRequirements] [-PrepareSchema] [-PrepareAD] [-PrepareAllDomains] [-InstallExchange] [-CreateCheckPoints]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="All CopyExchange2016InstallationFiles AddAdRightsInRootDomain InstallWindowsFeatures InstallRequirements PrepareSchema PrepareAD PrepareAllDomains InstallExchange CreateCheckPoints Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>All</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>CopyExchange2016InstallationFiles</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>AddAdRightsInRootDomain</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallWindowsFeatures</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallRequirements</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareSchema</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareAD</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>PrepareAllDomains</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>InstallExchange</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>CreateCheckPoints</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Invoke" noun="LabDscConfiguration">
+      <Name>Invoke-LabDscConfiguration</Name>
+      <Syntax>
+        <string>Invoke-LabDscConfiguration -Configuration &lt;ConfigurationInfo&gt; -ComputerName &lt;String[]&gt; [-ConfigurationData &lt;Hashtable&gt;] [-Wait]</string>
+        <string>Invoke-LabDscConfiguration -ComputerName &lt;String[]&gt; [-UseExisting] [-Wait]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="New" Params="Configuration ComputerName ConfigurationData Wait Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+        <CommandParameterSetInfo2 Name="UseExisting" Params="ComputerName UseExisting Wait Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="ConfigurationInfo" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Configuration</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ComputerName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>ConfigurationData</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Wait</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>UseExisting</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Remove" noun="LabDscLocalConfigurationManagerConfiguration">
+      <Name>Remove-LabDscLocalConfigurationManagerConfiguration</Name>
+      <Syntax>
+        <string>Remove-LabDscLocalConfigurationManagerConfiguration [-ComputerName] &lt;String[]&gt;</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>ComputerName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Restore" noun="LabConnection">
+      <Name>Restore-LabConnection</Name>
+      <Syntax>
+        <string>Restore-LabConnection</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
+      </ParamSets>
+      <Parameters />
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Send" noun="ModuleToPSSession">
+      <Name>Send-ModuleToPSSession</Name>
+      <Syntax>
+        <string>Send-ModuleToPSSession [-Module] &lt;PSModuleInfo&gt; [-Session] &lt;PSSession[]&gt; [-Scope &lt;String&gt; {AllUsers | CurrentUser} ] [-IncludeDependencies] [-Move] [-Encrypt] [-NoWriteBuffer] [-Verify] [-NoClobber] [-MaxBufferSize &lt;UInt32&gt;]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType>System.IO.FileInfo</ReturnType>
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Module Session Scope IncludeDependencies Move Encrypt NoWriteBuffer Verify NoClobber MaxBufferSize Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="PSModuleInfo" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="true" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Module</Name>
+          <Attributes>
+            <string>System.Management.Automation.ValidateNotNullOrEmptyAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="PSSession[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="1" globbing="false">
+          <Name>Session</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Scope</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>IncludeDependencies</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Move</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Encrypt</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>NoWriteBuffer</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Verify</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>NoClobber</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="UInt32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>MaxBufferSize</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateRangeAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Set" noun="LabDscLocalConfigurationManagerConfiguration">
+      <Name>Set-LabDscLocalConfigurationManagerConfiguration</Name>
+      <Syntax>
+        <string>Set-LabDscLocalConfigurationManagerConfiguration [-ComputerName] &lt;String[]&gt; [[-ActionAfterReboot] &lt;String&gt; {ContinueConfiguration | StopConfiguration} ] [[-CertificateID] &lt;String&gt;] [[-ConfigurationID] &lt;String&gt;] [[-RefreshFrequencyMins] &lt;Int32&gt;] [[-AllowModuleOverwrite] &lt;Boolean&gt;] [[-DebugMode] &lt;String&gt; {ForceModuleImport | All | None} ] [[-ConfigurationNames] &lt;String[]&gt;] [[-StatusRetentionTimeInDays] &lt;Int32&gt;] [[-RefreshMode] &lt;String&gt; {Push | Pull} ] [[-ConfigurationModeFrequencyMins] &lt;Int32&gt;] [[-ConfigurationMode] &lt;String&gt; {ApplyAndAutoCorrect | ApplyOnly | ApplyAndMonitor} ] [[-RebootNodeIfNeeded] &lt;Boolean&gt;] [[-ConfigurationRepositoryWeb] &lt;Hashtable[]&gt;] [[-ReportServerWeb] &lt;Hashtable[]&gt;] [[-PartialConfiguration] &lt;Hashtable[]&gt;]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="ComputerName ActionAfterReboot CertificateID ConfigurationID RefreshFrequencyMins AllowModuleOverwrite DebugMode ConfigurationNames StatusRetentionTimeInDays RefreshMode ConfigurationModeFrequencyMins ConfigurationMode RebootNodeIfNeeded ConfigurationRepositoryWeb ReportServerWeb PartialConfiguration Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="String[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>ComputerName</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>ActionAfterReboot</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>CertificateID</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
+          <Name>ConfigurationID</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="4" globbing="false">
+          <Name>RefreshFrequencyMins</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Boolean" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="5" globbing="false">
+          <Name>AllowModuleOverwrite</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="6" globbing="false">
+          <Name>DebugMode</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="7" globbing="false">
+          <Name>ConfigurationNames</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="8" globbing="false">
+          <Name>StatusRetentionTimeInDays</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="9" globbing="false">
+          <Name>RefreshMode</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Int32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="10" globbing="false">
+          <Name>ConfigurationModeFrequencyMins</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="11" globbing="false">
+          <Name>ConfigurationMode</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ValidateSetAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Boolean" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="12" globbing="false">
+          <Name>RebootNodeIfNeeded</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Hashtable[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="13" globbing="false">
+          <Name>ConfigurationRepositoryWeb</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Hashtable[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="14" globbing="false">
+          <Name>ReportServerWeb</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Hashtable[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="15" globbing="false">
+          <Name>PartialConfiguration</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Test" noun="HashtableKeys">
+      <Name>Test-HashtableKeys</Name>
+      <Syntax>
+        <string>Test-HashtableKeys [-Hashtable] &lt;Hashtable&gt; [[-MandatoryKeys] &lt;String[]&gt;] [[-ValidKeys] &lt;String[]&gt;] [-Quiet]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis />
+        <Description />
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Hashtable MandatoryKeys ValidKeys Quiet Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="Hashtable" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Hashtable</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>MandatoryKeys</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>ValidKeys</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+          <Name>Quiet</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>

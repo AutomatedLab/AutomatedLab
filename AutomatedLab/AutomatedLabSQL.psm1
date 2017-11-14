@@ -103,7 +103,8 @@ GO
             
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 45
-            
+            Write-ScreenInfo -Message 'Done' -TaskEnd
+	    
             foreach ($machine in $machinesBatch)
             {
                 $role = $machine.Roles | Where-Object Name -like SQLServer*

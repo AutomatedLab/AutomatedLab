@@ -250,12 +250,12 @@ function Import-Lab
         }
     
         $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name Azure -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name AzureRm -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
-            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please download it from 'http://azure.microsoft.com/en-us/downloads/'"
+            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
         }
 
-        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 2))
+        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
         {
             throw 'The VMWare snapin was not loaded. Maybe it is missing'
         }
@@ -455,7 +455,7 @@ function Install-Lab
     Write-LogFunctionEntry
 
     #perform full install if no role specific installation is requested
-    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin 'NoValidation', 'DelayBetweenComputers' }).Count
+    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
     if (-not $Global:labExported -and -not (Get-Lab -ErrorAction SilentlyContinue))
     {
@@ -484,6 +484,8 @@ function Install-Lab
     Unblock-LabSources
     
     $Global:AL_DeploymentStart = Get-Date
+
+	Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -536,6 +538,10 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+
+    #VMs created, export lab definition again to update MAC addresses
+	Set-LabDefinition -Machines $Script:data.Machines
+    Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabMachine -Role RootDC))
@@ -759,7 +765,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
-        Start-LabVM -All -DelayBetweenComputers ([int]((Get-LabMachine).HostType -contains 'HyperV')*30) -ProgressIndicator 30 -NoNewline
+        if ($null -eq $DelayBetweenComputers){
+            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV')*30)
+        }
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
         Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -769,7 +778,9 @@ function Install-Lab
     {
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
         $jobs | Wait-Job | Out-Null
-    }
+    }    
+	
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
 }
@@ -785,9 +796,7 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name,
-        
-        [switch]$RemoveReferenceDisks
+        [string]$Name
     )
     Write-LogFunctionEntry
     
@@ -909,22 +918,6 @@ function Remove-Lab
             {
                 Remove-Item -Path $Script:data.LabPath
             }
-        }
-        
-        if ($RemoveReferenceDisks)
-        {
-            Write-ScreenInfo -Message 'Removing Reference Disks'
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ServerReferenceDiskPath -Confirm:$false
-            }
-        
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ClientReferenceDiskPath -Confirm:$false
-            }
-        
-            Remove-Item -Path (Split-Path -Path $Script:data.ClientReferenceDiskPath -Parent) -Confirm:$false -Recurse
         }
 
         $Script:data = $null
@@ -1918,7 +1911,7 @@ function Install-VisualStudio2015
         $parameters.Add('ActivityName', 'InstallationVisualStudio2015')
         $parameters.Add('Verbose', $VerbosePreference)
         $parameters.Add('Scriptblock', {
-                Write-Verbose 'Installing Visual Studio 2013'
+                Write-Verbose 'Installing Visual Studio 2015'
             
                 Push-Location
                 Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
@@ -2599,12 +2592,12 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip 1
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
             
                     Write-Verbose "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession[0]
+                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
                 }
             }
     

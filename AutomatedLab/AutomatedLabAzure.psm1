@@ -54,7 +54,7 @@ function Add-LabAzureSubscription
     
     Write-LogFunctionEntry
     
-    Update-LabAzureSettings
+    Update-LabAzureSettings    
     
     if (-not $Path)
     {
@@ -72,11 +72,16 @@ function Add-LabAzureSubscription
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
 
+    if (-not $DefaultResourceGroupName)
+    {
+        $DefaultResourceGroupName = $script:lab.Name
+    }
+
     #This needs to be loaded manually to import the required DLLs
     $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
-    if (-not (Get-Module -Name Azure -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
+    if (-not (Get-Module -Name AzureRM -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
     {
-        throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please download it from 'http://azure.microsoft.com/en-us/downloads/'"
+        throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it: Install-Module AzureRM -Force"
     }
     
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
@@ -94,7 +99,7 @@ function Add-LabAzureSubscription
 		# Select the proper subscription before saving the profile
 		if ($SubscriptionName)
 		{
-			[void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+			[void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
 		}
 
 		Save-AzureRmContext -Path $Path
@@ -151,7 +156,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Select-AzureRmSubscription -SubscriptionName $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
     }
     catch
     {
@@ -256,9 +261,41 @@ function Add-LabAzureSubscription
     New-LabAzureLabSourcesStorage
 
     # Add ISOs
-    Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
-    Add-LabIsoImageDefinition -Path "$labSources\ISOs"
-    Write-ScreenInfo -Message 'Done' -TaskEnd
+	$type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
+    
+    try
+    {
+        Write-Verbose -Message 'Get last ISO update time'
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $lastChecked = $timestamps.AzureIsosLastChecked
+        Write-Verbose -Message "Last check was '$lastChecked'."
+    }
+    catch
+    {
+        Write-Verbose -Message 'Last check time could not be retrieved. Azure ISOs never updated'
+        $lastChecked = Get-Date -Year 1601
+        $timestamps = New-Object $type
+    }
+
+	if ($lastChecked -lt [datetime]::Now.AddDays(-7))
+	{
+		Write-Verbose -Message 'ISO cache outdated. Updating ISO files.'
+		try
+		{
+			Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
+			Add-LabIsoImageDefinition -Path "$labSources\ISOs" -ErrorAction Stop
+		}
+		catch
+		{
+			Write-ScreenInfo -Message 'No ISO files have been found in your Azure labsources share. Please make sure that they are present when you try mounting them.' -Type Warning
+		}
+		finally
+		{
+			$timestamps['AzureIsosLastChecked'] = Get-Date
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+			Write-ScreenInfo -Message 'Done' -TaskEnd
+		}  
+	}	  
 
     $script:lab.AzureSettings.VmImages = $vmimages | %{ [AutomatedLab.Azure.AzureOSImage]::Create($_)}
     Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
@@ -452,10 +489,6 @@ function Get-LabAzureLocation
     
     Write-LogFunctionEntry
     
-    #Update-LabAzureSettings
-    
-    Import-Module -Name Azure*
-
     $azureLocations = Get-AzureRmLocation
     
     if ($LocationName)
@@ -880,7 +913,7 @@ function Remove-LabAzureResourceGroup
         {
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
-                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue
+                Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
                 Write-Verbose "RG '$($name)' removed"
                 
                 $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
@@ -1002,7 +1035,7 @@ function New-LabAzureLabSourcesStorage
     if (-not $resourceGroup)
     {
         Write-ScreenInfo "Resoure Group '$azureLabSourcesResourceGroupName' could not be found, creating it"
-        New-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -Location $LocationName | Out-Null
+        $resourceGroup = New-AzureRmResourceGroup -Name $azureLabSourcesResourceGroupName -Location $LocationName | Out-Null
     }
 
     $storageAccount = Get-AzureRmStorageAccount -ResourceGroupName $azureLabSourcesResourceGroupName -ErrorAction SilentlyContinue | Where-Object StorageAccountName -like automatedlabsources?????

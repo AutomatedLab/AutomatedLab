@@ -1,7 +1,7 @@
 @{
     RootModule = 'AutomatedLab.psm1'
     
-    ModuleVersion = '4.0.1.2'
+    ModuleVersion = '4.4.0.0'
     
     GUID = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -9,7 +9,7 @@
     
     CompanyName = 'AutomatedLab Team'
     
-    Copyright = '2016'
+    Copyright = '2017'
     
     Description = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
@@ -19,7 +19,7 @@
     
     CLRVersion = '4.0'
 
-	ModuleList = @('AutomatedLab')
+    ModuleList = @('AutomatedLab')
     
     ScriptsToProcess = @('AutomatedLab.init.ps1')
     
@@ -41,8 +41,9 @@
         'AutomatedLabAzure.psm1',
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1'
-        'AutomatedLabOffice.psm1'
+        'AutomatedLabDsc.psm1',
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabHybrid'
     )
 
     RequiredModules = @(
@@ -51,7 +52,8 @@
         'PSFileTransfer',
         'AutomatedLabWorker',
         'HostsFile',
-        'AutomatedLabUnattended'
+        'AutomatedLabUnattended',
+        'AutomatedLabNotifications'
     )
     
     # Functions to export from this module
@@ -80,6 +82,9 @@
         'Enable-LabVMRemoting',
         'Enable-LabHostRemoting',
         'Invoke-LabCommand',
+        'Invoke-LabDscConfiguration',
+        'Remove-LabDscLocalConfigurationManagerConfiguration',
+        'Set-LabDscLocalConfigurationManagerConfiguration',
         'Checkpoint-LabVM',
         'Remove-LabVMSnapshot',
         'Restore-LabVMSnapshot',
@@ -129,8 +134,8 @@
         'Get-LabAzureCertificate',
         'Get-LabIssuingCA',
         'Request-LabCertificate',
-        'Get-LabCertificatePfx',
-        'Add-LabCertificatePfx',
+        'Get-LabCertificate',
+        'Add-LabCertificate',
         'Connect-LabVM',
         'Wait-LabVMShutdown',
         'Add-LabVMWareSettings',
@@ -185,6 +190,7 @@
         'Unblock-LabSources',
         'Add-VariableToPSSession',
         'Add-FunctionToPSSession',
+        'Send-ModuleToPSSession',
         'Get-LabMachineUacStatus', 'Set-LabMachineUacStatus',
         'Get-LabMachineDescription', 'Set-LabMachineDescription',
         'Test-LabMachineInternetConnectivity',
@@ -197,7 +203,12 @@
         'Test-LabSourcesOnAzureStorage',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
-        'Get-LabAzureLabSourcesContent'
+        'Get-LabAzureLabSourcesContent',
+        'Test-HashtableKeys',
+        'Connect-Lab',
+        'Disconnect-Lab',
+        'Restore-LabConnection',
+        'Get-LabPublicIpAddress'
     )
     
     # List of all files packaged with this module
@@ -242,10 +253,14 @@
         Timeout_VisualStudio2013Installation = 90
         Timeout_VisualStudio2015Installation = 90
 
+        #PSSession settings
         InvokeLabCommandRetries = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
-
+        MaxPSSessionsPerVM = 5
         DoNotUseGetHostEntryInNewLabPSSession = $true
+
+        #DSC
+        DscMofPath = '"$labSources\DscConfigurations"'
 
         #General VM settings
         DisableWindowsDefender = $true
@@ -254,12 +269,12 @@
         SetLocalIntranetSites = 'All' #All, Forest, Domain, None
 
         #Azure
-        MinimumAzureModuleVersion = '0.9.3'
-        DefaultAzureRoleSize = 'A'
+        MinimumAzureModuleVersion = '4.0.0'
+        DefaultAzureRoleSize = 'D'
 
         #Exchange
         ExchangeUcmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-        Exchange2013DownloadLink = 'https://download.microsoft.com/download/7/B/9/7B91E07E-21D6-407E-803B-85236C04D25D/Exchange2013-x64-cu16.exe'
+        Exchange2013DownloadLink = 'https://download.microsoft.com/download/D/E/1/DE1C3D22-28A6-4A30-9811-0A0539385E51/Exchange2013-x64-cu17.exe'
         #Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' the Exchange CUs are ISOs again
 
         #Office
@@ -276,6 +291,11 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+
+        # Notification settings - see AutomatedLabNotifications module manifest for provider settings
+        NotificationProviders = @(
+            'Toast'
+        )
 
 		#SQL Server sample database contents
 		SQLServer2008 = 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21062'

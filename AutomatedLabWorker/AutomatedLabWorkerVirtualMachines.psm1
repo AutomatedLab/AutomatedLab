@@ -53,25 +53,29 @@ function New-LWHypervVM
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
-    $adapters = New-Object System.Collections.ArrayList
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] }))
-    $adapters.AddRange(@($Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address }))
+	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
+    $adapters = New-Object $type
+	$Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
+	$Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {
         #move the adapter that connects the machine to the domain to the top
         $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
-        #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
-        #the network ordering
-        $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
-        Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
-        Select-Object -First 1
-        
-        if ($domainAdapter)
+        if ($dc)
         {
-            $adapters.Remove($domainAdapter)
-            $adapters.Insert(0, $domainAdapter)
+            #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
+            #the network ordering
+            $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
+            Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
+            Select-Object -First 1
+        
+            if ($domainAdapter)
+            {
+                $adapters.Remove($domainAdapter)
+                $adapters.Insert(0, $domainAdapter)
+            }
         }
     }
     
@@ -136,6 +140,8 @@ function New-LWHypervVM
                 
         Add-UnattendedNetworkAdapter @ipSettings
     }
+
+	$Machine.NetworkAdapters = $adapters
             
     Add-UnattendedRenameNetworkAdapters
     #endregion network adapter settings
@@ -464,6 +470,9 @@ Windows Registry Editor Version 5.00
     Write-Verbose "`tSettings RAM, start and stop actions"
     $param = @{}
     $param.Add('MemoryStartupBytes', $Machine.Memory)
+    $param.Add('AutomaticCheckpointsEnabled', $false)
+    $param.Add('CheckpointType', 'Production')
+
     if ($Machine.MaxMemory) { $param.Add('MemoryMaximumBytes', $Machine.MaxMemory) }
     if ($Machine.MinMemory) { $param.Add('MemoryMinimumBytes', $Machine.MinMemory) }
     
@@ -477,6 +486,8 @@ Windows Registry Editor Version 5.00
         Write-Verbose "`tSettings static memory to $($Machine.Memory)"
         $param.Add('StaticMemory', $true)
     }
+
+    $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
     Set-VM -Name $Machine.Name @param
     
@@ -1272,6 +1283,13 @@ function Mount-LWIsoImage
         {
             try
             {
+                $releaseId = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId -ErrorAction SilentlyContinue
+
+                if ($releaseId -eq 1709)
+                {
+                    Stop-LabVm $machine -Wait
+                }
+
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
                     $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
@@ -1283,6 +1301,11 @@ function Mount-LWIsoImage
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
                     $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                }
+
+                if ($releaseId -eq 1709)
+                {
+                    Start-LabVm $machine -Wait
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
