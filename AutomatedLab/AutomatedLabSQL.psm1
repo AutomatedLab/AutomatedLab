@@ -399,8 +399,6 @@ function Install-LabSqlSampleDatabases
         }
         'SQLServer2012' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
-
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2012
                 $query = @"
@@ -417,8 +415,6 @@ function Install-LabSqlSampleDatabases
         }
         'SQLServer2014' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
-		
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
                 $query = @"
@@ -435,8 +431,6 @@ function Install-LabSqlSampleDatabases
         }
         'SQLServer2016' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
-		
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
                 $query = @"
@@ -538,7 +532,7 @@ function New-LabSqlAccount
             }
 
             Invoke-LabCommand -ComputerName $dc -ActivityName ('Creating {0} in {1}' -f $user,$domain) -ScriptBlock {
-                if (-not (Get-ADUser $user))
+                if (-not (Get-ADUser $user -ErrorAction SilentlyContinue))
                 {
                     New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
                 }
@@ -547,7 +541,7 @@ function New-LabSqlAccount
         else
         {
             Invoke-LabCommand $Machine -ActivityName ('Creating local user {0}' -f $user) -ScriptBlock {
-                if (-not (Get-LocalUser $user))
+                if (-not (Get-LocalUser $user -ErrorAction SilentlyContinue))
                 {
                     New-LocalUser -Name $user -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -Password ($password | ConvertTo-SecureString -AsPlainText -Force)
                 }
