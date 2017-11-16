@@ -41,6 +41,12 @@ function Install-LabFailoverCluster
         
         Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
             New-Cluster –Name $clusterName –Node $env:COMPUTERNAME –StaticAddress $clusterIp
+
+            while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
+            {
+                Start-Sleep -Seconds 1
+            }
+            
             Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
         } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp)
     }    
