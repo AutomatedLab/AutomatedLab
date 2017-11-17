@@ -1560,6 +1560,7 @@ function Get-LabInternetFile
             {
                 $bytesProcessed = 0
                 $request = [System.Net.WebRequest]::Create($Uri)
+                $request.AllowAutoRedirect = $true
         
                 if ($request)
                 {

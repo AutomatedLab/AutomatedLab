@@ -11,7 +11,10 @@ function Send-ALToastNotification
         $Message
     )
     
-    $isCoreOrNano = Get-ItemPropertyValue 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore,ServerNano -ErrorAction SilentlyContinue
+    if (Get-Item 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -ErrorAction SilentlyContinue)
+    {
+        $isCoreOrNano = Get-ItemPropertyValue 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore,ServerNano -ErrorAction SilentlyContinue
+    }    
 
     if ($PSVersionTable.BuildVersion.Major -lt 10 -or $isCoreOrNano)
 	{

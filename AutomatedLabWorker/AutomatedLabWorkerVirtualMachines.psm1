@@ -1283,7 +1283,7 @@ function Mount-LWIsoImage
         {
             try
             {
-                $releaseId = Get-ItemPropertyValue -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion' -Name ReleaseId -ErrorAction SilentlyContinue
+                $releaseId = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId -ErrorAction SilentlyContinue
 
                 if ($releaseId -eq 1709)
                 {
