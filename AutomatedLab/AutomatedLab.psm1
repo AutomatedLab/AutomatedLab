@@ -650,9 +650,9 @@ function Install-Lab
 
     if (($FailoverCluster -or $performAll) -and (Get-LabVm -Role FailoverNode,FailoverStorage))
     {
-        Start-LabVm -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
-
         Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+
+        Start-LabVm -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait        
         Install-LabFailoverCluster
 
         Write-ScreenInfo -Message 'Done' -TaskEnd

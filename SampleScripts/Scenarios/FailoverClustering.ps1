@@ -17,7 +17,7 @@ $PSDefaultParameterValues = @{
 Add-LabMachineDefinition -Name foDC1 -Roles RootDC
 
 # Integrate an iSCSI Target into your machines
-$storageRole = Get-LabMachineRoleDefinition -Role FailoverStorage -Properties @{LunSize = [string]25GB; LunDrive = 'D' }
+$storageRole = Get-LabMachineRoleDefinition -Role FailoverStorage -Properties @{LunDrive = 'D' }
 Add-LabDiskDefinition -Name LunDisk -DiskSizeInGb 26
 Add-LabMachineDefinition -Name foCLS1 -Roles $storageRole -DiskName LunDisk
 
