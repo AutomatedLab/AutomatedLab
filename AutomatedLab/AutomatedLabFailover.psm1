@@ -34,7 +34,7 @@ function Install-LabFailoverCluster
         if (-not $clusterIp)
         {
             $adapterVirtualNetwork = Get-LabVirtualNetworkDefinition -Name $firstNode.NetworkAdapters[0].VirtualSwitch
-            $clusterIp = $adapterVirtualNetwork.NextIpAddress()
+            $clusterIp = $adapterVirtualNetwork.NextIpAddress().AddressAsString
         }
 
         if (-not $clusterName)
@@ -56,7 +56,7 @@ function Install-LabFailoverCluster
         
                     if (-not ($offlineDisk | Get-Partition | Get-Volume))
                     {
-                        $offlineDisk | New-Volume -FriendlyName Luns -FileSystem ReFS -DriveLetter $lunDrive
+                        $offlineDisk | New-Volume -FriendlyName quorum -FileSystem NTFS
                     }
                 }
             }
@@ -71,6 +71,13 @@ function Install-LabFailoverCluster
             }
 
             Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
+            
+            $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk'
+
+            if ($clusterDisk)
+            {
+                Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
+            }
         } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness)
     }    
 }

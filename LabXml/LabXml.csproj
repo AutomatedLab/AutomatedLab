@@ -106,6 +106,7 @@
     <Compile Include="Validator\ActiveDirectory\DoaminHasNoRootOrFirstChildDC.cs" />
     <Compile Include="Validator\ActiveDirectory\MachineInAnUndefinedDomain.cs" />
     <Compile Include="Validator\ActiveDirectory\DomainWithTooLongName.cs" />
+    <Compile Include="Validator\FailoverCluster\ClusterNoDomain.cs" />
     <Compile Include="Validator\FailoverCluster\TooFewNodesForCluster.cs" />
     <Compile Include="Validator\FailoverCluster\ClusterOperatingSystem.cs" />
     <Compile Include="Validator\LabInformation\LabNameContainsIllegalCharacters.cs" />

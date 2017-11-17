@@ -22,17 +22,23 @@ Add-LabDiskDefinition -Name LunDisk -DiskSizeInGb 26
 Add-LabMachineDefinition -Name foCLS1 -Roles $storageRole -DiskName LunDisk
 
 # Integrate one or more clusters
+# This sample will create two named clusters and one automatic cluster called ALCluster with an automatic static IP
 $cluster1 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu1'; ClusterIp = '192.168.50.111' }
 $cluster2 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu2'; ClusterIp = '192.168.50.121' }
-foreach ( $i in 1..4 )
+$cluster3 = Get-LabMachineRoleDefinition -Role FailoverNode
+foreach ( $i in 1..10 )
 {
-    if ($i % 2)
+    if (-not ($i % 2))
     {
         Add-LabMachineDefinition -name foCLN$i -Roles $cluster1
     }
-    else
+    elseif (-not ($i % 3))
     {
         Add-LabMachineDefinition -name foCLN$i -Roles $cluster2
+    }
+    else
+    {
+        Add-LabMachineDefinition -name foCLN$i -Roles $cluster3
     }
     
 }
