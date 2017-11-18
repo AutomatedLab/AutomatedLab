@@ -1,7 +1,7 @@
 ﻿@{
 	RootModule = 'PSLog.psm1'
 	
-	ModuleVersion = '4.0.0.2'
+	ModuleVersion = '4.5.0.0'
 	
 	GUID = 'cd303a6c-f405-4dcb-b1ce-fbc2c52264e9'
 	
@@ -31,3 +31,5 @@
 		TruncateLength = 50
 	}
 }
+
+

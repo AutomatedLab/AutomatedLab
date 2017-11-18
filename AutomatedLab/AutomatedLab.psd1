@@ -1,7 +1,7 @@
-@{
+﻿@{
     RootModule             = 'AutomatedLab.psm1'
     
-    ModuleVersion          = '4.4.0.0'
+    ModuleVersion = '4.5.0.0'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -310,3 +310,6 @@
         SQLServer2016                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
     }
 }
+
+
+

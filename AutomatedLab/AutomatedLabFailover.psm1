@@ -82,7 +82,7 @@ function Install-LabFailoverCluster
                 WarningAction             = 'SilentlyContinue'
             }
 
-            $clusterParameters = Sync-Parameter -Command New-Cluster -Parameters $clusterParameters
+            $clusterParameters = Sync-Parameter -Command (Get-Command New-Cluster) -Parameters $clusterParameters
 
             New-Cluster @clusterParameters
 
