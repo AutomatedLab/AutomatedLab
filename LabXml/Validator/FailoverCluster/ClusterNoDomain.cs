@@ -25,7 +25,7 @@ namespace AutomatedLab.Validator.FailoverCluster
                 var clusterName = "ALCluster";
                 if (tempNode.Properties.ContainsKey("ClusterName"))
                 {
-                    clusterName = node.Roles.Where(r => r.Name.Equals(Roles.FailoverNode)).First().Properties["ClusterName"].ToString();
+                    clusterName = tempNode.Properties["ClusterName"].ToString();
                 }
 
                 if (!clusters.ContainsKey(clusterName))
@@ -45,18 +45,33 @@ namespace AutomatedLab.Validator.FailoverCluster
                     continue;
                 }
 
-                foreach (var node in failoverNodes)
+                var clusterFail = false;
+                foreach (var node in cluster.Value)
                 {
                     if (node.OperatingSystem.Version >= new Version { Major = 10 })
                     {
                         continue;
                     }
 
+                    clusterFail = true;
+                }
+
+                if (clusterFail)
+                {
                     yield return new ValidationMessage
                     {
                         Message = "Workgroup or multidomain clusters are only supported starting with Server 2016",
-                        TargetObject = node.Name,
+                        TargetObject = cluster.Key,
                         Type = MessageType.Error
+                    };
+                }
+                else
+                {
+                    yield return new ValidationMessage
+                    {
+                        Message = "Workgroup or multidomain clusters supported with Server 2016",
+                        TargetObject = cluster.Key,
+                        Type = MessageType.Information
                     };
                 }
             }

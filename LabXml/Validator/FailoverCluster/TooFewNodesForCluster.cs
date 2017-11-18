@@ -27,7 +27,7 @@ namespace AutomatedLab
                 var clusterName = "ALCluster";
                 if (tempNode.Properties.ContainsKey("ClusterName"))
                 {
-                    clusterName = node.Roles.Where(r => r.Name.Equals(Roles.FailoverNode)).First().Properties["ClusterName"].ToString();
+                    clusterName = tempNode.Properties["ClusterName"].ToString();
                 }
                 
                 if (!clusters.ContainsKey(clusterName))
