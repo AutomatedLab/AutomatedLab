@@ -38,7 +38,7 @@ namespace AutomatedLab.Validator.FailoverCluster
 
             foreach (var cluster in clusters)
             {
-                var domainCount = cluster.Value.Select(machine => machine.DomainName).Distinct().Count();
+                var domainCount = cluster.Value.Where(machine => !string.IsNullOrWhiteSpace(machine.DomainName)).Select(machine => machine.DomainName).Distinct().Count();
 
                 if (domainCount == 1)
                 {
