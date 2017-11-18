@@ -82,6 +82,8 @@ function Install-LabFailoverCluster
                 WarningAction             = 'SilentlyContinue'
             }
 
+            $clusterParameters = Sync-Parameter -Command New-Cluster -Parameters $clusterParameters
+
             New-Cluster @clusterParameters
 
             while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
@@ -100,7 +102,7 @@ function Install-LabFailoverCluster
                     Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
                 }
             }
-        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint)
+        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint) -Function (Get-Command Sync-Parameter)
     }    
 }
 #endregion
