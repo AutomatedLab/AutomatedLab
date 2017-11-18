@@ -182,6 +182,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
+				<File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
