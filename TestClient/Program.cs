@@ -15,8 +15,9 @@ namespace TestClient
         static void Main(string[] args)
         {
             //SerializationTest1();
+            var labName = "failover";
 
-            var labPath = @"C:\Users\randr\Documents\AutomatedLab-Labs\SingleMachine\Lab.xml";
+            var labPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AutomatedLab-Labs", labName, "Lab.xml");
             var ltest1 = XmlStore<Lab>.Import(labPath);
             var machines2 = ListXmlStore<Machine>.Import(labPath.Replace("Lab.xml", "Machines.xml"));
 

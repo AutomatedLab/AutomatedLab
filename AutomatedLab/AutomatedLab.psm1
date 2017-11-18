@@ -646,7 +646,17 @@ function Install-Lab
         Install-LabDscPullServer
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
-    }    
+    }
+
+    if (($FailoverCluster -or $performAll) -and (Get-LabVm -Role FailoverNode,FailoverStorage))
+    {
+        Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+
+        Start-LabVm -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait        
+        Install-LabFailoverCluster
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
     
     if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016))
     {

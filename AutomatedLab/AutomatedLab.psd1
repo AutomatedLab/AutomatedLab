@@ -1,7 +1,7 @@
-@{
+﻿@{
     RootModule             = 'AutomatedLab.psm1'
     
-    ModuleVersion          = '4.4.0.0'
+    ModuleVersion = '4.5.0.0'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -43,7 +43,8 @@
         'AutomatedLabRouting.psm1',
         'AutomatedLabDsc.psm1',
         'AutomatedLabOffice.psm1',
-        'AutomatedLabHybrid'
+        'AutomatedLabHybrid.psm1',
+        'AutomatedLabFailover.psm1'
     )
 
     RequiredModules        = @(
@@ -209,6 +210,7 @@
         'Disconnect-Lab',
         'Restore-LabConnection',
         'Get-LabPublicIpAddress',
+        'Install-LabFailoverCluster'
         'Install-LabSqlSampleDatabases'
     )
     
@@ -231,7 +233,9 @@
         'AutomatedLabVMWare.psm1',
         'AutomatedLabRouting.psm1',
         'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1'
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabHybrid.psm1',
+        'AutomatedLabFailover.psm1'
     )
     
     # Private data to pass to the module specified in RootModule
@@ -306,3 +310,6 @@
         SQLServer2016                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
     }
 }
+
+
+
