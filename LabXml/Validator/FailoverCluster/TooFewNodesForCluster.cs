@@ -38,27 +38,17 @@ namespace AutomatedLab
                 clusters[clusterName].Add(node);
             }
 
-            var validationFailed = false;
-            var validationMessage = string.Empty;
-
             foreach (var cluster in clusters)
             {
                 if (cluster.Value.Count < 2)
                 {
-                    validationFailed = true;
-                    validationMessage += $"Too few nodes {cluster.Value.Count} for cluster {cluster.Key}";
+                    yield return new ValidationMessage
+                    {
+                        Message = $"Too few nodes {cluster.Value.Count} for cluster {cluster.Key}",
+                        TargetObject = cluster.Key,
+                        Type = MessageType.Error
+                    };
                 }
-            }
-
-
-            if (validationFailed)
-            {
-                yield return new ValidationMessage
-                {
-                    Message = validationMessage,
-                    TargetObject = string.Join(", ", from item in clusters select item.Key),
-                    Type = MessageType.Error
-                };
             }
         }
     }
