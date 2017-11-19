@@ -1,5 +1,5 @@
-@{    
-    ModuleVersion          = '4.4.0.0'
+﻿@{    
+    ModuleVersion = '4.5.0.0'
     
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
@@ -21,7 +21,7 @@
 
     FunctionsToExport      = '*'
 
-    CmdletsToExport        = '*'
+    CmdletsToExport        = 'Send-ALNotification'
 
     VariablesToExport      = '*'
 
@@ -61,4 +61,7 @@
     # DefaultCommandPrefix = ''
 
 }
+
+
+
 

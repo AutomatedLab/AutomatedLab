@@ -1560,6 +1560,7 @@ function Get-LabInternetFile
             {
                 $bytesProcessed = 0
                 $request = [System.Net.WebRequest]::Create($Uri)
+                $request.AllowAutoRedirect = $true
         
                 if ($request)
                 {
@@ -2013,7 +2014,7 @@ function Send-ModuleToPSSession
 
             Write-Verbose "Sending psd1 manifest module in directory $($Local:Module.ModuleBase)"
 
-            if ($Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}')
+            if ($Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$' -or $Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}$')
             {
                 #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
                 $Local:moduleParentFolder = Split-Path -Path $Local:Module.ModuleBase -Parent
@@ -2063,8 +2064,11 @@ function Sync-Parameter
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
     param (
-        [Parameter(Mandatory)]
-        [System.Management.Automation.FunctionInfo]$Command,
+        [Parameter(Mandatory = $true)]
+        [ValidateScript({
+            $_ -is [System.Management.Automation.FunctionInfo] -or $_ -is [System.Management.Automation.CmdletInfo]
+        })]
+        [object]$Command,
         
         [hashtable]$Parameters
     )

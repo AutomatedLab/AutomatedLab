@@ -1,7 +1,7 @@
-@{
+﻿@{
 	RootModule = 'AutomatedLabUnattended.psm1'
 
-	ModuleVersion = '3.8.0.9'
+	ModuleVersion = '4.5.0.0'
 
 	GUID = 'b20c8df3-3f74-4537-a40b-b53186084dd5'
 
@@ -21,3 +21,5 @@
 
 	FileList = @('AutomatedLabUnattended.psm1')
 }
+
+

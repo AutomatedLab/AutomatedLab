@@ -182,6 +182,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
+				<File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
@@ -1442,21 +1443,6 @@
       <Component Id="cmp26C0482860694A5D77DCD33746087215" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="502e73c8-43a2-46ff-9ef2-3d3d4c251956">
         <File Id="fil248030669FCE47E3625A37688AECB3C3" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\users.csv" />
       </Component>
-      <Component Id="cmp40BFF1A76F8BB56C085A9A4C278CCC81" Directory="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Guid="dc206e20-8839-4ff8-96b8-1a02d53f218d">
-        <File Id="fil7C9859A79704296C8EBD98427FECCB9B" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1" />
-      </Component>
-      <Component Id="cmp9D34ED0CEB0AECFB560F17B73C55FC83" Directory="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Guid="61cd29be-f9a1-4b6f-a8e1-6d46e66d940b">
-        <File Id="filA59A68A0670FAF3E9E169548CE9838C8" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql" />
-      </Component>
-      <Component Id="cmpE4D5C0F8AE6B5105FB7130014EA32B6F" Directory="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Guid="49e2bdbe-e53b-483b-a5df-501a4cf8e7b7">
-        <File Id="fil832B08284737F682136844C2DC9B07EB" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql" />
-      </Component>
-      <Component Id="cmpB91D47F28733C4B7D0D3DFF748A3C43B" Directory="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Guid="b31dce1e-b199-4ace-bdca-c53eab8dfe58">
-        <File Id="fil458E8999AAE47196194C26D91DAEAAD1" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt" />
-      </Component>
-      <Component Id="cmpA4536446E506BB5CB8D526058E0EDE12" Directory="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Guid="7d9cec0f-64aa-41ce-b778-3e7b632c393f">
-        <File Id="filF8418E62C3CE6D3A27B5E251A3048B52" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi" />
-      </Component>
       <Component Id="cmpE26210C325B965F52FCEC796635C60D5" Directory="dir2EE33670E132C988264FB3374812BBCE" Guid="c349b85f-7174-4ac7-903b-03dc11528128">
         <File Id="fil6FFF71E4740D84EBF787101D499B4999" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1" />
       </Component>
@@ -1501,11 +1487,6 @@
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
       <Directory Id="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Name="ISOs" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
-      <Directory Id="dir1AD6EF2D72AFAF1E2AE19A87E49FFD8F" Name="PrepareSqlServer" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

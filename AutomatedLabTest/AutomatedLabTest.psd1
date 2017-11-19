@@ -1,7 +1,7 @@
-@{
+﻿@{
 	RootModule = 'AutomatedLabTest.psm1'
 	
-	ModuleVersion = '3.8.0.1'
+	ModuleVersion = '4.5.0.0'
 	
 	GUID = '16580260-aab3-4f4c-a7ca-75cd310e4f0b'
 	
@@ -29,3 +29,5 @@
 	
 	PrivateData = @{}
 }
+
+

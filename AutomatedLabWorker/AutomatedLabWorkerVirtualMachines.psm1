@@ -470,6 +470,9 @@ Windows Registry Editor Version 5.00
     Write-Verbose "`tSettings RAM, start and stop actions"
     $param = @{}
     $param.Add('MemoryStartupBytes', $Machine.Memory)
+    $param.Add('AutomaticCheckpointsEnabled', $false)
+    $param.Add('CheckpointType', 'Production')
+
     if ($Machine.MaxMemory) { $param.Add('MemoryMaximumBytes', $Machine.MaxMemory) }
     if ($Machine.MinMemory) { $param.Add('MemoryMinimumBytes', $Machine.MinMemory) }
     
@@ -483,6 +486,8 @@ Windows Registry Editor Version 5.00
         Write-Verbose "`tSettings static memory to $($Machine.Memory)"
         $param.Add('StaticMemory', $true)
     }
+
+    $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
     Set-VM -Name $Machine.Name @param
     
@@ -1278,6 +1283,13 @@ function Mount-LWIsoImage
         {
             try
             {
+                $releaseId = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId -ErrorAction SilentlyContinue
+
+                if ($releaseId -eq 1709)
+                {
+                    Stop-LabVm $machine -Wait
+                }
+
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
                     $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
@@ -1289,6 +1301,11 @@ function Mount-LWIsoImage
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
                     $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                }
+
+                if ($releaseId -eq 1709)
+                {
+                    Start-LabVm $machine -Wait
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
