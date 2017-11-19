@@ -2064,7 +2064,7 @@ function Sync-Parameter
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript({
             $_ -is [System.Management.Automation.FunctionInfo] -or $_ -is [System.Management.Automation.CmdletInfo]
         })]
