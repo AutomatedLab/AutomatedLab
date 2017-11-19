@@ -252,7 +252,7 @@ function Install-LabFailoverStorage
     $targetAddress = $storageNode.IpV4Address
 
     Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVm -Role FailoverNode) -ScriptBlock {
-        if (-not (Get-Command New-IscsiTargetPortal))
+        if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
         {
             iscsicli.exe QAddTargetPortal $targetAddress
             $target = ((iscsicli.exe ListTargets) -match 'iqn.+target')[0].Trim()
