@@ -34,7 +34,7 @@ function Install-LabSqlServers
 
     #The dafault SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin accout has permissions, Invoke-LabCommand cannot be used.
-    $azureMachines = $machines | Where-Object HostType -eq Azure
+    $azureMachines = $machines | Where-Object {$_.HostType -eq 'Azure' -and ($_.Roles | Where-Object Name -like 'SQL*').Properties.Count -eq 0}
 
     if ($azureMachines)
     {
@@ -74,7 +74,7 @@ GO
     
     $onPremisesMachines = @($machines | Where-Object HostType -eq HyperV)
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and ($_.Roles | Where-Object {$_.Name -like "SQL*"}).Properties.Count -gt 0})}
-    
+
     if ($onPremisesMachines)
     {        
         $parallelInstalls = 4

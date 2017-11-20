@@ -1468,6 +1468,11 @@ function Add-LabIsoImageDefinition
     if (Test-LabPathIsOnLabAzureLabSourcesStorage $Path)
     {
         $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
+
+        if ( [System.IO.Path]::HasExtension($Path))
+        {
+            $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+        }
     }
     else
     {
