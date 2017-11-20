@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ModuleObject xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fVersion="1.1" type="Script" mclass="Module" useSupports="false">
   <Name>AutomatedLabDefinition</Name>
-  <Version>4.3.1.0</Version>
+  <Version>4.5.0.0</Version>
   <Description>The module creates the lab and machine definition for the AutomatedLab module saved in XML</Description>
   <HasManifest>true</HasManifest>
   <OverridePostCount>false</OverridePostCount>
@@ -626,14 +626,14 @@ Specified in bytes and must be within range 128MB-128GB.</Description>
       <Examples>
         <Example>
           <Name>EXAMPLE 1</Name>
-          <Cmd>Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER' -ToolsPath 'C:\LabSources\MyLabTools1' -ToolsPathDestination 'C:\MyDistTools'</Cmd>
+          <Cmd>Add-LabMachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER' -ToolsPath 'C:\LabSources\MyLabTools1' -ToolsPathDestination 'C:\MyDistTools'</Cmd>
           <Description>Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER'.
 Machine will not be domain joined but be placed in workgroup.</Description>
           <Output>If using a folder for tools folder for each machine in the lab ie C:\MyLabTools1\Server1, C:\MyLabTools1\Server2 etc, you can use 'C:\MyLabTools1\&lt;machine&gt;' and AutomatedLab will map using the name of each machine to find the tools folder.</Output>
         </Example>
         <Example>
           <Name>EXAMPLE 2</Name>
-          <Cmd>Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2008 R2 SERVERDATACENTER' -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName 'contoso.com'</Cmd>
+          <Cmd>Add-LabMachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2008 R2 SERVERDATACENTER' -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName 'contoso.com'</Cmd>
           <Description>Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2008 R2 SERVERDATACENTER'.</Description>
           <Output>Following parameters for the machine, will be auto-configured:
 - Processors
@@ -647,13 +647,13 @@ Machine will not be domain joined but be placed in workgroup.</Description>
         </Example>
         <Example>
           <Name>EXAMPLE 3</Name>
-          <Cmd>Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress '192.168.100.5/24' -Network Network1</Cmd>
+          <Cmd>Add-LabMachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress '192.168.100.5/24' -Network Network1</Cmd>
           <Description>Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2012 R2 SERVERDATACENTER' with build version of '6.3.9600.17415'.</Description>
           <Output>Memory will be set to 2GB (static).</Output>
         </Example>
         <Example>
           <Name>EXAMPLE 4</Name>
-          <Cmd>Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'</Cmd>
+          <Cmd>Add-LabMachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'</Cmd>
           <Description>Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2012 R2 SERVERDATACENTER'.</Description>
           <Output>Memory will be set to 2GB (static).</Output>
         </Example>
