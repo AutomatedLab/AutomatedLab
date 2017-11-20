@@ -84,22 +84,18 @@ function New-LWAzureVM
             #get the SQL Server version defined in the role
             $sqlServerRoleName = $Matches[0]
             $sqlServerVersion = $Matches.SqlVersion
-        }
-    }
-    
-    #if this machine has a Visual Studio role
-    foreach ($role in $Machine.Roles) 
-    { 
+           
+            if ($role.Properties.Count -gt 0)
+            {
+                $useStandardVm = $true
+            }
+        }  
         if ($role.Name -match 'VisualStudio(?<Version>\d{4})')
         {
             $visualStudioRoleName = $Matches[0]        
             $visualStudioVersion = $Matches.Version
         }
-    }
-
-    #if this machine has a SharePoint role
-    foreach ($role in $Machine.Roles) 
-    { 
+    
         if ($role.Name -match 'SharePoint(?<Version>\d{4})')
         {
             $sharePointRoleName = $Matches[0]
@@ -107,7 +103,7 @@ function New-LWAzureVM
         }
     }
                 
-    if ($sqlServerRoleName)
+    if ($sqlServerRoleName -and -not $useStandardVm)
     {
         Write-Verbose -Message 'This is going to be a SQL Server VM'
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'

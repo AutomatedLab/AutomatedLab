@@ -72,21 +72,23 @@ GO
         Write-ScreenInfo -Type Verbose -Message "Finished configuring Azure SQL Servers '$($azureMachines -join ', ')'"
     }
     
-    $hypervMachines = @($machines | Where-Object HostType -eq HyperV)
-    if ($hypervMachines)
+    $onPremisesMachines = @($machines | Where-Object HostType -eq HyperV)
+    $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and ($_.Roles | Where-Object {$_.Name -like "SQL*"}).Properties.Count -gt 0})}
+    
+    if ($onPremisesMachines)
     {        
         $parallelInstalls = 4
         Write-ScreenInfo -Type Verbose -Message "Parallel installs: $parallelInstalls"
         $machineIndex = 0
         $installBatch = 0
-        $totalBatches = [System.Math]::Ceiling($hypervMachines.count / $parallelInstalls)
+        $totalBatches = [System.Math]::Ceiling($onPremisesMachines.count / $parallelInstalls)
         do
         {
             $jobs = @()
             
             $installBatch++
             
-            $machinesBatch = $($hypervMachines[$machineIndex..($machineIndex + $parallelInstalls - 1)])
+            $machinesBatch = $($onPremisesMachines[$machineIndex..($machineIndex + $parallelInstalls - 1)])
             
             Write-ScreenInfo -Message "Starting machines '$($machinesBatch -join ', ')'"
             Start-LabVM -ComputerName $machinesBatch
@@ -274,7 +276,7 @@ GO
             }    
             
         }
-        until ($machineIndex -ge $hypervMachines.Count)
+        until ($machineIndex -ge $onPremisesMachines.Count)
 	    
         $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
@@ -283,9 +285,9 @@ GO
             Start-LabVM -ComputerName $machinesToPrepare -Wait
         }
         
-        Write-ScreenInfo -Message "All SQL Servers '$($hypervMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
+        Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
         
-        Wait-LabVM -ComputerName $hypervMachines -TimeoutInMinutes 30 -ProgressIndicator 10
+        Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
         $sql2016 = Get-LabVM -Role SQLServer2016
 
