@@ -74,7 +74,7 @@ GO
     }
     
     $onPremisesMachines = @($machines | Where-Object HostType -eq HyperV)
-    $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and ($_.Roles | Where-Object {$_.Name -like "SQL*"}).Properties.Count -gt 0})}
+    $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles | Where-Object {$_.Name -like "SQL*"}).Properties.Count -gt 0)}
 
     if ($onPremisesMachines)
     {        
