@@ -1573,7 +1573,7 @@ function Add-LabIsoImageDefinition
         if ($script:lab.DefaultVirtualizationEngine -eq 'Azure')
         {
             Write-Verbose -Message "Syncing $($iso.Name) with Azure lab sources storage in case it does not already exist"
-            Sync-LabAzureLabSources -Filter $iso.Name
+            Sync-LabAzureLabSources -Filter (Split-Path -Path $iso.Name -Leaf)
         }
         #$script:lab.Sources.ISOs.Remove($iso) | Out-Null
         $script:lab.Sources.ISOs.Add($iso)
