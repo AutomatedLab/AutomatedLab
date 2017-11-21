@@ -22,8 +22,11 @@ $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch Lab1
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
 Add-LabMachineDefinition -Name DC1 -Roles RootDC -NetworkAdapter $netAdapter
 
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
-Add-LabMachineDefinition -Name SQL1 -Roles SQLServer2014, Routing -PostInstallationActivity $postInstallActivity
+$roles = @(
+    Get-LabMachineRoleDefinition -Role SQLServer2014 -Properties @{InstallSampleDatabase = 'true'}
+    Get-LabMachineRoleDefinition -Role Routing
+)
+Add-LabMachineDefinition -Name SQL1 -Roles $roles
 
 Add-LabMachineDefinition -Name DevClient1 -OperatingSystem 'Windows 10 Pro' -Roles VisualStudio2015
 

@@ -1560,6 +1560,7 @@ function Get-LabInternetFile
             {
                 $bytesProcessed = 0
                 $request = [System.Net.WebRequest]::Create($Uri)
+                $request.AllowAutoRedirect = $true
         
                 if ($request)
                 {
@@ -1812,60 +1813,10 @@ function Add-VariableToPSSession
 #endregion Add-VariableToPSSession
 
 #region Send-ModuleToPSSession
+
 function Send-ModuleToPSSession
 {
-    #Requires -Version 3
-    <#
-            .SYNOPSIS
-            Copies/moves a module to a given set of computers using a PSSession.
-            The destination path will mirror the source path.
-            
-            .DESCRIPTION
-            This cmdlet uses standard PS remoting to send modules stored on your
-            local machine to a remote machine. If the required module and assembly
-            properties have been populated, you may optionally have it try to include
-            those dependencies for you by specifying the IncludeDependencies parameter.
-            
-            .PARAMETER Module
-            The module to copy/move to the remote computers
-            .PARAMETER Session
-            The session(s) to send the files to.
-            .PARAMETER IncludeDependencies
-            Determines whether the command attempts to send the module's enumerated
-            dependencies after the module has been sent. 
-            .PARAMETER Move
-            Causes the source file to be deleted if all session sends are successful
-            .PARAMETER MaxBufferSize
-            The maximum chunk size to send to a session at one time.
-            Note: 10MB seems to be the default maximum sized allowed in Powershell V4,
-            however in testing the practical limit appears to be 7.4MB. This may 
-            be due to the overhead of serialization or a consequence of the
-            default compression
-            .PARAMETER Encrypt
-            Attempts to use the NT filesystem's EFS attribute to encrypt the
-            destination file when it is written.
-            .PARAMETER NoWriteBuffer
-            Causes the destination file to get written without using any intermediate 
-            buffer other than the storage of the received data into a powershell variable. 
-            .PARAMETER NoClobber
-            Does not allow a destination file to be overwritten
-            .PARAMETER Verify
-            Checks the md5 hash of each sessions's destination file against the source.
-            Note that for large files this may greatly increase the memory requirements
-            on both the source computer and destination sessions. 
-
-        
-            .EXAMPLE
-            #Send the PoWu module installed on the local machine to all remote $sessions, verify and encrypt their contents
-            Get-Module -ListAvailable -Name "PoWu" | Send-ModuleToPSSession -Session $sessions -verify -encrypt -IncludeDependencies -Verbose
-
-            .OUTPUTS
-            System.IO.FileInfo objects representing the successfully copied module files			
-
-            .NOTES
-            Author: Tim Bertalot / Raimund Andree
-    #> 
-    
+    #.ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(  
             RemotingCapability		= 'PowerShell',  #V3 and above, values documented here: http://msdn.microsoft.com/en-us/library/system.management.automation.remotingcapability(v=vs.85).aspx
             SupportsShouldProcess   = $false,
@@ -2013,7 +1964,7 @@ function Send-ModuleToPSSession
 
             Write-Verbose "Sending psd1 manifest module in directory $($Local:Module.ModuleBase)"
 
-            if ($Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}')
+            if ($Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}\.\d{1,4}$' -or $Local:Module.ModuleBase -match '\d{1,4}\.\d{1,4}\.\d{1,4}$')
             {
                 #parent folder contains a specific version. In order to copy the module right, the parent of this parent is required
                 $Local:moduleParentFolder = Split-Path -Path $Local:Module.ModuleBase -Parent
@@ -2063,7 +2014,7 @@ function Sync-Parameter
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
     param (
-        [Parameter(Mandatory)]
+        [Parameter(Mandatory = $true)]
         [ValidateScript({
             $_ -is [System.Management.Automation.FunctionInfo] -or $_ -is [System.Management.Automation.CmdletInfo]
         })]

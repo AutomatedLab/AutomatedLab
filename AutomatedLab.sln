@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.12
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -94,6 +94,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
 		AutomatedLab\AutomatedLabExchange2016.psm1 = AutomatedLab\AutomatedLabExchange2016.psm1
+		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
 		AutomatedLab\AutomatedLabNetwork.psm1 = AutomatedLab\AutomatedLabNetwork.psm1
@@ -143,15 +144,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrepareRootDomain", "Prepar
 		LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt = LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt
 		LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt = LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt
 		LabSources\PostInstallationActivities\PrepareRootDomain\users.csv = LabSources\PostInstallationActivities\PrepareRootDomain\users.csv
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PrepareSqlServer", "PrepareSqlServer", "{3E54B63E-54DF-47C0-80C7-C2CB0A5D3E55}"
-	ProjectSection(SolutionItems) = preProject
-		LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1 = LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1
-		LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql = LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql
-		LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql = LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql
-		LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt = LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt
-		LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi = LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A33ABAA2-AE00-4951-9A9C-727C11FE2C03}"
@@ -413,7 +405,6 @@ Global
 		{084EEAC4-687E-49BA-BD42-6464DCDE4894} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{F6BA00ED-F4BA-4D03-908A-FA07433D65C3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{BC03E484-C1F9-4BF7-9D25-2E546EDABB3B} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
-		{3E54B63E-54DF-47C0-80C7-C2CB0A5D3E55} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{35796C10-DDB9-4E04-A2CD-FE3D00A0E361} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
 		{F283AF3D-956C-4CE2-ABBF-273D38810E2D} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 		{F808D90D-4D58-4532-8041-ED753492C589} = {35796C10-DDB9-4E04-A2CD-FE3D00A0E361}

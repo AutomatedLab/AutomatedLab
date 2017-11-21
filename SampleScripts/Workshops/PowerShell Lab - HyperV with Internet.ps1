@@ -51,8 +51,8 @@ Add-LabMachineDefinition -Name POSHWeb1 -Memory 512MB -Roles WebServer -IpAddres
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB
 #SQL server with demo databases
 Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_server_2014_standard_edition_with_service_pack_2_x64_dvd_8961564.iso
-$postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName InstallSampleDBs.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareSqlServer -KeepFolder
-Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles SQLServer2014 -IpAddress 192.168.30.52 -PostInstallationActivity $postInstallActivity
+$role = Get-LabMachineRoleDefinition -Role SQLServer2014 -Properties @{InstallSampleDatabase = 'true'}
+Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52
 #>
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
