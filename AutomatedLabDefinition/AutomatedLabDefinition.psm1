@@ -1472,6 +1472,15 @@ function Add-LabIsoImageDefinition
         if ( [System.IO.Path]::HasExtension($Path))
         {
             $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+
+            if (-not $isoFiles -and $Name)
+            {
+                $filterPath = Split-Path -Path $Path -Leaf
+                Write-Verbose -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
+                Sync-LabAzureLabSources -Filter $filterPath
+
+                $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+            }
         }
     }
     else
@@ -1570,11 +1579,6 @@ function Add-LabIsoImageDefinition
             $script:lab.Sources.ISOs.Remove($isoToRemove) | Out-Null
         }
 
-        if ($script:lab.DefaultVirtualizationEngine -eq 'Azure')
-        {
-            Write-Verbose -Message "Syncing $($iso.Name) with Azure lab sources storage in case it does not already exist"
-            Sync-LabAzureLabSources -Filter (Split-Path -Path $iso.Name -Leaf)
-        }
         #$script:lab.Sources.ISOs.Remove($iso) | Out-Null
         $script:lab.Sources.ISOs.Add($iso)
         if (-not $NoDisplay)
