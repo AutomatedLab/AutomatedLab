@@ -171,7 +171,7 @@ GO
                     while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
                     {
                         Start-Sleep -Seconds 2
-                        $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive).Drive
+                        $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
                     }
                     
                     if ($dvdDrive)
@@ -355,7 +355,7 @@ function Install-LabSqlSampleDatabases
         throw "No SQL link found to download $roleName sample database"
     }
 
-    $targetFolder = Join-Path -Path $global:labSources -ChildPath SoftwarePackages\SqlSampleDbs
+    $targetFolder = Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath SoftwarePackages\SqlSampleDbs
 
     if (-not (Test-Path $targetFolder))
     {
@@ -510,6 +510,8 @@ function New-LabSqlAccount
 
     foreach ( $kvp in $usersAndPasswords.GetEnumerator())
     {
+        $user = $kvp.Key
+
         if ($kvp.Key.Contains("\"))
         {
             $domain = ($kvp.Key -split "\\")[0]
