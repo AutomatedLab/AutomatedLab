@@ -186,13 +186,10 @@ GO
                         {
                             throw "SQL Setup failed with exit code $($installation.ExitCode)"
                         }
-                        
-                        if ($installation.ExitCode -eq 3010)
-                        {
-                            Write-Verbose 'SQL Installation finished. Restarting machine.'
-                        
-                            Restart-Computer -Force
-                        }
+
+                        Write-Verbose 'SQL Installation finished. Restarting machine.'
+                    
+                        Restart-Computer -Force
                     }
                     else
                     {
