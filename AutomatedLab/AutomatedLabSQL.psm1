@@ -161,6 +161,10 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
                 Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
+                if ($machine.HostType -eq 'Azure')
+                {
+                    $global:setupArguments += "/UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                }
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
                 $scriptBlock = {                    
