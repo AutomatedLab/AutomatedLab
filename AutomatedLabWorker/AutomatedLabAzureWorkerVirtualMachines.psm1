@@ -1501,16 +1501,48 @@ function Mount-LWAzureIsoImage
 
         [switch]$PassThru
     )
-
-    $machines = Get-LabVM -ComputerName $ComputerName
-
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
-        $drive = Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+        $isoPath = $args[0]
+
+        if (-not (Test-Path $isoPath))
+        {
+            throw "$isoPath was not accessible."
+        }
+
+        $targetPath = Join-Path -Path D: -ChildPath (Split-Path $isoPath -Leaf)
+        Copy-Item -Path $isoPath -Destination $targetPath  -Force
+        $drive = Mount-DiskImage -ImagePath $targetPath -StorageType ISO -PassThru | Get-Volume
         $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
         $drive | Select-Object -Property *
     } -ArgumentList $azureIsoPath -PassThru:$PassThru
+}
+#endregion
+
+#region Dismount-LWAzureIsoImage
+function Dismount-LWAzureIsoImage
+{
+    param
+    (
+        [Parameter(Mandatory, Position = 0)]
+        [string[]]
+        $ComputerName
+    )
+
+    Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Dismounting ISO Images on Azure machines $($ComputerName -join ',')" -ScriptBlock {
+        
+        $originalImage = Get-ChildItem -Path D:\ -Filter *.iso | Foreach-Object { Get-DiskImage -ImagePath $_.FullName } | Where-Object Attached
+
+        if ($originalImage)
+        {
+            Write-Verbose -Message "Dismounting $($originalImage.ImagePath -join ',')"
+            $originalImage | Dismount-DiskImage
+
+            Write-Verbose -Message "Removing temporary file $($originalImage.ImagePath -join ',')"
+            Remove-Item -Path $originalImage.ImagePath -Force
+        }
+    }
 }
 #endregion
