@@ -179,33 +179,20 @@ GO
                         #Configure App Compatibility for SQL Server 2008. Otherwise a warning pop-up will stop the installation
                         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{f2d3ae3a-bfcc-45e2-bf63-178d1db34294}' -Value 4 -PropertyType 'DWORD'
                         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{45da5a8b-67b5-4896-86b7-a2e838aee035}' -Value 4 -PropertyType 'DWORD'
+                                                
+                        $installation = Start-Process -FilePath "$dvdDrive\Setup.exe" -ArgumentList $setupArguments -Wait -LoadUserProfile -PassThru
                         
-                        Set-Content -Path C:\InstallSQLServer.cmd -Value "$dvdDrive\Setup.exe$setupArguments"
-                        schtasks.exe /Create /SC ONLOGON /TN InstallSQLServer /TR "cmd /c c:\InstallSQLServer.cmd"
-                        schtasks.exe /Run /I /TN "InstallSQLServer"
-                        
-                        #Wait until installation starts
-                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object { $_ -like '*InstallSQLServer*' -and $_ -notlike '*Running*' })
+                        if ($installation.ExitCode -notin 0,3010)
                         {
-                            Start-Sleep -Seconds 1
+                            throw "SQL Setup failed with exit code $($installation.ExitCode)"
                         }
                         
-                        #Wait until installation finishes
-                        while (schtasks.exe /Query /TN "InstallSQLServer" | Where-Object { $_ -like '*InstallSQLServer*' -and $_ -like '*Running*' })
+                        if ($installation.ExitCode -eq 3010)
                         {
-                            Start-Sleep -Seconds 5
+                            Write-Verbose 'SQL Installation finished. Restarting machine.'
+                        
+                            Restart-Computer -Force
                         }
-                        
-                        schtasks.exe /Delete /TN "InstallSQLServer" /F
-                        if (-not (Test-Path -Path C:\DeployDebug))
-                        {
-                            New-Item -ItemType Directory -Path C:\DeployDebug | Out-Null
-                        }
-                        Move-Item -Path c:\InstallSQLServer.cmd -Destination C:\DeployDebug
-                        
-                        Write-Verbose 'SQL Installation finished. Restarting machine.'
-                        
-                        Restart-Computer -Force
                     }
                     else
                     {
