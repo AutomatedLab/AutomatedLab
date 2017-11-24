@@ -425,15 +425,7 @@ function Add-LabAzureSubscription
         }
         Write-Verbose "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
         [void](Set-AzureRmCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
-    }    
-    
-    <# TODO, seems deprecated and or dangerous Add all additional Azure Services if configured
-            $resourceGroupNames = (Get-LabMachine).AzureProperties.ResourceGroupName | Select-Object -Unique
-            if ($resourceGroupNames)
-            {
-            #Rename to new-labazureresourcegroup
-            New-LabAzureResourceGroup -ServiceName $resourceGroupNames -LocationName $lab.AzureSettings.DefaultLocation -ErrorAction Stop
-    }#>
+    }
 
     Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
     

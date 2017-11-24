@@ -273,7 +273,7 @@ GO
                 
                 Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
                 
-                if ($installBatch -lt $totalBatches)
+                if ($installBatch -lt $totalBatches -and ($machinesBatch | Where-Object HostType -eq 'HyperV'))
                 {
                     Write-ScreenInfo -Message "Saving machines '$($machinesBatch -join ', ')' as these are not needed right now" -Type Warning
                     Save-VM -Name $machinesBatch
@@ -309,7 +309,7 @@ GO
 
         if ($CreateCheckPoints)
         {
-            Checkpoint-LabVM -ComputerName $machines -SnapshotName 'Post SQL Server Installation'
+            Checkpoint-LabVM -ComputerName ($machines | Where-Object HostType -eq 'HyperV') -SnapshotName 'Post SQL Server Installation'
         }
     }
 	
