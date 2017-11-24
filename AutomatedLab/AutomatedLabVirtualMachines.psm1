@@ -1150,11 +1150,11 @@ function Connect-LabVM
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
         }
-        elseif ($machine.HostType -eq 'HyperV')
+        else
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
+            mstsc.exe "/v:$($machine.Name)"
             
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
             
