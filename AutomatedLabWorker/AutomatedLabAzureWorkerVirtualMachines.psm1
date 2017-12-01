@@ -696,7 +696,7 @@ function Initialize-LWAzureVM
     }
     Write-ScreenInfo -Message "DNS names found: $((Get-LabVM).AzureConnectionInfo.DnsName.Count)"
 
-    #refresh the machine list to have also Azure meta date is available
+    #refresh the machine list to make sure Azure connection info is available
     $Machine = Get-LabVM -ComputerName $Machine
       
     #copy AL tools to lab machine and optionally the tools folder
@@ -725,6 +725,8 @@ function Initialize-LWAzureVM
     Write-ScreenInfo -Message 'Finished' -TaskEnd
     
     Enable-LabVMRemoting -ComputerName $Machine
+
+    Set-LabAutoLogon -ComputerName $Machine
     
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
     $machinesToStop = $Machine | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDC' -and $_.Roles.Name -notcontains 'DC' -and $_.IsDomainJoined }
