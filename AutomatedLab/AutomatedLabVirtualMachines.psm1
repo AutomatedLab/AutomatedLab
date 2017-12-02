@@ -1788,7 +1788,7 @@ function Get-LabVM
 }
 #endregion Get-LabVM
 
-#region Set-LabAutoLogonUser
+#region Set-LabAutoLogon
 function Set-LabAutoLogon
 {
     param

@@ -211,7 +211,8 @@
         'Restore-LabConnection',
         'Get-LabPublicIpAddress',
         'Install-LabFailoverCluster'
-        'Install-LabSqlSampleDatabases'
+        'Install-LabSqlSampleDatabases',
+        'Set-LabAutoLogon'
     )
     
     # List of all files packaged with this module

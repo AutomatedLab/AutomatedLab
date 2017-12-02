@@ -725,8 +725,6 @@ function Initialize-LWAzureVM
     Write-ScreenInfo -Message 'Finished' -TaskEnd
     
     Enable-LabVMRemoting -ComputerName $Machine
-
-    Set-LabAutoLogon -ComputerName $Machine
     
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
     $machinesToStop = $Machine | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDC' -and $_.Roles.Name -notcontains 'DC' -and $_.IsDomainJoined }
@@ -923,6 +921,8 @@ function Start-LWAzureVM
 
         Write-Verbose -Message 'Start joining the machines to the respective domains'
         Join-LabVMDomain -Machine $machinesToJoin
+
+        Set-LabAutoLogon -ComputerName $machinesToJoin
     }
     
     Write-LogFunctionExit
