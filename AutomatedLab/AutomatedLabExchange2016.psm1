@@ -14,7 +14,7 @@ function Copy-LabExchange2016InstallationFiles
     Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading .net Framework 4.5.2 from '$dotnet452DownloadLink'"
     Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
-    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet452DownloadLink'"
+    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet462DownloadLink'"
     Get-LabInternetFile -Uri $dotnet462DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
         
     Write-ScreenInfo 'finished' -TaskEnd
@@ -87,7 +87,7 @@ function Start-ExchangeInstallSequence
             
             try
             {
-                Write-ScreenInfo "Calling activity '$Activity' agian."
+                Write-ScreenInfo "Calling activity '$Activity' again."
                 $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorAction Stop
             }
