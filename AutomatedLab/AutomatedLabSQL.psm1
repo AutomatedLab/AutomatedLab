@@ -163,9 +163,25 @@ GO
                 
                 if ($machine.HostType -eq 'Azure')
                 {
-                    $global:setupArguments += "/UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                    $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
                 }
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
+
+                $retryCount = 3
+                $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
+                while (-not $autoLogon -and $retryCount -gt 0)
+                {
+                    Set-LabAutoLogon -ComputerName $machine
+                    Restart-LabVm -ComputerName $machine -Wait
+
+                    $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
+                    $retryCount--
+                }
+
+                if (-not $autoLogon)
+                {
+                    throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with SQL Server setup for $machine"
+                }
 
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
@@ -181,8 +197,8 @@ GO
                     if ($dvdDrive)
                     {
                         #Configure App Compatibility for SQL Server 2008. Otherwise a warning pop-up will stop the installation
-                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{f2d3ae3a-bfcc-45e2-bf63-178d1db34294}' -Value 4 -PropertyType 'DWORD'
-                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{45da5a8b-67b5-4896-86b7-a2e838aee035}' -Value 4 -PropertyType 'DWORD'
+                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{f2d3ae3a-bfcc-45e2-bf63-178d1db34294}' -Value 4 -PropertyType 'DWORD' -ErrorAction SilentlyContinue
+                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{45da5a8b-67b5-4896-86b7-a2e838aee035}' -Value 4 -PropertyType 'DWORD' -ErrorAction SilentlyContinue
                                                 
                         $installation = Start-Process -FilePath "$dvdDrive\Setup.exe" -ArgumentList $setupArguments -Wait -LoadUserProfile -PassThru
                         
@@ -356,6 +372,7 @@ function Install-LabSqlSampleDatabases
     }
     else
     {
+        [void] (New-Item -ItemType Directory -Path (Join-Path -Path $targetFolder -ChildPath $rolename) -ErrorAction SilentlyContinue)
         $targetFile = Join-Path -Path $targetFolder -ChildPath "$rolename\$roleName.bak"
     }
 

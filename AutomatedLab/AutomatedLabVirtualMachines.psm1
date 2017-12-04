@@ -1793,12 +1793,15 @@ function Set-LabAutoLogon
 {
     param
     (
-        [AutomatedLab.Machine[]]
+        [string[]]
         $ComputerName
     )
        
     Write-Verbose -Message "Enabling autologon on $($ComputerName.Count) machines"
-    foreach ( $Machine in $ComputerName)
+
+    $Machines = Get-LabVm @PSBoundParameters
+
+    foreach ( $Machine in $Machines)
     {
         $InvokeParameters = @{
             Username = $Machine.InstallationUser.UserName
@@ -1811,7 +1814,7 @@ function Set-LabAutoLogon
         }
         else
         {
-            $invokeParameters['DomainName'] = $Machine.DomainName
+            $invokeParameters['DomainName'] = $Machine.Name
         }
 
         Invoke-LabCommand -ActivityName "Enabling AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
@@ -1820,8 +1823,75 @@ function Set-LabAutoLogon
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $InvokeParameters.DomainName -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $InvokeParameters.UserName -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $InvokeParameters.Password -Type String -Force
-        } -Variable (Get-Variable InvokeParameters)
+        } -Variable (Get-Variable InvokeParameters) -NoDisplay
     }
+}
+#endregion
+
+#region Test-LabAutoLogon
+function Test-LabAutoLogon
+{
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
+
+    Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+    $returnValues = @{}
+    
+    foreach ( $Machine in $Machines)
+    {
+        $parameters = @{
+            Username = $Machine.InstallationUser.UserName
+            Password = $Machine.InstallationUser.Password
+        }
+
+        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        {
+            $parameters['DomainName'] = $Machine.DomainName
+        }
+        else
+        {
+            $parameters['DomainName'] = $Machine.Name
+        }
+
+        $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+            $values = @{}
+            $values['AutoAdminLogon'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon
+            $values['DefaultDomainName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName
+            $values['DefaultUserName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName
+            $values['DefaultPassword'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword
+            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession | ForEach-Object {
+                $_.GetRelated('Win32_UserAccount') | Select-Object -ExpandProperty Caption 
+            } | Sort-Object -Unique
+            
+            $values
+        } -PassThru -NoDisplay
+
+        if ( $settings.AutoAdminLogon -ne 1 -or
+            $settings.DefaultDomainName -ne $parameters.DomainName -or
+            $settings.DefaultUserName -ne $parameters.Username -or
+            $settings.DefaultPassword -ne $parameters.Password)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $interactiveSessionUserName = '{0}\{1}' -f $parameters.DomainName, $parameters.Username
+
+        if ( $returnValues.LoggedOnUsers -notcontains $interactiveSessionUserName)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $returnValues[$Machine.Name] = $true
+    }
+
+    return $returnValues
 }
 #endregion
 
