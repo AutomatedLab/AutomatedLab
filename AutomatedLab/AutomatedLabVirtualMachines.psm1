@@ -1864,12 +1864,14 @@ function Test-LabAutoLogon
             $values['DefaultDomainName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName
             $values['DefaultUserName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName
             $values['DefaultPassword'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword
-            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession | ForEach-Object {
-                $_.GetRelated('Win32_UserAccount') | Select-Object -ExpandProperty Caption 
-            } | Sort-Object -Unique
+            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession | 
+                Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
+                Select-Object -ExpandProperty Caption -Unique
             
             $values
         } -PassThru -NoDisplay
+
+        Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
 
         if ( $settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
@@ -1880,9 +1882,9 @@ function Test-LabAutoLogon
             continue
         }
 
-        $interactiveSessionUserName = '{0}\{1}' -f $parameters.DomainName, $parameters.Username
+        $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
 
-        if ( $returnValues.LoggedOnUsers -notcontains $interactiveSessionUserName)
+        if ( $settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
         {
             $returnValues[$Machine.Name] = $false
             continue
