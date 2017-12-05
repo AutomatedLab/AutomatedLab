@@ -107,7 +107,7 @@ namespace AutomatedLab
 
                     case "Windows Server 2016 SERVERSTANDARDNANO":
                         return "2016-Nano-Server";
-                        
+
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
 
@@ -254,6 +254,12 @@ namespace AutomatedLab
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 SERVERDATACENTERNANO":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    // Server 2016 Insider Preview
+                    case "Windows Server 2016 SERVERSTANDARDACORE":
+                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
+                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
 
                     default:
                         return string.Empty;

@@ -1744,17 +1744,17 @@ function Add-LabMachineDefinition
         [string[]]$DiskName,
         
         [ValidateSet(
-            'Windows 7 PROFESSIONAL', 'Windows 7 ULTIMATE', 'Windows 7 Enterprise',
-            'Windows 8 Pro', 'Windows 8 Enterprise',
-            'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
-            'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB', 'Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
-            'Windows Server 2008 R2 SERVERDATACENTER', 'Windows Server 2008 R2 SERVERDATACENTERCORE', 'Windows Server 2008 R2 SERVERENTERPRISE', 'Windows Server 2008 R2 SERVERENTERPRISECORE', 'Windows Server 2008 R2 SERVERSTANDARD', 'Windows Server 2008 R2 SERVERSTANDARDCORE', 'Windows Server 2008 R2 SERVERWEB', 'Windows Server 2008 R2 SERVERWEBCORE',
-            'Windows Server 2012 SERVERDATACENTER', 'Windows Server 2012 SERVERDATACENTERCORE', 'Windows Server 2012 SERVERSTANDARD', 'Windows Server 2012 SERVERSTANDARDCORE',
-            'Windows Server 2012 R2 SERVERDATACENTER', 'Windows Server 2012 R2 SERVERDATACENTERCORE', 'Windows Server 2012 R2 SERVERSTANDARD', 'Windows Server 2012 R2 SERVERSTANDARDCORE',
-            'Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 4 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTER',
-            'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
-            'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
-            'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO'
+                'Windows 7 PROFESSIONAL', 'Windows 7 ULTIMATE', 'Windows 7 Enterprise',
+                'Windows 8 Pro', 'Windows 8 Enterprise',
+                'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
+                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
+                'Windows Server 2008 R2 SERVERDATACENTER', 'Windows Server 2008 R2 SERVERDATACENTERCORE', 'Windows Server 2008 R2 SERVERENTERPRISE', 'Windows Server 2008 R2 SERVERENTERPRISECORE', 'Windows Server 2008 R2 SERVERSTANDARD', 'Windows Server 2008 R2 SERVERSTANDARDCORE', 'Windows Server 2008 R2 SERVERWEB', 'Windows Server 2008 R2 SERVERWEBCORE',
+                'Windows Server 2012 SERVERDATACENTER', 'Windows Server 2012 SERVERDATACENTERCORE', 'Windows Server 2012 SERVERSTANDARD', 'Windows Server 2012 SERVERSTANDARDCORE',
+                'Windows Server 2012 R2 SERVERDATACENTER', 'Windows Server 2012 R2 SERVERDATACENTERCORE', 'Windows Server 2012 R2 SERVERSTANDARD', 'Windows Server 2012 R2 SERVERSTANDARDCORE',
+                'Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 4 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 4 SERVERDATACENTER',
+                'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
+                'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
+                'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO','Windows Server 2016 SERVERSTANDARDACORE', 'Windows Server 2016 SERVERDATACENTERACORE'
                 
         )]
         [Alias('OS')]
