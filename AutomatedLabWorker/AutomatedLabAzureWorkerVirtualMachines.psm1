@@ -84,22 +84,18 @@ function New-LWAzureVM
             #get the SQL Server version defined in the role
             $sqlServerRoleName = $Matches[0]
             $sqlServerVersion = $Matches.SqlVersion
-        }
-    }
-    
-    #if this machine has a Visual Studio role
-    foreach ($role in $Machine.Roles) 
-    { 
+           
+            if ($role.Properties.Count -gt 0)
+            {
+                $useStandardVm = $true
+            }
+        }  
         if ($role.Name -match 'VisualStudio(?<Version>\d{4})')
         {
             $visualStudioRoleName = $Matches[0]        
             $visualStudioVersion = $Matches.Version
         }
-    }
-
-    #if this machine has a SharePoint role
-    foreach ($role in $Machine.Roles) 
-    { 
+    
         if ($role.Name -match 'SharePoint(?<Version>\d{4})')
         {
             $sharePointRoleName = $Matches[0]
@@ -107,7 +103,7 @@ function New-LWAzureVM
         }
     }
                 
-    if ($sqlServerRoleName)
+    if ($sqlServerRoleName -and -not $useStandardVm)
     {
         Write-Verbose -Message 'This is going to be a SQL Server VM'
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
@@ -700,7 +696,7 @@ function Initialize-LWAzureVM
     }
     Write-ScreenInfo -Message "DNS names found: $((Get-LabVM).AzureConnectionInfo.DnsName.Count)"
 
-    #refresh the machine list to have also Azure meta date is available
+    #refresh the machine list to make sure Azure connection info is available
     $Machine = Get-LabVM -ComputerName $Machine
       
     #copy AL tools to lab machine and optionally the tools folder
@@ -925,6 +921,8 @@ function Start-LWAzureVM
 
         Write-Verbose -Message 'Start joining the machines to the respective domains'
         Join-LabVMDomain -Machine $machinesToJoin
+
+        Set-LabAutoLogon -ComputerName $machinesToJoin
     }
     
     Write-LogFunctionExit
@@ -1505,16 +1503,48 @@ function Mount-LWAzureIsoImage
 
         [switch]$PassThru
     )
-
-    $machines = Get-LabVM -ComputerName $ComputerName
-
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
-        $drive = Mount-DiskImage -ImagePath $args[0] -StorageType ISO -PassThru | Get-Volume
+        $isoPath = $args[0]
+
+        if (-not (Test-Path $isoPath))
+        {
+            throw "$isoPath was not accessible."
+        }
+
+        $targetPath = Join-Path -Path D: -ChildPath (Split-Path $isoPath -Leaf)
+        Copy-Item -Path $isoPath -Destination $targetPath  -Force
+        $drive = Mount-DiskImage -ImagePath $targetPath -StorageType ISO -PassThru | Get-Volume
         $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
         $drive | Select-Object -Property *
     } -ArgumentList $azureIsoPath -PassThru:$PassThru
+}
+#endregion
+
+#region Dismount-LWAzureIsoImage
+function Dismount-LWAzureIsoImage
+{
+    param
+    (
+        [Parameter(Mandatory, Position = 0)]
+        [string[]]
+        $ComputerName
+    )
+
+    Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Dismounting ISO Images on Azure machines $($ComputerName -join ',')" -ScriptBlock {
+        
+        $originalImage = Get-ChildItem -Path D:\ -Filter *.iso | Foreach-Object { Get-DiskImage -ImagePath $_.FullName } | Where-Object Attached
+
+        if ($originalImage)
+        {
+            Write-Verbose -Message "Dismounting $($originalImage.ImagePath -join ',')"
+            $originalImage | Dismount-DiskImage
+
+            Write-Verbose -Message "Removing temporary file $($originalImage.ImagePath -join ',')"
+            Remove-Item -Path $originalImage.ImagePath -Force
+        }
+    }
 }
 #endregion
