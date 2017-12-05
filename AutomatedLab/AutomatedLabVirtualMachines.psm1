@@ -1864,7 +1864,7 @@ function Test-LabAutoLogon
             $values['DefaultDomainName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName
             $values['DefaultUserName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName
             $values['DefaultPassword'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword
-            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType -eq 2' | 
+            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
                 Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
                 Select-Object -ExpandProperty Caption -Unique
             
