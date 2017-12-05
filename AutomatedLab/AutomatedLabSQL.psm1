@@ -314,16 +314,43 @@ GO
         
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
-        $sql2016 = Get-LabVM -Role SQLServer2016
+        $servers = Get-LabVm | 
+            Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} | 
+            Add-Member -Name 'SsmsUri' -Value {
+                    (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.Name.Substring($this.Name.Length - 4, 4))ManagementStudio"]
+                } -MemberType ScriptProperty -PassThru -Force |
+            Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {$this.Name.Substring($this.Name.Length - 4, 4)} -PassThru -Force
+        
+            if ($servers)
+            {
+                Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
+            }
+        $jobs = @()
 
-        if ($sql2016)
+        foreach ( $server in $servers)
         {
-            $ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
+            if (-not $server.SsmsUri)
+            {
+                Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+                continue
+            }
+            
+            $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath $server.SqlVersion
+            $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
 
-            Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
-            Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
+            if (-not (Test-Path $downloadFolder))
+            {
+                [void] (New-Item -ItemType Directory -Path $downloadFolder)
+            }
 
-            $jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
+            Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath
+
+            $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -AsJob -PassThru            
+        }
+
+        if ($jobs)
+        {
+            Write-Verbose -Message 'Waiting for SQL Server Management Studio installation jobs to finish'
             Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
         }
 
