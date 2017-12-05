@@ -258,16 +258,7 @@ namespace AutomatedLab
                     // Server 2016 Insider Preview
                     case "Windows Server 2016 SERVERSTANDARDACORE":
                         return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
-                    case "Windows Server 2016 SERVERSTANDARDA":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
-                    case "Windows Server 2016 SERVERSTANDARDANANO":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
-
                     case "Windows Server 2016 SERVERDATACENTERACORE":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
-                    case "Windows Server 2016 SERVERDATACENTERANANO":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
-                    case "Windows Server 2016 SERVERDATACENTERA":
                         return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
 
                     default:
