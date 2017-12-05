@@ -658,7 +658,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016))
+    if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabMachine -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabMachine -Role SQLServer2008).Name -join ', ')'" }
@@ -666,6 +666,7 @@ function Install-Lab
         if (Get-LabMachine -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabMachine -Role SQLServer2012).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2016).Name -join ', ')'" }
+        if (Get-LabMachine -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabMachine -Role SQLServer2017).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd

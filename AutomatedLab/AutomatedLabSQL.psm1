@@ -30,7 +30,7 @@ function Install-LabSqlServers
         return
     }
 
-    $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016
+    $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
 
     #The dafault SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin accout has permissions, Invoke-LabCommand cannot be used.
@@ -113,7 +113,7 @@ GO
                 
                 #Dismounting ISO images to have just one drive later
                 Dismount-LabIsoImage -ComputerName $machine -SupressOutput
-
+                
                 $retryCount = 3
                 $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                 while (-not $autoLogon -and $retryCount -gt 0)
@@ -166,6 +166,7 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
+				Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('BrowserSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
@@ -177,6 +178,21 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
                 Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
+                if ( $role.Properties.ContainsKey('ConfigurationFile'))
+                {
+                    $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
+                    
+                    try
+                    {
+                        Copy-LabFileItem -Path $role.Properties.ConfigurationFile -ComputerName $machine -ErrorAction Stop
+                        $global:setupArguments += Write-ArgumentVerbose -Argument (" /ConfigurationFile=`"$fileName`"")
+                    }
+                    catch
+                    {
+                        Write-Verbose -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
+                    }                    
+                }
+
                 if ($machine.HostType -eq 'Azure')
                 {
                     $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
@@ -238,14 +254,14 @@ GO
                 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
-                $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016 |
+                $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
                     Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
                     
-                    $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016 |
+                    $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
                         Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
                         Select-Object -First 2
                     
@@ -265,7 +281,7 @@ GO
                         Write-Verbose -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
                         
-                        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
+                        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
                     }
                     Write-Verbose -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
@@ -287,7 +303,7 @@ GO
         }
         until ($machineIndex -ge $onPremisesMachines.Count)
 	    
-        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016
+        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
         {
@@ -298,16 +314,43 @@ GO
         
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
-        $sql2016 = Get-LabVM -Role SQLServer2016
+        $servers = Get-LabVm | 
+            Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} | 
+            Add-Member -Name 'SsmsUri' -Value {
+                    (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.Name.Substring($this.Name.Length - 4, 4))ManagementStudio"]
+                } -MemberType ScriptProperty -PassThru -Force |
+            Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {$this.Name.Substring($this.Name.Length - 4, 4)} -PassThru -Force
+        
+            if ($servers)
+            {
+                Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
+            }
+        $jobs = @()
 
-        if ($sql2016)
+        foreach ( $server in $servers)
         {
-            $ssmsUri = $MyInvocation.MyCommand.Module.PrivateData.Sql2016ManagementStudio
+            if (-not $server.SsmsUri)
+            {
+                Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+                continue
+            }
+            
+            $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath $server.SqlVersion
+            $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
 
-            Write-ScreenInfo -Message "Installing SQL Server 2016 Management Studio on machines '$($sql2016.Name -join ', ')'"
-            Get-LabInternetFile -Uri $ssmsUri -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe
+            if (-not (Test-Path $downloadFolder))
+            {
+                [void] (New-Item -ItemType Directory -Path $downloadFolder)
+            }
 
-            $jobs = Install-LabSoftwarePackage -Path $global:labSources\SoftwarePackages\SSMS-Setup-ENU.exe -CommandLine '/install /quiet' -ComputerName $sql2016 -AsJob -PassThru
+            Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath
+
+            $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -AsJob -PassThru            
+        }
+
+        if ($jobs)
+        {
+            Write-Verbose -Message 'Waiting for SQL Server Management Studio installation jobs to finish'
             Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
         }
 
@@ -498,9 +541,9 @@ function New-LabSqlAccount
         $usersAndPasswords[$RoleProperties['AgtSvcAccount']] = $RoleProperties['AgtSvcPassword']
     } 
 
-    if ($RoleProperties.ContainsKey('RsSvcAccount') -and $RoleProperties.ContainsKey('RsSvcAccount'))
+    if ($RoleProperties.ContainsKey('RsSvcAccount') -and $RoleProperties.ContainsKey('RsSvcPassword'))
     {
-        $usersAndPasswords[$RoleProperties['RsSvcAccount']] = $RoleProperties['RsSvcAccount']
+        $usersAndPasswords[$RoleProperties['RsSvcAccount']] = $RoleProperties['RsSvcPassword']
     } 
 
     if ($RoleProperties.ContainsKey('AsSvcAccount') -and $RoleProperties.ContainsKey('AsSvcPassword'))
