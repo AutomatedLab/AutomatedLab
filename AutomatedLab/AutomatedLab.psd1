@@ -296,6 +296,7 @@
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio                = 'https://go.microsoft.com/fwlink/?LinkID=840946'
+        Sql2017ManagementStudio                = 'https://go.microsoft.com/fwlink/?linkid=858904'
 
         # Notification settings - see AutomatedLabNotifications module manifest for provider settings
         NotificationProviders                  = @(
