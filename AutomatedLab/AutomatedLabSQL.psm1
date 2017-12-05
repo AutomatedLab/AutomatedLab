@@ -113,6 +113,22 @@ GO
                 
                 #Dismounting ISO images to have just one drive later
                 Dismount-LabIsoImage -ComputerName $machine -SupressOutput
+                
+                $retryCount = 3
+                $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
+                while (-not $autoLogon -and $retryCount -gt 0)
+                {
+                    Set-LabAutoLogon -ComputerName $machine
+                    Restart-LabVm -ComputerName $machine -Wait
+
+                    $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
+                    $retryCount--
+                }
+
+                if (-not $autoLogon)
+                {
+                    throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with SQL Server setup for $machine"
+                }
                                 
                 Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput
                 
@@ -182,22 +198,6 @@ GO
                     $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
                 }
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
-
-                $retryCount = 3
-                $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
-                while (-not $autoLogon -and $retryCount -gt 0)
-                {
-                    Set-LabAutoLogon -ComputerName $machine
-                    Restart-LabVm -ComputerName $machine -Wait
-
-                    $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
-                    $retryCount--
-                }
-
-                if (-not $autoLogon)
-                {
-                    throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with SQL Server setup for $machine"
-                }
 
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
