@@ -424,60 +424,7 @@ $unattendedXmlDefaultContent2008 = @'
   </settings>
 </unattend>
 '@
-#region Get-Type (helper function for creating generic types)
-function Get-Type
-{
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
-    param (
-        [Parameter(Position = 0, Mandatory = $true)]
-        [string] $GenericType,
-        
-        [Parameter(Position = 1, Mandatory = $true)]
-        [string[]] $T
-    )
-    
-    $T = $T -as [type[]]
-    
-    try
-    {
-        $generic = [type]($GenericType + '`' + $T.Count)
-        $generic.MakeGenericType($T)
-    }
-    catch [Exception]
-    {
-        throw New-Object -TypeName System.Exception -ArgumentList ('Cannot create generic type', $_.Exception)
-    }
-}
-#endregion
-#region Invoke-Ternary
-function Invoke-Ternary 
-{
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
-    param
-    (
-        [scriptblock]
-        $decider,
 
-        [scriptblock]
-        $ifTrue,
-
-        [scriptblock]
-        $ifFalse
-    )
-
-    if (&$decider)
-    {
-        &$ifTrue
-    }
-    else
-    {
-        &$ifFalse
-    }
-}
-Set-Alias -Name ?? -Value Invoke-Ternary -Option AllScope -Description "Ternary Operator like '?' in C#"
-#endregion
 #region Get-LabVolumesOnPhysicalDisks
 
 function Get-LabVolumesOnPhysicalDisks
