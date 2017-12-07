@@ -3167,7 +3167,7 @@ function Enable-LabCertificateAutoenrollment
 
         Enable-AutoEnrollment -Computer:$Computer -UserOrCodeSigning:($User -or $CodeSigning)
             
-    } -Variables (Get-Variable gpoType, Computer, User, CodeSigning) -Function (Get-Command Enable-AutoEnrollment)
+    } -Variable (Get-Variable gpoType, Computer, User, CodeSigning) -Function (Get-Command Enable-AutoEnrollment)
     Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay
         
         
