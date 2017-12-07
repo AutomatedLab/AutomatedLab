@@ -315,16 +315,19 @@ GO
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
         $servers = Get-LabVm | 
-            Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} | 
-            Add-Member -Name 'SsmsUri' -Value {
-                    (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.Name.Substring($this.Name.Length - 4, 4))ManagementStudio"]
-                } -MemberType ScriptProperty -PassThru -Force |
-            Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {$this.Name.Substring($this.Name.Length - 4, 4)} -PassThru -Force
+        Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} |
+        Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {
+            $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
+            $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force | 
+        Add-Member -Name 'SsmsUri' -Value {
+                (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
+            } -MemberType ScriptProperty -PassThru -Force
+    
+        if ($servers)
+        {
+            Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
+        }
         
-            if ($servers)
-            {
-                Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
-            }
         $jobs = @()
 
         foreach ( $server in $servers)
