@@ -54,7 +54,8 @@
         'AutomatedLabWorker',
         'HostsFile',
         'AutomatedLabUnattended',
-        'AutomatedLabNotifications'
+        'AutomatedLabNotifications',
+        'AutomatedLab.Common'
     )
     
     # Functions to export from this module
