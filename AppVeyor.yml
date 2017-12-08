@@ -1,0 +1,47 @@
+version: 4.6.{build}
+
+branches:
+  only:
+    - master
+    - develop
+
+skip_tags: true
+image: Visual Studio 2017
+skip_commits:
+  message: /updated readme.*|update readme.*s/
+
+test_script:
+  - ps: . .\build.ps1
+
+before_build:
+  -ps: |
+       gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
+       gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
+
+build:
+  project: AutomatedLab\AutomatedLab.sln
+
+after_build:
+  - ps: |
+        # Find MSIs
+        $msifiles = Get-ChildItem -Recurse -Filter AutomatedLab.msi
+        foreach($f in $msifiles)
+        {
+          Push-AppVeyorArtifact $f.FullName
+        }
+artifacts:
+  - path: Installer\bin\Debug\AutomatedLab.msi 
+    name: alinstaller
+    type: file
+
+deploy:
+  release: AutomatedLab-v$(appveyor_build_version)
+  description: 'This is an automated release by AppVeyor'
+  provider: GitHub
+  auth_token:
+    secure: DpSClhfGRzvQY114F1GU9MwQAtey6LVSKc8DkIsQhMEkCSiBN0a/mytsr3y/nsIu # your encrypted token from GitHub
+  artifact: alinstaller            # upload all NuGet packages to release assets
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
