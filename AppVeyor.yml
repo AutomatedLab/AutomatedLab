@@ -27,6 +27,9 @@ after_test:
         {
           Push-AppVeyorArtifact $f.FullName
         }
+
+build: false
+
 artifacts:
   - path: Installer\bin\Debug\AutomatedLab.msi 
     name: alinstaller
