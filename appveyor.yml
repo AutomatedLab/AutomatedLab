@@ -1,5 +1,15 @@
 version: 4.6.{build}
 
+environment:
+  twitApi:
+    secure: ukcYar2X3Solh3Xaj/x6TV4ZxpaXWWxKWBSB1fxpBp8=
+  twiApiSecure:
+    secure: dzs3u7ctD2UFRTaaOLuR8Mnrdkb+o9AcCxSDThbMMmbcg854TJ+0cqvujFtcnbjLSCz/Sb0u5RPFjb2nhejGbw==
+  accessToken:
+    secure: E9fYMRsZvLC/R22S8YPRdFA9okfxfAf7vzeAB4F5kyCqgk6Ek1itDqkIWIYb34Rw3y/1Ak3ofSJkdKXna51ALw==
+  accessTokenSecret:
+    secure: xbVDi+rwp6jQ3YQCMTxNriOuFaWG0eK0EOakbtSwdenfOGMxdhDHu4IKnlXgohXc
+
 skip_tags: true
 
 install:
@@ -24,7 +34,6 @@ build:
 
 after_build:
   - ps: |
-        # Find MSIs
         Write-Host "Locating installer to push as artifact"
         Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
         $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
@@ -41,3 +50,21 @@ deploy:
   prerelease: false
   on:
     branch: master                 # release from master branch only
+
+after_deploy:
+  ps: |
+        Write-Host "Downloading Twitter module"
+        iex (New-Object Net.WebClient).DownloadString("https://gist.githubusercontent.com/stefanstranger/2138dc710576bc40b64b/raw/bfd25a0e7363e9a1906908b0695ebcffaa508276/InstallMyTwitterModule.ps1")
+
+        if (Get-Module MyTwitter -List)
+        {
+          <#New-MyTwitterConfiguration -APIKey $env:twitApi -APISecret $env:twiApiSecure -AccessToken $env:accessToken -AccessTokenSecret $env:accessTokenSecret -Force -Verbose:$false
+          $tweets = @(
+              "#AutomatedLab just released v{0}! See our changelog at: {1} Get it while it's hot! #PowerShell #Automation"
+              "It's time for a new release :) #AutomatedLab v{0} is out now! Check out what has changed: {1} #PowerShell #Automation"
+              "#AutomatedLab v{0} is now live! Check out our changelog at {1}! #PowerShell #Automation"
+              "What? AutomatedLab has released v{0}? Awesome :) Check out our changelog at {1}! #PowerShell #Automation"
+          )
+          $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
+          Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md')#>
+        }
