@@ -1,30 +1,36 @@
 version: 4.6.{build}
 
+branches:
+  only:
+    - master
+
 skip_tags: true
-image: Visual Studio 2017
-skip_commits:
-  message: /updated readme.*|update readme.*s/
 
-build: false
+install:
+  - git submodule -q update --init
+  - git clone https://github.com/PowerShell/DscResource.Tests
 
-test_script:
+before_build:
+  -ps: |
+       Add-AppveyorMessage -Message "Setting version number in files"-Category Information
+       gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
+       gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
+
+build:
+  project: AutomatedLab.sln
+
+after_build:
   - ps: |
-        git submodule -q update --init
-        Write-Host "Setting module version and kicking of build script"
-        gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
-        gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
-        . .\build.ps1
         # Find MSIs
-        Write-Host "Pushing MSIs"
         $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
-        Push-AppVeyorArtifact $msiFile.FullName -FileName alinstaller
+        Push-AppVeyorArtifact $msifile.FullName -FileName alinstaller
 
 deploy:
   release: AutomatedLab-v$(appveyor_build_version)
-  description: 'This is an automated release by AppVeyor'
+  description: 'Release description'
   provider: GitHub
   auth_token:
-    secure: DpSClhfGRzvQY114F1GU9MwQAtey6LVSKc8DkIsQhMEkCSiBN0a/mytsr3y/nsIu # your encrypted token from GitHub
+    secure: YMKyXVrtkuyciwUqQh+UZnCYrL7HgBdIVbTzuLSsVzHQCTF/e5ZLs6lUBPPj53fC # your encrypted token from GitHub
   artifact: alinstaller            # upload all NuGet packages to release assets
   draft: false
   prerelease: false
