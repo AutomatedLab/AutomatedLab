@@ -8,7 +8,7 @@ install:
 
 before_build:
   -ps: |
-       Add-AppveyorMessage -Message "Setting version number in files"-Category Information
+       Add-AppveyorMessage -Message "Setting version number in files" -Category Information
        gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
        gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
 
@@ -18,8 +18,10 @@ build:
 after_build:
   - ps: |
         # Find MSIs
+        Write-Host "Locating installer to push as artifact"
+        Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
         $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
-        Push-AppVeyorArtifact $msifile.FullName -FileName alinstaller
+        Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
 
 deploy:
   release: AutomatedLab-v$(appveyor_build_version)
