@@ -1,10 +1,5 @@
 version: 4.6.{build}
 
-branches:
-  only:
-    - master
-    - develop
-
 skip_tags: true
 image: Visual Studio 2017
 skip_commits:
@@ -21,16 +16,8 @@ test_script:
         . .\build.ps1
         # Find MSIs
         Write-Host "Pushing MSIs"
-        $msifiles = Get-ChildItem -Recurse -Filter AutomatedLab.msi
-        foreach($f in $msifiles)
-        {
-          Push-AppVeyorArtifact $f.FullName
-        }
-
-artifacts:
-  - path: Installer\bin\Debug\AutomatedLab.msi 
-    name: alinstaller
-    type: file
+        $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
+        Push-AppVeyorArtifact $msiFile.FullName -FileName alinstaller
 
 deploy:
   release: AutomatedLab-v$(appveyor_build_version)
