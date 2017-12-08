@@ -10,16 +10,15 @@ image: Visual Studio 2017
 skip_commits:
   message: /updated readme.*|update readme.*s/
 
+build: false
+
 test_script:
-  - cmd: git submodule -q update --init
   - ps: |
+        git submodule -q update --init
         Write-Host "Setting module version and kicking of build script"
         gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
         gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
         . .\build.ps1
-
-after_test:
-  - ps: |
         # Find MSIs
         Write-Host "Pushing MSIs"
         $msifiles = Get-ChildItem -Recurse -Filter AutomatedLab.msi
@@ -27,8 +26,6 @@ after_test:
         {
           Push-AppVeyorArtifact $f.FullName
         }
-
-build: false
 
 artifacts:
   - path: Installer\bin\Debug\AutomatedLab.msi 
