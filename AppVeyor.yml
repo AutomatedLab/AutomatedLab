@@ -11,15 +11,11 @@ skip_commits:
   message: /updated readme.*|update readme.*s/
 
 test_script:
-  - ps: . .\build.ps1
-
-before_build:
-  -ps: |
-       gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
-       gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
-
-build:
-  project: AutomatedLab\AutomatedLab.sln
+  - cmd: git submodule -q update --init
+  - ps: |
+        gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion = '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
+        gci -Filter AssemblyInfo.cs -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace '[assembly: AssemblyVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" -replace '[assembly: AssemblyFileVersion("\d\.\d\.\d\.\d")]', "[assembly: AssemblyFileVersion(`"$env:APPVEYOR_BUILD_VERSION`")]" | Out-File $_.FullName}
+        . .\build.ps1
 
 after_build:
   - ps: |
