@@ -1203,7 +1203,7 @@
     <Binary Id="info" SourceFile="Resources\Info.ico" />
     <Binary Id="bannrbmp" SourceFile="Resources\Banner.bmp" />
     <Binary Id="dlgbmp" SourceFile="Resources\Dialog.bmp" />
-    <Icon Id="ApplicationIcon" SourceFile="Resources\PowerShell.ico" />
+    <Icon Id="ApplicationIcon" SourceFile="Resources\AutomatedLab.ico" />
     <Property Id="ARPPRODUCTICON" Value="ApplicationIcon" />
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />

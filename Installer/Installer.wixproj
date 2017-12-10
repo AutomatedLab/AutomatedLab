@@ -39,7 +39,6 @@
     <Content Include="Resources\Info.ico" />
     <Content Include="Resources\License.rtf" />
     <Content Include="Resources\New.ico" />
-    <Content Include="Resources\Powershell Logo.jpg" />
     <Content Include="Resources\Powershell Logo.psd" />
     <Content Include="Resources\Hammer.ico" />
     <Content Include="Resources\Remove.ico" />
