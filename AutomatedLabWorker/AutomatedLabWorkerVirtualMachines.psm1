@@ -1480,14 +1480,14 @@ function Set-LWHypervVMDescription
     Write-LogFunctionEntry
     
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-    $disctionary = New-Object $type
+    $dictionary = New-Object $type
     
     foreach ($kvp in $Hashtable.GetEnumerator())
     {
-        $disctionary.Add($kvp.Key, $kvp.Value)
+        $dictionary.Add($kvp.Key, $kvp.Value)
     }
     
-    $notes = $disctionary.ExportToString()    
+    $notes = $dictionary.ExportToString()    
     
     Set-VM -Name $ComputerName -Notes $notes
     
