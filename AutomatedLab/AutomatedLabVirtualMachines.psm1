@@ -1413,8 +1413,17 @@ function Mount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -notin HyperV,Azure | ForEach-Object {
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
         Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
@@ -1455,9 +1464,18 @@ function Dismount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -notin HyperV,Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V and Azure VMs. Skipping machine '$($_.Name)'"
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
+        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
