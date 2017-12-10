@@ -1283,13 +1283,6 @@ function Mount-LWIsoImage
         {
             try
             {
-                $releaseId = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId -ErrorAction SilentlyContinue
-
-                if ($releaseId -eq 1709)
-                {
-                    Stop-LabVm $machine -Wait
-                }
-
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
                     $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
@@ -1301,11 +1294,6 @@ function Mount-LWIsoImage
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
                     $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
-                }
-
-                if ($releaseId -eq 1709)
-                {
-                    Start-LabVm $machine -Wait
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
@@ -1480,14 +1468,14 @@ function Set-LWHypervVMDescription
     Write-LogFunctionEntry
     
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-    $dictionary = New-Object $type
+    $disctionary = New-Object $type
     
     foreach ($kvp in $Hashtable.GetEnumerator())
     {
-        $dictionary.Add($kvp.Key, $kvp.Value)
+        $disctionary.Add($kvp.Key, $kvp.Value)
     }
     
-    $notes = $dictionary.ExportToString()    
+    $notes = $disctionary.ExportToString()    
     
     Set-VM -Name $ComputerName -Notes $notes
     
