@@ -441,6 +441,8 @@
                 <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
                 <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
                 <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
+                <File Id='Sample_Intro121' Name='12.1 Azure Single domain-joined server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1' />
+                <File Id='Sample_Intro122' Name='12.2 Azure SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="both"/>
               </Component>
             </Directory>

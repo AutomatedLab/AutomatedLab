@@ -279,6 +279,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 		SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
 		SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
 		SampleScripts\Introduction\11 ISO Offline Patching.ps1 = SampleScripts\Introduction\11 ISO Offline Patching.ps1
+		SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1 = SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1
+		SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-EDE3-4069-9B4C-310FDE3EDF19}"
