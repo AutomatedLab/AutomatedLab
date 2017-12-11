@@ -1879,10 +1879,10 @@ function Test-LabAutoLogon
 
         $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
             $values = @{}
-            $values['AutoAdminLogon'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue
-            $values['DefaultDomainName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue
-            $values['DefaultUserName'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue
-            $values['DefaultPassword'] = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue
+            $values['AutoAdminLogon'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultDomainName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
             $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
                 Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
                 Select-Object -ExpandProperty Caption -Unique
