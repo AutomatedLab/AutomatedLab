@@ -3609,6 +3609,42 @@ function Add-LabVMUserRight
 }
 #endregion function Add-LabVMUserRight
 
+#region New-LabSourcesFolder
+function New-LabSourcesFolder
+{
+    param
+    (
+        [Switch]
+        $Force
+    )
+    $Path = Get-LabSourcesLocationInternal -Local
+
+    if ($Path -and -not $Force)
+    {
+        return (Get-Item -Path $Path)
+    }
+
+    Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+
+    $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp','')
+    [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
+    $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+
+    Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+    Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+
+    if (-not (Test-Path -Path $Path))
+    {
+        $Path = New-Item -ItemType Directory -Path (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+    }
+
+    $Path = Get-Item -Path (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+    
+    Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
+
+    $Path
+}
+
 #New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
 #New-Alias -Name Set-LabVMRemoting -Value Enable-LabVMRemoting -Scope Global
 #New-Alias -Name Set-LabHostRemoting -Value Enable-LabHostRemoting -Scope Global
