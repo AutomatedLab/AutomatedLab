@@ -9,6 +9,8 @@ environment:
     secure: E9fYMRsZvLC/R22S8YPRdFA9okfxfAf7vzeAB4F5kyCqgk6Ek1itDqkIWIYb34Rw3y/1Ak3ofSJkdKXna51ALw==
   accessTokenSecret:
     secure: xbVDi+rwp6jQ3YQCMTxNriOuFaWG0eK0EOakbtSwdenfOGMxdhDHu4IKnlXgohXc
+  NuGetApiKey:
+    secure: OX4AxdrgR7cWD+b3x/ZcjN87ij7UM1+HYsd/L3CJKxAkJ2ZEX3lIgvWDuoTMcKNM
 
 skip_tags: true
 

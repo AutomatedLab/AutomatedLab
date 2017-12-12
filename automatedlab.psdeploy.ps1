@@ -10,8 +10,7 @@ $moduleNames = @(
 )
 
 # Publish to gallery with a few restrictions
-if ($true
-    #$env:APPVEYOR_REPO_BRANCH -eq "master"
+if ($env:APPVEYOR_REPO_BRANCH -eq "master"
 )
 {
     foreach ($moduleName in $moduleNames)
