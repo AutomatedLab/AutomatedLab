@@ -28,11 +28,7 @@ if ($env:APPVEYOR_REPO_BRANCH -eq "master"
 }
 else
 {
-    "Skipping deployment: To deploy, ensure that...`n" +
-    "`t* You are in a known build system (Current: $ENV:BHBuildSystem)`n" +
-    "`t* You are committing to the master branch (Current: $ENV:BHBranchName) `n" +
-    "`t* Module path is valid (Current: $(Join-Path $ENV:BHProjectPath $ENV:BHProjectName))" |
-        Write-Host
+    Write-Host "Skipping PSGallery deployment. We are in branch $env:APPVEYOR_REPO_BRANCH (PSGallery only on master)"
 }
 
 # Publish to AppVeyor if we're in AppVeyor
