@@ -1598,7 +1598,7 @@ function Get-LabWindowsFeature
     }
     if ($machines.Count -ne $ComputerName.Count)
     {
-        $machinesNotFound = Compare-Object -ReferenceObject $Name -DifferenceObject ($machines.Name)
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
         Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
     }
     
@@ -1704,7 +1704,7 @@ function Install-LabWindowsFeature
     }
     if ($machines.Count -ne $ComputerName.Count)
     {
-        $machinesNotFound = Compare-Object -ReferenceObject $Name -DifferenceObject ($machines.Name)
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
         Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
     }
     

@@ -63,6 +63,89 @@
 
               </Component>
             </Directory>
+            <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
+              <Directory Id="InstallFolder_CommonCommon" Name="Common">
+                <Directory Id="InstallFolder_CommonCommonPublic" Name="Public">
+                  <Component Id="ALCommonComponent1" Guid="8b0287f3-d70a-47e6-a04f-6cc360f33eab">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-AccountPrivilege.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-FunctionToPSSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-IsAdministrator.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
+                  <Component Id="ALCommonComponent2" Guid="1493e46b-7913-408a-9549-5ae1da7cef34">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Gpo.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\LsaWrapper.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Mesh.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonDsc" Name="DscHelper">
+                <Directory Id="InstallFolder_CommonDscPublic" Name="Public">
+                  <Component Id="ALCommonComponent3" Guid="c9813b6e-f4da-450e-8d22-6dd2547aa7b7" >
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\DscHelper\Public\Get-DscConfigurationImportedResource.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonNetwork" Name="NetworkHelper">
+                <Directory Id="InstallFolder_CommonNetworkPublic" Name="Public" >
+                  <Component Id="ALCommonComponent4" Guid="722317e2-e32b-4427-954e-59147cf8617e">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-BinaryIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DecimalIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DottedDecimalIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-Mask.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-MaskLength.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-BroadcastAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkRange.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkSummary.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-PublicIpAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Test-Port.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonPki" Name="PkiHelper">
+                <Directory Id="InstallFolder_CommonPkiPublic" Name="Public">
+                  <Component Id="ALCommonComponent5" Guid="301a6732-f49c-4f95-9891-4f2f3fe345e5">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-CATemplateStandardPermission.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-Certificate2.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Enable-AutoEnrollment.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Find-CertificateAuthority.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-Certificate2.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-NextOid.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\New-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Publish-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Request-Certificate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Test-CaTemplate.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonPkiTypes" Name="Types">
+                  <Component Id="ALCommonComponent6" Guid="633ce5e1-186b-4a5f-a38d-78946c0a1c0f">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+
+              <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
+                <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
+
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
+              </Component>
+            </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
               <Component Id="HostsFileComponent" Guid="0d760600-ad78-43c0-8b19-4eb2cc9b11b4">
@@ -182,7 +265,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
-				<File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
@@ -352,11 +435,14 @@
                 <File Id='Sample_Intro04' Name='04 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server.ps1' />
                 <File Id='Sample_Intro05' Name='05 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1' />
                 <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro07' Name='07 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro071' Name='07.1 Exchange 2013 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro072' Name='07.2 Exchange 2016 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1' />
                 <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
                 <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
                 <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
                 <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
+                <File Id='Sample_Intro121' Name='12.1 Azure Single domain-joined server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1' />
+                <File Id='Sample_Intro122' Name='12.2 Azure SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="both"/>
               </Component>
             </Directory>
@@ -373,6 +459,13 @@
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
+        <ComponentRef Id ='CommonComponent' />
+        <ComponentRef Id ='ALCommonComponent1' />
+        <ComponentRef Id ='ALCommonComponent2' />
+        <ComponentRef Id ='ALCommonComponent3' />
+        <ComponentRef Id ='ALCommonComponent4' />
+        <ComponentRef Id ='ALCommonComponent5' />
+        <ComponentRef Id ='ALCommonComponent6' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
         <ComponentRef Id='AutomatedLabComponent'/>
@@ -1112,7 +1205,7 @@
     <Binary Id="info" SourceFile="Resources\Info.ico" />
     <Binary Id="bannrbmp" SourceFile="Resources\Banner.bmp" />
     <Binary Id="dlgbmp" SourceFile="Resources\Dialog.bmp" />
-    <Icon Id="ApplicationIcon" SourceFile="Resources\PowerShell.ico" />
+    <Icon Id="ApplicationIcon" SourceFile="Resources\AutomatedLab.ico" />
     <Property Id="ARPPRODUCTICON" Value="ApplicationIcon" />
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />

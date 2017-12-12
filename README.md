@@ -1,8 +1,12 @@
 [![Krihelimeter](http://krihelinator.xyz/badge/AutomatedLab/AutomatedLab)](http://krihelinator.xyz/repositories/AutomatedLab/AutomatedLab)
+[![Build status](https://ci.appveyor.com/api/projects/status/ua2sjna1b7nl3dh3/branch/master?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab-tcyx4/branch/master)
+[![Build status dev](https://ci.appveyor.com/api/projects/status/ua2sjna1b7nl3dh3/branch/develop?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab-tcyx4/branch/develop)
+
+
 ## Project Summary
 AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images and a Hyper-V host or Azure subscription machine.
 
-### Download AutomatedLab (lateset version 4.4.0 released on October 27 2017)
+### Download AutomatedLab (latest version 4.5.0 released on November 18 2017)
 You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) right here in GitHub if you do not want to compile your own version of AutomatedLab.
 
 ### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)

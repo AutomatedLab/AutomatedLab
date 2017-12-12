@@ -415,7 +415,7 @@ function Invoke-LabDscConfiguration
     
         #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
         #to find out all the reuqired modules we need to upload in total
-        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name
+        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name -ErrorAction Stop
         foreach ($requiredDscModule in $requiredDscModules)
         {
             Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
