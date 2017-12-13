@@ -22,7 +22,7 @@ function Send-ALToastNotification
 
     if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
 	{
-        Write-Verbose -Message 'No toasts for OS version < 10 or Server Nano/Server Core'
+        Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Nano/Server Core'
     }
     
     $toastProvider = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Toast.Provider
