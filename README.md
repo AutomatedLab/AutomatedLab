@@ -13,6 +13,7 @@ AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or A
 Apart from the module itself your system needs to meet the following requirements:
 
 - Windows Management Framework 5+
+- Windows Server 2012 R2+/Windows 8.1+
 - Required OS language is en-us
 - Admin privileges are required
 - ISO files for all operating systems and roles to be deployed
