@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.27004.2006
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -160,15 +160,15 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{35796C10
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{F283AF3D-956C-4CE2-ABBF-273D38810E2D}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1 = SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1
-		SampleScripts\Workshops\ADRecoveryLab - Azure.ps1 = SampleScripts\Workshops\ADRecoveryLab - Azure.ps1
-		SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1 = SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1
-		SampleScripts\Workshops\DFSHC - Azure.ps1 = SampleScripts\Workshops\DFSHC - Azure.ps1
-		SampleScripts\Workshops\DFSHC - HyperV.ps1 = SampleScripts\Workshops\DFSHC - HyperV.ps1
-		SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1 = SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1
-		SampleScripts\Workshops\PowerShell Lab - Azure.ps1 = SampleScripts\Workshops\PowerShell Lab - Azure.ps1
-		SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1 = SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1
-		SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
+		LabSources\SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1 = LabSources\SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1
+		LabSources\SampleScripts\Workshops\ADRecoveryLab - Azure.ps1 = LabSources\SampleScripts\Workshops\ADRecoveryLab - Azure.ps1
+		LabSources\SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1 = LabSources\SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1
+		LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1 = LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1
+		LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1 = LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1
+		LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1
+		LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1
+		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1
+		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
@@ -184,31 +184,32 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{00FED816
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{4121F376-E671-41E2-97D7-8C1DAEA4BBF2}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1 = SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1
-		SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1 = SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1
-		SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1 = SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1
-		SampleScripts\HyperV\MultiForestLab 2008R2.ps1 = SampleScripts\HyperV\MultiForestLab 2008R2.ps1
-		SampleScripts\HyperV\MultiForestLab 2012R2.ps1 = SampleScripts\HyperV\MultiForestLab 2012R2.ps1
-		SampleScripts\HyperV\PKI Custom.ps1 = SampleScripts\HyperV\PKI Custom.ps1
-		SampleScripts\HyperV\PKI Simple.ps1 = SampleScripts\HyperV\PKI Simple.ps1
-		SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1 = SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1
-		SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1 = SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1
-		SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1 = SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1
-		SampleScripts\HyperV\Single 10 Client.ps1 = SampleScripts\HyperV\Single 10 Client.ps1
-		SampleScripts\HyperV\Single 2008R2 Server.ps1 = SampleScripts\HyperV\Single 2008R2 Server.ps1
-		SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1 = SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1
-		SampleScripts\HyperV\Single 2012R2 Server.ps1 = SampleScripts\HyperV\Single 2012R2 Server.ps1
-		SampleScripts\HyperV\Single 81 Client with Office.ps1 = SampleScripts\HyperV\Single 81 Client with Office.ps1
-		SampleScripts\HyperV\Single 81 Client.ps1 = SampleScripts\HyperV\Single 81 Client.ps1
-		SampleScripts\HyperV\SmallLab 2012R2 EX.ps1 = SampleScripts\HyperV\SmallLab 2012R2 EX.ps1
-		SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1 = SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1
-		SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1 = SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1
-		SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1 = SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1
+		LabSources\SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1 = LabSources\SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1
+		LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1 = LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1
+		LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1 = LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1
+		LabSources\SampleScripts\HyperV\MultiForestLab 2008R2.ps1 = LabSources\SampleScripts\HyperV\MultiForestLab 2008R2.ps1
+		LabSources\SampleScripts\HyperV\MultiForestLab 2012R2.ps1 = LabSources\SampleScripts\HyperV\MultiForestLab 2012R2.ps1
+		LabSources\SampleScripts\HyperV\PKI Custom.ps1 = LabSources\SampleScripts\HyperV\PKI Custom.ps1
+		LabSources\SampleScripts\HyperV\PKI Simple.ps1 = LabSources\SampleScripts\HyperV\PKI Simple.ps1
+		LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1 = LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1
+		LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1 = LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1
+		LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1 = LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1
+		LabSources\SampleScripts\HyperV\Single 10 Client.ps1 = LabSources\SampleScripts\HyperV\Single 10 Client.ps1
+		LabSources\SampleScripts\HyperV\Single 2008R2 Server.ps1 = LabSources\SampleScripts\HyperV\Single 2008R2 Server.ps1
+		LabSources\SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1 = LabSources\SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1
+		LabSources\SampleScripts\HyperV\Single 2012R2 Server.ps1 = LabSources\SampleScripts\HyperV\Single 2012R2 Server.ps1
+		LabSources\SampleScripts\HyperV\Single 81 Client with Office.ps1 = LabSources\SampleScripts\HyperV\Single 81 Client with Office.ps1
+		LabSources\SampleScripts\HyperV\Single 81 Client.ps1 = LabSources\SampleScripts\HyperV\Single 81 Client.ps1
+		LabSources\SampleScripts\HyperV\SmallLab 2012R2 EX.ps1 = LabSources\SampleScripts\HyperV\SmallLab 2012R2 EX.ps1
+		LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1 = LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1
+		LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1 = LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1
+		LabSources\SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1 = LabSources\SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{8BD962AE-3F32-4704-8F5C-AA159589C6A3}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\Azure\MultiForestLab 2012R2.ps1 = SampleScripts\Azure\MultiForestLab 2012R2.ps1
+		LabSources\SampleScripts\Azure\MultiForestLab 2012R2.ps1 = LabSources\SampleScripts\Azure\MultiForestLab 2012R2.ps1
+		LabSources\SampleScripts\Azure\VpnConnectedLab.ps1 = LabSources\SampleScripts\Azure\VpnConnectedLab.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabTest", "AutomatedLabTest", "{390023B7-CB2C-4D70-800F-8D1B6AE916CC}"
@@ -220,14 +221,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabTest", "Automat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
-		SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
-		SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
-		SampleScripts\Scenarios\Failover Clustering 1.ps1 = SampleScripts\Scenarios\Failover Clustering 1.ps1
-		SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1 = SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1
-		SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
-		SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
-		SampleScripts\Scenarios\WinRM clients with SSL.ps1 = SampleScripts\Scenarios\WinRM clients with SSL.ps1
+		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
+		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
+		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
+		LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1 = LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1
+		LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1 = LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1
+		LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
+		LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+		LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1 = LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSUpdates", "OSUpdates", "{BB2F6956-209C-40CB-8877-07E3F5C79F76}"
@@ -267,20 +268,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introduction", "{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B}"
 	ProjectSection(SolutionItems) = preProject
-		SampleScripts\Introduction\01 Single Win10 Client.ps1 = SampleScripts\Introduction\01 Single Win10 Client.ps1
-		SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1 = SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1
-		SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1 = SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1
-		SampleScripts\Introduction\04 Single domain-joined server.ps1 = SampleScripts\Introduction\04 Single domain-joined server.ps1
-		SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1 = SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1
-		SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1
-		SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1 = SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1
-		SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1 = SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1
-		SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1 = SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1
-		SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
-		SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
-		SampleScripts\Introduction\11 ISO Offline Patching.ps1 = SampleScripts\Introduction\11 ISO Offline Patching.ps1
-		SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1 = SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1
-		SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1 = SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\01 Single Win10 Client.ps1 = LabSources\SampleScripts\Introduction\01 Single Win10 Client.ps1
+		LabSources\SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1 = LabSources\SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1
+		LabSources\SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1 = LabSources\SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1
+		LabSources\SampleScripts\Introduction\04 Single domain-joined server.ps1 = LabSources\SampleScripts\Introduction\04 Single domain-joined server.ps1
+		LabSources\SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1 = LabSources\SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1
+		LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1 = LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1
+		LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
+		LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
+		LabSources\SampleScripts\Introduction\11 ISO Offline Patching.ps1 = LabSources\SampleScripts\Introduction\11 ISO Offline Patching.ps1
+		LabSources\SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1 = LabSources\SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1
+		LabSources\SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-EDE3-4069-9B4C-310FDE3EDF19}"
@@ -502,6 +503,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{AE2E62EE
 		AutomatedLab.Common\Tests\Test-Port.Tests.ps1 = AutomatedLab.Common\Tests\Test-Port.Tests.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VMWare", "VMWare", "{9598B13D-43BD-4D68-A718-5D48693A2E36}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\SampleScripts\VMWare\VMWare Single Server.ps1 = LabSources\SampleScripts\VMWare\VMWare Single Server.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -547,6 +553,7 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
+		{0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{BF2C3317-327C-4552-8C6B-18A07307D977} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{02DDCCD0-7EAA-450B-AE8A-67D54E8EF30C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{51120906-7BD4-4855-912D-56DBF8812578} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
@@ -590,6 +597,7 @@ Global
 		{A80EF74A-C7CC-4A8F-91BC-577B2770809F} = {66222DE6-3AC8-44BC-B3FF-04EA7524BCBA}
 		{8EDB1BFE-319F-40DA-9D81-DB6650D7EDA7} = {66222DE6-3AC8-44BC-B3FF-04EA7524BCBA}
 		{AE2E62EE-7275-43E2-90CB-E83D84E4B131} = {E024D96C-6476-4F89-A0B2-4AF5E0DBB747}
+		{9598B13D-43BD-4D68-A718-5D48693A2E36} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
