@@ -3642,6 +3642,8 @@ function New-LabSourcesFolder
     
     Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
 
+    Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
+
     $Path.FullName
 }
 

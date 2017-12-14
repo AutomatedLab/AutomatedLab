@@ -1,6 +1,6 @@
 [![Krihelimeter](http://krihelinator.xyz/badge/AutomatedLab/AutomatedLab)](http://krihelinator.xyz/repositories/AutomatedLab/AutomatedLab)
-[![Build status](https://ci.appveyor.com/api/projects/status/ua2sjna1b7nl3dh3/branch/master?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab-tcyx4/branch/master)
-[![Build status dev](https://ci.appveyor.com/api/projects/status/ua2sjna1b7nl3dh3/branch/develop?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab-tcyx4/branch/develop)
+[![Build status](https://ci.appveyor.com/api/projects/status/ahvu6hwtpa1xgu5o/branch/master?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab/branch/master)
+[![Build status dev](https://ci.appveyor.com/api/projects/status/ahvu6hwtpa1xgu5o/branch/develop?svg=true)](https://ci.appveyor.com/project/nyanhp/automatedlab/branch/develop)(https://ci.appveyor.com/project/nyanhp/automatedlab-tcyx4/branch/develop)
 
 
 ## Project Summary
