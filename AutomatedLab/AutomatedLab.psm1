@@ -3612,39 +3612,67 @@ function Add-LabVMUserRight
 #region New-LabSourcesFolder
 function New-LabSourcesFolder
 {
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium')]
     param
     (
-        [Switch]
+        [Parameter(Mandatory = $false)]
+        [System.String]
+        $DriveLetter,
+
+        [switch]
         $Force
     )
-    $Path = Get-LabSourcesLocationInternal -Local
 
-    if ($Path -and -not $Force)
+    $Path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+
+    if ($DriveLetter)
+    {
+        try
+        {
+            $drive = [System.IO.DriveInfo]$DriveLetter
+        }
+        catch
+        {
+            throw "$DriveLetter is not a valid drive letter. Exception was ($_.Exception.Message)"
+        }
+
+        if (-not $drive.IsReady)
+        {
+            throw "LabSource cannot be placed on $DriveLetter. The drive is not ready."
+        }
+
+        $Path = Join-Path -Path $drive.RootDirectory -ChildPath LabSources
+    }
+
+    if ((Test-Path $Path) -and -not $Force)
     {
         return $Path
     }
 
     Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
 
-    $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp','')
-    [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
-    $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
-
-    Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-    Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
-
-    if (-not (Test-Path -Path $Path))
+    if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
     {
-        $Path = New-Item -ItemType Directory -Path (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
-    }
+        $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')    
+        [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
-    $Path = Get-Item -Path (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+        Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+
+        if (-not (Test-Path -Path $Path))
+        {
+            $Path = (New-Item -ItemType Directory -Path $Path).FullName
+        }
     
-    Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
 
-    Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
+        Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 
-    $Path.FullName
+        $Path
+    }
 }
 
 #New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
