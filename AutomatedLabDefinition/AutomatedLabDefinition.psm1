@@ -772,7 +772,7 @@ function New-LabDefinition
         $sourcesPath = New-LabSourcesFolder
     }
 
-    Write-ScreenInfo -Message "Location of LabSources folder is '($sourcesPath.FullName)'"
+    Write-ScreenInfo -Message "Location of LabSources folder is '$sourcesPath'"
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {

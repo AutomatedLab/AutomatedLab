@@ -3621,7 +3621,7 @@ function New-LabSourcesFolder
 
     if ($Path -and -not $Force)
     {
-        return (Get-Item -Path $Path)
+        return $Path
     }
 
     Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
@@ -3642,7 +3642,7 @@ function New-LabSourcesFolder
     
     Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
 
-    $Path
+    $Path.FullName
 }
 
 #New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
