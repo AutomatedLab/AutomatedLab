@@ -10,8 +10,7 @@ $moduleNames = @(
 )
 
 # Publish to gallery with a few restrictions
-if ($env:APPVEYOR_REPO_BRANCH -eq "master"
-)
+if ($env:APPVEYOR_REPO_BRANCH -eq "master")
 {
     foreach ($moduleName in $moduleNames)
     {
@@ -32,20 +31,18 @@ else
 }
 
 # Publish to AppVeyor if we're in AppVeyor
-if (
-    $env:APPVEYOR_BUILD_VERSION
-)
+if ($env:APPVEYOR_BUILD_VERSION)
 {
     foreach ($moduleName in $moduleNames)
     {
-    Deploy DeveloperBuild {
-        By AppVeyorModule {
-            FromSource (Join-Path $PSScriptRoot $moduleName)
-            To AppVeyor
-            WithOptions @{
-                Version = $env:APPVEYOR_BUILD_VERSION
+        Deploy DeveloperBuild {
+            By AppVeyorModule {
+                FromSource (Join-Path $PSScriptRoot $moduleName)
+                To AppVeyor
+                WithOptions @{
+                    Version = $env:APPVEYOR_BUILD_VERSION
+                }
             }
         }
     }
-}
 }

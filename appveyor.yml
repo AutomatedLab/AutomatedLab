@@ -1,22 +1,21 @@
-version: 4.6.{build}
+version: 4.7.{build}
 
 environment:
   twitApi:
-    secure: ukcYar2X3Solh3Xaj/x6TV4ZxpaXWWxKWBSB1fxpBp8=
+    secure: rYfYoYo9iG/WFkyc3Bj49V0y10dfjsWo1xrncPd1LjY=
   twiApiSecure:
-    secure: dzs3u7ctD2UFRTaaOLuR8Mnrdkb+o9AcCxSDThbMMmbcg854TJ+0cqvujFtcnbjLSCz/Sb0u5RPFjb2nhejGbw==
+    secure: YfqnwXIZJPqn0VGRh1c+Aapjrv7d+uXHGpZiI2j7YYcRKAvWDJxrwUnr2Qy0mSnKwPk1OGJ87butL9a8opCnwQ==
   accessToken:
-    secure: E9fYMRsZvLC/R22S8YPRdFA9okfxfAf7vzeAB4F5kyCqgk6Ek1itDqkIWIYb34Rw3y/1Ak3ofSJkdKXna51ALw==
+    secure: KNxTrNc7tY0vJgx3NnuCT3DBEHdC5VUWhUyU3H5bPAp7OPWxCVB0VnVmmDcKYKT0BTHa01icm9+cQ08s2+WcbQ==
   accessTokenSecret:
-    secure: xbVDi+rwp6jQ3YQCMTxNriOuFaWG0eK0EOakbtSwdenfOGMxdhDHu4IKnlXgohXc
+    secure: 3UIs4ZFVKTNpi0u425qZtk4tyssfZE3M2Ur5sDEGiFtPY6I7gbrWJX+VmKNK6oup
   NuGetApiKey:
-    secure: OX4AxdrgR7cWD+b3x/ZcjN87ij7UM1+HYsd/L3CJKxAkJ2ZEX3lIgvWDuoTMcKNM
+    secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
 
 skip_tags: true
 
 install:
-  - git submodule -q update --init
-  - git clone https://github.com/PowerShell/DscResource.Tests
+  - git submodule -q update --init --recursive
 
 assembly_info:
   patch: true
