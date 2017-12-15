@@ -2273,7 +2273,7 @@ function Install-LabSoftwarePackage
     $parameters.Add('DoNotUseCredSsp', $DoNotUseCredSsp)
     $parameters.Add('PassThru', $True)
     $parameters.Add('AsJob', $True)
-    $parameters.Add('ScriptBlock', (Get-Command -Name Install-LWSoftwarePackage).ScriptBlock)
+    $parameters.Add('ScriptBlock', (Get-Command -Name Install-SoftwarePackage).ScriptBlock)
         
     if ($parameterSetName -eq 'SinglePackage')
     {
