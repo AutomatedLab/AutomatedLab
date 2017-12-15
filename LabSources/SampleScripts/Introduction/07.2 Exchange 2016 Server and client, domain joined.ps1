@@ -27,7 +27,7 @@ Install-Lab -NetworkSwitches -BaseImages -VMs -Domains -StartRemainingMachines
 
 Install-LabSoftwarePackage -Path $labSources\OSUpdates\2016\windows10.0-kb3206632-x64_b2e20b7e1aa65288007de21e88cd21c3ffb05110.msu -ComputerName (Get-LabVM -Role Exchange2016) -Timeout 60
 
-Invoke-LabCommand -ComputerName (Get-LabVM -Role Exchange2016) -ScriptBlock {restart-computer -force}
+Restart-LabVM -ComputerName (Get-LabVM -Role Exchange2016) -Wait
 
 Install-Lab -Exchange2016
 
