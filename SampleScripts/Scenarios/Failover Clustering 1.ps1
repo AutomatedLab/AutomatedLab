@@ -1,4 +1,4 @@
-$labname = 'failover'
+$labname = 'FailOverLab1'
 New-LabDefinition -Name $labname -DefaultVirtualizationEngine HyperV
 
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1

@@ -1,0 +1,3 @@
+[submodule "AutomatedLab.Common"]
+	path = AutomatedLab.Common
+	url = https://github.com/AutomatedLab/AutomatedLab.Common

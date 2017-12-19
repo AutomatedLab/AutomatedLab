@@ -711,6 +711,7 @@ function Wait-LabVM
                 $VerbosePreference = $using:VerbosePreference
 
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
+				Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                 Import-Lab -LabBytes $LabBytes
 
@@ -1150,11 +1151,11 @@ function Connect-LabVM
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
         }
-        elseif ($machine.HostType -eq 'HyperV')
+        else
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
+            mstsc.exe "/v:$($machine.Name)"
             
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
             
@@ -1412,8 +1413,17 @@ function Mount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -notin HyperV,Azure | ForEach-Object {
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
         Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
@@ -1454,12 +1464,27 @@ function Dismount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -ne HyperV | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs. Skipping machine '$($_.Name)'"
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
+        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
+    $azureMachines = $machines | Where-Object HostType -eq Azure
+
+    if ($azureMachines)
+    {
+        Dismount-LWAzureIsoImage -ComputerName $azureMachines
+    }
 
     foreach ($machine in $machines)
     {
@@ -1781,5 +1806,114 @@ function Get-LabVM
     }
 }
 #endregion Get-LabVM
+
+#region Set-LabAutoLogon
+function Set-LabAutoLogon
+{
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
+       
+    Write-Verbose -Message "Enabling autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+
+    foreach ( $Machine in $Machines)
+    {
+        $InvokeParameters = @{
+            Username = $Machine.InstallationUser.UserName
+            Password = $Machine.InstallationUser.Password
+        }
+
+        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        {
+            $invokeParameters['DomainName'] = $Machine.DomainName
+        }
+        else
+        {
+            $invokeParameters['DomainName'] = $Machine.Name
+        }
+
+        Invoke-LabCommand -ActivityName "Enabling AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 1 -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoLogonCount -Value 9999 -Type DWORD -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $InvokeParameters.DomainName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $InvokeParameters.UserName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $InvokeParameters.Password -Type String -Force
+        } -Variable (Get-Variable InvokeParameters) -NoDisplay
+    }
+}
+#endregion
+
+#region Test-LabAutoLogon
+function Test-LabAutoLogon
+{
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
+
+    Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+    $returnValues = @{}
+    
+    foreach ( $Machine in $Machines)
+    {
+        $parameters = @{
+            Username = $Machine.InstallationUser.UserName
+            Password = $Machine.InstallationUser.Password
+        }
+
+        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        {
+            $parameters['DomainName'] = $Machine.DomainName
+        }
+        else
+        {
+            $parameters['DomainName'] = $Machine.Name
+        }
+
+        $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+            $values = @{}
+            $values['AutoAdminLogon'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultDomainName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
+            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
+                Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
+                Select-Object -ExpandProperty Caption -Unique
+            
+            $values
+        } -PassThru -NoDisplay
+
+        Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
+
+        if ( $settings.AutoAdminLogon -ne 1 -or
+            $settings.DefaultDomainName -ne $parameters.DomainName -or
+            $settings.DefaultUserName -ne $parameters.Username -or
+            $settings.DefaultPassword -ne $parameters.Password)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
+
+        if ( $settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $returnValues[$Machine.Name] = $true
+    }
+
+    return $returnValues
+}
+#endregion
 
 New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global -Force

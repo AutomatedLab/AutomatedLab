@@ -25,7 +25,7 @@ function Install-LabFailoverCluster
     foreach ($cluster in $clusters)
     {
         $firstNode = $cluster.Group | Select-Object -First 1
-        $clusterDomains = $cluster.Group.DomainName 
+        $clusterDomains = $cluster.Group.DomainName | Select-Object -Unique
         $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
         $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']
@@ -121,50 +121,51 @@ function Install-LabFailoverCluster
                 }
             }
         }
-    }
+    
 
-    $clusterAccessPoint = if ($clusterDomains.Count -ne 1)
-    {
-        'DNS'
-    }
-    else
-    {
-        'ActiveDirectoryAndDns'    
-    }
+        $clusterAccessPoint = if ($clusterDomains.Count -ne 1)
+        {
+            'DNS'
+        }
+        else
+        {
+            'ActiveDirectoryAndDns'    
+        }
         
-    Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
-        Import-Module FailoverClusters -ErrorAction Stop
+        Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
+            Import-Module FailoverClusters -ErrorAction Stop
 
-        $clusterParameters = @{
-            Name                      = $clusterName
-            Node                      = $env:COMPUTERNAME
-            StaticAddress             = $clusterIp
-            AdministrativeAccessPoint = $clusterAccessPoint
-            ErrorAction               = 'Stop'
-            WarningAction             = 'SilentlyContinue'
-        }
-
-        $clusterParameters = Sync-Parameter -Command (Get-Command New-Cluster) -Parameters $clusterParameters
-
-        New-Cluster @clusterParameters
-
-        while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
-        {
-            Start-Sleep -Seconds 1
-        }
-
-        Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
-            
-        if ($useDiskWitness)
-        {
-            $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk'
-
-            if ($clusterDisk)
-            {
-                Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
+            $clusterParameters = @{
+                Name                      = $clusterName
+                Node                      = $env:COMPUTERNAME
+                StaticAddress             = $clusterIp
+                AdministrativeAccessPoint = $clusterAccessPoint
+                ErrorAction               = 'Stop'
+                WarningAction             = 'SilentlyContinue'
             }
-        }
-    } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint) -Function (Get-Command Sync-Parameter)
+
+            $clusterParameters = Sync-Parameter -Command (Get-Command New-Cluster) -Parameters $clusterParameters
+
+            New-Cluster @clusterParameters
+
+            while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
+            {
+                Start-Sleep -Seconds 1
+            }
+
+            Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
+            
+            if ($useDiskWitness)
+            {
+                $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk'
+
+                if ($clusterDisk)
+                {
+                    Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
+                }
+            }
+        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint) -Function (Get-Command Sync-Parameter)
+    }
 }
 #endregion
 
@@ -252,7 +253,7 @@ function Install-LabFailoverStorage
     $targetAddress = $storageNode.IpV4Address
 
     Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVm -Role FailoverNode) -ScriptBlock {
-        if (-not (Get-Command New-IscsiTargetPortal))
+        if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
         {
             iscsicli.exe QAddTargetPortal $targetAddress
             $target = ((iscsicli.exe ListTargets) -match 'iqn.+target')[0].Trim()

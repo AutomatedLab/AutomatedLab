@@ -13,12 +13,16 @@ function Send-ALToastNotification
     
     if (Get-Item 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -ErrorAction SilentlyContinue)
     {
-        $isCoreOrNano = Get-ItemPropertyValue 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore,ServerNano -ErrorAction SilentlyContinue
+        [bool]$core = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore -ErrorAction SilentlyContinue).ServerCore
+        [bool]$guimgmt = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Mgmt -ErrorAction SilentlyContinue).'Server-Gui-Mgmt'
+        [bool]$guimgmtshell = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Shell -ErrorAction SilentlyContinue).'Server-Gui-Shell'
+
+        $isFullGui = $core -and $guimgmt -and $guimgmtshell
     }    
 
-    if ($PSVersionTable.BuildVersion.Major -lt 10 -or $isCoreOrNano)
+    if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
 	{
-        Write-Verbose -Message 'No toasts for OS version < 10 or Server Nano/Server Core'
+        Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Nano/Server Core'
     }
     
     $toastProvider = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Toast.Provider
