@@ -766,7 +766,13 @@ function New-LabDefinition
     $diskDefinitionFile.Path = $diskDefinitionFilePath
     $script:lab.DiskDefinitionFiles.Add($diskDefinitionFile)
     
-    Write-ScreenInfo -Message "Location of LabSources folder is '($labSources)'"
+    $sourcesPath = $labSources
+    if (-not $sourcesPath)
+    {
+        $sourcesPath = New-LabSourcesFolder
+    }
+
+    Write-ScreenInfo -Message "Location of LabSources folder is '$sourcesPath'"
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {

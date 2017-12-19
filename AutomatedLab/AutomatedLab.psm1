@@ -3609,6 +3609,72 @@ function Add-LabVMUserRight
 }
 #endregion function Add-LabVMUserRight
 
+#region New-LabSourcesFolder
+function New-LabSourcesFolder
+{
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium')]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [System.String]
+        $DriveLetter,
+
+        [switch]
+        $Force
+    )
+
+    $Path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+
+    if ($DriveLetter)
+    {
+        try
+        {
+            $drive = [System.IO.DriveInfo]$DriveLetter
+        }
+        catch
+        {
+            throw "$DriveLetter is not a valid drive letter. Exception was ($_.Exception.Message)"
+        }
+
+        if (-not $drive.IsReady)
+        {
+            throw "LabSource cannot be placed on $DriveLetter. The drive is not ready."
+        }
+
+        $Path = Join-Path -Path $drive.RootDirectory -ChildPath LabSources
+    }
+
+    if ((Test-Path $Path) -and -not $Force)
+    {
+        return $Path
+    }
+
+    Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+
+    if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
+    {
+        $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')    
+        [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+
+        Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+
+        if (-not (Test-Path -Path $Path))
+        {
+            $Path = (New-Item -ItemType Directory -Path $Path).FullName
+        }
+    
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
+
+        Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
+
+        $Path
+    }
+}
+
 #New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
 #New-Alias -Name Set-LabVMRemoting -Value Enable-LabVMRemoting -Scope Global
 #New-Alias -Name Set-LabHostRemoting -Value Enable-LabHostRemoting -Scope Global
