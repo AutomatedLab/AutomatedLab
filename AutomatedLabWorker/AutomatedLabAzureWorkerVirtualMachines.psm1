@@ -85,7 +85,7 @@ function New-LWAzureVM
             $sqlServerRoleName = $Matches[0]
             $sqlServerVersion = $Matches.SqlVersion
            
-            if ($role.Properties.Count -gt 0)
+            if ($role.Properties.Keys | Where-Object {$_ -ne 'InstallSampleDatabase'})
             {
                 $useStandardVm = $true
             }
@@ -108,8 +108,15 @@ function New-LWAzureVM
         Write-Verbose -Message 'This is going to be a SQL Server VM'
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
                 
-        #get all SQL images machting the RegEx pattern and then get only the latest one
-        $sqlServerImages = $lab.AzureSettings.VmImages |
+        #get all SQL images matching the RegEx pattern and then get only the latest one
+        $sqlServerImages = $lab.AzureSettings.VmImages
+
+        if ([System.Convert]::ToBoolean($Machine.AzureProperties['UseByolImage']))
+        {
+            $sqlServerImages = $sqlServerImages | Where-Object Offer -like '*-BYOL'
+        }
+
+        $sqlServerImages = $sqlServerImages |
         Where-Object Offer -Match $pattern | 
         Group-Object -Property Sku, Offer | 
         ForEach-Object {
