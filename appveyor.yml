@@ -69,5 +69,5 @@ after_deploy:
               "What? AutomatedLab has released v{0}? Awesome :) Check out our changelog at {1}! #PowerShell #Automation"
           )
           $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
-          [void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
+          #[void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
         }
