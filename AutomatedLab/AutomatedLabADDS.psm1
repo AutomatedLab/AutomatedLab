@@ -881,7 +881,7 @@ function Install-LabRootDcs
     }
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
 
-	#this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
+    #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
     $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
         -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
@@ -1123,7 +1123,7 @@ function Install-LabFirstChildDcs
     
     Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
 
-	#this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
+    #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
     $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
         -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
@@ -1748,8 +1748,15 @@ function New-LabADSubnet
             $rootDc = $machine
         }
     
-        Invoke-LabCommand -ComputerName $rootDc -ActivityName 'Create AD SubNet' -NoDisplay `
-        -ScriptBlock $createSubnetScript -AsJob -ArgumentList $networkInfo
+        if ($rootDc)
+        {
+            Invoke-LabCommand -ComputerName $rootDc -ActivityName 'Create AD Subnet' -NoDisplay `
+            -ScriptBlock $createSubnetScript -AsJob -ArgumentList $networkInfo
+        }
+        else
+        {
+            Write-ScreenInfo -Message 'Root domain controller could not be found, cannot Create AD Subnet automatically.' -Type Warning
+        }
     }
   
     Write-LogFunctionExit
