@@ -2201,6 +2201,8 @@ function Install-LabSoftwarePackage
         [switch]$AsJob,
         
         [switch]$AsScheduledJob,
+
+        [switch]$UseExplicitCredentialsForScheduledJob,
         
         [switch]$UseShellExecute,
 
@@ -2236,7 +2238,7 @@ function Install-LabSoftwarePackage
     
     if ($parameterSetName -like 'Single*')
     {
-        $Machine = Get-LabMachine -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName
 
         if (-not $Machine)
         {
@@ -2248,6 +2250,13 @@ function Install-LabSoftwarePackage
         if ($unknownMachines)
         {
             Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+        }
+
+        if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
+            ($Machine | Group-Object -Property DomainName).Count -gt 1)
+        {
+            Write-Error "If you install software in a background job and require the schedule job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
+            return
         }
     }
     
@@ -2273,7 +2282,7 @@ function Install-LabSoftwarePackage
     $parameters.Add('DoNotUseCredSsp', $DoNotUseCredSsp)
     $parameters.Add('PassThru', $True)
     $parameters.Add('AsJob', $True)
-    $parameters.Add('ScriptBlock', (Get-Command -Name Install-LWSoftwarePackage).ScriptBlock)
+    $parameters.Add('ScriptBlock', (Get-Command -Name Install-SoftwarePackage).ScriptBlock)
         
     if ($parameterSetName -eq 'SinglePackage')
     {
@@ -2288,13 +2297,27 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
         
-        $installArgs = (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
         $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($LocalPath))'")
             
-        $installArgs = $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     else
     {
@@ -2309,7 +2332,14 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installArgs = (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     $parameters.Add('ArgumentList', $installArgs)
         
@@ -3667,7 +3697,7 @@ function New-LabSourcesFolder
             $Path = (New-Item -ItemType Directory -Path $Path).FullName
         }
     
-        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath 'AutomatedLab-master\LabSources') -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master\LabSources\*) -Destination $Path -Recurse -Force:$Force
 
         Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 

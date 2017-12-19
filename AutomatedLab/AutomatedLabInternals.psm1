@@ -505,9 +505,16 @@ function Get-LabInternetFile
                             $bytesProcessed += $bytesRead
                         
                             $percentageCompleted = $bytesProcessed / $response.ContentLength
-                            Write-Progress -Activity "Downloading file '$fileName'" `
-                            -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                            -PercentComplete ($percentageCompleted * 100)
+                            if ($percentageCompleted -gt 0)
+                            {
+                                Write-Progress -Activity "Downloading file '$fileName'" `
+                                -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                -PercentComplete ($percentageCompleted * 100)
+                            }
+                            else
+                            {
+                                Write-ScreenInfo -Message "Could not determine the ContentLength of '$Uri'" -Type Verbose
+                            }
                         
                         } while ($bytesRead -gt 0)
                     }
@@ -697,6 +704,3 @@ function Get-LabSourcesLocationInternal
         Get-LabSourcesLocationInternal -Local
     }
 }
-
-
-
