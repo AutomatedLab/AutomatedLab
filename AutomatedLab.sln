@@ -233,6 +233,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabTest", "Automat
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
+		LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1

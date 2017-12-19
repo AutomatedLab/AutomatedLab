@@ -411,7 +411,8 @@
             <Directory Id="SAMPLESSCENARIOSDIR" Name="Scenarios">
               <Component Id='SamplesScenariosComponent' Guid='973e631b-bb24-4634-83ae-28a53ace65bf'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesScenariosComponent"/>
-
+                
+                <File Id='Sample_AGPM1' Name='AGPM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1' />
                 <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
                 <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
