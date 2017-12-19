@@ -32,9 +32,12 @@ function Install-LabSqlServers
 
     $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
 
-    #The dafault SQL installation in Azure does not give the standard buildin administrators group access.
-    #This section adds the rights. As only the renamed Builtin Admin accout has permissions, Invoke-LabCommand cannot be used.
-    $azureMachines = $machines | Where-Object {$_.HostType -eq 'Azure' -and ($_.Roles | Where-Object Name -like 'SQL*').Properties.Count -eq 0}
+    #The default SQL installation in Azure does not give the standard buildin administrators group access.
+    #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
+    $azureMachines = $machines | Where-Object {
+            $_.HostType -eq 'Azure' -and -not (($_.Roles | 
+                Where-Object Name -like 'SQL*').Properties.Keys |
+                    Where-Object {$_ -ne 'InstallSampleDatabase'})}
 
     if ($azureMachines)
     {
@@ -74,7 +77,9 @@ GO
     }
     
     $onPremisesMachines = @($machines | Where-Object HostType -eq HyperV)
-    $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles | Where-Object {$_.Name -like "SQL*"}).Properties.Count -gt 0)}
+    $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles | 
+    Where-Object Name -like 'SQL*').Properties.Keys |
+        Where-Object {$_ -ne 'InstallSampleDatabase'})}
 
     if ($onPremisesMachines)
     {        
