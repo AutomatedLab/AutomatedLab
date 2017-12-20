@@ -112,7 +112,6 @@
     <Compile Include="Validator\FailoverCluster\ClusterOperatingSystem.cs" />
     <Compile Include="Validator\LabInformation\LabNameContainsIllegalCharacters.cs" />
     <Compile Include="Validator\Machines\Azure\AzureSpecifiedRoleSizeNotFound.cs" />
-    <Compile Include="Validator\Machines\Azure\AzureDoesNotSupportStaticDnsSettings.cs" />
     <Compile Include="Validator\Machines\Azure\AzureDoesSupportMax8NetworkAdapters.cs" />
     <Compile Include="Validator\Machines\HyperV\HypervMemorySettings.cs" />
     <Compile Include="Validator\Machines\HyperV\HypervDoesSupportMax8NetworkAdapters.cs" />

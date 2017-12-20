@@ -255,7 +255,7 @@ function Restore-LabConnection
 
     try
     {
-        $labIp = Get-LabPublicIpAddress -ErrorAction Stop
+        $labIp = Get-PublicIpAddress -ErrorAction Stop
     }
     catch
     {
@@ -396,7 +396,7 @@ function Connect-OnPremisesWithAzure
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
     
-    $labPublicIp = Get-LabPublicIpAddress
+    $labPublicIp = Get-PublicIpAddress
 
     if (-not $labPublicIp)
     {

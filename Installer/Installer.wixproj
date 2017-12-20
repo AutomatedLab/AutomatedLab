@@ -39,7 +39,6 @@
     <Content Include="Resources\Info.ico" />
     <Content Include="Resources\License.rtf" />
     <Content Include="Resources\New.ico" />
-    <Content Include="Resources\Powershell Logo.jpg" />
     <Content Include="Resources\Powershell Logo.psd" />
     <Content Include="Resources\Hammer.ico" />
     <Content Include="Resources\Remove.ico" />
@@ -59,6 +58,11 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
+  <PropertyGroup>
+    <PreBuildEvent>git submodule -q update --init --recursive
+cd $(SolutionDir)AutomatedLab.Common\
+git pull origin master</PreBuildEvent>
+  </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
 	Other similar extension points exist, see Wix.targets.

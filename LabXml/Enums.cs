@@ -49,7 +49,9 @@ namespace AutomatedLab
         ADFSProxy = 33554432,
         DSCPullServer = 67108864,
         FailoverStorage = 134217728,
-        FailoverNode = 268435456
+        FailoverNode = 268435456,
+
+        SQLServer2017 = 536870912
     }
 
     public enum ActiveDirectoryFunctionalLevel

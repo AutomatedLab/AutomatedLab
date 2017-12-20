@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <ModuleObject xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" fVersion="1.1" type="Script" mclass="Module" useSupports="false">
   <Name>AutomatedLab</Name>
-  <Version>4.3.1.0</Version>
+  <Version>4.5.0.0</Version>
   <Description>The module creates a Hyper-V visual lab automatically as defined in the XML files.</Description>
   <HasManifest>true</HasManifest>
   <OverridePostCount>false</OverridePostCount>
@@ -4291,8 +4291,8 @@ c:\DeployDebug</Description>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.AliasAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
@@ -5656,7 +5656,7 @@ c:\DeployDebug</Description>
     <CmdletObject verb="Sync" noun="Parameter">
       <Name>Sync-Parameter</Name>
       <Syntax>
-        <string>Sync-Parameter [-Command] &lt;FunctionInfo&gt; [[-Parameters] &lt;Hashtable&gt;]</string>
+        <string>Sync-Parameter [-Command] &lt;Object&gt; [[-Parameters] &lt;Hashtable&gt;]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Update a commands parameters</Synopsis>
@@ -5673,16 +5673,6 @@ c:\DeployDebug</Description>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Command Parameters Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
-        <ParameterDescription type="FunctionInfo" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
-          <Name>Command</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The FunctionInfo object to be used, e.g. Get-Command Get-ADUser</Description>
-          <DefaultValue />
-        </ParameterDescription>
         <ParameterDescription type="Hashtable" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
           <Name>Parameters</Name>
           <Attributes>
@@ -5691,6 +5681,17 @@ c:\DeployDebug</Description>
           </Attributes>
           <Aliases />
           <Description>The parameter hashtable to be synchronised</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Command</Name>
+          <Attributes>
+            <string>System.Management.Automation.ValidateScriptAttribute</string>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -6645,8 +6646,8 @@ c:\DeployDebug</Description>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Confirm</Name>
           <Attributes>
-            <string>System.Management.Automation.AliasAttribute</string>
             <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.AliasAttribute</string>
           </Attributes>
           <Aliases>
             <string>cf</string>
@@ -7053,8 +7054,8 @@ ChildDC2   child.contoso.com 192.168.41.21 Windows Server 2012 R2 SERVERDATACENT
     <CmdletObject verb="Connect" noun="Lab">
       <Name>Connect-Lab</Name>
       <Syntax>
-        <string>Connect-Lab -SourceLab &lt;String&gt; -DestinationLab &lt;String&gt; [-NetworkAdapterName &lt;String&gt;]</string>
-        <string>Connect-Lab -SourceLab &lt;String&gt; -DestinationIpAddress &lt;Object&gt; -PreSharedKey &lt;Object&gt; [-AddressSpace &lt;String[]&gt;] [-NetworkAdapterName &lt;String&gt;]</string>
+        <string>Connect-Lab [-SourceLab] &lt;String&gt; [-DestinationLab] &lt;String&gt; [-NetworkAdapterName &lt;String&gt;]</string>
+        <string>Connect-Lab [-SourceLab] &lt;String&gt; [-DestinationIpAddress] &lt;String&gt; [-PreSharedKey] &lt;String&gt; [[-AddressSpace] &lt;String[]&gt;] [-NetworkAdapterName &lt;String&gt;]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Connect two labs via VPN</Synopsis>
@@ -7074,7 +7075,7 @@ To make use of this cmdlet, your on-premises lab needs to contain a router, i.e.
         <CommandParameterSetInfo2 Name="Site2Site" Params="SourceLab DestinationIpAddress PreSharedKey AddressSpace NetworkAdapterName Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
           <Name>SourceLab</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -7084,7 +7085,7 @@ To make use of this cmdlet, your on-premises lab needs to contain a router, i.e.
           <Description>The source lab name</Description>
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
           <Name>DestinationLab</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -7104,25 +7105,7 @@ To make use of this cmdlet, your on-premises lab needs to contain a router, i.e.
           <Description />
           <DefaultValue />
         </ParameterDescription>
-        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>DestinationIpAddress</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The destination IP address if you are connecting to any VPN device</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="Object" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
-          <Name>PreSharedKey</Name>
-          <Attributes>
-            <string>System.Management.Automation.ParameterAttribute</string>
-          </Attributes>
-          <Aliases />
-          <Description>The pre-shared key to connect to the IPSEC VPN</Description>
-          <DefaultValue />
-        </ParameterDescription>
-        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
+        <ParameterDescription type="String[]" varLen="true" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="3" globbing="false">
           <Name>AddressSpace</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
@@ -7130,6 +7113,26 @@ To make use of this cmdlet, your on-premises lab needs to contain a router, i.e.
           </Attributes>
           <Aliases />
           <Description>One or more address spaces to be routed in case you are connecting to an external VPN gateway and not to another lab. Example: 192.168.2.30/24</Description>
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>DestinationIpAddress</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="2" globbing="false">
+          <Name>PreSharedKey</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
@@ -7388,7 +7391,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
       <Parameters />
       <Examples />
@@ -7765,7 +7768,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
     <CmdletObject verb="Restore" noun="LabConnection">
       <Name>Restore-LabConnection</Name>
       <Syntax>
-        <string>Restore-LabConnection</string>
+        <string>Restore-LabConnection [-SourceLab] &lt;String&gt; [-DestinationLab] &lt;String&gt;</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis />
@@ -7779,9 +7782,30 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
         <ReturnTypeDescription />
       </GeneralHelp>
       <ParamSets>
-        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="" />
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="SourceLab DestinationLab Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
       </ParamSets>
-      <Parameters />
+      <Parameters>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>SourceLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+        <ParameterDescription type="String" varLen="false" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="1" globbing="false">
+          <Name>DestinationLab</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
       <Examples />
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
@@ -7793,15 +7817,15 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
         <string>Send-ModuleToPSSession [-Module] &lt;PSModuleInfo&gt; [-Session] &lt;PSSession[]&gt; [-Scope &lt;String&gt; {AllUsers | CurrentUser} ] [-IncludeDependencies] [-Move] [-Encrypt] [-NoWriteBuffer] [-Verify] [-NoClobber] [-MaxBufferSize &lt;UInt32&gt;]</string>
       </Syntax>
       <GeneralHelp>
-        <Synopsis />
-        <Description />
-        <Notes />
+        <Synopsis>Copies/moves a module to a given set of computers using a PSSession. The destination path will mirror the source path.</Synopsis>
+        <Description> This cmdlet uses standard PS remoting to send modules stored on your  local machine to a remote machine. If the required module and assembly properties have been populated, you may optionally have it try to include those dependencies for you by specifying the IncludeDependencies parameter.</Description>
+        <Notes>Author: Tim Bertalot / Raimund Andree</Notes>
         <InputType />
         <InputUrl />
         <InputTypeDescription />
         <ReturnType>System.IO.FileInfo</ReturnType>
         <ReturnUrl />
-        <ReturnTypeDescription />
+        <ReturnTypeDescription>System.IO.FileInfo objects representing the successfully copied module files</ReturnTypeDescription>
       </GeneralHelp>
       <ParamSets>
         <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Module Session Scope IncludeDependencies Move Encrypt NoWriteBuffer Verify NoClobber MaxBufferSize Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
@@ -7815,7 +7839,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The module to copy/move to the remote computers, e.g. (Get-Module NTFSSecurity -ListAvailable)</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="PSSession[]" varLen="true" required="true" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="true" isPos="true" pos="1" globbing="false">
@@ -7825,7 +7849,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The session(s) to send the files to.</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="String" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7836,7 +7860,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The scope of the module. Default is AllUsers</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7846,7 +7870,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Determines whether the command attempts to send the module's enumerated dependencies after the module has been sent. </Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7856,7 +7880,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Causes the source file to be deleted if all session sends are successful</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7866,7 +7890,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Attempts to use the NT filesystem's EFS attribute to encrypt the destination file when it is written.</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7876,7 +7900,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Causes the destination file to get written without using any intermediate buffer other than the storage of the received data into a powershell variable. </Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7886,7 +7910,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Checks the md5 hash of each sessions's destination file against the source. Note that for large files this may greatly increase the memory requirements on both the source computer and destination sessions.</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7896,7 +7920,7 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>Does not allow a destination file to be overwritten</Description>
           <DefaultValue />
         </ParameterDescription>
         <ParameterDescription type="UInt32" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
@@ -7907,11 +7931,19 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
           </Attributes>
           <Aliases />
-          <Description />
+          <Description>The maximum chunk size to send to a session at one time.
+Note: 10MB seems to be the default maximum sized allowed in Powershell V4, however in testing the practical limit appears to be 7.4MB. This may  be due to the overhead of serialization or a consequence of the default compression</Description>
           <DefaultValue />
         </ParameterDescription>
       </Parameters>
-      <Examples />
+      <Examples>
+        <Example>
+          <Name>Example 1</Name>
+          <Cmd>Get-Module -ListAvailable -Name "PoWu" | Send-ModuleToPSSession -Session $sessions -verify -encrypt -IncludeDependencies -Verbose</Cmd>
+          <Description>Send the PoWu module installed on the local machine to all remote $sessions, verify and encrypt their contents</Description>
+          <Output />
+        </Example>
+      </Examples>
       <RelatedLinks />
       <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
       <Publish>false</Publish>
@@ -8158,6 +8190,92 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
         </ParameterDescription>
         <ParameterDescription type="SwitchParameter" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="false" pos="named" globbing="false">
           <Name>Quiet</Name>
+          <Attributes>
+            <string>System.Management.Automation.ParameterAttribute</string>
+            <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>
+          </Attributes>
+          <Aliases />
+          <Description />
+          <DefaultValue />
+        </ParameterDescription>
+      </Parameters>
+      <Examples />
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Install" noun="LabFailoverCluster">
+      <Name>Install-LabFailoverCluster</Name>
+      <Syntax>
+        <string>Install-LabFailoverCluster</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis>Installs all failover clusters</Synopsis>
+        <Description>This cmdlet installs all clusters defined in the lab environment i.e. all machines with the role FailoverNode and FailoverStorage. Using the role properties with Add-LabMachineDefinition lets you provide ClusterName and ClusterIp</Description>
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Verbose Debug ErrorAction WarningAction InformationAction ErrorVariable WarningVariable InformationVariable OutVariable OutBuffer PipelineVariable" />
+      </ParamSets>
+      <Parameters />
+      <Examples>
+        <Example>
+          <Name>EXAMPLE 1</Name>
+          <Cmd>$cluster1 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu1'; ClusterIp = '192.168.50.111' }
+$cluster2 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu2'; ClusterIp = '192.168.50.121' }
+$cluster3 = Get-LabMachineRoleDefinition -Role FailoverNode
+foreach ( $i in 1..10 )
+{
+    if (-not ($i % 2))
+    {
+        Add-LabMachineDefinition -name foCLN$i -Roles $cluster1
+    }
+    elseif (-not ($i % 3))
+    {
+        Add-LabMachineDefinition -name foCLN$i -Roles $cluster2
+    }
+    else
+    {
+        Add-LabMachineDefinition -name foCLN$i -Roles $cluster3
+    }    
+}</Cmd>
+          <Description>This sample will create two named clusters and one automatic cluster called ALCluster with an automatic static IP</Description>
+          <Output />
+        </Example>
+      </Examples>
+      <RelatedLinks />
+      <SupportInformation ad="false" rsat="false" ps2="false" ps3="false" ps4="false" ps5="false" wxp="false" wv="false" w7="false" w8="false" w81="false" w10="false" w2k3s="false" w2k3e="false" w2k3d="false" w2k8s="false" w2k8e="false" w2k8d="false" w2k8r2s="false" w2k8r2e="false" w2k8r2d="false" w2k12s="false" w2k12d="false" w2k12r2s="false" w2k12r2d="false" />
+      <Publish>false</Publish>
+    </CmdletObject>
+    <CmdletObject verb="Install" noun="LabSqlSampleDatabases">
+      <Name>Install-LabSqlSampleDatabases</Name>
+      <Syntax>
+        <string>Install-LabSqlSampleDatabases [[-Machine] &lt;Machine&gt;]</string>
+      </Syntax>
+      <GeneralHelp>
+        <Synopsis>Install the SQL sample database</Synopsis>
+        <Description>If the role property InstallSampleDatabase is set to "true", the appropriate sample database will be downloaded and deployed. By using this cmdlet, you can install the sample DBs after the lab has been deployed as well.
+Download links can be configured in AutomatedLab.psd1</Description>
+        <Notes />
+        <InputType />
+        <InputUrl />
+        <InputTypeDescription />
+        <ReturnType />
+        <ReturnUrl />
+        <ReturnTypeDescription />
+      </GeneralHelp>
+      <ParamSets>
+        <CommandParameterSetInfo2 Name="__AllParameterSets" Params="Machine" />
+      </ParamSets>
+      <Parameters>
+        <ParameterDescription type="Machine" varLen="false" required="false" dynamic="false" pipeRemaining="false" pipe="false" pipeProp="false" isPos="true" pos="0" globbing="false">
+          <Name>Machine</Name>
           <Attributes>
             <string>System.Management.Automation.ParameterAttribute</string>
             <string>System.Management.Automation.ArgumentTypeConverterAttribute</string>

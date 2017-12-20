@@ -458,7 +458,18 @@ function Copy-LabFileItem
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabVM -ComputerName $ComputerName -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $ComputerName
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    
     $connectedMachines = @{ }
     
     foreach ($machine in $machines)
