@@ -1,8 +1,8 @@
 # AutomatedLab
 
 [![Krihelimeter](http://krihelinator.xyz/badge/AutomatedLab/AutomatedLab)](http://krihelinator.xyz/repositories/AutomatedLab/AutomatedLab)
-[![Build status](https://ci.appveyor.com/api/projects/status/ahvu6hwtpa1xgu5o/branch/master?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
-[![Build status dev](https://ci.appveyor.com/api/projects/status/ahvu6hwtpa1xgu5o/branch/develop?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
+[![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/master?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
+[![Build status dev](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/develop?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
 
 ## Project Summary
 
