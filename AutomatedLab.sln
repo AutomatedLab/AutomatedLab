@@ -151,7 +151,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
-		_config.yml = _config.yml
 		appveyor.yml = appveyor.yml
 		Automated-Lab_icon128.png = Automated-Lab_icon128.png
 		Automated-Lab_icon256.png = Automated-Lab_icon256.png
