@@ -1,6 +1,6 @@
 # Changelog
 
-## v4.6.* - yyyy-mm-dd
+## v4.7.* - yyyy-mm-dd
 
 ### Fixes
 - AL now creates all SQL service accounts
@@ -9,12 +9,13 @@
 - Sync-Parameter fixed so that it works with PSv2 as well
 
 ### Enhancements
-- Build process automated
+- Build and release process automated
 - New sample scripts
 - New module AutomatedLab.Common added as submodule
 - SQL 2017 added
 - SSMS installation streamlined
 - SQL Server now customizable on Azure as well
+- FQDN in host file
 
 ## v4.5.0.0 - 2017-11-18
 
