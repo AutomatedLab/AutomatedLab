@@ -1,33 +1,59 @@
 ﻿@{
-    RootModule = 'AutomatedLabDefinition.psm1'
+    RootModule             = 'AutomatedLabDefinition.psm1'
     
-    ModuleVersion = '4.5.0.0'
+    ModuleVersion          = '4.5.0.0'
     
-    GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
+    GUID                   = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
-    Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
+    Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
-    CompanyName = 'AutomatedLab Team'
+    CompanyName            = 'AutomatedLab Team'
     
-    Copyright = '2017'
+    Copyright              = '2017'
     
-    Description = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
+    Description            = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
     
-    PowerShellVersion = '4.0'
+    PowerShellVersion      = '4.0'
     
     DotNetFrameworkVersion = '4.0'
 
-	ModuleList = @('AutomatedLabDefinition')
+	ModuleList             = @('AutomatedLabDefinition')
     
-    ScriptsToProcess = @('AutomatedLabDefinition.init.ps1')
+    ScriptsToProcess       = @('AutomatedLabDefinition.init.ps1')
     
-    NestedModules = @('AutomatedLabDefinitionNetwork.psm1')
+    NestedModules          = @('AutomatedLabDefinitionNetwork.psm1')
     
-    FileList = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
+    FileList               = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
     
-    RequiredModules = @(
+    RequiredModules        = @(
         'AutomatedLabUnattended'
         'PSLog'
+    )
+
+    CmdletsToExport        = @()
+
+    FunctionsToExport      = @(
+        'Add-UnattendedNetworkAdapter',
+        'Add-UnattendedRenameNetworkAdapter',
+        'Add-UnattendedRenameNetworkAdapters',
+        'Add-UnattendedSynchronousCommand',
+        'Export-UnattendedFile',
+        'Get-UnattendedContent',
+        'Import-UnattendedContent',
+        'Import-UnattendedFile',
+        'Set-LocalIntranetSites',
+        'Set-UnattendedAdministratorName',
+        'Set-UnattendedAdministratorPassword',
+        'Set-UnattendedAutoLogon',
+        'Set-UnattendedComputerName',
+        'Set-UnattendedDomain',
+        'Set-UnattendedIpSettings',
+        'Set-UnattendedProductKey',
+        'Set-UnattendedTimeZone',
+        'Set-UnattendedUserLocale',
+        'Set-UnattendedWindowsDefender',
+        'Set-UnattendedWorkgroup',
+        'Set-WindowsFirewallState'
     )
 
     PrivateData = @{
@@ -81,5 +107,3 @@
         }
     }
 }
-
-
