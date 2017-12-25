@@ -350,6 +350,8 @@ function Install-LWAzureWindowsFeature
         
         [switch]$IncludeAllSubFeature,
         
+        [switch]$IncludeManagementTools,
+        
         [switch]$UseLocalCredential,
         
         [switch]$AsJob,
@@ -372,7 +374,7 @@ function Install-LWAzureWindowsFeature
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
             }
         }
         else
@@ -383,7 +385,7 @@ function Install-LWAzureWindowsFeature
             }
             else
             {
-                $cmd = [scriptblock]::Create("Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature")
+                $cmd = [scriptblock]::Create("Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
             }
         }
         
