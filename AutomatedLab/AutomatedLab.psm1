@@ -1681,6 +1681,8 @@ function Install-LabWindowsFeature
         [string[]]$FeatureName,
 
         [switch]$IncludeAllSubFeature,
+
+        [switch]$InstallManagementTools,
         
         [switch]$UseLocalCredential,
         
@@ -1731,11 +1733,11 @@ function Install-LabWindowsFeature
             $isoImagePath = $machine.OperatingSystem.IsoPath
             Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImagePath -SupressOutput
         }
-        $jobs = Install-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Install-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -InstallManagementTools:$InstallManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     elseif ($azureMachines)
     {
-        $jobs = Install-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Install-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -InstallManagementTools:$InstallManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     
     if (-not $AsJob)
