@@ -284,7 +284,7 @@ function Install-LWHypervWindowsFeature
         
         [switch]$IncludeAllSubFeature,
 
-        [switch]$InstallManagementTools,
+        [switch]$IncludeManagementTools,
         
         [switch]$UseLocalCredential,
         
@@ -308,7 +308,7 @@ function Install-LWHypervWindowsFeature
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -InstallManagementTools:`$$InstallManagementTools")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
             }
         }
         else
@@ -319,7 +319,7 @@ function Install-LWHypervWindowsFeature
             }
             else
             {
-                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -InstallManagementTools:`$$InstallManagementTools")
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
             }
         }
         

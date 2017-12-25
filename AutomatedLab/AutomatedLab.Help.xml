@@ -7236,7 +7236,7 @@ SQLServer2008
 				<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
-				<maml:name>InstallManagementTools</maml:name>
+				<maml:name>IncludeManagementTools</maml:name>
 				<maml:description>
 					<maml:para>Indicates if management tools for the selected features should be installed</maml:para>
 				</maml:description>
