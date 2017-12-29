@@ -1,7 +1,7 @@
 @{
     RootModule             = 'AutomatedLab.psm1'
     
-    ModuleVersion          = '4.5.6.0'
+    ModuleVersion          = '4.5.7.0'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -9,7 +9,7 @@
     
     CompanyName            = 'AutomatedLab Team'
     
-    Copyright              = '2017'
+    Copyright              = '2018'
     
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
@@ -243,7 +243,7 @@
 
         #General VM settings
         DisableWindowsDefender                 = $true
-		DoNotSkipNonNonEnglishIso              = $false
+        DoNotSkipNonNonEnglishIso              = $false
 
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
