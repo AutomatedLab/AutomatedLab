@@ -33,27 +33,33 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
-        'Add-UnattendedNetworkAdapter',
-        'Add-UnattendedRenameNetworkAdapter',
-        'Add-UnattendedRenameNetworkAdapters',
-        'Add-UnattendedSynchronousCommand',
-        'Export-UnattendedFile',
-        'Get-UnattendedContent',
-        'Import-UnattendedContent',
-        'Import-UnattendedFile',
-        'Set-LocalIntranetSites',
-        'Set-UnattendedAdministratorName',
-        'Set-UnattendedAdministratorPassword',
-        'Set-UnattendedAutoLogon',
-        'Set-UnattendedComputerName',
-        'Set-UnattendedDomain',
-        'Set-UnattendedIpSettings',
-        'Set-UnattendedProductKey',
-        'Set-UnattendedTimeZone',
-        'Set-UnattendedUserLocale',
-        'Set-UnattendedWindowsDefender',
-        'Set-UnattendedWorkgroup',
-        'Set-WindowsFirewallState'
+        'Add-LabDiskDefinition'
+        'Add-LabDomainDefinition'
+        'Add-LabIsoImageDefinition'
+        'Add-LabMachineDefinition'
+        'Add-LabVirtualNetworkDefinition'
+        'Export-LabDefinition'
+        'Get-DiskSpeed'
+        'Get-LabAvailableAddresseSpace'
+        'Get-LabDefinition'
+        'Get-LabDomainDefinition'
+        'Get-LabIsoImageDefinition'
+        'Get-LabMachineDefinition'
+        'Get-LabMachineRoleDefinition'
+        'Get-LabPostInstallationActivity'
+        'Get-LabVirtualNetwork'
+        'Get-LabVirtualNetworkDefinition'
+        'Get-LabVolumesOnPhysicalDisks'
+        'New-LabDefinition'
+        'New-LabNetworkAdapterDefinition'
+        'Remove-LabDomainDefinition'
+        'Remove-LabIsoImageDefinition'
+        'Remove-LabMachineDefinition'
+        'Remove-LabVirtualNetworkDefinition'
+        'Repair-LabDuplicateIpAddresses'
+        'Set-LabDefinition'
+        'Set-LabLocalVirtualMachineDiskAuto'
+        'Test-LabDefinition'
     )
 
     PrivateData = @{
