@@ -1037,7 +1037,7 @@ function Get-LabAvailableOperatingSystem
             {
                 $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $image.ImageIndex
                 
-                if (-not ($imageInfo.Languages -like '*en-us*'))
+                if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
                     Write-Warning "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped."
                     continue

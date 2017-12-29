@@ -243,6 +243,7 @@
 
         #General VM settings
         DisableWindowsDefender                 = $true
+		DoNotSkipNonNonEnglishIso              = $false
 
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
