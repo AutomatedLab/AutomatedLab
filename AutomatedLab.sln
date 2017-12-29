@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -55,7 +55,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "AutomatedLabDefinition", "{688118CF-DFF0-484C-B9DA-EE9B99B6CBD6}"
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLabDefinition\AutomatedLabDefinition.Help.xml = AutomatedLabDefinition\AutomatedLabDefinition.Help.xml
-		AutomatedLabDefinition\AutomatedLabDefinition.init.ps1 = AutomatedLabDefinition\AutomatedLabDefinition.init.ps1
 		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
 		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
 		AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1
