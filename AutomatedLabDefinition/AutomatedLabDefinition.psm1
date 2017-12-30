@@ -692,16 +692,14 @@ function New-LabDefinition
                 Start-Sleep -Seconds 1
                 
                 #Download SysInternals suite
-                $tempFolderName = "$($Env:Temp)\$([System.Guid]::NewGuid().ToString())"
-                Write-Verbose -Message "Temp folder path: '$tempFolderName'"
                 
-                New-Item -ItemType Directory -Path $tempFolderName | Out-Null
-                $filePath = "$tempFolderName\SysinternalsSUite.zip"
-                Write-Verbose -Message "Temp file: '$filePath'"
+                $tempFilePath = [System.IO.Path]::GetTempFileName()
+                $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
+                Write-Verbose -Message "Temp file: '$tempFilePath'"
 
                 try
                 {
-                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $filePath
+                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
                     $fileDownloaded = $true
                     Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
                 }
@@ -713,7 +711,7 @@ function New-LabDefinition
                 
                 if ($fileDownloaded)
                 {
-                    Unblock-File -Path $filePath
+                    Unblock-File -Path $tempFilePath
         
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
@@ -733,10 +731,9 @@ function New-LabDefinition
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
         
-                    Write-Verbose -Message 'Exteacting files'
-                    $shell = New-Object -ComObject Shell.Application
-                    $shell.namespace("$labSources\Tools\SysInternals").CopyHere($shell.Namespace($filePath).Items())
-                    Remove-Item -Path $tempFolderName -Recurse
+                    Write-Verbose -Message 'Extracting files'
+                    Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
+                    Remove-Item -Path $tempFilePath
         
                     #Update registry
                     $versions['SysInternals'] = $updateStringFromWebPage
