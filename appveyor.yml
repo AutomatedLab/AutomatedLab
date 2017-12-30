@@ -1,4 +1,4 @@
-version: 4.7.{build}
+version: 4.7.1.{build}
 
 environment:
   twitApi:
