@@ -262,21 +262,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDscClients", "{42F1CA14-387C-4DC0-BF14-0DFEA2681105}"
-	ProjectSection(SolutionItems) = preProject
-		LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 = LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "SetupDscPullServer", "{2E4C28D0-0A96-453D-AE4B-22ED3284966C}"
-	ProjectSection(SolutionItems) = preProject
-		LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1
-		LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb = LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb
-		LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix = LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix
-		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
-		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
-		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introduction", "{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\SampleScripts\Introduction\01 Single Win10 Client.ps1 = LabSources\SampleScripts\Introduction\01 Single Win10 Client.ps1
@@ -583,8 +568,6 @@ Global
 		{BB2F6956-209C-40CB-8877-07E3F5C79F76} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{1D008E01-0359-4EF9-AB13-ADC357240D25} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
-		{42F1CA14-387C-4DC0-BF14-0DFEA2681105} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
-		{2E4C28D0-0A96-453D-AE4B-22ED3284966C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
 		{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
 		{99649F48-1216-41A4-9315-22EA5706AAA4} = {F53EE2B3-B14E-4266-9018-18CDEC02D2DA}
 		{DFDF84A2-F080-47E7-ADC9-F03AD15CB7F0} = {9C1CF008-E02A-4CC5-B1D7-C8DD8BF91E3D}
