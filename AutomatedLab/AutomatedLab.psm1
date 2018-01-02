@@ -485,7 +485,7 @@ function Install-Lab
     
     $Global:AL_DeploymentStart = Get-Date
 
-	Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -541,7 +541,7 @@ function Install-Lab
     }
 
     #VMs created, export lab definition again to update MAC addresses
-	Set-LabDefinition -Machines $Script:data.Machines
+    Set-LabDefinition -Machines $Script:data.Machines
     Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
@@ -791,7 +791,7 @@ function Install-Lab
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
         $jobs | Wait-Job | Out-Null
     }    
-	
+    
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
@@ -1721,7 +1721,11 @@ function Install-LabWindowsFeature
         }
     }    
     
-    Start-LabVM -ComputerName $ComputerName -Wait    
+    $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
+    if ($stoppedMachines)
+    {
+        Start-LabVM -ComputerName $stoppedMachines.Name -Wait
+    }
     
     $hyperVMachines = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
     $azureMachines  = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
