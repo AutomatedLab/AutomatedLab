@@ -1,4 +1,4 @@
- $PSDefaultParameterValues = @{
+$PSDefaultParameterValues = @{
     '*-Azure*:Verbose'      = $false
     '*-Azure*:Warning'      = $false
     'Import-Module:Verbose' = $false
@@ -1236,7 +1236,7 @@ function Sync-LabAzureLabSources
             {
                 $isOs = [bool](Get-LabAvailableOperatingSystem -Path $file.FullName)
 
-                if ($isOs -and $DoNotSkipOsIsos)
+                if ($isOs -and -not $DoNotSkipOsIsos)
                 {
                     Write-Verbose "Skipping OS ISO $($file.FullName)"
                     continue
