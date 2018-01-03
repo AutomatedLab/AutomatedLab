@@ -105,6 +105,9 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTERCORE":
                         return "2016-Datacenter-Server-Core";
 
+                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                        return "Datacenter-Core-1709-smalldisk";
+
                     case "Windows Server 2016 SERVERSTANDARDNANO":
                         return "2016-Nano-Server";
 
@@ -290,6 +293,14 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName)
         {
             this.operatingSystemName = operatingSystemName;
+            if (operatingSystemName.ToLower().Contains("windows server"))
+            {
+                installation = "Server";
+            }
+            else
+            {
+                installation = "Client";
+            }
         }
 
         public OperatingSystem(string operatingSystemName, AutomatedLab.Version version)
