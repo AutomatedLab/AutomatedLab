@@ -73,8 +73,6 @@ function New-LWAzureVM
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
-
-    
     
     #if this machine has a SQL Server role
     foreach ($role in $Machine.Roles) 
@@ -282,9 +280,9 @@ function New-LWAzureVM
         }
         
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object Name -Match $pattern |
+        Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
         Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, NumberOfCores |
+        Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
         Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
