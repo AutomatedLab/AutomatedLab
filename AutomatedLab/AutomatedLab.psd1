@@ -108,7 +108,6 @@
         'Get-LabVMStatus',
         'Get-LabVMUptime,'
         'Get-LabSoftwarePackage',
-        'Get-LabAvailableOperatingSystem',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
