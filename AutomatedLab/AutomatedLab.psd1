@@ -184,6 +184,7 @@
         'Unblock-LabSources',
         'Update-LabAzureSettings',
         'Update-LabIsoImage',
+        'Update-LabBaseImage',
         'Wait-LabADReady',
         'Wait-LabVM',
         'Wait-LabVMRestart',
