@@ -1,49 +1,49 @@
 #region New-LabBaseImages
 function New-LabBaseImages
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	[cmdletBinding()]
-	param ()
-	
-	Write-LogFunctionEntry
-	
-    $lab = Get-Lab
-	if (-not $lab)
-	{
-		Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
-		return
-	}
-	
-	$isos = $lab.Sources.ISOs | Where-Object { $_.IsOperatingSystem }
-	$oses = (Get-LabMachine -All | Select-Object).OperatingSystem
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param ()
     
-	if (-not $lab.Sources.AvailableOperatingSystems)
-	{
-		throw "There isn't a single operating system ISO available in the lab. Please call 'Get-LabAvailableOperatingSystem' to see what AutomatedLab has found and check the LabSources folder location by calling 'Get-LabSourcesLocation'."
-	}
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    $isos = $lab.Sources.ISOs | Where-Object { $_.IsOperatingSystem }
+    $oses = (Get-LabMachine -All | Select-Object).OperatingSystem
+    
+    if (-not $lab.Sources.AvailableOperatingSystems)
+    {
+        throw "There isn't a single operating system ISO available in the lab. Please call 'Get-LabAvailableOperatingSystem' to see what AutomatedLab has found and check the LabSources folder location by calling 'Get-LabSourcesLocation'."
+    }
 
-	$osesProcessed = @()
+    $osesProcessed = @()
     $BaseImagesCreated = 0
 
     foreach ($os in $oses)
-	{
-		if (-not $os.ProductKey)
-		{
-			$message = "The product key is unknown for the OS '$($os.OperatingSystemName)' in ISO image '$($os.OSName)'. Cannot install lab until this problem is solved."
-			Write-LogFunctionExitWithError -Message $message
-			throw $message
-		}
-	
+    {
+        if (-not $os.ProductKey)
+        {
+            $message = "The product key is unknown for the OS '$($os.OperatingSystemName)' in ISO image '$($os.OSName)'. Cannot install lab until this problem is solved."
+            Write-LogFunctionExitWithError -Message $message
+            throw $message
+        }
+    
         $baseDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version).vhdx"
-		$os.BaseDiskPath = $baseDiskPath
+        $os.BaseDiskPath = $baseDiskPath
         
-		$hostOsVersion = [System.Version]((Get-CimInstance -ClassName Win32_OperatingSystem).Version) 
+        $hostOsVersion = [System.Version]((Get-CimInstance -ClassName Win32_OperatingSystem).Version) 
         
         if ($hostOsVersion -ge [System.Version]'6.3' -and $os.Version -ge [System.Version]'6.2')
-		{
+        {
             Write-Verbose -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, setting partition style to GPT."
-			$partitionStyle = 'GPT'
-		}
+            $partitionStyle = 'GPT'
+        }
         else
         {
             Write-Verbose -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, KEEPING partition style as MBR."
@@ -54,16 +54,16 @@ function New-LabBaseImages
         {
             $osesProcessed += $os
             
-    	    if (-not (Test-Path $baseDiskPath))
+            if (-not (Test-Path $baseDiskPath))
             {
                 Stop-ShellHWDetectionService
                 
                 New-LWReferenceVHDX -IsoOsPath $os.IsoPath `
                     -ReferenceVhdxPath $baseDiskPath `
-				    -OsName $os.OperatingSystemName `
-				    -ImageName $os.OperatingSystemImageName `
-				    -SizeInGb $lab.Target.ReferenceDiskSizeInGB `
-				    -PartitionStyle $partitionStyle
+                    -OsName $os.OperatingSystemName `
+                    -ImageName $os.OperatingSystemImageName `
+                    -SizeInGb $lab.Target.ReferenceDiskSizeInGB `
+                    -PartitionStyle $partitionStyle
 
                 $BaseImagesCreated++
             }
@@ -72,27 +72,27 @@ function New-LabBaseImages
                 Write-Verbose -Message "The base image $baseDiskPath already exists"
             }
         }
-		else
-		{
+        else
+        {
             Write-Verbose -Message "Base disk for operating system '$os' already created previously"
-		}
-	}
+        }
+    }
     
     if (-not $BaseImagesCreated)
     {
         Write-ScreenInfo -Message 'All base images were created previously'
     }
 
-	Start-ShellHWDetectionService
+    Start-ShellHWDetectionService
     
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
 #endregion New-LabBaseImages
 
 
 function Stop-ShellHWDetectionService
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
 
     Write-LogFunctionEntry
 
@@ -126,7 +126,7 @@ function Stop-ShellHWDetectionService
 
 function Start-ShellHWDetectionService
 {
-	# .ExternalHelp AutomatedLab.Help.xml
+    # .ExternalHelp AutomatedLab.Help.xml
 
     Write-LogFunctionEntry
 
@@ -138,7 +138,7 @@ function Start-ShellHWDetectionService
         return
     }
 
-	if ((Get-Service -Name ShellHWDetection).Status -eq 'Running')
+    if ((Get-Service -Name ShellHWDetection).Status -eq 'Running')
     {
         Write-Verbose -Message "'ShellHWDetection' Service is already running."
         Write-LogFunctionExit
@@ -168,108 +168,108 @@ function Start-ShellHWDetectionService
 #region New-LabVHDX
 function New-LabVHDX
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	[cmdletBinding()]
-	param (
-		[Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
-		[string[]]$Name,
-		
-		[Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'All')]
-		[switch]$All
-	)
-	
-	Write-LogFunctionEntry
-	
-	$lab = Get-Lab
-	if (-not $lab)
-	{
-		Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
-		return
-	}
-	
-	Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
+        [string[]]$Name,
+        
+        [Parameter(ValueFromPipelineByPropertyName = $true, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
     Stop-ShellHWDetectionService
-	
-	if ($Name)
-	{
-		$disks = $lab.Disks | Where-Object Name -in $Name
-	}
-	else
-	{
-		$disks = $lab.Disks
-	}
-	
-	if (-not $disks)
-	{
-		Write-Verbose 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
-		Write-LogFunctionExit
-		return
-	}
-	
-	$diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
-	
-	foreach ($disk in $disks)
-	{
-		New-LWVHDX -VhdxPath (Join-Path -Path $diskPath -ChildPath ($disk.Name + '.vhdx')) -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
-	}
-	
-	Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+    
+    if ($Name)
+    {
+        $disks = $lab.Disks | Where-Object Name -in $Name
+    }
+    else
+    {
+        $disks = $lab.Disks
+    }
+    
+    if (-not $disks)
+    {
+        Write-Verbose 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
+        Write-LogFunctionExit
+        return
+    }
+    
+    $diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
+    
+    foreach ($disk in $disks)
+    {
+        New-LWVHDX -VhdxPath (Join-Path -Path $diskPath -ChildPath ($disk.Name + '.vhdx')) -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
+    }
+    
+    Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
     Start-ShellHWDetectionService
     
-	Write-LogFunctionExit
+    Write-LogFunctionExit
 }
 #endregion New-LabVHDX
 
 #region Get-LabVHDX
 function Get-LabVHDX
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	[OutputType([AutomatedLab.Machine])]
-	param (
-		[Parameter(Mandatory = $true, ParameterSetName = 'ByName')]
-		[ValidateNotNullOrEmpty()]
-		[string[]]$Name,
-		
-		[Parameter(Mandatory = $true, ParameterSetName = 'All')]
-		[switch]$All
-	)
-	
-	Write-LogFunctionEntry
-	
-	$lab = Get-Lab
-	if (-not $lab)
-	{
-		Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
-		return
-	}
-	
-	if ($PSCmdlet.ParameterSetName -eq 'ByName')
-	{
-		$results = $lab.Disks | Where-Object -FilterScript {
-			$_.Name -in $Name
-		}
-	}
-	
-	if ($PSCmdlet.ParameterSetName -eq 'All')
-	{
-		$results = $lab.Disks
-	}
-	
-	if ($results)
-	{
-		$diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
-		foreach ($result in $results)
-		{
-			$result.Path = Join-Path -Path $diskPath -ChildPath ($result.Name + '.vhdx')
-		}
-		
-		Write-LogFunctionExit -ReturnValue $results.ToString()
-		
-		return $results
-	}
-	else
-	{
-		return
-	}
+    # .ExternalHelp AutomatedLab.Help.xml
+    [OutputType([AutomatedLab.Machine])]
+    param (
+        [Parameter(Mandatory = $true, ParameterSetName = 'ByName')]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$Name,
+        
+        [Parameter(Mandatory = $true, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq 'ByName')
+    {
+        $results = $lab.Disks | Where-Object -FilterScript {
+            $_.Name -in $Name
+        }
+    }
+    
+    if ($PSCmdlet.ParameterSetName -eq 'All')
+    {
+        $results = $lab.Disks
+    }
+    
+    if ($results)
+    {
+        $diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
+        foreach ($result in $results)
+        {
+            $result.Path = Join-Path -Path $diskPath -ChildPath ($result.Name + '.vhdx')
+        }
+        
+        Write-LogFunctionExit -ReturnValue $results.ToString()
+        
+        return $results
+    }
+    else
+    {
+        return
+    }
 }
 #endregion Get-LabVHDX
