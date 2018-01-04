@@ -167,7 +167,7 @@ function Install-LabDscPullServer
     foreach ($machine in $machines)
     {
         $role = $machine.Roles | Where-Object Name -eq $roleName
-        if ($role.Properties.DatabaseEngine = 'mdb')
+        if ($role.Properties.DatabaseEngine -eq 'mdb')
         {
             $databaseEngine = 'mdb'
         }
