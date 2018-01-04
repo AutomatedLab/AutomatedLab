@@ -106,7 +106,7 @@
         'Get-LabVM',
         'Get-LabVMRdpFile',
         'Get-LabVMStatus',
-        'Get-LabVMUptime,'
+        'Get-LabVMUptime',
         'Get-LabWindowsFeature',
         'Import-Lab',
         'Import-LabAzureCertificate',
