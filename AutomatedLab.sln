@@ -445,6 +445,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{E47974
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Install-SoftwarePackage.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Install-SoftwarePackage.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1
