@@ -123,6 +123,9 @@ function New-LabVM
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
+		Write-Verbose -Message 'Restarting machines to apply DNS settings'
+		Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+
         Write-Verbose -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs        
 
@@ -481,7 +484,7 @@ function Restart-LabVM
     }
     
     Write-Verbose "Stopping machine '$ComputerName' and waiting for shutdown"
-    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine
+    Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine -KeepAzureVmProvisioned
     Write-Verbose "Machine '$ComputerName' is stopped"
 
     Write-Debug 'Waiting 10 seconds'
@@ -513,7 +516,9 @@ function Stop-LabVM
 
         [int]$ProgressIndicator,
 
-        [switch]$NoNewLine
+        [switch]$NoNewLine,
+
+		[switch]$KeepAzureVmProvisioned
     )
     
     Write-LogFunctionEntry
@@ -544,6 +549,11 @@ function Stop-LabVM
             Write-Debug "Machine $($vmState.Name) is already stopped, removing it from the list of machines to stop"
         }
     }
+
+    if (-not $machines)
+    {
+        return
+    }
     
     Remove-LabPSSession -ComputerName $machines
     
@@ -552,7 +562,10 @@ function Stop-LabVM
     $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
     
     if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
-    if ($azureVms) { Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue }
+    if ($azureVms) { 
+		$stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+		Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+		}
     if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
     
     $remainingTargets = @()
@@ -661,11 +674,14 @@ function Wait-LabVM
         netsh.exe interface ip delete arpcache | Out-Null
         
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
-        $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
-        if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
-        {
-            Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
-        }
+		if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
+		{
+			$machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+			if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
+			{
+				Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
+			}
+		}        
  
         $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -Retries 1 -DoNotUseCredSsp:$DoNotUseCredSsp -ErrorAction SilentlyContinue
             
@@ -695,6 +711,7 @@ function Wait-LabVM
                 $VerbosePreference = $using:VerbosePreference
 
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
+				Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                 Import-Lab -LabBytes $LabBytes
 
@@ -820,7 +837,9 @@ function Wait-LabVMRestart
         
         [switch]$NoNewLine,
         
-        $MonitorJob
+        $MonitorJob,
+
+        [DateTime]$MonitoringStartTime = (Get-Date)
     )
     
     Write-LogFunctionEntry
@@ -837,12 +856,11 @@ function Wait-LabVMRestart
     $azureVms = $vms | Where-Object HostType -eq 'Azure'
     $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
     $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
-    $start = Get-Date
     
     if ($azureVms)
     {
         Wait-LWAzureRestartVM -ComputerName $azureVms -DoNotUseCredSsp:$DoNotUseCredSsp -TimeoutInMinutes $TimeoutInMinutes `
-        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError
+        -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorAction SilentlyContinue -ErrorVariable azureWaitError -MonitoringStartTime $MonitoringStartTime
     }
 
     if ($hypervVms)
@@ -1121,7 +1139,7 @@ function Connect-LabVM
             $cred = $machine.GetCredential($lab)
         }
         
-        if ($machine.HostType = 'Azure')
+        if ($machine.HostType -eq 'Azure')
         {
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
@@ -1133,11 +1151,11 @@ function Connect-LabVM
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
         }
-        elseif ($machine.HostType -eq 'HyperV')
+        else
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
+            mstsc.exe "/v:$($machine.Name)"
             
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
             
@@ -1258,10 +1276,29 @@ function Join-LabVMDomain
             [string]$DomainName,
 
             [Parameter(Mandatory = $true)]
-            [System.Management.Automation.PSCredential]$Credential
+            [System.Management.Automation.PSCredential]$Credential,
+
+			[bool]$AlwaysReboot = $false
         )
 
-        Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop
+		try
+		{
+			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
+			$true
+		}
+		catch
+		{
+			if ($AlwaysReboot)
+			{
+				$false
+				Start-Sleep -Seconds 1
+				Restart-Computer -Force
+			}
+			else
+			{
+				Write-Error -Exception $_.Exception -Message $_.Exception.Message -ErrorAction Stop
+			}
+		}
 
         $logonName = "$DomainName\$($Credential.UserName)"
         $password = $Credential.GetNetworkCredential().Password
@@ -1278,6 +1315,7 @@ function Join-LabVMDomain
 
     $lab = Get-Lab
     $jobs = @()
+    $startTime = Get-Date
 
     Write-Verbose "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
@@ -1307,8 +1345,22 @@ function Join-LabVMDomain
             $cred = $domain.GetCredential()
 
             Write-Verbose "Joining machine '$m' to domain '$domain'"
-            $jobs += Invoke-LabCommand -ComputerName $m -ActivityName DomainJoin -ScriptBlock (Get-Command Join-Computer).ScriptBlock `
-            -UseLocalCredential -ArgumentList $domain, $cred -AsJob -PassThru -NoDisplay
+			$jobParameters = @{
+				ComputerName = $m
+				ActivityName = "DomainJoin_$m"
+				ScriptBlock = (Get-Command Join-Computer).ScriptBlock
+				UseLocalCredential = $true
+				ArgumentList = $domain, $cred
+				AsJob = $true
+				PassThru = $true
+				NoDisplay = $true
+			}
+
+			if ($m.HostType -eq 'Azure')
+			{
+				$jobParameters.ArgumentList += $true
+			}
+            $jobs += Invoke-LabCommand @jobParameters
         }
     }
     
@@ -1319,12 +1371,22 @@ function Join-LabVMDomain
     
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message 'Waiting for machines to restart' -NoNewLine
-        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine
+        Wait-LabVMRestart -ComputerName $Machine -ProgressIndicator 30 -NoNewLine -MonitoringStartTime $startTime
     }
     
     foreach ($m in $Machine)
     {
-        $m.HasDomainJoined = $true
+		$machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
+		$machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
+		if (($machineJob).State -eq 'Failed' -or -not $machineResult)
+		{
+			Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
+			$m.HasDomainJoined = $false
+		}
+		else
+		{
+			$m.HasDomainJoined = $true
+		}
     }
     Export-Lab
     
@@ -1351,8 +1413,17 @@ function Mount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -notin HyperV,Azure | ForEach-Object {
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
         Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
@@ -1393,12 +1464,27 @@ function Dismount-LabIsoImage
     Write-LogFunctionEntry
 
     $machines = Get-LabMachine -ComputerName $ComputerName
-
-    $machines | Where-Object HostType -ne HyperV | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs. Skipping machine '$($_.Name)'"
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+    }
+    $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
+        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
+    $azureMachines = $machines | Where-Object HostType -eq Azure
+
+    if ($azureMachines)
+    {
+        Dismount-LWAzureIsoImage -ComputerName $azureMachines
+    }
 
     foreach ($machine in $machines)
     {
@@ -1720,5 +1806,114 @@ function Get-LabVM
     }
 }
 #endregion Get-LabVM
+
+#region Set-LabAutoLogon
+function Set-LabAutoLogon
+{
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
+       
+    Write-Verbose -Message "Enabling autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+
+    foreach ( $Machine in $Machines)
+    {
+        $InvokeParameters = @{
+            Username = $Machine.InstallationUser.UserName
+            Password = $Machine.InstallationUser.Password
+        }
+
+        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        {
+            $invokeParameters['DomainName'] = $Machine.DomainName
+        }
+        else
+        {
+            $invokeParameters['DomainName'] = $Machine.Name
+        }
+
+        Invoke-LabCommand -ActivityName "Enabling AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 1 -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoLogonCount -Value 9999 -Type DWORD -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $InvokeParameters.DomainName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $InvokeParameters.UserName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $InvokeParameters.Password -Type String -Force
+        } -Variable (Get-Variable InvokeParameters) -NoDisplay
+    }
+}
+#endregion
+
+#region Test-LabAutoLogon
+function Test-LabAutoLogon
+{
+    param
+    (
+        [string[]]
+        $ComputerName
+    )
+
+    Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+    $returnValues = @{}
+    
+    foreach ( $Machine in $Machines)
+    {
+        $parameters = @{
+            Username = $Machine.InstallationUser.UserName
+            Password = $Machine.InstallationUser.Password
+        }
+
+        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        {
+            $parameters['DomainName'] = $Machine.DomainName
+        }
+        else
+        {
+            $parameters['DomainName'] = $Machine.Name
+        }
+
+        $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+            $values = @{}
+            $values['AutoAdminLogon'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultDomainName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
+            $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
+            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
+                Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
+                Select-Object -ExpandProperty Caption -Unique
+            
+            $values
+        } -PassThru -NoDisplay
+
+        Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
+
+        if ( $settings.AutoAdminLogon -ne 1 -or
+            $settings.DefaultDomainName -ne $parameters.DomainName -or
+            $settings.DefaultUserName -ne $parameters.Username -or
+            $settings.DefaultPassword -ne $parameters.Password)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
+
+        if ( $settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
+        {
+            $returnValues[$Machine.Name] = $false
+            continue
+        }
+
+        $returnValues[$Machine.Name] = $true
+    }
+
+    return $returnValues
+}
+#endregion
 
 New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global -Force

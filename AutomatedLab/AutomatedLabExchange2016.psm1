@@ -14,7 +14,7 @@ function Copy-LabExchange2016InstallationFiles
     Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -ErrorAction Stop
     Write-ScreenInfo -Message "Downloading .net Framework 4.5.2 from '$dotnet452DownloadLink'"
     Get-LabInternetFile -Uri $dotnet452DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
-    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet452DownloadLink'"
+    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet462DownloadLink'"
     Get-LabInternetFile -Uri $dotnet462DownloadLink -Path $downloadTargetFolder -ErrorAction Stop
         
     Write-ScreenInfo 'finished' -TaskEnd
@@ -25,10 +25,10 @@ function Copy-LabExchange2016InstallationFiles
     foreach ($exchangeServer in $exchangeServers | Where-Object HostType -eq HyperV)
     {
         Write-ScreenInfo "Copying to server '$exchangeServer'..." -NoNewLine
-        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $exchangeServer
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $ucmaInstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $exchangeServer
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
@@ -38,9 +38,9 @@ function Copy-LabExchange2016InstallationFiles
     foreach ($rootDc in $exchangeRootDCs)
     {
         Write-ScreenInfo "Copying to server '$rootDc'..." -NoNewLine
-        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolder C:\Install -ComputerName $rootDc
+        #Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $exchangeInstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet452InstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $dotnet462InstallFileName) -DestinationFolderPath C:\Install -ComputerName $rootDc
         Write-ScreenInfo 'finished'
     }
     Write-ScreenInfo 'Finished copying file to RootDCs' -TaskEnd
@@ -87,7 +87,7 @@ function Start-ExchangeInstallSequence
             
             try
             {
-                Write-ScreenInfo "Calling activity '$Activity' agian."
+                Write-ScreenInfo "Calling activity '$Activity' again."
                 $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "$($disk.DriveLetter)\setup.exe" -CommandLine $CommandLine -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorAction Stop
             }
@@ -224,10 +224,11 @@ function Install-LabExchange2016
         $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$ucmaInstallFileName" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
+		#.net 4.5.2 is not needed for Exchange 2016
         #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         #$jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet452InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
-        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet452.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeServers -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $exchangeRootDCs -LocalPath "C:\Install\$dotnet462InstallFileName" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 10
 
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine

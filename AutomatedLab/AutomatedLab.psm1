@@ -250,12 +250,12 @@ function Import-Lab
         }
     
         $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name Azure -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name AzureRm -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
-            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please download it from 'http://azure.microsoft.com/en-us/downloads/'"
+            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
         }
 
-        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 2))
+        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
         {
             throw 'The VMWare snapin was not loaded. Maybe it is missing'
         }
@@ -455,7 +455,7 @@ function Install-Lab
     Write-LogFunctionEntry
 
     #perform full install if no role specific installation is requested
-    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin 'NoValidation', 'DelayBetweenComputers' }).Count
+    $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
     if (-not $Global:labExported -and -not (Get-Lab -ErrorAction SilentlyContinue))
     {
@@ -484,6 +484,8 @@ function Install-Lab
     Unblock-LabSources
     
     $Global:AL_DeploymentStart = Get-Date
+
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
     {
@@ -524,6 +526,7 @@ function Install-Lab
             if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
             {
                 $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
             }
         }
     
@@ -536,6 +539,10 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+
+    #VMs created, export lab definition again to update MAC addresses
+    Set-LabDefinition -Machines $Script:data.Machines
+    Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabMachine -Role RootDC))
@@ -640,9 +647,19 @@ function Install-Lab
         Install-LabDscPullServer
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
-    }    
+    }
+
+    if (($FailoverCluster -or $performAll) -and (Get-LabVm -Role FailoverNode,FailoverStorage))
+    {
+        Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+
+        Start-LabVm -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait        
+        Install-LabFailoverCluster
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
     
-    if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016))
+    if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabMachine -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabMachine -Role SQLServer2008).Name -join ', ')'" }
@@ -650,6 +667,7 @@ function Install-Lab
         if (Get-LabMachine -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabMachine -Role SQLServer2012).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
         if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2016).Name -join ', ')'" }
+        if (Get-LabMachine -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabMachine -Role SQLServer2017).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -759,7 +777,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
-        Start-LabVM -All -DelayBetweenComputers ([int]((Get-LabMachine).HostType -contains 'HyperV')*30) -ProgressIndicator 30 -NoNewline
+        if ($null -eq $DelayBetweenComputers){
+            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV')*30)
+        }
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
         Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -769,7 +790,9 @@ function Install-Lab
     {
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
         $jobs | Wait-Job | Out-Null
-    }
+    }    
+    
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
 }
@@ -785,9 +808,7 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name,
-        
-        [switch]$RemoveReferenceDisks
+        [string]$Name
     )
     Write-LogFunctionEntry
     
@@ -910,22 +931,6 @@ function Remove-Lab
                 Remove-Item -Path $Script:data.LabPath
             }
         }
-        
-        if ($RemoveReferenceDisks)
-        {
-            Write-ScreenInfo -Message 'Removing Reference Disks'
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ServerReferenceDiskPath -Confirm:$false
-            }
-        
-            if ($Script:data.ServerReferenceDiskPath -like '*vhdx')
-            {
-                Remove-Item -Path $Script:data.ClientReferenceDiskPath -Confirm:$false
-            }
-        
-            Remove-Item -Path (Split-Path -Path $Script:data.ClientReferenceDiskPath -Parent) -Confirm:$false -Recurse
-        }
 
         $Script:data = $null
         
@@ -1032,7 +1037,7 @@ function Get-LabAvailableOperatingSystem
             {
                 $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $image.ImageIndex
                 
-                if (-not ($imageInfo.Languages -like '*en-us*'))
+                if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
                     Write-Warning "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped."
                     continue
@@ -1404,7 +1409,7 @@ function Get-LabWindowsFeature
     }
     if ($machines.Count -ne $ComputerName.Count)
     {
-        $machinesNotFound = Compare-Object -ReferenceObject $Name -DifferenceObject ($machines.Name)
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
         Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
     }
     
@@ -1486,6 +1491,8 @@ function Install-LabWindowsFeature
         [string[]]$FeatureName,
 
         [switch]$IncludeAllSubFeature,
+
+        [switch]$IncludeManagementTools,
         
         [switch]$UseLocalCredential,
         
@@ -1510,7 +1517,7 @@ function Install-LabWindowsFeature
     }
     if ($machines.Count -ne $ComputerName.Count)
     {
-        $machinesNotFound = Compare-Object -ReferenceObject $Name -DifferenceObject ($machines.Name)
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
         Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
     }
     
@@ -1524,7 +1531,11 @@ function Install-LabWindowsFeature
         }
     }    
     
-    Start-LabVM -ComputerName $ComputerName -Wait    
+    $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
+    if ($stoppedMachines)
+    {
+        Start-LabVM -ComputerName $stoppedMachines.Name -Wait
+    }
     
     $hyperVMachines = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
     $azureMachines  = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
@@ -1536,11 +1547,11 @@ function Install-LabWindowsFeature
             $isoImagePath = $machine.OperatingSystem.IsoPath
             Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImagePath -SupressOutput
         }
-        $jobs = Install-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Install-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     elseif ($azureMachines)
     {
-        $jobs = Install-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Install-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     
     if (-not $AsJob)
@@ -1728,7 +1739,7 @@ function Install-VisualStudio2015
         $parameters.Add('ActivityName', 'InstallationVisualStudio2015')
         $parameters.Add('Verbose', $VerbosePreference)
         $parameters.Add('Scriptblock', {
-                Write-Verbose 'Installing Visual Studio 2013'
+                Write-Verbose 'Installing Visual Studio 2015'
             
                 Push-Location
                 Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
@@ -2007,6 +2018,8 @@ function Install-LabSoftwarePackage
         [switch]$AsJob,
         
         [switch]$AsScheduledJob,
+
+        [switch]$UseExplicitCredentialsForScheduledJob,
         
         [switch]$UseShellExecute,
 
@@ -2042,7 +2055,7 @@ function Install-LabSoftwarePackage
     
     if ($parameterSetName -like 'Single*')
     {
-        $Machine = Get-LabMachine -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName
 
         if (-not $Machine)
         {
@@ -2054,6 +2067,13 @@ function Install-LabSoftwarePackage
         if ($unknownMachines)
         {
             Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+        }
+
+        if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
+            ($Machine | Group-Object -Property DomainName).Count -gt 1)
+        {
+            Write-Error "If you install software in a background job and require the schedule job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
+            return
         }
     }
     
@@ -2079,7 +2099,7 @@ function Install-LabSoftwarePackage
     $parameters.Add('DoNotUseCredSsp', $DoNotUseCredSsp)
     $parameters.Add('PassThru', $True)
     $parameters.Add('AsJob', $True)
-    $parameters.Add('ScriptBlock', (Get-Command -Name Install-LWSoftwarePackage).ScriptBlock)
+    $parameters.Add('ScriptBlock', (Get-Command -Name Install-SoftwarePackage).ScriptBlock)
         
     if ($parameterSetName -eq 'SinglePackage')
     {
@@ -2094,13 +2114,27 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
         
-        $installArgs = (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
         $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($LocalPath))'")
             
-        $installArgs = $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     else
     {
@@ -2115,7 +2149,14 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installArgs = (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
+        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
+        }
+        else
+        {
+            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
+        }
     }
     $parameters.Add('ArgumentList', $installArgs)
         
@@ -2409,12 +2450,12 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip 1
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
             
                     Write-Verbose "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession[0]
+                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
                 }
             }
     
@@ -3408,283 +3449,78 @@ function Add-LabVMUserRight
         $param.add('ComputerName', $Computer)
 
         $Job += Invoke-LabCommand -ComputerName $Computer -ActivityName "Configure user rights '$($Priveleges -join ', ')' for user accounts: '$($UserName -join ', ')'" -NoDisplay -AsJob -PassThru -ScriptBlock {
-            param
-            (
-                $UserName,
-                $Priveleges
-            )
-                
-            try
-            {
-        
-                # try to access and if fails Add the type
-                $dummy =  [MyLsaWrapper].FullName
-
-            }
-            catch
-            {
-                #region Code
-                Add-Type @'
-                using System;
-                using System.Collections.Generic;
-                using System.Text;
-
-                namespace MyLsaWrapper
-                {
-                    using System.Runtime.InteropServices;
-                    using System.Security;
-                    using System.Management;
-                    using System.Runtime.CompilerServices;
-                    using System.ComponentModel;
-
-                    using LSA_HANDLE = IntPtr;
-
-                    [StructLayout(LayoutKind.Sequential)]
-                    struct LSA_OBJECT_ATTRIBUTES
-                    {
-                        internal int Length;
-                        internal IntPtr RootDirectory;
-                        internal IntPtr ObjectName;
-                        internal int Attributes;
-                        internal IntPtr SecurityDescriptor;
-                        internal IntPtr SecurityQualityOfService;
-                    }
-                    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-                    struct LSA_UNICODE_STRING
-                    {
-                        internal ushort Length;
-                        internal ushort MaximumLength;
-                        [MarshalAs(UnmanagedType.LPWStr)]
-                        internal string Buffer;
-                    }
-                    sealed class Win32Sec
-                    {
-                        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true),
-                        SuppressUnmanagedCodeSecurityAttribute]
-                        internal static extern uint LsaOpenPolicy(
-                        LSA_UNICODE_STRING[] SystemName,
-                        ref LSA_OBJECT_ATTRIBUTES ObjectAttributes,
-                        int AccessMask,
-                        out IntPtr PolicyHandle
-                        );
-
-                        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true),
-                        SuppressUnmanagedCodeSecurityAttribute]
-                        internal static extern uint LsaAddAccountRights(
-                        LSA_HANDLE PolicyHandle,
-                        IntPtr pSID,
-                        LSA_UNICODE_STRING[] UserRights,
-                        int CountOfRights
-                        );
-
-                        [DllImport("advapi32", CharSet = CharSet.Unicode, SetLastError = true),
-                        SuppressUnmanagedCodeSecurityAttribute]
-                        internal static extern int LsaLookupNames2(
-                        LSA_HANDLE PolicyHandle,
-                        uint Flags,
-                        uint Count,
-                        LSA_UNICODE_STRING[] Names,
-                        ref IntPtr ReferencedDomains,
-                        ref IntPtr Sids
-                        );
-
-                        [DllImport("advapi32")]
-                        internal static extern int LsaNtStatusToWinError(int NTSTATUS);
-
-                        [DllImport("advapi32")]
-                        internal static extern int LsaClose(IntPtr PolicyHandle);
-
-                        [DllImport("advapi32")]
-                        internal static extern int LsaFreeMemory(IntPtr Buffer);
-
-                    }
-                    /// <summary>
-                    /// This class is used to grant "Log on as a service", "Log on as a batchjob", "Log on localy" etc.
-                    /// to a user.
-                    /// </summary>
-                    public sealed class LsaWrapper : IDisposable
-                    {
-                        [StructLayout(LayoutKind.Sequential)]
-                        struct LSA_TRUST_INFORMATION
-                        {
-                            internal LSA_UNICODE_STRING Name;
-                            internal IntPtr Sid;
-                        }
-                        [StructLayout(LayoutKind.Sequential)]
-                        struct LSA_TRANSLATED_SID2
-                        {
-                            internal SidNameUse Use;
-                            internal IntPtr Sid;
-                            internal int DomainIndex;
-                            uint Flags;
-                        }
-
-                        [StructLayout(LayoutKind.Sequential)]
-                        struct LSA_REFERENCED_DOMAIN_LIST
-                        {
-                            internal uint Entries;
-                            internal LSA_TRUST_INFORMATION Domains;
-                        }
-
-                        enum SidNameUse : int
-                        {
-                            User = 1,
-                            Group = 2,
-                            Domain = 3,
-                            Alias = 4,
-                            KnownGroup = 5,
-                            DeletedAccount = 6,
-                            Invalid = 7,
-                            Unknown = 8,
-                            Computer = 9
-                        }
-                        
-                        enum Access : int
-                        {
-                            POLICY_READ = 0x20006,
-                            POLICY_ALL_ACCESS = 0x00F0FFF,
-                            POLICY_EXECUTE = 0X20801,
-                            POLICY_WRITE = 0X207F8
-                        }
-                        const uint STATUS_ACCESS_DENIED = 0xc0000022;
-                        const uint STATUS_INSUFFICIENT_RESOURCES = 0xc000009a;
-                        const uint STATUS_NO_MEMORY = 0xc0000017;
-
-                        IntPtr lsaHandle;
-
-                        public LsaWrapper()
-                            : this(null)
-                        { }
-                        // // local system if systemName is null
-                        public LsaWrapper(string systemName)
-                        {
-                            LSA_OBJECT_ATTRIBUTES lsaAttr;
-                            lsaAttr.RootDirectory = IntPtr.Zero;
-                            lsaAttr.ObjectName = IntPtr.Zero;
-                            lsaAttr.Attributes = 0;
-                            lsaAttr.SecurityDescriptor = IntPtr.Zero;
-                            lsaAttr.SecurityQualityOfService = IntPtr.Zero;
-                            lsaAttr.Length = Marshal.SizeOf(typeof(LSA_OBJECT_ATTRIBUTES));
-                            lsaHandle = IntPtr.Zero;
-                            LSA_UNICODE_STRING[] system = null;
-                            if (systemName != null)
-                            {
-                                system = new LSA_UNICODE_STRING[1];
-                                system[0] = InitLsaString(systemName);
-                            }
-
-                            uint ret = Win32Sec.LsaOpenPolicy(system, ref lsaAttr,
-                            (int)Access.POLICY_ALL_ACCESS, out lsaHandle);
-                            if (ret == 0)
-                                return;
-                            if (ret == STATUS_ACCESS_DENIED)
-                            {
-                                throw new UnauthorizedAccessException();
-                            }
-                            if ((ret == STATUS_INSUFFICIENT_RESOURCES) || (ret == STATUS_NO_MEMORY))
-                            {
-                                throw new OutOfMemoryException();
-                            }
-                            throw new Win32Exception(Win32Sec.LsaNtStatusToWinError((int)ret));
-                        }
-
-                        public void AddPrivileges(string account, string privilege)
-                        {
-                            IntPtr pSid = GetSIDInformation(account);
-                            LSA_UNICODE_STRING[] privileges = new LSA_UNICODE_STRING[1];
-                            privileges[0] = InitLsaString(privilege);
-                            uint ret = Win32Sec.LsaAddAccountRights(lsaHandle, pSid, privileges, 1);
-                            if (ret == 0)
-                                return;
-                            if (ret == STATUS_ACCESS_DENIED)
-                            {
-                                throw new UnauthorizedAccessException();
-                            }
-                            if ((ret == STATUS_INSUFFICIENT_RESOURCES) || (ret == STATUS_NO_MEMORY))
-                            {
-                                throw new OutOfMemoryException();
-                            }
-                            throw new Win32Exception(Win32Sec.LsaNtStatusToWinError((int)ret));
-                        }
-
-                        public void Dispose()
-                        {
-                            if (lsaHandle != IntPtr.Zero)
-                            {
-                                Win32Sec.LsaClose(lsaHandle);
-                                lsaHandle = IntPtr.Zero;
-                            }
-                            GC.SuppressFinalize(this);
-                        }
-                        ~LsaWrapper()
-                        {
-                            Dispose();
-                        }
-                        // helper functions
-
-                        IntPtr GetSIDInformation(string account)
-                        {
-                            LSA_UNICODE_STRING[] names = new LSA_UNICODE_STRING[1];
-                            LSA_TRANSLATED_SID2 lts;
-                            IntPtr tsids = IntPtr.Zero;
-                            IntPtr tdom = IntPtr.Zero;
-                            names[0] = InitLsaString(account);
-                            lts.Sid = IntPtr.Zero;
-                            Console.WriteLine("String account: {0}", names[0].Length);
-                            int ret = Win32Sec.LsaLookupNames2(lsaHandle, 0, 1, names, ref tdom, ref tsids);
-                            if (ret != 0)
-                                throw new Win32Exception(Win32Sec.LsaNtStatusToWinError(ret));
-                            lts = (LSA_TRANSLATED_SID2)Marshal.PtrToStructure(tsids,
-                            typeof(LSA_TRANSLATED_SID2));
-                            Win32Sec.LsaFreeMemory(tsids);
-                            Win32Sec.LsaFreeMemory(tdom);
-                            return lts.Sid;
-                        }
-
-                        static LSA_UNICODE_STRING InitLsaString(string s)
-                        {
-                            // Unicode strings max. 32KB
-                            if (s.Length > 0x7ffe)
-                                throw new ArgumentException("String too long");
-                            LSA_UNICODE_STRING lus = new LSA_UNICODE_STRING();
-                            lus.Buffer = s;
-                            lus.Length = (ushort)(s.Length * sizeof(char));
-                            lus.MaximumLength = (ushort)(lus.Length + sizeof(char));
-                            return lus;
-                        }
-                    }
-                    public class LsaWrapperCaller
-                    {
-                        public static void AddPrivileges(string account, string privilege)
-                        {
-                            using (LsaWrapper lsaWrapper = new LsaWrapper())
-                            {
-                                lsaWrapper.AddPrivileges(account, privilege);
-                            }
-                        }
-                    }
-                }
-'@
-                #endregion
-            }
-        
-            finally
-            {
-                foreach ($User in $UserName)
-                {
-                    foreach ($Priv in $Priveleges)
-                    {
-                        [MyLsaWrapper.LsaWrapperCaller]::AddPrivileges($User, $Priv)
-                        Start-Sleep -Milliseconds 250
-                        [MyLsaWrapper.LsaWrapperCaller]::AddPrivileges($User, $Priv)
-                    }
-                }
-            }
-        } -ArgumentList $UserName, $Priveleges
+            Add-AccountPrivilege -UserName $UserName -Privilege $Priveleges
+        } -Variable (Get-Variable UserName, Priveleges) -Function (Get-Command Add-AccountPrivilege)
     }
     Wait-LWLabJob -Job $Job -NoDisplay
 }
 #endregion function Add-LabVMUserRight
+
+#region New-LabSourcesFolder
+function New-LabSourcesFolder
+{
+    [CmdletBinding(
+        SupportsShouldProcess = $true,
+        ConfirmImpact = 'Medium')]
+    param
+    (
+        [Parameter(Mandatory = $false)]
+        [System.String]
+        $DriveLetter,
+
+        [switch]
+        $Force
+    )
+
+    $Path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+
+    if ($DriveLetter)
+    {
+        try
+        {
+            $drive = [System.IO.DriveInfo]$DriveLetter
+        }
+        catch
+        {
+            throw "$DriveLetter is not a valid drive letter. Exception was ($_.Exception.Message)"
+        }
+
+        if (-not $drive.IsReady)
+        {
+            throw "LabSource cannot be placed on $DriveLetter. The drive is not ready."
+        }
+
+        $Path = Join-Path -Path $drive.RootDirectory -ChildPath LabSources
+    }
+
+    if ((Test-Path $Path) -and -not $Force)
+    {
+        return $Path
+    }
+
+    Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+
+    if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
+    {
+        $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')    
+        [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+
+        Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+
+        if (-not (Test-Path -Path $Path))
+        {
+            $Path = (New-Item -ItemType Directory -Path $Path).FullName
+        }
+    
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master\LabSources\*) -Destination $Path -Recurse -Force:$Force
+
+        Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
+
+        $Path
+    }
+}
 
 #New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
 #New-Alias -Name Set-LabVMRemoting -Value Enable-LabVMRemoting -Scope Global

@@ -51,11 +51,11 @@ function New-LWAzureNetworkSwitch
                 $ProfilePath,
                 $Subscription,
                 $azureNetworkParameters,
-                $Subnets,
+                [object[]]$Subnets,
                 $Network
             )
             
-            Select-AzureRmProfile -Path $ProfilePath
+            Import-AzureRmContext -Path $ProfilePath
             Set-AzureRmContext -SubscriptionName $Subscription
 
             $azureSubnets = @()
@@ -63,7 +63,10 @@ function New-LWAzureNetworkSwitch
             # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
             if ($Subnets)
             {
-                $azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnets.Name -AddressPrefix "$($subnets.Address)/$($subnets.Prefix)"
+				foreach ($subnet in $Subnets)
+				{
+					$azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
+				}
             }
 
             if (-not $azureSubnets)
@@ -77,12 +80,18 @@ function New-LWAzureNetworkSwitch
                 $azureNetworkParameters.Add('Subnet', $azureSubnets)
             }
             
-            $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.SubscriptionName, $azureNetworkParameters, $network.Subnets, $network
+            $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue
+        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $azureNetworkParameters, $network.Subnets, $network
     }
     
     #Wait for network creation jobs and configure vnet peering    
     Wait-LWLabJob -Job $jobs
+
+	if($jobs.State -contains 'Failed')
+	{
+		throw ('Creation of at least one Azure Vnet failed. Examine the jobs output. Failed jobs: {0}' -f (($jobs | Where-Object State -EQ 'Failed').Id -join ','))
+	}
+
     Write-ScreenInfo -Message "Done" -TaskEnd
     Write-ProgressIndicator
 
@@ -154,7 +163,7 @@ function Remove-LWAzureNetworkSwitch
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
         
-        $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Select-AzureRmProfile -Path $($lab.AzureSettings.AzureProfilePath);Select-AzureRmSubscription -SubscriptionName $($lab.AzureSettings.DefaultSubscription.SubscriptionName); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
+        $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Import-AzureRmContext -Path $($lab.AzureSettings.AzureProfilePath);Set-AzureRmContext -SubscriptionName $($lab.AzureSettings.DefaultSubscription.Name); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
         Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
     }
     $jobs = Get-Job -Name RemoveAzureVNet*
@@ -181,7 +190,7 @@ function Get-LWAzureNetworkSwitch
     
     foreach ($network in $VirtualNetwork)
     {
-        Write-ScreenInfo -Message "Locating Azure virtual network '$($network.Name)'" -TaskStart
+        Write-Verbose -Message "Locating Azure virtual network '$($network.Name)'"
          
         $azureNetworkParameters = @{
             Name = $network.Name
@@ -213,7 +222,9 @@ function New-LWAzureLoadBalancer
         $publicIp = Get-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
         if (-not $publicIp)
         {
-            $publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -Location $location -AllocationMethod Static -IpAddressVersion IPv4 -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())"
+            $publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
+            -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
+            -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
         $frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
@@ -227,7 +238,7 @@ function New-LWAzureLoadBalancer
             $inboundRules += New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
         }
 
-        $loadBalancer = New-AzureRmLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force
+        $loadBalancer = New-AzureRmLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -WarningAction SilentlyContinue
     }
 }
 #endregion
@@ -272,14 +283,14 @@ function Set-LWAzureDnsServer
 
         $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
         $network.DnsServers.AddressAsString | ForEach-Object { $azureVnet.DhcpOptions.DnsServers.Add($PSItem)}
-        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction SilentlyContinue
+        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
 
         if ($PassThru)
         {
             $azureVnet
         }
         
-        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.Name)" -TaskStart
+        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.Name)" -TaskEnd
     }
 
     Write-LogFunctionExit

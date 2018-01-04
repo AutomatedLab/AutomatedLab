@@ -1,5 +1,83 @@
 #region Internals
 #region .net Types
+$certStoreTypes = @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace System.Security.Cryptography.X509Certificates
+{
+    public class Win32
+    {
+        [DllImport("crypt32.dll", EntryPoint="CertOpenStore", CharSet=CharSet.Auto, SetLastError=true)]
+        public static extern IntPtr CertOpenStore(
+            int storeProvider,
+            int encodingType,
+            IntPtr hcryptProv,
+            int flags,
+            String pvPara);
+                                    
+        [DllImport("crypt32.dll", EntryPoint="CertCloseStore", CharSet=CharSet.Auto, SetLastError=true)]
+        [return : MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CertCloseStore(
+            IntPtr storeProvider,
+            int flags);
+    }
+
+    public enum CertStoreLocation
+    {
+        CERT_SYSTEM_STORE_CURRENT_USER = 0x00010000,
+        CERT_SYSTEM_STORE_LOCAL_MACHINE = 0x00020000,
+        CERT_SYSTEM_STORE_SERVICES = 0x00050000,
+        CERT_SYSTEM_STORE_USERS = 0x00060000
+    }
+
+    [Flags]
+    public enum CertStoreFlags
+    {
+        CERT_STORE_NO_CRYPT_RELEASE_FLAG = 0x00000001,
+        CERT_STORE_SET_LOCALIZED_NAME_FLAG = 0x00000002,
+        CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG = 0x00000004,
+        CERT_STORE_DELETE_FLAG = 0x00000010,
+        CERT_STORE_SHARE_STORE_FLAG = 0x00000040,
+        CERT_STORE_SHARE_CONTEXT_FLAG = 0x00000080,
+        CERT_STORE_MANIFOLD_FLAG = 0x00000100,
+        CERT_STORE_ENUM_ARCHIVED_FLAG = 0x00000200,
+        CERT_STORE_UPDATE_KEYID_FLAG = 0x00000400,
+        CERT_STORE_BACKUP_RESTORE_FLAG = 0x00000800,
+        CERT_STORE_READONLY_FLAG = 0x00008000,
+        CERT_STORE_OPEN_EXISTING_FLAG = 0x00004000,
+        CERT_STORE_CREATE_NEW_FLAG = 0x00002000,
+        CERT_STORE_MAXIMUM_ALLOWED_FLAG = 0x00001000
+    }
+
+    public enum CertStoreProvider
+    {
+        CERT_STORE_PROV_MSG                = 1,
+        CERT_STORE_PROV_MEMORY             = 2,
+        CERT_STORE_PROV_FILE               = 3,
+        CERT_STORE_PROV_REG                = 4,
+        CERT_STORE_PROV_PKCS7              = 5,
+        CERT_STORE_PROV_SERIALIZED         = 6,
+        CERT_STORE_PROV_FILENAME_A         = 7,
+        CERT_STORE_PROV_FILENAME_W         = 8,
+        CERT_STORE_PROV_FILENAME           = CERT_STORE_PROV_FILENAME_W,
+        CERT_STORE_PROV_SYSTEM_A           = 9,
+        CERT_STORE_PROV_SYSTEM_W           = 10,
+        CERT_STORE_PROV_SYSTEM             = CERT_STORE_PROV_SYSTEM_W,
+        CERT_STORE_PROV_COLLECTION         = 11,
+        CERT_STORE_PROV_SYSTEM_REGISTRY_A  = 12,
+        CERT_STORE_PROV_SYSTEM_REGISTRY_W  = 13,
+        CERT_STORE_PROV_SYSTEM_REGISTRY    = CERT_STORE_PROV_SYSTEM_REGISTRY_W,
+        CERT_STORE_PROV_PHYSICAL_W         = 14,
+        CERT_STORE_PROV_PHYSICAL           = CERT_STORE_PROV_PHYSICAL_W,
+        CERT_STORE_PROV_SMART_CARD_W       = 15,
+        CERT_STORE_PROV_SMART_CARD         = CERT_STORE_PROV_SMART_CARD_W,
+        CERT_STORE_PROV_LDAP_W             = 16,
+        CERT_STORE_PROV_LDAP               = CERT_STORE_PROV_LDAP_W
+    }
+}
+'@
+
 $pkiInternalsTypes = @'
 using System;
 
@@ -85,7 +163,7 @@ namespace Pki.CATemplate
         RequireUserInteraction = 256,// This flag instructs the client to obtain user consent before attempting to enroll for a certificate that is based on the specified template.
         RemoveInvalidFromStore = 1024,// This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048,//This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
-        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section §4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
+        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section ï¿½4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
         ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768,//This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536,//This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -869,104 +947,121 @@ $gpoType = @'
 '@
 #endregion .net Types
 
-function Get-NextOid
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$Oid
-    )
-    
-    $oidRange = $Oid.Substring(0, $Oid.LastIndexOf('.'))
-    $lastNumber = $Oid.Substring($Oid.LastIndexOf('.') + 1)
-    '{0}.{1}' -f $oidRange, ([int]$lastNumber + 1)
-}
-
-function Find-CertificateAuthority
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [string]$DomainName
-    )
-    
-    try
-    {
-        if (-not $DomainName)
-        {
-            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain().GetDirectoryEntry().distinguishedName
-        }
-        else
-        {
-            $ctx = New-Object System.DirectoryServices.ActiveDirectory.DirectoryContext('Domain', $DomainName)
-            $DomainName = [System.DirectoryServices.ActiveDirectory.Domain]::GetDomain($ctx).GetDirectoryEntry().distinguishedName
-        }
-        $cdpContainer = [ADSI]"LDAP://CN=CDP,CN=Public Key Services,CN=Services,CN=Configuration,$DomainName"
-    }
-    catch
-    {
-        Write-Error "The domain '$DomainName' could not be contacted" -TargetObject $DomainName
-        return
-    }
-                
-    $caFound = $false
-    foreach ($item in $cdpContainer.Children)
-    {
-        if (-not $caFound)
-        {
-            $machine = ($item.distinguishedName -split '=|,')[1]
-            $caName = ($item.Children.distinguishedName -split '=|,')[1]
-                        
-            $certificateAuthority = "$machine\$caName"
-                        
-            $result = certutil.exe -ping $certificateAuthority
-            if ($result -match 'interface is alive*' )
-            {
-                $caFound = $true
-            }
-        }
-    }
-    
-    if ($caFound)
-    {
-        $certificateAuthority
-    }
-    else
-    {
-        Write-Error "No Certificate Authority could be found in domain '$DomainName'"
-    }
-}
-
-function Get-CATemplate
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$TemplateName
-    )
-    
-    $configNc= ([adsi]'LDAP://RootDSE').configurationNamingContext
-    $templateContainer = [adsi]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNc"
-    Write-Verbose "Template container is '$($templateContainer.distinguishedName)'"
-
-    $templateContainer.Children | Where-Object Name -eq $TemplateName
-}
-
 $ApplicationPolicies = @{
-    ServerAuthentication = '1.3.6.1.5.5.7.3.1'
-    ClientAuthentication = '1.3.6.1.5.5.7.3.2'
-    CodeSigning = '1.3.6.1.5.5.7.3.3'
-    EmailProtection = '1.3.6.1.5.5.7.3.4'
-    IpsecEndSystem  = '1.3.6.1.5.5.7.3.5'
-    IpsecTunnel = '1.3.6.1.5.5.7.3.6'
-    IpsecUser = '1.3.6.1.5.5.7.3.7'
-    TimeStamping = '1.3.6.1.5.5.7.3.8'
-    OCSPSigning = '1.3.6.1.5.5.7.3.9'
-    CapWap = '1.3.6.1.5.5.7.3.19'
+    # Remote Desktop
+    'Remote Desktop' = '1.3.6.1.4.1.311.54.1.2'
+    # Windows Update
+    'Windows Update' = '1.3.6.1.4.1.311.76.6.1'
+    # Windows Third Party Applicaiton Component
+    'Windows Third Party Application Component' = '1.3.6.1.4.1.311.10.3.25'
+    # Windows TCB Component
+    'Windows TCB Component' = '1.3.6.1.4.1.311.10.3.23'
+    # Windows Store
+    'Windows Store' = '1.3.6.1.4.1.311.76.3.1'
+    # Windows Software Extension verification
+    ' Windows Software Extension Verification' = '1.3.6.1.4.1.311.10.3.26'
+    # Windows RT Verification
+    'Windows RT Verification' = '1.3.6.1.4.1.311.10.3.21'
+    # Windows Kits Component
+    'Windows Kits Component' = '1.3.6.1.4.1.311.10.3.20'
+    # ROOT_PROGRAM_NO_OCSP_FAILOVER_TO_CRL
+    'No OCSP Failover to CRL' = '1.3.6.1.4.1.311.60.3.3'
+    # ROOT_PROGRAM_AUTO_UPDATE_END_REVOCATION
+    'Auto Update End Revocation' = '1.3.6.1.4.1.311.60.3.2'
+    # ROOT_PROGRAM_AUTO_UPDATE_CA_REVOCATION
+    'Auto Update CA Revocation' = '1.3.6.1.4.1.311.60.3.1'
+    # Revoked List Signer
+    'Revoked List Signer' = '1.3.6.1.4.1.311.10.3.19'
+    # Protected Process Verification
+    'Protected Process Verification' = '1.3.6.1.4.1.311.10.3.24'
+    # Protected Process Light Verification
+    'Protected Process Light Verification' = '1.3.6.1.4.1.311.10.3.22'
+    # Platform Certificate
+    'Platform Certificate' = '2.23.133.8.2'
+    # Microsoft Publisher
+    'Microsoft Publisher' = '1.3.6.1.4.1.311.76.8.1'
+    # Kernel Mode Code Signing
+    'Kernel Mode Code Signing' = '1.3.6.1.4.1.311.6.1.1'
+    # HAL Extension
+    'HAL Extension' = '1.3.6.1.4.1.311.61.5.1'
+    # Endorsement Key Certificate
+    'Endorsement Key Certificate' = '2.23.133.8.1'
+    # Early Launch Antimalware Driver
+    'Early Launch Antimalware Driver' = '1.3.6.1.4.1.311.61.4.1'
+    # Dynamic Code Generator
+    'Dynamic Code Generator' = '1.3.6.1.4.1.311.76.5.1'
+    # Domain Name System (DNS) Server Trust
+    'DNS Server Trust' = '1.3.6.1.4.1.311.64.1.1'
+    # Document Encryption
+    'Document Encryption' = '1.3.6.1.4.1.311.80.1'
+    # Disallowed List
+    'Disallowed List' = '1.3.6.1.4.1.10.3.30'
+    # Attestation Identity Key Certificate
+    # System Health Authentication
+    'System Health Authentication' = '1.3.6.1.4.1.311.47.1.1'
+    # Smartcard Logon
+    'IdMsKpScLogon' = '1.3.6.1.4.1.311.20.2.2'
+    # Certificate Request Agent
+    'ENROLLMENT_AGENT' = '1.3.6.1.4.1.311.20.2.1'
+    # CTL Usage
+    'AUTO_ENROLL_CTL_USAGE' = '1.3.6.1.4.1.311.20.1'
+    # Private Key Archival
+    'KP_CA_EXCHANGE' = '1.3.6.1.4.1.311.21.5'
+    # Key Recovery Agent
+    'KP_KEY_RECOVERY_AGENT' = '1.3.6.1.4.1.311.21.6'
+    # Secure Email
+    'PKIX_KP_EMAIL_PROTECTION' = '1.3.6.1.5.5.7.3.4'
+    # IP Security End System
+    'PKIX_KP_IPSEC_END_SYSTEM' = '1.3.6.1.5.5.7.3.5'
+    # IP Security Tunnel Termination
+    'PKIX_KP_IPSEC_TUNNEL' = '1.3.6.1.5.5.7.3.6'
+    # IP Security User
+    'PKIX_KP_IPSEC_USER' = '1.3.6.1.5.5.7.3.7'
+    # Time Stamping
+    'PKIX_KP_TIMESTAMP_SIGNING' = '1.3.6.1.5.5.7.3.8'
+    # OCSP Signing
+    'KP_OCSP_SIGNING' = '1.3.6.1.5.5.7.3.9'
+    # IP security IKE intermediate
+    'IPSEC_KP_IKE_INTERMEDIATE' = '1.3.6.1.5.5.8.2.2'
+    # Microsoft Trust List Signing
+    'KP_CTL_USAGE_SIGNING' = '1.3.6.1.4.1.311.10.3.1'
+    # Microsoft Time Stamping
+    'KP_TIME_STAMP_SIGNING' = '1.3.6.1.4.1.311.10.3.2'
+    # Windows Hardware Driver Verification
+    'WHQL_CRYPTO' = '1.3.6.1.4.1.311.10.3.5'
+    # Windows System Component Verification
+    'NT5_CRYPTO' = '1.3.6.1.4.1.311.10.3.6'
+    # OEM Windows System Component Verification
+    'OEM_WHQL_CRYPTO' = '1.3.6.1.4.1.311.10.3.7'
+    # Embedded Windows System Component Verification
+    'EMBEDDED_NT_CRYPTO' = '1.3.6.1.4.1.311.10.3.8'
+    # Root List Signer
+    'ROOT_LIST_SIGNER' = '1.3.6.1.4.1.311.10.3.9'
+    # Qualified Subordination
+    'KP_QUALIFIED_SUBORDINATION' = '1.3.6.1.4.1.311.10.3.10'
+    # Key Recovery
+    'KP_KEY_RECOVERY' = '1.3.6.1.4.1.311.10.3.11'
+    # Document Signing
+    'KP_DOCUMENT_SIGNING' = '1.3.6.1.4.1.311.10.3.12'
+    # Lifetime Signing
+    'KP_LIFETIME_SIGNING' = '1.3.6.1.4.1.311.10.3.13'
+    'DRM' = '1.3.6.1.4.1.311.10.5.1'
+    'DRM_INDIVIDUALIZATION' = '1.3.6.1.4.1.311.10.5.2'
+    # Key Pack Licenses
+    'LICENSES' = '1.3.6.1.4.1.311.10.6.1'
+    # License Server Verification
+    'LICENSE_SERVER' = '1.3.6.1.4.1.311.10.6.2'
+    'Server Authentication' = '1.3.6.1.5.5.7.3.1' #The certificate can be used for OCSP authentication.            
+    KP_IPSEC_USER = '1.3.6.1.5.5.7.3.7' #The certificate can be used for an IPSEC user.            
+    'Code Signing' = '1.3.6.1.5.5.7.3.3' #The certificate can be used for signing code.
+    'Client Authentication' = '1.3.6.1.5.5.7.3.2' #The certificate can be used for authenticating a client.
+    KP_EFS = '1.3.6.1.4.1.311.10.3.4' #The certificate can be used to encrypt files by using the Encrypting File System.
+    EFS_RECOVERY = '1.3.6.1.4.1.311.10.3.4.1' #The certificate can be used for recovery of documents protected by using Encrypting File System (EFS).
+    DS_EMAIL_REPLICATION = '1.3.6.1.4.1.311.21.19' #The certificate can be used for Directory Service email replication.         
+    ANY_APPLICATION_POLICY = '1.3.6.1.4.1.311.10.12.1' #The applications that can use the certificate are not restricted.
 }
 
-$KeyUsages = @{
+$ExtendedKeyUsages = @{
     OldAuthorityKeyIdentifier = '.29.1'
     OldPrimaryKeyAttributes = '2.5.29.2'
     OldCertificatePolicies = '2.5.29.3'
@@ -996,499 +1091,34 @@ $KeyUsages = @{
     X509version3CertificateExtensionInhibitAny = '2.5.29.54'
 }
 
-function New-CATemplate
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$TemplateName,
-        
-        [string]$DisplayName,
-        
-        [Parameter(Mandatory = $true)]
-        [string]$SourceTemplateName,
-        
-        [ValidateSet('EmailProtection', 'OCSPSigning', 'CodeSigning', 'ClientAuthentication', 'IpsecTunnel', 'TimeStamping', 'IpsecUser', 'IpsecEndSystem', 'ServerAuthentication', 'CapWap')]
-        [string[]]$ApplicationPolicy,
-
-        [Pki.CATemplate.EnrollmentFlags]$EnrollmentFlags,
-
-        [Pki.CATemplate.PrivateKeyFlags]$PrivateKeyFlags = 0,
-        
-        [int]$Version,
-
-        [timespan]$ValidityPeriod,
-        
-        [timespan]$RenewalPeriod
-    )
-
-    $configNc = ([adsi]'LDAP://RootDSE').ConfigurationNamingContext
-    $templateContainer = [adsi]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNc"
-    Write-Verbose "Template container is '$templateContainer'"
-
-    $sourceTemplate = $templateContainer.Children | Where-Object Name -eq $SourceTemplateName
-    if (-not $sourceTemplate)
-    {
-        Write-Error "The source template '$SourceTemplateName' could not be found"
-        return
-    }
-
-    if (($templateContainer.Children | Where-Object Name -eq $TemplateName))
-    {
-        Write-Error "The template '$TemplateName' does aleady exist"
-        return
-    }
-    
-    if (-not $DisplayName) { $DisplayName = $TemplateName }
-    
-    $newCertTemplate = $templateContainer.Create('pKICertificateTemplate', "CN=$TemplateName") 
-    $newCertTemplate.put('distinguishedName',"CN=$TemplateName,CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNc")
-
-    $lastOid = $templateContainer.Children | 
-    Sort-Object -Property { [int]($_.'msPKI-Cert-Template-OID' -split '\.')[-1] } | 
-    Select-Object -Last 1 -ExpandProperty msPKI-Cert-Template-OID
-    $oid = Get-NextOid -Oid $lastOid
-    
-    $flags = $sourceTemplate.flags.Value
-    $flags = $flags -bor [Pki.CATemplate.Flags]::IsModified -bxor [Pki.CATemplate.Flags]::IsDefault
-    
-    $newCertTemplate.put('flags', $flags)
-    $newCertTemplate.put('displayName', $DisplayName)
-    $newCertTemplate.put('revision','100')
-    $newCertTemplate.put('pKIDefaultKeySpec', $sourceTemplate.pKIDefaultKeySpec.Value)
-
-    $newCertTemplate.put('pKIMaxIssuingDepth', $sourceTemplate.pKIMaxIssuingDepth.Value)
-    $newCertTemplate.put('pKICriticalExtensions', $sourceTemplate.pKICriticalExtensions.Value)
-    
-    $ku = @($sourceTemplate.pKIExtendedKeyUsage.Value)
-    $newCertTemplate.put('pKIExtendedKeyUsage', $ku)
-    
-    #$newCertTemplate.put('pKIDefaultCSPs','2,Microsoft Base Cryptographic Provider v1.0, 1,Microsoft Enhanced Cryptographic Provider v1.0')
-    $newCertTemplate.put('msPKI-RA-Signature', '0')
-    $newCertTemplate.put('msPKI-Enrollment-Flag', $EnrollmentFlags)
-    $newCertTemplate.put('msPKI-Private-Key-Flag', $PrivateKeyFlags)
-    $newCertTemplate.put('msPKI-Certificate-Name-Flag', $sourceTemplate.'msPKI-Certificate-Name-Flag'.Value)
-    $newCertTemplate.put('msPKI-Minimal-Key-Size', $sourceTemplate.'msPKI-Minimal-Key-Size'.Value)
-    
-    if (-not $Version)
-    {
-        $Version = $sourceTemplate.'msPKI-Template-Schema-Version'.Value
-    }
-    $newCertTemplate.put('msPKI-Template-Schema-Version', $Version)
-    $newCertTemplate.put('msPKI-Template-Minor-Revision', '1')
-                   
-    $newCertTemplate.put('msPKI-Cert-Template-OID', $oid)
-    
-    if (-not $ApplicationPolicy)
-    {
-        #V2 template
-        $ap = $sourceTemplate.'msPKI-Certificate-Application-Policy'.Value
-        if (-not $ap)
-        {
-            #V1 template
-            $ap = $sourceTemplate.pKIExtendedKeyUsage.Value
-        }
-    }
-    else
-    {
-        $ap = $ApplicationPolicy | ForEach-Object { $ApplicationPolicies[$_] }
-    }
-    
-    if ($ap)
-    {
-        $newCertTemplate.put('msPKI-Certificate-Application-Policy', $ap)
-    }
-    
-    $newCertTemplate.SetInfo()
-    $newCertTemplate.pKIKeyUsage = $sourceTemplate.pKIKeyUsage
-    
-    if ($ValidityPeriod)
-    {
-        $newCertTemplate.pKIExpirationPeriod.Value = [Pki.Period]::ToByteArray($ValidityPeriod)
-    }
-    else
-    {
-        $newCertTemplate.pKIExpirationPeriod = $sourceTemplate.pKIExpirationPeriod
-    }
-    
-    if ($RenewalPeriod)
-    {
-        $newCertTemplate.pKIOverlapPeriod.Value = [Pki.Period]::ToByteArray($RenewalPeriod)
-    }
-    else
-    {
-        $newCertTemplate.pKIOverlapPeriod = $sourceTemplate.pKIOverlapPeriod
-    }    
-    $newCertTemplate.SetInfo()
-}
-
-function Publish-CATemplate
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$TemplateName
-    )
-    
-    $caInfo = certutil.exe -CAInfo
-    if ($caInfo -like '*No local Certification Authority*')
-    {
-        Write-Error 'This command needs to run on a CA'
-        return
-    }
-
-    $start = Get-Date
-    $done = $false
-    $i = 0
-    do
-    {
-        Write-Verbose -Message "Trying to publish '$TemplateName' at ($(Get-Date)), retry count $i"
-        $result = certutil.exe -SetCAtemplates "+$TemplateName" | Out-Null
-        if (-not $LASTEXITCODE)
-        {
-            $done = $true
-        }
-        else
-        {
-            if ($i % 5 -eq 0)
-            {
-                Restart-Service -Name CertSvc
-            }
-
-            $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-            Write-Verbose -Message "Publishing the template '$TemplateName' failed: $($ex.Message)"
-
-            Start-Sleep -Seconds 10
-            $i++
-        }
-    }
-    until ($done -or ((Get-Date) - $start).TotalMinutes -ge 10)
-    Write-Verbose -Message "Certificate templete '$TemplateName' published successfully"
-
-    if ($LASTEXITCODE)
-    {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Publishing the template '$TemplateName' failed: $($ex.Message)" -Exception $ex
-        return
-    }
-
-    Write-Verbose "Successfully published template '$TemplateName'"
-}
-
-function Test-CATemplate
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$TemplateName
-    )
-    
-    $tempates = certutil.exe -Template | Select-String -Pattern TemplatePropCommonName
-
-    $template = $tempates -like "*$TemplateName"
-
-    return [bool]$template
-}
-
-function Add-CATemplateStandardPermission
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)]
-        [string]$TemplateName,
-        
-        [Parameter(Mandatory = $true)]
-        [string[]]$SamAccountName
-    )
-    
-    $configNc= ([adsi]'LDAP://RootDSE').configurationNamingContext
-    $templateContainer = [adsi]"LDAP://CN=Certificate Templates,CN=Public Key Services,CN=Services,$configNc"
-    Write-Verbose "Template container is '$templateContainer'"
-
-    $template = $templateContainer.Children | Where-Object Name -eq $TemplateName
-    if (-not $template)
-    {
-        Write-Error "The template '$TemplateName' could not be found"
-        return
-    }
-   
-    foreach ($name in $SamAccountName)
-    {
-        try
-        {
-            $sid = ([System.Security.Principal.NTAccount]$name).Translate([System.Security.Principal.SecurityIdentifier])
-            $name = $sid.Translate([System.Security.Principal.NTAccount])
-
-            dsacls $template.DistinguishedName /G "$($name):GR"
-            dsacls $template.DistinguishedName /G "$($name):CA;Enroll"
-            dsacls $template.DistinguishedName /G "$($name):CA;AutoEnrollment"
-        }
-        catch
-        {
-            Write-Error "The principal '$name' could not be found"
-        }
-    }
-}
-
-function Request-Certificate
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory = $true, HelpMessage = 'Please enter the subject beginning with CN=')]
-        [ValidatePattern('CN=')]
-        [string]$Subject,
-
-        [Parameter(HelpMessage = 'Please enter the SAN domains as a comma separated list')]
-        [string[]]$SAN,
-
-        [Parameter(HelpMessage = 'Please enter the Online Certificate Authority')]
-        [string]$OnlineCA,
-
-        [Parameter(Mandatory = $true, HelpMessage = 'Please enter the Online Certificate Authority')]
-        [string]$TemplateName
-    )
-
-    $infFile = [System.IO.Path]::GetTempFileName()
-    $requestFile = [System.IO.Path]::GetTempFileName()
-    $certFile = [System.IO.Path]::GetTempFileName()
-    $rspFile = [System.IO.Path]::GetTempFileName()
-
-    ### INI file generation
-    $iniContent = @'
-[Version]
-Signature="$Windows NT$"
-
-[NewRequest]
-Subject="{0}"
-Exportable=TRUE
-KeyLength=2048
-KeySpec=1
-KeyUsage=0xA0
-MachineKeySet=True
-ProviderName="Microsoft RSA SChannel Cryptographic Provider"
-ProviderType=12
-SMIME=FALSE
-RequestType=PKCS10
-[Strings]
-szOID_ENHANCED_KEY_USAGE = "2.5.29.37"
-szOID_PKIX_KP_SERVER_AUTH = "1.3.6.1.5.5.7.3.1"
-szOID_PKIX_KP_CLIENT_AUTH = "1.3.6.1.5.5.7.3.2"
-'@
-
-    $iniContent = $iniContent -f $Subject
-
-    Add-Content -Path $infFile -Value $iniContent
-    Write-Verbose "ini file created '$infFile'"
- 
-    if ($SAN)
-    {
-        Write-Verbose 'Assing SAN section'
-        Add-Content -Path $infFile -Value 'szOID_SUBJECT_ALT_NAME2 = "2.5.29.17"'
-        Add-Content -Path $infFile -Value '[Extensions]'
-        Add-Content -Path $infFile -Value '2.5.29.17 = "{text}"'
- 
-        foreach ($s in $SAN)
-        {
-            Write-Verbose "`t $s"
-            $temp = '_continue_ = "dns={0}&"' -f $s
-            Add-Content -Path $infFile -Value $temp
-        }
-    }
- 
-    ### Certificate request generation
-    Remove-Item -Path $requestFile
-    Write-Verbose "Calling 'certreq.exe -new $infFile $requestFile | Out-Null'"
-    certreq.exe -new $infFile $requestFile | Out-Null
- 
-    ### Online certificate request and import
-    if (-not $OnlineCA)
-    {
-        Write-Verbose 'No CA given, trying to find one...'
-        $OnlineCA = Find-CertificateAuthority -ErrorAction Stop
-        Write-Verbose "Found CA '$OnlineCA'"
-    }
-    
-    if (-not $OnlineCA)
-    {
-        Write-Error "No OnlineCA given and no one could be found in the machine's domain"
-        return
-    }
-       
-    Remove-Item -Path $certFile
-    Write-Verbose "Calling 'certreq.exe -q -submit -attrib CertificateTemplate:$TemplateName -config $OnlineCA $requestFile $certFile | Out-Null'"
-    certreq.exe -submit -q -attrib "CertificateTemplate:$TemplateName" -config $OnlineCA $requestFile $certFile | Out-Null
-
-    if ($LASTEXITCODE)
-    {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Submitting the certificate request failed: $($ex.Message)" -Exception $ex 
-        return
-    }
- 
-    Write-Verbose "Calling 'certreq.exe -accept $certFile'"
-    certreq.exe -q -accept $certFile
-    if ($LASTEXITCODE)
-    {
-        $ex = New-Object System.ComponentModel.Win32Exception($LASTEXITCODE)
-        Write-Error -Message "Accepting the certificate failed: $($ex.Message)" -Exception $ex
-        return
-    }
-
-    Copy-Item -Path $certFile -Destination c:\cert.cer -Force
-    Copy-Item -Path $infFile -Destination c:\request.inf -Force
-
-    Remove-Item -Path $infFile, $requestFile, $certFile, $rspFile -Force
-    
-    $certPrint = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-    $certPrint.Import('C:\cert.cer')
-    $certPrint
-}
-
-function Get-CertificatePfx
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
-    param (
-        [Parameter(Mandatory = $true, ParameterSetName = 'DnsName')]
-        [string]$DnsName,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'Thumbprint')]
-        [string]$Thumbprint,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'All')]
-        [switch]$All
-    )
-    
-    $certs = foreach ($location in [Enum]::GetNames([System.Security.Cryptography.X509Certificates.StoreLocation]))
-    {
-        Write-Verbose "Enumerating store location '$location'"
-        foreach ($store in [System.Enum]::GetNames([System.Security.Cryptography.X509Certificates.StoreName]))
-        {
-            Write-Verbose "Enumerating store '$store'"
-            $store = New-Object System.Security.Cryptography.X509Certificates.X509Store($store, $location)
-            $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]::ReadOnly)
-            $store.Certificates | 
-            Where-Object { $_.HasPrivateKey } |
-            Add-Member -MemberType NoteProperty -Name Location -Value $location -PassThru | 
-            Add-Member -MemberType NoteProperty -Name Store -Value $store.Name -PassThru
-        }
-    }
-
-    Write-Verbose "Found $($certs.Count) certificates"
-
-    if ($DnsName)
-    {
-        $certs = $certs | Where-Object { $DnsName -in $_.DnsNameList } | Sort-Object NotBefore | Select-Object -Last 1
-    }
-    elseif ($Thumbprint)
-    {
-        $certs = $certs | Where-Object Thumbprint -eq $Thumbprint | Sort-Object NotBefore | Select-Object -Last 1
-    }
-    else
-    {
-        #nothing, all certs are kept
-    }
-
-    Write-Verbose "$($certs.Count) certificates remaining after applying filter"
-
-    $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
-
-    foreach ($cert in $certs)
-    {
-        $tempFile = [System.IO.Path]::GetTempFileName()
-        Remove-Item -Path $tempFile
-
-        Write-Verbose "Current certificate is $($cert.Thumbprint)"
-
-        try
-        {
-            Write-Verbose 'Calling Export-PfxCertificate'
-            Export-PfxCertificate -Cert $cert -FilePath $tempFile -Password $password -ErrorAction SilentlyContinue | Out-Null
-            Write-Verbose 'Export finished'
-        }
-        catch
-        {
-            if ($DnsName -or $Thumbprint)
-            {
-                Write-Error $_
-            }
-            Write-Verbose 'Private key cannot be exported'
-            continue
-        }
-
-        $bytes = [System.IO.File]::ReadAllBytes($tempFile)
-        Remove-Item -Path $tempFile
-
-        New-Object -TypeName PSObject -Property @{
-            Thumbprint = $cert.Thumbprint
-            DnsNameList = $cert.DnsNameList
-            Location = $cert.Location
-            Store = $cert.Store
-            Computer = $env:COMPUTERNAME
-            Pfx = $bytes
-        }
-    }
-}
-
-function Add-CertificatePfx
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
-    param (
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [string]$Path,
-
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [System.Security.Cryptography.X509Certificates.StoreLocation]$Location,
-
-        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
-        [System.Security.Cryptography.X509Certificates.StoreName]$Store
-    )
-
-    begin
-    {
-        $password = ConvertTo-SecureString -String 'AL' -Force -AsPlainText
-    }
-
-    process
-    {
-        if (-not (Test-Path -Path $Path))
-        {
-            Write-Error "The path '$Path' does not exist"
-            continue
-        }
-
-        $certPath = 'cert:\{0}\{1}' -f $Location, $Store
-
-        Write-Verbose 'Calling Import-PfxCertificate '
-        Import-PfxCertificate -FilePath $Path -Password $password -CertStoreLocation $certPath -Exportable
-        Write-Verbose 'Certificate imported'
-    }
-
-    end { }
-}
 #endregion Internals
 
-#region Get-LabCertificatePfx
-function Get-LabCertificatePfx
+#region Get-LabCertificate
+function Get-LabCertificate
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
+    [cmdletBinding(DefaultParameterSetName = 'Find')]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'DnsName')]
-        [string]$DnsName,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Find')]
+        [string]$SearchString,
 
-        [Parameter(Mandatory, ParameterSetName = 'Thumbprint')]
-        [string]$Thumbprint,
-
-        [Parameter(Mandatory, ParameterSetName = 'All')]
-        [switch]$All,
+        [Parameter(Mandatory = $true, ParameterSetName = 'Find')]
+        [System.Security.Cryptography.X509Certificates.X509FindType]$FindType,
         
+        [System.Security.Cryptography.X509Certificates.CertStoreLocation]$Location,
+        
+        [System.Security.Cryptography.X509Certificates.StoreName]$Store,
+        
+        [string]$ServiceName,
+
+        [Parameter(Mandatory = $true, ParameterSetName = 'All')]
+        [switch]$All,
+
+        [Parameter(ParameterSetName = 'All')]
+        [switch]$IncludeServices,
+        
+        [string]$Password = 'AL',
+
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
@@ -1496,39 +1126,57 @@ function Get-LabCertificatePfx
     Write-LogFunctionEntry
     
     $variables = Get-Variable -Name PSBoundParameters
-    $functions = Get-Command -Name Get-CertificatePfx, Sync-Parameter
+    $functions = Get-Command -Name Get-Certificate2, Sync-Parameter
+
+    $x = $PSBoundParameters
     
     foreach ($computer in $ComputerName)
     {
-        Invoke-LabCommand -ActivityName 'Exporting certificates with exportable private key' -ComputerName $computer -ScriptBlock {
-        
-            Sync-Parameter -Command (Get-Command -Name Get-CertificatePfx)
-            Get-CertificatePfx @ALBoundParameters
+        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -ScriptBlock {
+            Add-Type -TypeDefinition $args[0]
+        } -ArgumentList $certStoreTypes -NoDisplay
+
+        Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -ScriptBlock {
+			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            Sync-Parameter -Command (Get-Command -Name Get-Certificate2)
+            Get-Certificate2 @ALBoundParameters
             
         } -Variable $variables -Function $functions -PassThru
     }
     
     Write-LogFunctionExit
 }
-#endregion Get-LabCertificatePfx
+#endregion Get-LabCertificate
 
-#region Add-LabCertificatePfx
-function Add-LabCertificatePfx
+#region Add-LabCertificate
+function Add-LabCertificate
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding(DefaultParameterSetName = 'DnsName')]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [byte[]]$Pfx,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [System.Security.Cryptography.X509Certificates.StoreLocation]$Location,
-
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
+    [cmdletBinding(DefaultParameterSetName = 'ByteArray')]
+    param(
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'File')]
+        [string]$Path,
+        
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByteArray')]
+        [byte[]]$Cert,
+        
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [System.Security.Cryptography.X509Certificates.StoreName]$Store,
         
+        [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
+        [System.Security.Cryptography.X509Certificates.CertStoreLocation]$Location,
+        
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [string]$ServiceName,
+        
+        [Parameter(ValueFromPipelineByPropertyName = $true)]
+        [ValidateSet('CER', 'PFX')]
+        [string]$CertificateType = 'CER',
+        
+        [string]$Password = 'AL',
+
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true)]
-        [string]$ComputerName
+        [string[]]$ComputerName
     )
     
     begin
@@ -1539,21 +1187,26 @@ function Add-LabCertificatePfx
     process
     {
         $variables = Get-Variable -Name PSBoundParameters
-        $functions = Get-Command -Name Add-CertificatePfx, Sync-Parameter
+        $functions = Get-Command -Name Add-Certificate2, Sync-Parameter
+
+        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -ScriptBlock {
+            Add-Type -TypeDefinition $args[0]
+        } -ArgumentList $certStoreTypes -NoDisplay
         
-        Invoke-LabCommand -ActivityName 'Storing Pfx bytes on target machine' -ComputerName $ComputerName -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Storing certificate bytes on target machine' -ComputerName $ComputerName -ScriptBlock {
         
             $tempFile = [System.IO.Path]::GetTempFileName()
             [System.IO.File]::WriteAllBytes($tempFile, $args[0])
-            Write-Verbose "Pfx is written to '$tempFile'"
+            Write-Verbose "Cert is written to '$tempFile'"
             
-        } -ArgumentList (,$Pfx) -Variable $variables
+        } -ArgumentList (,$Cert) -Variable $variables
     
-        Invoke-LabCommand -ActivityName 'Importing Pfx file' -ComputerName $ComputerName -ScriptBlock {
-        
-            Sync-Parameter -Command (Get-Command -Name Add-CertificatePfx)
+        Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -ScriptBlock {
+			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            Sync-Parameter -Command (Get-Command -Name Add-Certificate2)
             $ALBoundParameters.Add('Path', $tempFile)
-            Add-CertificatePfx @ALBoundParameters | Out-Null
+            $ALBoundParameters.Remove('Cert')
+            Add-Certificate2 @ALBoundParameters | Out-Null
             Remove-Item -Path $tempFile
             
         } -Variable $variables -Function $functions -PassThru
@@ -1565,7 +1218,7 @@ function Add-LabCertificatePfx
         Write-LogFunctionExit
     }
 }
-#endregion Add-LabCertificatePfx
+#endregion Add-LabCertificate
 
 #region New-LabCATemplate
 function New-LabCATemplate
@@ -1581,12 +1234,14 @@ function New-LabCATemplate
         [Parameter(Mandatory)]
         [string]$SourceTemplateName,
         
-        [ValidateSet('EmailProtection', 'OCSPSigning', 'CodeSigning', 'ClientAuthentication', 'IpsecTunnel', 'TimeStamping', 'IpsecUser', 'IpsecEndSystem', 'ServerAuthentication', 'CapWap')]
+        [ValidateSet('EFS_RECOVERY', 'Auto Update CA Revocation', 'No OCSP Failover to CRL', 'OEM_WHQL_CRYPTO', 'Windows TCB Component', 'DNS Server Trust', 'Windows Third Party Application Component', 'ANY_APPLICATION_POLICY', 'KP_LIFETIME_SIGNING', 'Disallowed List', 'DS_EMAIL_REPLICATION', 'LICENSE_SERVER', 'KP_KEY_RECOVERY', 'Windows Kits Component', 'AUTO_ENROLL_CTL_USAGE', 'PKIX_KP_TIMESTAMP_SIGNING', 'Windows Update', 'Document Encryption', 'KP_CTL_USAGE_SIGNING', 'IPSEC_KP_IKE_INTERMEDIATE', 'PKIX_KP_IPSEC_TUNNEL', 'Code Signing', 'KP_KEY_RECOVERY_AGENT', 'KP_QUALIFIED_SUBORDINATION', 'Early Launch Antimalware Driver', 'Remote Desktop', 'WHQL_CRYPTO', 'EMBEDDED_NT_CRYPTO', 'System Health Authentication', 'DRM', 'PKIX_KP_EMAIL_PROTECTION', 'KP_TIME_STAMP_SIGNING', 'Protected Process Light Verification', 'Endorsement Key Certificate', 'KP_IPSEC_USER', 'PKIX_KP_IPSEC_END_SYSTEM', 'LICENSES', 'Protected Process Verification', 'IdMsKpScLogon', 'HAL Extension', 'KP_OCSP_SIGNING', 'Server Authentication', 'Auto Update End Revocation', 'KP_EFS', 'KP_DOCUMENT_SIGNING', 'Windows Store', 'Kernel Mode Code Signing', 'ENROLLMENT_AGENT', 'ROOT_LIST_SIGNER', 'Windows RT Verification', 'NT5_CRYPTO', 'Revoked List Signer', 'Microsoft Publisher', 'Platform Certificate', ' Windows Software Extension Verification', 'KP_CA_EXCHANGE', 'PKIX_KP_IPSEC_USER', 'Dynamic Code Generator', 'Client Authentication', 'DRM_INDIVIDUALIZATION')]
         [string[]]$ApplicationPolicy,
 
         [Pki.CATemplate.EnrollmentFlags]$EnrollmentFlags,
 
         [Pki.CATemplate.PrivateKeyFlags]$PrivateKeyFlags = 0,
+
+        [Pki.CATemplate.KeyUsage]$KeyUsage = 0,
         
         [int]$Version = 2,
 
@@ -1603,7 +1258,7 @@ function New-LabCATemplate
 
     Write-LogFunctionEntry
     
-    $computer = Get-LabMachine -ComputerName $ComputerName
+    $computer = Get-LabVM -ComputerName $ComputerName
     if (-not $computer)
     {
         Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
@@ -1616,7 +1271,7 @@ function New-LabCATemplate
         return
     }
     
-    $variables = Get-Variable -Name KeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
+    $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
 
     Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
@@ -1683,7 +1338,6 @@ function Test-LabCATemplate
 }
 #endregion Test-LabCATemplate
 
-
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
@@ -1714,7 +1368,7 @@ function Get-LabIssuingCA
     
     if (-not $issuingCAs)
     {
-        Write-Error "There was no issuing CA found"
+        Write-Error 'There was no issuing CA found'
         return
     }
 
@@ -3206,7 +2860,7 @@ function Publish-LabCAInstallCertificates
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
-            Send-File -Source $certfile.FullName -Destination "C:\Windows\$($certfile.BaseName).crt" -Session $machineSession
+            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath C:\Windows -Session $machineSession
         }
         
         $scriptBlock = {
@@ -3499,21 +3153,10 @@ function Enable-LabCertificateAutoenrollment
     Write-ScreenInfo -Message "Enabling auto enrollment of $out certificates" -NoNewLine
     $job = Invoke-LabCommand -ComputerName $machines -ActivityName 'Configuring machines for auto enrollment and performing auto enrollment of certificates' -NoDisplay -AsJob -PassThru -ScriptBlock `
     {
-        param
-        (
-            [string]$GpoType,
-            [boolean]$Computer,
-            [boolean]$UserOrCodeSigning
-        )
-            
-        Write-Verbose -Message "Computer: '$Computer'"
-        Write-Verbose -Message "Computer: '$UserOrCodeSigning'"
-            
-        Add-Type -TypeDefinition $GpoType -IgnoreWarnings
-            
+        Add-Type -TypeDefinition $gpoType
         Set-Item WSMan:\localhost\Client\TrustedHosts '*' -Force
         Enable-WSManCredSSP -Role Client -DelegateComputer * -Force
-            
+        
         $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
         if ($value -ne '*' -and $value -ne 'WSMAN/*')
         {
@@ -3521,24 +3164,10 @@ function Enable-LabCertificateAutoenrollment
             [GPO.Helper]::SetGroupPolicy($true, 'Software\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFresh', 1) | Out-Null
             [GPO.Helper]::SetGroupPolicy($true, 'Software\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1', 'WSMAN/*') | Out-Null
         }
-        if ($Computer)
-        {
-            Write-Verbose -Message 'Configuring for computer auto enrollment'
-            [GPO.Helper]::SetGroupPolicy($true, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'AEPolicy', 7)
-            [GPO.Helper]::SetGroupPolicy($true, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationPercent', 10)
-            [GPO.Helper]::SetGroupPolicy($true, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationStoreNames', 'MY')
-        }
-        if ($UserOrCodeSigning)
-        {
-            Write-Verbose -Message 'Configuring for user auto enrollment'
-            [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'AEPolicy', 7)
-            [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationPercent', 10)
-            [GPO.Helper]::SetGroupPolicy($false, 'Software\Policies\Microsoft\Cryptography\AutoEnrollment', 'OfflineExpirationStoreNames', 'MY')
-        }
+
+        Enable-AutoEnrollment -Computer:$Computer -UserOrCodeSigning:($User -or $CodeSigning)
             
-        1..3 | ForEach-Object { gpupdate.exe /force; certutil.exe -pulse; Start-Sleep -Seconds 1 }
-            
-    } -ArgumentList $gpoType, $Computer, ($User -or $CodeSigning)
+    } -Variable (Get-Variable gpoType, Computer, User, CodeSigning) -Function (Get-Command Enable-AutoEnrollment)
     Wait-LWLabJob -Job $job -ProgressIndicator 20 -Timeout 30 -NoDisplay
         
         
@@ -3548,4 +3177,3 @@ function Enable-LabCertificateAutoenrollment
 }
 #endregion Enable-LabCertificateAutoenrollment
 
-Add-Type -TypeDefinition $pkiInternalsTypes

@@ -102,9 +102,15 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "2016-Datacenter";
 
+                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                        return "2016-Datacenter-Server-Core";
+
+                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                        return "Datacenter-Core-1709-smalldisk";
+
                     case "Windows Server 2016 SERVERSTANDARDNANO":
                         return "2016-Nano-Server";
-                        
+
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
 
@@ -212,6 +218,8 @@ namespace AutomatedLab
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Technical Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise Evaluation":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise 2015 LTSB":
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":
@@ -250,6 +258,12 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTERNANO":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
+                    // Server 2016 Insider Preview
+                    case "Windows Server 2016 SERVERSTANDARDACORE":
+                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
+                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
+
                     default:
                         return string.Empty;
                 }
@@ -279,6 +293,14 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName)
         {
             this.operatingSystemName = operatingSystemName;
+            if (operatingSystemName.ToLower().Contains("windows server"))
+            {
+                installation = "Server";
+            }
+            else
+            {
+                installation = "Client";
+            }
         }
 
         public OperatingSystem(string operatingSystemName, AutomatedLab.Version version)

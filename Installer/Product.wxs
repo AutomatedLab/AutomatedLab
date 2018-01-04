@@ -26,7 +26,7 @@
                       Key='SOFTWARE\[Manufacturer]\[ProductName]'
                       Name='LabSourcesFolder' Type='raw' />
     </Property>
-    
+
     <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
 
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
@@ -61,6 +61,89 @@
 
                 <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="both"/>
 
+              </Component>
+            </Directory>
+            <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
+              <Directory Id="InstallFolder_CommonCommon" Name="Common">
+                <Directory Id="InstallFolder_CommonCommonPublic" Name="Public">
+                  <Component Id="ALCommonComponent1" Guid="8b0287f3-d70a-47e6-a04f-6cc360f33eab">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-AccountPrivilege.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-FunctionToPSSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-IsAdministrator.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
+                  <Component Id="ALCommonComponent2" Guid="1493e46b-7913-408a-9549-5ae1da7cef34">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Gpo.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\LsaWrapper.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Mesh.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonDsc" Name="DscHelper">
+                <Directory Id="InstallFolder_CommonDscPublic" Name="Public">
+                  <Component Id="ALCommonComponent3" Guid="c9813b6e-f4da-450e-8d22-6dd2547aa7b7" >
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\DscHelper\Public\Get-DscConfigurationImportedResource.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonNetwork" Name="NetworkHelper">
+                <Directory Id="InstallFolder_CommonNetworkPublic" Name="Public" >
+                  <Component Id="ALCommonComponent4" Guid="722317e2-e32b-4427-954e-59147cf8617e">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-BinaryIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DecimalIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DottedDecimalIp.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-Mask.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-MaskLength.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-BroadcastAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkRange.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkSummary.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-PublicIpAddress.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Test-Port.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Directory Id="InstallFolder_CommonPki" Name="PkiHelper">
+                <Directory Id="InstallFolder_CommonPkiPublic" Name="Public">
+                  <Component Id="ALCommonComponent5" Guid="301a6732-f49c-4f95-9891-4f2f3fe345e5">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-CATemplateStandardPermission.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-Certificate2.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Enable-AutoEnrollment.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Find-CertificateAuthority.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-Certificate2.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-NextOid.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\New-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Publish-CaTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Request-Certificate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Test-CaTemplate.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonPkiTypes" Name="Types">
+                  <Component Id="ALCommonComponent6" Guid="633ce5e1-186b-4a5f-a38d-78946c0a1c0f">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+
+              <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
+                <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
+
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
               </Component>
             </Directory>
             <!--______________________________________________________________________________-->
@@ -132,6 +215,29 @@
 
             <!--______________________________________________________________________________-->
 
+            <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
+              <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
+                <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
+              </Component>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPrivate" Name="Private">
+                <Component Id="AutomatedLabNotificationsComponentPrivate" Guid="bf814c6a-01f1-4a3c-b9dc-bb036cb37d0c">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                </Component>
+              </Directory>
+              <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
+                <Component Id ="AutomatedLabNotificationsComponentPublic" Guid="9873f179-5cfc-4dc2-8c80-203a4af81bf4">
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
+                </Component>
+              </Directory>
+            </Directory>
+
+            <!--______________________________________________________________________________-->
+
             <Directory Id="InstallFolder_AutomatedLabDefinition" Name="AutomatedLabDefinition">
               <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
 
@@ -159,6 +265,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
@@ -174,6 +281,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVMWare.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabRouting.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADFS.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
 
                 <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
 
@@ -241,31 +349,31 @@
               <Component Id='SamplesHypervComponent' Guid='c3b77aa7-5024-4be3-b82c-a742b6bc203c'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesHypervComponent"/>
 
-                <File Id='Sample_Single2012R2Server' Name='Single 2012R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server.ps1' />
-                <File Id='Sample_Single2012R2ServerDCSQL2014WebCA' Name='Single 2012R2 Server DC SQL2014 Web CA.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1' />
-                <File Id='Sample_Single2008R2Server' Name='Single 2008R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 2008R2 Server.ps1' />
-                <File Id='Sample_Single81Client' Name='Single 81 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 81 Client.ps1' />
-                <File Id='Sample_Single81ClientWithOffice' Name='Single 81 Client with Office.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 81 Client with Office.ps1' />
-                <File Id='Sample_Single81ClientWithOfficeVSReflector' Name='Single 10 Client with Office, VS and Reflector.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1' />
-                <File Id='Sample_Single10Client' Name='Single 10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\Single 10 Client.ps1' />
+                <File Id='Sample_Single2012R2Server' Name='Single 2012R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 2012R2 Server.ps1' />
+                <File Id='Sample_Single2012R2ServerDCSQL2014WebCA' Name='Single 2012R2 Server DC SQL2014 Web CA.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 2012R2 Server DC SQL2014 Web CA.ps1' />
+                <File Id='Sample_Single2008R2Server' Name='Single 2008R2 Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 2008R2 Server.ps1' />
+                <File Id='Sample_Single81Client' Name='Single 81 Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 81 Client.ps1' />
+                <File Id='Sample_Single81ClientWithOffice' Name='Single 81 Client with Office.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 81 Client with Office.ps1' />
+                <File Id='Sample_Single81ClientWithOfficeVSReflector' Name='Single 10 Client with Office, VS and Reflector.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1' />
+                <File Id='Sample_Single10Client' Name='Single 10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 10 Client.ps1' />
 
-                <File Id='Sample_SmallLab12012R2SingleServer' Name='SmallLab 2012R2 Single Server.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1' />
-                <File Id='Sample_SmallLab12012R2SingleClient' Name='SmallLab 2012R2 Single Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1' />
-                <File Id='Sample_SmallLab2012R2Ex' Name='SmallLab 2012R2 EX.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\SmallLab 2012R2 EX.ps1' />
-                <File Id='Sample_SmallLab2012R2Sql' Name='SmallLab 2012R2 SQL.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1' />
+                <File Id='Sample_SmallLab12012R2SingleServer' Name='SmallLab 2012R2 Single Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1' />
+                <File Id='Sample_SmallLab12012R2SingleClient' Name='SmallLab 2012R2 Single Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1' />
+                <File Id='Sample_SmallLab2012R2Ex' Name='SmallLab 2012R2 EX.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 EX.ps1' />
+                <File Id='Sample_SmallLab2012R2Sql' Name='SmallLab 2012R2 SQL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 SQL.ps1' />
 
-                <File Id='Sample_MediumLab12012R2SQL' Name='MediumLab 2012R2 SQL.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1' />
-                <File Id='Sample_MediumLab12012R2SQLEX' Name='MediumLab 2012R2 SQL EX.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1' />
+                <File Id='Sample_MediumLab12012R2SQL' Name='MediumLab 2012R2 SQL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1' />
+                <File Id='Sample_MediumLab12012R2SQLEX' Name='MediumLab 2012R2 SQL EX.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1' />
 
-                <File Id='Sample_BigLab2012R2EXSQLORCHVSOFFC1' Name='BigLab 2012R2 EX SQL ORCH VS OFF.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1' />
+                <File Id='Sample_BigLab2012R2EXSQLORCHVSOFFC1' Name='BigLab 2012R2 EX SQL ORCH VS OFF.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1' />
 
-                <File Id='Sample_MultiForestLab12012R2' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\MultiForestLab 2012R2.ps1' />
-                <File Id='Sample_MultiForestLab12008R2' Name='MultiForestLab 2008R2.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\MultiForestLab 2008R2.ps1' />
+                <File Id='Sample_MultiForestLab12012R2' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\MultiForestLab 2012R2.ps1' />
+                <File Id='Sample_MultiForestLab12008R2' Name='MultiForestLab 2008R2.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\MultiForestLab 2008R2.ps1' />
 
-                <File Id='Sample_PKITwoTierTypical' Name='PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1' />
-                <File Id='Sample_PKITwoTierCustom' Name='PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1' />
-                <File Id='Sample_PKISimple' Name='PKI Simple.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Simple.ps1' />
-                <File Id='Sample_PKICustom' Name='PKI Custom.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\HyperV\PKI Custom.ps1' />
+                <File Id='Sample_PKITwoTierTypical' Name='PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1' />
+                <File Id='Sample_PKITwoTierCustom' Name='PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1' />
+                <File Id='Sample_PKISimple' Name='PKI Simple.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\PKI Simple.ps1' />
+                <File Id='Sample_PKICustom' Name='PKI Custom.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\PKI Custom.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSamplesHypervDir" Directory="SamplesHypervDir" On="both"/>
               </Component>
@@ -275,7 +383,8 @@
               <Component Id='SamplesAzureComponent' Guid='2904ea2b-6964-47ba-b912-f4c47b1cd6a4'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesAzureComponent"/>
 
-                <File Id='Sample_MultiForestLab12012R2Azure' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Azure\MultiForestLab 2012R2.ps1' />
+                <File Id='Sample_MultiForestLab12012R2Azure' Name='MultiForestLab 2012R2.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Azure\MultiForestLab 2012R2.ps1' />
+                <File Id='VpnConnectedLab' Name='VpnConnectedLab.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Azure\VpnConnectedLab.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSamplesAzureDir" Directory="SamplesAzureDir" On="both"/>
               </Component>
@@ -285,15 +394,15 @@
               <Component Id='SamplesWorkshopComponent' Guid='09b8b205-a1a4-4038-8b82-db45356e511f'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesWorkshopComponent"/>
 
-                <File Id='Sample_ADPowerShellLab' Name='ADPowerShellWorkshopLab.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1' />
-                <File Id='Sample_ADRecoveryLabAzure' Name='ADRecoveryLab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADRecoveryLab - Azure.ps1' />
-                <File Id='Sample_ADRecoveryLabHyperV' Name='ADRecoveryLab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1' />
-                <File Id='Sample_DFSHCAzure' Name='DFSHC - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\DFSHC - Azure.ps1' />
-                <File Id='Sample_DFSHCHyperV' Name='DFSHC - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\DFSHC - HyperV.ps1' />
-                <File Id='Sample_Kerberos101LabHyperV' Name='Kerberos 101 Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1' />
-                <File Id='Sample_PowerShellLabAzure' Name='PowerShell Lab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\PowerShell Lab - Azure.ps1' />
-                <File Id='Sample_PowerShellLabHyperVwithInternet' Name='PowerShell Lab - HyperV with Internet.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1' />
-                <File Id='Sample_PowerShellLabHyperV' Name='PowerShell Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Workshops\PowerShell Lab - HyperV.ps1' />
+                <File Id='Sample_ADPowerShellLab' Name='ADPowerShellWorkshopLab.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\ADPowerShellWorkshopLab.ps1' />
+                <File Id='Sample_ADRecoveryLabAzure' Name='ADRecoveryLab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\ADRecoveryLab - Azure.ps1' />
+                <File Id='Sample_ADRecoveryLabHyperV' Name='ADRecoveryLab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\ADRecoveryLab - HyperV.ps1' />
+                <File Id='Sample_DFSHCAzure' Name='DFSHC - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1' />
+                <File Id='Sample_DFSHCHyperV' Name='DFSHC - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1' />
+                <File Id='Sample_Kerberos101LabHyperV' Name='Kerberos 101 Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1' />
+                <File Id='Sample_PowerShellLabAzure' Name='PowerShell Lab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1' />
+                <File Id='Sample_PowerShellLabHyperVwithInternet' Name='PowerShell Lab - HyperV with Internet.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1' />
+                <File Id='Sample_PowerShellLabHyperV' Name='PowerShell Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSAMPLESWORKSHOPSDIR" Directory="SAMPLESWORKSHOPSDIR" On="both"/>
               </Component>
@@ -302,12 +411,18 @@
             <Directory Id="SAMPLESSCENARIOSDIR" Name="Scenarios">
               <Component Id='SamplesScenariosComponent' Guid='973e631b-bb24-4634-83ae-28a53ace65bf'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesScenariosComponent"/>
-
-                <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
-                <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
-                <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
-                <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
-                <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
+                
+                <File Id='Sample_AGPM1' Name='AGPM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1' />
+                <File Id='Sample_LabInABox1HyperV' Name='Lab in a Box 1 - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1' />
+                <File Id='Sample_LabInABox2Azure' Name='Lab in a Box 2 - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1' />
+                <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
+                <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
+                <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
+                <File Id='Sample_DSCPullScenario1S' Name='DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' />
+                <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
+                <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
+                <File Id='Sample_FailoverClustering1' Name='Failover Clustering 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1' />
+                <File Id='Sample_HybridEnvironmentHyperVandAzure1' Name='Hybrid Environment HyperV and Azure 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1' />
 
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
@@ -317,17 +432,20 @@
               <Component Id='SamplesIntroductionComponent' Guid='42526be0-5995-4cff-bf97-5949c26c1288'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesIntroductionComponent"/>
 
-                <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\01 Single Win10 Client.ps1' />
-                <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
-                <File Id='Sample_Intro03' Name='03 PowerShell 5 on Windows 7.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1' />
-                <File Id='Sample_Intro04' Name='04 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\04 Single domain-joined server.ps1' />
-                <File Id='Sample_Intro05' Name='05 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1' />
-                <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro07' Name='07 Exchange Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\07 Exchange Server and client, domain joined.ps1' />
-                <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
-                <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
-                <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
-                <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
+                <File Id='Sample_Intro01' Name='01 Single Win10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\01 Single Win10 Client.ps1' />
+                <File Id='Sample_Intro02' Name='02 Single Win10 Client (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\02 Single Win10 Client (internet facing).ps1' />
+                <File Id='Sample_Intro03' Name='03 PowerShell 5 on Windows 7.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\03 PowerShell 5 on Windows 7.ps1' />
+                <File Id='Sample_Intro04' Name='04 Single domain-joined server.ps1      ' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\04 Single domain-joined server.ps1' />
+                <File Id='Sample_Intro05' Name='05 Single domain-joined server (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\05 Single domain-joined server (internet facing).ps1' />
+                <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro071' Name='07.1 Exchange 2013 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro072' Name='07.2 Exchange 2016 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
+                <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
+                <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
+                <File Id='Sample_Intro11' Name='11 ISO Offline Patching.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\11 ISO Offline Patching.ps1' />
+                <File Id='Sample_Intro121' Name='12.1 Azure Single domain-joined server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\12.1 Azure Single domain-joined server.ps1' />
+                <File Id='Sample_Intro122' Name='12.2 Azure SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\12.2 Azure SQL Server and client, domain joined.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESINSTRODUCTIONDIR" Directory="SAMPLESINSTRODUCTIONDIR" On="both"/>
               </Component>
             </Directory>
@@ -344,13 +462,22 @@
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
+        <ComponentRef Id ='CommonComponent' />
+        <ComponentRef Id ='ALCommonComponent1' />
+        <ComponentRef Id ='ALCommonComponent2' />
+        <ComponentRef Id ='ALCommonComponent3' />
+        <ComponentRef Id ='ALCommonComponent4' />
+        <ComponentRef Id ='ALCommonComponent5' />
+        <ComponentRef Id ='ALCommonComponent6' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
         <ComponentRef Id='AutomatedLabComponent'/>
         <ComponentRef Id='AutomatedLabDefinitionComponent'/>
         <ComponentRef Id='AutomatedLabUnattendedComponent'/>
         <ComponentRef Id='AutomatedLabTestComponent'/>
-
+        <ComponentRef Id='AutomatedLabNotificationsComponent' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPublic' />
+        <ComponentRef Id='AutomatedLabNotificationsComponentPrivate' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
       </Feature>
 
@@ -1081,7 +1208,7 @@
     <Binary Id="info" SourceFile="Resources\Info.ico" />
     <Binary Id="bannrbmp" SourceFile="Resources\Banner.bmp" />
     <Binary Id="dlgbmp" SourceFile="Resources\Dialog.bmp" />
-    <Icon Id="ApplicationIcon" SourceFile="Resources\PowerShell.ico" />
+    <Icon Id="ApplicationIcon" SourceFile="Resources\AutomatedLab.ico" />
     <Property Id="ARPPRODUCTICON" Value="ApplicationIcon" />
 
     <Property Id="LABSOURCESOURCEFOLDER" Value="$(var.SolutionDir)LabSources" />
@@ -1376,147 +1503,144 @@
   <!--All references created using heat.exe-->
   <Fragment>
     <ComponentGroup Id="LabSourcesComponentGroup">
-      <Component Id="cmp39Q7tjdvSKxX9CpA2jN7av1dKyE" Directory="dir7WLcTQ0qFC0cHx.uoP_NIqE.GCw" Guid="13cc9554-0c87-43a0-9106-b70533594041">
-        <File Id="filIbxMxonEj6WwOyERxFXVW3gO7C4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
+      <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
+        <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\_Put custom role scripts here.txt" />
       </Component>
-      <Component Id="cmpS40wCYMDmHA12Z0Eb_M8pJCoZIA" Directory="dir3VF5dP_zxECzFLgWvZRzT_8xP0I" Guid="f461bfb5-26b4-4468-b7e3-e93cdd6fc967">
-        <File Id="fil2Qo1MjIFhq2GpbQfDHFvUP4AfkM" KeyPath="yes" Source="$(var.SolutionDir)LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt" />
+      <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
+        <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
       </Component>
-      <Component Id="cmprIcqQWxnQKCECiHWK_TkAwUk2Ks" Directory="dirSfK1v5lOtFi.Qg_pePMEsZfilFo" Guid="55025a96-184b-49b9-840b-409684743e15">
-        <File Id="filunsCzL4IlmE8W22f.l.tiS1qSow" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt" />
+      <Component Id="cmp590D2D7C56C54DA055DDE83528B57C13" Directory="dir89E871A710737F4B22546DECEF191B40" Guid="2cbfb439-2a97-4810-89e4-84f4ec7497bc">
+        <File Id="filF31E07CB8C65D89C7254CA55B09CE11B" KeyPath="yes" Source="$(var.SolutionDir)LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt" />
       </Component>
-      <Component Id="cmpib6iIClZ0jLNwLndx89LEAircts" Directory="dirw3u8qqAB5qjrCz5DvAZ76lNMfzs" Guid="bf3b2871-3a83-478c-9b7c-ea826bd9cd02">
-        <File Id="fil.BK3nB3T0TsV4iAcRQusCyDepv8" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1" />
+      <Component Id="cmp43B76600451B8D628D7EC64CFA049626" Directory="dirB2ACA9410CDB950E0A607387A4CEAC01" Guid="88b83189-2a22-46fb-b6a5-10edb6d8553a">
+        <File Id="filCE5BBBA18864DFAB2341D02FC3EE5F99" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt" />
       </Component>
-      <Component Id="cmpXBbxgLQRKfHk.615Ah1eT.8bUmA" Directory="dirA9tweYa2yEfjWaX7i_EZs5eEmtg" Guid="99439724-e79d-41ba-90e5-512f1198ec82">
-        <File Id="filREfiGwu435gYQ3UMoq8EXnKoMm0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DotNet35Client\DotNet35Client.ps1" />
+      <Component Id="cmpE162BBFF409B8CC73F5745943C9F78AD" Directory="dirBA4353D3575F96F525324853C216E37A" Guid="32219f4c-9fee-45b7-8f36-85ddf1ee87ae">
+        <File Id="fil97CB0342FDAB6F8D84B78029E5B82B8E" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1" />
       </Component>
-      <Component Id="cmpTC4tZPxPu04AAhzX19gsdaSDdK8" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="d155ffc0-0555-4eb1-81ae-d858751ec7e4">
-        <File Id="filUjtypV_lYtzeexGnWGTkAVXqnOU" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\LabUsers.txt" />
+      <Component Id="cmp807FDEB28168B8D0318E2208A4652140" Directory="dirFB8F46DAE95D4FEE6AAF25E7B7E68B1D" Guid="1fc5494d-db16-4e54-b560-87aa4e66c165">
+        <File Id="fil3768C45B910051D0DD8B6B1E5B587935" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DotNet35Client\DotNet35Client.ps1" />
       </Component>
-      <Component Id="cmp69Xw.ERrtpHwUI2PcNeaCh_.YXU" Directory="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Guid="6284249a-94e7-4a0c-b7f5-b25e21c88676">
-        <File Id="filErUHjjV99bHGurv5rYyCAiQHaWo" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" />
+      <Component Id="cmpB193B2B326BB852924DAB2B86F30C9AA" Directory="dirA63905768963FE92C75427CB0FE07A7B" Guid="1ae1b65c-ebe2-4cbe-a796-110ae4341fd9">
+        <File Id="filFA02968727403FF1B8C702C41CEC8005" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\LabUsers.txt" />
       </Component>
-      <Component Id="cmpM0COtymNTLzzbuQ76epxJf03QTU" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="78226789-5cca-4f10-b818-878eede2ccc9">
-        <File Id="fil58pXueQYfHkiILdiVrZcKQZjtPs" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1" />
+      <Component Id="cmpA5664FF12ACC73D5346CC08990DB6435" Directory="dirA63905768963FE92C75427CB0FE07A7B" Guid="556ac2e8-4cab-4017-ae22-24e9ed5bf308">
+        <File Id="fil5E6BBD7AFA9AF74057D3658038C196A0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareFirstChildDomain\New-ADLabAccounts 2.0.ps1" />
       </Component>
-      <Component Id="cmpqugj8tJlsI9Feml5s_na0z.LHbg" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="147472f1-1d9d-41dd-9784-e57b80fad19e">
-        <File Id="filVfQ7D83OGMpEjeYAQ6jsPPW38nI" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\RepAll.bat" />
+      <Component Id="cmp27D410847F88DBF89BA60A49C07FD89D" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="140493eb-d17e-497f-bcd4-c85db98076c7">
+        <File Id="filB9DE523E962A2A7EA7064EADDF42C324" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\PrepareRootDomain.ps1" />
       </Component>
-      <Component Id="cmpkyXop.ReK93sgA.t2PU7BCKDfk8" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="12241212-98ac-4264-816f-ac7b0444e6d6">
-        <File Id="filNxJ3TWteD7Ia7Tmjss9AW91NOR4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt" />
+      <Component Id="cmp572E7781C050E8F17197616868AF8483" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="c9dbdf0e-5a39-4db7-a04b-4c3fade2b061">
+        <File Id="filBF9DD3E8C0FEB088368544BEBFDA5241" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\RepAll.bat" />
       </Component>
-      <Component Id="cmp2wxX9cdsOGmxyxDWL.2i6OskfCw" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="75f2a098-5241-4da8-b493-f2983c4104e5">
-        <File Id="filH_Uai3fQczJ2tjp8SUQIDNZF_Gc" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt" />
+      <Component Id="cmp1653DBBC51F93966487491C2D7E535A1" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="f56f4402-571b-4ce7-a045-3085c22a8e94">
+        <File Id="filCFCBA185E13EE33701230CB04C938202" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Sites.txt" />
       </Component>
-      <Component Id="cmpQXvsAI..nO40WbNyh9suPJjVMKk" Directory="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Guid="d579b8a5-f183-468e-b2e6-8f9040c79c3c">
-        <File Id="fil.a95ZpfEA8knC6coamfOIxINrpA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\users.csv" />
+      <Component Id="cmp68327B1E847CA60D18E44BD1A2EE82BD" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="19c1deba-deba-4cca-8be9-5bf9a1e0c6a0">
+        <File Id="fil285B4BBCAFFD7B516D7124DEF2883049" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\Subnets.txt" />
       </Component>
-      <Component Id="cmpbTw_dy3Ck1uRP3FtPgFVRirifiQ" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="4e9bdfc5-b123-4da1-b1da-e2b54f59f6b2">
-        <File Id="filqbM7R89myPIZuNuLA.pzPEtbwvM" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\InstallSampleDBs.ps1" />
+      <Component Id="cmp26C0482860694A5D77DCD33746087215" Directory="dir748E276A50118FBDB70F5F2F1C60FEFD" Guid="502e73c8-43a2-46ff-9ef2-3d3d4c251956">
+        <File Id="fil248030669FCE47E3625A37688AECB3C3" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareRootDomain\users.csv" />
       </Component>
-      <Component Id="cmpkFPYhrx13lFQHxXnZO7vcNAPNss" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="102de213-3d54-4f82-83a6-36ee94e82a98">
-        <File Id="filQ39OOwXeRfmojGbqKV.tXWF7j3k" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instnwnd.sql" />
+      <Component Id="cmpE26210C325B965F52FCEC796635C60D5" Directory="dir2EE33670E132C988264FB3374812BBCE" Guid="c349b85f-7174-4ac7-903b-03dc11528128">
+        <File Id="fil6FFF71E4740D84EBF787101D499B4999" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1" />
       </Component>
-      <Component Id="cmpUy5wE73MZXS.YprO94VUTzuH59g" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="1f105575-e091-48fd-b0fc-c59210e6f3e5">
-        <File Id="filYalWIKPRspvxwswYlPoF4KtNtoA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\instpubs.sql" />
+      <Component Id="cmpEE9203318723FF8F2B8640D69426EC11" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="677b0584-53dd-455a-ab6c-8496d2d21f6d">
+        <File Id="filDD63F634D84FF08A27B4324841E0A117" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1" />
       </Component>
-      <Component Id="cmpyCfF3YE.mj4OOC649sOCes6EC94" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="72eb5f22-a986-43de-a089-d36ebbf38216">
-        <File Id="filxS1WqzNb4VLR0.87hGouXBX5hR4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\Script.txt" />
+      <Component Id="cmpB85FA2BD096943C488D20B6762C074F1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="864324e4-06a4-460e-a5f3-abe69bc20e2d">
+        <File Id="fil1C8824BF1D24203C55144DD3D8E8F975" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb" />
       </Component>
-      <Component Id="cmpXkzVllkoH4SJB_lIPFRv93VfdDc" Directory="dirihEFvFCCplqoEBVilsK9cAJFONk" Guid="6d4899c9-98fd-4a04-838e-74803b2dc455">
-        <File Id="filWwqhxJTNLvBx.idNKguuELTsEto" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\PrepareSqlServer\SQL2000SampleDb.msi" />
+      <Component Id="cmp3DB102DDB4E8933CB7CA8F10E690C53B" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="10eb84f3-9d21-4b1b-aed7-257c934dcb61">
+        <File Id="filA64366873E8C3F31B46E5DE0AA1EB499" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix" />
       </Component>
-      <Component Id="cmpzECzawlAf5x6JLAgDyP.sIn9PzU" Directory="dir6qcjGzMTLDt8yol9DTU_rGQHCMQ" Guid="4830f332-681e-4a11-ae68-80492ca4d593">
-        <File Id="filGUeCMmnzmJxxQxtd28HY8pCaTwk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1" />
+      <Component Id="cmp50A7D124DC8D85FD036A3927455C8230" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="93caa70c-6cfe-4e0f-a391-e4b79c0c8aa8">
+        <File Id="filA31276FA1BBC72CB111A51948F29C1CE" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1" />
       </Component>
-      <Component Id="cmpVIGRs60vN4NHzVxEaclPVs79bQw" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="d3ed0e58-48d6-4c1b-92ab-31a4bc97ed89">
-        <File Id="filbIpqgMiPeMf9o8VczJogg183xN0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1" />
+      <Component Id="cmp5BA4E0BA3769D59601C1AC2971C0ABA9" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="56364c6e-9885-45a1-bea9-095f0a5c2b79">
+        <File Id="fil5154ECA491181D426A43B5F0696F2D5F" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1" />
       </Component>
-      <Component Id="cmpNEktzdDa7PxfNjHMtZlDCp1o9oA" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="ac60dc64-7ab8-490b-a3a2-08a22c55bcc3">
-        <File Id="filwCnKGukvwP7cp5pRjch9ziry8xk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1" />
+      <Component Id="cmpB9F44D1BE872FB3C577FB59AA1C15BD1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="bd3b858a-8261-4151-991e-705a6cc05c6f">
+        <File Id="fil19D047322B9B206322C414F06B9749C2" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
       </Component>
-      <Component Id="cmpCEktzdDa7PxfNjHctZiDCp1o9oJ" Directory="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Guid="912262f5-7625-46ee-aaa2-0bb6ea42c2b0">
-        <File Id="filwCvKGukvwP8cp5pRjch9ziry8yk" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
+      <Component Id="cmp8D2B8A64166C91132F0DBC3F643D114D" Directory="dir311D91D38903AE9026EBF00ADD6C4410" Guid="3271d103-ca0c-4248-9212-c590748d99c0">
+        <File Id="fil955A23ABDD5E709E04D314B16F498600" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />
       </Component>
-      <Component Id="cmpZtptSdfdc_4EfGPo3bsMVo0s8Ys" Directory="dirMSSpwAehkfJ4VCtltYuupdp_7Z4" Guid="679d610f-de03-4675-8b2d-ec61ae520063">
-        <File Id="filGESobCBdah.C4zdibUFQ04gPUYE" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />
+      <Component Id="cmp0A8492B227C5BF123BBE55C2C9575F74" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="22848e70-1f5b-431d-b03e-c1e9ac076c6e">
+        <File Id="fil314088D0AFFAA91499CB31DE7F672422" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\oscdimg.exe" />
       </Component>
-      <Component Id="cmprzoS.tx4RKCWEiR8q5Mbe0T0038" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="f081c6d6-834d-4a81-95c6-0e17eb1093aa">
-        <File Id="filiVW9jVXNKNjCjhPlAtu7AwcJkEA" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\oscdimg.exe" />
+      <Component Id="cmp7FD43B34EF04450D0C411ED00C384154" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="e5a528f1-7a9e-4426-893e-6aab5d633b8e">
+        <File Id="fil91A42F784C9D2E9445F021CE9F1F2D7F" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\RepAll.bat" />
       </Component>
-      <Component Id="cmp7mpzjNQkUFFMVTnGGMVFxsuza5g" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="f0741078-de03-47db-9f43-1ab6e9abc268">
-        <File Id="fil360mBlOL.zZpRU8eb42BE0lyNK4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\RepAll.bat" />
+      <Component Id="cmp812EEFC5976F1877DCCECB37C5C9A325" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="50a89d7e-1652-4c04-b057-40072be6bf2c">
+        <File Id="filAE4B1BCB18D14AFD2FC9B29DB9564210" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSAT.exe" />
       </Component>
-      <Component Id="cmpiTXB0ToaDWhk3kDZnU0O_aD4Ae0" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="64c37e30-6d2b-40c5-aa33-ccd823ed2aa8">
-        <File Id="filkDmymJEpuqWygEs6Sj78DrvsvQ4" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSAT.exe" />
+      <Component Id="cmp0CCB7565672BEADF4BE9BF6834BC5A32" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="98258ecf-60ad-43fb-aec5-f1c5f3310c72">
+        <File Id="filBC151B15E628F832478D42E89BA3B0B0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSATAPI.dll" />
       </Component>
-      <Component Id="cmpxM00eMcvei0KSPAUZlh2FQWTQkM" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="e560195b-6391-43c8-88e6-acb6f61e6976">
-        <File Id="filnB3n7iR313jMjFy6gSf56D2WX34" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSATAPI.dll" />
-      </Component>
-      <Component Id="cmp.jnqGoDdF_iFJo_6PIiHejqnT94" Directory="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Guid="41380587-b5b3-46b4-b5e4-e58915ad3802">
-        <File Id="filqn6q7tzLAfRXxUen_6kAPmDim9s" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt" />
+      <Component Id="cmpB9D89FA06C3A5093BFBA8D6765A911E5" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="af868421-3e89-4b3f-bb8f-33388a580104">
+        <File Id="filC2BE05767D118750F071E69ADCEE9D4A" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt" />
       </Component>
     </ComponentGroup>
   </Fragment>
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
-      <Directory Id="dir3VF5dP_zxECzFLgWvZRzT_8xP0I" Name="OSUpdates" />
+      <Directory Id="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Name="ISOs" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dir6qcjGzMTLDt8yol9DTU_rGQHCMQ" Name="SetupDscClients" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="LABSOURCESDIR">
-      <Directory Id="dir7WLcTQ0qFC0cHx.uoP_NIqE.GCw" Name="ISOs" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dirA9tweYa2yEfjWaX7i_EZs5eEmtg" Name="DotNet35Client" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dirBcIT44jhYUvTdBj8UvP7At.ri1E" Name="PrepareFirstChildDomain" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dirCHTMSkzCEtt5Nlblbh2wyNcF90E" Name="SetupDscPullServer" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="direkzvTffO1N1AsLn5FN2ytYvN4dQ" Name="PrepareRootDomain" />
-    </DirectoryRef>
-  </Fragment>
-  <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dirihEFvFCCplqoEBVilsK9cAJFONk" Name="PrepareSqlServer" />
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dir2EE33670E132C988264FB3374812BBCE" Name="SetupDscClients" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
-      <Directory Id="dirMSSpwAehkfJ4VCtltYuupdp_7Z4" Name="SoftwarePackages" />
+      <Directory Id="dir311D91D38903AE9026EBF00ADD6C4410" Name="SoftwarePackages" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Name="SetupDscPullServer" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dir748E276A50118FBDB70F5F2F1C60FEFD" Name="PrepareRootDomain" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
-      <Directory Id="dirQK6SIbG4bzg3QAWdoA.QCi9CPYg" Name="Tools" />
+      <Directory Id="dir89E871A710737F4B22546DECEF191B40" Name="OSUpdates" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dirA63905768963FE92C75427CB0FE07A7B" Name="PrepareFirstChildDomain" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
-      <Directory Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo" Name="PostInstallationActivities" />
+      <Directory Id="dirB2ACA9410CDB950E0A607387A4CEAC01" Name="PostInstallationActivities" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
-    <DirectoryRef Id="dirSfK1v5lOtFi.Qg_pePMEsZfilFo">
-      <Directory Id="dirw3u8qqAB5qjrCz5DvAZ76lNMfzs" Name="DnsAndTrustSetup" />
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dirBA4353D3575F96F525324853C216E37A" Name="DnsAndTrustSetup" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="LABSOURCESDIR">
+      <Directory Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Name="CustomRoles" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="LABSOURCESDIR">
+      <Directory Id="dirE5BE5518051AF65ED41BF5D6ED532027" Name="Tools" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dirFB8F46DAE95D4FEE6AAF25E7B7E68B1D" Name="DotNet35Client" />
     </DirectoryRef>
   </Fragment>
 

@@ -1,25 +1,25 @@
 @{
-	RootModule = 'HostsFile.psm1'
+	RootModule                = 'HostsFile.psm1'
 	
-	ModuleVersion = '3.5'
+	ModuleVersion             = '4.5.7.0'
 	
-	GUID = '8dc3dd5c-5ae8-4198-a8f2-2157ab6b725c'
+	GUID                      = '8dc3dd5c-5ae8-4198-a8f2-2157ab6b725c'
 	
-	Author = 'Raimund Andree, Per Pedersen'
+	Author                    = 'Raimund Andree, Per Pedersen'
 	
-	CompanyName = 'AutomatedLab Team'
+	CompanyName               = 'AutomatedLab Team'
 	
-	Copyright = '2015'
+	Copyright                 = '2018'
 	
-	Description = 'This module provides management of hosts file content'
+	Description               = 'This module provides management of hosts file content'
 	
-	PowerShellVersion = '3.0'
+	PowerShellVersion         = '3.0'
 	
-	DotNetFrameworkVersion = '4.0'
+	DotNetFrameworkVersion    = '4.0'
 
-	ModuleList = @('HostsFile')
+	ModuleList                = @('HostsFile')
 
-	FunctionsToExport = 'Add-HostEntry', 'Clear-HostFile', 'Get-HostEntry', 'Open-HostFile', 'Remove-HostEntry', 'Save-HostFile'
+	FunctionsToExport         = 'Add-HostEntry', 'Clear-HostFile', 'Get-HostEntry', 'Open-HostFile', 'Remove-HostEntry', 'Save-HostFile'
 	
-	FileList = @('HostsFile.psm1', 'HostsFile.psd1')
+	FileList                  = @('HostsFile.psm1', 'HostsFile.psd1')
 }

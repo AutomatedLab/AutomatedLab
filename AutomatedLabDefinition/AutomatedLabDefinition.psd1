@@ -1,33 +1,63 @@
 ﻿@{
-    RootModule = 'AutomatedLabDefinition.psm1'
+    RootModule             = 'AutomatedLabDefinition.psm1'
     
-    ModuleVersion = '4.1.0.0'
+    ModuleVersion          = '4.5.7.0'
     
-    GUID = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
+    GUID                   = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
-    Author = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
+    Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
-    CompanyName = 'AutomatedLab Team'
+    CompanyName            = 'AutomatedLab Team'
     
-    Copyright = '2016'
+    Copyright              = '2018'
     
-    Description = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
+    Description            = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
     
-    PowerShellVersion = '4.0'
+    PowerShellVersion      = '4.0'
     
     DotNetFrameworkVersion = '4.0'
 
-	ModuleList = @('AutomatedLabDefinition')
+    ModuleList             = @('AutomatedLabDefinition')
     
-    ScriptsToProcess = @('AutomatedLabDefinition.init.ps1')
+    NestedModules          = @('AutomatedLabDefinitionNetwork.psm1')
     
-    NestedModules = @('AutomatedLabDefinitionNetwork.psm1')
+    FileList               = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
     
-    FileList = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
-    
-    RequiredModules = @(
+    RequiredModules        = @(
         'AutomatedLabUnattended'
         'PSLog'
+    )
+
+    CmdletsToExport        = @()
+
+    FunctionsToExport      = @(
+        'Add-LabDiskDefinition'
+        'Add-LabDomainDefinition'
+        'Add-LabIsoImageDefinition'
+        'Add-LabMachineDefinition'
+        'Add-LabVirtualNetworkDefinition'
+        'Export-LabDefinition'
+        'Get-DiskSpeed'
+        'Get-LabAvailableAddresseSpace'
+        'Get-LabDefinition'
+        'Get-LabDomainDefinition'
+        'Get-LabIsoImageDefinition'
+        'Get-LabMachineDefinition'
+        'Get-LabMachineRoleDefinition'
+        'Get-LabPostInstallationActivity'
+        'Get-LabVirtualNetwork'
+        'Get-LabVirtualNetworkDefinition'
+        'Get-LabVolumesOnPhysicalDisks'
+        'New-LabDefinition'
+        'New-LabNetworkAdapterDefinition'
+        'Remove-LabDomainDefinition'
+        'Remove-LabIsoImageDefinition'
+        'Remove-LabMachineDefinition'
+        'Remove-LabVirtualNetworkDefinition'
+        'Repair-LabDuplicateIpAddresses'
+        'Set-LabDefinition'
+        'Set-LabLocalVirtualMachineDiskAuto'
+        'Test-LabDefinition'
     )
 
     PrivateData = @{
@@ -60,8 +90,8 @@
                 CaRoot = 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
                 CaSubordinate = 'ParentCA', 'ParentCALogicalName', 'CACommonName', 'CAType', 'KeyLength', 'CryptoProviderName', 'HashAlgorithmName', 'DatabaseDirectory', 'LogDirectory', 'ValidityPeriod', 'ValidityPeriodUnits', 'CertsValidityPeriod', 'CertsValidityPeriodUnits', 'CRLPeriod', 'CRLPeriodUnits', 'CRLOverlapPeriod', 'CRLOverlapUnits', 'CRLDeltaPeriod', 'CRLDeltaPeriodUnits', 'UseLDAPAIA', 'UseHTTPAIA', 'AIAHTTPURL01', 'AIAHTTPURL02', 'AIAHTTPURL01UploadLocation', 'AIAHTTPURL02UploadLocation', 'UseLDAPCRL', 'UseHTTPCRL', 'CDPHTTPURL01', 'CDPHTTPURL02', 'CDPHTTPURL01UploadLocation', 'CDPHTTPURL02UploadLocation', 'InstallWebEnrollment', 'InstallWebRole', 'CPSURL', 'CPSText', 'InstallOCSP', 'OCSPHTTPURL01', 'OCSPHTTPURL02', 'DoNotLoadDefaultTemplates'
 
-                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet'
-                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet'
+                RootDC = 'DomainFunctionalLevel', 'ForestFunctionalLevel', 'SiteName', 'SiteSubnet', 'NetBiosDomainName'
+                FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet', 'NetBIOSDomainName'
                 DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
 
                 Exchange2013 = 'OrganizationName'
@@ -71,7 +101,7 @@
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
-				DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
+                DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
             }
 
             MandatoryRoleProperties = @{

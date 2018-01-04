@@ -1,0 +1,73 @@
+version: 4.7.1.{build}
+
+environment:
+  twitApi:
+    secure: rYfYoYo9iG/WFkyc3Bj49V0y10dfjsWo1xrncPd1LjY=
+  twiApiSecure:
+    secure: YfqnwXIZJPqn0VGRh1c+Aapjrv7d+uXHGpZiI2j7YYcRKAvWDJxrwUnr2Qy0mSnKwPk1OGJ87butL9a8opCnwQ==
+  accessToken:
+    secure: KNxTrNc7tY0vJgx3NnuCT3DBEHdC5VUWhUyU3H5bPAp7OPWxCVB0VnVmmDcKYKT0BTHa01icm9+cQ08s2+WcbQ==
+  accessTokenSecret:
+    secure: 3UIs4ZFVKTNpi0u425qZtk4tyssfZE3M2Ur5sDEGiFtPY6I7gbrWJX+VmKNK6oup
+  NuGetApiKey:
+    secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
+
+skip_tags: true
+
+install:
+  - git submodule -q update --init --recursive
+
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "{version}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
+before_build:
+  - ps: |
+        Write-Host "Setting version number in files"
+        Add-AppveyorMessage -Message "Setting version number in files" -Category Information
+        gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
+        Write-Host "Calling build script"
+        .\Build.ps1
+
+build:
+  project: AutomatedLab.sln
+
+after_build:
+  - ps: |
+        Write-Host "Locating installer to push as artifact"
+        Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
+        $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
+        Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
+
+deploy:
+  release: AutomatedLab-v$(appveyor_build_version)
+  description: 'Release description'
+  provider: GitHub
+  auth_token:
+    secure: DpSClhfGRzvQY114F1GU9MwQAtey6LVSKc8DkIsQhMEkCSiBN0a/mytsr3y/nsIu # your encrypted token from GitHub
+  artifact: alinstaller            # upload all NuGet packages to release assets
+  draft: false
+  prerelease: false
+  on:
+    branch: master                 # release from master branch only
+
+after_deploy:
+  ps: |
+        Write-Host "Downloading Twitter module"
+        iex (New-Object Net.WebClient).DownloadString("https://gist.githubusercontent.com/stefanstranger/2138dc710576bc40b64b/raw/bfd25a0e7363e9a1906908b0695ebcffaa508276/InstallMyTwitterModule.ps1")
+
+        if (Get-Module MyTwitter -List)
+        {
+          New-MyTwitterConfiguration -APIKey $env:twitApi -APISecret $env:twiApiSecure -AccessToken $env:accessToken -AccessTokenSecret $env:accessTokenSecret -Force -Verbose:$false
+          $tweets = @(
+              "#AutomatedLab just released v{0}! See our changelog at: {1} Get it while it's hot! #PowerShell #Automation"
+              "It's time for a new release :) #AutomatedLab v{0} is out now! Check out what has changed: {1} #PowerShell #Automation"
+              "#AutomatedLab v{0} is now live! Check out our changelog at {1}! #PowerShell #Automation"
+              "What? AutomatedLab has released v{0}? Awesome :) Check out our changelog at {1}! #PowerShell #Automation"
+          )
+          $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
+          #[void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
+        }
