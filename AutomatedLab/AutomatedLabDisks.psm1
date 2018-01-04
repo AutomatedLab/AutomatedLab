@@ -17,10 +17,10 @@ function New-LabBaseImages
     $isos = $lab.Sources.ISOs | Where-Object { $_.IsOperatingSystem }
     $oses = (Get-LabMachine -All | Select-Object).OperatingSystem
     
-	if (-not $lab.Sources.AvailableOperatingSystems)
-	{
-		throw "There isn't a single operating system ISO available in the lab. Please call 'Get-LabAvailableOperatingSystem' to see what AutomatedLab has found and check the LabSources folder location by calling 'Get-LabSourcesLocation'."
-	}
+    if (-not $lab.Sources.AvailableOperatingSystems)
+    {
+        throw "There isn't a single operating system ISO available in the lab. Please call 'Get-LabAvailableOperatingSystem' to see what AutomatedLab has found and check the LabSources folder location by calling 'Get-LabSourcesLocation'."
+    }
 
     $osesProcessed = @()
     $BaseImagesCreated = 0
