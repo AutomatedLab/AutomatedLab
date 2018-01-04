@@ -1,6 +1,6 @@
 ﻿$labName = 'ADRES<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
-$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU HAVE NO PROFILE FILE, CALL Save-AzureRmContext
+$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU DO NOT HAVE A PROFILE FILE, CALL Save-AzureRmContext
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #setting addMemberServer to $true installes an additional server in the lab
