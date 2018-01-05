@@ -79,8 +79,15 @@ Configuration SetupDscPullServer
         xWebConfigKeyValue CorrectDBConnectionStr
         { 
             ConfigSection = 'AppSettings'
-            Key = 'dbconnectionstr'
-            Value = 'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;'
+            Key = 'dbconnectionstr'            
+            Value = if ([System.Environment]::OSVersion.Version -gt '6.3.0.0') #greater then Windows Server 2012 R2
+            {
+                'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;' #does no longer work with Server 2016+
+            }
+            else
+            {
+                'Provider=Microsoft.ACE.OLEDB.12.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;'
+            }
             WebsitePath = 'IIS:\sites\PSDSCPullServer'
             DependsOn = '[xDSCWebService]PSDSCPullServer'
         }
