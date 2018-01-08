@@ -10,6 +10,7 @@ namespace AutomatedLab.Azure
         public string Name { get; set; }
         public string State { get; set; }
         public string TenantId { get; set; }
+        public SerializableDictionary<string, string> Tags { get; set; }
 
         public AzureSubscription()
         { }
