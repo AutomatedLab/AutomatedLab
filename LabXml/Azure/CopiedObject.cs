@@ -47,7 +47,22 @@ namespace AutomatedLab.Azure
                         object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, value);
                         toProperty.SetValue(to, o);
                     }
-                    else if (fromProperty.PropertyType.IsInterface || fromProperty.PropertyType == toProperty.PropertyType || toProperty.PropertyType == typeof(string))
+                    else if (fromProperty.PropertyType.IsGenericType && typeof(Nullable<>) == fromProperty.PropertyType.GetGenericTypeDefinition() && fromProperty.PropertyType.GetGenericArguments()[0].IsEnum)
+                    {
+                        var intValue = 0;
+
+                        var t = typeof(Nullable<>).MakeGenericType(toProperty.PropertyType.GetGenericArguments());
+                        var value = fromProperty.GetValue(input);
+                        if (value != null)
+                        {
+                            intValue = Convert.ToInt32(value);
+                        }
+
+                        object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, intValue);
+                        toProperty.SetValue(to, o);
+                    }
+                    //else if (fromProperty.PropertyType.IsInterface || fromProperty.PropertyType == toProperty.PropertyType || toProperty.PropertyType == typeof(string))
+                    else if (fromProperty.PropertyType == toProperty.PropertyType || toProperty.PropertyType == typeof(string))
                     {
                         //if the target property type is string and the source not, ToString is used to convert the object into a string if the property value if not null
                         if (toProperty.PropertyType == typeof(string) & fromProperty.PropertyType != typeof(string) & fromProperty.GetValue(input) != null)
@@ -71,6 +86,41 @@ namespace AutomatedLab.Azure
                         //if the object is not null, set the target property with it
                         if (@object != null)
                             toProperty.SetValue(to, @object);
+                    }
+                    else if (toProperty.PropertyType.IsGenericType && typeof(IList<>) == fromProperty.PropertyType.GetGenericTypeDefinition() && toProperty.PropertyType.GetGenericArguments()[0].BaseType.IsGenericType && toProperty.PropertyType.GetGenericArguments()[0].BaseType.GetGenericTypeDefinition() == typeof(CopiedObject<>))
+                    {
+                        //get the source value
+                        var value = fromProperty.GetValue(input);
+
+                        //and the generic type according to the target property
+                        var t = typeof(CopiedObject<>).MakeGenericType(toProperty.PropertyType.GetGenericArguments()[0]);
+                        //var itemType = value.GetType().GetGenericArguments()[0];
+
+                        var toList = Activator.CreateInstance(toProperty.PropertyType);
+                        //retrieve the static method "Create" and create a new object
+                        var createMethodInfo = t.GetMethod("Create", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).MakeGenericMethod(toProperty.PropertyType.GetGenericArguments()[0]);
+
+                        //get the property 'Item' from the input property list
+                        var itemProp = value.GetType().GetProperty("Item");
+                        //get the length of the input property list
+                        var length = (int)value.GetType().GetProperty("Count").GetValue(value);
+                        //get the 'Add' method of the toList
+                        var addMethod = toProperty.PropertyType.GetMethod("Add", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public);
+
+                        //iterate over the incoming list
+                        for (int i = 0; i < length; i++)
+                        {
+                            //get the current value from the incoming list
+                            var o = itemProp.GetValue(value, new object[] { i });
+                            //create a new object of the destination type for each incoming object
+                            var @object = createMethodInfo.Invoke(null, new[] { o });
+                            //and add it to the toList
+                            addMethod.Invoke(toList, new object[] { @object });
+                        }
+
+                        //if the length is not 0, set the target property with it
+                        if (length > 0)
+                            toProperty.SetValue(to, toList);
                     }
                     else if (toProperty.PropertyType.IsArray && fromProperty.PropertyType.IsArray)
                     {
@@ -97,7 +147,7 @@ namespace AutomatedLab.Azure
                                 //if the object is not null, set the target property with it
                                 if (@object != null)
                                     ((System.Collections.IList)toArray)[i] = @object;
-                                    //toProperty.SetValue(toArray, @object, new object[] { i });
+                                //toProperty.SetValue(toArray, @object, new object[] { i });
                             }
                         }
 
