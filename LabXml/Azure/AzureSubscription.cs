@@ -15,26 +15,6 @@ namespace AutomatedLab.Azure
         public AzureSubscription()
         { }
 
-        public static AzureSubscription Create(object input)
-        {
-            return Create<AzureSubscription>(input);
-        }
-
-        public static IEnumerable<AzureSubscription> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureSubscription>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
-
         public override string ToString()
         {
             return Name;

@@ -5,7 +5,7 @@ using System.Linq;
 namespace AutomatedLab.Azure
 {
     [Serializable]
-    public class CopiedObject<T>
+    public class CopiedObject<T> where T : CopiedObject<T>, new()
     {
         private List<string> nonMappedProperties;
 
@@ -19,8 +19,34 @@ namespace AutomatedLab.Azure
             nonMappedProperties = new List<string>();
         }
 
-        protected static T Create<T>(object input) where T : CopiedObject<T>, new()
+        public void Merge(T input)
         {
+            //run over all properties and take the property value from the input object if it is empty on the current object
+            var fromProperties = input.GetType().GetProperties();
+            var toProperties = GetType().GetProperties();
+
+            foreach (var toProperty in toProperties)
+            {
+                //get the property with the same name, the same generic argument count
+                var fromProperty = fromProperties.Where(p => p.Name == toProperty.Name &&
+                    p.PropertyType.GenericTypeArguments.Count() == toProperty.PropertyType.GenericTypeArguments.Count()).FirstOrDefault();
+
+                var fromValue = fromProperty.GetValue(input);
+                var toValue = toProperty.GetValue(this);
+
+                if (fromProperty != null && ((toValue == null && fromValue != null)))
+                {
+                    toProperty.SetValue(this, fromValue);
+                }
+            }
+
+        }
+
+        public static T Create(object input) 
+        {
+            if (input == null)
+                throw new ArgumentException("Input cannot be null");
+
             T to = new T();
 
             if (typeof(System.Management.Automation.PSObject) == input.GetType())
@@ -98,7 +124,7 @@ namespace AutomatedLab.Azure
 
                         var toList = Activator.CreateInstance(toProperty.PropertyType);
                         //retrieve the static method "Create" and create a new object
-                        var createMethodInfo = t.GetMethod("Create", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic).MakeGenericMethod(toProperty.PropertyType.GetGenericArguments()[0]);
+                        var createMethodInfo = t.GetMethod("Create", new Type[] { toProperty.PropertyType });
 
                         //get the property 'Item' from the input property list
                         var itemProp = value.GetType().GetProperty("Item");
@@ -165,6 +191,21 @@ namespace AutomatedLab.Azure
             }
 
             return to;
+        }
+
+        public static IEnumerable<T> Create(object[] input) 
+        {
+            if (input != null)
+            {
+                foreach (var item in input)
+                {
+                    yield return Create(item);
+                }
+            }
+            else
+            {
+                yield break;
+            }
         }
     }
 }

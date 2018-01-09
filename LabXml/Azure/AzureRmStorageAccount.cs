@@ -7,7 +7,6 @@ namespace AutomatedLab.Azure
     {
         public string Location { get; set; }
         public string StorageAccountName { get; set; }
-
         public DateTime? CreationTime { get; set; }
         public string Id { get; set; }
         public DateTime? LastGeoFailoverTime { get; set; }
@@ -22,26 +21,6 @@ namespace AutomatedLab.Azure
 
         public AzureRmStorageAccount()
         { }
-
-        public static AzureRmStorageAccount Create(object input)
-        {
-            return Create<AzureRmStorageAccount>(input);
-        }
-
-        public static IEnumerable<AzureRmStorageAccount> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureRmStorageAccount>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
 
         public override string ToString()
         {

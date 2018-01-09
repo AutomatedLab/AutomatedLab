@@ -16,26 +16,6 @@ namespace AutomatedLab.Azure
         public AzureOSImage()
         { }
 
-        public static AzureOSImage Create(object input)
-        {
-            return Create<AzureOSImage>(input);
-        }
-
-        public static IEnumerable<AzureOSImage> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureOSImage>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
-
         public override string ToString()
         {
             return Offer;

@@ -11,26 +11,6 @@ namespace AutomatedLab.Azure
         public AzureAccount()
         { }
 
-        public static AzureAccount Create(object input)
-        {
-            return Create<AzureAccount>(input);
-        }
-
-        public static IEnumerable<AzureAccount> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureAccount>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
-
         public override string ToString()
         {
             return Id;

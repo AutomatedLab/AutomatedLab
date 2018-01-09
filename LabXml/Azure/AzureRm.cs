@@ -7,7 +7,6 @@ namespace AutomatedLab.Azure
     public class AzureRm
     {
         public List<AzureRmService> Services { get; set; }
-
         public List<AzureRmServerFarmWithRichSku> ServicePlans { get; set; }
 
         public AzureRm()

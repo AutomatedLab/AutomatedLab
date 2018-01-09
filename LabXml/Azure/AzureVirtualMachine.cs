@@ -37,26 +37,6 @@ namespace AutomatedLab.Azure
         public AzureVirtualMachine()
         { }
 
-        public static AzureVirtualMachine Create(object input)
-        {
-            return Create<AzureVirtualMachine>(input);
-        }
-
-        public static IEnumerable<AzureVirtualMachine> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureVirtualMachine>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
-
         public override string ToString()
         {
             return Name;

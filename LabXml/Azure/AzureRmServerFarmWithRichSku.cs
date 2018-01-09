@@ -13,7 +13,6 @@ namespace AutomatedLab.Azure
         public string GeoRegion { get; set; }
         //skipping for now
         //HostingEnvironmentProfile Property   Microsoft.Azure.Management.WebSites.Models.HostingEnvironmentProfile HostingEnvironmentProfile
-
         public string Id { get; set; }
         public string Location { get; set; }
         public int? MaximumNumberOfWorkers { get; set; }
@@ -29,7 +28,6 @@ namespace AutomatedLab.Azure
         public SerializableDictionary<string, string> Tags { get; set; }
         public string Type { get; set; }
         public string WorkerTierName { get; set; }
-
         //non-standard properties
         public string WorkerSize { get; set; }
         public string Tier { get; set; }
@@ -37,21 +35,6 @@ namespace AutomatedLab.Azure
 
         public AzureRmServerFarmWithRichSku()
         { }
-
-        public static IEnumerable<AzureRmServerFarmWithRichSku> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureRmServerFarmWithRichSku>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
 
         public override string ToString()
         {

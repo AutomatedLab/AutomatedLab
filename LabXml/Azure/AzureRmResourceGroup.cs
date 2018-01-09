@@ -16,26 +16,6 @@ namespace AutomatedLab.Azure
         public AzureRmResourceGroup()
         { }
 
-        public static AzureRmResourceGroup Create(object input)
-        {
-            return Create<AzureRmResourceGroup>(input);
-        }
-
-        public static IEnumerable<AzureRmResourceGroup> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureRmResourceGroup>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
-
         public override string ToString()
         {
             return ResourceGroupName;
