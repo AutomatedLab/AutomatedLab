@@ -799,7 +799,7 @@ function Install-Lab
         $jobs | Wait-Job | Out-Null
     }
 
-    if ($AzureServices)
+    if (($AzureServices -or $performAll) -and (Get-LabAzureWebApp))
     {
         Write-ScreenInfo -Message 'Starting deployment of Azure services' -TaskStart
 

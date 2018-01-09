@@ -16,17 +16,24 @@ function Install-LabAzureServices
     Write-ScreenInfo -Message "Starting Azure Services Deplyment"
     
     $services = Get-LabAzureWebApp
+    $servicePlans = Get-LabAzureAppServicePlan
     
     if (-not $services)
     {
         Write-ScreenInfo "No Azure service defined, exiting."
         Write-LogFunctionExit
-        break
+        return
     }
-    
-    Write-ScreenInfo "There are $($services.Count) Azure services defined."
-    
-        
+
+    Write-ScreenInfo "There are $($servicePlans.Count) Azure App Services Plans defined. Starting deployment." -TaskStart
+    $servicePlans | New-LabAzureAppServicePlan
+    Write-ScreenInfo 'Finished creating Azure App Services Plans.' -TaskEnd
+
+    Write-ScreenInfo "There are $($services.Count) Azure Web Apps defined. Starting deployment." -TaskStart
+    $services | New-LabAzureWebApp
+    Write-ScreenInfo 'Finished creating Azure Web Apps.' -TaskEnd
+
+    Write-LogFunctionExit
 }
 
 #region New-LabAzureAppServicePlan
@@ -46,8 +53,7 @@ function New-LabAzureAppServicePlan
     begin
     {
         Write-LogFunctionEntry
-        
-        $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
+        $script:lab = Get-Lab
         if (-not $lab)
         {
             Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
@@ -59,38 +65,36 @@ function New-LabAzureAppServicePlan
     {
         foreach ($planName in $Name)
         {
-
-            $plan = Get-LabAzureWebApp -Name $planName
+            $plan = Get-LabAzureAppServicePlan -Name $planName
             
             if (-not (Get-LabAzureResourceGroup -ResourceGroupName $plan.ResourceGroup))
             {
                 New-LabAzureRmResourceGroup -ResourceGroupNames $plan.ResourceGroup -LocationName $plan.Location
             }
             
-            if ((Get-AzureRmWebApp -Name $plan.Name -ResourceGroupName $plan.ResourceGroup))
+            if ((Get-AzureRmAppServicePlan -Name $plan.Name -ResourceGroupName $plan.ResourceGroup -ErrorAction SilentlyContinue))
             {
                 Write-Error "The Azure Application Service Plan '$planName' does already exist in $($plan.ResourceGroup)"
                 return
                 
             }
 
-            New-AzureRmAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
-            $plan = Get-AzureRmAppServicePlan -Name $plan.Name -ResourceGroupName $plan.ResourceGroup
+            $plan = New-AzureRmAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
             $plan = [AutomatedLab.Azure.AzureRmServerFarmWithRichSku]::Create($plan)
-            
-            Remove-LabAzureAppServicePlan -Name $plan.Name -ErrorAction SilentlyContinue
-            $lab.AzureResources.ServicePlans.Add($plan)
-            
+            $existingPlan = Get-LabAzureAppServicePlan -Name $plan.Name
+            $existingPlan.Merge($plan)
+
             if ($PassThru)
             {
-                $webApp
+                $plan
             }
         }
+    }
     
-        end
-        {
-            Write-LogFunctionExit
-        }
+    end
+    {
+        Export-Lab #to update the XML files with the new data
+        Write-LogFunctionExit
     }
 }
 #endregion New-LabAzureAppServicePlan
@@ -113,7 +117,7 @@ function New-LabAzureWebApp
     {
         Write-LogFunctionEntry
         
-        $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
+        $script:lab = Get-Lab
         if (-not $lab)
         {
             Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
@@ -138,23 +142,22 @@ function New-LabAzureWebApp
                 New-LabAzureAppServicePlan -Name $app.ApplicationServicePlan
             }
 
-            New-AzureRmWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.Name -ResourceGroupName $app.ResourceGroup
-            $webApp = Get-AzureRmWebApp -Name $app.Name -ResourceGroupName $app.ResourceGroup
+            $webApp = New-AzureRmWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.Name -ResourceGroupName $app.ResourceGroup
             $webApp = [AutomatedLab.Azure.AzureRmService]::Create($webApp)
-            
-            Remove-LabAzureWebApp -Name $webApp.Name -ErrorAction SilentlyContinue
-            $lab.AzureResources.Services.Add($webApp)
+            $existingWebApp = Get-LabAzureWebApp -Name $webApp.Name
+            $existingWebApp.Merge($webApp)
             
             if ($PassThru)
             {
                 $webApp
             }
         }
+    }
     
-        end
-        {
-            Write-LogFunctionExit
-        }
+    end
+    {
+        Export-Lab #to update the XML files with the new data
+        Write-LogFunctionExit
     }
 }
 #endregion New-LabAzureWebApp
@@ -184,16 +187,12 @@ function Get-LabAzureAppServicePlan
         }
         
         $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
-        
-        if ($PSCmdlet.ParameterSetName -eq 'All')
-        {
-            $lab.AzureResources.ServicePlans
-            break
-        }
     }
     
     process
     {
+        if (-not $Name) { return }
+        
         $sp = $lab.AzureResources.ServicePlans | Where-Object Name -eq $Name
         
         if (-not $sp)
@@ -208,6 +207,11 @@ function Get-LabAzureAppServicePlan
     
     end
     {
+        if ($PSCmdlet.ParameterSetName -eq 'All')
+        {
+            $lab.AzureResources.ServicePlans
+        }
+        
         Write-LogFunctionExit
     }
 }
@@ -230,17 +234,13 @@ function Get-LabAzureWebApp
     {
         Write-LogFunctionEntry
         
-        $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
-        
-        if ($PSCmdlet.ParameterSetName -eq 'All')
-        {
-            $lab.AzureResources.Services
-            break
-        }
+        $script:lab = Get-Lab
     }
     
     process
     {
+        if (-not $Name) { return }
+        
         $sa = $lab.AzureResources.Services | Where-Object Name -eq $Name
         
         if (-not $sa)
@@ -255,6 +255,11 @@ function Get-LabAzureWebApp
     
     end
     {
+        if ($PSCmdlet.ParameterSetName -eq 'All')
+        {
+            $lab.AzureResources.Services
+        }
+            
         Write-LogFunctionExit
     }
 }
@@ -274,7 +279,7 @@ function Remove-LabAzureWebApp
     {
         Write-LogFunctionEntry
         
-        $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
+        $script:lab = Get-Lab
     }
     
     process
@@ -312,7 +317,7 @@ function Remove-LabAzureAppServicePlan
     {
         Write-LogFunctionEntry
         
-        $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
+        $script:lab = Get-Lab
     }
     
     process

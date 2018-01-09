@@ -122,10 +122,10 @@ function Add-LabAzureAppServicePlanDefinition
         [string]$Location,
 
         [ValidateSet('Basic', 'Free', 'Premium', 'Shared', 'Standard')]
-        [string]$Tier,
+        [string]$Tier = 'Free',
         
         [ValidateSet('ExtraLarge', 'Large', 'Medium', 'Small')]
-        [string]$WorkerSize,
+        [string]$WorkerSize = 'Small',
         
         [int]$NumberofWorkers,
         
