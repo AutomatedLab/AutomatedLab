@@ -297,15 +297,19 @@
               </Component>
 
               <Directory Id="InstallFolder_AutomatedLabTools" Name="Tools">
+                <Component Id="AutomatedLabToolsComponent" Guid="bad7f1ef-570d-4915-b488-0a3fe92e02f8">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabToolsComponent" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\Tools\FluentFTP.dll" />
+                </Component>
+                
                 <Directory Id="InstallFolder_AutomatedLabToolsHyperV" Name="HyperV">
-                  <Component Id="AutomatedLabToolsComponent" Guid="d69dc781-80ad-4fd5-9b36-6908fae51e50">
-
-                    <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabToolsComponent" />
-
+                  <Component Id="AutomatedLabHypervToolsComponent" Guid="d69dc781-80ad-4fd5-9b36-6908fae51e50">
+                    <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabHypervToolsComponent" />
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
                     <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\nvspbind.exe" />
                   </Component>
+                  
                 </Directory>
               </Directory>
 
@@ -482,6 +486,7 @@
         <ComponentRef Id='AutomatedLabNotificationsComponentPublic' />
         <ComponentRef Id='AutomatedLabNotificationsComponentPrivate' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
+        <ComponentRef Id='AutomatedLabHypervToolsComponent'/>
       </Feature>
 
       <Feature Id='LabSources' Title='Lab Sources' Description='Creates a folder structure that all samples scripts are based on and provides some lab preparation scripts.' Level='1' ConfigurableDirectory='LABSOURCESDIR'>
