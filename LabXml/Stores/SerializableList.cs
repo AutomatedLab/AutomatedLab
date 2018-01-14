@@ -21,6 +21,11 @@ namespace AutomatedLab
             Metadata = new List<string>();
         }
 
+        public SerializableList(IList<T> list)
+            : base(list)
+        {
+        }
+
         #region IXmlSerializable Members
         public System.Xml.Schema.XmlSchema GetSchema()
         {
