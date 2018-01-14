@@ -855,7 +855,11 @@ function New-LabAzureRmResourceGroup
             continue
         }
 
-        $result = New-AzureRmResourceGroup -Name $name -Location $LocationName
+        $result = New-AzureRmResourceGroup -Name $name -Location $LocationName -Tag @{ 
+            AutomatedLab = $script:lab.Name
+            CreationTime = Get-Date
+        }
+
         $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
         if ($PassThru)
         {
