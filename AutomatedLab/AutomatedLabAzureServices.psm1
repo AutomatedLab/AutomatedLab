@@ -41,8 +41,7 @@ function New-LabAzureAppServicePlan
 {
     # .ExternalHelp AutomatedLab.Help.xml
     
-    [OutputType([AutomatedLab.Azure.AzureRmService])]
-    
+    [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -80,20 +79,24 @@ function New-LabAzureAppServicePlan
             }
 
             $plan = New-AzureRmAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
-            $plan = [AutomatedLab.Azure.AzureRmServerFarmWithRichSku]::Create($plan)
-            $existingPlan = Get-LabAzureAppServicePlan -Name $plan.Name
-            $existingPlan.Merge($plan)
 
-            if ($PassThru)
+            if ($plan)
             {
-                $plan
+                $plan = [AutomatedLab.Azure.AzureRmServerFarmWithRichSku]::Create($plan)
+                $existingPlan = Get-LabAzureAppServicePlan -Name $plan.Name
+                $existingPlan.Merge($plan)
+
+                if ($PassThru)
+                {
+                    $plan
+                }
             }
         }
     }
     
     end
     {
-        Export-Lab #to update the XML files with the new data
+        Export-Lab
         Write-LogFunctionExit
     }
 }
@@ -105,7 +108,6 @@ function New-LabAzureWebApp
     # .ExternalHelp AutomatedLab.Help.xml
     
     [OutputType([AutomatedLab.Azure.AzureRmService])]
-    
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -129,7 +131,6 @@ function New-LabAzureWebApp
     {
         foreach ($serviceName in $Name)
         {
-
             $app = Get-LabAzureWebApp -Name $serviceName
             
             if (-not (Get-LabAzureResourceGroup -ResourceGroupName $app.ResourceGroup))
@@ -142,21 +143,25 @@ function New-LabAzureWebApp
                 New-LabAzureAppServicePlan -Name $app.ApplicationServicePlan
             }
 
-            $webApp = New-AzureRmWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.Name -ResourceGroupName $app.ResourceGroup
-            $webApp = [AutomatedLab.Azure.AzureRmService]::Create($webApp)
-            $existingWebApp = Get-LabAzureWebApp -Name $webApp.Name
-            $existingWebApp.Merge($webApp)
-            
-            if ($PassThru)
+            $webApp = New-AzureRmWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.ApplicationServicePlan -ResourceGroupName $app.ResourceGroup
+
+            if ($webApp)
             {
-                $webApp
+                $webApp = [AutomatedLab.Azure.AzureRmService]::Create($webApp)
+                $existingWebApp = Get-LabAzureWebApp -Name $webApp.Name
+                $existingWebApp.Merge($webApp)
+            
+                if ($PassThru)
+                {
+                    $webApp
+                }
             }
         }
     }
     
     end
     {
-        Export-Lab #to update the XML files with the new data
+        Export-Lab
         Write-LogFunctionExit
     }
 }
@@ -166,10 +171,9 @@ function New-LabAzureWebApp
 function Get-LabAzureAppServicePlan
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+  
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
-    
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name
@@ -224,7 +228,6 @@ function Get-LabAzureWebApp
     
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
-    
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name
@@ -269,7 +272,6 @@ function Get-LabAzureWebApp
 function Remove-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name
@@ -284,20 +286,28 @@ function Remove-LabAzureWebApp
     
     process
     {
-        $sa = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
         
-        if (-not $sa)
+        if (-not $service)
         {
-            Write-Error "The Azure App Service '$Name' does not exist."
+            Write-Error "The Azure App Service '$Name' does not exist in the lab."
         }
         else
         {
-            $lab.AzureResources.Services.Remove($sa)
+            $s = Get-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction SilentlyContinue
+
+            if ($s)
+            {
+                $s | Remove-AzureRmWebApp -Force
+            }
+
+            $lab.AzureResources.Services.Remove($service)
         }
     }
     
     end
     {
+        Export-Lab
         Write-LogFunctionExit
     }
 }
@@ -322,21 +332,175 @@ function Remove-LabAzureAppServicePlan
     
     process
     {
-        $sp = $lab.AzureResources.ServicePlans | Where-Object Name -eq $Name
+        $servicePlan = $lab.AzureResources.ServicePlans | Where-Object Name -eq $Name
         
-        if (-not $sp)
+        if (-not $servicePlan)
         {
             Write-Error "The Azure App Service Plan '$Name' does not exist."
         }
         else
         {
-            $lab.AzureResources.ServicePlans.Remove($sp)
+            $sp = Get-AzureRmAppServicePlan -Name $servicePlan.Name -ResourceGroupName $servicePlan.ResourceGroup -ErrorAction SilentlyContinue
+
+            if ($sp)
+            {
+                $sp | Remove-AzureRmAppServicePlan -Force
+            }
+            $lab.AzureResources.ServicePlans.Remove($servicePlan)
         }
     }
     
     end
     {
+        Export-Lab
         Write-LogFunctionExit
     }
 }
 #endregion Remove-LabAzureAppServicePlan
+
+#region Start-LabAzureWebApp
+function Start-LabAzureWebApp
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    
+    [OutputType([AutomatedLab.Azure.AzureRmService])]
+    param (
+        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+        
+        [switch]$PassThru
+    )
+    
+    begin
+    {
+        Write-LogFunctionEntry
+        $script:lab = Get-Lab
+        if (-not $lab)
+        {
+            Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+            return
+        }
+    }
+
+    process
+    {
+        if (-not $Name) { return }
+        
+        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        
+        if (-not $service)
+        {
+            Write-Error "The Azure App Service '$Name' does not exist."
+        }
+        else
+        {
+            Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup
+        }
+    }
+
+    end
+    {
+        Write-LogFunctionExit
+    }
+}
+#endregion Start-LabAzureWebApp
+
+#region Stop-LabAzureWebApp
+function Stop-LabAzureWebApp
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    
+    [OutputType([AutomatedLab.Azure.AzureRmService])]
+    param (
+        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+        
+        [switch]$PassThru
+    )
+    
+    begin
+    {
+        Write-LogFunctionEntry
+        $script:lab = Get-Lab
+        if (-not $lab)
+        {
+            Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+            return
+        }
+    }
+
+    process
+    {
+        if (-not $Name) { return }
+        
+        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        
+        if (-not $service)
+        {
+            Write-Error "The Azure App Service '$Name' does not exist."
+        }
+        else
+        {
+            Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup
+        }
+    }
+
+    end
+    {
+        Write-LogFunctionExit
+    }
+}
+#endregion Stop-LabAzureWebApp
+
+#region Get-LabAzureWebAppStatus
+function Get-LabAzureWebAppStatus
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    
+    [OutputType([System.Collections.Hashtable])]
+    param (
+        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+        
+        [switch]$PassThru
+    )
+    
+    begin
+    {
+        Write-LogFunctionEntry
+        $script:lab = Get-Lab
+        if (-not $lab)
+        {
+            Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+            return
+        }
+        $result = @{}
+    }
+
+    process
+    {
+        if (-not $Name) { return }
+        
+        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        
+        if (-not $service)
+        {
+            Write-Error "The Azure App Service '$Name' does not exist."
+        }
+        else
+        {
+            $s = Get-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction SilentlyContinue
+            if ($s)
+            {
+                $result.Add($s.Name, $s.State)
+            }
+        }
+    }
+
+    end
+    {
+        $result
+        Write-LogFunctionExit
+    }
+}
+#Get-LabAzureWebAppStatus
