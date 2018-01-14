@@ -66,7 +66,7 @@ namespace TestClient
 
                 try
                 {
-                    var result = PowerShellHelper.InvokeCommand(scriptContent, out errors);
+                    var result = PowerShellHelper.InvokeCommand(scriptContent);
 
                     var labXmlPath = System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Lab.xml");
                     var labPaths = new List<string>() { System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Machines.xml") };
