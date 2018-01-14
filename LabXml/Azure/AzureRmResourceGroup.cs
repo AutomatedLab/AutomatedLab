@@ -12,6 +12,7 @@ namespace AutomatedLab.Azure
         public string ResourceId { get; set; }
         public string TagsTable { get; set; }
         public SerializableDictionary<string,string> Tags { get; set; }
+        public SerializableList<string> SomeList { get; set; }
 
         public AzureRmResourceGroup()
         { }

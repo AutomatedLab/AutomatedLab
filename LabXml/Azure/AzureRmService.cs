@@ -6,10 +6,23 @@ using System.Threading.Tasks;
 
 namespace AutomatedLab.Azure
 {
+    public enum UsageState
+    {
+        Normal,
+        Exceeded
+    }
+
+    public enum SiteAvailabilityState
+    {
+        Normal,
+        Limited,
+        DisasterRecoveryMode
+    }
+
     [Serializable]
     public class AzureRmService : CopiedObject<AzureRmService>
     {
-        public int? AvailabilityState { get; set; } //System.Nullable[Microsoft.Azure.Management.WebSites.Models.SiteAvailabilityState]
+        public SiteAvailabilityState? AvailabilityState { get; set; } //System.Nullable[Microsoft.Azure.Management.WebSites.Models.SiteAvailabilityState]
         public bool? ClientAffinityEnabled { get; set; }
         public bool? ClientCertEnabled { get; set; }
         //ignoring this for now
@@ -45,7 +58,7 @@ namespace AutomatedLab.Azure
         public string TargetSwapSlot { get; set; }
         public SerializableList<string> TrafficManagerHostNames { get; set; }
         public string Type { get; set; }
-        public int? UsageState { get; set; }
+        public UsageState? UsageState { get; set; }
         //non-standard properties
         public string ApplicationServicePlan { get; set; }
 

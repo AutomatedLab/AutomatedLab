@@ -12,6 +12,7 @@ namespace AutomatedLab.Azure
         public int? MaxDataDiskCount { get; set; }
         public int ResourceDiskSizeInMB { get; set; }
         public int OSDiskSizeInMB { get; set; }
+
         public AzureRmVmSize()
         { }
 

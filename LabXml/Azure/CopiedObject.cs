@@ -30,6 +30,7 @@ namespace AutomatedLab.Azure
         ///     This method works similarly to <see cref="Convert.ChangeType(object, Type)"/> with the addition of support
         ///     for enumerations and <see cref="Nullable{T}"/> where the underlying type is <see cref="IConvertible"/>.
         /// </remarks>
+        /// 
         private static T ChangeType<T>(object value)
         {
 

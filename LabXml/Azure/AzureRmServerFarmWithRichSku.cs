@@ -6,6 +6,12 @@ using System.Threading.Tasks;
 
 namespace AutomatedLab.Azure
 {
+    public enum StatusOptions
+    {
+        Ready,
+        Pending
+    }
+
     [Serializable]
     public class AzureRmServerFarmWithRichSku : CopiedObject<AzureRmServerFarmWithRichSku>
     {
@@ -23,7 +29,7 @@ namespace AutomatedLab.Azure
         public string ServerFarmWithRichSkuName { get; set; }
 
         public AzureRmSkuDescription AzureRmSkuDescription { get; set; }
-        public int? Status { get; set; }
+        public StatusOptions? Status { get; set; }
         public string Subscription { get; set; }
         public SerializableDictionary<string, string> Tags { get; set; }
         public string Type { get; set; }
