@@ -79,7 +79,7 @@ namespace AutomatedLab.Azure
             nonMappedProperties = new List<string>();
         }
 
-        public void Merge(object input)
+        public void Merge(T input)
         {
             //run over all properties and take the property value from the input object if it is empty on the current object
             var fromProperties = input.GetType().GetProperties();
@@ -94,12 +94,17 @@ namespace AutomatedLab.Azure
                 var fromValue = fromProperty.GetValue(input);
                 var toValue = toProperty.GetValue(this);
 
-                if (fromProperty != null)
+                if (fromProperty != null && toProperty.CanWrite)
                 {
                     toProperty.SetValue(this, fromValue);
                 }
             }
+        }
 
+        public void Merge(object input)
+        {
+            var o = Create(input);
+            Merge(o);
         }
 
         public static T Create(object input)
