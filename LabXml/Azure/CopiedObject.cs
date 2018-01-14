@@ -160,7 +160,7 @@ namespace AutomatedLab.Azure
                         }
 
                         //dynamic type casting
-                        var changeTypeMethodInfo = typeof(CopiedObject<T>).GetMethod("ChangeType", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                        var changeTypeMethodInfo = typeof(CopiedObject<T>).GetMethod("ChangeType", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
                         changeTypeMethodInfo = changeTypeMethodInfo.MakeGenericMethod(toProperty.PropertyType.GenericTypeArguments[0]);
                         var o = changeTypeMethodInfo.Invoke(null, new object[] { intValue });
 
