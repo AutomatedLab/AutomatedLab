@@ -7,6 +7,65 @@ namespace AutomatedLab.Azure
     [Serializable]
     public class CopiedObject<T> where T : CopiedObject<T>, new()
     {
+        /// <summary>
+        ///     Returns an object of type <typeparamref name="T"/> whose value is equivalent to that of the specified 
+        ///     object.
+        /// </summary>
+        /// <typeparam name="T">
+        ///     The output type.
+        /// </typeparam>
+        /// <param name="value">
+        ///     An object that implements <see cref="IConvertible"/> or is <see cref="Nullable{T}"/> where the underlying
+        ///     type implements <see cref="IConvertible"/>.
+        /// </param>
+        /// <returns>
+        ///     An object whose type is <typeparamref name="T"/> and whose value is equivalent to <paramref name="value"/>.
+        /// </returns>
+        /// <exception cref="System.ArgumentException">
+        ///     The specified value is not defined by the enumeration (when <typeparamref name="T"/> is an enum, or Nullable{T}
+        ///     where the underlying type is an enum).
+        /// </exception>
+        /// <exception cref="System.InvalidCastException"
+        /// <remarks>
+        ///     This method works similarly to <see cref="Convert.ChangeType(object, Type)"/> with the addition of support
+        ///     for enumerations and <see cref="Nullable{T}"/> where the underlying type is <see cref="IConvertible"/>.
+        /// </remarks>
+        private static T ChangeType<T>(object value)
+        {
+
+            Type type = typeof(T);
+            Type underlyingNullableType = Nullable.GetUnderlyingType(type);
+
+            if ((underlyingNullableType ?? type).IsEnum)
+            {
+
+                // The specified type is an enum or Nullable{T} where T is an enum.
+
+                T convertedEnum = (T)Enum.ToObject(underlyingNullableType ?? type, value);
+
+                if (!Enum.IsDefined(underlyingNullableType ?? type, convertedEnum))
+                {
+                    throw new ArgumentException("The specified value is not defined by the enumeration.", "value");
+                }
+
+                return convertedEnum;
+            }
+            else if (type.IsValueType && underlyingNullableType == null)
+            {
+
+                // The specified type is a non-nullable value type.
+
+                if (value == null || DBNull.Value.Equals(value))
+                {
+                    throw new InvalidCastException("Cannot convert a null value to a non-nullable type.");
+                }
+
+                return (T)Convert.ChangeType(value, type);
+            }
+
+            // The specified type is a reference type or Nullable{T} where T is not an enum.
+            return (value == null || DBNull.Value.Equals(value)) ? default(T) : (T)Convert.ChangeType(value, underlyingNullableType ?? type);
+        }
         private List<string> nonMappedProperties;
 
         public List<string> NonMappedProperties
@@ -19,7 +78,7 @@ namespace AutomatedLab.Azure
             nonMappedProperties = new List<string>();
         }
 
-        public void Merge(T input)
+        public void Merge(object input)
         {
             //run over all properties and take the property value from the input object if it is empty on the current object
             var fromProperties = input.GetType().GetProperties();
@@ -34,7 +93,7 @@ namespace AutomatedLab.Azure
                 var fromValue = fromProperty.GetValue(input);
                 var toValue = toProperty.GetValue(this);
 
-                if (fromProperty != null && ((toValue == null && fromValue != null)))
+                if (fromProperty != null)
                 {
                     toProperty.SetValue(this, fromValue);
                 }
@@ -42,7 +101,7 @@ namespace AutomatedLab.Azure
 
         }
 
-        public static T Create(object input) 
+        public static T Create(object input)
         {
             if (input == null)
                 throw new ArgumentException("Input cannot be null");
@@ -65,15 +124,30 @@ namespace AutomatedLab.Azure
 
                 if (fromProperty != null)
                 {
-                    //if the type of the fromProperty is a Dictionary of the same type than the SerializableDictionary of the toProperty
-                    if (fromProperty.PropertyType.IsGenericType && typeof(IDictionary<,>) == fromProperty.PropertyType.GetGenericTypeDefinition() && typeof(IDictionary<,>).MakeGenericType(toProperty.PropertyType.GetGenericArguments()) == fromProperty.PropertyType)
+                    //if the type of the fromProperty is a Dictionary<,> of the same type than the SerializableDictionary of the toProperty
+                    if (fromProperty.PropertyType.IsGenericType &&
+                        fromProperty.PropertyType.GetGenericArguments().Length == 2 &&
+                        fromProperty.PropertyType.GetInterfaces().Contains(typeof(IDictionary<,>).MakeGenericType(fromProperty.PropertyType.GenericTypeArguments)))
                     {
                         var t = typeof(SerializableDictionary<,>).MakeGenericType(toProperty.PropertyType.GetGenericArguments());
                         var value = fromProperty.GetValue(input);
                         object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, value);
                         toProperty.SetValue(to, o);
                     }
-                    else if (fromProperty.PropertyType.IsGenericType && typeof(Nullable<>) == fromProperty.PropertyType.GetGenericTypeDefinition() && fromProperty.PropertyType.GetGenericArguments()[0].IsEnum)
+                    //if the type of the fromProperty is a List<> of the same type than the SerializableDictionary of the toProperty
+                    else if (fromProperty.PropertyType.IsGenericType &&
+                        fromProperty.PropertyType.GetGenericArguments().Length == 1 &&
+                        fromProperty.PropertyType.GetInterfaces().Contains(typeof(IList<>).MakeGenericType(fromProperty.PropertyType.GenericTypeArguments)))
+                    {
+                        var t = typeof(SerializableList<>).MakeGenericType(toProperty.PropertyType.GetGenericArguments());
+                        var value = fromProperty.GetValue(input);
+                        object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, value);
+                        toProperty.SetValue(to, o);
+                    }
+                    //if the type of fromProperty is a Nullable<Enum>
+                    else if (fromProperty.PropertyType.IsGenericType &&
+                        typeof(Nullable<>) == fromProperty.PropertyType.GetGenericTypeDefinition() &&
+                        fromProperty.PropertyType.GetGenericArguments()[0].IsEnum)
                     {
                         var intValue = 0;
 
@@ -84,10 +158,26 @@ namespace AutomatedLab.Azure
                             intValue = Convert.ToInt32(value);
                         }
 
-                        object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, intValue);
+                        //dynamic type casting
+                        var changeTypeMethodInfo = typeof(CopiedObject<T>).GetMethod("ChangeType", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public);
+                        changeTypeMethodInfo = changeTypeMethodInfo.MakeGenericMethod(toProperty.PropertyType.GenericTypeArguments[0]);
+                        var o = changeTypeMethodInfo.Invoke(null, new object[] { intValue });
+
                         toProperty.SetValue(to, o);
                     }
-                    //else if (fromProperty.PropertyType.IsInterface || fromProperty.PropertyType == toProperty.PropertyType || toProperty.PropertyType == typeof(string))
+                    //if the type of fromType is an enum
+                    else if (fromProperty.PropertyType.IsEnum && toProperty.PropertyType == typeof(Int32))
+                    {
+                        var value = fromProperty.GetValue(input);
+
+                        toProperty.SetValue(to, value);
+                    }
+                    else if (fromProperty.PropertyType.IsEnum && toProperty.PropertyType.IsEnum)
+                    {
+                        var value = fromProperty.GetValue(input);
+
+                        toProperty.SetValue(to, value);
+                    }
                     else if (fromProperty.PropertyType == toProperty.PropertyType || toProperty.PropertyType == typeof(string))
                     {
                         //if the target property type is string and the source not, ToString is used to convert the object into a string if the property value if not null
@@ -113,7 +203,7 @@ namespace AutomatedLab.Azure
                         if (@object != null)
                             toProperty.SetValue(to, @object);
                     }
-                    else if (toProperty.PropertyType.IsGenericType && typeof(IList<>) == fromProperty.PropertyType.GetGenericTypeDefinition() && toProperty.PropertyType.GetGenericArguments()[0].BaseType.IsGenericType && toProperty.PropertyType.GetGenericArguments()[0].BaseType.GetGenericTypeDefinition() == typeof(CopiedObject<>))
+                    else if (toProperty.PropertyType.IsGenericType && typeof(Dictionary<,>) == fromProperty.PropertyType.GetGenericTypeDefinition() && toProperty.PropertyType.GetGenericArguments()[0].BaseType.IsGenericType && toProperty.PropertyType.GetGenericArguments()[0].BaseType.GetGenericTypeDefinition() == typeof(CopiedObject<>))
                     {
                         //get the source value
                         var value = fromProperty.GetValue(input);
@@ -193,7 +283,7 @@ namespace AutomatedLab.Azure
             return to;
         }
 
-        public static IEnumerable<T> Create(object[] input) 
+        public static IEnumerable<T> Create(object[] input)
         {
             if (input != null)
             {
