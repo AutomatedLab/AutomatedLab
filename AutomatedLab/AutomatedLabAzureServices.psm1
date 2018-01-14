@@ -273,8 +273,11 @@ function Remove-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
     param (
-        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [string[]]$Name
+        [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+
+        [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$ResourceGroup
     )
     
     begin
@@ -286,7 +289,7 @@ function Remove-LabAzureWebApp
     
     process
     {
-        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
         
         if (-not $service)
         {
@@ -319,8 +322,11 @@ function Remove-LabAzureAppServicePlan
     # .ExternalHelp AutomatedLab.Help.xml
 
     param (
-        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
-        [string[]]$Name
+        [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+
+        [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$ResourceGroup
     )
     
     begin
@@ -332,7 +338,7 @@ function Remove-LabAzureAppServicePlan
     
     process
     {
-        $servicePlan = $lab.AzureResources.ServicePlans | Where-Object Name -eq $Name
+        $servicePlan = $lab.AzureResources.ServicePlans | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
         
         if (-not $servicePlan)
         {
@@ -365,8 +371,11 @@ function Start-LabAzureWebApp
     
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
-        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
+
+        [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$ResourceGroup,
         
         [switch]$PassThru
     )
@@ -386,7 +395,7 @@ function Start-LabAzureWebApp
     {
         if (-not $Name) { return }
         
-        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
         
         if (-not $service)
         {
@@ -394,12 +403,26 @@ function Start-LabAzureWebApp
         }
         else
         {
-            Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup
+            try
+            {
+                $s = Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
+                $service.Merge($s)
+
+                if ($PassThru)
+                {
+                    $service
+                }
+            }
+            catch
+            {
+                Write-Error "The Azure Web App '$($service.Name)' in resource group '$($service.ResourceGroup)' could not be started"
+            }
         }
     }
 
     end
     {
+        Export-Lab
         Write-LogFunctionExit
     }
 }
@@ -412,8 +435,11 @@ function Stop-LabAzureWebApp
     
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
-        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
+
+        [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$ResourceGroup,
         
         [switch]$PassThru
     )
@@ -433,20 +459,34 @@ function Stop-LabAzureWebApp
     {
         if (-not $Name) { return }
         
-        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
         
         if (-not $service)
         {
-            Write-Error "The Azure App Service '$Name' does not exist."
+            Write-Error "The Azure App Service '$Name' does not exist in Resource Group '$ResourceGroup'."
         }
         else
         {
-            Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup
+            try
+            {
+                $s = Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
+                $service.Merge($s)
+
+                if ($PassThru)
+                {
+                    $service
+                }
+            }
+            catch
+            {
+                Write-Error "The Azure Web App '$($service.Name)' in resource group '$($service.ResourceGroup)' could not be stopped"
+            }
         }
     }
 
     end
     {
+        Export-Lab
         Write-LogFunctionExit
     }
 }
@@ -456,13 +496,19 @@ function Stop-LabAzureWebApp
 function Get-LabAzureWebAppStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+    [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([System.Collections.Hashtable])]
     param (
-        [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
+
+        [Parameter(Position = 1, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$ResourceGroup,
+
+        [Parameter(ParameterSetName = 'All')]
+        [switch]$All = $true,
         
-        [switch]$PassThru
+        [switch]$AsHashTable
     )
     
     begin
@@ -474,32 +520,67 @@ function Get-LabAzureWebAppStatus
             Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
             return
         }
+        $allAzureWebApps = Get-AzureRmWebApp
+        if ($PSCmdlet.ParameterSetName -eq 'All')
+        {
+            $Name = $lab.AzureResources.Services.Name
+            $ResourceGroup = $lab.AzureResources.Services.Name.ResourceGroup
+        }
         $result = @{}
     }
 
     process
     {
-        if (-not $Name) { return }
-        
-        $service = $lab.AzureResources.Services | Where-Object Name -eq $Name
-        
-        if (-not $service)
+        $services = foreach ($n in $name)
         {
-            Write-Error "The Azure App Service '$Name' does not exist."
-        }
-        else
-        {
-            $s = Get-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction SilentlyContinue
-            if ($s)
+            if (-not $n -and -not $PSCmdlet.ParameterSetName -eq 'All') { return }
+        
+            $service = if ($ResourceGroup)
             {
-                $result.Add($s.Name, $s.State)
+                $lab.AzureResources.Services | Where-Object { $_.Name -eq $n -and $_.ResourceGroup -eq $ResourceGroup }
+            }
+            else
+            {
+                $lab.AzureResources.Services | Where-Object { $_.Name -eq $n }
+            }
+
+            if (-not $service)
+            {
+                Write-Error "The Azure App Service '$n' does not exist."
+            }
+            else
+            {
+                $service
             }
         }
+
+        foreach ($service in $services)
+        {
+            $s = $allAzureWebApps | Where-Object { $_.Name -eq $service.Name -and $_.ResourceGroup -eq $service.ResourceGroup }
+            if ($s)
+            {
+                $service.Merge($S)
+                $result.Add($service, $s.State)
+            }
+            else
+            {
+                Write-Error "The Web App '$($service.Name)' does not exist in the Azure Resource Group $($service.ResourceGroup)."
+            }
+        }
+            
     }
 
     end
     {
-        $result
+        Export-Lab
+        if ($result.Count -eq 1 -and -not $AsHashTable)
+        {
+            $result[$result.Keys[0]]
+        }
+        else
+        {
+            $result
+        }
         Write-LogFunctionExit
     }
 }
