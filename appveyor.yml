@@ -47,7 +47,7 @@ deploy:
   description: 'This is an automated deployment'
   provider: GitHub
   auth_token:
-    secure: DpSClhfGRzvQY114F1GU9MwQAtey6LVSKc8DkIsQhMEkCSiBN0a/mytsr3y/nsIu # your encrypted token from GitHub
+    secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
   artifact: alinstaller            # upload all NuGet packages to release assets
   draft: false
   prerelease: false
