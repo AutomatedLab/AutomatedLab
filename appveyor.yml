@@ -56,6 +56,18 @@ deploy:
 
 after_deploy:
   ps: |
+        $provParams = @{
+            Name = 'NuGet'
+            MinimumVersion = '2.8.5.208'
+            Force = $true
+        }
+
+        $null = Install-PackageProvider @provParams
+        $null = Import-PackageProvider @provParams
+
+        Install-Module -Name PowerShellGet -Force -Confirm:$false
+        Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
+        Import-Module -Name PowerShellGet
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
