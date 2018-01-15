@@ -39,6 +39,13 @@ build:
 
 after_build:
   - ps: |
+        $Params = @{
+        Path    = $env:APPVEYOR_BUILD_FOLDER
+        Force   = $true
+        Recurse = $false
+        Verbose = $true
+        }
+        Invoke-PSDeploy @Params
         Write-Host "Locating installer to push as artifact"
         Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
         $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
@@ -56,38 +63,17 @@ deploy:
   on:
     branch: master                 # release from master branch only
 
+deploy:
+  provider: NuGet
+  server: https://www.powershellgallery.com/api/v2
+  api_key:
+    secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
+  skip_symbols: true
+  on:
+    branch: master
+
 after_deploy:
   ps: |
-        $provParams = @{
-            Name = 'NuGet'
-            MinimumVersion = '2.8.5.208'
-            Force = $true
-        }
-
-        $null = Install-PackageProvider @provParams
-        $null = Import-PackageProvider @provParams
-
-        if (-not (Get-Module -List PowerShellGet))
-        {
-          Install-Module -Name PowerShellGet -Force -Confirm:$false
-          Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
-          Import-Module -Name PowerShellGet
-        }
-        
-        foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
-        {
-            if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
-
-            $publishParams = @{
-                Path        = $m.FullName
-                NuGetApiKey = $env:NuGetApiKey
-                Repository  = 'PSGallery'
-                Force = $true
-                Confirm = $false
-            }
-            Publish-Module @publishParams
-        }
-
         <#Write-Host "Downloading Twitter module"
         iex (New-Object Net.WebClient).DownloadString("https://gist.githubusercontent.com/stefanstranger/2138dc710576bc40b64b/raw/bfd25a0e7363e9a1906908b0695ebcffaa508276/InstallMyTwitterModule.ps1")
 
