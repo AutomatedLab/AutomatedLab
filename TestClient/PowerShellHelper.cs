@@ -18,37 +18,39 @@ namespace TestClient
             runspace.Open();
         }
 
-        public List<PSObject> Invoke(string command)
+        public List<PSObject> InvokeScript(string script)
+        {
+            var powershell = PowerShell.Create();
+            powershell.Runspace = runspace;
+
+            powershell.Commands.AddScript(script);
+            var result = powershell.Invoke();
+
+            powershell.Dispose();
+
+            return result.ToList();
+        }
+
+        public List<PSObject> InvokeCommand(string command)
         {
             var parameters = new Dictionary<string, object>();
-            return InvokeCommand(command, parameters, runspace);
+
+            return InvokeCommand(command, parameters);
         }
 
-        public List<PSObject> Invoke(string command, Dictionary<string, object> parameters)
-        {
-            return InvokeCommand(command, parameters, runspace);
-        }
-
-        public static List<PSObject> InvokeCommand(string script)
-        {
-            var parameters = new Dictionary<string, object>();
-
-            return InvokeCommand(script, parameters);
-        }
-
-        public static List<PSObject> InvokeCommand(string script, Dictionary<string, object> parameters)
+        public List<PSObject> InvokeCommand(string command, Dictionary<string, object> parameters)
         {
             var runspace = RunspaceFactory.CreateRunspace();
             runspace.Open();
 
-            var result = InvokeCommand(script, parameters, runspace);
+            var result = InvokeCommand(command, parameters, runspace);
 
             runspace.Close();
 
             return result;
         }
 
-        public static List<PSObject> InvokeCommand(string command, Dictionary<string, object> parameters, Runspace runspace)
+        public List<PSObject> InvokeCommand(string command, Dictionary<string, object> parameters, Runspace runspace)
         {            
             var powershell = PowerShell.Create();
             powershell.Runspace = runspace;
