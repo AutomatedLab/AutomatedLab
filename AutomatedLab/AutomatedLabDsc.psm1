@@ -28,8 +28,7 @@ function Install-LabDscPullServer
         Write-LogFunctionExit
         return
     }
-
-       
+    
     if (-not (Get-LabVM -Role Routing) -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
     {
         Write-ScreenInfo 'Routing Role not detected, installing DSC in offline mode.'
@@ -162,12 +161,20 @@ function Install-LabDscPullServer
         }
     }
 
+
+    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labSources\SoftwarePackages -PassThru
     $jobs = @()
 
     foreach ($machine in $machines)
     {
+        #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
+        if ((Get-LabVM -ComputerName dpull1).OperatingSystem.Version -gt '6.3.0.0')
+        {
+            Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
+        }
+        
         $role = $machine.Roles | Where-Object Name -eq $roleName
-        if ($role.Properties.DatabaseEngine = 'mdb')
+        if ($role.Properties.DatabaseEngine -eq 'mdb')
         {
             $databaseEngine = 'mdb'
         }

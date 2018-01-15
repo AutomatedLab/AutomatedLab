@@ -557,9 +557,12 @@ function Get-LabInternetFile
 
     if ($PassThru)
     {
+        $uri2 = New-Object System.Uri($Uri)
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
+            FileName = $uri2.Segments[$uri2.Segments.Count-1]
+            FullName = Join-Path -Path $Path -ChildPath $uri2.Segments[$uri2.Segments.Count-1]
             Length = $result.ContentLength
         }
     }

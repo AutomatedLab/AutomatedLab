@@ -339,6 +339,15 @@ function Add-LabAzureSubscription
             Group-Object -Property Skus, Offer |
             ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
+        # Desktop
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+            Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
         # SQL
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
             Where-Object PublisherName -eq 'MicrosoftSQLServer' |
@@ -1145,6 +1154,9 @@ function Sync-LabAzureLabSources
     (
         [switch]
         $SkipIsos,
+
+        [switch]
+        $DoNotSkipOsIsos,
         
         [int]
         $MaxFileSizeInMb,
@@ -1233,7 +1245,7 @@ function Sync-LabAzureLabSources
             {
                 $isOs = [bool](Get-LabAvailableOperatingSystem -Path $file.FullName)
 
-                if ($isOs)
+                if ($isOs -and -not $DoNotSkipOsIsos)
                 {
                     Write-Verbose "Skipping OS ISO $($file.FullName)"
                     continue

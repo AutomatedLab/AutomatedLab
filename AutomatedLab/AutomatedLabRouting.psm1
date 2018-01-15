@@ -6,32 +6,32 @@ function Install-LabRouting
     param (
         [int]$InstallationTimeout = 15
     )
-	
+    
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message 'Configuring Routing role...'
-	
+    
     $roleName = [AutomatedLab.Roles]::Routing
-	
+    
     if (-not (Get-LabMachine))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
         return
     }
-	
+    
     $machines = Get-LabMachine -Role $roleName | Where-Object HostType -eq 'HyperV'
     
     if (-not $machines)
     {
         return
     }
-	
+    
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
 
     Install-LabWindowsFeature -ComputerName $machines -FeatureName Routing, RSAT-RemoteAccess -IncludeAllSubFeature
-	
+    
     $jobs = @()
 
     foreach ($machine in $machines)
@@ -57,10 +57,10 @@ function Install-LabRouting
         $parameters.Add('Scriptblock', {
                 $VerbosePreference = 'Continue'
                 Write-Verbose 'Setting up routing...'
-			
+            
                 Set-Service -Name RemoteAccess -StartupType Automatic
                 Start-Service -Name RemoteAccess
-			
+            
                 Write-Verbose '...done'
 
                 if (-not $args[0])
@@ -70,7 +70,7 @@ function Install-LabRouting
                 }
 
                 Write-Verbose 'Setting up NAT...'
-			
+            
                 $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
                     Select-Object -ExpandProperty NetConnectionID
 
@@ -85,7 +85,7 @@ function Install-LabRouting
                 netsh.exe routing ip dnsproxy install
 
                 Restart-Service -Name RemoteAccess
-			
+            
                 Write-Verbose '...done'
             }
         )
@@ -119,23 +119,35 @@ function Set-LabADDNSServerForwarder
 
     Write-Verbose 'Setting DNS fowarder on all domain controllers in root domains'
 
-    $rootDcs = Get-LabMachine -Role RootDC
+    $rootDcs = Get-LabVM -Role RootDC
 
     $rootDomains = $rootDcs.DomainName
 
-    $dcs = Get-LabMachine -Role RootDC, DC | Where-Object DomainName -in $rootDomains
+    $dcs = Get-LabVM -Role RootDC, DC | Where-Object DomainName -in $rootDomains
+    $router = Get-LabVM -Role Routing
     Write-Verbose "Root DCs are '$dcs'"
 
     foreach ($dc in $dcs)
     {
-        $netAdapter = $dc.NetworkAdapters | Where-Object Ipv4Gateway
-        $gateway = $netAdapter.Ipv4Gateway
+        $gateway = if ($dc -eq $router)
+        {
+            Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName ALDC1 -ScriptBlock {
+            
+                Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
+                
+            } -PassThru -NoDisplay
+        }
+        else
+        {
+            $netAdapter = $dc.NetworkAdapters | Where-Object Ipv4Gateway
+            $netAdapter.Ipv4Gateway.AddressAsString
+        }
 
         Write-Verbose "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
     
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {
             dnscmd /resetforwarders $args[0]
-        } -ArgumentList $gateway.AddressAsString -AsJob
+        } -ArgumentList $gateway -AsJob
     }
 }
 #endregion Set-LabADDNSServerForwarder

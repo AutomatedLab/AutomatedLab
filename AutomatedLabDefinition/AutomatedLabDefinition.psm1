@@ -692,16 +692,14 @@ function New-LabDefinition
                 Start-Sleep -Seconds 1
                 
                 #Download SysInternals suite
-                $tempFolderName = "$($Env:Temp)\$([System.Guid]::NewGuid().ToString())"
-                Write-Verbose -Message "Temp folder path: '$tempFolderName'"
                 
-                New-Item -ItemType Directory -Path $tempFolderName | Out-Null
-                $filePath = "$tempFolderName\SysinternalsSUite.zip"
-                Write-Verbose -Message "Temp file: '$filePath'"
+                $tempFilePath = [System.IO.Path]::GetTempFileName()
+                $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
+                Write-Verbose -Message "Temp file: '$tempFilePath'"
 
                 try
                 {
-                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $filePath
+                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
                     $fileDownloaded = $true
                     Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
                 }
@@ -713,7 +711,7 @@ function New-LabDefinition
                 
                 if ($fileDownloaded)
                 {
-                    Unblock-File -Path $filePath
+                    Unblock-File -Path $tempFilePath
         
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
@@ -733,10 +731,9 @@ function New-LabDefinition
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
         
-                    Write-Verbose -Message 'Exteacting files'
-                    $shell = New-Object -ComObject Shell.Application
-                    $shell.namespace("$labSources\Tools\SysInternals").CopyHere($shell.Namespace($filePath).Items())
-                    Remove-Item -Path $tempFolderName -Recurse
+                    Write-Verbose -Message 'Extracting files'
+                    Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
+                    Remove-Item -Path $tempFilePath
         
                     #Update registry
                     $versions['SysInternals'] = $updateStringFromWebPage
@@ -1652,7 +1649,7 @@ function Add-LabDiskDefinition
     $disk.Name = $Name
     $disk.DiskSize = $DiskSizeInGb	
     $disk.SkipInitialization = [bool]$SkipInitialize
-	
+    
     
     $script:disks.Add($disk)
     
@@ -1720,11 +1717,11 @@ function Add-LabMachineDefinition
         [string]$Network,
 
         [Parameter(ParameterSetName = 'Network')]
-        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))(\/[1-3]?[1-9])?$')]
+        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))$')]
         [string]$IpAddress,
 
         [Parameter(ParameterSetName = 'Network')]
-        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))(\/[1-3]?[1-9])?$')]
+        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))$')]
         [string]$Gateway,
         
         [Parameter(ParameterSetName = 'Network')]
@@ -1827,6 +1824,7 @@ function Add-LabMachineDefinition
         if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
         $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
+        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
     
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {
@@ -1882,6 +1880,17 @@ function Add-LabMachineDefinition
             if ($illegalKeys)
             {
                 throw "The key(s) '$($illegalKeys -join ', ')' are not supported in AzureProperties. Valid keys are '$($azurePropertiesValidKeys -join ', ')'"
+            }
+        }
+        if ($HypervProperties)
+        {
+            $illegalKeys = Compare-Object -ReferenceObject $hypervPropertiesValidKeys -DifferenceObject ($HypervProperties.Keys | Select-Object -Unique) |
+                Where-Object SideIndicator -eq '=>' |
+                Select-Object -ExpandProperty InputObject
+
+            if ($illegalKeys)
+            {
+                throw "The key(s) '$($illegalKeys -join ', ')' are not supported in HypervProperties. Valid keys are '$($hypervPropertiesValidKeys -join ', ')'"
             }
         }
 

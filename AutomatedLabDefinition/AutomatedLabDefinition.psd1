@@ -1,7 +1,7 @@
 ﻿@{
     RootModule             = 'AutomatedLabDefinition.psm1'
     
-    ModuleVersion          = '4.5.0.0'
+    ModuleVersion          = '4.5.7.0'
     
     GUID                   = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
@@ -9,7 +9,7 @@
     
     CompanyName            = 'AutomatedLab Team'
     
-    Copyright              = '2017'
+    Copyright              = '2018'
     
     Description            = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
     
@@ -17,9 +17,7 @@
     
     DotNetFrameworkVersion = '4.0'
 
-	ModuleList             = @('AutomatedLabDefinition')
-    
-    ScriptsToProcess       = @('AutomatedLabDefinition.init.ps1')
+    ModuleList             = @('AutomatedLabDefinition')
     
     NestedModules          = @('AutomatedLabDefinitionNetwork.psm1')
     
@@ -33,27 +31,33 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
-        'Add-UnattendedNetworkAdapter',
-        'Add-UnattendedRenameNetworkAdapter',
-        'Add-UnattendedRenameNetworkAdapters',
-        'Add-UnattendedSynchronousCommand',
-        'Export-UnattendedFile',
-        'Get-UnattendedContent',
-        'Import-UnattendedContent',
-        'Import-UnattendedFile',
-        'Set-LocalIntranetSites',
-        'Set-UnattendedAdministratorName',
-        'Set-UnattendedAdministratorPassword',
-        'Set-UnattendedAutoLogon',
-        'Set-UnattendedComputerName',
-        'Set-UnattendedDomain',
-        'Set-UnattendedIpSettings',
-        'Set-UnattendedProductKey',
-        'Set-UnattendedTimeZone',
-        'Set-UnattendedUserLocale',
-        'Set-UnattendedWindowsDefender',
-        'Set-UnattendedWorkgroup',
-        'Set-WindowsFirewallState'
+        'Add-LabDiskDefinition'
+        'Add-LabDomainDefinition'
+        'Add-LabIsoImageDefinition'
+        'Add-LabMachineDefinition'
+        'Add-LabVirtualNetworkDefinition'
+        'Export-LabDefinition'
+        'Get-DiskSpeed'
+        'Get-LabAvailableAddresseSpace'
+        'Get-LabDefinition'
+        'Get-LabDomainDefinition'
+        'Get-LabIsoImageDefinition'
+        'Get-LabMachineDefinition'
+        'Get-LabMachineRoleDefinition'
+        'Get-LabPostInstallationActivity'
+        'Get-LabVirtualNetwork'
+        'Get-LabVirtualNetworkDefinition'
+        'Get-LabVolumesOnPhysicalDisks'
+        'New-LabDefinition'
+        'New-LabNetworkAdapterDefinition'
+        'Remove-LabDomainDefinition'
+        'Remove-LabIsoImageDefinition'
+        'Remove-LabMachineDefinition'
+        'Remove-LabVirtualNetworkDefinition'
+        'Repair-LabDuplicateIpAddresses'
+        'Set-LabDefinition'
+        'Set-LabLocalVirtualMachineDiskAuto'
+        'Test-LabDefinition'
     )
 
     PrivateData = @{
@@ -97,7 +101,7 @@
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
-				DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
+                DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
             }
 
             MandatoryRoleProperties = @{

@@ -1,11 +1,11 @@
 ﻿@{    
-    ModuleVersion = '4.5.0.0'
+    ModuleVersion          = '4.5.7.0'
     
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
     CompanyName            = 'AutomatedLab Team'
     
-    Copyright              = '2017'
+    Copyright              = '2018'
     
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
@@ -61,7 +61,3 @@
     # DefaultCommandPrefix = ''
 
 }
-
-
-
-
