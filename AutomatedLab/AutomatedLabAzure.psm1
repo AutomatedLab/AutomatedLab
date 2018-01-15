@@ -889,23 +889,21 @@ function Remove-LabAzureResourceGroup
         
         Update-LabAzureSettings
         
-        $resourceGroups = Get-LabAzureResourceGroup
+        $resourceGroups = Get-LabAzureResourceGroup -CurrentLab
     }
 
     process
     {
-        Write-ScreenInfo -Message "Removing the Resource Group '$ResourceGroupName'" -Type Warning
-
         foreach ($name in $ResourceGroupName)
         {
+            Write-ScreenInfo -Message "Removing the Resource Group '$name'" -Type Warning
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
-                Write-Verbose "RG '$($name)' removed"
+                Write-Verbose "Resource Group '$($name)' removed"
                 
-                $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
-                $Index = $script:lab.AzureSettings.ResourceGroups.IndexOf($RgObject)
-                $script:lab.AzureSettings.ResourceGroups.RemoveAt($Index)
+                $resourceGroup = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
+                $script:lab.AzureSettings.ResourceGroups.Remove($resourceGroup)
             }
             else
             {
@@ -923,10 +921,13 @@ function Remove-LabAzureResourceGroup
 function Get-LabAzureResourceGroup
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'ByName')]
     param (
-        [Parameter(Position = 0)]
-        [string[]]$ResourceGroupName
+        [Parameter(Position = 0, ParameterSetName = 'ByName')]
+        [string[]]$ResourceGroupName,
+
+        [Parameter(Position = 0, ParameterSetName = 'ByLab')]
+        [switch]$CurrentLab
     )
 
     Write-LogFunctionEntry
@@ -939,6 +940,10 @@ function Get-LabAzureResourceGroup
     {
         Write-Verbose "Getting the resource groups '$($ResourceGroupName -join ', ')'"
         $resourceGroups | Where-Object ResourceGroupName -in $ResourceGroupName
+    }
+    elseif ($CurrentLab)
+    {
+        $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name } 
     }
     else
     {

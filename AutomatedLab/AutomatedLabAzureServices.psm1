@@ -75,7 +75,6 @@ function New-LabAzureAppServicePlan
             {
                 Write-Error "The Azure Application Service Plan '$planName' does already exist in $($plan.ResourceGroup)"
                 return
-                
             }
 
             $plan = New-AzureRmAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
@@ -526,7 +525,7 @@ function Get-LabAzureWebAppStatus
             $Name = $lab.AzureResources.Services.Name
             $ResourceGroup = $lab.AzureResources.Services.Name.ResourceGroup
         }
-        $result = @{}
+        $result = [ordered]@{}
     }
 
     process

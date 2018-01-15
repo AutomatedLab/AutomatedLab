@@ -863,10 +863,11 @@ function Remove-Lab
         $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
         Write-Verbose '...done'
 
-        if (Get-LabMachine | Where-Object HostType -eq Azure)
+        if ((Get-LabMachine | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
-            Remove-LabAzureResourceGroup $labName -Force
+            #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
+            (Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
         if (Get-LabMachine | Where-Object HostType -eq HyperV)
