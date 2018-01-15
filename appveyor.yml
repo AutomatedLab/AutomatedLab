@@ -53,23 +53,23 @@ after_build:
 
 deploy:
   - provider: GitHub
-  release: AutomatedLab-v$(appveyor_build_version)
-  description: 'This is an automated deployment'
-  auth_token:
-    secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
-  artifact: alinstaller            # upload all NuGet packages to release assets
-  draft: false
-  prerelease: false
-  on:
-    branch: master                 # release from master branch only
+    release: AutomatedLab-v$(appveyor_build_version)
+    description: 'This is an automated deployment'
+    auth_token:
+      secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+    artifact: alinstaller            # upload all NuGet packages to release assets
+    draft: false
+    prerelease: false
+    on:
+      branch: master                 # release from master branch only
 
   - provider: NuGet
-  server: https://www.powershellgallery.com/api/v2
-  api_key:
-    secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
-  skip_symbols: true
-  on:
-    branch: master
+    server: https://www.powershellgallery.com/api/v2
+    api_key:
+      secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
+    skip_symbols: true
+    on:
+      branch: master
 
 after_deploy:
   ps: |
