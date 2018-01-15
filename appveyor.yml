@@ -44,7 +44,7 @@ after_build:
 
 deploy:
   release: AutomatedLab-v$(appveyor_build_version)
-  description: 'Release description'
+  description: 'This is an automated deployment'
   provider: GitHub
   auth_token:
     secure: DpSClhfGRzvQY114F1GU9MwQAtey6LVSKc8DkIsQhMEkCSiBN0a/mytsr3y/nsIu # your encrypted token from GitHub
@@ -56,7 +56,21 @@ deploy:
 
 after_deploy:
   ps: |
-        Write-Host "Downloading Twitter module"
+        foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
+        {
+            if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
+
+            $publishParams = @{
+                Path        = $m.FullName
+                NuGetApiKey = $env:NuGetApiKey
+                Repository  = 'PSGallery'
+                Force = $true
+                Confirm = $false
+            }
+            Publish-Module @publishParams
+        }
+
+        <#Write-Host "Downloading Twitter module"
         iex (New-Object Net.WebClient).DownloadString("https://gist.githubusercontent.com/stefanstranger/2138dc710576bc40b64b/raw/bfd25a0e7363e9a1906908b0695ebcffaa508276/InstallMyTwitterModule.ps1")
 
         if (Get-Module MyTwitter -List)
@@ -70,4 +84,4 @@ after_deploy:
           )
           $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
           #[void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
-        }
+        }#>

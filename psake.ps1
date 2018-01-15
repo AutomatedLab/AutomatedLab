@@ -41,16 +41,3 @@ Task Test -Depends Init {
     }
     "`n"
 }
-
-Task Deploy -Depends Test {
-    $lines
-    "Starting deployment with files inside $ProjectRoot"    
-
-    $Params = @{
-        Path    = $ProjectRoot
-        Force   = $true
-        Recurse = $false # We keep psdeploy artifacts, avoid deploying those : )
-        Verbose = $true
-    }
-    Invoke-PSDeploy @Params
-}
