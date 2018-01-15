@@ -40,10 +40,10 @@ namespace AutomatedLab.Azure
         public string PrimaryLocation { get; set; }
         public string ResourceGroupName { get; set; }
         public string SecondaryLocation { get; set; }
-        public ProvisioningState ProvisioningState { get; set; }
+        public ProvisioningState? ProvisioningState { get; set; }
         public SerializableDictionary<string, string> Tags { get; set; }
-        public AccountStatus StatusOfPrimary { get; set; }
-        public AccountStatus StatusOfSecondary { get; set; }
+        public AccountStatus? StatusOfPrimary { get; set; }
+        public AccountStatus? StatusOfSecondary { get; set; }
         public string StorageAccountKey { get; set; }
 
         public AzureRmStorageAccount()

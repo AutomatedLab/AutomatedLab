@@ -54,7 +54,7 @@ namespace AutomatedLab.Azure
         //SiteConfig Property   Microsoft.Azure.Management.WebSites.Models.SiteConfig SiteConfig { get; set; }
         public string SiteName { get; set; }
         public string State { get; set; }
-        public SerializableDictionary<string, string> Tage { get; set; }
+        public SerializableDictionary<string, string> Tags { get; set; }
         public string TargetSwapSlot { get; set; }
         public SerializableList<string> TrafficManagerHostNames { get; set; }
         public string Type { get; set; }
