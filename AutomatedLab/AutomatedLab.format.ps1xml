@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <Configuration>
   <ViewDefinitions>
-    
+
     <View>
       <Name>AutomatedLab.ValidationMessage</Name>
       <ViewSelectedBy>
@@ -73,7 +73,7 @@
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-                    [string]::Format('{0} ({1})', $_.OperatingSystem.OperatingSystemName, $_.OperatingSystem.Version)
+                  [string]::Format('{0} ({1})', $_.OperatingSystem.OperatingSystemName, $_.OperatingSystem.Version)
                 </ScriptBlock>
               </TableColumnItem>
             </TableColumnItems>
@@ -130,7 +130,7 @@
       </TableControl>
     </View>
 
-        <View>
+    <View>
       <Name>AutomatedLab.IsoImage</Name>
       <ViewSelectedBy>
         <TypeName>AutomatedLab.IsoImage</TypeName>
@@ -159,12 +159,12 @@
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-                    [string]::Format('{0:N2}' -f $_.Size)
+                  [string]::Format('{0:N2}' -f $_.Size)
                 </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-                    $_.OperatingSystems.Count
+                  $_.OperatingSystems.Count
                 </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
@@ -208,11 +208,53 @@
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>
-                    ($_.ServerFarmId -split '/')[-1]
+                  ($_.ServerFarmId -split '/')[-1]
                 </ScriptBlock>
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>ResourceGroup</PropertyName>
+              </TableColumnItem>
+            </TableColumnItems>
+          </TableRowEntry>
+        </TableRowEntries>
+      </TableControl>
+    </View>
+
+    <View>
+      <Name>AutomatedLab.Azure.AzureRmResourceGroup</Name>
+      <ViewSelectedBy>
+        <TypeName>AutomatedLab.Azure.AzureRmResourceGroup</TypeName>
+      </ViewSelectedBy>
+      <TableControl>
+        <AutoSize />
+        <TableHeaders>
+          <TableColumnHeader>
+            <Label>Name</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Location</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>ProvisioningState</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Tags</Label>
+          </TableColumnHeader>
+        </TableHeaders>
+        <TableRowEntries>
+          <TableRowEntry>
+            <TableColumnItems>
+              <TableColumnItem>
+                <PropertyName>ResourceGroupName</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Location</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>ProvisioningState</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Tags</PropertyName>
               </TableColumnItem>
             </TableColumnItems>
           </TableRowEntry>
