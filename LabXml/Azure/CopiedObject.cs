@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -125,8 +126,9 @@ namespace AutomatedLab.Azure
             foreach (var toProperty in toProperties)
             {
                 //get the property with the same name, the same generic argument count
-                var fromProperty = fromProperties.Where(p => p.Name == toProperty.Name &&
-                    p.PropertyType.GenericTypeArguments.Count() == toProperty.PropertyType.GenericTypeArguments.Count()).FirstOrDefault();
+                var fromProperty = fromProperties.Where(
+                    p => p.Name == toProperty.Name)
+                    .FirstOrDefault();
 
                 if (fromProperty != null)
                 {
@@ -208,6 +210,23 @@ namespace AutomatedLab.Azure
                         //if the object is not null, set the target property with it
                         if (@object != null)
                             toProperty.SetValue(to, @object);
+                    }
+                    else if (fromProperty.PropertyType == typeof(Hashtable) &&
+                        toProperty.PropertyType.GetInterfaces().Contains(typeof(IDictionary<,>).MakeGenericType(toProperty.PropertyType.GenericTypeArguments)))
+                    {
+                        //get the source value
+                        var value = fromProperty.GetValue(input);
+
+                        if (value == null)
+                            continue;
+
+                        var d = new Dictionary<string, string>();
+                        //KVPs in hashtables will be treated as strings always
+                        d = ((IEnumerable)value).Cast<DictionaryEntry>().ToDictionary(kvp => (string)kvp.Key, kvp => (string)kvp.Value);
+
+                        var t = typeof(SerializableDictionary<,>).MakeGenericType(toProperty.PropertyType.GetGenericArguments());
+                        object o = value == null ? Activator.CreateInstance(t) : Activator.CreateInstance(t, d);
+                        toProperty.SetValue(to, o);
                     }
                     else if (toProperty.PropertyType.IsGenericType && typeof(Dictionary<,>) == fromProperty.PropertyType.GetGenericTypeDefinition() && toProperty.PropertyType.GetGenericArguments()[0].BaseType.IsGenericType && toProperty.PropertyType.GetGenericArguments()[0].BaseType.GetGenericTypeDefinition() == typeof(CopiedObject<>))
                     {
