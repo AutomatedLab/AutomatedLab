@@ -8,7 +8,7 @@ Properties {
     $lines = '----------------------------------------------------------------------'
 }
 
-Task Default -Depends Test
+Task Default -Depends Deploy
 
 Task Init {
     $lines
@@ -40,4 +40,17 @@ Task Test -Depends Init {
         Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed"
     }
     "`n"
+}
+
+Task Deploy -Depends Test {
+    $lines
+    "Starting deployment with files inside $ProjectRoot"    
+
+    $Params = @{
+        Path    = $ProjectRoot
+        Force   = $true
+        Recurse = $false # We keep psdeploy artifacts, avoid deploying those : )
+        Verbose = $true
+    }
+    Invoke-PSDeploy @Params
 }
