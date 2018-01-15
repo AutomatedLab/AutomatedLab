@@ -67,9 +67,13 @@ after_deploy:
         $null = Install-PackageProvider @provParams
         $null = Import-PackageProvider @provParams
 
-        Install-Module -Name PowerShellGet -Force -Confirm:$false
-        Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
-        Import-Module -Name PowerShellGet
+        if (-not (Get-Module -List PowerShellGet))
+        {
+          Install-Module -Name PowerShellGet -Force -Confirm:$false
+          Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
+          Import-Module -Name PowerShellGet
+        }
+        
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
