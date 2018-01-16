@@ -122,3 +122,6 @@ after_deploy:
           $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
           #[void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
         }#>
+        
+on_finish:
+  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
