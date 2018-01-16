@@ -1283,8 +1283,6 @@ function Mount-LWIsoImage
         {
             try
             {
-                $releaseId = Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion" -Name ReleaseId -ErrorAction SilentlyContinue
-
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
                     $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
