@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -57,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "A
 		AutomatedLabDefinition\AutomatedLabDefinition.Help.xml = AutomatedLabDefinition\AutomatedLabDefinition.Help.xml
 		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
 		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
+		AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1
 		AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1
 	EndProjectSection
 EndProject
@@ -89,6 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabADDS.psm1 = AutomatedLab\AutomatedLabADDS.psm1
 		AutomatedLab\AutomatedLabADFS.psm1 = AutomatedLab\AutomatedLabADFS.psm1
 		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
+		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
@@ -167,6 +169,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{35796C10-DDB9-4E04-A2CD-FE3D00A0E361}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\Tools\FluentFTP.dll = AutomatedLab\Tools\FluentFTP.dll
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{F283AF3D-956C-4CE2-ABBF-273D38810E2D}"
 	ProjectSection(SolutionItems) = preProject

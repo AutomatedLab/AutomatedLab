@@ -6,14 +6,71 @@ using System.Management.Automation;
 using System.Reflection;
 using AutomatedLab;
 using LabXml;
+using AutomatedLab.Azure;
 
 namespace TestClient
 {
-
     class Program
     {
+        public enum MyColor
+        {
+            Black = 0,
+            DarkBlue = 1,
+            DarkGreen = 2,
+            DarkCyan = 3,
+            DarkRed = 4,
+            DarkMagenta = 5,
+            DarkYellow = 6,
+            Gray = 7,
+            DarkGray = 8,
+            Blue = 9,
+            Green = 10,
+            Cyan = 11,
+            Red = 12,
+            Magenta = 13,
+            Yellow = 14,
+            White = 15
+        }
+
+        public class TT1
+        {
+            public string ResourceGroupName { get; set; }
+            public System.Collections.Hashtable Tags { get; set; }
+            public List<string> SomeList { get; set; }
+            public Nullable<int> SomeInt1 { get; set; }
+            public int SomeInt2 { get; set; }
+            public System.ConsoleColor Color1 { get; set; }
+            public System.ConsoleColor Color2 { get; set; }
+            public MyColor? Color3 { get; set; }
+            public MyColor? Color4 { get; set; }
+
+            public TT1()
+            {
+                Tags = new System.Collections.Hashtable();
+                SomeList = new List<string>();
+            }
+        }
         static void Main(string[] args)
         {
+            var o1 = new TT1();
+            o1.ResourceGroupName = "T1";
+            o1.SomeList.AddRange(new string[] { "1", "2" });
+            o1.Tags.Add("K1", "V1"); o1.SomeInt1 = 11;
+            o1.SomeInt2 = 22;
+            o1.Color1 = ConsoleColor.DarkBlue;
+            o1.Color2 = ConsoleColor.Yellow;
+            o1.Color3 = MyColor.Green;
+            o1.Color4 = MyColor.Red;
+            var o2 = CopiedObject<AzureRmResourceGroup>.Create(o1);
+
+            var p = new PowerShellHelper();
+            var result11 = p.InvokeScript(@"Import-AzureRmContext -Path D:\AL1.json | Out-Null; Get-AzureRmResourceGroup").ToArray();
+            var result12 = CopiedObject<AzureRmResourceGroup>.Create(result11).ToArray();
+
+            var result21 = p.InvokeScript(@"Import-AzureRmContext -Path D:\AL1.json | Out-Null; Get-AzureRmStorageAccount").ToArray();
+            var result22 = CopiedObject<AzureRmStorageAccount>.Create(result21).ToArray();
+
+            return;
             //SerializationTest1();
             var labName = "failover";
 
@@ -66,7 +123,8 @@ namespace TestClient
 
                 try
                 {
-                    var result = PowerShellHelper.InvokeCommand(scriptContent, out errors);
+
+                    var result = p.InvokeCommand(scriptContent);
 
                     var labXmlPath = System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Lab.xml");
                     var labPaths = new List<string>() { System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Machines.xml") };

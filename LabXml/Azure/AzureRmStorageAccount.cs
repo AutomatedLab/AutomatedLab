@@ -3,45 +3,51 @@ using System.Collections.Generic;
 
 namespace AutomatedLab.Azure
 {
+    public enum ProvisioningState
+    {
+        Creating,
+        ResolvingDNS,
+        Succeeded
+    }
+
+    public enum AccountStatus
+    {
+        Available,
+        Unavailable
+    }
+
+    public enum Kind
+    {
+        Storage,
+        BlobStorage
+    }
+
+    public enum AccessTier
+    {
+        Hot,
+        Cool
+    }
+
     public class AzureRmStorageAccount : CopiedObject<AzureRmStorageAccount>
     {
         public string Location { get; set; }
         public string StorageAccountName { get; set; }
-
         public DateTime? CreationTime { get; set; }
         public string Id { get; set; }
+        public Kind? Kind { get; set; }
+        public AccessTier? AccessTier { get; set; }
         public DateTime? LastGeoFailoverTime { get; set; }
         public string PrimaryLocation { get; set; }
         public string ResourceGroupName { get; set; }
         public string SecondaryLocation { get; set; }
-        public string ProvisioningState { get; set; }
+        public ProvisioningState? ProvisioningState { get; set; }
         public SerializableDictionary<string, string> Tags { get; set; }
-        public string StatusOfPrimary { get; set; }
-        public string StatusOfSecondary { get; set; }
+        public AccountStatus? StatusOfPrimary { get; set; }
+        public AccountStatus? StatusOfSecondary { get; set; }
         public string StorageAccountKey { get; set; }
 
         public AzureRmStorageAccount()
         { }
-
-        public static AzureRmStorageAccount Create(object input)
-        {
-            return Create<AzureRmStorageAccount>(input);
-        }
-
-        public static IEnumerable<AzureRmStorageAccount> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureRmStorageAccount>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
 
         public override string ToString()
         {
