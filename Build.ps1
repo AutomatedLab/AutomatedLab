@@ -1,4 +1,4 @@
-﻿﻿function Resolve-Module
+﻿function Resolve-Module
 {
     [Cmdletbinding()]
     param
