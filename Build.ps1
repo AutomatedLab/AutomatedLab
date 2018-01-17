@@ -1,4 +1,4 @@
-﻿function Resolve-Module
+﻿﻿function Resolve-Module
 {
     [Cmdletbinding()]
     param
@@ -9,37 +9,37 @@
 
     Process
     {
-        foreach ($ModuleName in $Name)
+        foreach ($moduleName in $Name)
         {
-            $Module = Get-Module -Name $ModuleName -ListAvailable
-            Write-Verbose -Message "Resolving Module $($ModuleName)"
+            $module = Get-Module -Name $moduleName -ListAvailable
+            Write-Verbose -Message "Resolving Module $($moduleName)"
             
-            if ($Module) 
+            if ($module) 
             {                
-                $Version = $Module | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
-                $GalleryVersion = Find-Module -Name $ModuleName -Repository PSGallery | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
+                $version = $module | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
+                $galleryVersion = Find-Module -Name $moduleName -Repository PSGallery | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
 
-                if ($Version -lt $GalleryVersion)
+                if ($version -lt $galleryVersion)
                 {
                     
                     if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') { Set-PSRepository -Name PSGallery -InstallationPolicy Trusted }
                     
-                    Write-Verbose -Message "$($ModuleName) Installed Version [$($Version.tostring())] is outdated. Installing Gallery Version [$($GalleryVersion.tostring())]"
+                    Write-Verbose -Message "$($moduleName) Installed Version [$($version.ToString())] is outdated. Installing Gallery Version [$($galleryVersion.ToString())]"
                     
-                    Install-Module -Name $ModuleName -Force -SkipPublisherCheck
-                    Import-Module -Name $ModuleName -Force -RequiredVersion $GalleryVersion
+                    Install-Module -Name $moduleName -Force -SkipPublisherCheck -AllowClobber
+                    Import-Module -Name $moduleName -Force -RequiredVersion $galleryVersion
                 }
                 else
                 {
-                    Write-Verbose -Message "Module Installed, Importing $($ModuleName)"
-                    Import-Module -Name $ModuleName -Force -RequiredVersion $Version
+                    Write-Verbose -Message "Module Installed, Importing $($moduleName)"
+                    Import-Module -Name $moduleName -Force -RequiredVersion $version
                 }
             }
             else
             {
-                Write-Verbose -Message "$($ModuleName) Missing, installing Module"
-                Install-Module -Name $ModuleName -Force
-                Import-Module -Name $ModuleName -Force -RequiredVersion $Version
+                Write-Verbose -Message "$($moduleName) Missing, installing Module"
+                Install-Module -Name $moduleName -Force -AllowClobber
+                Import-Module -Name $moduleName -Force -RequiredVersion $version
             }
         }
     }
@@ -48,7 +48,7 @@
 # Grab nuget bits, install modules, set build variables, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-Resolve-Module Psake, PSDeploy, Pester, BuildHelpers
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab
 
 Invoke-psake .\psake.ps1
 exit ( [int]( -not $psake.build_success ) )
