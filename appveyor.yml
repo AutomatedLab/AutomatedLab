@@ -1,4 +1,4 @@
-version: 4.7.1.{build}
+version: 4.7.2.{build}
 image:
 - Visual Studio 2017
 
@@ -28,6 +28,8 @@ assembly_info:
 
 before_build:
   - ps: |
+        Write-Host "'before_build' block"
+
         Write-Host "Setting version number in files"
         Add-AppveyorMessage -Message "Setting version number in files" -Category Information
         gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
@@ -39,6 +41,7 @@ build:
 
 after_build:
   - ps: |
+        Write-Host "'after_build' block"
         $Params = @{
         Path    = $env:APPVEYOR_BUILD_FOLDER
         Force   = $true
@@ -51,8 +54,21 @@ after_build:
         $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
         Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
 
+deploy:
+  - provider: GitHub
+    release: AutomatedLab-v$(appveyor_build_version)
+    description: 'This is an automated deployment'
+    auth_token:
+      secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+    artifact: alinstaller            # upload all NuGet packages to release assets
+    draft: false
+    prerelease: false
+    on:
+      branch: master                 # release from master branch only
+
 after_deploy:
   ps: |
+        Write-Host "'after_deploy' block"
         if ( (Get-PackageProvider nuget -Erroraction SilentlyContinue).Version -lt 2.8.5.210)
         {
           $provParams = @{
@@ -110,24 +126,6 @@ after_deploy:
         
 on_finish:
   - ps: |
-        foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
-        {
-            if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
-
-            $publishParams = @{
-                Path        = $m.FullName
-                NuGetApiKey = $env:NuGetApiKey
-                Repository  = 'PSGallery'
-                Force = $true
-                Confirm = $false
-            }
-            write-Host "Publishing module '$($m.FullName)'"
-
-            Start-Job -Name "Publish $m" -ScriptBlock {
-                $publishParams = $args[0]
-                Publish-Module @publishParams
-            } -ArgumentList $publishParams | Receive-Job -AutoRemoveJob -Wait
-        }
-
-        $blockRdp = $true
-        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+        Write-Host "'on_finish' block"
+        #$blockRdp = $true
+        #iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
