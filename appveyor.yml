@@ -85,7 +85,7 @@ after_deploy:
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
         
-
+        <#
         if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.6))
         {
             Install-Module -Name PowerShellGet -Force -Confirm:$false -Verbose
@@ -107,7 +107,8 @@ after_deploy:
         Write-Host (Get-Module | Out-String)
         write-Host '-----------------------------------------------------------------'
         Get-Module | Remove-Module -Force
-        
+        #>
+
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
