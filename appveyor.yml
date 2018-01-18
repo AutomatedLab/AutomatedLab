@@ -73,9 +73,9 @@ after_deploy:
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
 
-        foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
+        foreach ($m in (Get-ChildItem -Path C:\projects\automatedlab -Directory -Exclude AutomatedLab.Common))
         {
-            if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
+            if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
 
             $publishParams = @{
                 Path        = $m.FullName
@@ -85,7 +85,11 @@ after_deploy:
                 Confirm = $false
             }
             write-Host "Publishing module '$($m.FullName)'"
-            Publish-Module @publishParams
+
+            Start-Job -Name "Publish $m" -ScriptBlock {
+                $publishParams = $args[0]
+                Publish-Module @publishParams
+            } -ArgumentList $publishParams | Receive-Job -AutoRemoveJob -Wait
         }
 
         <#Write-Host "Downloading Twitter module"
