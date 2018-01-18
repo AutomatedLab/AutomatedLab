@@ -92,7 +92,7 @@ after_deploy:
         foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
-
+            
             $publishParams = @{
                 Path        = $m.FullName
                 NuGetApiKey = $env:NuGetApiKey
@@ -123,7 +123,7 @@ after_deploy:
           $rnd = Get-Random -Minimum 0 -Maximum ($tweets.Length -1)
           #[void] (Send-Tweet -Message ($tweets[$rnd] -f $env:APPVEYOR_BUILD_VERSION, 'https://github.com/AutomatedLab/AutomatedLab/blob/develop/CHANGELOG.md'))
         }#>
-        
+
 on_finish:
   - ps: |
         Write-Host "'on_finish' block"
