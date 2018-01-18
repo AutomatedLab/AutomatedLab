@@ -85,11 +85,11 @@ after_deploy:
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
         
-        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.1.3.2))
+        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.5.0.0))
         {
-            Install-Module -Name PowerShellGet -RequiredVersion 1.1.3.2 -Force -Confirm:$false -Verbose
+            Install-Module -Name PowerShellGet -RequiredVersion 1.5.0.0 -Force -Confirm:$false -Verbose
 
-            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.1.3.2
+            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.5.0.0
             foreach ($m in $oldVersions)
             {
                 Remove-Item -Path $m.ModuleBase -Recurse -Force
