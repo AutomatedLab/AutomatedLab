@@ -85,12 +85,11 @@ after_deploy:
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
         
-        <#
-        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.6))
+        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.1.3.2))
         {
-            Install-Module -Name PowerShellGet -Force -Confirm:$false -Verbose
+            Install-Module -Name PowerShellGet -RequiredVersion 1.1.3.2 -Force -Confirm:$false -Verbose
 
-            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.6
+            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.1.3.2
             foreach ($m in $oldVersions)
             {
                 Remove-Item -Path $m.ModuleBase -Recurse -Force
@@ -99,15 +98,6 @@ after_deploy:
             Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
             Import-Module -Name PowerShellGet
         }
-        write-Host '-----------------------------------------------------------------'
-        Write-Host 'Available Modules'
-        Write-Host (Get-Module -List | Out-String)
-        write-Host '-----------------------------------------------------------------'
-        Write-Host 'Loaded Modules'
-        Write-Host (Get-Module | Out-String)
-        write-Host '-----------------------------------------------------------------'
-        Get-Module | Remove-Module -Force
-        #>
 
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
