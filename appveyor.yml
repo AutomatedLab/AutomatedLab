@@ -106,6 +106,7 @@ after_deploy:
         Write-Host 'Loaded Modules'
         Write-Host (Get-Module | Out-String)
         write-Host '-----------------------------------------------------------------'
+        Get-Module | Remove-Module -Force
         
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
