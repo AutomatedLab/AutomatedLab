@@ -84,16 +84,18 @@ after_deploy:
         {
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
-        
-        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.5.0.0))
-        {
-            Install-Module -Name PowerShellGet -RequiredVersion 1.5.0.0 -Force -Confirm:$false -Verbose
 
-            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.5.0.0
-            foreach ($m in $oldVersions)
-            {
-                Remove-Item -Path $m.ModuleBase -Recurse -Force
-            }
+        if (-not ((Get-Module -List -Name PackageManagement ).Version -ge '1.1.7.0 '))
+        {
+            Install-Module -Name PackageManagement  -RequiredVersion 1.1.7.0  -Force -Confirm:$false -Verbose
+
+            Remove-Module -Name PackageManagement  -Force -ErrorAction Ignore
+            Import-Module -Name PackageManagement 
+        }
+        
+        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge '1.6.0'))
+        {
+            Install-Module -Name PowerShellGet -RequiredVersion 1.6.0 -Force -Confirm:$false -Verbose
 
             Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
             Import-Module -Name PowerShellGet
