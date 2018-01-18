@@ -88,7 +88,6 @@ after_deploy:
 
         if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.6))
         {
-            Remove-Item -Path 'C:\Program Files\WindowsPowerShell\Modules\PowerShellGet' -Recurse -Force
             Install-Module -Name PowerShellGet -Force -Confirm:$false -Verbose
 
             $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.6
