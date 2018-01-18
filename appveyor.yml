@@ -133,4 +133,20 @@ after_deploy:
         }#>
         
 on_finish:
-  - ps: $blockRdp = $true; iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: |
+        foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
+        {
+            if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
+
+            $publishParams = @{
+                Path        = $m.FullName
+                NuGetApiKey = $env:NuGetApiKey
+                Repository  = 'PSGallery'
+                Force = $true
+                Confirm = $false
+            }
+            write-Host "Publishing module '$($m.FullName)'"
+            Publish-Module @publishParams
+        }
+        $blockRdp = $true
+        iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
