@@ -40,7 +40,7 @@ CollectionDescription=Built by AutomatedLab, your friendly lab automation soluti
 3 - TFS web site port
 4 - Build worker port
 #>
-$buildWorker = @"
+$buildWorkerConfiguration = @"
 [Configuration]
 Activity=Microsoft.TeamFoundation.Admin.TeamBuildActivity
 Assembly=Microsoft.TeamFoundation.Admin, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
@@ -56,13 +56,13 @@ Port={4}
 MaxConcurrentBuilds=0
 "@
 
-function Install-LabTeamFoundationServer
+function Install-LabTeamFoundationEnvironment
 {
     [CmdletBinding()]
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, TfsBuildWorker
     
     $jobs = @()
 
@@ -88,23 +88,7 @@ function Install-LabTeamFoundationServer
             throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with TFS setup for $machine"
         }
 
-        Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput
-
-        $sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017
-        $initialCollection = 'AutomatedLab'
-        $tfsPort = 8080
-
-        if ($role.Properties.ContainsKey('InitialCollection'))
-        {
-            $initialCollection = $role.Properties['InitialCollection']
-        }
-
-        if ($role.Properties.ContainsKey('Port'))
-        {
-            $tfsPort = $role.Properties['Port']
-        }
-
-        $targetConfiguration = $tfsConfiguration -f $sqlServer, $machine, $initialCollection, $tfsPort
+        Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput        
 
         $jobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $startTime = (Get-Date)
@@ -125,20 +109,63 @@ function Install-LabTeamFoundationServer
                 }
 
                 Write-Verbose 'TFS Installation finished. Configuring...'
-                    
-                $tfsConfigPath = Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse
-                if (-not $tfsConfiguration) { throw 'tfsconfig.exe could not be found.'}
-
-                $config = (New-Item -Path C:\DeployDebug\TfsConfig.ini -Force).FullName
-
-                & $tfsConfiguration.FullName "unattend /configure /unattendfile:$config"
             }
             else
             {
                 Write-Error -Message 'No ISO mounted. Cannot continue.'
             }
-        } -Variable (Get-Variable targetConfiguration, drive) -AsJob
+        } -Variable (Get-Variable drive) -AsJob
     }
+
+    Wait-LWLabJob -Job $jobs
+
+    Install-LabTeamFoundationServer
+
+    Install-LabBuildWorker
+}
+
+function Install-LabTeamFoundationServer
+{
+    [CmdletBinding()]
+    param
+    ( )
+
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
+    $sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017
+
+    $installationJobs = @()
+
+    foreach ( $machine in $tfsMachines)
+    {
+        $role = $machine.Roles | Where-Object Name -like Tfs????
+        $initialCollection = 'AutomatedLab'
+        $tfsPort = 8080
+    
+        if ($role.Properties.ContainsKey('InitialCollection'))
+        {
+            $initialCollection = $role.Properties['InitialCollection']
+        }
+
+        if ($role.Properties.ContainsKey('Port'))
+        {
+            $tfsPort = $role.Properties['Port']
+        }
+
+        $targetConfiguration = $tfsConfiguration -f $sqlServer, $machine, $initialCollection, $tfsPort
+
+        $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+            $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
+            if (-not $tfsConfiguration) { throw 'tfsconfig.exe could not be found.'}
+
+            $config = (New-Item -Path C:\DeployDebug\TfsConfig.ini -Force).FullName
+            Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
+
+            & $tfsConfigPath "unattend /configure /unattendfile:$config"
+        } -Variable (Get-Variable targetConfiguration) -AsJob:$AsJob
+    }
+}
+
+Wait-LWLabJob -Job $installationJobs
 }
 
 function Install-LabBuildWorker
@@ -147,5 +174,51 @@ function Install-LabBuildWorker
     param
     ( )
 
+    <#
+0 - Number of build agents
+1 - Build machine
+2 - TFS
+3 - TFS web site port
+4 - Build worker port
+#>
+
     $buildWorkers = Get-LabVm -Roles TfsBuildWorker
+    $tfsServer = Get-LabVm -Roles Tfs2015, Tfs2017
+    $tfsPort = 8080
+
+    $role = $buildWorker.Roles | Where-Object Name -eq TfsBuildWorker
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+    
+    $installationJobs = @()
+    foreach ( $machine in $buildWorkers)
+    {
+        $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
+        $buildAgentCount = 2
+        $buildWorkerPort = 9090
+
+        if ($role.Properties.ContainsKey('BuildAgentCount'))
+        {
+            $buildAgentCount = $role.Properties['BuildAgentCount']
+        }
+
+        if ($role.Properties.ContainsKey('Port'))
+        {
+            $buildWorkerPort = $role.Properties['Port']
+        }
+
+        $targetConfiguration = $buildWorkerConfiguration -f $buildAgentCount, $buildWorker, $tfsServer, $tfsPort, $buildWorkerPort
+
+        $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+            $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
+            if (-not $tfsConfiguration) { throw 'tfsconfig.exe could not be found.'}
+
+            $config = (New-Item -Path C:\DeployDebug\TfsBuildWorker.ini -Force).FullName
+            Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
+
+            & $tfsConfigPath "unattend /configure /unattendfile:$config"
+        } -AsJob -Variable (Get-Variable targetConfiguration)
+    }
 }

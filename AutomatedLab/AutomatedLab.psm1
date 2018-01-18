@@ -446,6 +446,7 @@ function Install-Lab
         [switch]$VisualStudio,
         [switch]$Office2013,
         [switch]$Office2016,
+        [switch]$TeamFoundation,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
@@ -770,6 +771,14 @@ function Install-Lab
         Install-LabOffice2016
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($TeamFoundation -or $performAll) -and (Get-LabMachine -Role Tfs2015,Tfs2017))
+    {
+        Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabMachine -Role Tfs2015,Tfs2017).Name -join ', ')'"
+        Install-LabTeamFoundationEnvironment
+        Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
     
     if ($StartRemainingMachines -or $performAll)
