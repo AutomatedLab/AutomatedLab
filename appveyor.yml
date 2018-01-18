@@ -73,7 +73,7 @@ after_deploy:
             Copy-Item $sourceLibraryPath $mainModule -Force
         }
 
-        foreach ($m in (Get-ChildItem -Path C:\projects\automatedlab -Directory -Exclude AutomatedLab.Common))
+        foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
 
@@ -110,19 +110,5 @@ after_deploy:
         
 on_finish:
   - ps: |
-        foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
-        {
-            if (-not ($m | Get-ChildItem -Filter *.psm1)) {continue}
-
-            $publishParams = @{
-                Path        = $m.FullName
-                NuGetApiKey = $env:NuGetApiKey
-                Repository  = 'PSGallery'
-                Force = $true
-                Confirm = $false
-            }
-            write-Host "Publishing module '$($m.FullName)'"
-            Publish-Module @publishParams
-        }
         $blockRdp = $true
         iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
