@@ -50,5 +50,28 @@ Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab
 
+$lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+if (-not ($lastestVersion.Version -ge '1.1.7.0'))
+{
+    Write-Host "Latest Version of 'PackageManagement' is '$($lastestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
+    Install-Module -Name PackageManagement -RequiredVersion 1.1.7.0 -Force -Confirm:$false #-Verbose
+
+    Remove-Module -Name PackageManagement -Force -ErrorAction Ignore
+    $m = Import-Module -Name PackageManagement -PassThru
+    Write-Host "New version of 'PackageManagement' is not $($m.Version)"
+}
+
+$lastestVersion = Get-Module -Name PowerShellGet -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+if (-not ($lastestVersion.Version -ge '1.6.0'))
+{
+    Write-Host "Latest Version of 'PowerShellGet' is '$($lastestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
+    Install-Module -Name PowerShellGet -RequiredVersion 1.6.0 -Force -Confirm:$false #-Verbose
+
+    Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
+    $m = Import-Module -Name PowerShellGet -PassThru
+    Write-Host "New version of 'PowerShellGet' is not $($m.Version)"
+    
+}
+
 Invoke-psake .\psake.ps1
 exit ( [int]( -not $psake.build_success ) )
