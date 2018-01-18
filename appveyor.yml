@@ -86,11 +86,19 @@ after_deploy:
         }
         
 
-        if (-not ((Get-module -list PowerShellGet).Version -ge 1.6))
+        if (-not ((Get-Module -List -Name PowerShellGet).Version -ge 1.6))
         {
-          Install-Module -Name PowerShellGet -Force -Confirm:$false -Verbose
-          Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
-          Import-Module -Name PowerShellGet
+            Remove-Item -Path 'C:\Program Files\WindowsPowerShell\Modules\PowerShellGet' -Recurse -Force
+            Install-Module -Name PowerShellGet -Force -Confirm:$false -Verbose
+
+            $oldVersions = Get-Module -ListAvailable -Name PowerShellGet | Where-Object Version -lt 1.6
+            foreach ($m in $oldVersions)
+            {
+                Remove-Item -Path $m.ModuleBase -Recurse -Force
+            }
+
+            Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
+            Import-Module -Name PowerShellGet
         }
         
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
