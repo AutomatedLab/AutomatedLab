@@ -99,6 +99,13 @@ after_deploy:
             Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
             Import-Module -Name PowerShellGet
         }
+        write-Host '-----------------------------------------------------------------'
+        Write-Host 'Available Modules'
+        Write-Host (Get-Module -List | Out-String)
+        write-Host '-----------------------------------------------------------------'
+        Write-Host 'Loaded Modules'
+        Write-Host (Get-Module | Out-String)
+        write-Host '-----------------------------------------------------------------'
         
         foreach ($m in (Get-ChildItem $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
@@ -111,6 +118,7 @@ after_deploy:
                 Force = $true
                 Confirm = $false
             }
+            write-Host "Publishing module '$($m.FullName)'"
             Publish-Module @publishParams
         }
 
