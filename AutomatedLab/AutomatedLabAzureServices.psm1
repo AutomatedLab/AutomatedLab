@@ -121,7 +121,7 @@ function Set-LabAzureWebAppContent
         if (-not (Test-Path -Path $LocalContentPath))
         {
             Write-LogFunctionExitWithError -Message "The path '$LocalContentPath' does not exist"
-            return
+            continue
         }
         
         $script:lab = Get-Lab
@@ -465,7 +465,7 @@ function Start-LabAzureWebApp
             try
             {
                 $s = Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
-                $service.Merge($s, 'Upload')
+                $service.Merge($s, 'PublishProfiles')
 
                 if ($PassThru)
                 {
@@ -529,7 +529,7 @@ function Stop-LabAzureWebApp
             try
             {
                 $s = Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
-                $service.Merge($s, 'Upload')
+                $service.Merge($s, 'PublishProfiles')
 
                 if ($PassThru)
                 {
@@ -618,7 +618,7 @@ function Get-LabAzureWebAppStatus
             $s = $allAzureWebApps | Where-Object { $_.Name -eq $service.Name -and $_.ResourceGroup -eq $service.ResourceGroup }
             if ($s)
             {
-                $service.Merge($S, 'Upload')
+                $service.Merge($s, 'PublishProfiles')
                 $result.Add($service, $s.State)
             }
             else
