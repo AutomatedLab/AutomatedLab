@@ -101,6 +101,59 @@ function New-LabAzureAppServicePlan
 }
 #endregion New-LabAzureAppServicePlan
 
+#region Set-LabAzureWebAppContent
+function Set-LabAzureWebAppContent
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    
+    param (
+        [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [string[]]$Name,
+
+        [Parameter(Mandatory, Position = 1)]
+        [string]$LocalContentPath
+    )
+
+    begin
+    {
+        Write-LogFunctionEntry
+
+        if (-not (Test-Path -Path $LocalContentPath))
+        {
+            Write-LogFunctionExitWithError -Message "The path '$LocalContentPath' does not exist"
+            return
+        }
+        
+        $script:lab = Get-Lab
+    }
+    
+    process
+    {
+        if (-not $Name) { return }
+        
+        $webApp = $lab.AzureResources.Services | Where-Object Name -eq $Name
+        
+        if (-not $webApp)
+        {
+            Write-Error "The Azure App Service '$Name' does not exist."
+            return
+        }
+
+        $publishingProfile = $webApp.PublishProfiles | Where-Object PublishMethod -eq 'FTP'
+        $cred = New-Object System.Net.NetworkCredential($publishingProfile.UserName, $publishingProfile.UserPWD)
+        $publishingProfile.PublishUrl -match '(ftp:\/\/)(?<url>[\w-\.]+)(\/)' | Out-Null
+        $hostUrl = $Matches.url
+
+        Send-FtpFolder -Path $LocalContentPath -DestinationPath site/wwwroot/ -HostUrl $hostUrl -Credential $cred -Recure
+    }
+    
+    end
+    {
+        Write-LogFunctionExit
+    }
+}
+#endregion Set-LabAzureWebAppContent
+
 #region New-LabAzureWebApp
 function New-LabAzureWebApp
 {
@@ -147,6 +200,13 @@ function New-LabAzureWebApp
             if ($webApp)
             {
                 $webApp = [AutomatedLab.Azure.AzureRmService]::Create($webApp)
+
+                #Get app-level deployment credentials
+                $xml = [xml](Get-AzureRmWebAppPublishingProfile -Name $webApp.Name -ResourceGroupName $webApp.ResourceGroup -OutputFile null)
+
+                $publishProfile = [AutomatedLab.Azure.PublishProfile]::Create($xml.publishData.publishProfile)
+                $webApp.PublishProfiles = $publishProfile
+
                 $existingWebApp = Get-LabAzureWebApp -Name $webApp.Name
                 $existingWebApp.Merge($webApp)
             
@@ -405,7 +465,7 @@ function Start-LabAzureWebApp
             try
             {
                 $s = Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
-                $service.Merge($s)
+                $service.Merge($s, 'Upload')
 
                 if ($PassThru)
                 {
@@ -469,7 +529,7 @@ function Stop-LabAzureWebApp
             try
             {
                 $s = Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
-                $service.Merge($s)
+                $service.Merge($s, 'Upload')
 
                 if ($PassThru)
                 {
@@ -558,7 +618,7 @@ function Get-LabAzureWebAppStatus
             $s = $allAzureWebApps | Where-Object { $_.Name -eq $service.Name -and $_.ResourceGroup -eq $service.ResourceGroup }
             if ($s)
             {
-                $service.Merge($S)
+                $service.Merge($S, 'Upload')
                 $result.Add($service, $s.State)
             }
             else
@@ -584,3 +644,139 @@ function Get-LabAzureWebAppStatus
     }
 }
 #Get-LabAzureWebAppStatus
+
+#region Send-LabAzureWebAppContent
+function Send-LabAzureWebAppContent
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [OutputType([string])]
+    param (
+        [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
+        [string]$Name,
+
+        [Parameter(Position = 1, ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
+        [string]$ResourceGroup
+    )
+    
+    begin
+    {
+        Write-LogFunctionEntry
+        $script:lab = Get-Lab
+        if (-not $lab)
+        {
+            Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
+            return
+        }
+    }
+
+    process
+    {
+        foreach ($n in $name)
+        {
+            $webApp = Get-LabAzureWebApp -Name $n | Where-Object ResourceGroup -eq $ResourceGroup
+
+        }
+    }
+
+    end
+    {
+        Export-Lab
+        if ($result.Count -eq 1 -and -not $AsHashTable)
+        {
+            $result[$result.Keys[0]]
+        }
+        else
+        {
+            $result
+        }
+        Write-LogFunctionExit
+    }
+}
+#endregion Send-LabAzureWebAppContent
+
+#region Send-FtpFolder
+function Send-FtpFolder
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [string]$DestinationPath,
+
+        [Parameter(Mandatory)]
+        [string]$HostUrl,
+
+        [Parameter(Mandatory)]
+        [System.Net.NetworkCredential]$Credential,
+
+        [switch]$Recure
+    )
+
+    Add-Type -Path 'C:\Program Files\WindowsPowerShell\Modules\AutomatedLab\Tools\FluentFTP.dll'
+    $fileCount = 0
+
+    if (-not (Test-Path -Path $Path -PathType Container))
+    {
+        Write-Error "The folder '$Path' does not exist or is not a directory."
+        return
+    }
+
+    $client = New-Object FluentFTP.FtpClient("ftp://$HostUrl", $Credential)
+    try
+    {
+        $client.DataConnectionType = [FluentFTP.FtpDataConnectionType]::PASV
+        $client.Connect()
+    }
+    catch
+    {
+        Write-Error -Message "Could not connect to FTP server: $($_.Exception.Message)" -Exception $_.Exception
+        return
+    }
+
+    if ($DestinationPath.Contains('\'))
+    {
+        Write-Error "The destination path cannot contain backslashes. Please use forward slashes to separate folder names."
+        return
+    }
+
+    if (-not $DestinationPath.EndsWith('/'))
+    {
+        $DestinationPath += '/'
+    }
+
+    $files = Get-ChildItem -Path $Path -File -Recurse:$Recure
+    Write-Verbose "Sending folder '$Path' with $($files.Count) files"
+
+    foreach ($file in $files)
+    {
+        $fileCount++
+        Write-Verbose "Sending file $($file.FullName) ($fileCount)"
+        Write-Progress -Activity "Uploading file '$($file.FullName)'" -Status x -PercentComplete ($fileCount / $files.Count * 100)
+        $relativeFullName = $file.FullName.Replace($path, '').Replace('\', '/')
+        if ($relativeFullName.StartsWith('/')) { $relativeFullName = $relativeFullName.Substring(1) }
+        $newDestinationPath = $DestinationPath + $relativeFullName
+
+        try
+        {
+            $result = $client.UploadFile($file.FullName, $newDestinationPath, 'Overwrite', $true, 'Retry')
+        }
+        catch
+        {
+            Write-Error -Exception $_.Exception
+            $client.Disconnect()
+            return
+        }
+        if (-not $result)
+        {
+            Write-Error "There was an error uploading file '$($file.FullName)'. Canelling the upload process."
+            $client.Disconnect()
+            return
+        }
+    }
+
+    Write-Verbose "Finsihed sending folder '$Path'"
+
+    $client.Disconnect()
+}
+#endregion Send-FtpFolder
