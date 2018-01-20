@@ -2,9 +2,18 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml;
 
 namespace AutomatedLab.Azure
 {
+    [AttributeUsage(AttributeTargets.Property)]
+    public class CustomProperty : Attribute
+    {
+        //
+        // Summary:
+        //     Indicates that a property was added and will not be found on the source of the CopiedObject.
+    }
+
     [Serializable]
     public class CopiedObject<T> where T : CopiedObject<T>, new()
     {
@@ -40,9 +49,7 @@ namespace AutomatedLab.Azure
 
             if ((underlyingNullableType ?? type).IsEnum)
             {
-
                 // The specified type is an enum or Nullable{T} where T is an enum.
-
                 T convertedEnum = (T)Enum.ToObject(underlyingNullableType ?? type, value);
 
                 if (!Enum.IsDefined(underlyingNullableType ?? type, convertedEnum))
@@ -80,11 +87,11 @@ namespace AutomatedLab.Azure
             nonMappedProperties = new List<string>();
         }
 
-        public void Merge(T input)
+        public void Merge(T input, string[] ExcludeProperties)
         {
             //run over all properties and take the property value from the input object if it is empty on the current object
             var fromProperties = input.GetType().GetProperties();
-            var toProperties = GetType().GetProperties();
+            var toProperties = GetType().GetProperties().Where(p => !ExcludeProperties.Contains(p.Name));
 
             foreach (var toProperty in toProperties)
             {
@@ -105,7 +112,13 @@ namespace AutomatedLab.Azure
         public void Merge(object input)
         {
             var o = Create(input);
-            Merge(o);
+            Merge(o, new string[] { });
+        }
+
+        public void Merge(object input, string[] ExcludeProperties)
+        {
+            var o = Create(input);
+            Merge(o, ExcludeProperties);
         }
 
         public static T Create(object input)
@@ -127,7 +140,7 @@ namespace AutomatedLab.Azure
             {
                 //get the property with the same name, the same generic argument count
                 var fromProperty = fromProperties.Where(
-                    p => p.Name == toProperty.Name)
+                    p => p.Name.ToLower() == toProperty.Name.ToLower())
                     .FirstOrDefault();
 
                 if (fromProperty != null)
@@ -298,6 +311,31 @@ namespace AutomatedLab.Azure
                     {
                         to.nonMappedProperties.Add(toProperty.Name);
                     }
+                }
+                else if (fromProperty == null && input.GetType() == typeof(XmlElement))
+                {
+                    XmlNode attribute = null;
+                    var xmlElement = (XmlElement)input;
+                    try
+                    {
+                        attribute = xmlElement.Attributes.Cast<XmlNode>().Where(node => node.Name.ToLower() == toProperty.Name.ToLower()).First();
+                    }
+                    catch
+                    {
+                        //it's ok not being able to find the attribute
+                    }
+                    if (attribute == null)
+                    {
+                        to.nonMappedProperties.Add(toProperty.Name);
+                        continue;
+                    }
+
+                    //dynamic type casting
+                    var changeTypeMethodInfo = typeof(CopiedObject<T>).GetMethod("ChangeType", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+                    changeTypeMethodInfo = changeTypeMethodInfo.MakeGenericMethod(toProperty.PropertyType);
+                    var o = changeTypeMethodInfo.Invoke(null, new object[] { attribute.Value });
+
+                    toProperty.SetValue(to, o);
                 }
                 else
                 {

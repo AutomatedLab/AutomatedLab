@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace AutomatedLab.Azure
 {
@@ -17,6 +14,27 @@ namespace AutomatedLab.Azure
         Normal,
         Limited,
         DisasterRecoveryMode
+    }
+
+    [Serializable]
+    public class PublishProfile : CopiedObject<PublishProfile>
+    {
+        public string ControlPanelLink { get; set; }
+        public string Databases { get; set; }
+        public string DestinationAppUrl { get; set; }
+        public string HostingProviderForumLink { get; set; }
+        public string MsdeploySite { get; set; }
+        public string MySQLDBConnectionString { get; set; }
+        public string ProfileName { get; set; }
+        public string PublishMethod { get; set; }
+        public string PublishUrl { get; set; }
+        public string SQLServerDBConnectionString { get; set; }
+        public string UserName { get; set; }
+        public string UserPWD { get; set; }
+        public string WebSystem { get; set; }
+
+        public PublishProfile()
+        { }
     }
 
     [Serializable]
@@ -56,14 +74,20 @@ namespace AutomatedLab.Azure
         public string State { get; set; }
         public SerializableDictionary<string, string> Tags { get; set; }
         public string TargetSwapSlot { get; set; }
-        public SerializableList<string> TrafficManagerHostNames { get; set; }
+        public List<string> TrafficManagerHostNames { get; set; }
         public string Type { get; set; }
         public UsageState? UsageState { get; set; }
+
         //non-standard properties
+        [CustomProperty]
         public string ApplicationServicePlan { get; set; }
+        [CustomProperty]
+        public List<PublishProfile> PublishProfiles { get; set; }
 
         public AzureRmService()
-        { }
+        {
+            PublishProfiles = new List<PublishProfile>();
+        }
 
         public override string ToString()
         {

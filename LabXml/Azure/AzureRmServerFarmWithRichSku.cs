@@ -35,8 +35,11 @@ namespace AutomatedLab.Azure
         public string Type { get; set; }
         public string WorkerTierName { get; set; }
         //non-standard properties
+        [CustomProperty]
         public string WorkerSize { get; set; }
+        [CustomProperty]
         public string Tier { get; set; }
+        [CustomProperty]
         public int NumberofWorkers { get; set; }
 
         public AzureRmServerFarmWithRichSku()
