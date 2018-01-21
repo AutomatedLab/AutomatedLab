@@ -209,6 +209,8 @@ function New-LabAzureWebApp
 
                 $existingWebApp = Get-LabAzureWebApp -Name $webApp.Name
                 $existingWebApp.Merge($webApp)
+
+				$existingWebApp | Set-LabAzureWebAppContent -LocalContentPath $labSources\PostInstallationActivities\WebSiteDefaultContent
             
                 if ($PassThru)
                 {

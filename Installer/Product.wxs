@@ -1571,6 +1571,9 @@
       <Component Id="cmpB9F44D1BE872FB3C577FB59AA1C15BD1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="bd3b858a-8261-4151-991e-705a6cc05c6f">
         <File Id="fil19D047322B9B206322C414F06B9749C2" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
       </Component>
+      <Component Id="cmp409218040CF648ED926382E690CB15C8" Directory="dirE842539784E045D999747314891FC4E7" Guid="82a26abf-2b33-415b-90fb-fdc06501a1db">
+        <File Id="filF716E14FD1EA46BDA54D9A76E3EEA053" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html" />
+      </Component>
       <Component Id="cmp8D2B8A64166C91132F0DBC3F643D114D" Directory="dir311D91D38903AE9026EBF00ADD6C4410" Guid="3271d103-ca0c-4248-9212-c590748d99c0">
         <File Id="fil955A23ABDD5E709E04D314B16F498600" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />
       </Component>
@@ -1614,6 +1617,11 @@
   <Fragment>
     <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
       <Directory Id="dir748E276A50118FBDB70F5F2F1C60FEFD" Name="PrepareRootDomain" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dirE842539784E045D999747314891FC4E7" Name="WebSiteDefaultContent" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
