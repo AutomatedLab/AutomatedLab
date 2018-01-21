@@ -31,6 +31,7 @@
     <Folder Include="Resources" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Resources\AutomatedLab.ico" />
     <Content Include="Resources\Banner.bmp" />
     <Content Include="Resources\Complete.ico" />
     <Content Include="Resources\Custom.ico" />
