@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace AutomatedLab.Azure
 {
@@ -16,26 +15,6 @@ namespace AutomatedLab.Azure
 
         public AzureAvailabilitySet()
         { }
-
-        public static AzureAvailabilitySet Create(object input)
-        {
-            return Create<AzureAvailabilitySet>(input);
-        }
-
-        public static IEnumerable<AzureAvailabilitySet> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureAvailabilitySet>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
 
         public override string ToString()
         {

@@ -1,21 +1,30 @@
 # Changelog
 
-## v4.7.* - yyyy-mm-dd
+## v4.7.5.0 - yyyy-mm-dd
 
 ### Fixes
 - AL now creates all SQL service accounts
 - New image names for server 1709 taken into account
 - Random spelling and formatting
 - Sync-Parameter fixed so that it works with PSv2 as well
+- Using Access Database Engine 2016 on a DSC Pull Server to support MDB database on Windows Server 2016
+- Routing role now works on domain controllers
+- Fixing some issues deploying large VM sized in Azure
 
 ### Enhancements
+- Added support for Azure PaaS starting with Web Apps and App Service Plans with 12 new cmdlets and 5 new classes
 - Build and release process automated
 - New sample scripts
+- New cmdlet Update-LabBaseImage
 - New module AutomatedLab.Common added as submodule
 - SQL 2017 added
 - SSMS installation streamlined
 - SQL Server now customizable on Azure as well
 - FQDN in host file
+- Extended CopiedObject.Create() to handle XmlElements, generic Lists, generic dictionaries and Nullable types
+- Extended the CopiedObject.Merge method to reflect the changes made to CopiedObject.Create()
+- Adding FluentFTP.dll to the tools folder
+- Install-LabWindowsFeature: Added parameter IncludeManagementTools
 
 ## v4.5.0.0 - 2017-11-18
 

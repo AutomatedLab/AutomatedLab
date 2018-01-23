@@ -24,14 +24,7 @@ function New-LabVM
         return
     }
     
-    if ($Name)
-    {
-        $machines = Get-LabVM -ComputerName $Name
-    }
-    else
-    {
-        $machines = Get-LabVM
-    }
+    $machines = Get-LabVM -ComputerName $Name -ErrorAction Stop
     
     if (-not $machines)
     {
@@ -123,8 +116,8 @@ function New-LabVM
         Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
-		Write-Verbose -Message 'Restarting machines to apply DNS settings'
-		Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+        Write-Verbose -Message 'Restarting machines to apply DNS settings'
+        Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
 
         Write-Verbose -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs        
@@ -518,7 +511,7 @@ function Stop-LabVM
 
         [switch]$NoNewLine,
 
-		[switch]$KeepAzureVmProvisioned
+        [switch]$KeepAzureVmProvisioned
     )
     
     Write-LogFunctionEntry
@@ -563,9 +556,9 @@ function Stop-LabVM
     
     if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
     if ($azureVms) { 
-		$stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
-		Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
-		}
+        $stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+        Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+    }
     if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
     
     $remainingTargets = @()
@@ -674,14 +667,14 @@ function Wait-LabVM
         netsh.exe interface ip delete arpcache | Out-Null
         
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
-		if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
-		{
-			$machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
-			if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
-			{
-				Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
-			}
-		}        
+        if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
+        {
+            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+            if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
+            {
+                Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
+            }
+        }        
  
         $session = New-LabPSSession -ComputerName $vm -UseLocalCredential -Retries 1 -DoNotUseCredSsp:$DoNotUseCredSsp -ErrorAction SilentlyContinue
             
@@ -711,7 +704,7 @@ function Wait-LabVM
                 $VerbosePreference = $using:VerbosePreference
 
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
-				Import-Module -Name AutomatedLab.Common -ErrorAction Stop
+                Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                 Import-Lab -LabBytes $LabBytes
 
@@ -1278,27 +1271,27 @@ function Join-LabVMDomain
             [Parameter(Mandatory = $true)]
             [System.Management.Automation.PSCredential]$Credential,
 
-			[bool]$AlwaysReboot = $false
+            [bool]$AlwaysReboot = $false
         )
 
-		try
-		{
-			Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
-			$true
-		}
-		catch
-		{
-			if ($AlwaysReboot)
-			{
-				$false
-				Start-Sleep -Seconds 1
-				Restart-Computer -Force
-			}
-			else
-			{
-				Write-Error -Exception $_.Exception -Message $_.Exception.Message -ErrorAction Stop
-			}
-		}
+        try
+        {
+            Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
+            $true
+        }
+        catch
+        {
+            if ($AlwaysReboot)
+            {
+                $false
+                Start-Sleep -Seconds 1
+                Restart-Computer -Force
+            }
+            else
+            {
+                Write-Error -Exception $_.Exception -Message $_.Exception.Message -ErrorAction Stop
+            }
+        }
 
         $logonName = "$DomainName\$($Credential.UserName)"
         $password = $Credential.GetNetworkCredential().Password
@@ -1345,21 +1338,21 @@ function Join-LabVMDomain
             $cred = $domain.GetCredential()
 
             Write-Verbose "Joining machine '$m' to domain '$domain'"
-			$jobParameters = @{
-				ComputerName = $m
-				ActivityName = "DomainJoin_$m"
-				ScriptBlock = (Get-Command Join-Computer).ScriptBlock
-				UseLocalCredential = $true
-				ArgumentList = $domain, $cred
-				AsJob = $true
-				PassThru = $true
-				NoDisplay = $true
-			}
+            $jobParameters = @{
+                ComputerName = $m
+                ActivityName = "DomainJoin_$m"
+                ScriptBlock = (Get-Command Join-Computer).ScriptBlock
+                UseLocalCredential = $true
+                ArgumentList = $domain, $cred
+                AsJob = $true
+                PassThru = $true
+                NoDisplay = $true
+            }
 
-			if ($m.HostType -eq 'Azure')
-			{
-				$jobParameters.ArgumentList += $true
-			}
+            if ($m.HostType -eq 'Azure')
+            {
+                $jobParameters.ArgumentList += $true
+            }
             $jobs += Invoke-LabCommand @jobParameters
         }
     }
@@ -1376,17 +1369,17 @@ function Join-LabVMDomain
     
     foreach ($m in $Machine)
     {
-		$machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
-		$machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
-		if (($machineJob).State -eq 'Failed' -or -not $machineResult)
-		{
-			Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
-			$m.HasDomainJoined = $false
-		}
-		else
-		{
-			$m.HasDomainJoined = $true
-		}
+        $machineJob = $jobs | Where-Object -Property Name -EQ DomainJoin_$m
+        $machineResult = $machineJob | Receive-Job -Keep -ErrorAction SilentlyContinue
+        if (($machineJob).State -eq 'Failed' -or -not $machineResult)
+        {
+            Write-ScreenInfo -Message "$m failed to join the domain. Retrying on next restart" -Type Warning
+            $m.HasDomainJoined = $false
+        }
+        else
+        {
+            $m.HasDomainJoined = $true
+        }
     }
     Export-Lab
     
@@ -1884,8 +1877,8 @@ function Test-LabAutoLogon
             $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
             $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
             $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
-                Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
-                Select-Object -ExpandProperty Caption -Unique
+            Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
+            Select-Object -ExpandProperty Caption -Unique
             
             $values
         } -PassThru -NoDisplay
@@ -1895,7 +1888,7 @@ function Test-LabAutoLogon
         if ( $settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
             $settings.DefaultUserName -ne $parameters.Username -or
-            $settings.DefaultPassword -ne $parameters.Password)
+        $settings.DefaultPassword -ne $parameters.Password)
         {
             $returnValues[$Machine.Name] = $false
             continue

@@ -495,7 +495,9 @@ function New-LabDefinition
         
         [switch]$NoAzurePublishSettingsFile,
         
-        [string]$AzureSubscriptionName
+        [string]$AzureSubscriptionName,
+        
+        [switch]$Passthru
     )
 
     Write-LogFunctionEntry
@@ -817,6 +819,11 @@ function New-LabDefinition
     
     $script:lab.Notes = $Notes
     
+    if ($Passthru)
+    {
+        $script:lab
+    }
+    
     Write-LogFunctionExit
 }
 #endregion New-LabDefinition
@@ -1119,16 +1126,17 @@ function Export-LabDefinition
         if ($script:machines.Count -eq 0)
         {
             Write-Warning 'There are no machines defined, nothing to export'
-            return
         }
-            
-        if ($Script:machines.OperatingSystem | Where-Object Version -lt '6.2')
-        {
-            $unattendedXmlDefaultContent2008 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2008.xml) -Encoding unicode
-        }
-        if ($Script:machines.OperatingSystem | Where-Object Version -ge '6.2')
-        {
-            $unattendedXmlDefaultContent2012 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2012.xml) -Encoding unicode
+            else
+            {
+            if ($Script:machines.OperatingSystem | Where-Object Version -lt '6.2')
+            {
+                $unattendedXmlDefaultContent2008 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2008.xml) -Encoding unicode
+            }
+            if ($Script:machines.OperatingSystem | Where-Object Version -ge '6.2')
+            {
+                $unattendedXmlDefaultContent2012 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2012.xml) -Encoding unicode
+            }
         }
     }
             

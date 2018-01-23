@@ -232,16 +232,19 @@ function Import-Lab
                 }
             }
         
-            $Script:data.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Value {
-                if ($this.OperatingSystem.Version -lt '6.2')
-                {
-                    $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2008.xml'
+            if ($Script:data.Machines)
+            {
+                $Script:data.Machines | Add-Member -MemberType ScriptProperty -Name UnattendedXmlContent -Value {
+                    if ($this.OperatingSystem.Version -lt '6.2')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2008.xml'
+                    }
+                    else
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
+                    }
+                    return [xml](Get-Content -Path $Path)
                 }
-                else
-                {
-                    $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
-                }
-                return [xml](Get-Content -Path $Path)
             }
         }
         catch
@@ -281,7 +284,7 @@ function Import-Lab
             Write-Warning "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)"
         }
     
-        if($Script:data.AzureSettings.AzureProfilePath -and (Test-Path $Script:data.AzureSettings.AzureProfilePath))
+        if($Script:data.AzureSettings.AzureProfilePath -and (Test-Path -Path $Script:data.AzureSettings.AzureProfilePath))
         {
             Add-LabAzureSubscription -Path $Script:data.AzureSettings.AzureProfilePath -DefaultLocationName $Script:data.AzureSettings.DefaultLocation.DisplayName `
             -DefaultStorageAccountName $Script:data.AzureSettings.DefaultStorageAccount `
@@ -446,6 +449,7 @@ function Install-Lab
         [switch]$VisualStudio,
         [switch]$Office2013,
         [switch]$Office2016,
+        [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
@@ -536,7 +540,10 @@ function Install-Lab
             Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
         }
         
-        New-LabVM -CreateCheckPoints:$CreateCheckPoints
+        if ($script:data.Machines)
+        {
+            New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+        }
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -783,13 +790,13 @@ function Install-Lab
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
     
-    if ($StartRemainingMachines -or $performAll)
+    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
-        if ($null -eq $DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV')*30)
+        if ($DelayBetweenComputers){
+            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV') * 30)
         }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
         Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
@@ -797,11 +804,20 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ($PostInstallations -or $performAll)
+    if (($PostInstallations -or $performAll) -and (Get-LabVM))
     {
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
         $jobs | Wait-Job | Out-Null
-    }    
+    }
+
+    if (($AzureServices -or $performAll) -and (Get-LabAzureWebApp))
+    {
+        Write-ScreenInfo -Message 'Starting deployment of Azure services' -TaskStart
+
+        Install-LabAzureServices
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
     
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
@@ -858,10 +874,11 @@ function Remove-Lab
         $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
         Write-Verbose '...done'
 
-        if (Get-LabMachine | Where-Object HostType -eq Azure)
+        if ((Get-LabMachine | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
-            Remove-LabAzureResourceGroup $labName -Force
+            #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
+            (Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
         if (Get-LabMachine | Where-Object HostType -eq HyperV)
@@ -3504,7 +3521,7 @@ function New-LabSourcesFolder
         $Path = Join-Path -Path $drive.RootDirectory -ChildPath LabSources
     }
 
-    if ((Test-Path $Path) -and -not $Force)
+    if ((Test-Path -Path $Path) -and -not $Force)
     {
         return $Path
     }

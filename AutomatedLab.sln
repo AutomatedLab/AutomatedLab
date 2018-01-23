@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -57,6 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabDefinition", "A
 		AutomatedLabDefinition\AutomatedLabDefinition.Help.xml = AutomatedLabDefinition\AutomatedLabDefinition.Help.xml
 		AutomatedLabDefinition\AutomatedLabDefinition.psd1 = AutomatedLabDefinition\AutomatedLabDefinition.psd1
 		AutomatedLabDefinition\AutomatedLabDefinition.psm1 = AutomatedLabDefinition\AutomatedLabDefinition.psm1
+		AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1
 		AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1 = AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1
 	EndProjectSection
 EndProject
@@ -89,6 +90,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabADDS.psm1 = AutomatedLab\AutomatedLabADDS.psm1
 		AutomatedLab\AutomatedLabADFS.psm1 = AutomatedLab\AutomatedLabADFS.psm1
 		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
+		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
@@ -151,10 +153,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.gitignore = .gitignore
 		.gitmodules = .gitmodules
 		appveyor.yml = appveyor.yml
-		Automated-Lab_icon128.png = Automated-Lab_icon128.png
-		Automated-Lab_icon256.png = Automated-Lab_icon256.png
-		Automated-Lab_icon512.png = Automated-Lab_icon512.png
-		Automated-Lab_icon64.png = Automated-Lab_icon64.png
 		automatedlab.psdeploy.ps1 = automatedlab.psdeploy.ps1
 		Build.ps1 = Build.ps1
 		CHANGELOG.md = CHANGELOG.md
@@ -167,6 +165,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{35796C10-DDB9-4E04-A2CD-FE3D00A0E361}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\Tools\FluentFTP.dll = AutomatedLab\Tools\FluentFTP.dll
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{F283AF3D-956C-4CE2-ABBF-273D38810E2D}"
 	ProjectSection(SolutionItems) = preProject
@@ -507,6 +508,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VMWare", "VMWare", "{9598B1
 		LabSources\SampleScripts\VMWare\VMWare Single Server.ps1 = LabSources\SampleScripts\VMWare\VMWare Single Server.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{17D0AC55-9455-4642-8344-495533568B68}"
+	ProjectSection(SolutionItems) = preProject
+		Assets\Automated-Lab_icon128.png = Assets\Automated-Lab_icon128.png
+		Assets\Automated-Lab_icon256.png = Assets\Automated-Lab_icon256.png
+		Assets\Automated-Lab_icon512.png = Assets\Automated-Lab_icon512.png
+		Assets\Automated-Lab_icon64.png = Assets\Automated-Lab_icon64.png
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSiteDefaultContent", "WebSiteDefaultContent", "{F8AE4BA3-E199-4E0A-A236-75EF8AB9F3CE}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html = LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -595,6 +609,7 @@ Global
 		{8EDB1BFE-319F-40DA-9D81-DB6650D7EDA7} = {66222DE6-3AC8-44BC-B3FF-04EA7524BCBA}
 		{AE2E62EE-7275-43E2-90CB-E83D84E4B131} = {E024D96C-6476-4F89-A0B2-4AF5E0DBB747}
 		{9598B13D-43BD-4D68-A718-5D48693A2E36} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
+		{F8AE4BA3-E199-4E0A-A236-75EF8AB9F3CE} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
