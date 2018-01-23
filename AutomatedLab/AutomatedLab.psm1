@@ -776,7 +776,7 @@ function Install-Lab
     if (($TeamFoundation -or $performAll) -and (Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabMachine -Role Tfs2015,Tfs2017).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker).Name -join ', ')'"
 
         Start-LabVm -RoleName Tfs2015,Tfs2017,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
         Install-LabTeamFoundationEnvironment
