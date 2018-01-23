@@ -77,6 +77,13 @@ function Install-LabTeamFoundationEnvironment
         if ( $role.Name -eq 'TfsBuildWorker')
         {
             $isoPath = ($lab.Sources.ISOs | Where-Object Name -like Tfs???? | Select-Object -First 1).Path
+
+            if ($role.Properties.ContainsKey('TfsServer'))
+            {
+                $tfsServer = Get-LabVm -Name $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
+                $tfsRole = $tfsServer.Roles | Where-Object Name -like Tfs????
+                $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $tfsRole.Name | Select-Object -First 1).Path
+            }            
         }
 
         $retryCount = 3
@@ -121,7 +128,7 @@ function Install-LabTeamFoundationEnvironment
             {
                 Write-Error -Message 'No ISO mounted. Cannot continue.'
             }
-        } -AsJob -PassThru
+        } -AsJob -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $jobs
@@ -182,7 +189,7 @@ function Install-LabTeamFoundationServer
             Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
 
             & $tfsConfigPath "unattend /unattendfile:$config /continue"
-        } -Variable (Get-Variable targetConfiguration) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru
+        } -Variable (Get-Variable targetConfiguration) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -202,8 +209,8 @@ function Install-LabBuildWorker
 4 - Build worker port
 #>
 
-    $buildWorkers = Get-LabVm -Roles TfsBuildWorker
-    $tfsServer = Get-LabVm -Roles Tfs2015, Tfs2017 | Select-Object -First 1
+    $buildWorkers = Get-LabVm -Role TfsBuildWorker
+    $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
     $tfsPort = 8080
 
     $role = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
@@ -250,7 +257,7 @@ function Install-LabBuildWorker
             Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
 
             & $tfsConfigPath "unattend /unattendfile:$config /continue"
-        } -AsJob -Variable (Get-Variable targetConfiguration) -ActivityName "Setting up build agent $machine" -PassThru
+        } -AsJob -Variable (Get-Variable targetConfiguration) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
