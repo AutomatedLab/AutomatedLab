@@ -80,7 +80,7 @@ function Install-LabTeamFoundationEnvironment
 
             if ($role.Properties.ContainsKey('TfsServer'))
             {
-                $tfsServer = Get-LabVm -Name $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
+                $tfsServer = Get-LabVm -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
                 $tfsRole = $tfsServer.Roles | Where-Object Name -like Tfs????
                 $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $tfsRole.Name | Select-Object -First 1).Path
             }            
@@ -169,7 +169,7 @@ function Install-LabTeamFoundationServer
 
         if ($role.Properties.ContainsKey('DbServer'))
         {
-            $sqlServer = Get-LabVm -Name $role.Properties['DbServer'] -ErrorAction SilentlyContinue
+            $sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
 
             if (-not $sqlServer)
             {
@@ -238,7 +238,7 @@ function Install-LabBuildWorker
 
         if ($role.Properties.ContainsKey('TfsServer'))
         {
-            $tfsServer = Get-LabVm -Name $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
+            $tfsServer = Get-LabVm -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
