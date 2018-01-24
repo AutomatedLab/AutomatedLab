@@ -360,6 +360,16 @@ function Add-LabAzureSubscription
         Group-Object -Property Skus, Offer |
         ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
+        # Sharepoint 2013 and 2016
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'MicrosoftSharePointServer' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
         $global:cacheVmImages = $vmImages
     }
     
