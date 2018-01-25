@@ -92,6 +92,8 @@ namespace AutomatedLab
         private AzureSettings azureSettings;
         private VMWareConfiguration vmwareSettings;
 
+        private Azure.AzureRm azureResources;
+
         public List<Disk> Disks
         {
             get { return disks; }
@@ -204,6 +206,12 @@ namespace AutomatedLab
             set { vmwareSettings = value; }
         }
 
+        public Azure.AzureRm AzureResources
+        {
+            get { return azureResources; }
+            set { azureResources = value; }
+        }
+
         public Lab()
         {
             sources = new Sources();
@@ -216,6 +224,8 @@ namespace AutomatedLab
             sources.ISOs = new List<IsoImage>();
             virtualNetworks = new List<VirtualNetwork>();
             notes = new SerializableDictionary<string, string>();
+
+            azureResources = new Azure.AzureRm();
         }
 
         public bool IsRootDomain(string domainName)

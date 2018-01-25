@@ -387,6 +387,7 @@ function Install-LabSqlSampleDatabases
 {
     param
     (
+        [Parameter(Mandatory)]
         [AutomatedLab.Machine]		
         $Machine
     )
@@ -509,6 +510,29 @@ function Install-LabSqlSampleDatabases
 		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
 		MOVE 'WWI_InMemory_Data_1' TO
 		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+		REPLACE
+"@
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
+        }
+        'SQLServer2017' 
+        {
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2017
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
+                $query = @"
+		USE master
+		RESTORE DATABASE WideWorldImporters
+		FROM disk = 
+		'$($backupFile.FullName)'
+		WITH MOVE 'WWI_Primary' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+		MOVE 'WWI_UserData' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+		MOVE 'WWI_Log' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+		MOVE 'WWI_InMemory_Data_1' TO
+		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
 		REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query

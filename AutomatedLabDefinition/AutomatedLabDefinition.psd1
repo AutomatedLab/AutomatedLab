@@ -19,9 +19,9 @@
 
     ModuleList             = @('AutomatedLabDefinition')
     
-    NestedModules          = @('AutomatedLabDefinitionNetwork.psm1')
+    NestedModules          = @('AutomatedLabDefinitionNetwork.psm1', 'AutomatedLabDefinitionAzureServices.psm1')
     
-    FileList               = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1')
+    FileList               = @('AutomatedLabDefinition.psm1', 'AutomatedLabDefinition.init.ps1', 'AutomatedLabDefinitionNetwork.psm1', 'AutomatedLabDefinitionAzureServices.psm1')
     
     RequiredModules        = @(
         'AutomatedLabUnattended'
@@ -31,12 +31,16 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
+        'Add-LabAzureWebAppDefinition'
+        'Add-LabAzureAppServicePlanDefinition'
         'Add-LabDiskDefinition'
         'Add-LabDomainDefinition'
         'Add-LabIsoImageDefinition'
         'Add-LabMachineDefinition'
         'Add-LabVirtualNetworkDefinition'
         'Export-LabDefinition'
+		'Get-LabAzureWebAppDefinition'
+        'Get-LabAzureAppServicePlanDefinition'
         'Get-DiskSpeed'
         'Get-LabAvailableAddresseSpace'
         'Get-LabDefinition'

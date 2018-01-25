@@ -26,6 +26,7 @@
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
     
     NestedModules          = @(
+        'AutomatedLabAzureServices.psm1',
         'AutomatedLab.dll',
         'AutomatedLabADDS.psm1',
         'AutomatedLabADCS.psm1',
@@ -83,6 +84,7 @@
         'Export-Lab',
         'Get-Lab',
         'Get-LabAvailableOperatingSystem',
+        'Get-LabAzureAppServicePlan',
         'Get-LabAzureCertificate',
         'Get-LabAzureDefaultLocation',
         'Get-LabAzureDefaultResourceGroup',
@@ -92,6 +94,8 @@
         'Get-LabAzureLocation',
         'Get-LabAzureResourceGroup',
         'Get-LabAzureSubscription',
+        'Get-LabAzureWebApp',
+        'Get-LabAzureWebAppStatus',
         'Get-LabCertificate',
         'Get-LabHyperVAvailableMemory',
         'Get-LabInternetFile',
@@ -114,6 +118,7 @@
         'Install-LabADDSTrust',
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
+        'Install-LabAzureServices',
         'Install-LabDcs',
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
@@ -137,6 +142,9 @@
         'Mount-LabIsoImage',
         'New-LabADSubnet',
         'New-LabAzureLabSourcesStorage',
+        'New-LabAzureAppServicePlan',
+        'New-LabAzureWebApp',
+        'New-LabAzureRmResourceGroup',
         'New-LabCATemplate',
         'New-LabPSSession',
         'New-LabVHDX',
@@ -161,6 +169,7 @@
         'Set-LabAutoLogon',
         'Set-LabAzureDefaultLocation',
         'Set-LabAzureDefaultStorageAccount',
+        'Set-LabAzureWebAppContent',
         'Set-LabDefaultOperatingSystem',
         'Set-LabDefaultVirtualizationEngine',
         'Set-LabDscLocalConfigurationManagerConfiguration',
@@ -168,7 +177,9 @@
         'Set-LabInstallationCredential',
         'Set-LabMachineUacStatus',
         'Show-LabDeploymentSummary',
+        'Start-LabAzureWebApp',
         'Start-LabVM',
+        'Stop-LabAzureWebApp',
         'Stop-LabVM',
         'Sync-LabActiveDirectory',
         'Sync-LabAzureLabSources',
@@ -195,23 +206,26 @@
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
         'AutomatedLab.psd1', 
-        'AutomatedLab.psm1', 
+        'AutomatedLab.psm1',
+        'AutomatedLabADCS.psm1',
         'AutomatedLabADDS.psm1',
-        'AutomatedLabADCS.psm1', 
+        'AutomatedLabADFS.psm1',
+        'AutomatedLabAzure.psm1',
+        'AutomatedLabAzureServices.psm1',
         'AutomatedLabDisks.psm1',
-        'AutomatedLabInternals.psm1',
-        'AutomatedLabVirtualMachines.psm1',
+        'AutomatedLabDsc.psm1',
         'AutomatedLabExchange2013.psm1',
         'AutomatedLabExchange2016.psm1',
-        'AutomatedLabSQL.psm1',
-        'AutomatedLabNetwork.psm1',
-        'AutomatedLabAzure.psm1', 
-        'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1',
+        'AutomatedLabFailover.psm1',
         'AutomatedLabHybrid.psm1',
-        'AutomatedLabFailover.psm1'
+        'AutomatedLabInternals.psm1',
+        'AutomatedLabNetwork.psm1',
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabRouting.psm1',
+        'AutomatedLabSharePoint.psm1',
+        'AutomatedLabSQL.psm1',
+        'AutomatedLabVirtualMachines.psm1',
+        'AutomatedLabVMWare.psm1'
     )
     
     PrivateData            = @{
@@ -285,6 +299,7 @@
         SQLServer2012                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2012.bak'
         SQLServer2014                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2014.bak'
         SQLServer2016                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
+        SQLServer2017                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
 
         #Access Database Engine
         AccessDatabaseEngine2016x86            = 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe'
