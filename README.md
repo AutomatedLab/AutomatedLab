@@ -4,6 +4,7 @@
 [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/master?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
 [![Build status dev](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/develop?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
 [![Downloads](https://img.shields.io/github/downloads/AutomatedLab/AutomatedLab/total.svg?label=Downloads&maxAge=60)](https://getsharex.com/downloads/)
+[![GitHub issues](https://img.shields.io/github/issues/AutomatedLab/AutomatedLab.svg)](https://github.com/AutomatedLab/AutomatedLab/issues)
 
 <a href="https://github.com/AutomatedLab/AutomatedLab/tree/master">
         <img src="https://img.shields.io/github/last-commit/AutomatedLab/AutomatedLab/develop.svg?label=lastest%20commit%20develop"
