@@ -1,62 +1,3 @@
-<#
-0 - SQL Server
-1 - TFS Server
-2 - Initial collection name
-3 - Port
-4 - Database label
-#>
-$tfsConfiguration = @"
-[Configuration]
-Activity=Microsoft.TeamFoundation.Admin.ServerConfigurationActivity
-Assembly=Microsoft.TeamFoundation.Admin, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-Scenario=NewServerAdvanced
-SqlInstance={0}
-UseExistingEmptyDatabase=False
-CreateConfigurationDatabase=True
-DatabaseLabel={4}
-StartTrial=False
-IsServiceAccountBuiltIn=True
-ServiceAccountName=NT AUTHORITY\NETWORK SERVICE
-UrlHostNameAlias={1}
-WebSiteVDirName=tfs
-SiteBindings=http:*:{3}:
-PublicUrl=http://{1}:{3}/tfs
-FileCacheFolder=C:\TfsData\ApplicationTier\_fileCache
-SmtpEmailEnabled=False
-EnableSshService=True
-SshPort=22
-UseReporting=False
-UseWss=False
-ConfigureSearch=False
-InstallSearchService=True
-CreateInitialCollection=True
-CollectionName={2}
-CollectionDescription=Built by AutomatedLab, your friendly lab automation solution
-"@
-
-<#
-0 - Number of build agents
-1 - Build machine
-2 - TFS
-3 - TFS web site port
-4 - Build worker port
-#>
-$buildWorkerConfiguration = @"
-[Configuration]
-Activity=Microsoft.TeamFoundation.Admin.TeamBuildActivity
-Assembly=Microsoft.TeamFoundation.Admin, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a
-AcknowledgedDeprecated=False
-ConfigurationType=Create
-AgentCount={0}
-NewControllerName={1} - Controller
-CleanResources=False
-CollectionUrl=http://{2}:{3}/tfs
-IsServiceAccountBuiltIn=True
-ServiceAccountName=NT AUTHORITY\NETWORK SERVICE
-Port={4}
-MaxConcurrentBuilds=0
-"@
-
 function Install-LabTeamFoundationEnvironment
 {
     [CmdletBinding()]
@@ -145,7 +86,10 @@ function Install-LabTeamFoundationServer
     ( )
 
     $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
-    $sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017
+    [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+    $unassignedBuildWorker = @(Get-LabVm -Role TfsBuildWorker | Where-Object {
+            -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
+        })
 
     $installationJobs = @()
     $count = 0
@@ -155,6 +99,7 @@ function Install-LabTeamFoundationServer
         $initialCollection = 'AutomatedLab'
         $tfsPort = 8080
         $databaseLabel = "TFS$count" # Increment database label in case we deploy multiple TFS
+        [string]$machineName = $machine
         $count++
     
         if ($role.Properties.ContainsKey('InitialCollection'))
@@ -169,27 +114,64 @@ function Install-LabTeamFoundationServer
 
         if ($role.Properties.ContainsKey('DbServer'))
         {
-            $sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
+            [string]$sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
 
             if (-not $sqlServer)
             {
                 Write-ScreenInfo -Message "No SQL server called $($role.Properties['DbServer']) found in lab." -NoNewLine -Type Warning
-                $sqlServer = Get-LabMachine -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+                [string]$sqlServer = Get-LabMachine -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $sqlServer instead." -Type Warning
             }
         }
 
-        $targetConfiguration = $tfsConfiguration -f $sqlServer, $machine, $initialCollection, $tfsPort, $databaseLabel
+        [string[]]$buildWorker = @(Get-LabVm -Role $role.Name | Where-Object {
+                ($_.Roles | Where-Object Name -eq $role.Name).Properties['TfsServer'] -eq $_.Name
+            })
+
+        if ($unassignedBuildWorker.Count -gt 0)
+        {
+            $buildWorker += $unassignedBuildWorker
+            $unassignedBuildWorker.Clear()
+        }
+        
+        $targetConfiguration = (Get-Variable -Name "$($role.Name)Configuration").Value -f $sqlServer, $machine, $initialCollection, $tfsPort, $databaseLabel, '{5}'
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
 
-            $config = (New-Item -Path C:\DeployDebug\TfsConfig.ini -Force).FullName
-            Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
+            if (-not (Test-Path C:\DeployDebug))
+            {
+                [void] (New-Item -Path C:\DeployDebug -ItemType Directory)
+            }
 
-            & $tfsConfigPath "unattend /unattendfile:$config /continue"
-        } -Variable (Get-Variable targetConfiguration) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+            # Create unattend file with fitting parameters and replace all we can find
+            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
+            
+            $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
+            $content = [System.IO.File]::ReadAllText($config)
+           
+            $content = $content -replace 'SqlInstance=.+', ('SqlInstance={0}' -f $sqlServer)
+            $content = $content -replace 'DatabaseLabel=.+', ('DatabaseLabel={0}' -f $databaseLabel)
+            $content = $content -replace 'UrlHostNameAlias=.+', ('UrlHostNameAlias={0}' -f $machineName)
+            $content = $content -replace 'SiteBindings=.+', ('SiteBindings=http:*:{0}:' -f $tfsPort)
+            $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}/tfs' -f $machineName, $tfsPort)
+            $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}/tfs' -f $machineName, $tfsPort)
+            $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
+            $content = $content -replace 'CollectionDescription=.+', 'CollectionDescription=Built by AutomatedLab, your friendly lab automation solution'
+            $content = $content -replace 'WebSitePort=.+', ('WebSitePort={0}' -f $tfsPort) # Plain TFS 2015
+            $content = $content -replace 'UrlHostNameAlias=.+', ('UrlHostNameAlias={0}' -f $machineName) # Plain TFS 2015
+            
+            [System.IO.File]::WriteAllText($config, $content)
+
+            $command = "unattend /unattendfile:`"$config`" /continue"
+            $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
+
+            if ($configurationProcess.ExitCode -ne 0)
+            {
+                throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
+            }
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -201,24 +183,22 @@ function Install-LabBuildWorker
     param
     ( )
 
-    <#
-0 - Number of build agents
-1 - Build machine
-2 - TFS
-3 - TFS web site port
-4 - Build worker port
-#>
-
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
     $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
     $tfsPort = 8080
+    $collection = 'AutomatedLab'
 
-    $role = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
-    if ($role.Properties.ContainsKey('Port'))
+    $tfsRole = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
+    if ($tfsRole.Properties.ContainsKey('Port'))
     {
-        $tfsPort = $role.Properties['Port']
+        $tfsPort = $tfsRole.Properties['Port']
     }
-    
+
+    if ($tfsRole.Properties.ContainsKey('InitialCollection'))
+    {
+        $collection = $tfsRole.Properties['InitialCollection']
+    }
+
     $installationJobs = @()
     foreach ( $machine in $buildWorkers)
     {
@@ -245,20 +225,72 @@ function Install-LabBuildWorker
                 $tfsServer = Get-LabMachine -Role Tfs2015, Tfs2017 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
             }
-        }
 
-        $targetConfiguration = $buildWorkerConfiguration -f $buildAgentCount, $buildWorker, $tfsServer, $tfsPort, $buildWorkerPort
+            $tfsRole = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
+            if ($tfsRole.Properties.ContainsKey('Port'))
+            {
+                $tfsPort = $tfsRole.Properties['Port']
+            }
+
+            if ($tfsRole.Properties.ContainsKey('InitialCollection'))
+            {
+                $collection = $tfsRole.Properties['InitialCollection']
+            }
+        }
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
 
-            $config = (New-Item -Path C:\DeployDebug\TfsBuildWorker.ini -Force).FullName
-            Set-Content -Path $config -Value $targetConfiguration -Encoding UTF8
+            if (-not (Test-Path C:\DeployDebug))
+            {
+                [void] (New-Item -Path C:\DeployDebug -ItemType Directory)
+            }
 
-            & $tfsConfigPath "unattend /unattendfile:$config /continue"
-        } -AsJob -Variable (Get-Variable targetConfiguration) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+            # Get correct signed assembly from a sample config file
+            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:basic /unattendfile:C:\DeployDebug\TfsBuildConfig.ini' -NoNewWindow -Wait)
+            
+            $config = (Get-Item -Path C:\DeployDebug\TfsBuildConfig.ini -ErrorAction Stop).FullName
+            $content = [System.IO.File]::ReadAllText($config)
+           
+            $content = $content -replace 'AgentCount=.+', ('AgentCount={0}' -f $buildAgentCount)
+            $content = $content -replace 'NewControllerName=.+', ('NewControllerName={0} - Controller' -f $machineName)
+            $content = $content -replace 'CollectionUrl=.+', ('CollectionUrl=http://{0}:{1}/tfs/{2}' -f $tfsServer, $tfsPort, $collection)
+            $content = $content -replace 'Port=.+', ('Port={0}' -f $buildWorkerPort)
+            
+            [System.IO.File]::WriteAllText($config, $content)
+
+            $command = "unattend /unattendfile:`"$config`" /continue"
+            $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
+            if ($configurationProcess.ExitCode -ne 0)
+            {
+                throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
+            }
+        } -AsJob -Variable (Get-Variable buildAgentCount, buildWorker, tfsServer, tfsPort, buildworkerport, collection) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
+}
+
+function Open-LabTeamFoundationSite
+{
+    param
+    (
+        [Parameter(Mandatory = $true)]
+        [string[]]
+        $ComputerName
+    )
+
+    $machines = Get-LabVm @PSBoundParameters
+
+    foreach ( $machine in $machines)
+    {
+        $role = $machine.Roles | Where-Object Name -eq Tfs????
+        $tfsPort = 8080
+        if ($role.Properties.ContainsKey('Port'))
+        {
+            $tfsPort = $role.Properties['Port']
+        }
+        Start-Process ('http://{1}:{3}/tfs' -f $machine, $tfsPort)
+    }
 }
