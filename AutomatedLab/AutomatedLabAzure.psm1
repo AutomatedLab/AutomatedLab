@@ -913,7 +913,7 @@ function Remove-LabAzureResourceGroup
                 Write-Verbose "Resource Group '$($name)' removed"
                 
                 $resourceGroup = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
-                $script:lab.AzureSettings.ResourceGroups.Remove($resourceGroup)
+                $script:lab.AzureSettings.ResourceGroups.Remove($resourceGroup) | Out-Null
             }
             else
             {

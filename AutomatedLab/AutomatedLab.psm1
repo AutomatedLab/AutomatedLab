@@ -867,7 +867,7 @@ function Remove-Lab
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
             #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
-            (Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
+            @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
         if (Get-LabMachine | Where-Object HostType -eq HyperV)
