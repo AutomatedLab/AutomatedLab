@@ -134,8 +134,6 @@ function Install-LabTeamFoundationServer
             $unassignedBuildWorker.Clear()
         }
         
-        $targetConfiguration = (Get-Variable -Name "$($role.Name)Configuration").Value -f $sqlServer, $machine, $initialCollection, $tfsPort, $databaseLabel, '{5}'
-
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
