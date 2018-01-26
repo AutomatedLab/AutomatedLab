@@ -1,6 +1,6 @@
 # Changelog
 
-## v4.7.5.0 - yyyy-mm-dd
+## v4.7.* - yyyy-mm-dd
 
 ### Fixes
 - AL now creates all SQL service accounts
@@ -25,6 +25,7 @@
 - Extended the CopiedObject.Merge method to reflect the changes made to CopiedObject.Create()
 - Adding FluentFTP.dll to the tools folder
 - Install-LabWindowsFeature: Added parameter IncludeManagementTools
+- TFS added
 
 ## v4.5.0.0 - 2017-11-18
 
