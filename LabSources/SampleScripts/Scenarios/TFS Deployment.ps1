@@ -22,10 +22,10 @@ $role = Get-LabMachineRoleDefinition -Role Tfs2017 -Properties @{
 }
 Add-LabMachineDefinition -Name tfsSrv1 -Roles $role -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTER' -Memory 4GB
 
-$role = Get-LabMachineRoleDefinition -Role Tfs2017 -Properties @{
+$role = Get-LabMachineRoleDefinition -Role Tfs2015 -Properties @{
     DbServer = "tfsSQL2" # Use correct SQL Edition according to the product compatibility matrix!
 }
-Add-LabMachineDefinition -Name tfsSrv2 -Roles Tfs2015 -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTER' -Memory 4GB
+Add-LabMachineDefinition -Name tfsSrv2 -Roles $role -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTER' -Memory 4GB
 
 # If no properties are used, we automatically bind to the first TFS Server in the lab, use port 9090 and 2 build agents
 # If a TFS server is used, the fitting installation (TFS2015 or 2017) will be used for the build agent

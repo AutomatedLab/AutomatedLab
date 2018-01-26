@@ -264,7 +264,7 @@ function Install-LabBuildWorker
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
             }
-        } -AsJob -Variable (Get-Variable buildAgentCount, buildWorker, tfsServer, tfsPort, buildworkerport, collection) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable buildAgentCount, tfsServer, tfsPort, buildworkerport, collection) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
