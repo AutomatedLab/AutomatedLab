@@ -29,10 +29,7 @@ Add-LabMachineDefinition -Name tfsSrv2 -Roles $role -DomainName contoso.com -Ope
 
 # If no properties are used, we automatically bind to the first TFS Server in the lab, use port 9090 and 2 build agents
 # If a TFS server is used, the fitting installation (TFS2015 or 2017) will be used for the build agent
-$role = Get-LabMachineRoleDefinition -Role TfsBuildWorker -Properties @{
-    TfsServer = "tfsSrv1"
-}
-Add-LabMachineDefinition -Name tfsBuild1 -Roles $role -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTERCORE' -Memory 2GB
+Add-LabMachineDefinition -Name tfsBuild1 -Roles TfsBuildWorker -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTERCORE' -Memory 2GB
 
 $role = Get-LabMachineRoleDefinition -Role TfsBuildWorker -Properties @{
     Port = '9091'

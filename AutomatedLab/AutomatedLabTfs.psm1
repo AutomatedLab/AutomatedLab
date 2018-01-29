@@ -85,11 +85,15 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
     [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
-    $unassignedBuildWorker = @(Get-LabVm -Role TfsBuildWorker | Where-Object {
+    
+    # Assign unassigned build workers to our most current TFS machine
+    Get-LabVm -Role TfsBuildWorker | Where-Object {
             -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
-        })
+        } | ForEach-Object {
+        ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.Add('TfsServer', $tfsMachines[0].Name)
+    }
 
     $installationJobs = @()
     $count = 0
@@ -124,16 +128,6 @@ function Install-LabTeamFoundationServer
             }
         }
 
-        [string[]]$buildWorker = @(Get-LabVm -Role $role.Name | Where-Object {
-                ($_.Roles | Where-Object Name -eq $role.Name).Properties['TfsServer'] -eq $_.Name
-            })
-
-        if ($unassignedBuildWorker.Count -gt 0)
-        {
-            $buildWorker += $unassignedBuildWorker
-            $unassignedBuildWorker.Clear()
-        }
-        
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
