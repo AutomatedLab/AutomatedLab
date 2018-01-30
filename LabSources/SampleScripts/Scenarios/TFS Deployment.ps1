@@ -32,8 +32,6 @@ Add-LabMachineDefinition -Name tfsSrv2 -Roles $role -DomainName contoso.com -Ope
 Add-LabMachineDefinition -Name tfsBuild1 -Roles TfsBuildWorker -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTERCORE' -Memory 2GB
 
 $role = Get-LabMachineRoleDefinition -Role TfsBuildWorker -Properties @{
-    Port = '9091'
-    BuildAgentCount = '4'
     TfsServer = "tfsSrv2"
 }
 Add-LabMachineDefinition -Name tfsBuild2 -Roles $role -DomainName contoso.com -OperatingSystem 'Windows Server 2016 SERVERDATACENTERCORE' -Memory 2GB

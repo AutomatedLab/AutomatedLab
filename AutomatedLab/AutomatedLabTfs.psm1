@@ -4,7 +4,7 @@ function Install-LabTeamFoundationEnvironment
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, TfsBuildWorker
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
     $lab = Get-Lab
     $jobs = @()
 
@@ -14,18 +14,6 @@ function Install-LabTeamFoundationEnvironment
 
         $role = $machine.Roles | Where-Object Name -like Tfs*
         $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path
-
-        if ( $role.Name -eq 'TfsBuildWorker')
-        {
-            $isoPath = ($lab.Sources.ISOs | Where-Object Name -like Tfs???? | Select-Object -First 1).Path
-
-            if ($role.Properties.ContainsKey('TfsServer'))
-            {
-                $tfsServer = Get-LabVm -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
-                $tfsRole = $tfsServer.Roles | Where-Object Name -like Tfs????
-                $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $tfsRole.Name | Select-Object -First 1).Path
-            }            
-        }
 
         $retryCount = 3
         $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
@@ -90,8 +78,8 @@ function Install-LabTeamFoundationServer
     
     # Assign unassigned build workers to our most current TFS machine
     Get-LabVm -Role TfsBuildWorker | Where-Object {
-            -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
-        } | ForEach-Object {
+        -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
+    } | ForEach-Object {
         ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.Add('TfsServer', $tfsMachines[0].Name)
     }
 
@@ -176,37 +164,19 @@ function Install-LabBuildWorker
     ( )
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
-    $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
-    $tfsPort = 8080
-    $collection = 'AutomatedLab'
 
-    $tfsRole = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
-    if ($tfsRole.Properties.ContainsKey('Port'))
-    {
-        $tfsPort = $tfsRole.Properties['Port']
-    }
-
-    if ($tfsRole.Properties.ContainsKey('InitialCollection'))
-    {
-        $collection = $tfsRole.Properties['InitialCollection']
-    }
+    [void] (New-Item -Path (Join-Path -Path $labsources -ChildPath Tools\TFS) -ErrorAction SilentlyContinue -ItemType Directory)
+    $buildWorkerUri = (Get-Module AutomatedLab -ListAvailable).PrivateData["BuildAgentUri"]
+    $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TFS\TfsBuildWorker.zip
+    Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath
+    Copy-LabFileItem -ComputerName $buildWorkers -Path $buildWorkerPath
 
     $installationJobs = @()
     foreach ( $machine in $buildWorkers)
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
-        $buildAgentCount = 2
-        $buildWorkerPort = 9090
-
-        if ($role.Properties.ContainsKey('BuildAgentCount'))
-        {
-            $buildAgentCount = $role.Properties['BuildAgentCount']
-        }
-
-        if ($role.Properties.ContainsKey('Port'))
-        {
-            $buildWorkerPort = $role.Properties['Port']
-        }
+        $tfsPort = 8080
+        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
 
         if ($role.Properties.ContainsKey('TfsServer'))
         {
@@ -223,42 +193,24 @@ function Install-LabBuildWorker
             {
                 $tfsPort = $tfsRole.Properties['Port']
             }
-
-            if ($tfsRole.Properties.ContainsKey('InitialCollection'))
-            {
-                $collection = $tfsRole.Properties['InitialCollection']
-            }
         }
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
-            if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
 
-            if (-not (Test-Path C:\DeployDebug))
-            {
-                [void] (New-Item -Path C:\DeployDebug -ItemType Directory)
-            }
+            if (-not (Test-Path C:\TfsBuildWorker.zip)) {throw 'Build worker installation files not available'}
 
-            # Get correct signed assembly from a sample config file
-            [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:basic /unattendfile:C:\DeployDebug\TfsBuildConfig.ini' -NoNewWindow -Wait)
-            
-            $config = (Get-Item -Path C:\DeployDebug\TfsBuildConfig.ini -ErrorAction Stop).FullName
-            $content = [System.IO.File]::ReadAllText($config)
-           
-            $content = $content -replace 'AgentCount=.+', ('AgentCount={0}' -f $buildAgentCount)
-            $content = $content -replace 'NewControllerName=.+', ('NewControllerName={0} - Controller' -f $machineName)
-            $content = $content -replace 'CollectionUrl=.+', ('CollectionUrl=http://{0}:{1}/tfs/{2}' -f $tfsServer, $tfsPort, $collection)
-            $content = $content -replace 'Port=.+', ('Port={0}' -f $buildWorkerPort)
-            
-            [System.IO.File]::WriteAllText($config, $content)
+            Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
+            $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
-            $command = "unattend /unattendfile:`"$config`" /continue"
-            $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
+            $commandLine = '--unattended --url http://{0}:{1}/tfs --auth Integrated --pool default --agent {2} --runasservice' -f `
+                $tfsServer, $tfsPort, $env:COMPUTERNAME
+            $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
+
             if ($configurationProcess.ExitCode -ne 0)
             {
-                throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
+                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
             }
-        } -AsJob -Variable (Get-Variable buildAgentCount, tfsServer, tfsPort, buildworkerport, collection) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable tfsServer, tfsPort) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
