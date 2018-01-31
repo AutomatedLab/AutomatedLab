@@ -285,6 +285,7 @@
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADFS.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
                 <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
+                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
 
                 <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
 
