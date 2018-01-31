@@ -491,7 +491,7 @@ function Install-Lab
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
-    if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
+    if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
@@ -505,7 +505,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($BaseImages -or $performAll) -and (Get-LabMachine -All | Where-Object HostType -eq 'HyperV'))
+    if (($BaseImages -or $performAll) -and (Get-LabVM -All | Where-Object HostType -eq 'HyperV'))
     {
         Write-ScreenInfo -Message 'Creating base images' -TaskStart
         
@@ -518,7 +518,7 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-        if (Get-LabMachine -All | Where-Object HostType -eq 'HyperV')
+        if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
         {
             New-LabVHDX
         }
@@ -552,18 +552,18 @@ function Install-Lab
     Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
-    if (($Domains -or $performAll) -and (Get-LabMachine -Role RootDC))
+    if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC))
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
-        if (Get-LabMachine -Role RootDC)
+        if (Get-LabVM -Role RootDC)
         {
-            Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabMachine -Role RootDC).Name -join ', ')'"
+            Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
             Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
         }
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($Routing -or $performAll) -and (Get-LabMachine -Role Routing))
+    if (($Routing -or $performAll) -and (Get-LabVM -Role Routing))
     {
         Write-ScreenInfo -Message 'Configuring routing' -TaskStart
         
@@ -572,7 +572,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($DHCP -or $performAll) -and (Get-LabMachine -Role DHCP))
+    if (($DHCP -or $performAll) -and (Get-LabVM -Role DHCP))
     {
         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
         
@@ -581,18 +581,18 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Domains -or $performAll) -and (Get-LabMachine -Role FirstChildDC))
+    if (($Domains -or $performAll) -and (Get-LabVM -Role FirstChildDC))
     {
         Write-ScreenInfo -Message 'Installing Child Domain Controllers' -TaskStart
-        if (Get-LabMachine -Role FirstChildDC)
+        if (Get-LabVM -Role FirstChildDC)
         {
-            Write-ScreenInfo -Message "Machines with FirstChildDC role to be installed: '$((Get-LabMachine -Role FirstChildDC).Name -join ', ')'"
+            Write-ScreenInfo -Message "Machines with FirstChildDC role to be installed: '$((Get-LabVM -Role FirstChildDC).Name -join ', ')'"
             Install-LabFirstChildDcs -CreateCheckPoints:$CreateCheckPoints
         }
 
         New-LabADSubnet
         
-        $allDcVMs = Get-LabMachine -Role RootDC, FirstChildDC
+        $allDcVMs = Get-LabVM -Role RootDC, FirstChildDC
         
         if ($allDcVMs)
         {
@@ -605,19 +605,19 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Domains -or $performAll) -and (Get-LabMachine -Role DC))
+    if (($Domains -or $performAll) -and (Get-LabVM -Role DC))
     {
         Write-ScreenInfo -Message 'Installing Additional Domain Controllers' -TaskStart
         
-        if (Get-LabMachine -Role DC)
+        if (Get-LabVM -Role DC)
         {
-            Write-ScreenInfo -Message "Machines with DC role to be installed: '$((Get-LabMachine -Role DC).Name -join ', ')'"
+            Write-ScreenInfo -Message "Machines with DC role to be installed: '$((Get-LabVM -Role DC).Name -join ', ')'"
             Install-LabDcs -CreateCheckPoints:$CreateCheckPoints
         }
         
         New-LabADSubnet
         
-        $allDcVMs = Get-LabMachine -Role RootDC, FirstChildDC, DC
+        $allDcVMs = Get-LabVM -Role RootDC, FirstChildDC, DC
         
         if ($allDcVMs)
         {
@@ -630,7 +630,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($AdTrusts -or $performAll) -and ((Get-LabMachine -Role RootDC | Measure-Object).Count -gt 1))
+    if (($AdTrusts -or $performAll) -and ((Get-LabVM -Role RootDC | Measure-Object).Count -gt 1))
     {
         Write-ScreenInfo -Message 'Configuring DNS forwarding and AD trusts' -TaskStart
         Install-LabDnsForwarder
@@ -638,7 +638,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($CA -or $performAll) -and ((Get-LabMachine -Role CaRoot) -or (Get-LabMachine -Role CaSubordinate)))
+    if (($CA -or $performAll) -and ((Get-LabVM -Role CaRoot) -or (Get-LabVM -Role CaSubordinate)))
     {
         Write-ScreenInfo -Message 'Installing Certificate Servers' -TaskStart
         Install-LabCA -CreateCheckPoints:$CreateCheckPoints
@@ -646,7 +646,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($DSCPullServer -or $performAll) -and (Get-LabMachine -Role DSCPullServer))
+    if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer))
     {
         Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         
@@ -666,21 +666,21 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($SQLServers -or $performAll) -and (Get-LabMachine -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
-        if (Get-LabMachine -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabMachine -Role SQLServer2008).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabMachine -Role SQLServer2008R2).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabMachine -Role SQLServer2012).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabMachine -Role SQLServer2014).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabMachine -Role SQLServer2016).Name -join ', ')'" }
-        if (Get-LabMachine -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabMachine -Role SQLServer2017).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabVM -Role SQLServer2008R2).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabVM -Role SQLServer2012).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabVM -Role SQLServer2014).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($ADFS -or $performAll) -and (Get-LabMachine -Role ADFS))
+    if (($ADFS -or $performAll) -and (Get-LabVM -Role ADFS))
     {
         Write-ScreenInfo -Message 'Configuring ADFS' -TaskStart
         
@@ -695,16 +695,16 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($WebServers -or $performAll) -and (Get-LabMachine -Role WebServer))
+    if (($WebServers -or $performAll) -and (Get-LabVM -Role WebServer))
     {
         Write-ScreenInfo -Message 'Installing Web Servers' -TaskStart
-        Write-ScreenInfo -Message "Machines to have Web Server role installed: '$((Get-LabMachine -Role WebServer).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have Web Server role installed: '$((Get-LabVM -Role WebServer).Name -join ', ')'"
         Install-LabWebServers -CreateCheckPoints:$CreateCheckPoints
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Orchestrator2012 -or $performAll) -and (Get-LabMachine -Role Orchestrator2012))
+    if (($Orchestrator2012 -or $performAll) -and (Get-LabVM -Role Orchestrator2012))
     {
         Write-ScreenInfo -Message 'Installing Orchestrator Servers' -TaskStart
         Install-LabOrchestrator2012
@@ -712,7 +712,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Exchange2013 -or $performAll) -and (Get-LabMachine -Role Exchange2013))
+    if (($Exchange2013 -or $performAll) -and (Get-LabVM -Role Exchange2013))
     {
         Write-ScreenInfo -Message 'Installing Exchange 2013' -TaskStart
         
@@ -721,7 +721,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($Exchange2016 -or $performAll) -and (Get-LabMachine -Role Exchange2016))
+    if (($Exchange2016 -or $performAll) -and (Get-LabVM -Role Exchange2016))
     {
         Write-ScreenInfo -Message 'Installing Exchange 2016' -TaskStart
         
@@ -730,7 +730,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($SharePoint2013 -or $performAll) -and (Get-LabMachine -Role SharePoint2013))
+    if (($SharePoint2013 -or $performAll) -and (Get-LabVM -Role SharePoint2013))
     {
         Write-ScreenInfo -Message 'Installing SharePoint 2013 Servers' -TaskStart
         
@@ -739,41 +739,41 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($VisualStudio -or $performAll) -and (Get-LabMachine -Role VisualStudio2013))
+    if (($VisualStudio -or $performAll) -and (Get-LabVM -Role VisualStudio2013))
     {
         Write-ScreenInfo -Message 'Installing Visual Studio 2013' -TaskStart
         
-        Write-ScreenInfo -Message "Machines to have Visual Studio 2013 installed: '$((Get-LabMachine -Role VisualStudio2013).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have Visual Studio 2013 installed: '$((Get-LabVM -Role VisualStudio2013).Name -join ', ')'"
         Install-VisualStudio2013
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($VisualStudio -or $performAll) -and (Get-LabMachine -Role VisualStudio2015))
+    if (($VisualStudio -or $performAll) -and (Get-LabVM -Role VisualStudio2015))
     {
         Write-ScreenInfo -Message 'Installing Visual Studio 2015' -TaskStart
         
-        Write-ScreenInfo -Message "Machines to have Visual Studio 2015 installed: '$((Get-LabMachine -Role VisualStudio2015).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have Visual Studio 2015 installed: '$((Get-LabVM -Role VisualStudio2015).Name -join ', ')'"
         Install-VisualStudio2015
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Office2013 -or $performAll) -and (Get-LabMachine -Role Office2013))
+    if (($Office2013 -or $performAll) -and (Get-LabVM -Role Office2013))
     {
         Write-ScreenInfo -Message 'Installing Office 2013' -TaskStart
         
-        Write-ScreenInfo -Message "Machines to have Office 2013 installed: '$((Get-LabMachine -Role Office2013).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have Office 2013 installed: '$((Get-LabVM -Role Office2013).Name -join ', ')'"
         Install-LabOffice2013
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Office2016 -or $performAll) -and (Get-LabMachine -Role Office2016))
+    if (($Office2016 -or $performAll) -and (Get-LabVM -Role Office2016))
     {
         Write-ScreenInfo -Message 'Installing Office 2016' -TaskStart
         
-        Write-ScreenInfo -Message "Machines to have Office 2016 installed: '$((Get-LabMachine -Role Office2016).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have Office 2016 installed: '$((Get-LabVM -Role Office2016).Name -join ', ')'"
         Install-LabOffice2016
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -863,16 +863,16 @@ function Remove-Lab
         $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
         Write-Verbose '...done'
 
-        if ((Get-LabMachine | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
+        if ((Get-LabVM | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
             #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
             @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
-        if (Get-LabMachine | Where-Object HostType -eq HyperV)
+        if (Get-LabVM | Where-Object HostType -eq HyperV)
         {
-            $labMachines = Get-LabMachine | Where-Object HostType -eq 'HyperV'
+            $labMachines = Get-LabVM | Where-Object HostType -eq 'HyperV'
             $labName = (Get-Lab).Name
 
             $removeMachines = foreach ($machine in $labMachines)
@@ -1139,11 +1139,11 @@ function Enable-LabVMRemoting
     
     if ($ComputerName)
     {
-        $machines = Get-LabMachine -All | Where-Object { $_.Name -in $ComputerName }
+        $machines = Get-LabVM -All | Where-Object { $_.Name -in $ComputerName }
     }
     else
     {
-        $machines = Get-LabMachine -All
+        $machines = Get-LabVM -All
     }
     
     $hypervVMs = $machines | Where-Object HostType -eq 'HyperV'
@@ -1195,7 +1195,7 @@ function Checkpoint-LabVM
     
     if ($Name)
     {
-        $machines = Get-LabMachine | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
     }
     else
     {
@@ -1253,7 +1253,7 @@ function Restore-LabVMSnapshot
     
     if ($ComputerName)
     {
-        $machines = Get-LabMachine | Where-Object { $_.Name -in $ComputerName }
+        $machines = Get-LabVM | Where-Object { $_.Name -in $ComputerName }
     }
     else
     {
@@ -1317,7 +1317,7 @@ function Remove-LabVMSnapshot
     
     if ($Name)
     {
-        $machines = Get-LabMachine | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
     }
     else
     {
@@ -1361,7 +1361,7 @@ function Install-LabWebServers
         return
     }
     
-    $machines = Get-LabMachine | Where-Object { $roleName -in $_.Roles.Name }
+    $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
     if (-not $machines)
     {
         Write-Warning -Message "There is no machine with the role '$roleName'"
@@ -1418,7 +1418,7 @@ function Get-LabWindowsFeature
     
     $results = @()
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -1526,7 +1526,7 @@ function Install-LabWindowsFeature
     
     $results = @()
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -1554,8 +1554,8 @@ function Install-LabWindowsFeature
         Start-LabVM -ComputerName $stoppedMachines.Name -Wait
     }
     
-    $hyperVMachines = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
-    $azureMachines  = Get-LabMachine -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
+    $hyperVMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
+    $azureMachines  = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
 
     if ($hyperVMachines)
     {
@@ -1609,7 +1609,7 @@ function Install-VisualStudio2013
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName | Where-Object HostType -eq 'HyperV'
+    $machines = Get-LabVM -Role $roleName | Where-Object HostType -eq 'HyperV'
     
     if (-not $machines)
     {
@@ -1697,7 +1697,7 @@ function Install-VisualStudio2013
         if ($result -ne 0)
         {
             $ipAddress = (Get-Job -Id $job.id).Location
-            $machineName = (Get-LabMachine | Where-Object {$_.IpV4Address -eq $ipAddress}).Name
+            $machineName = (Get-LabVM | Where-Object {$_.IpV4Address -eq $ipAddress}).Name
             Write-ScreenInfo -Type Warning "Installation generated error or warning for machine '$machineName'. Return code is: $result"
         }
     }
@@ -1728,7 +1728,7 @@ function Install-VisualStudio2015
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName | Where-Object HostType -eq 'HyperV'
+    $machines = Get-LabVM -Role $roleName | Where-Object HostType -eq 'HyperV'
     
     if (-not $machines)
     {
@@ -1819,7 +1819,7 @@ function Install-VisualStudio2015
         if ($result -notin '0', 'bc2') #0 == success, 0xbc2 == sucess but required reboot
         {
             $ipAddress = (Get-Job -Id $job.id).Location
-            $machineName = (Get-LabMachine | Where-Object {$_.IpV4Address -eq $ipAddress}).Name
+            $machineName = (Get-LabVM | Where-Object {$_.IpV4Address -eq $ipAddress}).Name
             Write-ScreenInfo -Type Warning "Installation generated error or warning for machine '$machineName'. Return code is: $result"
         }
     }
@@ -1947,7 +1947,7 @@ function Install-LabOrchestrator2012
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName
+    $machines = Get-LabVM -Role $roleName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message "There is no machine with the role $roleName"
@@ -1976,7 +1976,7 @@ function Install-LabOrchestrator2012
             Get-ADGroup -Identity 'Domain Admins' | Add-ADGroupMember -Members `$user
         Get-ADGroup -Identity 'Administrators' | Add-ADGroupMember -Members `$user"
         
-        $dc = Get-LabMachine -All | Where-Object {
+        $dc = Get-LabVM -All | Where-Object {
             $_.DomainName -eq $machine.DomainName -and
             $_.Roles.Name -in @([AutomatedLab.Roles]::DC, [AutomatedLab.Roles]::FirstChildDC, [AutomatedLab.Roles]::RootDC)
         } | Get-Random
@@ -2352,7 +2352,7 @@ function New-LabPSSession
     {
         if ($PSCmdlet.ParameterSetName -eq 'ByName')
         {
-            $Machine = Get-LabMachine -ComputerName $ComputerName
+            $Machine = Get-LabVM -ComputerName $ComputerName
 
             if (-not $Machine)
             {
@@ -2362,7 +2362,7 @@ function New-LabPSSession
         elseif ($PSCmdlet.ParameterSetName -eq 'BySession')
         {
             $internalSession = $Session
-            $Machine = Get-LabMachine -ComputerName $internalSession.LabMachineName
+            $Machine = Get-LabVM -ComputerName $internalSession.LabMachineName
 
             if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'Credssp')
             {
@@ -2493,7 +2493,7 @@ function New-LabPSSession
                         Write-Verbose "Session to computer '$($param.ComputerName)' created"
                         $sessions += $internalSession
                         
-                        if ((Get-LabMachine -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
+                        if ((Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure')
                         {
                             Connect-LWAzureLabSourcesDrive -Session $internalSession
                         }
@@ -2545,7 +2545,7 @@ function Get-LabPSSession
         
     if ($ComputerName)
     {
-        $computers = Get-LabMachine -ComputerName $ComputerName
+        $computers = Get-LabVM -ComputerName $ComputerName
     }
     else
     {
@@ -2603,11 +2603,11 @@ function Remove-LabPSSession
     $removedSessionCount = 0
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabMachine -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName
     }
     if ($PSCmdlet.ParameterSetName -eq 'All')
     {
-        $Machine = Get-LabMachine -All
+        $Machine = Get-LabVM -All
     }
         
     foreach ($m in $Machine)
@@ -2663,7 +2663,7 @@ function Enter-LabPSSession
     
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabMachine -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName
     }
 
     if ($Machine)
@@ -2796,7 +2796,7 @@ function Invoke-LabCommand
     
     if ($PostInstallationActivity)
     {
-        $machines = Get-LabMachine -ComputerName $ComputerName | Where-Object { $_.PostInstallationActivity }
+        $machines = Get-LabVM -ComputerName $ComputerName | Where-Object { $_.PostInstallationActivity }
         if (-not $machines)
         {
             Write-Verbose 'There are no machine with PostInstallationActivity defined, exiting...'
@@ -2805,7 +2805,7 @@ function Invoke-LabCommand
     }
     else
     {
-        $machines = Get-LabMachine -ComputerName $ComputerName   
+        $machines = Get-LabVM -ComputerName $ComputerName   
     }
 
     if (-not $machines)
@@ -2936,7 +2936,7 @@ function Update-LabMemorySettings
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -All
+    $machines = Get-LabVM -All
     $lab = Get-LabDefinition
 
     if ($machines | Where-Object Memory -lt 32)
@@ -3093,13 +3093,13 @@ function Update-LabMemorySettings
         }
         
         <#
-                $plannedMaxMemoryUsage = (Get-LabMachine -All).MaxMemory | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+                $plannedMaxMemoryUsage = (Get-LabVM -All).MaxMemory | Measure-Object -Sum | Select-Object -ExpandProperty Sum
                 if ($plannedMaxMemoryUsage -le ($totalMemory/3))
                 {
                 foreach ($machine in (Get-LabMachine))
                 {
-                (Get-LabMachine -ComputerName $machine).Memory *= 2
-                (Get-LabMachine -ComputerName $machine).MaxMemory *= 2
+                (Get-LabVM -ComputerName $machine).Memory *= 2
+                (Get-LabVM -ComputerName $machine).MaxMemory *= 2
                 }
                 }
         #>
