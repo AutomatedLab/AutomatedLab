@@ -242,6 +242,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1 = LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1
 		LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
 		LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+		LabSources\SampleScripts\Scenarios\TFS Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS Deployment.ps1
 		LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1 = LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1
 	EndProjectSection
 EndProject
