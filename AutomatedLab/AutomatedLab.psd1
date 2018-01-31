@@ -45,7 +45,8 @@
         'AutomatedLabDsc.psm1',
         'AutomatedLabOffice.psm1',
         'AutomatedLabHybrid.psm1',
-        'AutomatedLabFailover.psm1'
+        'AutomatedLabFailover.psm1',
+        'AutomatedLabTfs.psm1'
     )
 
     RequiredModules        = @(
@@ -136,6 +137,7 @@
         'Install-LabSqlSampleDatabases',
         'Install-LabSqlServers',
         'Install-LabWindowsFeature',
+        'Install-LabTeamFoundationEnvironment',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
@@ -303,5 +305,8 @@
 
         #Access Database Engine
         AccessDatabaseEngine2016x86            = 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe'
+
+        #TFS Build Agent
+        BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
     }
 }
