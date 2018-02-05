@@ -1,72 +1,15 @@
-﻿#region Import-UnattendedFile
-function Import-UnattendedFile
-{
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$Path
-	)
-	
-	$script:un = [xml](Get-Content -Path $Path)
-	$script:ns = @{ un = 'urn:schemas-microsoft-com:unattend' }
-	$Script:wcmNamespaceUrl = 'http://schemas.microsoft.com/WMIConfig/2002/State'
-}
-#endregion Import-UnattendedFile
-
-#region Import-UnattendedContent
-function Import-UnattendedContent
-{
-	param (
-		[Parameter(Mandatory = $true)]
-		[xml]$Content
-	)
-	
-	$script:un = $Content
-	$script:ns = @{ un = 'urn:schemas-microsoft-com:unattend' }
-    $Script:wcmNamespaceUrl = 'http://schemas.microsoft.com/WMIConfig/2002/State'
-}
-#endregion Import-UnattendedContent
+﻿
 
 #region Get-UnattendedContent
-function Get-UnattendedContent
-{
-	param ()
-	
-	return $script:un
-}
+
 #endregion Get-UnattendedContent
 
 #region Export-UnattendedFile
-function Export-UnattendedFile
-{
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$Path
-	)
-	
-	$script:un.Save($Path)
-}
+
 #endregion Export-UnattendedFile
 
 #region Set-UnattendedComputerName
-function Set-UnattendedComputerName
-{
-	param (
-		[Parameter(Mandatory = $true)]
-		[string]$ComputerName
-	)
-	
-	if (-not $script:un)
-	{
-		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
-		return
-	}
-	
-	$component = $script:un |
-	Select-Xml -XPath '//un:settings[@pass = "specialize"]/un:component[@name = "Microsoft-Windows-Shell-Setup"]' -Namespace $ns |
-	Select-Object -ExpandProperty Node
-	
-	$component.ComputerName = $ComputerName
-}
+
 #endregion
 
 #region Set-UnattendedUserLocale

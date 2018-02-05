@@ -1110,6 +1110,49 @@ function Get-LabAvailableOperatingSystem
             }
         }
 
+        $susePath = "$letter`:\content"
+        if (Test-Path -Path $susePath -PathType Leaf)
+        {
+            $content = Get-Content -Path $susePath -Raw
+            [void] ($content -match 'DISTRO\s+.+,(?<Distro>\w+\s\w+)\s{0,1}(?<Version>\d{0,2}\.{0,1}\d{0,3})\n.*LINGUAS\s+(?<Lang>.*)\nREPOID\s+.+((?<CreationTime>\d{8})|(\d{2}\.\d{1}))\/(?<Edition>\w+)\/.*\nVENDOR\s+(?<Vendor>.*)')
+            
+            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
+            $os.OperatingSystemImageName = $Matches.Distro
+            $os.OperatingSystemName = $Matches.Distro
+            $os.Size = $isoFile.Length
+            $os.Version = $Matches.Version
+            $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
+            $os.Edition = $Matches.Edition
+    
+            $osList.Add($os)
+        }
+
+        $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
+        if (Test-Path -Path $rhelPath -PathType Leaf)
+        {
+            $content = Get-Content -Path $rhelPath | Where-Object -FilterScript {$_ -like "*=*" } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+                        
+            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
+            $os.OperatingSystemImageName = $content.Name
+            $os.OperatingSystemName = $content.Family
+            $os.Size = $isoFile.Length
+
+            if ($content.Version -match '\.')
+            {
+                $os.Version = $content.Version
+            }
+            else
+            {
+               $os.Version = [AutomatedLab.Version]::new($content.Version,0)
+            }
+
+            # Unix time stamp...
+            $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($content.TimeStamp)
+            $os.Edition = $content.Variant
+    
+            $osList.Add($os)
+        }
+
         Write-Verbose 'Dismounting ISO'
         Dismount-DiskImage -ImagePath $isoFile.FullName
     }
