@@ -41,10 +41,19 @@ namespace AutomatedLab
         private Hashtable hypervProperties;
         private SerializableDictionary<string, string> notes;
         private SerializableDictionary<string, string> internalNotes;
+        private bool isLinux;
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
+        public bool IsLinux
+        {
+            get
+            {
+                isLinux = (!(bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? true : false;
+                return isLinux;
+            }
+        }
 
         public int Processors
         {

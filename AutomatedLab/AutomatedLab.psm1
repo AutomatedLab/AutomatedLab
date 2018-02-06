@@ -1110,31 +1110,45 @@ function Get-LabAvailableOperatingSystem
             }
         }
 
+		# SuSE, openSuSE et al
         $susePath = "$letter`:\content"
         if (Test-Path -Path $susePath -PathType Leaf)
         {
             $content = Get-Content -Path $susePath -Raw
-            [void] ($content -match 'DISTRO\s+.+,(?<Distro>\w+\s\w+)\s{0,1}(?<Version>\d{0,2}\.{0,1}\d{0,3})\n.*LINGUAS\s+(?<Lang>.*)\nREPOID\s+.+((?<CreationTime>\d{8})|(\d{2}\.\d{1}))\/(?<Edition>\w+)\/.*\nVENDOR\s+(?<Vendor>.*)')
+            [void] ($content -match 'DISTRO\s+.+,(?<Distro>[a-zA-Z 0-9.]+)\n.*LINGUAS\s+(?<Lang>.*)\n(?:REGISTERPRODUCT.+\n){0,1}REPOID\s+.+((?<CreationTime>\d{8})|(?<Version>\d{2}\.\d{1}))\/(?<Edition>\w+)\/.*\nVENDOR\s+(?<Vendor>[a-zA-z ]+)')
             
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $Matches.Distro
             $os.OperatingSystemName = $Matches.Distro
             $os.Size = $isoFile.Length
-            $os.Version = $Matches.Version
+            if($Matches.Version -like '*.*')
+			{
+				$os.Version = $Matches.Version
+			}
+			elseif ($Matches.Version)
+			{
+				$os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
+			}
+			else
+			{
+				$os.Version = [AutomatedLab.Version]::new(0,0)
+			}
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
     
             $osList.Add($os)
         }
 
+		# RHEL, CentOS, Fedora et al
         $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
         if (Test-Path -Path $rhelPath -PathType Leaf)
         {
-            $content = Get-Content -Path $rhelPath | Where-Object -FilterScript {$_ -like "*=*" } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
+			
+			$content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
                         
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-            $os.OperatingSystemImageName = $content.Name
-            $os.OperatingSystemName = $content.Family
+            $os.OperatingSystemImageName = $content.Name            
             $os.Size = $isoFile.Length
 
             if ($content.Version -match '\.')
@@ -1146,9 +1160,11 @@ function Get-LabAvailableOperatingSystem
                $os.Version = [AutomatedLab.Version]::new($content.Version,0)
             }
 
+			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$content.Version
+
             # Unix time stamp...
             $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($content.TimeStamp)
-            $os.Edition = $content.Variant
+            $os.Edition = if($content.Variant) {$content.Variant}else{'Server'}
     
             $osList.Add($os)
         }
