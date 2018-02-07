@@ -660,6 +660,12 @@ function Wait-LabVM
         
     foreach ($vm in $vms)
     {
+        if ( $vm.OperatingSystemType -eq 'Linux')
+        {
+            Write-Verbose -Message "Skipping Wait-LabVm for $vm as it is a Linux system"
+            continue
+        }
+
         $session = $null
         #remove the existing sessions to ensure a new one is created and the existing one not reused.
         Remove-LabPSSession -ComputerName $vm
@@ -1701,6 +1707,8 @@ function Get-LabVM
         
         [Parameter(Mandatory, ParameterSetName = 'All')]
         [switch]$All,
+
+        [switch]$IncludeLinux,
         
         [switch]$IsRunning
     )
@@ -1757,6 +1765,12 @@ function Get-LabVM
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
             $result = $Script:data.Machines
+        }
+
+        # Skip Linux machines by default
+        if (-not $IncludeLinux)
+        {
+            $result = $result | Where-Object -Property OperatingSystemType -eq Windows
         }
     }
     
