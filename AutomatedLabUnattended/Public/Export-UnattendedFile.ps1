@@ -16,5 +16,5 @@ function Export-UnattendedFile
     if ( $IsKickstart) { Export-UnattendedKickstartFile -Path $Path; return }
     if ( $IsAutoYast) { Export-UnattendedYastFile -Path $Path; return }
     
-    Export-UnattendedKickstartFile -Path $Path
+    Export-UnattendedWindowsFile -Path $Path
 }

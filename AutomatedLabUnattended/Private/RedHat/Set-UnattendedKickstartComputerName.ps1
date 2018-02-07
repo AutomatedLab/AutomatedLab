@@ -5,4 +5,5 @@ function Set-UnattendedKickstartComputerName
         [string]$ComputerName
     )
 
+    $script:un = $script:un -replace '%HOSTNAME%', $ComputerName
 }
