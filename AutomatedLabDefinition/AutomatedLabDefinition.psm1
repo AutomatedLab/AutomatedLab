@@ -425,6 +425,30 @@ $unattendedXmlDefaultContent2008 = @'
 </unattend>
 '@
 
+$kickstartContent = @"
+install
+firewall --disabled
+cdrom
+text
+firstboot --disable
+selinux --enforcing
+reboot
+bootloader --append="biosdevname=0 net.ifnames=0"
+zerombr
+clearpart --all
+autopart
+"@
+
+$autoyastContent = @"
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile
+  xmlns="http://www.suse.com/1.0/yast2ns"
+  xmlns:config="http://www.suse.com/1.0/configns">
+  <!-- RESOURCES -->
+</profile>
+"@
+
 #region Get-LabVolumesOnPhysicalDisks
 
 function Get-LabVolumesOnPhysicalDisks
@@ -1127,8 +1151,8 @@ function Export-LabDefinition
         {
             Write-Warning 'There are no machines defined, nothing to export'
         }
-            else
-            {
+        else
+        {
             if ($Script:machines.OperatingSystem | Where-Object Version -lt '6.2')
             {
                 $unattendedXmlDefaultContent2008 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2008.xml) -Encoding unicode
