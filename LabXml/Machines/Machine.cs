@@ -41,17 +41,35 @@ namespace AutomatedLab
         private Hashtable hypervProperties;
         private SerializableDictionary<string, string> notes;
         private SerializableDictionary<string, string> internalNotes;
-        private bool isLinux;
+        private OperatingSystemType operatingSystemType;
+        private bool gen2vmSupported;
+        private LinuxType linuxType;
+
+        public LinuxType LinuxType
+        {
+            get
+            {
+                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
+            }
+        }
+
+        public bool Gen2VmSupported
+        {
+            get
+            {
+                return (OperatingSystem.Version >= new Version(6, 2, 0) || OperatingSystemType == OperatingSystemType.Linux) ? true : false;
+            }
+        }
+
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
-        public bool IsLinux
+        public OperatingSystemType OperatingSystemType
         {
             get
             {
-                isLinux = (!(bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? true : false;
-                return isLinux;
+                return (!(bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
             }
         }
 

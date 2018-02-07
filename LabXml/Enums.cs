@@ -17,6 +17,18 @@ namespace AutomatedLab
         VMWare = 3
     }
 
+    public enum OperatingSystemType
+    {
+        Windows,
+        Linux
+    }
+
+    public enum LinuxType
+    {
+        RedHat,
+        SuSE
+    }
+
     [Flags]
     public enum Roles : long
     {

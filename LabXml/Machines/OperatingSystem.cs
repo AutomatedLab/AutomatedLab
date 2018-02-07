@@ -15,6 +15,7 @@ namespace AutomatedLab
         private string edition;
         private string installation;
         private int imageIndex;
+        private bool isLinux;
 
         public string OperatingSystemName
         {
@@ -333,6 +334,15 @@ namespace AutomatedLab
         public override string ToString()
         {
             return operatingSystemName;
+        }
+
+        public bool IsLinux
+        {
+            get
+            {
+                isLinux = (!operatingSystemName.Contains("Windows")) ? true : false;
+                return isLinux;
+            }
         }
 
         public string OperatingSystemImageName
