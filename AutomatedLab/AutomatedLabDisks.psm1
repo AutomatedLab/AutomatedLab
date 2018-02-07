@@ -14,8 +14,7 @@ function New-LabBaseImages
         return
     }
     
-    $isos = $lab.Sources.ISOs | Where-Object { $_.IsOperatingSystem }
-    $oses = (Get-LabMachine -All | Select-Object).OperatingSystem
+    $oses = (Get-LabVm -All).OperatingSystem
     
     if (-not $lab.Sources.AvailableOperatingSystems)
     {
