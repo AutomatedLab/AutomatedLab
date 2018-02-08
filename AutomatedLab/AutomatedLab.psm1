@@ -243,7 +243,15 @@ function Import-Lab
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    return [xml](Get-Content -Path $Path)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks.cfg
+                    }
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst.xml
+                    }
+                    return (Get-Content -Path $Path)
                 }
             }
         }
@@ -492,7 +500,7 @@ function Install-Lab
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
-    if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
+    if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
@@ -519,7 +527,7 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-        if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
+        if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
         {
             New-LabVHDX
         }
@@ -790,7 +798,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
     
-    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM))
+    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
@@ -881,9 +889,9 @@ function Remove-Lab
             @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
-        if (Get-LabVM | Where-Object HostType -eq HyperV)
+        if (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV)
         {
-            $labMachines = Get-LabVM | Where-Object HostType -eq 'HyperV'
+            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV'
             $labName = (Get-Lab).Name
 
             $removeMachines = foreach ($machine in $labMachines)
@@ -950,6 +958,8 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)\Disks.xml") { Remove-Item -Path "$($Script:data.LabPath)\Disks.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Machines.xml") { Remove-Item -Path "$($Script:data.LabPath)\Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)\Unattended*.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)\ks.cfg" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)\autoinst.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Certificates") { Remove-Item -Path "$($Script:data.LabPath)\Certificates" -Recurse -Force -Confirm:$false }
             
@@ -1141,29 +1151,31 @@ function Get-LabAvailableOperatingSystem
 
 		# RHEL, CentOS, Fedora et al
         $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
-        if (Test-Path -Path $rhelPath -PathType Leaf)
+        $rhelDiscinfo = "$letter`:\.discinfo"
+        if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
         {
 			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
-			
+            $discInfoContent = Get-Content -Path $rhelDiscinfo
+            $versionInfo = ($discInfoContent[1] -split " ")[-1]
 			$content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
                         
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $content.Name            
             $os.Size = $isoFile.Length
 
-            if ($content.Version -match '\.')
+            if ($versionInfo -match '\.')
             {
-                $os.Version = $content.Version
+                $os.Version = $versionInfo
             }
             else
             {
-               $os.Version = [AutomatedLab.Version]::new($content.Version,0)
+               $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
             }
 
-			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$content.Version
+			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
 
             # Unix time stamp...
-            $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($content.TimeStamp)
+            $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
             $os.Edition = if($content.Variant) {$content.Variant}else{'Server'}
     
             $osList.Add($os)
@@ -1265,11 +1277,11 @@ function Checkpoint-LabVM
     
     if ($Name)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVm -IncludeLinux
     }
     
     if (-not $machines)
@@ -1323,11 +1335,11 @@ function Restore-LabVMSnapshot
     
     if ($ComputerName)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $ComputerName }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVM -IncludeLinux
     }
     
     if (-not $machines)
@@ -1387,11 +1399,11 @@ function Remove-LabVMSnapshot
     
     if ($Name)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVm -IncludeLinux
     }
     
     if (-not $machines)
@@ -3006,7 +3018,7 @@ function Update-LabMemorySettings
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabVM -All
+    $machines = Get-LabVM -All -IncludeLinux
     $lab = Get-LabDefinition
 
     if ($machines | Where-Object Memory -lt 32)
@@ -3288,7 +3300,7 @@ function Show-LabDeploymentSummary
     if ($ts.Seconds -gt 1) { $secondsPlural = 's' }
 
     $lab = Get-Lab
-    $machines = Get-LabVM
+    $machines = Get-LabVM -IncludeLinux
     
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'
     Write-ScreenInfo -Message ("Setting up the lab took {0} hour$hoursPlural, {1} minute$minutesPlural and {2} second$secondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
@@ -3319,7 +3331,7 @@ function Show-LabDeploymentSummary
         }
         
         Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-        $vmInfo = Get-LabVM | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
         @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
         @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
         Out-String
