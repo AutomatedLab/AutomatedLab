@@ -34,16 +34,16 @@ function New-LWHypervVM
         return $false
     }
 
-    if ($PSDefaultParameterValues.ContainsKey('*Unattended*:IsKickstart')) { $PSDefaultParameterValues.Remove('*Unattended*:IsKickstart') }
-    if ($PSDefaultParameterValues.ContainsKey('*Unattended*:IsYast')) { $PSDefaultParameterValues.Remove('*Unattended*:IsYast') }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsYast')) { $PSDefaultParameterValues.Remove('*:IsYast') }
 
     if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {        
-        $PSDefaultParameterValues['*Unattended*:IsKickstart'] = $true
+        $PSDefaultParameterValues['*:IsKickstart'] = $true
     }
     if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
     {
-        $PSDefaultParameterValues['*Unattended*:IsYast'] = $true
+        $PSDefaultParameterValues['*:IsYast'] = $true
     }
 
     Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
@@ -54,12 +54,12 @@ function New-LWHypervVM
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
             
-    Import-UnattendedContent -Content $Machine.UnattendedXmlContent    
+    Import-UnattendedContent -Content $Machine.UnattendedXmlContent
     
     #region network adapter settings
     $macAddressPrefix = '0017FA'
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
-    $macAddressesInUse += (Get-LabMachine).NetworkAdapters.MacAddress
+    $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
@@ -136,25 +136,30 @@ function New-LWHypervVM
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
-
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
-                
-                
+        
+        if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'RedHat')
+        {
+            $ipSettings.Add('IsKickstart', $true)
+        }
+        if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'Suse')
+        {
+            $ipSettings.Add('IsAutoYast', $true)
+        }
 
         switch ($Adapter.NetbiosOptions)
         {                
             'Default'  { $ipSettings.Add('NetBIOSOptions', '0') }
             'Enabled'  { $ipSettings.Add('NetBIOSOptions', '1') }
             'Disabled' { $ipSettings.Add('NetBIOSOptions', '2') }
-        }
-                
+        }                
                 
         Add-UnattendedNetworkAdapter @ipSettings
     }
 
     $Machine.NetworkAdapters = $adapters
             
-    Add-UnattendedRenameNetworkAdapters
+    if ($Machine.OperatingSystemType -eq 'Windows') {Add-UnattendedRenameNetworkAdapters}
     #endregion network adapter settings
             
     Set-UnattendedComputerName -ComputerName $Machine.Name
@@ -242,7 +247,20 @@ function New-LWHypervVM
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
             $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
-            Set-UnattendedDomain -DomainName $Machine.DomainName -Username $domain.Administrator.UserName -Password $domain.Administrator.Password
+
+            $parameters = @{
+                DomainName = $Machine.DomainName
+                Username = $domain.Administrator.UserName 
+                Password = $domain.Administrator.Password
+            }
+            if ($Machine.OperatingSystemType -eq 'Linux')
+            {
+                $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
+                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'
+                $parameters['Password'] = "$($Machine.Name)`$"
+            }
+            
+            Set-UnattendedDomain @parameters            
         }
     }
 
@@ -280,7 +298,7 @@ function New-LWHypervVM
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
         # TODO! OS Disk mit Unattend-Partition 100MB Fat32
-        $systemDisk = New-VHD -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -ErrorAction Stop -BlockSizeBytes 1MB
+        $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
         $unattendPartition = $mountedOsDisk | New-Partition -Size 100MB
@@ -296,21 +314,22 @@ function New-LWHypervVM
 
         $unattendPartition | Set-Partition -NewDriveLetter x
         $unattendPartition = $unattendPartition | Get-Partition
+        $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
         # Copy Unattend-Stuff here
         if ($Machine.LinuxType -eq 'RedHat')
         {
-            Export-UnattendedFile -Path (Join-Path -Path $unattendPartition.DriveLetter -ChildPath ks.cfg)
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
         }
         else
         {
-            Export-UnattendedFile -Path (Join-Path -Path $unattendPartition.DriveLetter -ChildPath autoinst.xml)
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
         }
 
         $mountedOsDisk | Dismount-VHD
 
-        if ($PSDefaultParameterValues.ContainsKey('*Unattended*:IsKickstart')) { $PSDefaultParameterValues.Remove('*Unattended*:IsKickstart') }
-        if ($PSDefaultParameterValues.ContainsKey('*Unattended*:IsYast')) { $PSDefaultParameterValues.Remove('*Unattended*:IsYast') }
+        if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
+        if ($PSDefaultParameterValues.ContainsKey('*:IsYast')) { $PSDefaultParameterValues.Remove('*:IsYast') }
     }
     else
     {
