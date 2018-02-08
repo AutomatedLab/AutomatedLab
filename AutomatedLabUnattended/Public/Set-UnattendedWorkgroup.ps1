@@ -4,11 +4,9 @@ function Set-UnattendedWorkgroup
 		[Parameter(Mandatory = $true)]
 		[string]$WorkgroupName,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
 	)

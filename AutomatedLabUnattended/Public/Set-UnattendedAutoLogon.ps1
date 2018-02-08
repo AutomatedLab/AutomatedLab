@@ -10,11 +10,9 @@ function Set-UnattendedAutoLogon
 		[Parameter(Mandatory = $true)]
 		[string]$Password,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
     )
@@ -25,7 +23,7 @@ function Set-UnattendedAutoLogon
 		return
     }
     
-    if( $IsKickstart) { Set-UnattendedKickstartAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password}
-    if( $IsKickstart) { Set-UnattendedYastAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password}
+    if( $IsKickstart) { Set-UnattendedKickstartAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password; return}
+    if( $IsAutoYast) { Set-UnattendedYastAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password; return}
     Set-UnattendedWindowsAutoLogon -DomainName $DomainName -UserName $UserName -Password $Password
 }

@@ -4,11 +4,9 @@ function Set-UnattendedComputerName
         [Parameter(Mandatory = $true)]
         [string]$ComputerName,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
     )

@@ -5,11 +5,9 @@ function Set-UnattendedTimeZone
         [Parameter(Mandatory = $true)]
         [string]$TimeZone,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
     )

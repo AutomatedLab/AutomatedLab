@@ -1,4 +1,4 @@
-function Set-UnattendedWindowsWorkgroup
+function Set-UnattendedKickstartWorkgroup
 {
     param 
     (
@@ -7,13 +7,5 @@ function Set-UnattendedWindowsWorkgroup
         $WorkgroupName
     )
     
-    $idNode = $script:un |
-	Select-Xml -XPath '//un:settings[@pass = "specialize"]/un:component[@name = "Microsoft-Windows-UnattendedJoin"]/un:Identification' -Namespace $ns |
-	Select-Object -ExpandProperty Node
-	
-	$idNode.RemoveAll()
-	
-	$workGroupNode = $script:un.CreateElement('JoinWorkgroup')
-	$workGroupNode.InnerText = $WorkgroupName
-    [Void]$idNode.AppendChild($workGroupNode)
+    $script:un += 'auth --smbworkgroup={0}' -f $WorkgroupName
 }

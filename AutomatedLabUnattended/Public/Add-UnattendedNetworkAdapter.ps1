@@ -23,11 +23,9 @@ function Add-UnattendedNetworkAdapter
 
         [string]$NetbiosOptions,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
     )    
@@ -36,9 +34,7 @@ function Add-UnattendedNetworkAdapter
     {
         Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
         return
-    }
-
-    
+    }    
     
     if ($IsKickstart) 
     {

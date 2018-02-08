@@ -2,16 +2,12 @@ function Import-UnattendedContent
 {
     param (
         [Parameter(Mandatory = $true)]
-        [xml]
+        [string[]]
         $Content,
-        
-        [Parameter(ParameterSetName = 'Kickstart')]
-        [switch]
-        $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
-        [switch]
-        $IsAutoYast
+        [switch]$IsKickstart,
+
+        [switch]$IsAutoYast
     )    
     
     if ($IsKickstart)

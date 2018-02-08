@@ -10,11 +10,9 @@ function Set-UnattendedDomain
 		[Parameter(Mandatory = $true)]
 		[string]$Password,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
 	)

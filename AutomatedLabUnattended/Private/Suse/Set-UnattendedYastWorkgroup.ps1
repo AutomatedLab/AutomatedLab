@@ -1,4 +1,4 @@
-function Set-UnattendedWindowsWorkgroup
+function Set-UnattendedYastWorkgroup
 {
     param 
     (

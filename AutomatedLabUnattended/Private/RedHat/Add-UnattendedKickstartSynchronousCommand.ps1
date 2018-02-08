@@ -8,4 +8,5 @@ function Add-UnattendedKickstartSynchronousCommand
         [string]$Description
     )
 
+    Write-Verbose -Message 'No Synchronous Command (first user logon script) for RHEL/CentOS/Fedora'
 }

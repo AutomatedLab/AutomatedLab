@@ -4,11 +4,9 @@ function Set-UnattendedLocalIntranetSites
 		[Parameter(Mandatory = $true)]
 		[string[]]$Values,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
 	)

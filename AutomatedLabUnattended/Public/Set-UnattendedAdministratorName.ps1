@@ -4,11 +4,9 @@ function Set-UnattendedAdministratorName
 		[Parameter(Mandatory = $true)]
 		[string]$Name,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
     )

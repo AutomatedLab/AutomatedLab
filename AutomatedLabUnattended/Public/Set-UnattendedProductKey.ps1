@@ -4,11 +4,9 @@ function Set-UnattendedProductKey
 		[Parameter(Mandatory = $true)]
 		[string]$ProductKey,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
 	)

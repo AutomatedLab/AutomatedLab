@@ -12,15 +12,14 @@ function Add-UnattendedKickstartNetworkAdapter
     
     $linuxInterfaceName = ($Interfacename -replace '-',':').ToLower()
     $adapterAddress = $IpAddresses | Select-Object -First 1
-    $netMask = ConvertTo-Mask -Masklength $adapterAddress.Cidr
 
-    if (-not $adapterAdress)
+    if (-not $adapterAddress)
     {
-        $configurationItem = "`nnetwork --bootproto=dhcp"
+        $configurationItem = "network --bootproto=dhcp"
     }
     else
     {
-        $configurationItem = "`nnetwork --bootproto=static --device={0} --ip={1} --netmask={2}" -f $linuxInterfaceName,$adapterAddress.AddressAsString,$netMask
+        $configurationItem = "network --bootproto=static --device={0} --ip={1} --netmask={2}" -f $linuxInterfaceName,$adapterAddress.IPAddress.AddressAsString,$adapterAddress.Netmask
     }
 
     if ($Gateways)
@@ -36,8 +35,6 @@ function Add-UnattendedKickstartNetworkAdapter
     {
         ' --nodns'
     }
-
-    $configurationItem += '--hostname=%HOSTNAME%'
 
     $script:un += $configurationItem
 }

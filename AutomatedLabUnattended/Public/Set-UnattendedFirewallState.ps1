@@ -4,11 +4,9 @@ function Set-UnattendedFirewallState
 		[Parameter(Mandatory = $true)]
 		[boolean]$State,
         
-        [Parameter(ParameterSetName = 'Kickstart')]
         [switch]
         $IsKickstart,
 
-        [Parameter(ParameterSetName = 'Yast')]
         [switch]
         $IsAutoYast
 	)

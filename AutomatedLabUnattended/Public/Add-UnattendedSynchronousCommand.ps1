@@ -5,7 +5,11 @@ function Add-UnattendedSynchronousCommand
         [string]$Command,
 		
         [Parameter(Mandatory)]
-        [string]$Description
+        [string]$Description,
+
+        [switch]$IsKickstart,
+
+        [switch]$IsAutoYast
     )
 	
     if (-not $script:un)

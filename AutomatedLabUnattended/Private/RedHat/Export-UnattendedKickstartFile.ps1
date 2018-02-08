@@ -5,5 +5,8 @@ function Export-UnattendedKickstartFile
         [string]$Path
     )
 
+    $script:un += '%packages --ignoremissing'
+    $script:un += '@core'
+    $script:un += '%end'
     $script:un | Set-Content -Path $Path -Force
 }
