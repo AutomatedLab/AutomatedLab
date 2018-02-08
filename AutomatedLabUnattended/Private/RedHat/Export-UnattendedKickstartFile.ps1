@@ -7,6 +7,10 @@ function Export-UnattendedKickstartFile
 
     $script:un += '%packages --ignoremissing'
     $script:un += '@core'
+    $script:un += 'oddjob'
+    $script:un += 'oddjob-mkhomedir'
+    $script:un += 'sssd'
+    $script:un += 'adcli'
     $script:un += '%end'
     $script:un | Set-Content -Path $Path -Force
 }

@@ -340,12 +340,21 @@ function New-LWHypervVM
 
     Write-ProgressIndicator
 
-    $vm = New-VM -Name $Machine.Name `
-    -MemoryStartupBytes ($Machine.Memory) `
-    -VHDPath $systemDisk.Path `
-    -Path $VmPath `
-    -Generation $generation `
-    -ErrorAction Stop
+    $vmParameter = @{
+        Name = $Machine.Name
+        MemoryStartupBytes = ($Machine.Memory)
+        VHDPath = $systemDisk.Path
+        Path = $VmPath
+        Generation = $generation
+        ErrorAction = 'Stop'
+    }
+
+    if ($Machine.OperatingSystemType -eq 'Linux')
+    {
+        $vmParameter['BootDevice'] = 'CD'
+    }
+
+    $vm = New-VM @vmParameter
     
     Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
@@ -392,6 +401,11 @@ function New-LWHypervVM
     $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
     
     Write-ProgressIndicator
+
+    if ( $Machine.OperatingSystemType -eq 'Linux')
+    {
+        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+    }
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
