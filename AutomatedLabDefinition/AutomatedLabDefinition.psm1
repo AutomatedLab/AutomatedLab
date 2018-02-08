@@ -431,7 +431,6 @@ firewall --disabled
 cdrom
 text
 firstboot --disable
-selinux --enforcing
 reboot
 bootloader --append="biosdevname=0 net.ifnames=0"
 zerombr
@@ -1160,6 +1159,14 @@ function Export-LabDefinition
             if ($Script:machines.OperatingSystem | Where-Object Version -ge '6.2')
             {
                 $unattendedXmlDefaultContent2012 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2012.xml) -Encoding unicode
+            }
+            if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
+            {
+                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks.cfg) -Encoding unicode
+            }
+            if ($Script:machines | Where-Object LinuxType -eq 'Suse')
+            {
+                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst.xml) -Encoding unicode
             }
         }
     }
@@ -2648,6 +2655,7 @@ function Add-LabMachineDefinition
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Disk
         $machine.Disks = New-Object $type
+
         if ($DiskName)
         {
             foreach ($disk in $DiskName)

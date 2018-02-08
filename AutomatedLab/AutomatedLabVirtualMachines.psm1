@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
     
-    $machines = Get-LabVM -ComputerName $Name -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop
     
     if (-not $machines)
     {
