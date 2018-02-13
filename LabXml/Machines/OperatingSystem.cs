@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace AutomatedLab
 {
@@ -15,7 +17,6 @@ namespace AutomatedLab
         private string edition;
         private string installation;
         private int imageIndex;
-        private bool isLinux;
 
         public string OperatingSystemName
         {
@@ -288,12 +289,17 @@ namespace AutomatedLab
             set { baseDiskPath = value; }
         }
 
+        [XmlArrayItem(ElementName = "Package")]
+        public List<String> LinuxPackageGroup { get; set; }
         public OperatingSystem()
-        { }
+        {
+            LinuxPackageGroup = new List<String>();
+        }
 
         public OperatingSystem(string operatingSystemName)
         {
             this.operatingSystemName = operatingSystemName;
+            LinuxPackageGroup = new List<String>();
             if (operatingSystemName.ToLower().Contains("windows server"))
             {
                 installation = "Server";
@@ -307,18 +313,21 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, AutomatedLab.Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.version = version;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath, Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
         }
@@ -326,6 +335,7 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, string isoPath, Version version, string imageName)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
             this.operatingSystemImageName = imageName;
@@ -335,16 +345,22 @@ namespace AutomatedLab
         {
             return operatingSystemName;
         }
+        private LinuxType linuxType;
 
-        public bool IsLinux
+        public LinuxType LinuxType
         {
             get
             {
-                isLinux = (!operatingSystemName.Contains("Windows")) ? true : false;
-                return isLinux;
+                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
             }
         }
-
+        public OperatingSystemType OperatingSystemType
+        {
+            get
+            {
+                return ((bool)(OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+            }
+        }
         public string OperatingSystemImageName
         {
             get { return operatingSystemImageName; }

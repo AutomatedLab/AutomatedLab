@@ -256,8 +256,7 @@ function New-LWHypervVM
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
-                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'
-                $parameters['Password'] = "$($Machine.Name)`$"
+                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'             
             }
             
             Set-UnattendedDomain @parameters            
@@ -297,7 +296,6 @@ function New-LWHypervVM
     
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
-        # TODO! OS Disk mit Unattend-Partition 100MB Fat32
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
@@ -315,6 +313,8 @@ function New-LWHypervVM
         $unattendPartition | Set-Partition -NewDriveLetter x
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+
+        Set-UnattendedPackage -Package $machine.LinuxPackageGroup
 
         # Copy Unattend-Stuff here
         if ($Machine.LinuxType -eq 'RedHat')
@@ -347,11 +347,6 @@ function New-LWHypervVM
         Path = $VmPath
         Generation = $generation
         ErrorAction = 'Stop'
-    }
-
-    if ($Machine.OperatingSystemType -eq 'Linux')
-    {
-        $vmParameter['BootDevice'] = 'CD'
     }
 
     $vm = New-VM @vmParameter

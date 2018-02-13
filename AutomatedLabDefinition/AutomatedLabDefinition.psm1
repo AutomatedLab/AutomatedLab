@@ -1,4 +1,6 @@
 ﻿#region Internals
+$script:RedHatPackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
+$script:SusePackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
 $unattendedXmlDefaultContent2012 = @'
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
@@ -1517,7 +1519,7 @@ function Add-LabIsoImageDefinition
                 Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO
                 Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
                 $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
-                $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim")
+                $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim") -or (Test-Path "$letter`:\.discinfo") -or (Test-Path "$letter`:\isolinux") -or (Test-Path "$letter`:\suse")
                 DisMount-DiskImage -ImagePath $isoFile.FullName
             }            
             
@@ -1562,6 +1564,11 @@ function Add-LabIsoImageDefinition
     
     foreach ($iso in $isos)
     {
+        if ($iso.IsOperatingSystem -and $iso.OperatingSystems.OperatingSystemType -contains 'Linux')
+        {
+            Set-LinuxPackage -Package $iso.OperatingSystems[0].LinuxPackageGroup -LinuxType ($iso.OperatingSystems.LinuxType)[0]
+        }
+
         $isosToRemove = $script:lab.Sources.ISOs | Where-Object { $_.Name -eq $iso.Name -or $_.Path -eq $iso.Path }
         foreach ($isoToRemove in $isosToRemove)
         {
@@ -1744,7 +1751,7 @@ function Add-LabMachineDefinition
                 'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
                 'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
                 'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO','Windows Server 2016 SERVERSTANDARDACORE', 'Windows Server 2016 SERVERDATACENTERACORE',
-                'CentOS 7','CentOS Linux 7','Fedora 27','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
+                'CentOS 7.4','Fedora 27','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
         )]
         [Alias('OS')]
         [AutomatedLab.OperatingSystem]$OperatingSystem = (Get-LabDefinition).DefaultOperatingSystem,
@@ -1847,6 +1854,33 @@ function Add-LabMachineDefinition
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+        $ParameterName = 'RhelPackage'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        if($script:RedHatPackage.Count -gt 0)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:RedHatPackage))
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
+
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+
+        $ParameterName = 'SusePackage'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        if ($script:SusePackage.Count -gt 0)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:SusePackage))
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
+        
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
+
         return $RuntimeParameterDictionary
     }
 
@@ -1855,6 +1889,8 @@ function Add-LabMachineDefinition
         Write-LogFunctionEntry
         $AzureRoleSize = $PsBoundParameters['AzureRoleSize']
         $TimeZone = $PsBoundParameters['TimeZone']
+        $SusePackage = $PsBoundParameters['SusePackage']
+        $RhelPackage = $PsBoundParameters['RhelPackage']
     }
 
     process
@@ -2576,6 +2612,9 @@ function Add-LabMachineDefinition
     
         if ($machine.HostType -eq 'HyperV')
         {
+            if ($RhelPackage) { $machine.LinuxPackageGroup = $RhelPackage}
+            if ($SusePackage) { $machine.LinuxPackageGroup = $SusePackage}
+
             if ($OperatingSystemVersion)
             {
                 $os = Get-LabAvailableOperatingSystem | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
@@ -3211,6 +3250,33 @@ function Repair-LabDuplicateIpAddresses
                 $adapter.Ipv4Address.Add($ipAddress)
             }
         }
+    }
+}
+
+function Set-LinuxPackage
+{
+    param
+    (
+        [string[]]
+        $Package,
+
+        [ValidateSet('RedHat', 'Suse')]
+        [string]
+        $LinuxType
+    )
+
+    if ($LinuxType -eq 'RedHat')
+    {
+        foreach ($entry in $Package)
+        {
+            [void] ($script:RedHatPackage.Add($Package))
+        }
+        return
+    }
+
+    foreach ($entry in $Package)
+    {
+        [void] ($script:SusePackage.Add($Package))
     }
 }
 #endregion Internal

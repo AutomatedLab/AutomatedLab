@@ -1152,6 +1152,7 @@ function Get-LabAvailableOperatingSystem
 		# RHEL, CentOS, Fedora et al
         $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
         $rhelDiscinfo = "$letter`:\.discinfo"
+        $rhelPackageInfo = "$letter`:\repodata"
         if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
         {
 			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
@@ -1162,6 +1163,19 @@ function Get-LabAvailableOperatingSystem
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $content.Name            
             $os.Size = $isoFile.Length
+
+            $packageXml = Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml
+            if (-not $packageXml)
+            {
+                # CentOS ISO for some reason contained only GUIDs
+                $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
+                    Get-Content -TotalCount 2 |
+                    Where-Object {$_ -like "*comps*"} |
+                    Foreach-Object { $file.FullName }
+            }
+
+            [xml]$packageInfo = Get-Content $packageXml
+            $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
 
             if ($versionInfo -match '\.')
             {
