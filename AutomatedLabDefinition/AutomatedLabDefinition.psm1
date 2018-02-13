@@ -3269,14 +3269,14 @@ function Set-LinuxPackage
     {
         foreach ($entry in $Package)
         {
-            [void] ($script:RedHatPackage.Add($Package))
+            [void] ($script:RedHatPackage.Add($entry))
         }
         return
     }
 
     foreach ($entry in $Package)
     {
-        [void] ($script:SusePackage.Add($Package))
+        [void] ($script:SusePackage.Add($entry))
     }
 }
 #endregion Internal
