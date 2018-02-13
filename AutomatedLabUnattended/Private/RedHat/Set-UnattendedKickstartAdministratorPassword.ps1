@@ -6,4 +6,5 @@ function Set-UnattendedKickstartAdministratorPassword
     )
 		
 		$Script:un += "`nrootpw $Password"
+		$Script:un = $Script:un -replace '%PASSWORD%', $Password
 }

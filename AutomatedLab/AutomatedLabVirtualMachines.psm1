@@ -650,7 +650,7 @@ function Wait-LabVM
         
     $jobs = @()
     
-    $vms = Get-LabMachine -ComputerName $ComputerName
+    $vms = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
     
     if (-not $vms)
     {
@@ -660,12 +660,6 @@ function Wait-LabVM
         
     foreach ($vm in $vms)
     {
-        if ( $vm.OperatingSystemType -eq 'Linux')
-        {
-            Write-Verbose -Message "Skipping Wait-LabVm for $vm as it is a Linux system"
-            continue
-        }
-
         $session = $null
         #remove the existing sessions to ensure a new one is created and the existing one not reused.
         Remove-LabPSSession -ComputerName $vm

@@ -314,11 +314,14 @@ function New-LWHypervVM
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
-        Set-UnattendedPackage -Package $machine.LinuxPackageGroup
+        if ( $machine.InternalNotes.LinuxPackage )
+        {
+            Set-UnattendedPackage -Package $machine.InternalNotes.LinuxPackage
+        }
 
         # Copy Unattend-Stuff here
         if ($Machine.LinuxType -eq 'RedHat')
-        {
+        {            
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
         }
         else

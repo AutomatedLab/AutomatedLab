@@ -804,10 +804,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
         if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV') * 30)
+            $DelayBetweenComputers = ([int]((Get-LabMachine -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
-        Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
+        Wait-LabVM -ComputerName (Get-LabMachine -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -2448,7 +2448,7 @@ function New-LabPSSession
     {
         if ($PSCmdlet.ParameterSetName -eq 'ByName')
         {
-            $Machine = Get-LabVM -ComputerName $ComputerName
+            $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
 
             if (-not $Machine)
             {
@@ -2458,7 +2458,7 @@ function New-LabPSSession
         elseif ($PSCmdlet.ParameterSetName -eq 'BySession')
         {
             $internalSession = $Session
-            $Machine = Get-LabVM -ComputerName $internalSession.LabMachineName
+            $Machine = Get-LabVM -ComputerName $internalSession.LabMachineName -IncludeLinux
 
             if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'Credssp')
             {
@@ -2528,6 +2528,15 @@ function New-LabPSSession
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)
+            }
+
+            if ($m.OperatingSystemType -eq 'Linux')
+            {
+                Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
+                $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+                $param['UseSSL'] = $true
+                $param['Port'] = 5986
+                $param['Authentication'] = 'Basic'
             }
 
             Write-Verbose ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $param.ComputerName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
@@ -2641,11 +2650,11 @@ function Get-LabPSSession
         
     if ($ComputerName)
     {
-        $computers = Get-LabVM -ComputerName $ComputerName
+        $computers = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     else
     {
-        $computers = Get-LabMachine
+        $computers = Get-LabVM -IncludeLinux
     }
     
     if (-not $computers)
@@ -2699,11 +2708,11 @@ function Remove-LabPSSession
     $removedSessionCount = 0
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabVM -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     if ($PSCmdlet.ParameterSetName -eq 'All')
     {
-        $Machine = Get-LabVM -All
+        $Machine = Get-LabVM -All -IncludeLinux
     }
         
     foreach ($m in $Machine)
@@ -2759,7 +2768,7 @@ function Enter-LabPSSession
     
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabVM -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
 
     if ($Machine)
@@ -2871,7 +2880,7 @@ function Invoke-LabCommand
     #required to suppress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVm -IncludeLinux))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -2901,7 +2910,7 @@ function Invoke-LabCommand
     }
     else
     {
-        $machines = Get-LabVM -ComputerName $ComputerName   
+        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
 
     if (-not $machines)
