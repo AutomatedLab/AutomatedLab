@@ -842,9 +842,10 @@ function Install-LabRootDcs
             {
                 $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
                 if (-not $domainJoinedMachines) { continue }
+                $oneTimePassword = ($root.Group)[0].InstallationUser.Password
                 Invoke-LabCommand -ComputerName ($root.Group)[0] -ActivityName 'Add computer objects for domain-joined Linux machines' -NoDisplay -ScriptBlock {
-                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m }
-                } -Variable (Get-Variable -Name domainJoinedMachines)
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword)
             }
         }
 
