@@ -32,7 +32,7 @@ function Enable-LabHostRemoting
     
     if (-not ($trustedHostsList -contains '*'))
     {
-        Write-Warning -Message "TrustedHosts does not include '*'. Replacing the currernt value '$($trustedHostsList -join ', ')' with '*'"
+        Write-Warning -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'"
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
