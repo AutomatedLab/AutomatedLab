@@ -10,6 +10,9 @@ function Import-UnattendedYastContent
     $script:un = $Content
     $script:ns = @{
         un          = "http://www.suse.com/1.0/yast2ns"
-        'un:config' = "http://www.suse.com/1.0/configns" 
+        'un:config' = "http://www.suse.com/1.0/configns"
     }
+    $script:nsm =   [System.Xml.XmlNamespaceManager]::new($script:un.NameTable)
+    $script:nsm.AddNamespace('un',"http://www.suse.com/1.0/yast2ns")
+    $script:nsm.AddNamespace('un:config',"http://www.suse.com/1.0/configns" )
 }

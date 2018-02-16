@@ -10,5 +10,8 @@ function Set-UnattendedYastAutoLogon
 		[Parameter(Mandatory = $true)]
 		[string]$Password
     )
-    Write-Verbose -Message "Auto-logon not implemented yet for AutoYAST file"
+	
+	$autoLogon = $script:un.CreateElement('autologin_user', $script:nsm.LookupNamespace('un'))
+	$autologon.InnerText = '{0}\{1}' -f $DomainName, $Username
+	$null = $script:un.DocumentElement.AppendChild($autoLogon)
 }

@@ -35,7 +35,7 @@ function New-LWHypervVM
     }
 
     if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
-    if ($PSDefaultParameterValues.ContainsKey('*:IsYast')) { $PSDefaultParameterValues.Remove('*:IsYast') }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
 
     if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {        
@@ -43,7 +43,7 @@ function New-LWHypervVM
     }
     if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
     {
-        $PSDefaultParameterValues['*:IsYast'] = $true
+        $PSDefaultParameterValues['*:IsAutoYast'] = $true
     }
 
     Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
@@ -332,7 +332,7 @@ function New-LWHypervVM
         $mountedOsDisk | Dismount-VHD
 
         if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
-        if ($PSDefaultParameterValues.ContainsKey('*:IsYast')) { $PSDefaultParameterValues.Remove('*:IsYast') }
+        if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
     }
     else
     {

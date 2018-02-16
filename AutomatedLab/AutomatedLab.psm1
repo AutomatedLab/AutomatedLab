@@ -1130,6 +1130,15 @@ function Get-LabAvailableOperatingSystem
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $Matches.Distro
             $os.OperatingSystemName = $Matches.Distro
+
+            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
+                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
+                {
+                    $Matches.pack
+                }
+            }
+            
+            $os.LinuxPackageGroup = $packages
             $os.Size = $isoFile.Length
             if($Matches.Version -like '*.*')
 			{

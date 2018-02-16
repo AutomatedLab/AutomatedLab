@@ -4,9 +4,6 @@ function Set-UnattendedYastComputerName
         [Parameter(Mandatory = $true)]
         [string]$ComputerName
     )
-    $component = $script:un |
-	Select-Xml -XPath '//un:settings[@pass = "specialize"]/un:component[@name = "Microsoft-Windows-Shell-Setup"]' -Namespace $ns |
-	Select-Object -ExpandProperty Node
-	
-	$component.ComputerName = $ComputerName
+    $component = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns/un:hostname', $script:nsm)
+    $component.InnerText = $ComputerName
 }

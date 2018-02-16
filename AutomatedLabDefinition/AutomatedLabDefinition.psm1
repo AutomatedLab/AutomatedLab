@@ -446,7 +446,74 @@ $autoyastContent = @"
 <profile
   xmlns="http://www.suse.com/1.0/yast2ns"
   xmlns:config="http://www.suse.com/1.0/configns">
-  <!-- RESOURCES -->
+  <general>
+  <signature-handling>
+    <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+    <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+    <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+    <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+    <import_gpg_key config:type="boolean">true</import_gpg_key>
+    <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+    </signature-handling>
+  <mode>
+    <halt config:type="boolean">false</halt>
+    <forceboot config:type="boolean">false</forceboot>
+    <final_reboot config:type="boolean">true</final_reboot>
+    <final_halt config:type="boolean">false</final_halt>
+    <confirm_base_product_license config:type="boolean">false</confirm_base_product_license>
+    <confirm config:type="boolean">false</confirm>
+    <second_stage config:type="boolean">true</second_stage>
+  </mode>
+  </general>
+  <partitioning config:type="list">
+    <drive>
+    <use>all</use>
+        <initialize config:type="boolean">true</initialize>    
+    </drive>
+</partitioning>
+<language>
+    <language>en_US</language>
+</language>
+<timezone>
+<!-- https://raw.githubusercontent.com/yast/yast-country/master/timezone/src/data/timezone_raw.ycp -->
+    <hwclock>UTC</hwclock>
+    <timezone>ETC/GMT</timezone>
+</timezone>
+<keyboard>
+<!-- https://raw.githubusercontent.com/yast/yast-country/master/keyboard/src/data/keyboard_raw.ycp -->
+    <keymap>english-us</keymap>
+</keyboard>
+<software>
+<do_online_update config:type="boolean">true</do_online_update>
+  <install_recommended config:type="boolean">true</install_recommended>
+  <packages config:type="list">
+    <package>samba-winbind</package>
+  </packages>
+</software>
+<services-manager>
+  <default_target>multi-user</default_target>
+  <services>
+    <enable config:type="list">
+      <service>sshd</service>
+      <service>omid</service>
+    </enable>
+  </services>
+</services-manager>
+<networking>
+<interfaces config:type="list">
+</interfaces>
+</networking>
+<users config:type="list">
+  <user>
+    <username>root</username>
+    <user_password>Password1</user_password>
+    <encrypted config:type="boolean">false</encrypted>
+  </user>
+  </users>
+<firewall>
+  <enable_firewall config:type="boolean">true</enable_firewall>
+  <start_firewall config:type="boolean">true</start_firewall>
+</firewall>
 </profile>
 "@
 
