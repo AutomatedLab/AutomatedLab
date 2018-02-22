@@ -296,10 +296,15 @@ function New-LWHypervVM
     
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
+        $nextDriveLetter = [char[]](67..90) | 
+                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+                            Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+                            Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
-        $unattendPartition = $mountedOsDisk | New-Partition -Size 100MB
+        $size = 6GB
+        $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
         $diskpartCmd = "@
@@ -310,7 +315,7 @@ function New-LWHypervVM
         @"
         $diskpartCmd | diskpart.exe | Out-Null
 
-        $unattendPartition | Set-Partition -NewDriveLetter x
+        $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
@@ -327,6 +332,27 @@ function New-LWHypervVM
         else
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
+        }
+        
+        # Mount ISO
+        $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
+        $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
+        # Copy data
+        Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
+            Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+
+        # Unmount ISO
+        Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
+
+        if ($Machine.LinuxType -eq 'Suse')
+        {
+            # AutoYast XML file is not picked up properly without modifying bootloader config
+            # Change grub and isolinux configuration            
+            $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
+            $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
+
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -400,10 +426,10 @@ function New-LWHypervVM
     
     Write-ProgressIndicator
 
-    if ( $Machine.OperatingSystemType -eq 'Linux')
-    {
-        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
-    }
+    #if ( $Machine.OperatingSystemType -eq 'Linux')
+    #{
+    #    $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+    #}
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
