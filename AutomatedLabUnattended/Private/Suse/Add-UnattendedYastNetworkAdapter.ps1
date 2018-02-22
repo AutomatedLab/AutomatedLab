@@ -123,6 +123,7 @@ function Add-UnattendedYastNetworkAdapter
 
     if ($Gateways)
     {
+        $routing = $script:un.CreateElement('routing', $script:nsm.LookupNamespace('un'))
         $routes = $script:un.CreateElement('routes', $script:nsm.LookupNamespace('un'))
         $listAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
         $listAttr.InnerText = 'list'
@@ -149,8 +150,9 @@ function Add-UnattendedYastNetworkAdapter
             $null = $routeNode.AppendChild($gatewayNode)
             $null = $routeNode.AppendChild($netmask)
             $null = $routes.AppendChild($routeNode)
+            $null = $routing.AppendChild($routes)
         }
 
-        $null = $networking.AppendChild($routes)
+        $null = $networking.AppendChild($routing)
     }
 }
