@@ -119,7 +119,7 @@ function Add-UnattendedYastNetworkAdapter
         $null = $interfaceNode.AppendChild($aliases)
     }
 
-    $null = $networking.AppendChild($interfaceNode)
+    $null = $interfaceList.AppendChild($interfaceNode)
 
     if ($Gateways)
     {

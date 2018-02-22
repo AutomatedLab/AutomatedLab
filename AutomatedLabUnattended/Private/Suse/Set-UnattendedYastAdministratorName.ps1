@@ -7,7 +7,7 @@ function Set-UnattendedYastAdministratorName
 
     $userNode = $script:un.SelectSingleNode('/un:profile/un:users', $script:nsm)
 
-    $user = $script:un.CreateElement('username', $script:nsm.LookupNamespace('un'))
+    $user = $script:un.CreateElement('user', $script:nsm.LookupNamespace('un'))
     $username = $script:un.CreateElement('username', $script:nsm.LookupNamespace('un'))
     $pw = $script:un.CreateElement('user_password', $script:nsm.LookupNamespace('un'))
     $encrypted = $script:un.CreateElement('encrypted', $script:nsm.LookupNamespace('un'))

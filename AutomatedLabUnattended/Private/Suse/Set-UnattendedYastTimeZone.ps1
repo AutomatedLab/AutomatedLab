@@ -11,7 +11,7 @@ function Set-UnattendedYastTimeZone
 
     $timeNode = $script:un.SelectSingleNode('/un:profile/un:timezone/un:timezone', $script:nsm)
 
-    $timeNode.InnerText += if ($tzInfo.BaseUtcOffset.TotalHours -gt 0)
+    $timeNode.InnerText = if ($tzInfo.BaseUtcOffset.TotalHours -gt 0)
     {
         'Etc/GMT+{0}' -f $tzInfo.BaseUtcOffset.TotalHours
     }
