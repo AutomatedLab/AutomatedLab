@@ -455,6 +455,7 @@ $autoyastContent = @"
     <import_gpg_key config:type="boolean">true</import_gpg_key>
     <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
     </signature-handling>
+    <self_update config:type="boolean">false</self_update>
   <mode>
     <halt config:type="boolean">false</halt>
     <forceboot config:type="boolean">false</forceboot>
@@ -467,10 +468,40 @@ $autoyastContent = @"
   </general>
   <partitioning config:type="list">
     <drive>
-    <use>all</use>
-        <initialize config:type="boolean">true</initialize>    
+        <disklabel>gpt</disklabel>
+        <device>/dev/sda</device>
+        <use>free</use>
+        <partitions config:type="list">
+            <partition>
+                <filesystem config:type="symbol">vfat</filesystem>
+                <mount>/boot</mount>
+                <size>1G</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">vfat</filesystem>
+                <mount>/boot/efi</mount>
+                <size>1G</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">swap</filesystem>
+                <mount>/swap</mount>
+                <size>auto</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">ext4</filesystem>
+                <mount>/</mount>
+                <size>auto</size>
+            </partition>
+        </partitions>
     </drive>
 </partitioning>
+<bootloader>
+  <loader_type>grub2-efi</loader_type>
+  <global>
+    <activate config:type="boolean">true</activate>
+    <boot_boot>true</boot_boot>
+  </global>
+ </bootloader>
 <language>
     <language>en_US</language>
 </language>
@@ -484,10 +515,16 @@ $autoyastContent = @"
     <keymap>english-us</keymap>
 </keyboard>
 <software>
-<do_online_update config:type="boolean">true</do_online_update>
+    <patterns config:type="list">
+    <pattern>base</pattern>
+    <pattern>enhanced_base</pattern>
+  </patterns>
   <install_recommended config:type="boolean">true</install_recommended>
   <packages config:type="list">
     <package>samba-winbind</package>
+    <package>iputils</package>
+    <package>vi</package>
+    <package>less</package>
   </packages>
 </software>
 <services-manager>
@@ -495,7 +532,6 @@ $autoyastContent = @"
   <services>
     <enable config:type="list">
       <service>sshd</service>
-      <service>omid</service>
     </enable>
   </services>
 </services-manager>
@@ -514,6 +550,22 @@ $autoyastContent = @"
   <enable_firewall config:type="boolean">true</enable_firewall>
   <start_firewall config:type="boolean">true</start_firewall>
 </firewall>
+<scripts>
+    <init-scripts config:type="list">
+      <script>
+        <source>
+        <![CDATA[
+            rpm --import https://packages.microsoft.com/keys/microsoft.asc
+            curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/zypp/repos.d/microsoft.repo
+            rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
+            zypper update
+            zypper install powershell,omi
+            systemctl enable omid
+        ]]>
+        </source>
+      </script>
+    </init-scripts>
+  </scripts>
 </profile>
 "@
 
