@@ -35,7 +35,7 @@ function Set-UnattendedYastDomain
 	$kdc.InnerText = $DomainName
 		
 	$disableDhcp.InnerText = 'true'
-	$securityNode.InnerText = 'ADC'
+	$securityNode.InnerText = 'ADS'
 	$shellNode.InnerText = '/bin/bash'
 	$guestNode.InnerText = 'no'
 	$domainNode.InnerText = $DomainName
@@ -59,4 +59,44 @@ function Set-UnattendedYastDomain
 	$null = $smbClientNode.AppendChild($winbindNode)
 
 	$null = $script:un.DocumentElement.AppendChild($smbClientNode)
+
+	# SSSD configuration
+	$authClientNode = $script:un.CreateElement('auth-client', $script:nsm.LookupNamespace('un'))
+	$authClientSssd = $script:un.CreateElement('sssd', $script:nsm.LookupNamespace('un'))
+	$authClientLdaps = $script:un.CreateElement('nssldap', $script:nsm.LookupNamespace('un'))
+	$sssdConf = $script:un.CreateElement('sssd_conf', $script:nsm.LookupNamespace('un'))
+	$sssdConfFile = $script:un.CreateElement('config_file_version', $script:nsm.LookupNamespace('un'))
+	$sssdConfServices = $script:un.CreateElement('services', $script:nsm.LookupNamespace('un'))
+	$sssdConfNode = $script:un.CreateElement('sssd', $script:nsm.LookupNamespace('un'))
+	$sssdConfDomains = $script:un.CreateElement('domains', $script:nsm.LookupNamespace('un'))
+	$authDomains = $script:un.CreateElement('auth_domains', $script:nsm.LookupNamespace('un'))
+	$authDomain = $script:un.CreateElement('domain', $script:nsm.LookupNamespace('un'))
+	$authDomainName = $script:un.CreateElement('domain_name', $script:nsm.LookupNamespace('un'))
+	$authDomainIdp = $script:un.CreateElement('id_provider', $script:nsm.LookupNamespace('un'))
+	$authDomainUri = $script:un.CreateElement('ldap_uri', $script:nsm.LookupNamespace('un'))
+
+	$authClientSssd.InnerText = 'yes'
+	$authClientLdaps.InnerText = 'no'
+	$sssdConfFile.InnerText = 2
+	$sssdConfServices.InnerText = 'nss, pam'
+	$sssdConfDomains.InnerText = $DomainName
+	$authDomainName.InnerText = $DomainName
+	$authDomainIdp.InnerText = 'ldap'
+	$authDomainUri.InnerText = "ldap://$DomainName"
+
+	$authDomain.AppendChild($authDomainName)
+	$authDomain.AppendChild($authDomainIdp)
+	$authDomain.AppendChild($authDomainUri)
+	$authDomains.AppendChild($authDomain)
+	$sssdConf.AppendChild($authDomains)
+
+	$sssdConfNode.AppendChild($sssdConfFile)
+	$sssdConfNode.AppendChild($sssdConfServices)
+	$sssdConfNode.AppendChild($sssdConfDomains)
+	$sssdConf.AppendChild($sssdConfNode)
+	
+	$authClientNode.AppendChild($authClientSssd)
+	$authClientNode.AppendChild($authClientLdaps)
+	$authClientNode.AppendChild($sssdConf)
+	$script:un.DocumentElement.AppendChild($authClientNode)
 }
