@@ -24,46 +24,50 @@ function Add-UnattendedYastNetworkAdapter
         $dns = $script:un.CreateElement('dns', $script:nsm.LookupNamespace('un'))
         $host = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
         $null = $dns.AppendChild($host)
+    }
 
-        if ($DnsDomain)
-        {    
-            $domain = $script:un.CreateElement('domain', $script:nsm.LookupNamespace('un'))
-            $domain.InnerText = $DnsDomain
-            $null = $dns.AppendChild($domain)
-            $nameservers = $script:un.CreateElement('nameservers', $script:nsm.LookupNamespace('un'))
-            $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
-            $nsAttr.InnerText = 'list'
-            $null = $nameservers.Attributes.Append($nsAttr)
+    if ($DnsDomain)
+    {    
+        $domain = $script:un.CreateElement('domain', $script:nsm.LookupNamespace('un'))
+        $domain.InnerText = $DnsDomain
+        $null = $dns.AppendChild($domain)
+    }
 
-            foreach ($ns in $DnsServers)
-            {
-                $nameserver = $script:un.CreateElement('nameserver', $script:nsm.LookupNamespace('un'))
-                $nameserver.InnerText = $ns
-                $null = $nameservers.AppendChild($nameserver)
-            }
+    if ($DnsServers)
+    {
+        $nameservers = $script:un.CreateElement('nameservers', $script:nsm.LookupNamespace('un'))
+        $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+        $nsAttr.InnerText = 'list'
+        $null = $nameservers.Attributes.Append($nsAttr)
 
-            $null = $dns.AppendChild($nameservers)
-
-            if ($DNSSuffixSearchOrder)
-            {
-                $searchlist = $script:un.CreateElement('searchlist', $script:nsm.LookupNamespace('un'))
-                $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
-                $nsAttr.InnerText = 'list'
-                $null = $searchlist.Attributes.Append($nsAttr)
-
-                foreach ($suffix in ($DNSSuffixSearchOrder -split ','))
-                {
-                    $suffixEntry = $script:un.CreateElement('search', $script:nsm.LookupNamespace('un'))
-                    $suffixEntry.InnerText = $suffix
-                    $null = $searchlist.AppendChild($suffixEntry)
-                }
-
-                $null = $dns.AppendChild($searchlist)
-            }
+        foreach ($ns in $DnsServers)
+        {
+            $nameserver = $script:un.CreateElement('nameserver', $script:nsm.LookupNamespace('un'))
+            $nameserver.InnerText = $ns
+            $null = $nameservers.AppendChild($nameserver)
         }
 
-        $null = $networking.AppendChild($dns)
+        $null = $dns.AppendChild($nameservers)
+
+        if ($DNSSuffixSearchOrder)
+        {
+            $searchlist = $script:un.CreateElement('searchlist', $script:nsm.LookupNamespace('un'))
+            $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+            $nsAttr.InnerText = 'list'
+            $null = $searchlist.Attributes.Append($nsAttr)
+
+            foreach ($suffix in ($DNSSuffixSearchOrder -split ','))
+            {
+                $suffixEntry = $script:un.CreateElement('search', $script:nsm.LookupNamespace('un'))
+                $suffixEntry.InnerText = $suffix
+                $null = $searchlist.AppendChild($suffixEntry)
+            }
+
+            $null = $dns.AppendChild($searchlist)
+        }
     }
+
+    $null = $networking.AppendChild($dns)
 
     $interface = 'eth0'
     $lastInterface = $script:un.SelectNodes('/un:profile/un:networking/un:interfaces/un:interface/un:device', $script:nsm).InnerText | Sort-Object | Select-Object -Last 1
@@ -137,10 +141,8 @@ function Add-UnattendedYastNetworkAdapter
             $gatewayNode = $script:un.CreateElement('gateway', $script:nsm.LookupNamespace('un'))
             $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
 
-            $destinationNode.InnerText = ($IpAddresses | Where-Object {
-                [regex]::Match($_.FirstUsable.AddressAsString, "\d{1,3}\.\d{1,3}\.\d{1,3}").Value -eq [regex]::Match($gateway.AddressAsString, "\d{1,3}\.\d{1,3}\.\d{1,3}").Value -and `
-                ([int]($_.FirstUsable.AddressAsString -split '\.')[-1] -lt [int]($gateway.AddressAsString -split '\.')[-1] -and [int]($_.LastUsable.AddressAsString -split '\.')[-1] -gt [int]($gateway.AddressAsString -split '\.')[-1])
-            }).Network.AddressAsString
+            $destinationNode.InnerText = 'default' # should work for both IPV4 and IPV6 routes
+            
             $devicenode.InnerText = $interface
             $gatewayNode.InnerText = $gateway.AddressAsString
             $netmask.InnerText = '-'
