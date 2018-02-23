@@ -1129,16 +1129,7 @@ function Get-LabAvailableOperatingSystem
             
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $Matches.Distro
-            $os.OperatingSystemName = $Matches.Distro
-
-            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
-                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
-                {
-                    $Matches.pack
-                }
-            }
-            
-            $os.LinuxPackageGroup = $packages
+            $os.OperatingSystemName = $Matches.Distro            
             $os.Size = $isoFile.Length
             if($Matches.Version -like '*.*')
 			{
@@ -1154,6 +1145,15 @@ function Get-LabAvailableOperatingSystem
 			}
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
+
+            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
+                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
+                {
+                    $Matches.pack
+                }
+            }
+            
+            $os.LinuxPackageGroup = $packages
     
             $osList.Add($os)
         }
@@ -1173,17 +1173,18 @@ function Get-LabAvailableOperatingSystem
             $os.OperatingSystemImageName = $content.Name            
             $os.Size = $isoFile.Length
 
-            $packageXml = Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml
+            $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml | Select-Object -First 1).FullName
             if (-not $packageXml)
             {
                 # CentOS ISO for some reason contained only GUIDs
                 $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
                     Get-Content -TotalCount 2 |
                     Where-Object {$_ -like "*comps*"} |
-                    Foreach-Object { $file.FullName }
+                    Foreach-Object { $file.FullName } |
+                    Select-Object -First 1
             }
 
-            [xml]$packageInfo = Get-Content $packageXml
+            [xml]$packageInfo = Get-Content -Path $packageXml -Raw
             $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
 
             if ($versionInfo -match '\.')
