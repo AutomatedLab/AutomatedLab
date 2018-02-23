@@ -51,7 +51,7 @@ namespace AutomatedLab
                         case "10":
                             return "10.0";
                         default:
-                            throw new Exception("Operating System Version could not be retrieved");
+                            return VersionString;
                     }
 
                 }
@@ -345,7 +345,6 @@ namespace AutomatedLab
         {
             return operatingSystemName;
         }
-        private LinuxType linuxType;
 
         public LinuxType LinuxType
         {
@@ -409,17 +408,25 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)";
+                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
 
-                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
+                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
                 if (!string.IsNullOrEmpty(match.Groups[1].Value))
                 {
                     return match.Groups[1].Value;
                 }
-                else
+                else if (!string.IsNullOrEmpty(match.Groups[4].Value))
                 {
                     return match.Groups[4].Value;
+                }
+                else
+                {
+                    if(!string.IsNullOrEmpty(match.Groups[9].Value))
+                    {
+                        return $"{match.Groups[8].Value}.{match.Groups[9].Value[match.Groups[9].Value.Length - 1]}";
+                    }
+                    return match.Groups[8].Value;
                 }
             }
         }

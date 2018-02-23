@@ -25,6 +25,7 @@ namespace AutomatedLab
 
     public enum LinuxType
     {
+        Unknown,
         RedHat,
         SuSE
     }
