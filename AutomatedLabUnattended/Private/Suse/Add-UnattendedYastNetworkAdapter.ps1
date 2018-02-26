@@ -36,7 +36,7 @@ function Add-UnattendedYastNetworkAdapter
     if ($DnsServers)
     {
         $nameservers = $script:un.CreateElement('nameservers', $script:nsm.LookupNamespace('un'))
-        $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+        $nsAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
         $nsAttr.InnerText = 'list'
         $null = $nameservers.Attributes.Append($nsAttr)
 
@@ -52,7 +52,7 @@ function Add-UnattendedYastNetworkAdapter
         if ($DNSSuffixSearchOrder)
         {
             $searchlist = $script:un.CreateElement('searchlist', $script:nsm.LookupNamespace('un'))
-            $nsAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+            $nsAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
             $nsAttr.InnerText = 'list'
             $null = $searchlist.Attributes.Append($nsAttr)
 
@@ -129,7 +129,7 @@ function Add-UnattendedYastNetworkAdapter
     {
         $routing = $script:un.CreateElement('routing', $script:nsm.LookupNamespace('un'))
         $routes = $script:un.CreateElement('routes', $script:nsm.LookupNamespace('un'))
-        $listAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+        $listAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
         $listAttr.InnerText = 'list'
         $null = $routes.Attributes.Append($listAttr)
 

@@ -12,7 +12,7 @@ function Set-UnattendedYastDomain
     )
 	
 	$smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))
-	$boolAttrib = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+	$boolAttrib = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
     $boolAttrib.InnerText = 'boolean'
 	$adNode = $script:un.CreateElement('active_directory', $script:nsm.LookupNamespace('un'))
 	$kdc = $script:un.CreateElement('kdc', $script:nsm.LookupNamespace('un'))
@@ -23,8 +23,8 @@ function Set-UnattendedYastDomain
 	$guestNode = $script:un.CreateElement('usershare_allow_guests', $script:nsm.LookupNamespace('un'))
 	$domainNode = $script:un.CreateElement('workgroup', $script:nsm.LookupNamespace('un'))
 	$joinNode = $script:un.CreateElement('join', $script:nsm.LookupNamespace('un'))
-	$joinUserNode = $script:un.CreateElement('password', $script:nsm.LookupNamespace('un'))
-	$joinPasswordNode = $script:un.CreateElement('user', $script:nsm.LookupNamespace('un'))
+	$joinUserNode = $script:un.CreateElement('user', $script:nsm.LookupNamespace('un'))
+	$joinPasswordNode = $script:un.CreateElement('password', $script:nsm.LookupNamespace('un'))
 	$homedirNode = $script:un.CreateElement('mkhomedir', $script:nsm.LookupNamespace('un'))
 	$winbindNode = $script:un.CreateElement('winbind', $script:nsm.LookupNamespace('un'))
 
@@ -42,7 +42,7 @@ function Set-UnattendedYastDomain
 	$joinUserNode.InnerText = $Username
 	$joinPasswordNode.InnerText = $Password	
 	$homedirNode.InnerText = 'true'
-	$winbindNode.InnerText = 'true'
+	$winbindNode.InnerText = 'false'
 
 	$null = $adNode.AppendChild($kdc)
 	$null = $globalNode.AppendChild($securityNode)

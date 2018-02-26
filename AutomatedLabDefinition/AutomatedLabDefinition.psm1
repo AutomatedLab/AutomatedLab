@@ -521,7 +521,6 @@ $autoyastContent = @"
   </patterns>
   <install_recommended config:type="boolean">true</install_recommended>
   <packages config:type="list">
-    <package>samba-winbind</package>
     <package>iputils</package>
     <package>vi</package>
     <package>less</package>
@@ -556,7 +555,6 @@ $autoyastContent = @"
         <source>
         <![CDATA[
             rpm --import https://packages.microsoft.com/keys/microsoft.asc
-            curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/zypp/repos.d/microsoft.repo
             rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
             zypper update
             zypper install powershell,omi

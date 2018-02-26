@@ -8,7 +8,7 @@ function Set-UnattendedYastWorkgroup
     )
     
     $smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))
-	$boolAttrib = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+	$boolAttrib = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
     $boolAttrib.InnerText = 'boolean'	
 	$disableDhcp = $script:un.CreateElement('disable_dhcp_hostname', $script:nsm.LookupNamespace('un'))
 	$globalNode = $script:un.CreateElement('global', $script:nsm.LookupNamespace('un'))

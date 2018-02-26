@@ -11,7 +11,7 @@ function Set-UnattendedYastAdministratorName
     $username = $script:un.CreateElement('username', $script:nsm.LookupNamespace('un'))
     $pw = $script:un.CreateElement('user_password', $script:nsm.LookupNamespace('un'))
     $encrypted = $script:un.CreateElement('encrypted', $script:nsm.LookupNamespace('un'))
-    $listAttr = $script:un.CreateAttribute('type', $script:nsm.LookupNamespace('config'))
+    $listAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
     $listAttr.InnerText = 'boolean'
     $null = $encrypted.Attributes.Append($listAttr)
     
