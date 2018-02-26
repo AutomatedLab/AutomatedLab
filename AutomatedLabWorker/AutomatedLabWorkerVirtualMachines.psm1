@@ -344,6 +344,28 @@ function New-LWHypervVM
         # Unmount ISO
         Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
 
+        # Copy additional packages
+        $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
+        if (Test-Path -Path $additionalPackagePath)
+        {
+            switch -Regex ($Machine.OperatingSystem.OperatingSystemName)
+            {
+                'Suse' {
+                    Copy-Item -Path $additionalPackagePath -Destination "$letter`:\suse\x86_64" -Force
+                }
+                'Red Hat|Centos' {
+                    Copy-Item -Path $additionalPackagePath -Destination "$letter`:\Packages" -Force
+                }
+                'Fedora' {
+                    # Why...
+                    Get-ChildItem $additionalPackagePath -File | ForEach-Object {
+                        $targetPath = Join-Path -Path "$letter`:\Packages" -ChildPath $_.Name.Substring(0,1)
+                        $_ | Copy-Item -Destination $targetPath -Force
+                    }
+                }
+            }
+        }
+
         if ($Machine.LinuxType -eq 'Suse')
         {
             # AutoYast XML file is not picked up properly without modifying bootloader config
