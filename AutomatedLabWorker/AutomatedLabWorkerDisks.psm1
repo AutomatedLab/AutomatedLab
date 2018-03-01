@@ -116,14 +116,7 @@ exit
 	
     Write-Verbose 'Applying image to the volume...'
     
-    if ($image.Installation -eq 'Nano Server')
-    {
-        $wimPath = "$isoDrive\NanoServer\NanoServer.wim"
-    }
-    else
-    {
-        $wimPath = "$isoDrive\Sources\install.wim"
-    }
+    $wimPath = "$isoDrive\Sources\install.wim"
     $job = Start-Job -ScriptBlock { Dism.exe /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\ }
 	
     Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 20 -Timeout 60
@@ -159,22 +152,7 @@ exit
         @"
         $diskpartCmd | diskpart.exe | Out-Null
     }
-    
-    if ($image.Installation -eq 'Nano Server')
-    {
-        $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages -File
-        foreach ($package in $packages)
-        {
-            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
-        }
-        
-        $packages = Get-ChildItem -Path $isoDrive\NanoServer\Packages\en-US -File
-        foreach ($package in $packages)
-        {
-            Add-WindowsPackage -Path $vhdWindowsVolume -PackagePath $package.FullName | Out-Null
-        }
-    }
-	
+
     Write-Verbose 'Dismounting ISO and new disk'
     Dismount-DiskImage -ImagePath $IsoOsPath
     Dismount-DiskImage -ImagePath $ReferenceVhdxPath
