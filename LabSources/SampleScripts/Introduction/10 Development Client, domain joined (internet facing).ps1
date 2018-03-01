@@ -13,7 +13,7 @@ Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType =
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:Memory' = 1GB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
     'Add-LabMachineDefinition:Network' = 'Lab1'
 }
 

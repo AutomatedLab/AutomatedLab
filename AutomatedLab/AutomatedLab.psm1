@@ -1040,30 +1040,33 @@ function Get-LabAvailableOperatingSystem
         Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
     }
 
+    $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
     $osList = New-Object $type
 
     foreach ($isoFile in $isoFiles)
     {
         Write-Verbose "Mounting ISO image '$($isoFile.FullName)'"
-        Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO
+        $drive = Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
 
         Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
     
         Write-Verbose 'Getting disk image of the ISO'
-        $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
+        $letter = ($drive | Get-Volume).DriveLetter
         Write-Verbose "Got disk image '$letter'"
         Write-Verbose "OS ISO mounted on drive letter '$letter'"
     
         $standardImagePath = "$letter`:\Sources\Install.wim"    
         if (Test-Path -Path $standardImagePath)
         {
-            $images = Get-WindowsImage -ImagePath $standardImagePath
-            
-            Write-Verbose "The Windows Image list contains $($images.Count) items"
-    
-            foreach ($image in $images)
+            $dismOutput = Dism.exe /Get-WimInfo /WimFile:$standardImagePath
+            $dismOutput = $dismOutput -join "`n"
+            $dismMatches = $dismOutput | Select-String -Pattern $dismPattern -AllMatches
+            Write-Verbose "The Windows Image list contains $($dismMatches.Matches.Count) items"
+
+            foreach ($dismMatch in $dismMatches.Matches)
             {
-                $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $image.ImageIndex
+                $index = $dismMatch.Groups['Index'].Value
+                $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $index
                 
                 if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
@@ -1072,33 +1075,8 @@ function Get-LabAvailableOperatingSystem
                 }
 
                 $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-                $os.OperatingSystemImageName = $imageInfo.ImageName
-                $os.OperatingSystemName = $imageInfo.ImageName
-                $os.Size = $imageInfo.Imagesize
-                $os.Version = $imageInfo.Version
-                $os.PublishedDate = $imageInfo.CreatedTime
-                $os.Edition = $imageInfo.EditionId
-                $os.Installation = $imageInfo.InstallationType
-                $os.ImageIndex = $imageInfo.ImageIndex
-        
-                $osList.Add($os)
-            }
-        }
-
-        $nanoImagePath = "$letter`:\NanoServer\NanoServer.wim"    
-        if (Test-Path -Path $nanoImagePath)
-        {
-            $images = Get-WindowsImage -ImagePath $nanoImagePath
-            
-            Write-Verbose "The Windows Image list contains $($images.Count) items"
-    
-            foreach ($image in $images)
-            {
-                $imageInfo = Get-WindowsImage -ImagePath $nanoImagePath -Index $image.ImageIndex
-
-                $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-                $os.OperatingSystemImageName = $imageInfo.ImageName
-                $os.OperatingSystemName = $imageInfo.ImageName
+                $os.OperatingSystemImageName = $dismMatch.Groups['Name'].Value
+                $os.OperatingSystemName = $dismMatch.Groups['Name'].Value
                 $os.Size = $imageInfo.Imagesize
                 $os.Version = $imageInfo.Version
                 $os.PublishedDate = $imageInfo.CreatedTime
@@ -2098,7 +2076,7 @@ function Install-LabSoftwarePackage
         }
 
         if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
-            ($Machine | Group-Object -Property DomainName).Count -gt 1)
+        ($Machine | Group-Object -Property DomainName).Count -gt 1)
         {
             Write-Error "If you install software in a background job and require the schedule job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
             return
@@ -3488,8 +3466,8 @@ function Add-LabVMUserRight
 function New-LabSourcesFolder
 {
     [CmdletBinding(
-        SupportsShouldProcess = $true,
-        ConfirmImpact = 'Medium')]
+            SupportsShouldProcess = $true,
+    ConfirmImpact = 'Medium')]
     param
     (
         [Parameter(Mandatory = $false)]

@@ -25,7 +25,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DnsServer1' = '192.168.50.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.50.11'
     'Add-LabMachineDefinition:Memory' = 512MB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 }
 
 #the first machine is the root domain controller

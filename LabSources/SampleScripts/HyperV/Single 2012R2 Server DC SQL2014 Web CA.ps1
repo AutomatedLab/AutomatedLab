@@ -22,7 +22,7 @@ $role += Get-LabMachineRoleDefinition -Role WebServer
 $role += Get-LabMachineRoleDefinition -Role CaRoot
 Add-LabMachineDefinition -Name S1DC1 -Memory 4GB -Network $labName -IpAddress 192.168.81.10 `
     -DnsServer1 192.168.81.10 -DomainName test1.net -Roles $role `
-    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Install-Lab
 

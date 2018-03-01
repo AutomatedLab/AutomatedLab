@@ -124,7 +124,7 @@ Add-LabIsoImageDefinition -Name SQLServer2012 -Path
 The lab that we created in Part 2 contains two machines: S1DC1 and
 S1Server1. We need to change the operating system of the two machines in
 the existing lab. This is a simple find and replace operation. Replace
-the string **'Windows Server 2012 R2 SERVERDATACENTER'** with **'Windows
+the string **'Windows Server 2012 R2 Datacenter (Server with a GUI)'** with **'Windows
 Server vNext SERVERDATACENTER'**.
 
 The definition of the domain controller looks like this:

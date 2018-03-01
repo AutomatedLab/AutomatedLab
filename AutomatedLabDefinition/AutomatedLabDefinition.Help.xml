@@ -1416,9 +1416,9 @@ Machine will not be domain joined but be placed in workgroup.</maml:para>
 			<maml:introduction>
 				<maml:paragraph>PS C:\&gt;</maml:paragraph>
 			</maml:introduction>
-			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2008 R2 SERVERDATACENTER&apos; -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName &apos;contoso.com&apos;</dev:code>
+			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2008 R2 Datacenter (Full Installation)&apos; -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName &apos;contoso.com&apos;</dev:code>
 			<dev:remarks>
-				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2008 R2 SERVERDATACENTER&#39;.</maml:para>
+				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2008 R2 Datacenter (Full Installation)&#39;.</maml:para>
 				<maml:para />
 				<maml:para />
 				<maml:para>Following parameters for the machine, will be auto-configured:
@@ -1444,9 +1444,9 @@ Machine will not be domain joined but be placed in workgroup.</maml:para>
 			<maml:introduction>
 				<maml:paragraph>PS C:\&gt;</maml:paragraph>
 			</maml:introduction>
-			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2012 R2 SERVERDATACENTER&apos; -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress &apos;192.168.100.5/24&apos; -Network Network1</dev:code>
+			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2012 R2 Datacenter (Server with a GUI)&apos; -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress &apos;192.168.100.5/24&apos; -Network Network1</dev:code>
 			<dev:remarks>
-				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2012 R2 SERVERDATACENTER&#39; with build version of &#39;6.3.9600.17415&#39;.</maml:para>
+				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2012 R2 Datacenter (Server with a GUI)&#39; with build version of &#39;6.3.9600.17415&#39;.</maml:para>
 				<maml:para />
 				<maml:para />
 				<maml:para>Memory will be set to 2GB (static).</maml:para>
@@ -1464,9 +1464,9 @@ Machine will not be domain joined but be placed in workgroup.</maml:para>
 			<maml:introduction>
 				<maml:paragraph>PS C:\&gt;</maml:paragraph>
 			</maml:introduction>
-			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2012 R2 SERVERDATACENTER&apos; -VirtualizationHost HyperV -DefaultDomain -ProductKey &apos;ABCDE-ABCDE-ABCDE-ABCDE-ABCDE&apos;</dev:code>
+			<dev:code>Add-MachineDefinition -Name Server1 -OperatingSystem &apos;Windows Server 2012 R2 Datacenter (Server with a GUI)&apos; -VirtualizationHost HyperV -DefaultDomain -ProductKey &apos;ABCDE-ABCDE-ABCDE-ABCDE-ABCDE&apos;</dev:code>
 			<dev:remarks>
-				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2012 R2 SERVERDATACENTER&#39;.</maml:para>
+				<maml:para>Adds a definition of a Hyper-V machine with the name &#39;Server1&#39; with the operating system of &#39;Windows Server 2012 R2 Datacenter (Server with a GUI)&#39;.</maml:para>
 				<maml:para />
 				<maml:para />
 				<maml:para>Memory will be set to 2GB (static).</maml:para>
