@@ -5,10 +5,22 @@ function Export-UnattendedKickstartFile
         [string]$Path
     )
 
-    $script:un += '%post'
-    $script:un += 'curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/yum.repos.d/microsoft.repo'
-    $script:un += 'yum install -y powershell'
-    $script:un += 'yum install -y omi-psrp-server'
-    $script:un += '%end'
+    $script:un += @'
+    %post
+    function IsNotInstalled {
+        if yum list installed "$@" >/dev/null 2>&1; then
+          false
+        else
+          true
+        fi
+      }
+    curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/yum.repos.d/microsoft.repo
+    yum install -y powershell
+    yum install -y omi-psrp-server
+
+    if IsNotInstalled powershell; then yum install -y powershell; fi
+    if IsNotInstalled omi-psrp-server; then yum install -y powershell; fi
+    %end
+'@
     ($script:un | Out-String) -replace "`r`n","`n" | Set-Content -Path $Path -Force
 }

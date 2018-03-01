@@ -557,7 +557,7 @@ $autoyastContent = @"
             rpm --import https://packages.microsoft.com/keys/microsoft.asc
             rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
             zypper update
-            zypper install powershell,omi
+            zypper -v install powershell omi
             systemctl enable omid
         ]]>
         </source>

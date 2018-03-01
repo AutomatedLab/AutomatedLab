@@ -163,8 +163,8 @@ function New-LWHypervVM
     #endregion network adapter settings
             
     Set-UnattendedComputerName -ComputerName $Machine.Name
-    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password
     Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName
+    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password    
             
     if ($Machine.ProductKey)
     {
@@ -304,6 +304,10 @@ function New-LWHypervVM
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
         $size = 6GB
+        if ($Machine.LinuxType -eq 'RedHat')
+        {
+            $size = 100MB
+        }
         $unattendPartition = $mountedOsDisk | New-Partition -Size $size
 
         # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
@@ -332,49 +336,48 @@ function New-LWHypervVM
         else
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
-        }
-        
-        # Mount ISO
-        $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
-        $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
-        # Copy data
-        Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
-            Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+            # Mount ISO
+            $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
+            $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
+            # Copy data
+            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
+                Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
 
-        # Unmount ISO
-        Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
+            # Unmount ISO
+            Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
 
-        # Copy additional packages
-        $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
-        if (Test-Path -Path $additionalPackagePath)
-        {
-            switch -Regex ($Machine.OperatingSystem.OperatingSystemName)
+            # Copy additional packages
+            $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
+            if (Test-Path -Path $additionalPackagePath)
             {
-                'Suse' {
-                    Copy-Item -Path $additionalPackagePath -Destination "$letter`:\suse\x86_64" -Force
-                }
-                'Red Hat|Centos' {
-                    Copy-Item -Path $additionalPackagePath -Destination "$letter`:\Packages" -Force
-                }
-                'Fedora' {
-                    # Why...
-                    Get-ChildItem $additionalPackagePath -File | ForEach-Object {
-                        $targetPath = Join-Path -Path "$letter`:\Packages" -ChildPath $_.Name.Substring(0,1)
-                        $_ | Copy-Item -Destination $targetPath -Force
+                switch -Regex ($Machine.OperatingSystem.OperatingSystemName)
+                {
+                    'Suse'
+                    {
+                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\suse\x86_64" -Force
+                    }
+                    'Red Hat|Centos'
+                    {
+                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\Packages" -Force
+                    }
+                    'Fedora'
+                    {
+                        # Why...
+                        Get-ChildItem $additionalPackagePath -File | ForEach-Object {
+                            $targetPath = Join-Path -Path "$letter`:\Packages" -ChildPath $_.Name.Substring(0, 1)
+                            $_ | Copy-Item -Destination $targetPath -Force
+                        }
                     }
                 }
             }
-        }
 
-        if ($Machine.LinuxType -eq 'Suse')
-        {
             # AutoYast XML file is not picked up properly without modifying bootloader config
             # Change grub and isolinux configuration            
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
             ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName        
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -448,10 +451,10 @@ function New-LWHypervVM
     
     Write-ProgressIndicator
 
-    #if ( $Machine.OperatingSystemType -eq 'Linux')
-    #{
-    #    $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
-    #}
+    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
+    {
+        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+    }
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
