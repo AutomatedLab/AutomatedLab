@@ -11,6 +11,7 @@ namespace AutomatedLab
         private string scriptFilePath;
         private bool keepFolder;
         private Path isoImage;
+        private SerializableDictionary<string, string> properties;
         private bool doNotUseCredSsp;
         private bool asJob;
 
@@ -55,6 +56,12 @@ namespace AutomatedLab
         {
             get { return isoImage; }
             set { isoImage = value; }
+        }
+
+        public SerializableDictionary<string,string> Properties
+        {
+            get { return properties; }
+            set { properties = value; }
         }
 
         public bool DoNotUseCredSsp

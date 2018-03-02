@@ -2820,6 +2820,9 @@ function Get-LabPostInstallationActivity
         [Parameter(Mandatory, ParameterSetName = 'IsoImageDependencyLocalScript')]
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyLocalScript')]
         [string]$ScriptFilePath,
+
+        [Parameter(ParameterSetName = 'CustomRole')]
+        [hashtable]$Properties,
         
         [switch]$DoNotUseCredSsp
     )
@@ -2855,7 +2858,6 @@ function Get-LabPostInstallationActivity
         $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
     }
     
-    
     process
     {   
         if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
@@ -2888,6 +2890,7 @@ function Get-LabPostInstallationActivity
             $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -ChildPath $CustomRole
             $activity.KeepFolder = $KeepFolder.ToBool()
             $activity.ScriptFileName = "$CustomRole.ps1"
+            $activity.Properties = $Properties
         }
     
         $activity.DoNotUseCredSsp = $DoNotUseCredSsp
