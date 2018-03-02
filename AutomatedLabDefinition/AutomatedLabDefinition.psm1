@@ -557,7 +557,7 @@ $autoyastContent = @"
             rpm --import https://packages.microsoft.com/keys/microsoft.asc
             rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
             zypper update
-            zypper -v install powershell omi
+            zypper -f -v install powershell omi openssl
             systemctl enable omid
         ]]>
         </source>
@@ -1868,7 +1868,7 @@ function Add-LabMachineDefinition
                 'Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE', 'Windows Server 2016 Technical Preview 5 SERVERSTANDARD', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE', 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER',
                 'Windows Server 2016 SERVERDATACENTER', 'Windows Server 2016 SERVERDATACENTERCORE', 'Windows Server 2016 SERVERSTANDARD', 'Windows Server 2016 SERVERSTANDARDCORE',
                 'Windows Server 2016 SERVERSTANDARDNANO', 'Windows Server 2016 SERVERDATACENTERNANO','Windows Server 2016 SERVERSTANDARDACORE', 'Windows Server 2016 SERVERDATACENTERACORE',
-                'CentOS 7.4','Fedora 27','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
+                'CentOS 7.4','Fedora 27.0','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
         )]
         [Alias('OS')]
         [AutomatedLab.OperatingSystem]$OperatingSystem = (Get-LabDefinition).DefaultOperatingSystem,
