@@ -1118,7 +1118,7 @@ function Connect-LabVM
         [switch]$UseLocalCredential
     )
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
     $lab = Get-Lab
     
     foreach ($machine in $machines)
@@ -1130,6 +1130,32 @@ function Connect-LabVM
         else
         {
             $cred = $machine.GetCredential($lab)
+        }
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            $sshBinary = Get-Item $labsources\Tools\OpenSSH\ssh.exe -ErrorAction SilentlyContinue
+
+            if (-not $sshBinary)
+            {
+                $download = Read-Choice -ChoiceList 'No','Yes' -Caption 'Download Win32-OpenSSH' -Message 'OpenSSH is necessary to connect to Linux VMs. Would you like us to download Win32-OpenSSH for you?' -Default 1
+
+                if ([bool]$download)
+                {
+                    $downloadUri = (Get-Module AutomatedLab).PrivateData['OpenSshUri']
+                    $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
+                    $targetPath = "$labsources\Tools\OpenSSH"
+                    Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
+
+                    Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
+                    $sshBinary = Get-Item $labsources\Tools\OpenSSH\ssh.exe -ErrorAction SilentlyContinue
+                }
+            }
+
+            $arguments = '{0}@{1}' -f $cred.UserName,$machine
+            $connection = Start-Process -FilePath $sshBinary.FullName -ArgumentList $arguments -PassThru
+            $connection.StandardInput.WriteLine($cred.GetNetworkCredential().Password)
+            return
         }
         
         if ($machine.HostType -eq 'Azure')
