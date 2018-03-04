@@ -249,7 +249,7 @@ function Import-Lab
         }
         catch
         {
-            throw "No machines imported from file $machineDefinitionFile"
+            Write-Error -Message "No machines imported from file $machineDefinitionFile" -Exception $_.Exception -ErrorAction Stop
         }
     
         $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
@@ -544,13 +544,14 @@ function Install-Lab
         {
             New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
         }
+
+        #VMs created, export lab definition again to update MAC addresses
+        Set-LabDefinition -Machines $Script:data.Machines
+        Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    #VMs created, export lab definition again to update MAC addresses
-    Set-LabDefinition -Machines $Script:data.Machines
-    Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC))
@@ -2808,7 +2809,7 @@ function Invoke-LabCommand
         Start-LabVM -ComputerName $machines -Wait
     }
     
-    if ($PostInstallationActivity -and $machines)
+    if ($PostInstallationActivity)
     {
         Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart
 
@@ -2839,13 +2840,19 @@ function Invoke-LabCommand
                 if ($item.ActivityName) { $param.Add('ActivityName', $item.ActivityName) }
                 if ($Retries) { $param.Add('Retries', $Retries) }
                 if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
-        
-                $param.AsJob      = $true
-                $param.PassThru   = $PassThru
+				$param.AsJob      = $true
+				$param.PassThru   = $PassThru
                 $param.Verbose    = $VerbosePreference
                 if ($PSBoundParameters.ContainsKey('ThrottleLimit'))
                 {
                     $param.Add('ThrottleLimit', $ThrottleLimit)
+                }
+
+                if ($item.Properties)
+                {
+                    $temp = $item.Properties
+                    Add-VariableToPSSession -Session $session -PSVariable (Get-Variable -Name temp)
+                    $param.ParameterVariableName = 'temp'
                 }
 
                 $results += Invoke-LWCommand @param
