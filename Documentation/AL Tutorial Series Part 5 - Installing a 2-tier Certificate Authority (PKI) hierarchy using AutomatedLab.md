@@ -107,7 +107,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Then, the Root CA need to be installed. This server will be a
 Stand-Alone CA server and not joined to any domain. Since the
@@ -140,7 +140,7 @@ Add-LabMachineDefinition -Name S1ROOTCA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Next, the Subordinate CA server needs to be defined. This is the code
 for doing this:
@@ -171,7 +171,7 @@ Add-LabMachineDefinition -Name S2SUBCA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Now when all the machines have been defined, start the installation of
 the lab like usual. This would mean, export the lab definition, import
@@ -250,7 +250,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Now, when defining the role of the CA, we have the option of specifying
 configuration parameters. Take a look at the following:
@@ -286,7 +286,7 @@ Add-LabMachineDefinition -Name S1ROOTCA1 -MemoryInMb 512 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Last, the machine for Subordinate CA needs to be defined. This command
 is the same as before. Only the contents of the \$role variable is
@@ -326,7 +326,7 @@ Add-LabMachineDefinition -Name S1SUBCA1 -MemoryInMb 512 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Just as before, perform the actual installation of the lab using:
 
@@ -465,7 +465,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' \`
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' \`
 
 -Roles \$role
 
@@ -489,7 +489,7 @@ Add-LabMachineDefinition -Name S1ROOTCA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' \`
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' \`
 
 -Roles \$role
 
@@ -517,7 +517,7 @@ Add-LabMachineDefinition -Name S2SUBCA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' \`
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' \`
 
 -Roles \$role
 

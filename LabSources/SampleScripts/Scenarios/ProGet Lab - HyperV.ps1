@@ -24,7 +24,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.110.10'
     'Add-LabMachineDefinition:Gateway' = '192.168.110.50'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 }
 
 #DC

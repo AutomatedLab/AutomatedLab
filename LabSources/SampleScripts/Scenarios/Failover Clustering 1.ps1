@@ -8,7 +8,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 Add-LabVirtualNetworkDefinition -Name $labname -AddressSpace 192.168.50.0/24
 
 $PSDefaultParameterValues = @{
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Network'         = $labname
     'Add-LabMachineDefinition:DomainName'      = 'contoso.com'
     'Add-LabMachineDefinition:Memory'          = 1GB
