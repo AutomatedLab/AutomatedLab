@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Xml.Serialization;
 
 namespace AutomatedLab
@@ -11,7 +12,7 @@ namespace AutomatedLab
         private string scriptFilePath;
         private bool keepFolder;
         private Path isoImage;
-        private SerializableDictionary<string, string> properties;
+        private SerializableDictionary<string, List<object>> properties;
         private bool doNotUseCredSsp;
         private bool asJob;
 
@@ -58,7 +59,7 @@ namespace AutomatedLab
             set { isoImage = value; }
         }
 
-        public SerializableDictionary<string,string> Properties
+        public SerializableDictionary<string, List<object>> Properties
         {
             get { return properties; }
             set { properties = value; }
@@ -74,6 +75,11 @@ namespace AutomatedLab
         {
             get { return asJob; }
             set { asJob = value; }
+        }
+
+        public PostInstallationActivity()
+        {
+            properties = new SerializableDictionary<string, List<object>>();
         }
     }
 }

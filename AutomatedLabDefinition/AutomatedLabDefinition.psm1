@@ -447,16 +447,16 @@ function Get-LabVolumesOnPhysicalDisks
             foreach ($volume in $volumes)
             {
                 Get-Volume -DriveLetter $volume.DeviceId[0] | 
-                    Add-Member -Name Serial -MemberType NoteProperty -Value $disk.SerialNumber -PassThru |
-                    Add-Member -Name Signature -MemberType NoteProperty -Value $disk.Signature -PassThru
+                Add-Member -Name Serial -MemberType NoteProperty -Value $disk.SerialNumber -PassThru |
+                Add-Member -Name Signature -MemberType NoteProperty -Value $disk.Signature -PassThru
             }
         }
     }
 
     $labVolumes |
-        Select-Object -ExpandProperty DriveLetter |
-        Sort-Object |    
-        ForEach-Object {
+    Select-Object -ExpandProperty DriveLetter |
+    Sort-Object |    
+    ForEach-Object {
         $localDisk = New-Object AutomatedLab.LocalDisk($_)
         $localDisk.Serial = $_.Serial
         $localDisk.Signature = $_.Signature
@@ -567,9 +567,9 @@ function New-LabDefinition
         $reservedMacAddresses += '00:16:3E'
         
         $macAddress = Get-WmiObject Win32_NetworkAdapter | 
-            Where-Object { $_.NetEnabled -and $_.NetConnectionID } | 
-            Where-Object { $_.MACaddress.ToString().SubString(0, 8) -notin $reservedMacAddresses } |
-            Select-Object -ExpandProperty MACAddress -Unique
+        Where-Object { $_.NetEnabled -and $_.NetConnectionID } | 
+        Where-Object { $_.MACaddress.ToString().SubString(0, 8) -notin $reservedMacAddresses } |
+        Select-Object -ExpandProperty MACAddress -Unique
         
         $Name = "$($env:COMPUTERNAME)$($macAddress.SubString(12,2))$($macAddress.SubString(15,2))"
         Write-ScreenInfo -Message "Lab name and network name has automatically been generated as '$Name' (if not overridden)"
@@ -867,7 +867,12 @@ function Set-LabDefinition
 
     if ($Machines)
     {
-        $script:Machines.Clear()
+        if (-not $script:machines)
+        {
+            $script:machines = New-Object 'AutomatedLab.SerializableList[AutomatedLab.Machine]'
+        }
+        
+        $script:machines.Clear()
         $Machines | Foreach-Object { $script:Machines.Add($_)}
     }
 
@@ -943,7 +948,7 @@ function Export-LabDefinition
             if ($firstRouter)
             {
                 $mappingNetworks = Compare-Object -ReferenceObject $firstRouter.NetworkAdapters.VirtualSwitch.Name `
-                    -DifferenceObject $machine.NetworkAdapters.VirtualSwitch.Name -ExcludeDifferent -IncludeEqual
+                -DifferenceObject $machine.NetworkAdapters.VirtualSwitch.Name -ExcludeDifferent -IncludeEqual
             }
             
             foreach ($networkAdapter in $machine.NetworkAdapters)
@@ -1127,8 +1132,8 @@ function Export-LabDefinition
         {
             Write-Warning 'There are no machines defined, nothing to export'
         }
-            else
-            {
+        else
+        {
             if ($Script:machines.OperatingSystem | Where-Object Version -lt '6.2')
             {
                 $unattendedXmlDefaultContent2008 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2008.xml) -Encoding unicode
@@ -1516,15 +1521,15 @@ function Add-LabIsoImageDefinition
     }
 
     $duplicateOperatingSystems = $isos | Where-Object { $_.OperatingSystems } | 
-        Group-Object -Property { "$($_.OperatingSystems.OperatingSystemName) $($_.OperatingSystems.Version)" } |
-        Where-Object Count -gt 1
+    Group-Object -Property { "$($_.OperatingSystems.OperatingSystemName) $($_.OperatingSystems.Version)" } |
+    Where-Object Count -gt 1
 
     if ($duplicateOperatingSystems)
     {
         $duplicateOperatingSystems.Group | 
-            ForEach-Object { $_ } -PipelineVariable iso | 
-            ForEach-Object { $_.OperatingSystems } |
-            ForEach-Object { Write-Warning "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" }
+        ForEach-Object { $_ } -PipelineVariable iso | 
+        ForEach-Object { $_.OperatingSystems } |
+        ForEach-Object { Write-Warning "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" }
     }
 
     $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
@@ -1606,17 +1611,17 @@ function Add-LabDiskDefinition
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [ValidateScript( {
-                $doesAlreadyExist = Test-Path -Path $_
-                if ($doesAlreadyExist)
-                {
-                    Write-Warning 'The disk does already exist'
-                    return $false
+                    $doesAlreadyExist = Test-Path -Path $_
+                    if ($doesAlreadyExist)
+                    {
+                        Write-Warning 'The disk does already exist'
+                        return $false
+                    }
+                    else
+                    {
+                        return $true
+                    }
                 }
-                else
-                {
-                    return $true
-                }
-            }
         )]
         [ValidateNotNullOrEmpty()]
         [string]$Name,
@@ -1879,8 +1884,8 @@ function Add-LabMachineDefinition
         if ($AzureProperties)
         {
             $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Select-Object -Unique) |
-                Where-Object SideIndicator -eq '=>' |
-                Select-Object -ExpandProperty InputObject
+            Where-Object SideIndicator -eq '=>' |
+            Select-Object -ExpandProperty InputObject
 
             if ($illegalKeys)
             {
@@ -1890,8 +1895,8 @@ function Add-LabMachineDefinition
         if ($HypervProperties)
         {
             $illegalKeys = Compare-Object -ReferenceObject $hypervPropertiesValidKeys -DifferenceObject ($HypervProperties.Keys | Select-Object -Unique) |
-                Where-Object SideIndicator -eq '=>' |
-                Select-Object -ExpandProperty InputObject
+            Where-Object SideIndicator -eq '=>' |
+            Select-Object -ExpandProperty InputObject
 
             if ($illegalKeys)
             {
@@ -2278,14 +2283,14 @@ function Add-LabMachineDefinition
                 #Using first specified virtual network '$($networkDefinitions[0])' with address space '$($networkDefinitions[0].AddressSpace)'."
             
                 <#
-                    if ($script:autoIPAddress)
-                    {
-                    #Network already created and IP range already found
-                    Write-Verbose -Message 'Network already created and IP range already found'
-                    }
-                    else
-                    {
-            #>
+                        if ($script:autoIPAddress)
+                        {
+                        #Network already created and IP range already found
+                        Write-Verbose -Message 'Network already created and IP range already found'
+                        }
+                        else
+                        {
+                #>
 
                 foreach ($networkDefinition in $networkDefinitions)
                 {
@@ -2318,9 +2323,9 @@ function Add-LabMachineDefinition
                         
                             #and also verify that the new address space is not overlapping with an exsiting one
                             $otherHypervSwitch = $existingHyperVVirtualSwitches |
-                                Where-Object { $_.AddressSpace } |
-                                Where-Object { [AutomatedLab.IPNetwork]::Overlap($_.AddressSpace, $networkDefinition.AddressSpace) } |
-                                Select-Object -First 1
+                            Where-Object { $_.AddressSpace } |
+                            Where-Object { [AutomatedLab.IPNetwork]::Overlap($_.AddressSpace, $networkDefinition.AddressSpace) } |
+                            Select-Object -First 1
                         
                             if ($otherHypervSwitch)
                             {
@@ -2479,7 +2484,7 @@ function Add-LabMachineDefinition
                 #$machine.IsDomainJoined -and
                 -not $adapter.UseDhcp -and
                 -not ($DnsServer1 -or $DnsServer2
-                ))
+            ))
             {
                 $adapter.Ipv4DnsServers.Add('0.0.0.0')
             }
@@ -2710,8 +2715,8 @@ function Get-LabMachineDefinition
         if ($PSCmdlet.ParameterSetName -eq 'ByRole')
         {
             $result = $Script:machines |
-                Where-Object { $_.Roles.Name } |
-                Where-Object { $_.Roles | Where-Object { $Role.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            Where-Object { $_.Roles.Name } |
+            Where-Object { $_.Roles | Where-Object { $Role.HasFlag([AutomatedLab.Roles]$_.Name) } }
             
             if (-not $result)
             {
@@ -2890,7 +2895,31 @@ function Get-LabPostInstallationActivity
             $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -ChildPath $CustomRole
             $activity.KeepFolder = $KeepFolder.ToBool()
             $activity.ScriptFileName = "$CustomRole.ps1"
-            $activity.Properties = $Properties
+            
+            $scriptFullName = Join-Path -Path $activity.DependencyFolder -ChildPath $activity.ScriptFileName
+            $scriptInfo = Get-Command -Name $scriptFullName
+            $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
+            $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
+            foreach ($parameter in $parameters)
+            {
+                if ($parameter.Value.Attributes.Mandatory -and -not $properties.ContainsKey($parameter.Key))
+                {
+                    Write-Error "There is no value defined for mandatory property '$($parameter.Key)'" -ErrorAction Stop
+                }
+            }
+
+            foreach ($property in $properties.GetEnumerator())
+            {
+                if (-not $scriptInfo.Parameters.ContainsKey($property.Key))
+                {
+                    Write-Error "The defined property '$($property.Key)' is unknown" -ErrorAction Stop
+                }
+            }
+            
+            foreach ($kvp in $Properties.GetEnumerator())
+            {
+                $activity.Properties.Add($kvp.Key, $kvp.Value)
+            }
         }
     
         $activity.DoNotUseCredSsp = $DoNotUseCredSsp
@@ -2953,7 +2982,7 @@ function Get-DiskSpeed
     $result = New-Object PSObject -Property ([ordered]@{
             ReadRandom  = $readThroughoutRandom
             WriteRandom = $writeThroughoutRandom
-        })
+    })
     
     $result
 
@@ -3085,8 +3114,8 @@ function Get-LabVirtualNetwork
         $network.Name = $switch.Name
         $network.SwitchType = $switch.SwitchType.ToString()
         $ipAddress = Get-NetIPAddress -AddressFamily IPv4 | 
-            Where-Object { $_.InterfaceAlias -eq "vEthernet ($($network.Name))" -and $_.PrefixOrigin -eq 'manual' } | 
-            Select-Object -First 1
+        Where-Object { $_.InterfaceAlias -eq "vEthernet ($($network.Name))" -and $_.PrefixOrigin -eq 'manual' } | 
+        Select-Object -First 1
 
         if ($ipAddress)
         {
