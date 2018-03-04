@@ -2900,19 +2900,22 @@ function Get-LabPostInstallationActivity
             $scriptInfo = Get-Command -Name $scriptFullName
             $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
             $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
+            
+			#make sure all mandatory parameters are defined
             foreach ($parameter in $parameters)
             {
                 if ($parameter.Value.Attributes.Mandatory -and -not $properties.ContainsKey($parameter.Key))
                 {
-                    Write-Error "There is no value defined for mandatory property '$($parameter.Key)'" -ErrorAction Stop
+                    Write-Error "There is no value defined for the mandatory parameter '$($parameter.Key)' of role '$CustomRole'. The role will not be installed." -ErrorAction Stop
                 }
             }
 
+            #make sure only parameters known by the custom role are defined
             foreach ($property in $properties.GetEnumerator())
             {
                 if (-not $scriptInfo.Parameters.ContainsKey($property.Key))
                 {
-                    Write-Error "The defined property '$($property.Key)' is unknown" -ErrorAction Stop
+                    Write-Error "The defined property '$($property.Key)' is not a known parameter for role '$CustomRole'. The role will not be installed." -ErrorAction Stop
                 }
             }
             
