@@ -389,7 +389,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 First machine is now defined.
 
@@ -416,7 +416,7 @@ Add-LabMachineDefinition -Name S1Server1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 ### Exporting the lab
 
@@ -590,7 +590,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Add-LabMachineDefinition -Name S1Server1 \`
 
@@ -610,7 +610,7 @@ Add-LabMachineDefinition -Name S1Server1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Export-LabDefinition –Force -ExportDefaultUnattendedXml
 

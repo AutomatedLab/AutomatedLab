@@ -466,7 +466,7 @@ function Get-LabInternetFile
 
         if ((Test-Path -Path $Path) -and -not $Force)
         {
-            Write-Warning "The file '$Path' does already exist, skipping the download"
+            Write-ScreenInfo "The file '$Path' does already exist, skipping the download"
         }
         else
         {

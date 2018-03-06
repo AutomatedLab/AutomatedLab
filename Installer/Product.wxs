@@ -1508,6 +1508,9 @@
       <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
         <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\_Put custom role scripts here.txt" />
       </Component>
+      <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
+        <File Id="fil15557113CE81E43BF902A99A2FE81F807" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
+      </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
       </Component>
@@ -1641,6 +1644,11 @@
   <Fragment>
     <DirectoryRef Id="LABSOURCESDIR">
       <Directory Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Name="CustomRoles" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirB373F64E5AF4425A852A91AF628C1053" Name="DemoCustomRole" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

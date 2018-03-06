@@ -33,7 +33,7 @@ Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.25.1/24
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2016 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Memory'= 1GB
     'Add-LabMachineDefinition:DomainName'= 'contoso.com'
 }
@@ -41,10 +41,10 @@ $PSDefaultParameterValues = @{
 Add-LabMachineDefinition -Name ALDC1 -Roles RootDC
 
 Add-LabDiskDefinition -Name AL1D -DiskSizeInGb 100
-Add-LabMachineDefinition -Name AL1 -Memory 32GB -OperatingSystem 'Windows Server 2016 SERVERDATACENTERACORE' -DiskName AL1D
+Add-LabMachineDefinition -Name AL1 -Memory 32GB -OperatingSystem 'Windows Server Datacenter' -DiskName AL1D
 
 #Add-LabDiskDefinition -Name AL2D -DiskSizeInGb 100
-#Add-LabMachineDefinition -Name AL2 -Memory 32GB -OperatingSystem 'Windows Server 2016 SERVERDATACENTER' -DiskName AL2D
+#Add-LabMachineDefinition -Name AL2 -Memory 32GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -DiskName AL2D
 
 Add-LabMachineDefinition -Name ALClient1 -OperatingSystem 'Windows 10 Pro'
 

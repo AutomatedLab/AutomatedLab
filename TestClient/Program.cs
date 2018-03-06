@@ -178,9 +178,9 @@ namespace TestClient
             var l1 = XmlStore<Lab>.Import(@"D:\POSH\Lab.xml");
             //var l1 = XmlStore<Lab>.Import(@"C:\Users\randr_000\Documents\AutomatedLab-Labs\Small1\Lab.xml");
 
-            //var w2012r2 = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 SERVERDATACENTER");
-            //var w2012 = new AutomatedLab.OperatingSystem("Windows Server 2012 SERVERDATACENTER");
-            //var w2008r2 = new AutomatedLab.OperatingSystem("Windows Server 2008 R2 SERVERSTANDARD");
+            //var w2012r2 = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 Datacenter (Server with a GUI)");
+            //var w2012 = new AutomatedLab.OperatingSystem("Windows Server 2012 Datacenter (Server with a GUI)");
+            //var w2008r2 = new AutomatedLab.OperatingSystem("Windows Server 2008 R2 Standard (Full Installation)");
             //var w2008 = new AutomatedLab.OperatingSystem("Windows Server 2008 SERVERSTANDARD");
             //var w10 = new AutomatedLab.OperatingSystem("Windows Technical Preview");
             //var w7 = new AutomatedLab.OperatingSystem("Windows 7 ENTERPRISE");
@@ -230,7 +230,7 @@ namespace TestClient
             m.HostType = VirtualizationHost.HyperV;
             m.IsDomainJoined = false;
             m.UnattendedXml = "unattended.xml";
-            m.OperatingSystem = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 SERVERDATACENTER", "E:\\", (AutomatedLab.Version)"6.4.12.0");
+            m.OperatingSystem = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 Datacenter (Server with a GUI)", "E:\\", (AutomatedLab.Version)"6.4.12.0");
             m.InstallationUser = new User("Administrator", "Password1");
             m.DomainName = "vm.net";
             m.HostType = VirtualizationHost.HyperV;

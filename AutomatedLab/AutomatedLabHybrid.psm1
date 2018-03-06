@@ -484,7 +484,7 @@ function Connect-OnPremisesWithAzure
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 SERVERDATACENTER'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
 '@
     }
     
@@ -651,7 +651,7 @@ function Connect-OnPremisesWithEndpoint
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 SERVERDATACENTER'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
 '@
     }
     

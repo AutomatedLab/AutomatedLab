@@ -1339,51 +1339,29 @@ function Join-LabVMDomain
     Write-Verbose "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
     {
-        if ($m.OperatingSystem.Installation -eq 'Nano Server')
-        {
-            $temp = [System.IO.Path]::GetTempFileName()
-            $dc = Get-LabMachine -Role ADDS | Where-Object DomainName -eq $m.DomainName            
-            Remove-Item -Path $temp
-            
-            Invoke-LabCommand -ComputerName $dc -ScriptBlock {
-                djoin /provision /domain $m.DomainName /machine $m.Name /savefile "C:\join_$($m.Name).txt"
-            } -Variable (Get-Variable -Name m) -NoDisplay
-            
-            Receive-File -Source "C:\join_$($m.Name).txt" -Destination $temp -Session (Get-LabPSSession -ComputerName $dc)
-            Copy-LabFileItem -Path $temp -ComputerName $m
-            
-            Invoke-LabCommand -ActivityName "Offline Domain Join on '$m'" -ComputerName $m -ScriptBlock {
-                djoin /requestodj /loadfile "C:\$([System.IO.Path]::GetFileName($temp))" /windowspath C:\Windows /localos
-            } -Variable (Get-Variable -Name temp) -NoDisplay
-            
-            Remove-Item -Path $temp
-        }
-        else
-        {
-            $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
-            $cred = $domain.GetCredential()
+        $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
+        $cred = $domain.GetCredential()
 
-            Write-Verbose "Joining machine '$m' to domain '$domain'"
-            $jobParameters = @{
-                ComputerName = $m
-                ActivityName = "DomainJoin_$m"
-                ScriptBlock = (Get-Command Join-Computer).ScriptBlock
-                UseLocalCredential = $true
-                ArgumentList = $domain, $cred
-                AsJob = $true
-                PassThru = $true
-                NoDisplay = $true
-            }
-
-            if ($m.HostType -eq 'Azure')
-            {
-                $jobParameters.ArgumentList += $true
-            }
-            $jobs += Invoke-LabCommand @jobParameters
+        Write-Verbose "Joining machine '$m' to domain '$domain'"
+        $jobParameters = @{
+            ComputerName = $m
+            ActivityName = "DomainJoin_$m"
+            ScriptBlock = (Get-Command Join-Computer).ScriptBlock
+            UseLocalCredential = $true
+            ArgumentList = $domain, $cred
+            AsJob = $true
+            PassThru = $true
+            NoDisplay = $true
         }
+
+        if ($m.HostType -eq 'Azure')
+        {
+            $jobParameters.ArgumentList += $true
+        }
+        $jobs += Invoke-LabCommand @jobParameters
     }
     
-    if ($jobs) #not for Nano Servers
+    if ($jobs)
     {
         Write-Verbose 'Waiting on jobs to finish'
         Wait-LWLabJob -Job $jobs -ProgressIndicator 15 -NoDisplay -NoNewLine

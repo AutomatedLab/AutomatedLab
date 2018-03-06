@@ -9,6 +9,7 @@ namespace AutomatedLab
     {
         private string operatingSystemName;
         private string operatingSystemImageName;
+        private string operatingSystemImageDescription;
         private string isoPath;
         private string baseDiskPath;
         private Version version;
@@ -50,6 +51,10 @@ namespace AutomatedLab
                             return "6.3";
                         case "10":
                             return "10.0";
+                        case "":
+                            if (operatingSystemName == "Windows Server Datacenter" | operatingSystemName == "Windows Server Standard")
+                                return "10.0";
+                            throw new Exception("Operating System Version could not be retrieved");
                         default:
                             return VersionString;
                     }
@@ -92,26 +97,23 @@ namespace AutomatedLab
 
                 switch (operatingSystemName)
                 {
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "2008-R2-SP1";
 
-                    case "Windows Server 2012 SERVERDATACENTER":
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "2012-Datacenter";
 
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "2012-R2-Datacenter";
 
-                    case "Windows Server 2016 SERVERDATACENTER":
+                    case "Windows Server 2016 Datacenter (Desktop Experience)":
                         return "2016-Datacenter";
 
-                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                    case "Windows Server 2016 Datacenter":
                         return "2016-Datacenter-Server-Core";
 
-                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                    case "Windows Server Datacenter":
                         return "Datacenter-Core-1709-smalldisk";
-
-                    case "Windows Server 2016 SERVERSTANDARDNANO":
-                        return "2016-Nano-Server";
 
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
@@ -122,7 +124,7 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise":
                         return "Windows-10-N-x64";
 
-                    case "Windows 7 ENTERPRISE":
+                    case "Windows 7 Enterprise":
                         return "Win7-SP1-Ent-N";
 
                     default:
@@ -138,13 +140,13 @@ namespace AutomatedLab
                 //the VMWare templates must be provided by the VMWare infrastructure
                 switch (operatingSystemName)
                 {
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "AL_WindowsServer2008R2DataCenter";
 
-                    case "Windows Server 2012 SERVERDATACENTER":
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "AL_WindowsServer2012DataCenter";
 
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "AL_WindowsServer2012R2DataCenter";
 
                     case "Windows Server vNext SERVERDATACENTER":
@@ -162,9 +164,9 @@ namespace AutomatedLab
             {
                 switch (operatingSystemName)
                 {
-                    case "Windows 7 PROFESSIONAL":
+                    case "Windows 7 Professional":
                         return "FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4";
-                    case "Windows 7 ENTERPRISE":
+                    case "Windows 7 Enterprise":
                         return "33PXH-7Y6KF-2VJC9-XBBR8-HVTHH";
 
                     case "Windows 8 Pro":
@@ -177,48 +179,36 @@ namespace AutomatedLab
                     case "Windows 8.1 Enterprise":
                         return "MHF9N-XY6XB-WVXMC-BTDCT-MKKG7";
 
-                    case "Windows Server 2008 R2 SERVERSTANDARD":
+                    case "Windows Server 2008 R2 Standard (Full Installation)":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 SERVERSTANDARDCORE":
+                    case "Windows Server 2008 R2 Standard (Server Core Installation)":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 SERVERENTERPRISE":
-                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
-                    case "Windows Server 2008 R2 SERVERENTERPRISECORE":
-                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-                    case "Windows Server 2008 R2 SERVERDATACENTERCORE":
+                    case "Windows Server 2008 R2 Datacenter (Server Core Installation)":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-                    case "Windows Server 2008 R2 SERVERWEB":
-                        return "6TPJF-RBVHG-WBW2R-86QPH-6RTM4";
-                    case "Windows Server 2008 R2 SERVERWEBCORE":
-                        return "6TPJF-RBVHG-WBW2R-86QPH-6RTM4";
 
-                    case "Windows Server 2012 SERVERSTANDARDCORE":
+                    case "Windows Server 2012 Standard (Server Core Installation)":
                         return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 SERVERSTANDARD":
+                    case "Windows Server 2012 Standard (Server with a GUI)":
                         return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 SERVERDATACENTERCORE":
+                    case "Windows Server 2012 Datacenter (Server Core Installation)":
                         return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
-                    case "Windows Server 2012 SERVERDATACENTER":
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
 
-                    case "Windows Server 2012 R2 SERVERSTANDARDCORE":
+                    case "Windows Server 2012 R2 Standard (Server Core Installation)":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 SERVERSTANDARD":
+                    case "Windows Server 2012 R2 Standard (Server with a GUI)":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 SERVERDATACENTERCORE":
+                    case "Windows Server 2012 R2 Datacenter (Server Core Installation)":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
 
                     case "Windows 10 Pro":
                         return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
-                    case "Windows 10 Pro Technical Preview":
-                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Enterprise Technical Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Evaluation":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
@@ -227,43 +217,19 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise 2016 LTSB":
                         return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
 
-
-                    case "Windows Server 2016 Technical Preview 4 SERVERDATACENTER":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERSTANDARD":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-
-                    case "Windows Server 2016 Technical Preview 5 SERVERDATACENTER":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERSTANDARD":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-
-                    case "Windows Server 2016 SERVERSTANDARDCORE":
+                    case "Windows Server 2016 Standard":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERSTANDARD":
+                    case "Windows Server 2016 Standard (Desktop Experience)":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                    case "Windows Server 2016 Datacenter":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-                    case "Windows Server 2016 SERVERDATACENTER":
+                    case "Windows Server 2016 Datacenter (Desktop Experience)":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    case "Windows Server 2016 SERVERSTANDARDNANO":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERDATACENTERNANO":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    // Server 2016 Insider Preview
-                    case "Windows Server 2016 SERVERSTANDARDACORE":
+                    // Windows Server after 1709
+                    case "Windows Server Standard":
                         return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
-                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                    case "Windows Server Datacenter":
                         return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
 
                     default:
@@ -364,6 +330,12 @@ namespace AutomatedLab
         {
             get { return operatingSystemImageName; }
             set { operatingSystemImageName = value; }
+        }
+
+        public string OperatingSystemImageDescription
+        {
+            get { return operatingSystemImageDescription; }
+            set { operatingSystemImageDescription = value; }
         }
 
         public int ImageIndex

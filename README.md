@@ -26,9 +26,11 @@ Apart from the module itself your system needs to meet the following requirement
 - A decent amount of RAM
 - An SSD for your machines is highly recommended as many issues arise from slow HDDs
 
-### Download AutomatedLab (latest version 4.5.0 released on November 18 2017)
+### Download AutomatedLab (latest version 4.7.2.2 released on January 18 2018)
 
-You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) right here in GitHub if you do not want to compile your own version of AutomatedLab.
+There are two options installing AutomatedLab:
+- You can use the [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) published on GitHub.
+- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module. Please refer to the wiki for some details.
 
 ### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
 
