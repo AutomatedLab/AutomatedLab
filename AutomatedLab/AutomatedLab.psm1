@@ -2819,6 +2819,22 @@ function Invoke-LabCommand
         {
             foreach ($item in $machine.PostInstallationActivity)
             {
+                if ($item.IsCustomRole)
+                {
+                    #if there is a HostInit.ps1 script for the role
+                    $hostInitPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostInit.ps1'
+                    if (Test-Path -Path $hostInitPath)
+                    {
+                        $hostInitScript = Get-Command -Name $hostInitPath
+                        $hostInitParam = Sync-Parameter -Command $hostInitScript -Parameters $item.Properties
+                        if ($hostInitScript.Parameters.ContainsKey('ComputerName'))
+                        {
+                            $hostInitParam['ComputerName'] = $machine.Name
+                        }
+                        & $hostInitPath @hostInitParam
+                    }
+                }
+
                 $ComputerName = $machine.Name
                 
                 $param = @{}
@@ -2840,8 +2856,8 @@ function Invoke-LabCommand
                 if ($item.ActivityName) { $param.Add('ActivityName', $item.ActivityName) }
                 if ($Retries) { $param.Add('Retries', $Retries) }
                 if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
-				$param.AsJob      = $true
-				$param.PassThru   = $PassThru
+                $param.AsJob      = $true
+                $param.PassThru   = $PassThru
                 $param.Verbose    = $VerbosePreference
                 if ($PSBoundParameters.ContainsKey('ThrottleLimit'))
                 {
@@ -2850,15 +2866,38 @@ function Invoke-LabCommand
 
                 if ($item.Properties)
                 {
-                    $temp = $item.Properties
+                    $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
+                    $script = Get-Command -Name $scriptFullName
+                    $temp = Sync-Parameter -Command $script -Parameters $item.Properties
+
                     Add-VariableToPSSession -Session $session -PSVariable (Get-Variable -Name temp)
                     $param.ParameterVariableName = 'temp'
                 }
 
                 $results += Invoke-LWCommand @param
+
+                if ($item.IsCustomRole)
+                {
+                    #if there is a HostCleanup.ps1 script for the role
+                    $hostCleanupPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostCleanup.ps1'
+                    if (Test-Path -Path $hostInitPath)
+                    {
+                        $hostCleanupScript = Get-Command -Name $hostCleanupPath
+                        $hostCleanupParam = Sync-Parameter -Command $hostCleanupScript -Parameters $item.Properties
+                        if ($hostCleanupScript.Parameters.ContainsKey('ComputerName'))
+                        {
+                            $hostCleanupParam['ComputerName'] = $machine.Name
+                        }
+                        & $hostCleanupPath @hostCleanupParam
+                    }
+                }
             }
         }
         
+        Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
+        $results | Wait-Job | Out-Null
+        Write-ScreenInfo -Message 'finihsed'
+
         Write-ScreenInfo -Message 'Post-installations done' -TaskEnd
     }
     else

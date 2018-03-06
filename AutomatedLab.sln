@@ -528,6 +528,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoCustomRole1", "DemoCustomRole1", "{AC8B92ED-54DE-41B5-98FB-AA9815077B34}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1 = LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1
+		LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1 = LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1
+		LabSources\CustomRoles\DemoCustomRole\HostInit.ps1 = LabSources\CustomRoles\DemoCustomRole\HostInit.ps1
 	EndProjectSection
 EndProject
 Global
