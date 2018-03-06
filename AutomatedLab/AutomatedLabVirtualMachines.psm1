@@ -1134,7 +1134,7 @@ function Connect-LabVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            $sshBinary = Get-Item $labsources\Tools\OpenSSH\ssh.exe -ErrorAction SilentlyContinue
+            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
 
             if (-not $sshBinary)
             {
@@ -1148,13 +1148,20 @@ function Connect-LabVM
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
                     Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
-                    $sshBinary = Get-Item $labsources\Tools\OpenSSH\ssh.exe -ErrorAction SilentlyContinue
+                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
                 }
             }
 
-            $arguments = '{0}@{1}' -f $cred.UserName,$machine
-            $connection = Start-Process -FilePath $sshBinary.FullName -ArgumentList $arguments -PassThru
-            $connection.StandardInput.WriteLine($cred.GetNetworkCredential().Password)
+            if ($UseLocalCredential)
+            {
+                $arguments = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l {0} {1}' -f $cred.UserName,$machine
+            }
+            else 
+            {
+                $arguments = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l {0}@{2} {1}' -f $cred.UserName,$machine,$cred.GetNetworkCredential().Domain
+            }
+
+            Start-Process -FilePath $sshBinary.FullPath -ArgumentList $arguments
             return
         }
         
