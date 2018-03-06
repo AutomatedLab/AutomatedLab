@@ -1518,8 +1518,8 @@
       </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
         <File Id="fil611A290B504B40AC8067CF36E9A1FE16" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
-        <File Id="filBE11AC3DC999442C9450DAD98FF51265" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1" />
-        <File Id="filF8132E52FC96455F841EC3746134B102" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostInit.ps1" />
+        <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1" />
+        <File Id="filF8132E52FC96455F841EC3746134B102" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostInit.ps1" />
       </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
