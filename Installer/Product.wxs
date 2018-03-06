@@ -77,6 +77,8 @@
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Install-SoftwarePackage.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-Choice.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-HashTable.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
