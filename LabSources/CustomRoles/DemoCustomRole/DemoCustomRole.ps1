@@ -2,12 +2,12 @@ param(
     [Parameter(Mandatory)]
     [string]$FeatureName,
 
-    [string[]]$Folders
+    [string[]]$RemoteFolders
 )
 
 Install-WindowsFeature -Name XPS-Viewer
 
-foreach ($folder in $Folders)
+foreach ($folder in $RemoteFolders)
 {
     mkdir -Path $folder
 }
