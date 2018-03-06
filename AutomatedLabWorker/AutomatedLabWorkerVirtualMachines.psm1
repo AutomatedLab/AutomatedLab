@@ -935,7 +935,7 @@ workflow Checkpoint-LWHypervVM
         {
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
             {
-                if ((Get-VM -Name $n -ErrorAction SilentlyContinue) -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName).State -eq 'Running')
+                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
                 {
                     Suspend-VM -Name $n -ErrorAction SilentlyContinue
                     Save-VM -Name $n -ErrorAction SilentlyContinue
@@ -950,7 +950,7 @@ workflow Checkpoint-LWHypervVM
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName))
+            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
             {
                 Checkpoint-VM -Name $n -SnapshotName $SnapshotName
             }
