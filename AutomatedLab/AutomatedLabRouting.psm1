@@ -131,7 +131,7 @@ function Set-LabADDNSServerForwarder
     {
         $gateway = if ($dc -eq $router)
         {
-            Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName ALDC1 -ScriptBlock {
+            Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
             
                 Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
                 
