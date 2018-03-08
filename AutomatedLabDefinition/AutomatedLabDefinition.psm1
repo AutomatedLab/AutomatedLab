@@ -2938,6 +2938,10 @@ function Get-LabPostInstallationActivity
             foreach ($script in $scripts)
             {
                 $scriptFullName = Join-Path -Path $activity.DependencyFolder -ChildPath $script
+                if (-not (Test-Path -Path $scriptFullName))
+                {
+                    continue
+                }
                 $scriptInfo = Get-Command -Name $scriptFullName
                 $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters

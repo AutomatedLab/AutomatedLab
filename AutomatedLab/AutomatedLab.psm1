@@ -808,7 +808,8 @@ function Install-Lab
     if (($PostInstallations -or $performAll) -and (Get-LabVM))
     {
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
-        $jobs | Wait-Job | Out-Null
+        #PostInstallations can be installed as jobs or as direct calls. If there are jobs returned, wait until they are finished
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
     }
 
     if (($AzureServices -or $performAll) -and (Get-LabAzureWebApp))
@@ -2831,7 +2832,7 @@ function Invoke-LabCommand
                         {
                             $hostInitParam['ComputerName'] = $machine.Name
                         }
-                        & $hostInitPath @hostInitParam
+                        $results += & $hostInitPath @hostInitParam
                     }
                 }
 
@@ -2864,9 +2865,9 @@ function Invoke-LabCommand
                     $param.Add('ThrottleLimit', $ThrottleLimit)
                 }
 
-                if ($item.Properties)
+				$scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
+                if ($item.Properties -and (Test-Path -Path $scriptFullName))
                 {
-                    $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
                     $script = Get-Command -Name $scriptFullName
                     $temp = Sync-Parameter -Command $script -Parameters $item.Properties
 
@@ -2874,13 +2875,23 @@ function Invoke-LabCommand
                     $param.ParameterVariableName = 'temp'
                 }
 
-                $results += Invoke-LWCommand @param
+				if ($item.IsCustomRole)
+                {
+					if (Test-Path -Path $scriptFullName)
+					{
+						$results += Invoke-LWCommand @param
+					}
+				}
+				else
+				{
+					$results += Invoke-LWCommand @param
+				}
 
                 if ($item.IsCustomRole)
                 {
                     #if there is a HostCleanup.ps1 script for the role
                     $hostCleanupPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostCleanup.ps1'
-                    if (Test-Path -Path $hostInitPath)
+                    if (Test-Path -Path $hostCleanupPath)
                     {
                         $hostCleanupScript = Get-Command -Name $hostCleanupPath
                         $hostCleanupParam = Sync-Parameter -Command $hostCleanupScript -Parameters $item.Properties
@@ -2888,14 +2899,17 @@ function Invoke-LabCommand
                         {
                             $hostCleanupParam['ComputerName'] = $machine.Name
                         }
-                        & $hostCleanupPath @hostCleanupParam
+                        $results += & $hostCleanupPath @hostCleanupParam
                     }
                 }
             }
         }
         
         Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
-        $results | Wait-Job | Out-Null
+        if ($results.Count -gt 0)
+		{
+			$results | Wait-Job | Out-Null
+		}
         Write-ScreenInfo -Message 'finihsed'
 
         Write-ScreenInfo -Message 'Post-installations done' -TaskEnd
