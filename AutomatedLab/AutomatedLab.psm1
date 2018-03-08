@@ -2908,7 +2908,7 @@ function Invoke-LabCommand
         Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
         if ($results.Count -gt 0)
 		{
-			$results | Wait-Job | Out-Null
+			$results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 		}
         Write-ScreenInfo -Message 'finihsed'
 
