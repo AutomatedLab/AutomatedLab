@@ -2741,6 +2741,7 @@ function Invoke-LabCommand
     )
     
     Write-LogFunctionEntry
+    $customRoles = 0
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
@@ -2822,6 +2823,7 @@ function Invoke-LabCommand
             {
                 if ($item.IsCustomRole)
                 {
+                    $customRoles++
                     #if there is a HostInit.ps1 script for the role
                     $hostInitPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostInit.ps1'
                     if (Test-Path -Path $hostInitPath)
@@ -2905,7 +2907,10 @@ function Invoke-LabCommand
             }
         }
         
-        Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
+        if ($customRoles)
+        {
+            Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
+        }
         if ($results.Count -gt 0)
 		{
 			$results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
