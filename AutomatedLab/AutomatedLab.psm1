@@ -2866,7 +2866,7 @@ function Invoke-LabCommand
                 }
 
 				$scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
-                if ($item.Properties -and (Test-Path -Path $scriptFullName))
+                if ($item.Properties.Count -and (Test-Path -Path $scriptFullName))
                 {
                     $script = Get-Command -Name $scriptFullName
                     $temp = Sync-Parameter -Command $script -Parameters $item.Properties
