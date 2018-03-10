@@ -1084,7 +1084,7 @@ workflow Checkpoint-LWHypervVM
         {
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
             {
-                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
                 {
                     Suspend-VM -Name $n -ErrorAction SilentlyContinue
                     Save-VM -Name $n -ErrorAction SilentlyContinue
@@ -1099,7 +1099,14 @@ workflow Checkpoint-LWHypervVM
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            Checkpoint-VM -Name $n -SnapshotName $SnapshotName
+            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
+            {
+                Checkpoint-VM -Name $n -SnapshotName $SnapshotName
+            }
+            else
+            {
+                Write-ScreenInfo "A snapshot with the name '$SnapshotName' already exists for machine '$n'" -Type Warning
+            }
         }
         
         Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
