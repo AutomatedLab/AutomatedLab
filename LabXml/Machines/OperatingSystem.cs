@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace AutomatedLab
 {
@@ -54,7 +56,7 @@ namespace AutomatedLab
                                 return "10.0";
                             throw new Exception("Operating System Version could not be retrieved");
                         default:
-                            throw new Exception("Operating System Version could not be retrieved");
+                            return VersionString;
                     }
 
                 }
@@ -253,12 +255,17 @@ namespace AutomatedLab
             set { baseDiskPath = value; }
         }
 
+        [XmlArrayItem(ElementName = "Package")]
+        public List<String> LinuxPackageGroup { get; set; }
         public OperatingSystem()
-        { }
+        {
+            LinuxPackageGroup = new List<String>();
+        }
 
         public OperatingSystem(string operatingSystemName)
         {
             this.operatingSystemName = operatingSystemName;
+            LinuxPackageGroup = new List<String>();
             if (operatingSystemName.ToLower().Contains("windows server"))
             {
                 installation = "Server";
@@ -272,18 +279,21 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, AutomatedLab.Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.version = version;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath, Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
         }
@@ -291,6 +301,7 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, string isoPath, Version version, string imageName)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
             this.operatingSystemImageName = imageName;
@@ -301,6 +312,20 @@ namespace AutomatedLab
             return operatingSystemName;
         }
 
+        public LinuxType LinuxType
+        {
+            get
+            {
+                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
+            }
+        }
+        public OperatingSystemType OperatingSystemType
+        {
+            get
+            {
+                return ((bool)(OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+            }
+        }
         public string OperatingSystemImageName
         {
             get { return operatingSystemImageName; }
@@ -355,17 +380,25 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)";
+                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
 
-                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
+                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
                 if (!string.IsNullOrEmpty(match.Groups[1].Value))
                 {
                     return match.Groups[1].Value;
                 }
-                else
+                else if (!string.IsNullOrEmpty(match.Groups[4].Value))
                 {
                     return match.Groups[4].Value;
+                }
+                else
+                {
+                    if(!string.IsNullOrEmpty(match.Groups[9].Value))
+                    {
+                        return $"{match.Groups[8].Value}.{match.Groups[9].Value[match.Groups[9].Value.Length - 1]}";
+                    }
+                    return match.Groups[8].Value;
                 }
             }
         }

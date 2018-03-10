@@ -308,5 +308,9 @@
 
         #TFS Build Agent
         BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
+
+
+        # OpenSSH
+        OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
     }
 }

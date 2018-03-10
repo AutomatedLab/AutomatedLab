@@ -243,7 +243,15 @@ function Import-Lab
                     {
                         $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath 'Unattended2012.xml'
                     }
-                    return [xml](Get-Content -Path $Path)
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks.cfg
+                    }
+                    if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
+                    {
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst.xml
+                    }
+                    return (Get-Content -Path $Path)
                 }
             }
         }
@@ -492,7 +500,7 @@ function Install-Lab
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
-    if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
+    if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
@@ -519,7 +527,7 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-        if (Get-LabVM -All | Where-Object HostType -eq 'HyperV')
+        if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
         {
             New-LabVHDX
         }
@@ -791,16 +799,16 @@ function Install-Lab
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
     
-    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM))
+    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
         if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabMachine).HostType -contains 'HyperV') * 30)
+            $DelayBetweenComputers = ([int]((Get-LabMachine -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
-        Wait-LabVM -ComputerName (Get-LabMachine) -ProgressIndicator 30 -TimeoutInMinutes 60
+        Wait-LabVM -ComputerName (Get-LabMachine -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -883,9 +891,9 @@ function Remove-Lab
             @(Get-LabAzureResourceGroup -CurrentLab).Clone() | Remove-LabAzureResourceGroup -Force
         }
         
-        if (Get-LabVM | Where-Object HostType -eq HyperV)
+        if (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV)
         {
-            $labMachines = Get-LabVM | Where-Object HostType -eq 'HyperV'
+            $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV'
             $labName = (Get-Lab).Name
 
             $removeMachines = foreach ($machine in $labMachines)
@@ -952,6 +960,8 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)\Disks.xml") { Remove-Item -Path "$($Script:data.LabPath)\Disks.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Machines.xml") { Remove-Item -Path "$($Script:data.LabPath)\Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)\Unattended*.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)\ks.cfg" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)\autoinst.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Certificates") { Remove-Item -Path "$($Script:data.LabPath)\Certificates" -Recurse -Force -Confirm:$false }
             
@@ -1090,6 +1100,91 @@ function Get-LabAvailableOperatingSystem
             }
         }
 
+		# SuSE, openSuSE et al
+        $susePath = "$letter`:\content"
+        if (Test-Path -Path $susePath -PathType Leaf)
+        {
+            $content = Get-Content -Path $susePath -Raw
+            [void] ($content -match 'DISTRO\s+.+,(?<Distro>[a-zA-Z 0-9.]+)\n.*LINGUAS\s+(?<Lang>.*)\n(?:REGISTERPRODUCT.+\n){0,1}REPOID\s+.+((?<CreationTime>\d{8})|(?<Version>\d{2}\.\d{1}))\/(?<Edition>\w+)\/.*\nVENDOR\s+(?<Vendor>[a-zA-z ]+)')
+            
+            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
+            $os.OperatingSystemImageName = $Matches.Distro
+            $os.OperatingSystemName = $Matches.Distro            
+            $os.Size = $isoFile.Length
+            if($Matches.Version -like '*.*')
+			{
+				$os.Version = $Matches.Version
+			}
+			elseif ($Matches.Version)
+			{
+				$os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
+			}
+			else
+			{
+				$os.Version = [AutomatedLab.Version]::new(0,0)
+			}
+            $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
+            $os.Edition = $Matches.Edition
+
+            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
+                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
+                {
+                    $Matches.pack
+                }
+            }
+            
+            $os.LinuxPackageGroup = $packages
+    
+            $osList.Add($os)
+        }
+
+		# RHEL, CentOS, Fedora et al
+        $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
+        $rhelDiscinfo = "$letter`:\.discinfo"
+        $rhelPackageInfo = "$letter`:\repodata"
+        if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
+        {
+			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
+            $discInfoContent = Get-Content -Path $rhelDiscinfo
+            $versionInfo = ($discInfoContent[1] -split " ")[-1]
+			$content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+                        
+            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
+            $os.OperatingSystemImageName = $content.Name            
+            $os.Size = $isoFile.Length
+
+            $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml | Select-Object -First 1).FullName
+            if (-not $packageXml)
+            {
+                # CentOS ISO for some reason contained only GUIDs
+                $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
+                    Get-Content -TotalCount 2 |
+                    Where-Object {$_ -like "*comps*"} |
+                    Foreach-Object { $file.FullName } |
+                    Select-Object -First 1
+            }
+
+            [xml]$packageInfo = Get-Content -Path $packageXml -Raw
+            $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
+
+            if ($versionInfo -match '\.')
+            {
+                $os.Version = $versionInfo
+            }
+            else
+            {
+               $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
+            }
+
+			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
+
+            # Unix time stamp...
+            $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
+            $os.Edition = if($content.Variant) {$content.Variant}else{'Server'}
+    
+            $osList.Add($os)
+        }
+
         Write-Verbose 'Dismounting ISO'
         Dismount-DiskImage -ImagePath $isoFile.FullName
     }
@@ -1186,11 +1281,11 @@ function Checkpoint-LabVM
     
     if ($Name)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVm -IncludeLinux
     }
     
     if (-not $machines)
@@ -1244,11 +1339,11 @@ function Restore-LabVMSnapshot
     
     if ($ComputerName)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $ComputerName }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVM -IncludeLinux
     }
     
     if (-not $machines)
@@ -1308,11 +1403,11 @@ function Remove-LabVMSnapshot
     
     if ($Name)
     {
-        $machines = Get-LabVM | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
     }
     else
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVm -IncludeLinux
     }
     
     if (-not $machines)
@@ -2343,7 +2438,7 @@ function New-LabPSSession
     {
         if ($PSCmdlet.ParameterSetName -eq 'ByName')
         {
-            $Machine = Get-LabVM -ComputerName $ComputerName
+            $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
 
             if (-not $Machine)
             {
@@ -2353,7 +2448,7 @@ function New-LabPSSession
         elseif ($PSCmdlet.ParameterSetName -eq 'BySession')
         {
             $internalSession = $Session
-            $Machine = Get-LabVM -ComputerName $internalSession.LabMachineName
+            $Machine = Get-LabVM -ComputerName $internalSession.LabMachineName -IncludeLinux
 
             if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'Credssp')
             {
@@ -2423,6 +2518,15 @@ function New-LabPSSession
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)
+            }
+
+            if ($m.OperatingSystemType -eq 'Linux')
+            {
+                Set-Item -Path WSMan:\localhost\Client\Auth\Basic -Value $true -Force
+                $param['SessionOption'] = New-PSSessionOption -SkipCACheck -SkipCNCheck -SkipRevocationCheck
+                $param['UseSSL'] = $true
+                $param['Port'] = 5986
+                $param['Authentication'] = 'Basic'
             }
 
             Write-Verbose ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $param.ComputerName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
@@ -2536,11 +2640,11 @@ function Get-LabPSSession
         
     if ($ComputerName)
     {
-        $computers = Get-LabVM -ComputerName $ComputerName
+        $computers = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     else
     {
-        $computers = Get-LabMachine
+        $computers = Get-LabVM -IncludeLinux
     }
     
     if (-not $computers)
@@ -2594,11 +2698,11 @@ function Remove-LabPSSession
     $removedSessionCount = 0
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabVM -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     if ($PSCmdlet.ParameterSetName -eq 'All')
     {
-        $Machine = Get-LabVM -All
+        $Machine = Get-LabVM -All -IncludeLinux
     }
         
     foreach ($m in $Machine)
@@ -2654,7 +2758,7 @@ function Enter-LabPSSession
     
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
-        $Machine = Get-LabVM -ComputerName $ComputerName
+        $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
 
     if ($Machine)
@@ -2767,7 +2871,7 @@ function Invoke-LabCommand
     #required to suppress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVm -IncludeLinux))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -2797,7 +2901,7 @@ function Invoke-LabCommand
     }
     else
     {
-        $machines = Get-LabVM -ComputerName $ComputerName   
+        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
 
     if (-not $machines)
@@ -2990,7 +3094,7 @@ function Update-LabMemorySettings
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabVM -All
+    $machines = Get-LabVM -All -IncludeLinux
     $lab = Get-LabDefinition
 
     if ($machines | Where-Object Memory -lt 32)
@@ -3272,7 +3376,7 @@ function Show-LabDeploymentSummary
     if ($ts.Seconds -gt 1) { $secondsPlural = 's' }
 
     $lab = Get-Lab
-    $machines = Get-LabVM
+    $machines = Get-LabVM -IncludeLinux
     
     Write-ScreenInfo -Message '---------------------------------------------------------------------------'
     Write-ScreenInfo -Message ("Setting up the lab took {0} hour$hoursPlural, {1} minute$minutesPlural and {2} second$secondsPlural" -f $ts.hours, $ts.minutes, $ts.seconds)
@@ -3303,7 +3407,7 @@ function Show-LabDeploymentSummary
         }
         
         Write-ScreenInfo -Message '------------------------- Virtual Machine Summary -------------------------'
-        $vmInfo = Get-LabVM | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
+        $vmInfo = Get-LabVM -IncludeLinux | Format-Table -Property Name, DomainName, IpAddress, Roles, OperatingSystem,
         @{ Name = 'Local Admin'; Expression = { $_.InstallationUser.UserName } },
         @{ Name = 'Password'; Expression = { $_.InstallationUser.Password } } -AutoSize |
         Out-String
