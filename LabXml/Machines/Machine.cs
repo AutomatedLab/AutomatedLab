@@ -41,10 +41,46 @@ namespace AutomatedLab
         private Hashtable hypervProperties;
         private SerializableDictionary<string, string> notes;
         private SerializableDictionary<string, string> internalNotes;
+        private OperatingSystemType operatingSystemType;
+        private bool gen2vmSupported;
+        private LinuxType linuxType;
+
+        public LinuxType LinuxType
+        {
+            get
+            {
+                if(System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Windows"))
+                {
+                    return LinuxType.Unknown;
+                }
+                else if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "CentOS|Red Hat|Fedora"))
+                {
+                    return LinuxType.RedHat;
+                }
+
+                return LinuxType.SuSE;
+            }
+        }
+
+        public bool Gen2VmSupported
+        {
+            get
+            {
+                return (OperatingSystem.Version >= new Version(6, 2, 0) || OperatingSystemType == OperatingSystemType.Linux) ? true : false;
+            }
+        }
+
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
+        public OperatingSystemType OperatingSystemType
+        {
+            get
+            {
+                return ((bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+            }
+        }
 
         public int Processors
         {
@@ -338,7 +374,7 @@ namespace AutomatedLab
             if (dcRole == null)
             {
                 //machine is not a domain controller, creating a local username 
-                userName = string.Format(@"{0}\{1}", name, installationUser.UserName);
+                userName = OperatingSystemType == OperatingSystemType.Linux ? installationUser.UserName : string.Format(@"{0}\{1}", name, installationUser.UserName);
             }
             else
             {

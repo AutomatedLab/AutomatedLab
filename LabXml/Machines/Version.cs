@@ -74,15 +74,18 @@ namespace AutomatedLab
             char[] chArray1 = new char[1] { '.' };
             string[] textArray1 = version.Split(chArray1);
             int num1 = textArray1.Length;
-            if ((num1 < 2) || (num1 > 4))
+            if ((num1 < 1) || (num1 > 4))
             {
                 throw new ArgumentException("Arg_VersionString");
             }
+
             major = int.Parse(textArray1[0], CultureInfo.InvariantCulture);
             if (major < 0)
             {
                 throw new ArgumentOutOfRangeException("version", "ArgumentOutOfRange_Version");
             }
+            if (num1 == 1) return;
+
             minor = int.Parse(textArray1[1], CultureInfo.InvariantCulture);
             if (minor < 0)
             {

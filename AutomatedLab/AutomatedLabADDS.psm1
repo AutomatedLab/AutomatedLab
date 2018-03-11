@@ -822,7 +822,7 @@ function Install-LabRootDcs
         #Non-domain-joined machine are not registered in DNS hence cannot be found from inside the lab.
         #creating an A record for each non-domain-joined machine in the first forst solves that.
         #Every non-domain-joined machine get the first forest's name as the primary DNS domain.
-        $dnsCmd = Get-LabMachine -All | Where-Object { -not $_.IsDomainJoined -and $_.IpV4Address } | ForEach-Object {
+        $dnsCmd = Get-LabMachine -All -IncludeLinux | Where-Object { -not $_.IsDomainJoined -and $_.IpV4Address } | ForEach-Object {
             "dnscmd /recordadd $(@($rootDomains)[0]) $_ A $($_.IpV4Address)`n"
         }
         $dnsCmd += "Restart-Service -Name DNS -WarningAction SilentlyContinue`n"	
@@ -832,6 +832,22 @@ function Install-LabRootDcs
             $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
         } -ArgumentList $machines
+
+        $linuxMachines = Get-LabVm -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
+
+        if ($linuxMachines)
+        {
+            $rootDomains = $machines | Group-Object -Property DomainName
+            foreach($root in $rootDomains)
+            {
+                $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
+                if (-not $domainJoinedMachines) { continue }
+                $oneTimePassword = ($root.Group)[0].InstallationUser.Password
+                Invoke-LabCommand -ComputerName ($root.Group)[0] -ActivityName 'Add computer objects for domain-joined Linux machines' -NoDisplay -ScriptBlock {
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword)
+            }
+        }
 
         Restart-LabVM -ComputerName $machines -Wait
         Wait-LabADReady -ComputerName $machines
