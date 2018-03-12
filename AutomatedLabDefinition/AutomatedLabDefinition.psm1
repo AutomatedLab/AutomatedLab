@@ -3086,8 +3086,10 @@ function Get-LabPostInstallationActivity
             $activity.IsCustomRole = $true
 
             #The value ComputerName will be filled later when applying the custome role
-            $Properties.Add('ComputerName', '')
-
+            if ($Properties)
+            {
+                $Properties.Add('ComputerName', '')
+            }
             #The next sections compares the given custom role properties with with the custom role parameters.
             #Custom role parameters are taken form the main role script as well as the HostInit.ps1 and the HostCleanup.ps1
             $scripts = $activity.ScriptFileName, 'HostInit.ps1', 'HostCleanup.ps1'
@@ -3113,11 +3115,14 @@ function Get-LabPostInstallationActivity
                 }
 
                 #test if there are custom role properties defined that do not map to the custom role parameters
-                foreach ($property in $properties.GetEnumerator())
+                if ($Properties)
                 {
-                    if (-not $scriptInfo.Parameters.ContainsKey($property.Key) -and -not $unknownParameters.Contains($property.Key))
+                    foreach ($property in $properties.GetEnumerator())
                     {
-                        $unknownParameters.Add($property.Key)
+                        if (-not $scriptInfo.Parameters.ContainsKey($property.Key) -and -not $unknownParameters.Contains($property.Key))
+                        {
+                            $unknownParameters.Add($property.Key)
+                        }
                     }
                 }
             }
@@ -3134,11 +3139,14 @@ function Get-LabPostInstallationActivity
                 $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
 
-                foreach ($property in $properties.GetEnumerator())
+                if ($Properties)
                 {
-                    if ($scriptInfo.Parameters.ContainsKey($property.Key) -and $unknownParameters.Contains($property.Key))
+                    foreach ($property in $properties.GetEnumerator())
                     {
-                        $unknownParameters.Remove($property.Key) | Out-Null
+                        if ($scriptInfo.Parameters.ContainsKey($property.Key) -and $unknownParameters.Contains($property.Key))
+                        {
+                            $unknownParameters.Remove($property.Key) | Out-Null
+                        }
                     }
                 }
             }
@@ -3148,9 +3156,12 @@ function Get-LabPostInstallationActivity
                 Write-Error "The defined properties '$($unknownParameters -join ', ')' are unknown for custom role '$CustomRole'" -ErrorAction Stop
             }
             
-            foreach ($kvp in $Properties.GetEnumerator())
+            if ($Properties)
             {
-                $activity.Properties.Add($kvp.Key, $kvp.Value)
+                foreach ($kvp in $Properties.GetEnumerator())
+                {
+                    $activity.Properties.Add($kvp.Key, $kvp.Value)
+                }
             }
         }
     
