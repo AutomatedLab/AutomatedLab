@@ -217,7 +217,7 @@ function Invoke-LWCommand
     {
         Write-Debug 'Adding LABHOSTNAME to scriptblock' 
         #in some situations a retry makes sense. In order to know which machines have done the job, the scriptblock must return the hostname
-        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$(HOSTNAME.EXE)`"`n")
+        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$([System.Net.Dns]::GetHostName())`"`n")
     }
 
     if ($AsJob)

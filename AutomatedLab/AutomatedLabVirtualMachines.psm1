@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
     
-    $machines = Get-LabVM -ComputerName $Name -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop
     
     if (-not $machines)
     {
@@ -650,7 +650,7 @@ function Wait-LabVM
         
     $jobs = @()
     
-    $vms = Get-LabMachine -ComputerName $ComputerName
+    $vms = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
     
     if (-not $vms)
     {
@@ -1118,7 +1118,7 @@ function Connect-LabVM
         [switch]$UseLocalCredential
     )
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
     $lab = Get-Lab
     
     foreach ($machine in $machines)
@@ -1130,6 +1130,39 @@ function Connect-LabVM
         else
         {
             $cred = $machine.GetCredential($lab)
+        }
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+
+            if (-not $sshBinary)
+            {
+                $download = Read-Choice -ChoiceList 'No','Yes' -Caption 'Download Win32-OpenSSH' -Message 'OpenSSH is necessary to connect to Linux VMs. Would you like us to download Win32-OpenSSH for you?' -Default 1
+
+                if ([bool]$download)
+                {
+                    $downloadUri = (Get-Module AutomatedLab).PrivateData['OpenSshUri']
+                    $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
+                    $targetPath = "$labsources\Tools\OpenSSH"
+                    Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
+
+                    Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
+                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+                }
+            }
+
+            if ($UseLocalCredential)
+            {
+                $arguments = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l {0} {1}' -f $cred.UserName,$machine
+            }
+            else 
+            {
+                $arguments = '-o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no -l {0}@{2} {1}' -f $cred.UserName,$machine,$cred.GetNetworkCredential().Domain
+            }
+
+            Start-Process -FilePath $sshBinary.FullPath -ArgumentList $arguments
+            return
         }
         
         if ($machine.HostType -eq 'Azure')
@@ -1679,6 +1712,8 @@ function Get-LabVM
         
         [Parameter(Mandatory, ParameterSetName = 'All')]
         [switch]$All,
+
+        [switch]$IncludeLinux,
         
         [switch]$IsRunning
     )
@@ -1735,6 +1770,12 @@ function Get-LabVM
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
             $result = $Script:data.Machines
+        }
+
+        # Skip Linux machines by default
+        if (-not $IncludeLinux)
+        {
+            $result = $result | Where-Object -Property OperatingSystemType -eq Windows
         }
     }
     

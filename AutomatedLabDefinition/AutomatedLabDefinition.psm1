@@ -1,4 +1,6 @@
 ﻿#region Internals
+$script:RedHatPackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
+$script:SusePackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
 $unattendedXmlDefaultContent2012 = @'
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
@@ -424,6 +426,146 @@ $unattendedXmlDefaultContent2008 = @'
   </settings>
 </unattend>
 '@
+
+$kickstartContent = @"
+install
+firewall --disabled
+cdrom
+text
+firstboot --disable
+reboot
+bootloader --append="biosdevname=0 net.ifnames=0"
+zerombr
+clearpart --all
+autopart
+"@
+
+$autoyastContent = @"
+<?xml version="1.0"?>
+<!DOCTYPE profile>
+<profile
+  xmlns="http://www.suse.com/1.0/yast2ns"
+  xmlns:config="http://www.suse.com/1.0/configns">
+  <general>
+  <signature-handling>
+    <accept_unsigned_file config:type="boolean">true</accept_unsigned_file>
+    <accept_file_without_checksum config:type="boolean">true</accept_file_without_checksum>
+    <accept_verification_failed config:type="boolean">true</accept_verification_failed>
+    <accept_unknown_gpg_key config:type="boolean">true</accept_unknown_gpg_key>
+    <import_gpg_key config:type="boolean">true</import_gpg_key>
+    <accept_non_trusted_gpg_key config:type="boolean">true</accept_non_trusted_gpg_key>
+    </signature-handling>
+    <self_update config:type="boolean">false</self_update>
+  <mode>
+    <halt config:type="boolean">false</halt>
+    <forceboot config:type="boolean">false</forceboot>
+    <final_reboot config:type="boolean">true</final_reboot>
+    <final_halt config:type="boolean">false</final_halt>
+    <confirm_base_product_license config:type="boolean">false</confirm_base_product_license>
+    <confirm config:type="boolean">false</confirm>
+    <second_stage config:type="boolean">true</second_stage>
+  </mode>
+  </general>
+  <partitioning config:type="list">
+    <drive>
+        <disklabel>gpt</disklabel>
+        <device>/dev/sda</device>
+        <use>free</use>
+        <partitions config:type="list">
+            <partition>
+                <filesystem config:type="symbol">vfat</filesystem>
+                <mount>/boot</mount>
+                <size>1G</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">vfat</filesystem>
+                <mount>/boot/efi</mount>
+                <size>1G</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">swap</filesystem>
+                <mount>/swap</mount>
+                <size>auto</size>
+            </partition>
+            <partition>
+                <filesystem config:type="symbol">ext4</filesystem>
+                <mount>/</mount>
+                <size>auto</size>
+            </partition>
+        </partitions>
+    </drive>
+</partitioning>
+<bootloader>
+  <loader_type>grub2-efi</loader_type>
+  <global>
+    <activate config:type="boolean">true</activate>
+    <boot_boot>true</boot_boot>
+  </global>
+ </bootloader>
+<language>
+    <language>en_US</language>
+</language>
+<timezone>
+<!-- https://raw.githubusercontent.com/yast/yast-country/master/timezone/src/data/timezone_raw.ycp -->
+    <hwclock>UTC</hwclock>
+    <timezone>ETC/GMT</timezone>
+</timezone>
+<keyboard>
+<!-- https://raw.githubusercontent.com/yast/yast-country/master/keyboard/src/data/keyboard_raw.ycp -->
+    <keymap>english-us</keymap>
+</keyboard>
+<software>
+    <patterns config:type="list">
+    <pattern>base</pattern>
+    <pattern>enhanced_base</pattern>
+  </patterns>
+  <install_recommended config:type="boolean">true</install_recommended>
+  <packages config:type="list">
+    <package>iputils</package>
+    <package>vi</package>
+    <package>less</package>
+  </packages>
+</software>
+<services-manager>
+  <default_target>multi-user</default_target>
+  <services>
+    <enable config:type="list">
+      <service>sshd</service>
+    </enable>
+  </services>
+</services-manager>
+<networking>
+<interfaces config:type="list">
+</interfaces>
+</networking>
+<users config:type="list">
+  <user>
+    <username>root</username>
+    <user_password>Password1</user_password>
+    <encrypted config:type="boolean">false</encrypted>
+  </user>
+  </users>
+<firewall>
+  <enable_firewall config:type="boolean">true</enable_firewall>
+  <start_firewall config:type="boolean">true</start_firewall>
+</firewall>
+<scripts>
+    <init-scripts config:type="list">
+      <script>
+        <source>
+        <![CDATA[
+            rpm --import https://packages.microsoft.com/keys/microsoft.asc
+            rpm -Uvh https://packages.microsoft.com/config/sles/12/packages-microsoft-prod.rpm
+            zypper update
+            zypper -f -v install powershell omi openssl
+            systemctl enable omid
+        ]]>
+        </source>
+      </script>
+    </init-scripts>
+  </scripts>
+</profile>
+"@
 
 #region Get-LabVolumesOnPhysicalDisks
 
@@ -1142,6 +1284,14 @@ function Export-LabDefinition
             {
                 $unattendedXmlDefaultContent2012 | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath Unattended2012.xml) -Encoding unicode
             }
+            if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
+            {
+                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks.cfg) -Encoding unicode
+            }
+            if ($Script:machines | Where-Object LinuxType -eq 'Suse')
+            {
+                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst.xml) -Encoding unicode
+            }
         }
     }
             
@@ -1491,7 +1641,7 @@ function Add-LabIsoImageDefinition
                 Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO
                 Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
                 $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
-                $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim")
+                $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim") -or (Test-Path "$letter`:\.discinfo") -or (Test-Path "$letter`:\isolinux") -or (Test-Path "$letter`:\suse")
                 DisMount-DiskImage -ImagePath $isoFile.FullName
             }            
             
@@ -1536,6 +1686,11 @@ function Add-LabIsoImageDefinition
     
     foreach ($iso in $isos)
     {
+        if ($iso.IsOperatingSystem -and $iso.OperatingSystems.OperatingSystemType -contains 'Linux')
+        {
+            Set-LinuxPackage -Package $iso.OperatingSystems[0].LinuxPackageGroup -LinuxType ($iso.OperatingSystems.LinuxType)[0]
+        }
+
         $isosToRemove = $script:lab.Sources.ISOs | Where-Object { $_.Name -eq $iso.Name -or $_.Path -eq $iso.Path }
         foreach ($isoToRemove in $isosToRemove)
         {
@@ -1715,7 +1870,7 @@ function Add-LabMachineDefinition
                 'Windows Server 2012 Datacenter (Server with a GUI)', 'Windows Server 2012 Datacenter (Server Core Installation)', 'Windows Server 2012 Standard (Server with a GUI)', 'Windows Server 2012 Standard (Server Core Installation)',
                 'Windows Server 2012 R2 Datacenter (Server with a GUI)', 'Windows Server 2012 R2 Datacenter (Server Core Installation)', 'Windows Server 2012 R2 Standard (Server with a GUI)', 'Windows Server 2012 R2 Standard (Server Core Installation)',
                 'Windows Server 2016 Datacenter (Desktop Experience)', 'Windows Server 2016 Datacenter', 'Windows Server 2016 Standard (Desktop Experience)', 'Windows Server 2016 Standard',
-                'Windows Server Standard', 'Windows Server Datacenter'
+                'Windows Server Standard', 'Windows Server Datacenter', 'CentOS 7.4','Fedora 27.0','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
         )]
         [Alias('OS')]
         [AutomatedLab.OperatingSystem]$OperatingSystem = (Get-LabDefinition).DefaultOperatingSystem,
@@ -1818,6 +1973,33 @@ function Add-LabMachineDefinition
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+        $ParameterName = 'RhelPackage'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        if($script:RedHatPackage.Count -gt 0)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:RedHatPackage))
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
+
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+
+
+        $ParameterName = 'SusePackage'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $AttributeCollection.Add($ParameterAttribute)
+        if ($script:SusePackage.Count -gt 0)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:SusePackage))
+            $AttributeCollection.Add($ValidateSetAttribute)
+        }
+        
+        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
+
         return $RuntimeParameterDictionary
     }
 
@@ -1826,6 +2008,8 @@ function Add-LabMachineDefinition
         Write-LogFunctionEntry
         $AzureRoleSize = $PsBoundParameters['AzureRoleSize']
         $TimeZone = $PsBoundParameters['TimeZone']
+        $SusePackage = $PsBoundParameters['SusePackage']
+        $RhelPackage = $PsBoundParameters['RhelPackage']
     }
 
     process
@@ -2547,6 +2731,9 @@ function Add-LabMachineDefinition
     
         if ($machine.HostType -eq 'HyperV')
         {
+            if ($RhelPackage) { $machine.InternalNotes.LinuxPackage = $RhelPackage}
+            if ($SusePackage) { $machine.InternalNotes.LinuxPackage = $SusePackage}
+
             if ($OperatingSystemVersion)
             {
                 $os = Get-LabAvailableOperatingSystem | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
@@ -2626,6 +2813,7 @@ function Add-LabMachineDefinition
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Disk
         $machine.Disks = New-Object $type
+
         if ($DiskName)
         {
             foreach ($disk in $DiskName)
@@ -3252,6 +3440,33 @@ function Repair-LabDuplicateIpAddresses
                 $adapter.Ipv4Address.Add($ipAddress)
             }
         }
+    }
+}
+
+function Set-LinuxPackage
+{
+    param
+    (
+        [string[]]
+        $Package,
+
+        [ValidateSet('RedHat', 'Suse')]
+        [string]
+        $LinuxType
+    )
+
+    if ($LinuxType -eq 'RedHat')
+    {
+        foreach ($entry in $Package)
+        {
+            [void] ($script:RedHatPackage.Add($entry))
+        }
+        return
+    }
+
+    foreach ($entry in $Package)
+    {
+        [void] ($script:SusePackage.Add($entry))
     }
 }
 #endregion Internal

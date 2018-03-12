@@ -6,7 +6,7 @@ function Get-ALTypeComplete_AvailableLabs
 
 function Get-ALTypeComplete_LabVMs
 {
-    (Get-LabVM -All).Name
+    (Get-LabVM -All -IncludeLinux).Name
 }
 
 function Get-ALTypeComplete_DiskName

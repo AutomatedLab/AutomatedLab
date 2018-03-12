@@ -4,10 +4,10 @@ Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Some
 Set-LabInstallationCredential -Username Install -Password Somepass1
 
 # As usual, use the role name as the ISO image definition name
-Add-LabIsoImageDefinition -Name Tfs2017 -Path $labsources\ISOS\en_team_foundation_server_2017_x64_dvd_9579548.iso
-Add-LabIsoImageDefinition -Name Tfs2015 -Path $labsources\ISOS\en_team_foundation_server_2015_update_4_x86_x64_dvd_10284962.iso
-Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labsources\ISOS\en_sql_server_2014_enterprise_edition_with_service_pack_2_x64_dvd_8962401.iso
-Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labsources\ISOS\en_sql_server_2016_enterprise_x64_dvd_8701793.iso
+Add-LabIsoImageDefinition -Name Tfs2017 -Path $labsources\ISOs\en_team_foundation_server_2017_x64_dvd_9579548.iso
+Add-LabIsoImageDefinition -Name Tfs2015 -Path $labsources\ISOs\en_team_foundation_server_2015_update_4_x86_x64_dvd_10284962.iso
+Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labsources\ISOs\en_sql_server_2014_enterprise_edition_with_service_pack_2_x64_dvd_8962401.iso
+Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labsources\ISOs\en_sql_server_2016_enterprise_x64_dvd_8701793.iso
 
 Add-LabMachineDefinition -Name tfsDC1 -Roles RootDC -DomainName contoso.com -OperatingSystem 'Windows Server 2016 Datacenter' -Memory 1GB
 Add-LabMachineDefinition -Name tfsSQL1 -ROles SQLServer2016 -DomainName contoso.com -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Memory 2GB
