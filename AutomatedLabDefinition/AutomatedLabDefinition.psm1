@@ -3049,6 +3049,7 @@ function Get-LabPostInstallationActivity
         Write-LogFunctionEntry
         $CustomRole = $PsBoundParameters['CustomRole']
         $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+        if (-not $Properties) { $Properties = @{} }
     }
     
     process
