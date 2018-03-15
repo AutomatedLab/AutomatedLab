@@ -3086,11 +3086,6 @@ function Get-LabPostInstallationActivity
             $activity.ScriptFileName = "$CustomRole.ps1"
             $activity.IsCustomRole = $true
 
-            #The value ComputerName will be filled later when applying the custome role
-            if ($Properties)
-            {
-                $Properties.Add('ComputerName', '')
-            }
             #The next sections compares the given custom role properties with with the custom role parameters.
             #Custom role parameters are taken form the main role script as well as the HostInit.ps1 and the HostCleanup.ps1
             $scripts = $activity.ScriptFileName, 'HostInit.ps1', 'HostCleanup.ps1'
@@ -3106,6 +3101,17 @@ function Get-LabPostInstallationActivity
                 $scriptInfo = Get-Command -Name $scriptFullName
                 $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
+                
+                #If the custom role knows about a ComputerName parameter and if there is no value defined by the user, add add empty value now.
+                #Later that will be filled with the computer name of the computer the role is assigned to when the HostInit and the HostCleanup scripts are invoked.
+                if ($Properties)
+                {
+                    if (($parameters | Where-Object Key -eq 'ComputerName') -and -not $Properties.ContainsKey('ComputerName'))
+                    {
+                        $Properties.Add('ComputerName', '')
+                    }
+                }
+                
                 #test if all mandatory parameters are defined
                 foreach ($parameter in $parameters)
                 {
@@ -3161,7 +3167,7 @@ function Get-LabPostInstallationActivity
             {
                 foreach ($kvp in $Properties.GetEnumerator())
                 {
-                    $activity.Properties.Add($kvp.Key, $kvp.Value)
+                    $activity.Properties.Add($kvp.Key, [string]$kvp.Value)
                 }
             }
         }
