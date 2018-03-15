@@ -25,7 +25,6 @@ Add-LabMachineDefinition -Name tfs1Srv1 -Roles $role -Memory 4GB
 $role = Get-LabMachineRoleDefinition -Role TfsBuildWorker -Properties @{
     TfsServer = "tfs1Srv1"
 }
-
 Add-LabMachineDefinition -Name tfsBuild1 -Roles $role
 
 Install-Lab
