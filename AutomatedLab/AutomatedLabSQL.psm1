@@ -197,11 +197,8 @@ GO
                         Write-Verbose -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
                     }                    
                 }
-
-                if ($machine.HostType -eq 'Azure')
-                {
-                    $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
-                }
+                $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
                 $scriptBlock = {                    
