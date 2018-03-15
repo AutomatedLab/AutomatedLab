@@ -1865,7 +1865,7 @@ function Add-LabMachineDefinition
                 'Windows 7 Professional', 'Windows 7 Ultimate', 'Windows 7 Enterprise',
                 'Windows 8 Pro', 'Windows 8 Enterprise',
                 'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
-                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
+                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview', 'Windows 10 Enterprise Insider Preview', 'Windows 10 Pro Insider Preview',
                 'Windows Server 2008 R2 Datacenter (Full Installation)', 'Windows Server 2008 R2 Datacenter (Server Core Installation)', 'Windows Server 2008 R2 Standard (Full Installation)', 'Windows Server 2008 R2 Standard (Server Core Installation)',
                 'Windows Server 2012 Datacenter (Server with a GUI)', 'Windows Server 2012 Datacenter (Server Core Installation)', 'Windows Server 2012 Standard (Server with a GUI)', 'Windows Server 2012 Standard (Server Core Installation)',
                 'Windows Server 2012 R2 Datacenter (Server with a GUI)', 'Windows Server 2012 R2 Datacenter (Server Core Installation)', 'Windows Server 2012 R2 Standard (Server with a GUI)', 'Windows Server 2012 R2 Standard (Server Core Installation)',
