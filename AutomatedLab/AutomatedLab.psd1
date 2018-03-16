@@ -201,7 +201,9 @@
         'Wait-LabADReady',
         'Wait-LabVM',
         'Wait-LabVMRestart',
-        'Wait-LabVMShutdown'
+        'Wait-LabVMShutdown',
+        'Get-LabBuildStep',
+        'New-LabReleasePipeline'
     )
     
     FileList               = @(
