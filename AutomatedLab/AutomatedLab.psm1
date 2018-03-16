@@ -126,7 +126,7 @@ function Import-Lab
     {
         if ($Name)
         {
-            $Path = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $Name
+            $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
         }
 
         if (Test-Path -Path $Path -PathType Container)
@@ -384,7 +384,7 @@ function Get-Lab
     
     if ($List)
     {
-        $labsPath = '{0}\AutomatedLab-Labs' -f [System.Environment]::GetFolderPath('MyDocuments')
+        $labsPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
         
         foreach ($path in Get-ChildItem -Path $labsPath -Directory)
         {
@@ -851,7 +851,7 @@ function Remove-Lab
     
     if ($Name)
     {
-        $Path = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $Name
+        $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
         $labName = $Name
     }
     else

@@ -1,6 +1,6 @@
 function Get-ALTypeComplete_AvailableLabs
 {
-    $path = "$([System.Environment]::GetFolderPath('MyDocuments'))\AutomatedLab-Labs"
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
     Get-ChildItem -Path $path -Directory
 }
 

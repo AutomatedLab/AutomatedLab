@@ -758,7 +758,7 @@ function New-LabDefinition
     }
     else
     {
-        $script:labpath = "$([System.Environment]::GetFolderPath('MyDocuments'))\AutomatedLab-Labs\$Name"
+        $script:labpath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
     
