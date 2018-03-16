@@ -94,7 +94,7 @@ function Install-LabTeamFoundationServer
     {
         if ( Get-LabIssuingCA)
         {
-            $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName WebServer -ComputerName $machine -PassThru -ErrorAction Stop
+            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -ComputerName $machine -PassThru -ErrorAction Stop
             $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
         }
@@ -150,7 +150,7 @@ function Install-LabTeamFoundationServer
 
             if ($cert.Thumbprint)
             {
-                $content = $content -replace 'SiteBindings=.+', ('SiteBindings=https:*:{0}:My:{1}' -f $tfsPort, $cert.Thumbprint)
+                $content = $content -replace 'SiteBindings=.+', ('SiteBindings=https:*:{0}::My:{1}' -f $tfsPort, $cert.Thumbprint)
                 $content = $content -replace 'PublicUrl=.+', ('PublicUrl=https://{0}:{1}' -f $machineName, $tfsPort)
             }
             else
@@ -159,7 +159,7 @@ function Install-LabTeamFoundationServer
                 $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}' -f $machineName, $tfsPort)
             }
             
-            $content = $content -replace 'webSiteVDirName=.+'
+            $content = $content -replace 'webSiteVDirName=.+','webSiteVDirName='
             $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
             $content = $content -replace 'CollectionDescription=.+', 'CollectionDescription=Built by AutomatedLab, your friendly lab automation solution'
             $content = $content -replace 'WebSitePort=.+', ('WebSitePort={0}' -f $tfsPort) # Plain TFS 2015
@@ -228,11 +228,11 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
@@ -303,22 +303,27 @@ function New-LabReleasePipeline
         Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
     }
 
+    $project = New-TfsProject -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
+
     if ($gitBinary)
     {
-        $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+        $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
         $repositoryPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath alRepoTemp
+        Push-Location
+        
         [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        Set-Location $repositoryPath
 
-        [void] (& $gitBinary clone $SourceRepository $repositoryPath)
-
+        [void] (& $gitBinary clone $SourceRepository $repositoryPath --quiet)
         [void] (& $gitBinary remote add tfs $repoUrl)
-        [void] (& $gitBinary push tfs --all)
+        [void] (& $gitBinary -c http.sslVerify=false push tfs --all --quiet)
         Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+        Pop-Location
     }
 
-    New-TfsBuildDefinition -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -DefinitionName ALBuild -BuildTasks $buildSteps -UseSsl:$useSsl
+    New-TfsBuildDefinition -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -DefinitionName ALBuild -BuildTasks $buildSteps -UseSsl:$useSsl
 }
 
 function Get-LabBuildStep
