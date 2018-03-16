@@ -5,10 +5,10 @@ function Install-LabSqlServers
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_Sql2012Installation,
-		
+        
         [switch]$CreateCheckPoints
     )
-	
+    
     function Write-ArgumentVerbose
     {
         param
@@ -23,7 +23,7 @@ function Install-LabSqlServers
     Write-LogFunctionEntry
     
     $lab = Get-Lab -ErrorAction SilentlyContinue
-	
+    
     if (-not $lab)
     {
         Write-LogFunctionExitWithError -Message 'No lab definition imported, so there is nothing to do. Please use the Import-Lab cmdlet first'
@@ -111,7 +111,7 @@ GO
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 45
             Write-ScreenInfo -Message 'Done' -TaskEnd
-	    
+        
             foreach ($machine in $machinesBatch)
             {
                 $role = $machine.Roles | Where-Object Name -like SQLServer*
@@ -171,7 +171,7 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
-				Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } { }
+                Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('AgtSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('BrowserSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('RsSvcStartupType')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
@@ -198,15 +198,12 @@ GO
                     }                    
                 }
 
-                if ($machine.HostType -eq 'Azure')
-                {
-                    $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
-                }
+                $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
                 $scriptBlock = {                    
                     Write-Verbose 'Installing SQL Server...'
-				    
+                    
                     $dvdDrive = ''
                     $startTime = (Get-Date)
                     while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
@@ -307,7 +304,7 @@ GO
             
         }
         until ($machineIndex -ge $onPremisesMachines.Count)
-	    
+        
         $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
@@ -367,7 +364,7 @@ GO
             Checkpoint-LabVM -ComputerName ($machines | Where-Object HostType -eq 'HyperV') -SnapshotName 'Post SQL Server Installation'
         }
     }
-	
+    
     foreach ($machine in $machines)
     {
         $role = $machine.Roles | Where-Object Name -like SQLServer*
@@ -481,13 +478,13 @@ function Install-LabSqlSampleDatabases
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2014
                 $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
-		USE [master]
+        USE [master]
 
-		RESTORE DATABASE AdventureWorks2014
-		FROM disk= '$($backupFile.FullName)'
-		WITH MOVE 'AdventureWorks2014_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.mdf',
-		MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.ldf'
-		,REPLACE
+        RESTORE DATABASE AdventureWorks2014
+        FROM disk= '$($backupFile.FullName)'
+        WITH MOVE 'AdventureWorks2014_data' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.mdf',
+        MOVE 'AdventureWorks2014_Log' TO 'C:\Program Files\Microsoft SQL Server\MSSQL12.$roleInstance\MSSQL\DATA\AdventureWorks2014.ldf'
+        ,REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
@@ -498,19 +495,19 @@ function Install-LabSqlSampleDatabases
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2016
                 $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
-		USE master
-		RESTORE DATABASE WideWorldImporters
-		FROM disk = 
-		'$($backupFile.FullName)'
-		WITH MOVE 'WWI_Primary' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
-		MOVE 'WWI_UserData' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
-		MOVE 'WWI_Log' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
-		MOVE 'WWI_InMemory_Data_1' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
-		REPLACE
+        USE master
+        RESTORE DATABASE WideWorldImporters
+        FROM disk = 
+        '$($backupFile.FullName)'
+        WITH MOVE 'WWI_Primary' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+        MOVE 'WWI_UserData' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+        MOVE 'WWI_Log' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+        MOVE 'WWI_InMemory_Data_1' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL13.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+        REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
@@ -521,19 +518,19 @@ function Install-LabSqlSampleDatabases
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2017
                 $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
-		USE master
-		RESTORE DATABASE WideWorldImporters
-		FROM disk = 
-		'$($backupFile.FullName)'
-		WITH MOVE 'WWI_Primary' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
-		MOVE 'WWI_UserData' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
-		MOVE 'WWI_Log' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
-		MOVE 'WWI_InMemory_Data_1' TO
-		'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
-		REPLACE
+        USE master
+        RESTORE DATABASE WideWorldImporters
+        FROM disk = 
+        '$($backupFile.FullName)'
+        WITH MOVE 'WWI_Primary' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+        MOVE 'WWI_UserData' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+        MOVE 'WWI_Log' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+        MOVE 'WWI_InMemory_Data_1' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+        REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
             } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
