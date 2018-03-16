@@ -531,14 +531,14 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoCustomRole1", "DemoCustomRole1", "{AC8B92ED-54DE-41B5-98FB-AA9815077B34}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1 = LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1
-		LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1 = LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1
-		LabSources\CustomRoles\DemoCustomRole\HostInit.ps1 = LabSources\CustomRoles\DemoCustomRole\HostInit.ps1
+		LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1 = LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1
+		LabSources\CustomRoles\DemoCustomRole\HostStart.ps1 = LabSources\CustomRoles\DemoCustomRole\HostStart.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MDT", "MDT", "{D4D2647A-AC57-446F-BB07-95899E248D06}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\MDT\DownloadAdk.ps1 = LabSources\CustomRoles\MDT\DownloadAdk.ps1
-		LabSources\CustomRoles\MDT\HostInit.ps1 = LabSources\CustomRoles\MDT\HostInit.ps1
+		LabSources\CustomRoles\MDT\HostStart.ps1 = LabSources\CustomRoles\MDT\HostStart.ps1
 		LabSources\CustomRoles\MDT\InstallMDT.ps1 = LabSources\CustomRoles\MDT\InstallMDT.ps1
 		LabSources\CustomRoles\MDT\MDTApplications.xml = LabSources\CustomRoles\MDT\MDTApplications.xml
 	EndProjectSection

@@ -2928,17 +2928,17 @@ function Invoke-LabCommand
                 if ($item.IsCustomRole)
                 {
                     $customRoles++
-                    #if there is a HostInit.ps1 script for the role
-                    $hostInitPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostInit.ps1'
-                    if (Test-Path -Path $hostInitPath)
+                    #if there is a HostStart.ps1 script for the role
+                    $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
+                    if (Test-Path -Path $hostStartPath)
                     {
-                        $hostInitScript = Get-Command -Name $hostInitPath
-                        $hostInitParam = Sync-Parameter -Command $hostInitScript -Parameters $item.Properties
-                        if ($hostInitScript.Parameters.ContainsKey('ComputerName'))
+                        $hostStartScript = Get-Command -Name $hostStartPath
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties
+                        if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
-                            $hostInitParam['ComputerName'] = $machine.Name
+                            $hostStartParam['ComputerName'] = $machine.Name
                         }
-                        $results += & $hostInitPath @hostInitParam
+                        $results += & $hostStartPath @hostStartParam
                     }
                 }
 
@@ -2995,17 +2995,17 @@ function Invoke-LabCommand
 
                 if ($item.IsCustomRole)
                 {
-                    #if there is a HostCleanup.ps1 script for the role
-                    $hostCleanupPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostCleanup.ps1'
-                    if (Test-Path -Path $hostCleanupPath)
+                    #if there is a HostEnd.ps1 script for the role
+                    $hostEndPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostEnd.ps1'
+                    if (Test-Path -Path $hostEndPath)
                     {
-                        $hostCleanupScript = Get-Command -Name $hostCleanupPath
-                        $hostCleanupParam = Sync-Parameter -Command $hostCleanupScript -Parameters $item.Properties
-                        if ($hostCleanupScript.Parameters.ContainsKey('ComputerName'))
+                        $hostEndScript = Get-Command -Name $hostEndPath
+                        $hostEndParam = Sync-Parameter -Command $hostEndScript -Parameters $item.Properties
+                        if ($hostEndScript.Parameters.ContainsKey('ComputerName'))
                         {
-                            $hostCleanupParam['ComputerName'] = $machine.Name
+                            $hostEndParam['ComputerName'] = $machine.Name
                         }
-                        $results += & $hostCleanupPath @hostCleanupParam
+                        $results += & $hostEndPath @hostEndParam
                     }
                 }
             }
