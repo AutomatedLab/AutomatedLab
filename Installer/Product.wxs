@@ -1,5 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Wix 
+<Wix
   xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='AutomatedLab' Id='*' UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149' Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='AutomatedLab Team' >
     <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer" Comments='AutomatedLab Modules Installer' Manufacturer='AutomatedLabTeam' InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
@@ -108,6 +108,30 @@
                   </Component>
                 </Directory>
               </Directory>
+              <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
+                <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
+                  <Component Id="ALCommonComponent7" Guid="3a0b340c-534b-44c2-bc45-ff40c08dfe2b">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
+                  <Component Id="ALCommonComponent8" Guid="cc6ae11e-ab7f-4c4e-b501-ce0f6c53da43">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
               <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
                 <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
@@ -152,74 +176,74 @@
               </Component>
               <Directory Id="InstallFolder_AutomatedLabUnattendedPrivate" Name="Private">
                 <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateRedHat" Name="RedHat">
-                <Component Id="AutomatedLabUnattendedComponentPrivateRedHat" Guid="baa76ab9-a779-4c7f-bfa4-11ece4e646db">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1" />
+                  <Component Id="AutomatedLabUnattendedComponentPrivateRedHat" Guid="baa76ab9-a779-4c7f-bfa4-11ece4e646db">
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1" />
                   </Component>
                 </Directory>
                 <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateSuse" Name="Suse">
-                <Component Id="AutomatedLabUnattendedComponentPrivateSuse" Guid="5c90331e-b367-47c2-820b-0fda40db47f8">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1" />
+                  <Component Id="AutomatedLabUnattendedComponentPrivateSuse" Guid="5c90331e-b367-47c2-820b-0fda40db47f8">
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1" />
                   </Component>
                 </Directory>
                 <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateWin" Name="Win">
-                <Component Id="AutomatedLabUnattendedComponentPrivateWin" Guid="8fe16d3b-8909-4895-9fe1-1fb9555d243c">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1" />
+                  <Component Id="AutomatedLabUnattendedComponentPrivateWin" Guid="8fe16d3b-8909-4895-9fe1-1fb9555d243c">
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1" />
                   </Component>
-                </Directory>                
+                </Directory>
               </Directory>
               <Directory Id="InstallFolder_AutomatedLabUnattendedPublic" Name="Public">
                 <Component Id ="AutomatedLabUnattendedComponentPublic" Guid="aa10357d-30a5-4b59-9eaa-48be013f590f">
