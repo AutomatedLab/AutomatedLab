@@ -3697,9 +3697,5 @@ function New-LabSourcesFolder
     }
 }
 
-#New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
-#New-Alias -Name Set-LabVMRemoting -Value Enable-LabVMRemoting -Scope Global
-#New-Alias -Name Set-LabHostRemoting -Value Enable-LabHostRemoting -Scope Global
-
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
