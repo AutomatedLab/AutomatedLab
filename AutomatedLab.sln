@@ -545,7 +545,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MDT", "MDT", "{D4D2647A-AC5
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProGet5", "ProGet5", "{0249ABF7-D843-4050-9E71-8F23B5341DF8}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\CustomRoles\ProGet5\HostInit.ps1 = LabSources\CustomRoles\ProGet5\HostInit.ps1
+		LabSources\CustomRoles\ProGet5\HostStart.ps1 = LabSources\CustomRoles\ProGet5\HostStart.ps1
 	EndProjectSection
 EndProject
 Global

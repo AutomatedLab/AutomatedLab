@@ -16,8 +16,14 @@ $net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
 
-Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
-Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
+$isDotnet452Installed = Invoke-LabCommand -ActivityName 'Test .net Framework 4.5.2 installation' -ComputerName $proGetServer -ScriptBlock {
+    [bool]((Get-Content -Path C:\dotnet452.txt) -like '*Installation completed successfully with success code: (0x00000000)*')
+} -PassThru
+if (-not $isDotnet452Installed)
+{
+    Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
+    Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
+}
 
 if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
 {
@@ -33,7 +39,7 @@ Invoke-LabCommand -ActivityName 'Uninstalling the WebDAV feature' -ScriptBlock {
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
 
 $installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /LogFile=C:\ProGetInstallation.log /S'
-$installArgs = $installArgs -f $sqlServer
+$installArgs = $installArgs -f $SqlServer
 
 Write-Host "Installing ProGet on server '$proGetServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
