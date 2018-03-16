@@ -316,9 +316,9 @@ function New-LabReleasePipeline
         [void] (New-Item -ItemType Directory -Path $repositoryPath)
         Set-Location $repositoryPath
 
-        [void] (& $gitBinary clone $SourceRepository $repositoryPath --quiet)
-        [void] (& $gitBinary remote add tfs $repoUrl)
-        [void] (& $gitBinary -c http.sslVerify=false push tfs --all --quiet)
+        Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
+        Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow
+        Start-Process -FilePath $gitBinary @("-c", "http.sslVerify=false", "push", "tfs", "--all", "--quiet") -Wait -NoNewWindow
         Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
         Pop-Location
     }
