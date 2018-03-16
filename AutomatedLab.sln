@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.27130.2036
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -237,6 +237,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
+		LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1 = LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1
 		LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1 = LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1
 		LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1 = LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1
 		LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1 = LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1

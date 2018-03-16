@@ -35,13 +35,11 @@ $postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADL
 $postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name DSCDC01 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
 
-#file server and router
+# The good, the bad and the ugly
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
-
-# The good, the bad and the ugly
-Add-LabMachineDefinition -Name DSCCASQL01 -Memory 4GB -Roles CaRoot, SQLServer2016 -NetworkAdapter $netAdapter
+Add-LabMachineDefinition -Name DSCCASQL01 -Memory 4GB -Roles CaRoot, SQLServer2016, Routing -NetworkAdapter $netAdapter
 
 # DSC Pull Server with SQL server backing, TFS Build Worker
 $role = @(

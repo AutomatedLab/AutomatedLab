@@ -439,6 +439,7 @@
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
                 <File Id='Sample_DSCPullScenario1S' Name='DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' />
                 <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
+                <File Id='Sample_DSCPullScenario2' Name='DSC With Release Pipeline.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
                 <File Id='Sample_FailoverClustering1' Name='Failover Clustering 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1' />
                 <File Id='Sample_HybridEnvironmentHyperVandAzure1' Name='Hybrid Environment HyperV and Azure 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1' />
