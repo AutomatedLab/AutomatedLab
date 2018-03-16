@@ -128,7 +128,7 @@ while (-not $isActivated -and $activationRetries -gt 0)
         $adapter = New-Object System.Data.SqlClient.SqlDataAdapter
         $adapter.SelectCommand = $cmd
         $dataset = New-Object System.Data.DataSet
-        $adapter.Fill($dataset)
+        $adapter.Fill($dataset) | Out-Null
 
         $cn.Close() | Out-Null
 
