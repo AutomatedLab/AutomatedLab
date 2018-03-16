@@ -212,6 +212,10 @@ namespace AutomatedLab
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Evaluation":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise Insider Preview":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Pro Insider Preview":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise 2015 LTSB":
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":

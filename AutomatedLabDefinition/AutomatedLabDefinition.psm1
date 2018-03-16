@@ -1865,7 +1865,7 @@ function Add-LabMachineDefinition
                 'Windows 7 Professional', 'Windows 7 Ultimate', 'Windows 7 Enterprise',
                 'Windows 8 Pro', 'Windows 8 Enterprise',
                 'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
-                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview',
+                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview', 'Windows 10 Enterprise Insider Preview', 'Windows 10 Pro Insider Preview',
                 'Windows Server 2008 R2 Datacenter (Full Installation)', 'Windows Server 2008 R2 Datacenter (Server Core Installation)', 'Windows Server 2008 R2 Standard (Full Installation)', 'Windows Server 2008 R2 Standard (Server Core Installation)',
                 'Windows Server 2012 Datacenter (Server with a GUI)', 'Windows Server 2012 Datacenter (Server Core Installation)', 'Windows Server 2012 Standard (Server with a GUI)', 'Windows Server 2012 Standard (Server Core Installation)',
                 'Windows Server 2012 R2 Datacenter (Server with a GUI)', 'Windows Server 2012 R2 Datacenter (Server Core Installation)', 'Windows Server 2012 R2 Standard (Server with a GUI)', 'Windows Server 2012 R2 Standard (Server Core Installation)',
@@ -3049,6 +3049,7 @@ function Get-LabPostInstallationActivity
         Write-LogFunctionEntry
         $CustomRole = $PsBoundParameters['CustomRole']
         $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+        if (-not $Properties) { $Properties = @{} }
     }
     
     process
@@ -3085,9 +3086,6 @@ function Get-LabPostInstallationActivity
             $activity.ScriptFileName = "$CustomRole.ps1"
             $activity.IsCustomRole = $true
 
-            #The value ComputerName will be filled later when applying the custome role
-            $Properties.Add('ComputerName', '')
-
             #The next sections compares the given custom role properties with with the custom role parameters.
             #Custom role parameters are taken form the main role script as well as the HostInit.ps1 and the HostCleanup.ps1
             $scripts = $activity.ScriptFileName, 'HostInit.ps1', 'HostCleanup.ps1'
@@ -3103,6 +3101,17 @@ function Get-LabPostInstallationActivity
                 $scriptInfo = Get-Command -Name $scriptFullName
                 $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
+                
+                #If the custom role knows about a ComputerName parameter and if there is no value defined by the user, add add empty value now.
+                #Later that will be filled with the computer name of the computer the role is assigned to when the HostInit and the HostCleanup scripts are invoked.
+                if ($Properties)
+                {
+                    if (($parameters | Where-Object Key -eq 'ComputerName') -and -not $Properties.ContainsKey('ComputerName'))
+                    {
+                        $Properties.Add('ComputerName', '')
+                    }
+                }
+                
                 #test if all mandatory parameters are defined
                 foreach ($parameter in $parameters)
                 {
@@ -3113,11 +3122,14 @@ function Get-LabPostInstallationActivity
                 }
 
                 #test if there are custom role properties defined that do not map to the custom role parameters
-                foreach ($property in $properties.GetEnumerator())
+                if ($Properties)
                 {
-                    if (-not $scriptInfo.Parameters.ContainsKey($property.Key) -and -not $unknownParameters.Contains($property.Key))
+                    foreach ($property in $properties.GetEnumerator())
                     {
-                        $unknownParameters.Add($property.Key)
+                        if (-not $scriptInfo.Parameters.ContainsKey($property.Key) -and -not $unknownParameters.Contains($property.Key))
+                        {
+                            $unknownParameters.Add($property.Key)
+                        }
                     }
                 }
             }
@@ -3134,11 +3146,14 @@ function Get-LabPostInstallationActivity
                 $commonParameters = [System.Management.Automation.Internal.CommonParameters].GetProperties().Name
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
 
-                foreach ($property in $properties.GetEnumerator())
+                if ($Properties)
                 {
-                    if ($scriptInfo.Parameters.ContainsKey($property.Key) -and $unknownParameters.Contains($property.Key))
+                    foreach ($property in $properties.GetEnumerator())
                     {
-                        $unknownParameters.Remove($property.Key) | Out-Null
+                        if ($scriptInfo.Parameters.ContainsKey($property.Key) -and $unknownParameters.Contains($property.Key))
+                        {
+                            $unknownParameters.Remove($property.Key) | Out-Null
+                        }
                     }
                 }
             }
@@ -3148,9 +3163,12 @@ function Get-LabPostInstallationActivity
                 Write-Error "The defined properties '$($unknownParameters -join ', ')' are unknown for custom role '$CustomRole'" -ErrorAction Stop
             }
             
-            foreach ($kvp in $Properties.GetEnumerator())
+            if ($Properties)
             {
-                $activity.Properties.Add($kvp.Key, $kvp.Value)
+                foreach ($kvp in $Properties.GetEnumerator())
+                {
+                    $activity.Properties.Add($kvp.Key, [string]$kvp.Value)
+                }
             }
         }
     

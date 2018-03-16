@@ -443,7 +443,10 @@
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
                 <File Id='Sample_FailoverClustering1' Name='Failover Clustering 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1' />
                 <File Id='Sample_HybridEnvironmentHyperVandAzure1' Name='Hybrid Environment HyperV and Azure 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1' />
-                <File Id='Sample_TfsEnvironment' Name='TFS Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS Deployment.ps1' />
+                <File Id='Sample_Tfs2015Environment' Name='TFS 2015 Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1' />
+                <File Id='Sample_Tfs2017Environment' Name='TFS 2017 Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1' />
+                <File Id='Sample_MDTLab1' Name='MDT Lab 1, MDT Server 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 1, MDT Server 1.ps1' />
+                <File Id='Sample_MDTLab2' Name='MDT Lab 2, DC and MDT Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>
@@ -504,7 +507,6 @@
         <Component Id="LabSourcesFolderRegistry" Directory='LABSOURCESDIR'>
           <RegistryValue Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Value='[LABSOURCESDIR]' Type='string' KeyPath="yes" />
         </Component>
-        <!--<Feature Id='Documentation' Title='Documentation' Description='The instruction manual.' Level='1' ConfigurableDirectory='DOCUMENTATIONDIR'><ComponentRef Id='DocumentationComponent' /></Feature>-->
         <Feature Id='Samples' Title='Sample Scripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
           <ComponentRef Id='SamplesComponent' />
           <ComponentRef Id='SamplesHypervComponent' />
@@ -1535,6 +1537,12 @@
       <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
         <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\_Put custom role scripts here.txt" />
       </Component>
+      <Component Id="cmp37d492e149754ae5a9ec1f7d4dca1274" Directory="dirD49C097A947F489194CAACFE550AC9C2" Guid="b206fa90-412b-4d5d-9cdf-e7265d07fb7c">
+        <File Id="fil14812A370302467D999A50F69F73486E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\DownloadAdk.ps1" />
+        <File Id="fil90167B87796A44B0B67E03659AD053BD" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\HostInit.ps1" />
+        <File Id="filD931618E1A1748F4BCEA35443E457FF8" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\InstallMDT.ps1" />
+        <File Id="filA30EA48DB25F4DFE9B46C7BF8ECC2BEE" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\MDTApplications.xml" />
+      </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
         <File Id="fil611A290B504B40AC8067CF36E9A1FE16" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
         <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostCleanup.ps1" />
@@ -1678,6 +1686,11 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dirB373F64E5AF4425A852A91AF628C1053" Name="DemoCustomRole" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD49C097A947F489194CAACFE550AC9C2" Name="MDT" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
