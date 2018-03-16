@@ -159,7 +159,7 @@ function Install-LabTeamFoundationServer
                 $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}' -f $machineName, $tfsPort)
             }
             
-            $content = $content -replace 'webSiteVDirName=.+','webSiteVDirName='
+            $content = $content -replace 'webSiteVDirName=.+', 'webSiteVDirName='
             $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
             $content = $content -replace 'CollectionDescription=.+', 'CollectionDescription=Built by AutomatedLab, your friendly lab automation solution'
             $content = $content -replace 'WebSitePort=.+', ('WebSitePort={0}' -f $tfsPort) # Plain TFS 2015
