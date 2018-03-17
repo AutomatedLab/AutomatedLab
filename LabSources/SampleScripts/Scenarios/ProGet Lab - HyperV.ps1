@@ -43,7 +43,7 @@ Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 19
 
 #SQL server
 Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labSources\ISOs\en_sql_server_2016_standard_with_service_pack_1_x64_dvd_9540929.iso
-Add-LabMachineDefinition -Name PGSql1 -Memory 2GB -Roles SQLServer2014 -IpAddress 192.168.110.52
+Add-LabMachineDefinition -Name PGSql1 -Memory 2GB -Roles SQLServer2016 -IpAddress 192.168.110.52
 
 #client
 Add-LabMachineDefinition -Name PGClient1 -Memory 2GB -OperatingSystem 'Windows 10 Pro' -IpAddress 192.168.110.54
