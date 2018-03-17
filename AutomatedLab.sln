@@ -543,6 +543,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "MDT", "MDT", "{D4D2647A-AC5
 		LabSources\CustomRoles\MDT\MDTApplications.xml = LabSources\CustomRoles\MDT\MDTApplications.xml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProGet5", "ProGet5", "{0249ABF7-D843-4050-9E71-8F23B5341DF8}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\ProGet5\HostStart.ps1 = LabSources\CustomRoles\ProGet5\HostStart.ps1
+		LabSources\CustomRoles\ProGet5\README.md = LabSources\CustomRoles\ProGet5\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -634,6 +640,7 @@ Global
 		{F8AE4BA3-E199-4E0A-A236-75EF8AB9F3CE} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{AC8B92ED-54DE-41B5-98FB-AA9815077B34} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{D4D2647A-AC57-446F-BB07-95899E248D06} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{0249ABF7-D843-4050-9E71-8F23B5341DF8} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
