@@ -148,6 +148,13 @@ while (-not $isActivated -and $activationRetries -gt 0)
         Start-Sleep -Seconds 30
     } -NoDisplay
 
+    Invoke-LabCommand -ActivityName 'Trigger ProGet Activation' -ComputerName $proGetServer -ScriptBlock {
+        Restart-Service -Name INEDOPROGETSVC
+        iisreset.exe | Out-Null
+
+        Start-Sleep -Seconds 30
+    } -NoDisplay
+
     $activationRetries--
 }
 

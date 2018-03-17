@@ -1519,7 +1519,7 @@
         <File Id="filA30EA48DB25F4DFE9B46C7BF8ECC2BEE" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\MDTApplications.xml" />
       </Component>
        <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
-        <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostInit.ps1" />
+        <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
         <File Id="filE256ED55FB34497690F40A3DFD18B4F8" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\README.md" />
       </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
