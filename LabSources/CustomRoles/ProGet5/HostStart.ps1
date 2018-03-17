@@ -17,7 +17,7 @@ $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
 
 $isDotnet452Installed = Invoke-LabCommand -ActivityName 'Test .net Framework 4.5.2 installation' -ComputerName $proGetServer -ScriptBlock {
-    [bool]((Get-Content -Path C:\dotnet452.txt) -like '*Installation completed successfully with success code: (0x00000000)*')
+    [bool]((Get-Content -Path C:\dotnet452.txt -ErrorAction SilentlyContinue) -like '*Installation completed successfully with success code: (0x00000000)*')
 } -PassThru
 if (-not $isDotnet452Installed)
 {
@@ -140,6 +140,13 @@ while (-not $isActivated -and $activationRetries -gt 0)
 
         [bool]$dataset.Tables[0].Rows.Count
     } -PassThru
+
+    Invoke-LabCommand -ActivityName 'Trigger ProGet Activation' -ComputerName $proGetServer -ScriptBlock {
+        Restart-Service -Name INEDOPROGETSVC
+        iisreset.exe | Out-Null
+
+        Start-Sleep -Seconds 30
+    }
 
     $activationRetries--
 }
