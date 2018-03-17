@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+VisualStudioVersion = 15.0.27130.2020
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -24,8 +24,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LabSources", "LabSources", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{BF2C3317-327C-4552-8C6B-18A07307D977}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt = LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt
 		LabSources\Tools\oscdimg.exe = LabSources\Tools\oscdimg.exe
+		LabSources\Tools\README.md = LabSources\Tools\README.md
 		LabSources\Tools\RepAll.bat = LabSources\Tools\RepAll.bat
 		LabSources\Tools\WinSAT.exe = LabSources\Tools\WinSAT.exe
 		LabSources\Tools\WinSATAPI.dll = LabSources\Tools\WinSATAPI.dll
@@ -110,17 +110,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISOs", "ISOs", "{02DDCCD0-7EAA-450B-AE8A-67D54E8EF30C}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\ISOs\_Put all ISO images in here.txt = LabSources\ISOs\_Put all ISO images in here.txt
+		LabSources\ISOs\README.md = LabSources\ISOs\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SoftwarePackages", "SoftwarePackages", "{51120906-7BD4-4855-912D-56DBF8812578}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt = LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt
+		LabSources\SoftwarePackages\README.md = LabSources\SoftwarePackages\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PostInstallationActivities", "PostInstallationActivities", "{1130E19B-F91C-493B-AC50-8B7862716FB6}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt = LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt
+		LabSources\PostInstallationActivities\README.md = LabSources\PostInstallationActivities\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DnsAndTrustSetup", "DnsAndTrustSetup", "{06858CF6-B9DA-4FB1-8188-624E6D63F824}"
@@ -252,7 +252,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OSUpdates", "OSUpdates", "{BB2F6956-209C-40CB-8877-07E3F5C79F76}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt = LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt
+		LabSources\OSUpdates\README.md = LabSources\OSUpdates\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscClients", "SetupDscClients", "{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62}"
@@ -363,7 +363,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Private", "Private", "{6E73
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CustomRoles", "CustomRoles", "{EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}"
 	ProjectSection(SolutionItems) = preProject
-		LabSources\CustomRoles\_Put custom role scripts here.txt = LabSources\CustomRoles\_Put custom role scripts here.txt
+		LabSources\CustomRoles\README.md = LabSources\CustomRoles\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Common", "AutomatedLab.Common", "{E024D96C-6476-4F89-A0B2-4AF5E0DBB747}"

@@ -1510,7 +1510,7 @@
   <Fragment>
     <ComponentGroup Id="LabSourcesComponentGroup">
       <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
-        <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\_Put custom role scripts here.txt" />
+        <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\README.md" />
       </Component>
       <Component Id="cmp37d492e149754ae5a9ec1f7d4dca1274" Directory="dirD49C097A947F489194CAACFE550AC9C2" Guid="b206fa90-412b-4d5d-9cdf-e7265d07fb7c">
         <File Id="fil14812A370302467D999A50F69F73486E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\DownloadAdk.ps1" />
@@ -1524,13 +1524,13 @@
         <File Id="filF8132E52FC96455F841EC3746134B102" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostStart.ps1" />
       </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
-        <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\_Put all ISO images in here.txt" />
+        <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\README.md" />
       </Component>
       <Component Id="cmp590D2D7C56C54DA055DDE83528B57C13" Directory="dir89E871A710737F4B22546DECEF191B40" Guid="2cbfb439-2a97-4810-89e4-84f4ec7497bc">
-        <File Id="filF31E07CB8C65D89C7254CA55B09CE11B" KeyPath="yes" Source="$(var.SolutionDir)LabSources\OSUpdates\_Put all OS updates in here for offline patching.txt" />
+        <File Id="filF31E07CB8C65D89C7254CA55B09CE11B" KeyPath="yes" Source="$(var.SolutionDir)LabSources\OSUpdates\README.md" />
       </Component>
       <Component Id="cmp43B76600451B8D628D7EC64CFA049626" Directory="dirB2ACA9410CDB950E0A607387A4CEAC01" Guid="88b83189-2a22-46fb-b6a5-10edb6d8553a">
-        <File Id="filCE5BBBA18864DFAB2341D02FC3EE5F99" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\_This is the place for all scripts to customize the roles after installation.txt" />
+        <File Id="filCE5BBBA18864DFAB2341D02FC3EE5F99" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\README.md" />
       </Component>
       <Component Id="cmpE162BBFF409B8CC73F5745943C9F78AD" Directory="dirBA4353D3575F96F525324853C216E37A" Guid="32219f4c-9fee-45b7-8f36-85ddf1ee87ae">
         <File Id="fil97CB0342FDAB6F8D84B78029E5B82B8E" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\DnsAndTrustSetup\DnsAndTrustSetup.ps1" />
@@ -1584,7 +1584,7 @@
         <File Id="filF716E14FD1EA46BDA54D9A76E3EEA053" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html" />
       </Component>
       <Component Id="cmp8D2B8A64166C91132F0DBC3F643D114D" Directory="dir311D91D38903AE9026EBF00ADD6C4410" Guid="3271d103-ca0c-4248-9212-c590748d99c0">
-        <File Id="fil955A23ABDD5E709E04D314B16F498600" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\_Put all software you want to install to the VMs here.txt" />
+        <File Id="fil955A23ABDD5E709E04D314B16F498600" KeyPath="yes" Source="$(var.SolutionDir)LabSources\SoftwarePackages\README.md" />
       </Component>
       <Component Id="cmp0A8492B227C5BF123BBE55C2C9575F74" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="22848e70-1f5b-431d-b03e-c1e9ac076c6e">
         <File Id="fil314088D0AFFAA91499CB31DE7F672422" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\oscdimg.exe" />
@@ -1599,7 +1599,7 @@
         <File Id="filBC151B15E628F832478D42E89BA3B0B0" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\WinSATAPI.dll" />
       </Component>
       <Component Id="cmpB9D89FA06C3A5093BFBA8D6765A911E5" Directory="dirE5BE5518051AF65ED41BF5D6ED532027" Guid="af868421-3e89-4b3f-bb8f-33388a580104">
-        <File Id="filC2BE05767D118750F071E69ADCEE9D4A" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\_The tools folder gets copied into each VM to a directory named Tools in root of C drive.txt" />
+        <File Id="filC2BE05767D118750F071E69ADCEE9D4A" KeyPath="yes" Source="$(var.SolutionDir)LabSources\Tools\README.md" />
       </Component>
     </ComponentGroup>
   </Fragment>
