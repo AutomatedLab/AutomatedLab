@@ -1,7 +1,8 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Wix 
+<Wix
   xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='AutomatedLab' Id='*' UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149' Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='AutomatedLab Team' >
+    <?include Includes.wxi ?>
     <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer" Comments='AutomatedLab Modules Installer' Manufacturer='AutomatedLabTeam' InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
     <Property Id='LABSOURCESDIR'>
       <RegistrySearch Id='LabSourcesDirRegSearch' Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Type='raw' />
@@ -15,330 +16,350 @@
             <!--______________________________________________________________________________-->
             <!--Module Components-->
             <Directory Id="InstallFolder_PSFileTransfer" Name="PSFileTransfer">
-              <Component Id="PSFileTransferComponent" Guid="d7f9e425-2cb5-4c6e-ac47-12e820650e92">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSFileTransferComponent"/>
-                <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psm1" />
-                <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psd1" />
-                <RemoveFolder Id="RemoveFolderPSFileTransfer" Directory="InstallFolder_PSFileTransfer" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_PSFileTransferVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="PSFileTransferComponent" Guid="d7f9e425-2cb5-4c6e-ac47-12e820650e92">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSFileTransferComponent"/>
+                  <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psm1" />
+                  <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psd1" />
+                  <RemoveFolder Id="RemoveFolderPSFileTransfer" Directory="InstallFolder_PSFileTransfer" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_PSLog" Name="PSLog">
-              <Component Id="PSLogComponent" Guid="1c759c12-ecfd-4a09-b82c-5c8c4ab4266b">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSLogComponent" />
-                <File Source="$(var.SolutionDir)PSLog\PSLog.psm1" />
-                <File Source="$(var.SolutionDir)PSLog\PSLog.psd1" />
-                <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_PSLogVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="PSLogComponent" Guid="1c759c12-ecfd-4a09-b82c-5c8c4ab4266b">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSLogComponent" />
+                  <File Source="$(var.SolutionDir)PSLog\PSLog.psm1" />
+                  <File Source="$(var.SolutionDir)PSLog\PSLog.psd1" />
+                  <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
-              <Directory Id="InstallFolder_CommonCommon" Name="Common">
-                <Directory Id="InstallFolder_CommonCommonPublic" Name="Public">
-                  <Component Id="ALCommonComponent1" Guid="8b0287f3-d70a-47e6-a04f-6cc360f33eab">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-AccountPrivilege.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-FunctionToPSSession.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Install-SoftwarePackage.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-Choice.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-HashTable.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-IsAdministrator.ps1" />
-                  </Component>
+              <Directory Id="InstallFolder_CommonVersion" Name="$(var.AutomatedLabCommonVersion)">
+                <Directory Id="InstallFolder_CommonCommon" Name="Common">
+                  <Directory Id="InstallFolder_CommonCommonPublic" Name="Public">
+                    <Component Id="ALCommonComponent1" Guid="8b0287f3-d70a-47e6-a04f-6cc360f33eab">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-AccountPrivilege.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-FunctionToPSSession.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Install-SoftwarePackage.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Invoke-Ternary.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-Choice.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Read-HashTable.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Send-ModuleToPsSession.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-IsAdministrator.ps1" />
+                    </Component>
+                  </Directory>
+                  <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
+                    <Component Id="ALCommonComponent2" Guid="1493e46b-7913-408a-9549-5ae1da7cef34">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Gpo.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\LsaWrapper.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Mesh.ps1" />
+                    </Component>
+                  </Directory>
                 </Directory>
-                <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
-                  <Component Id="ALCommonComponent2" Guid="1493e46b-7913-408a-9549-5ae1da7cef34">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Gpo.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\LsaWrapper.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Mesh.ps1" />
-                  </Component>
+                <Directory Id="InstallFolder_CommonDsc" Name="DscHelper">
+                  <Directory Id="InstallFolder_CommonDscPublic" Name="Public">
+                    <Component Id="ALCommonComponent3" Guid="c9813b6e-f4da-450e-8d22-6dd2547aa7b7">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\DscHelper\Public\Get-DscConfigurationImportedResource.ps1" />
+                    </Component>
+                  </Directory>
                 </Directory>
+                <Directory Id="InstallFolder_CommonNetwork" Name="NetworkHelper">
+                  <Directory Id="InstallFolder_CommonNetworkPublic" Name="Public">
+                    <Component Id="ALCommonComponent4" Guid="722317e2-e32b-4427-954e-59147cf8617e">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-BinaryIp.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DecimalIp.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DottedDecimalIp.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-Mask.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-MaskLength.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-BroadcastAddress.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkAddress.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkRange.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkSummary.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-PublicIpAddress.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Test-Port.ps1" />
+                    </Component>
+                  </Directory>
+                </Directory>
+                <Directory Id="InstallFolder_CommonPki" Name="PkiHelper">
+                  <Directory Id="InstallFolder_CommonPkiPublic" Name="Public">
+                    <Component Id="ALCommonComponent5" Guid="301a6732-f49c-4f95-9891-4f2f3fe345e5">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-CATemplateStandardPermission.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-Certificate2.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Enable-AutoEnrollment.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Find-CertificateAuthority.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-CaTemplate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-Certificate2.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-NextOid.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\New-CaTemplate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Publish-CaTemplate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Request-Certificate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Test-CaTemplate.ps1" />
+                    </Component>
+                  </Directory>
+                  <Directory Id="InstallFolder_CommonPkiTypes" Name="Types">
+                    <Component Id="ALCommonComponent6" Guid="633ce5e1-186b-4a5f-a38d-78946c0a1c0f">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
+                    </Component>
+                  </Directory>
+                </Directory>
+                <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
+                  <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
+                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
+                </Component>
               </Directory>
-              <Directory Id="InstallFolder_CommonDsc" Name="DscHelper">
-                <Directory Id="InstallFolder_CommonDscPublic" Name="Public">
-                  <Component Id="ALCommonComponent3" Guid="c9813b6e-f4da-450e-8d22-6dd2547aa7b7">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\DscHelper\Public\Get-DscConfigurationImportedResource.ps1" />
-                  </Component>
-                </Directory>
-              </Directory>
-              <Directory Id="InstallFolder_CommonNetwork" Name="NetworkHelper">
-                <Directory Id="InstallFolder_CommonNetworkPublic" Name="Public">
-                  <Component Id="ALCommonComponent4" Guid="722317e2-e32b-4427-954e-59147cf8617e">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-BinaryIp.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DecimalIp.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-DottedDecimalIp.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-Mask.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\ConvertTo-MaskLength.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-BroadcastAddress.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkAddress.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkRange.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkSummary.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-PublicIpAddress.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Test-Port.ps1" />
-                  </Component>
-                </Directory>
-              </Directory>
-              <Directory Id="InstallFolder_CommonPki" Name="PkiHelper">
-                <Directory Id="InstallFolder_CommonPkiPublic" Name="Public">
-                  <Component Id="ALCommonComponent5" Guid="301a6732-f49c-4f95-9891-4f2f3fe345e5">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-CATemplateStandardPermission.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Add-Certificate2.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Enable-AutoEnrollment.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Find-CertificateAuthority.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-CaTemplate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-Certificate2.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Get-NextOid.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\New-CaTemplate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Publish-CaTemplate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Request-Certificate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Test-CaTemplate.ps1" />
-                  </Component>
-                </Directory>
-                <Directory Id="InstallFolder_CommonPkiTypes" Name="Types">
-                  <Component Id="ALCommonComponent6" Guid="633ce5e1-186b-4a5f-a38d-78946c0a1c0f">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
-                  </Component>
-                </Directory>
-              </Directory>
-              <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
-                <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
-                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
-                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
-              </Component>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
-              <Component Id="HostsFileComponent" Guid="0d760600-ad78-43c0-8b19-4eb2cc9b11b4">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="HostsFileComponent"/>
-                <File Source="$(var.SolutionDir)HostsFile\HostsFile.psm1" />
-                <File Source="$(var.SolutionDir)HostsFile\HostsFile.psd1" />
-                <RemoveFolder Id="RemoveFolderHostsFile" Directory="InstallFolder_HostsFile" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_HostsFileVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="HostsFileComponent" Guid="0d760600-ad78-43c0-8b19-4eb2cc9b11b4">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="HostsFileComponent"/>
+                  <File Source="$(var.SolutionDir)HostsFile\HostsFile.psm1" />
+                  <File Source="$(var.SolutionDir)HostsFile\HostsFile.psd1" />
+                  <RemoveFolder Id="RemoveFolderHostsFile" Directory="InstallFolder_HostsFile" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabWorker" Name="AutomatedLabWorker">
-              <Component Id="AutomatedLabWorkerComponent" Guid="1111e993-5d1a-4c08-b7a0-f888687c129e">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabWorkerComponent"/>
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psd1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerADCS.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerDisks.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerInternals.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerVirtualMachines.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerNetwork.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabAzureWorkerVirtualMachines.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerNetwork.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1" />
-                <RemoveFolder Id="RemoveFolderAutomatedLabWorker" Directory="InstallFolder_AutomatedLabWorker" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_AutomatedLabWorkerVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabWorkerComponent" Guid="1111e993-5d1a-4c08-b7a0-f888687c129e">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabWorkerComponent"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psd1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerADCS.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerDisks.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerInternals.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerVirtualMachines.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorkerNetwork.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabAzureWorkerNetwork.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabAzureWorkerVirtualMachines.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerNetwork.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLabWorker" Directory="InstallFolder_AutomatedLabWorker" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabUnattended" Name="AutomatedLabUnattended">
-              <Component Id="AutomatedLabUnattendedComponent" Guid="6e6be339-e857-4d44-8e05-82753b2121b7">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabUnattendedComponent"/>
-                <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psd1" />
-                <RemoveFolder Id="RemoveFolderAutomatedLabUnattended" Directory="InstallFolder_AutomatedLabUnattended" On="both"/>
-              </Component>
-              <Directory Id="InstallFolder_AutomatedLabUnattendedPrivate" Name="Private">
-                <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateRedHat" Name="RedHat">
-                <Component Id="AutomatedLabUnattendedComponentPrivateRedHat" Guid="baa76ab9-a779-4c7f-bfa4-11ece4e646db">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1" />
-                  </Component>
-                </Directory>
-                <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateSuse" Name="Suse">
-                <Component Id="AutomatedLabUnattendedComponentPrivateSuse" Guid="5c90331e-b367-47c2-820b-0fda40db47f8">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1" />
-                  </Component>
-                </Directory>
-                <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateWin" Name="Win">
-                <Component Id="AutomatedLabUnattendedComponentPrivateWin" Guid="8fe16d3b-8909-4895-9fe1-1fb9555d243c">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1" />
-                  </Component>
-                </Directory>                
-              </Directory>
-              <Directory Id="InstallFolder_AutomatedLabUnattendedPublic" Name="Public">
-                <Component Id ="AutomatedLabUnattendedComponentPublic" Guid="aa10357d-30a5-4b59-9eaa-48be013f590f">
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Export-UnattendedFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Get-UnattendedContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Import-UnattendedContent.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Import-UnattendFile.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1" />
+              <Directory Id="InstallFolder_AutomatedLabUnattendedVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabUnattendedComponent" Guid="6e6be339-e857-4d44-8e05-82753b2121b7">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabUnattendedComponent"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psd1" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLabUnattended" Directory="InstallFolder_AutomatedLabUnattended" On="both"/>
                 </Component>
+                <Directory Id="InstallFolder_AutomatedLabUnattendedPrivate" Name="Private">
+                  <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateRedHat" Name="RedHat">
+                    <Component Id="AutomatedLabUnattendedComponentPrivateRedHat" Guid="baa76ab9-a779-4c7f-bfa4-11ece4e646db">
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1" />
+                    </Component>
+                  </Directory>
+                  <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateSuse" Name="Suse">
+                    <Component Id="AutomatedLabUnattendedComponentPrivateSuse" Guid="5c90331e-b367-47c2-820b-0fda40db47f8">
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1" />
+                    </Component>
+                  </Directory>
+                  <Directory Id="InstallFolder_AutomatedLabUnattendedPrivateWin" Name="Win">
+                    <Component Id="AutomatedLabUnattendedComponentPrivateWin" Guid="8fe16d3b-8909-4895-9fe1-1fb9555d243c">
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1" />
+                      <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1" />
+                    </Component>
+                  </Directory>
+                </Directory>
+                <Directory Id="InstallFolder_AutomatedLabUnattendedPublic" Name="Public">
+                  <Component Id ="AutomatedLabUnattendedComponentPublic" Guid="aa10357d-30a5-4b59-9eaa-48be013f590f">
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Export-UnattendedFile.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Get-UnattendedContent.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Import-UnattendedContent.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Import-UnattendFile.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1" />
+                  </Component>
+                </Directory>
               </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabTest" Name="AutomatedLabTest">
-              <Component Id="AutomatedLabTestComponent" Guid="15227a83-5f7c-4eb4-b2d1-73c380fa6660">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabTestComponent"/>
-                <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psd1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.format.ps1xml" />
-                <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_AutomatedLabTestVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabTestComponent" Guid="15227a83-5f7c-4eb4-b2d1-73c380fa6660">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabTestComponent"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psd1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.format.ps1xml" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
-              <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
-                <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
-              </Component>
-              <Directory Id="InstallFolder_AutomatedLabNotificationsPrivate" Name="Private">
-                <Component Id="AutomatedLabNotificationsComponentPrivate" Guid="bf814c6a-01f1-4a3c-b9dc-bb036cb37d0c">
-                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+              <Directory Id="InstallFolder_AutomatedLabNotificationsVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
                 </Component>
-              </Directory>
-              <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
-                <Component Id ="AutomatedLabNotificationsComponentPublic" Guid="9873f179-5cfc-4dc2-8c80-203a4af81bf4">
-                  <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
-                </Component>
+                <Directory Id="InstallFolder_AutomatedLabNotificationsPrivate" Name="Private">
+                  <Component Id="AutomatedLabNotificationsComponentPrivate" Guid="bf814c6a-01f1-4a3c-b9dc-bb036cb37d0c">
+                    <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
+                  <Component Id ="AutomatedLabNotificationsComponentPublic" Guid="9873f179-5cfc-4dc2-8c80-203a4af81bf4">
+                    <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Public\Send-ALNotification.ps1" />
+                  </Component>
+                </Directory>
               </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabDefinition" Name="AutomatedLabDefinition">
-              <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabDefinitionComponent"/>
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psd1" />
-                <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.init.ps1" />
-                <RemoveFolder Id="RemoveFolderAutomatedLabDefinition" Directory="InstallFolder_AutomatedLabDefinition" On="both"/>
-              </Component>
+              <Directory Id="InstallFolder_AutomatedLabDefinitionVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabDefinitionComponent"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psd1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.init.ps1" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLabDefinition" Directory="InstallFolder_AutomatedLabDefinition" On="both"/>
+                </Component>
+              </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLab" Name="AutomatedLab">
-              <Component Id="AutomatedLabComponent" Guid="a5d9490b-1c1b-4d5d-bb00-6ded6afa0bd4">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabComponent"/>
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabInternals.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabOffice.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSharePoint.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSQL.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVirtualMachines.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVMWare.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabRouting.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADFS.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
-                <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
-                <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
-                <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="both"/>
-                <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="both"/>
-                <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="both"/>
-                <RemoveFolder Id="RemoveAutomatedLabTools" Directory="InstallFolder_AutomatedLabTools" On="both"/>
-                <RemoveFolder Id="RemoveAutomatedLabToolsHyperV" Directory="InstallFolder_AutomatedLabToolsHyperV" On="both"/>
-              </Component>
-              <Directory Id="InstallFolder_AutomatedLabTools" Name="Tools">
-                <Component Id="AutomatedLabToolsComponent" Guid="bad7f1ef-570d-4915-b488-0a3fe92e02f8">
-                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabToolsComponent" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\Tools\FluentFTP.dll" />
+              <Directory Id="InstallFolder_AutomatedLabVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="AutomatedLabComponent" Guid="a5d9490b-1c1b-4d5d-bb00-6ded6afa0bd4">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabComponent"/>
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabInternals.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabOffice.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSharePoint.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSQL.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVirtualMachines.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVMWare.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabRouting.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADFS.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
+                  <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
+                  <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="both"/>
+                  <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="both"/>
+                  <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="both"/>
+                  <RemoveFolder Id="RemoveAutomatedLabTools" Directory="InstallFolder_AutomatedLabTools" On="both"/>
+                  <RemoveFolder Id="RemoveAutomatedLabToolsHyperV" Directory="InstallFolder_AutomatedLabToolsHyperV" On="both"/>
                 </Component>
-                <Directory Id="InstallFolder_AutomatedLabToolsHyperV" Name="HyperV">
-                  <Component Id="AutomatedLabHypervToolsComponent" Guid="d69dc781-80ad-4fd5-9b36-6908fae51e50">
-                    <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabHypervToolsComponent" />
-                    <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
-                    <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
-                    <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\nvspbind.exe" />
+                <Directory Id="InstallFolder_AutomatedLabTools" Name="Tools">
+                  <Component Id="AutomatedLabToolsComponent" Guid="bad7f1ef-570d-4915-b488-0a3fe92e02f8">
+                    <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabToolsComponent" />
+                    <File Source="$(var.SolutionDir)\AutomatedLab\Tools\FluentFTP.dll" />
                   </Component>
+                  <Directory Id="InstallFolder_AutomatedLabToolsHyperV" Name="HyperV">
+                    <Component Id="AutomatedLabHypervToolsComponent" Guid="d69dc781-80ad-4fd5-9b36-6908fae51e50">
+                      <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabHypervToolsComponent" />
+                      <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
+                      <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
+                      <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\nvspbind.exe" />
+                    </Component>
+                  </Directory>
                 </Directory>
               </Directory>
             </Directory>
@@ -1518,7 +1539,7 @@
         <File Id="filD931618E1A1748F4BCEA35443E457FF8" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\InstallMDT.ps1" />
         <File Id="filA30EA48DB25F4DFE9B46C7BF8ECC2BEE" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\MDTApplications.xml" />
       </Component>
-       <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
+      <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
         <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
         <File Id="filE256ED55FB34497690F40A3DFD18B4F8" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\README.md" />
       </Component>
@@ -1672,7 +1693,7 @@
       <Directory Id="dirD49C097A947F489194CAACFE550AC9C2" Name="MDT" />
     </DirectoryRef>
   </Fragment>
-   <Fragment>
+  <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dir81AC7AA67CD84A6B9CBA05139A977B45" Name="ProGet5" />
     </DirectoryRef>
@@ -1692,4 +1713,13 @@
 .\heat dir 'C:\VS\automatedlab\AutomatedLab-3.7\LabSources' -cg LabSources -out d:\LabSources.wxs
 
 Get-Content D:\LabSources.wxs | ForEach-Object { if ($_ -like '*PUT-GUID-HERE*') { $_ -replace 'PUT-GUID-HERE', [guid]::NewGuid() } else { $_ } } | Out-File D:\LabSourcesWithGUIDs.wxs
+
+Commands to create the command in the project's pre-build that creates the file Includes.wxi:
+Base64 encoding is required due to escaping madness
+$string = '$version = (Select-String -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Pattern "ModuleVersion(.+)(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})").Matches[0].Groups["Version"].Value; (''<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?></Include>'' -f $version) | Out-File -FilePath ..\Installer\Includes.wxi -Encoding UTF8'
+$bytes = [System.Text.encoding]::Unicode.GetBytes($s)
+$base64 = [System.Convert]::ToBase64String($b)
+$base64 | clip
+
+PowerShell -Command "& { `$sb = [scriptblock]::Create([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('JAB2AGUAcgBzAGkAbwBuACAAPQAgACgAUwBlAGwAZQBjAHQALQBTAHQAcgBpAG4AZwAgAC0AUABhAHQAaAAgAC4AXABBAHUAdABvAG0AYQB0AGUAZABMAGEAYgAuAEMAbwBtAG0AbwBuAFwAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgAuAHAAcwBkADEAIAAtAFAAYQB0AHQAZQByAG4AIAAiAE0AbwBkAHUAbABlAFYAZQByAHMAaQBvAG4AKAAuACsAKQAoAD8APABWAGUAcgBzAGkAbwBuAD4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQApACIAKQAuAE0AYQB0AGMAaABlAHMAWwAwAF0ALgBHAHIAbwB1AHAAcwBbACIAVgBlAHIAcwBpAG8AbgAiAF0ALgBWAGEAbAB1AGUAOwAgACgAJwA8AD8AeABtAGwAIAB2AGUAcgBzAGkAbwBuAD0AIgAxAC4AMAAiACAAZQBuAGMAbwBkAGkAbgBnAD0AIgB1AHQAZgAtADgAIgA/AD4APABJAG4AYwBsAHUAZABlACAASQBkAD0AIgBWAGUAcgBzAGkAbwBuAE4AdQBtAGIAZQByAEkAbgBjAGwAdQBkAGUAIgA+ADwAPwBkAGUAZgBpAG4AZQAgAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAEMAbwBtAG0AbwBuAFYAZQByAHMAaQBvAG4APQAiAHsAMAB9ACIAIAA/AD4APAAvAEkAbgBjAGwAdQBkAGUAPgAnACAALQBmACAAJAB2AGUAcgBzAGkAbwBuACkAIAB8ACAATwB1AHQALQBGAGkAbABlACAALQBGAGkAbABlAFAAYQB0AGgAIAAuAC4AXABJAG4AcwB0AGEAbABsAGUAcgBcAEkAbgBjAGwAdQBkAGUAcwAuAHcAeABpACAALQBFAG4AYwBvAGQAaQBuAGcAIABVAFQARgA4AA=='))); &`$sb }"
 -->
