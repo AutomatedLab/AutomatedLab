@@ -170,7 +170,7 @@ function Install-LabExchange2016
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
     Start-LabVM -ComputerName $exchangeServers -ProgressIndicator 15
 
-    $exchangeRootDomains = (Get-LabMachine -Role Exchange2016).DomainName | Select-Object -Unique | ForEach-Object {
+    $exchangeRootDomains = (Get-LabMachine -Role Exchange2016).DomainName | Sort-Object -Unique | ForEach-Object {
         $lab.GetParentDomain($_).Name
     }
     $exchangeRootDCs = Get-LabMachine -Role RootDC | Where-Object DomainName -in $exchangeRootDomains

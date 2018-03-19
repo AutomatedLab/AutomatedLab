@@ -1009,7 +1009,7 @@ function Get-LabAvailableOperatingSystem
 
         if ($lab)
         {
-            $Path = $lab.Sources.Isos | Split-Path -Parent | Select-Object -Unique
+            $Path = $lab.Sources.Isos | Split-Path -Parent | Sort-Object -Unique
         }
         else
         {

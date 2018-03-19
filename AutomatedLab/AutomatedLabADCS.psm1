@@ -2984,7 +2984,7 @@ function Enable-LabCertificateAutoenrollment
 
     Write-ScreenInfo -Message 'Configuring certificate auto enrollment' -TaskStart
         
-    $domainsToProcess = (Get-LabMachine -Role RootDC, FirstChildDC, DC | Where-Object DomainName -in $issuingCAs.DomainName | Group-Object DomainName).Name | Select-Object -Unique
+    $domainsToProcess = (Get-LabMachine -Role RootDC, FirstChildDC, DC | Where-Object DomainName -in $issuingCAs.DomainName | Group-Object DomainName).Name | Sort-Object -Unique
     Write-Verbose -Message "Domains to process: '$($domainsToProcess -join ', ')'"
 
     $issuingCAsToProcess = ($issuingCAs | Where-Object DomainName -in $domainsToProcess).Name
@@ -2995,7 +2995,7 @@ function Enable-LabCertificateAutoenrollment
     {
         $dcsToProcess += Get-LabMachine -Role RootDC | Where-Object { $domain -like "*$($_.DomainName)"}
     }
-    $dcsToProcess = $dcsToProcess.Name | Select-Object -Unique
+    $dcsToProcess = $dcsToProcess.Name | Sort-Object -Unique
         
     Write-Verbose -Message "DCs to process: '$($dcsToProcess -join ', ')'"
         

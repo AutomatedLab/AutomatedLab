@@ -25,7 +25,7 @@ function Install-LabFailoverCluster
     foreach ($cluster in $clusters)
     {
         $firstNode = $cluster.Group | Select-Object -First 1
-        $clusterDomains = $cluster.Group.DomainName | Select-Object -Unique
+        $clusterDomains = $cluster.Group.DomainName | Sort-Object -Unique
         $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
         $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']
