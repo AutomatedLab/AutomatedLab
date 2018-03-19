@@ -1,3 +1,4 @@
+#region Lab-specific functionality
 function Install-LabTeamFoundationEnvironment
 {
     [CmdletBinding()]
@@ -81,12 +82,23 @@ function Install-LabTeamFoundationServer
         -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
     } | ForEach-Object {
         ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.Add('TfsServer', $tfsMachines[0].Name)
-    }
+    }    
+
+    $jobs = Install-LabWindowsFeature -ComputerName $tfsMachines -FeatureName Web-Mgmt-Tools -AsJob
+    Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
     $installationJobs = @()
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
+        if ( Get-LabIssuingCA)
+        {
+            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -ComputerName $machine -PassThru -ErrorAction Stop
+            $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
+            Export-Lab
+        }
+
         $role = $machine.Roles | Where-Object Name -like Tfs????
         $initialCollection = 'AutomatedLab'
         $tfsPort = 8080
@@ -127,6 +139,7 @@ function Install-LabTeamFoundationServer
 
             # Create unattend file with fitting parameters and replace all we can find
             [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
+            $cert = Get-ChildItem -Path Cert:\LocalMachine\my -SSLServerAuthentication -ErrorAction SilentlyContinue
             
             $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
@@ -134,9 +147,19 @@ function Install-LabTeamFoundationServer
             $content = $content -replace 'SqlInstance=.+', ('SqlInstance={0}' -f $sqlServer)
             $content = $content -replace 'DatabaseLabel=.+', ('DatabaseLabel={0}' -f $databaseLabel)
             $content = $content -replace 'UrlHostNameAlias=.+', ('UrlHostNameAlias={0}' -f $machineName)
-            $content = $content -replace 'SiteBindings=.+', ('SiteBindings=http:*:{0}:' -f $tfsPort)
-            $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}/tfs' -f $machineName, $tfsPort)
-            $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}/tfs' -f $machineName, $tfsPort)
+
+            if ($cert.Thumbprint)
+            {
+                $content = $content -replace 'SiteBindings=.+', ('SiteBindings=https:*:{0}::My:{1}' -f $tfsPort, $cert.Thumbprint)
+                $content = $content -replace 'PublicUrl=.+', ('PublicUrl=https://{0}:{1}' -f $machineName, $tfsPort)
+            }
+            else
+            {
+                $content = $content -replace 'SiteBindings=.+', ('SiteBindings=http:*:{0}:' -f $tfsPort)
+                $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}' -f $machineName, $tfsPort)
+            }
+            
+            $content = $content -replace 'webSiteVDirName=.+', 'webSiteVDirName='
             $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
             $content = $content -replace 'CollectionDescription=.+', 'CollectionDescription=Built by AutomatedLab, your friendly lab automation solution'
             $content = $content -replace 'WebSitePort=.+', ('WebSitePort={0}' -f $tfsPort) # Plain TFS 2015
@@ -156,7 +179,6 @@ function Install-LabTeamFoundationServer
 
     Wait-LWLabJob -Job $installationJobs
 }
-
 function Install-LabBuildWorker
 {
     [CmdletBinding()]
@@ -195,6 +217,8 @@ function Install-LabBuildWorker
             }
         }
 
+        $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint')
+
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
             if (-not (Test-Path C:\TfsBuildWorker.zip)) {throw 'Build worker installation files not available'}
@@ -202,39 +226,140 @@ function Install-LabBuildWorker
             Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
             $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
-            $commandLine = '--unattended --url http://{0}:{1}/tfs --auth Integrated --pool default --agent {2} --runasservice' -f `
-                $tfsServer, $tfsPort, $env:COMPUTERNAME
+            $commandLine = if ($useSsl)
+            {
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
+            }
+            else
+            {
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
+            }
+
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
 
             if ($configurationProcess.ExitCode -ne 0)
             {
                 Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
             }
-        } -AsJob -Variable (Get-Variable tfsServer, tfsPort) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable tfsServer, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
 }
+#endregion
 
-function Open-LabTeamFoundationSite
+#region TFS-specific functionality
+function New-LabReleasePipeline
 {
     param
     (
-        [Parameter(Mandatory = $true)]
-        [string[]]
+        [string]
+        $ProjectName = 'ALSampleProject',
+
+        [string]
+        $SourceRepository,
+
+        [string]
+        $ComputerName,
+
+        [Parameter(
+            Mandatory = $true,
+            HelpMessage = 'Refer to Get-TfsBuildStep for all available build steps.'
+        )]
+        [hashtable[]]
+        $BuildSteps
+    )
+
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+
+    if ($ComputerName)
+    {
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
+    }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+    
+    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $global:labSources\Tools\git.exe) {"$global:labSources\Tools\git.exe"}
+
+    if (-not $gitBinary)
+    {
+        Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
+    }
+
+    $project = New-TfsProject -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
+
+    if ($gitBinary)
+    {
+        $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
+        $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
+        $repositoryPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath alRepoTemp
+        Push-Location
+        
+        [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        Set-Location $repositoryPath
+
+        Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
+        Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow
+        Start-Process -FilePath $gitBinary @("-c", "http.sslVerify=false", "push", "tfs", "--all", "--quiet") -Wait -NoNewWindow
+        Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+        Pop-Location
+    }
+
+    New-TfsBuildDefinition -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -DefinitionName ALBuild -BuildTasks $buildSteps -UseSsl:$useSsl
+}
+
+function Get-LabBuildStep
+{
+    param
+    (
+        [string]
         $ComputerName
     )
 
-    $machines = Get-LabVm @PSBoundParameters
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
-    foreach ( $machine in $machines)
+    if ($ComputerName)
     {
-        $role = $machine.Roles | Where-Object Name -eq Tfs????
-        $tfsPort = 8080
-        if ($role.Properties.ContainsKey('Port'))
-        {
-            $tfsPort = $role.Properties['Port']
-        }
-        Start-Process ('http://{1}:{3}/tfs' -f $machine, $tfsPort)
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    
+    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
 }
+#endregion

@@ -114,13 +114,37 @@
                     </Component>
                   </Directory>
                 </Directory>
-                <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
-                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
-                  <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
-                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
-                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
-                </Component>
               </Directory>
+              <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
+                <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
+                  <Component Id="ALCommonComponent7" Guid="3a0b340c-534b-44c2-bc45-ff40c08dfe2b">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1" />
+                  </Component>
+                </Directory>
+                <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
+                  <Component Id="ALCommonComponent8" Guid="cc6ae11e-ab7f-4c4e-b501-ce0f6c53da43">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+              <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
+                <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
+              </Component>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
@@ -436,6 +460,7 @@
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
                 <File Id='Sample_DSCPullScenario1S' Name='DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' />
                 <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
+                <File Id='Sample_DSCCICD' Name='DSC With Release Pipeline.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
                 <File Id='Sample_FailoverClustering1' Name='Failover Clustering 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1' />
                 <File Id='Sample_HybridEnvironmentHyperVandAzure1' Name='Hybrid Environment HyperV and Azure 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1' />

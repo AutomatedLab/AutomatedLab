@@ -1,0 +1,88 @@
+$labName = 'psconf18'
+
+#--------------------------------------------------------------------------------------------------------------------
+#----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
+#----------------------- + EXCEPT FOR THE LINES STARTING WITH: REMOVE THE COMMENT TO --------------------------------
+#----------------------- + EXCEPT FOR THE LINES CONTAINING A PATH TO AN ISO OR APP   --------------------------------
+#--------------------------------------------------------------------------------------------------------------------
+
+#create an empty lab template and define where the lab XML files and the VMs will be stored
+New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
+
+#make the network definition
+Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
+Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+
+#and the domain definition with the domain admin account
+Add-LabDomainDefinition -Name psconf.eu -AdminUser Install -AdminPassword Somepass1
+
+#these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
+Set-LabInstallationCredential -Username Install -Password Somepass1
+
+#defining default parameter values, as these ones are the same for all the machines
+$PSDefaultParameterValues = @{
+    'Add-LabMachineDefinition:Network' = $labName
+    'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
+    'Add-LabMachineDefinition:DomainName' = 'psconf.eu'
+    'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
+    'Add-LabMachineDefinition:Gateway' = '192.168.30.50'
+}
+
+#The PostInstallationActivity is just creating some users
+$postInstallActivity = @()
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+Add-LabMachineDefinition -Name DSCDC01 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
+
+# The good, the bad and the ugly
+$netAdapter = @()
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+Add-LabMachineDefinition -Name DSCCASQL01 -Memory 4GB -Roles CaRoot, SQLServer2016, Routing -NetworkAdapter $netAdapter
+
+# DSC Pull Server with SQL server backing, TFS Build Worker
+$role = @(
+    Get-LabMachineRoleDefinition -Role DSCPullServer -Properties @{ DoNotPushLocalModules = 'true'; DatabaseEngine = 'mdb' }
+    Get-LabMachineRoleDefinition -Role TfsBuildWorker
+)
+Add-LabMachineDefinition -Name DSCPULL01 -Memory 2GB -Roles $role
+
+# Build Server
+Add-LabMachineDefinition -Name DSCTFS01 -Memory 1GB -Roles Tfs2017
+
+# DSC target nodes
+1..4 | Foreach-Object {
+    Add-LabMachineDefinition -Name "DSCSRV0$_" -Memory 1GB -OperatingSystem 'Windows Server 2016 Datacenter' # No GUI, we want DSC to configure our core servers
+}
+
+Install-Lab
+
+Install-LabWindowsFeature -ComputerName (Get-LabVM -Role DSCPullServer) -FeatureName RSAT-AD-Tools
+
+Enable-LabCertificateAutoenrollment -Computer -User
+
+$buildSteps = @(
+    @{
+        "enabled"         = $true
+        "continueOnError" = $false
+        "alwaysRun"       = $false
+        "displayName"     = "Execute Build.ps1"
+        "task"            = @{
+            "id"          = "e213ff0f-5d5c-4791-802d-52ea3e7be1f1" # We need to refer to a valid ID - refer to Get-LabBuildStep for all available steps
+            "versionSpec" = "*"
+        }
+        "inputs"          = @{
+            scriptType          = "filePath"
+            scriptName          = ".Build.ps1"
+            arguments           = "-resolveDependency"
+            failOnStandardError = $false
+        }
+    }
+)
+
+# Clone the DSCInfraSample code and push the code to TFS while creating a new Project and the necessary build definitions
+New-LabReleasePipeline -ProjectName 'ALSampleProject' -SourceRepository https://github.com/gaelcolas/DSCInfraSample -BuildSteps $buildSteps
+
+# Job done
+Show-LabDeploymentSummary -Detailed
