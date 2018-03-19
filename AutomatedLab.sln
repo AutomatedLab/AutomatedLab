@@ -157,12 +157,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		automatedlab.psdeploy.ps1 = automatedlab.psdeploy.ps1
 		Build.ps1 = Build.ps1
 		CHANGELOG.md = CHANGELOG.md
-		Changes.txt = Changes.txt
 		CONTRIBUTING.md = CONTRIBUTING.md
 		LICENSE = LICENSE
 		psake.ps1 = psake.ps1
 		README.md = README.md
-		Temp.txt = Temp.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{35796C10-DDB9-4E04-A2CD-FE3D00A0E361}"
