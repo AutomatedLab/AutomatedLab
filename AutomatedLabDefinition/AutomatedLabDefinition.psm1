@@ -758,7 +758,7 @@ function New-LabDefinition
     }
     else
     {
-        $script:labpath = "$([System.Environment]::GetFolderPath('MyDocuments'))\AutomatedLab-Labs\$Name"
+        $script:labpath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
     
@@ -3087,8 +3087,8 @@ function Get-LabPostInstallationActivity
             $activity.IsCustomRole = $true
 
             #The next sections compares the given custom role properties with with the custom role parameters.
-            #Custom role parameters are taken form the main role script as well as the HostInit.ps1 and the HostCleanup.ps1
-            $scripts = $activity.ScriptFileName, 'HostInit.ps1', 'HostCleanup.ps1'
+            #Custom role parameters are taken form the main role script as well as the HostStart.ps1 and the HostEnd.ps1
+            $scripts = $activity.ScriptFileName, 'HostStart.ps1', 'HostEnd.ps1'
             $unknownParameters = New-Object System.Collections.Generic.List[string]
             
             foreach ($script in $scripts)
@@ -3103,7 +3103,7 @@ function Get-LabPostInstallationActivity
                 $parameters = $scriptInfo.Parameters.GetEnumerator() | Where-Object Key -NotIn $commonParameters
                 
                 #If the custom role knows about a ComputerName parameter and if there is no value defined by the user, add add empty value now.
-                #Later that will be filled with the computer name of the computer the role is assigned to when the HostInit and the HostCleanup scripts are invoked.
+                #Later that will be filled with the computer name of the computer the role is assigned to when the HostStart and the HostEnd scripts are invoked.
                 if ($Properties)
                 {
                     if (($parameters | Where-Object Key -eq 'ComputerName') -and -not $Properties.ContainsKey('ComputerName'))

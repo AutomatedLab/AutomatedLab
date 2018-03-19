@@ -3836,7 +3836,7 @@ South India            9999</maml:para>
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para>Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g. %userprofile%\Documents\AutomatedLab-Labs\&lt;LabName&gt;\</maml:para>
+		<maml:para>Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g. %ProgramData%\AutomatedLab\Labs\&lt;LabName&gt;\</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>

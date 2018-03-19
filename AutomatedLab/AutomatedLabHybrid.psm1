@@ -48,14 +48,14 @@ function Connect-Lab
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFolder ="$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
     
-    $destinationFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $DestinationLab
+    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -218,14 +218,14 @@ function Restore-LabConnection
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
     
-    $destinationFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $DestinationLab
+    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {

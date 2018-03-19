@@ -1789,7 +1789,7 @@ Machines can then be configured (defined) to use this network using -Network par
 		<dev:version />
 	</command:details>
 	<maml:description>
-		<maml:para>Exports the whole lab definition as XML files in the standard path $env:USERPROFILE\Documents\AutomatedLab-Labs</maml:para>
+		<maml:para>Exports the whole lab definition as XML files in the standard path $env:ProgramData\AutomatedLab\Labs</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>

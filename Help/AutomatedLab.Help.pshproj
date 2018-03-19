@@ -1795,7 +1795,7 @@ South India            9999</Output>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Get RDP connection file</Synopsis>
-        <Description>Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g. %userprofile%\Documents\AutomatedLab-Labs\&lt;LabName&gt;\</Description>
+        <Description>Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g. %ProgramData%\AutomatedLab\Labs\&lt;LabName&gt;\</Description>
         <Notes />
         <InputType />
         <InputUrl />

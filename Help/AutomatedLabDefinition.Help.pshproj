@@ -798,7 +798,7 @@ Machines can then be configured (defined) to use this network using -Network par
       </Syntax>
       <GeneralHelp>
         <Synopsis>Export lab as XML</Synopsis>
-        <Description>Exports the whole lab definition as XML files in the standard path $env:USERPROFILE\Documents\AutomatedLab-Labs</Description>
+        <Description>Exports the whole lab definition as XML files in the standard path $env:ProgramData\AutomatedLab\Labs</Description>
         <Notes />
         <InputType />
         <InputUrl />
