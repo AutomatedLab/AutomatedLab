@@ -113,38 +113,38 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
                     </Component>
                   </Directory>
+                  <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
+                    <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
+                      <Component Id="ALCommonComponent7" Guid="3a0b340c-534b-44c2-bc45-ff40c08dfe2b">
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1" />
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1" />
+                      </Component>
+                    </Directory>
+                    <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
+                      <Component Id="ALCommonComponent8" Guid="cc6ae11e-ab7f-4c4e-b501-ce0f6c53da43">
+                        <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1" />
+                      </Component>
+                    </Directory>
+                  </Directory>
                 </Directory>
+                <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
+                  <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
+                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
+                </Component>
               </Directory>
-              <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
-                <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
-                  <Component Id="ALCommonComponent7" Guid="3a0b340c-534b-44c2-bc45-ff40c08dfe2b">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1" />
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1" />
-                  </Component>
-                </Directory>
-                <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
-                  <Component Id="ALCommonComponent8" Guid="cc6ae11e-ab7f-4c4e-b501-ce0f6c53da43">
-                    <File Source="$(var.SolutionDir)AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1" />
-                  </Component>
-                </Directory>
-              </Directory>
-              <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
-                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
-                <RemoveFolder Id="RemoveFolderCommon" Directory="InstallFolder_Common" On="both"/>
-                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
-                <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
-              </Component>
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
@@ -507,6 +507,8 @@
         <ComponentRef Id ='ALCommonComponent4' />
         <ComponentRef Id ='ALCommonComponent5' />
         <ComponentRef Id ='ALCommonComponent6' />
+        <ComponentRef Id ='ALCommonComponent7' />
+        <ComponentRef Id ='ALCommonComponent8' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
         <ComponentRef Id='AutomatedLabComponent'/>
@@ -1742,9 +1744,9 @@ Get-Content D:\LabSources.wxs | ForEach-Object { if ($_ -like '*PUT-GUID-HERE*')
 Commands to create the command in the project's pre-build that creates the file Includes.wxi:
 Base64 encoding is required due to escaping madness
 $string = '$version = (Select-String -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Pattern "ModuleVersion(.+)(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})").Matches[0].Groups["Version"].Value; (''<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?></Include>'' -f $version) | Out-File -FilePath ..\Installer\Includes.wxi -Encoding UTF8'
-$bytes = [System.Text.encoding]::Unicode.GetBytes($s)
-$base64 = [System.Convert]::ToBase64String($b)
+$bytes = [System.Text.encoding]::Unicode.GetBytes($string)
+$base64 = [System.Convert]::ToBase64String($bytes)
 $base64 | clip
 
-PowerShell -Command "& { `$sb = [scriptblock]::Create([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('JAB2AGUAcgBzAGkAbwBuACAAPQAgACgAUwBlAGwAZQBjAHQALQBTAHQAcgBpAG4AZwAgAC0AUABhAHQAaAAgAC4AXABBAHUAdABvAG0AYQB0AGUAZABMAGEAYgAuAEMAbwBtAG0AbwBuAFwAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgAuAHAAcwBkADEAIAAtAFAAYQB0AHQAZQByAG4AIAAiAE0AbwBkAHUAbABlAFYAZQByAHMAaQBvAG4AKAAuACsAKQAoAD8APABWAGUAcgBzAGkAbwBuAD4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQApACIAKQAuAE0AYQB0AGMAaABlAHMAWwAwAF0ALgBHAHIAbwB1AHAAcwBbACIAVgBlAHIAcwBpAG8AbgAiAF0ALgBWAGEAbAB1AGUAOwAgACgAJwA8AD8AeABtAGwAIAB2AGUAcgBzAGkAbwBuAD0AIgAxAC4AMAAiACAAZQBuAGMAbwBkAGkAbgBnAD0AIgB1AHQAZgAtADgAIgA/AD4APABJAG4AYwBsAHUAZABlACAASQBkAD0AIgBWAGUAcgBzAGkAbwBuAE4AdQBtAGIAZQByAEkAbgBjAGwAdQBkAGUAIgA+ADwAPwBkAGUAZgBpAG4AZQAgAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAEMAbwBtAG0AbwBuAFYAZQByAHMAaQBvAG4APQAiAHsAMAB9ACIAIAA/AD4APAAvAEkAbgBjAGwAdQBkAGUAPgAnACAALQBmACAAJAB2AGUAcgBzAGkAbwBuACkAIAB8ACAATwB1AHQALQBGAGkAbABlACAALQBGAGkAbABlAFAAYQB0AGgAIAAuAC4AXABJAG4AcwB0AGEAbABsAGUAcgBcAEkAbgBjAGwAdQBkAGUAcwAuAHcAeABpACAALQBFAG4AYwBvAGQAaQBuAGcAIABVAFQARgA4AA=='))); &`$sb }"
+PowerShell -NoProfile -Command "& { `$sb = [scriptblock]::Create([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('JAB2AGUAcgBzAGkAbwBuACAAPQAgACgAUwBlAGwAZQBjAHQALQBTAHQAcgBpAG4AZwAgAC0AUABhAHQAaAAgAC4AXABBAHUAdABvAG0AYQB0AGUAZABMAGEAYgAuAEMAbwBtAG0AbwBuAFwAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgAuAHAAcwBkADEAIAAtAFAAYQB0AHQAZQByAG4AIAAiAE0AbwBkAHUAbABlAFYAZQByAHMAaQBvAG4AKAAuACsAKQAoAD8APABWAGUAcgBzAGkAbwBuAD4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQBcAC4AXABkAHsAMQAsADIAfQApACIAKQAuAE0AYQB0AGMAaABlAHMAWwAwAF0ALgBHAHIAbwB1AHAAcwBbACIAVgBlAHIAcwBpAG8AbgAiAF0ALgBWAGEAbAB1AGUAOwAgACgAJwA8AD8AeABtAGwAIAB2AGUAcgBzAGkAbwBuAD0AIgAxAC4AMAAiACAAZQBuAGMAbwBkAGkAbgBnAD0AIgB1AHQAZgAtADgAIgA/AD4APABJAG4AYwBsAHUAZABlACAASQBkAD0AIgBWAGUAcgBzAGkAbwBuAE4AdQBtAGIAZQByAEkAbgBjAGwAdQBkAGUAIgA+ADwAPwBkAGUAZgBpAG4AZQAgAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAEMAbwBtAG0AbwBuAFYAZQByAHMAaQBvAG4APQAiAHsAMAB9ACIAIAA/AD4APAAvAEkAbgBjAGwAdQBkAGUAPgAnACAALQBmACAAJAB2AGUAcgBzAGkAbwBuACkAIAB8ACAATwB1AHQALQBGAGkAbABlACAALQBGAGkAbABlAFAAYQB0AGgAIAAuAC4AXABJAG4AcwB0AGEAbABsAGUAcgBcAEkAbgBjAGwAdQBkAGUAcwAuAHcAeABpACAALQBFAG4AYwBvAGQAaQBuAGcAIABVAFQARgA4AA=='))); &`$sb }"
 -->

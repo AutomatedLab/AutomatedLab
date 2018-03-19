@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.27130.2020
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 EndProject
@@ -550,6 +550,52 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ProGet5", "ProGet5", "{0249
 		LabSources\CustomRoles\ProGet5\README.md = LabSources\CustomRoles\ProGet5\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TeamFoundation", "TeamFoundation", "{68FDA044-3B7F-486E-A69B-AB1583E48175}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Types", "Types", "{8B1F613E-4E3F-4C42-B2CC-CD8C72D4667A}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{9973283D-AB99-434B-B67F-7E32C4F36370}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{23491B35-642A-46FF-89E6-386A8D499E48}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Generic", "Generic", "{A0965B4F-A53C-465D-942B-BCE8425E5A62}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Pools", "Pools", "{146702FC-E801-42D2-8947-88D0E98CB9EB}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Projects", "Projects", "{D30ED7EF-3594-41E1-8D41-58C92F71460E}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Queue", "Queue", "{CDE85675-45A5-4C67-B79D-64F336751D5F}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repository", "Repository", "{5A35AA7F-30CF-4AC2-915B-0F41530CA9A9}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -642,6 +688,15 @@ Global
 		{AC8B92ED-54DE-41B5-98FB-AA9815077B34} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{D4D2647A-AC57-446F-BB07-95899E248D06} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{0249ABF7-D843-4050-9E71-8F23B5341DF8} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{68FDA044-3B7F-486E-A69B-AB1583E48175} = {D1BDF6ED-8F1B-4254-9993-3A27BA640F4E}
+		{8B1F613E-4E3F-4C42-B2CC-CD8C72D4667A} = {68FDA044-3B7F-486E-A69B-AB1583E48175}
+		{9973283D-AB99-434B-B67F-7E32C4F36370} = {68FDA044-3B7F-486E-A69B-AB1583E48175}
+		{23491B35-642A-46FF-89E6-386A8D499E48} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{A0965B4F-A53C-465D-942B-BCE8425E5A62} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{146702FC-E801-42D2-8947-88D0E98CB9EB} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{D30ED7EF-3594-41E1-8D41-58C92F71460E} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{CDE85675-45A5-4C67-B79D-64F336751D5F} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{5A35AA7F-30CF-4AC2-915B-0F41530CA9A9} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
