@@ -262,12 +262,12 @@ function New-LabReleasePipeline
         [string]
         $ComputerName,
 
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'Refer to Get-TfsBuildStep for all available build steps.'
-        )]
         [hashtable[]]
-        $BuildSteps
+        $BuildSteps,
+
+        [Parameter()]
+        [hashtable[]]
+        $ReleaseSteps
     )
 
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
@@ -323,7 +323,31 @@ function New-LabReleasePipeline
         Pop-Location
     }
 
-    New-TfsBuildDefinition -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -DefinitionName ALBuild -BuildTasks $buildSteps -UseSsl:$useSsl
+    $parameters = @{
+        InstanceName   = $tfsvm.FQDN
+        Port           = $tfsPort
+        CollectionName = $initialCollection
+        ProjectName    = $ProjectName
+        Credential     = $credential
+        UseSsl         = $useSsl
+    }
+
+    $buildParameters = $parameters.Clone()
+    $releaseParameters = $parameters.Clone()
+    $buildParameters.DefinitionName = 'ALBuild'
+    if ($BuildSteps.Count -gt 0)
+    {
+        $buildParameters.BuildTasks = $BuildSteps
+    }
+    
+    $releaseParameters.ReleaseName = $ProjectName
+    if ($ReleaseSteps.Count -gt 0)
+    {
+        $releaseParameters.ReleaseTasks = $ReleaseSteps
+    }
+
+    New-TfsBuildDefinition @buildParameters
+    New-TfsReleaseDefinition @releaseParameters
 }
 
 function Get-LabBuildStep
@@ -361,5 +385,42 @@ function Get-LabBuildStep
     $credential = $tfsVm.GetCredential((Get-Lab))
     
     return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
+}
+
+function Get-LabReleaseStep
+{
+    param
+    (
+        [string]
+        $ComputerName
+    )
+
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+
+    if ($ComputerName)
+    {
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
+    }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    
+    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
 }
 #endregion
