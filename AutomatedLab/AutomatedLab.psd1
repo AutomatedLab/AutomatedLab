@@ -109,6 +109,7 @@
         'Get-LabVariable',
         'Get-LabVHDX',
         'Get-LabVM',
+        'Get-LabVMDotNetFrameworkVersion',
         'Get-LabVMRdpFile',
         'Get-LabVMStatus',
         'Get-LabVMUptime',

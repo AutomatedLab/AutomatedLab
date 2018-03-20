@@ -1857,7 +1857,7 @@ function Set-LabAutoLogon
         } -Variable (Get-Variable InvokeParameters) -NoDisplay
     }
 }
-#endregion
+#endregion Set-LabAutoLogon
 
 #region Test-LabAutoLogon
 function Test-LabAutoLogon
@@ -1926,4 +1926,32 @@ function Test-LabAutoLogon
 
     return $returnValues
 }
-#endregion
+#endregion Test-LabAutoLogon
+
+#region Get-LabVMDotNetFrameworkVersion
+function Get-LabVMDotNetFrameworkVersion
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [Cmdletbinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName
+    )
+
+    Write-LogFunctionEntry
+    
+    $machines = Get-LabVM -ComputerName $ComputerName
+    
+    if (-not $machines)
+    {
+        Write-Error 'The given machines could not be found'
+        return
+    }
+    
+    Invoke-LabCommand -ActivityName 'Get .net Framework version' -ComputerName $machines -ScriptBlock {
+        Get-DotNetFrameworkVersion
+    } -Function (Get-Command -Name Get-DotNetFrameworkVersion) -PassThru
+
+    Write-LogFunctionExit
+}
+#endregion Get-LabVMDotNetFrameworkVersion
