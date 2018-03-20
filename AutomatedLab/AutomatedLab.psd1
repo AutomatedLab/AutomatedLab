@@ -203,6 +203,7 @@
         'Wait-LabVMRestart',
         'Wait-LabVMShutdown',
         'Get-LabBuildStep',
+        'Get-LabReleaseStep',
         'New-LabReleasePipeline'
     )
     

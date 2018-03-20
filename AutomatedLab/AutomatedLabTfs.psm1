@@ -262,13 +262,18 @@ function New-LabReleasePipeline
         [string]
         $ComputerName,
 
-        [Parameter(
-            Mandatory = $true,
-            HelpMessage = 'Refer to Get-TfsBuildStep for all available build steps.'
-        )]
         [hashtable[]]
-        $BuildSteps
+        $BuildSteps,
+
+        [Parameter()]
+        [hashtable[]]
+        $ReleaseSteps
     )
+
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
 
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
 
@@ -310,20 +315,64 @@ function New-LabReleasePipeline
         $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
-        $repositoryPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath alRepoTemp
-        Push-Location
-        
-        [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        $repoparent = Join-Path -Path $global:labSources -ChildPath GitRepositories
+        if (-not (Test-Path $repoparent))
+        {
+            [void] (New-Item -ItemType Directory -Path $repoparent)
+        }
+
+        $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
+        if (-not (Test-Path $repositoryPath))
+        {
+            [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        }
+
+        Push-Location        
         Set-Location $repositoryPath
 
-        Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
-        Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow
-        Start-Process -FilePath $gitBinary @("-c", "http.sslVerify=false", "push", "tfs", "--all", "--quiet") -Wait -NoNewWindow
+        if (Join-Path -Path $repositoryPath -ChildPath '.git' -Resolve -ErrorAction SilentlyContinue)
+        {
+            Write-Verbose -Message ('There already is a clone of {0} in {1}. Pulling latest changes from remote if possible.' -f $SourceRepository, $repositoryPath)
+            Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'pull', 'origin') -Wait -NoNewWindow
+        }        
+        else
+        {
+            Write-Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
+            Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
+            Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow            
+        }
+        
+        Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow
         Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+
         Pop-Location
     }
 
-    New-TfsBuildDefinition -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -DefinitionName ALBuild -BuildTasks $buildSteps -UseSsl:$useSsl
+    $parameters = @{
+        InstanceName   = $tfsvm.FQDN
+        Port           = $tfsPort
+        CollectionName = $initialCollection
+        ProjectName    = $ProjectName
+        Credential     = $credential
+        UseSsl         = $useSsl
+    }
+
+    $buildParameters = $parameters.Clone()
+    $releaseParameters = $parameters.Clone()
+    $buildParameters.DefinitionName = 'ALBuild'
+    if ($BuildSteps.Count -gt 0)
+    {
+        $buildParameters.BuildTasks = $BuildSteps
+    }
+    
+    $releaseParameters.ReleaseName = $ProjectName
+    if ($ReleaseSteps.Count -gt 0)
+    {
+        $releaseParameters.ReleaseTasks = $ReleaseSteps
+    }
+
+    New-TfsBuildDefinition @buildParameters
+    New-TfsReleaseDefinition @releaseParameters
 }
 
 function Get-LabBuildStep
@@ -333,6 +382,11 @@ function Get-LabBuildStep
         [string]
         $ComputerName
     )
+
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
 
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
@@ -360,6 +414,48 @@ function Get-LabBuildStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
+    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+}
+
+function Get-LabReleaseStep
+{
+    param
+    (
+        [string]
+        $ComputerName
+    )
+
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+
+    if ($ComputerName)
+    {
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
+    }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    
+    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 #endregion

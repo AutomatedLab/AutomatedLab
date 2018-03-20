@@ -81,6 +81,33 @@ $buildSteps = @(
     }
 )
 
+<#
+# Add optional release steps as well e.g.
+$releaseSteps = @(
+    @{
+            enabled          = $true
+            continueOnError  = $false
+            alwaysRun        = $false
+            timeoutInMinutes = 0
+            definitionType   = 'task'
+            version          = '*'
+            name             = 'YOUR OWN DISPLAY NAME HERE' # e.g. Archive files $(message) or Archive Files
+            taskid           = 'd8b84976-e99a-4b86-b885-4849694435b0'
+            inputs           = @{
+                                rootFolder = 'VALUE' # Type: filePath, Default: $(Build.BinariesDirectory), Mandatory: True
+                                includeRootFolder = 'VALUE' # Type: boolean, Default: true, Mandatory: True
+                                archiveType = 'VALUE' # Type: pickList, Default: default, Mandatory: True
+                                tarCompression = 'VALUE' # Type: pickList, Default: gz, Mandatory: False
+                                archiveFile = 'VALUE' # Type: filePath, Default: $(Build.ArtifactStagingDirectory)/$(Build.BuildId).zip, Mandatory: True
+                                replaceExistingArchive = 'VALUE' # Type: boolean, Default: true, Mandatory: True
+            }
+        }
+
+)
+
+# Notice the differences here, the release steps have a slightly different syntax.
+#>
+
 # Clone the DSCInfraSample code and push the code to TFS while creating a new Project and the necessary build definitions
 New-LabReleasePipeline -ProjectName 'ALSampleProject' -SourceRepository https://github.com/gaelcolas/DSCInfraSample -BuildSteps $buildSteps
 
