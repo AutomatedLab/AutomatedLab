@@ -310,16 +310,36 @@ function New-LabReleasePipeline
         $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
-        $repositoryPath = Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath alRepoTemp
-        Push-Location
-        
-        [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        $repoparent = Join-Path -Path $global:labSources -ChildPath GitRepositories
+        if (-not (Test-Path $repoparent))
+        {
+            [void] (New-Item -ItemType Directory -Path $repoparent)
+        }
+
+        $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
+        if (-not (Test-Path $repositoryPath))
+        {
+            [void] (New-Item -ItemType Directory -Path $repositoryPath)
+        }
+
+        Push-Location        
         Set-Location $repositoryPath
 
-        Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
-        Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow
-        Start-Process -FilePath $gitBinary @("-c", "http.sslVerify=false", "push", "tfs", "--all", "--quiet") -Wait -NoNewWindow
+        if (Join-Path -Path $repositoryPath -ChildPath '.git' -Resolve -ErrorAction SilentlyContinue)
+        {
+            Write-Verbose -Message ('There already is a clone of {0} in {1}. Pulling latest changes from remote if possible.' -f $SourceRepository, $repositoryPath)
+            Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'pull', 'origin') -Wait -NoNewWindow
+        }        
+        else
+        {
+            Write-Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
+            Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
+            Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow            
+        }
+        
+        Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow
         Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+
         Pop-Location
     }
 
