@@ -228,11 +228,11 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer.FQDN, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
