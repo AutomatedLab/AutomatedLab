@@ -83,10 +83,10 @@ $cmd = {
     ([ADSI]"WinNT://$(HOSTNAME.EXE)/Administrators,group").Add($trustee)
 }
 
-Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabMachine -ComputerName POSHFS1) -ScriptBlock $cmd
+Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabVM -ComputerName POSHFS1) -ScriptBlock $cmd
 #endregion
 
-if (Get-LabMachine -ComputerName POSHClient1)
+if (Get-LabVM -ComputerName POSHClient1)
 {
 	Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
 	Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1

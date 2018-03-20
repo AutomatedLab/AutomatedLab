@@ -789,10 +789,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($TeamFoundation -or $performAll) -and (Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker))
+    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,TfsBuildWorker))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,TfsBuildWorker).Name -join ', ')'"
 
         Start-LabVm -RoleName Tfs2015,Tfs2017,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
         Install-LabTeamFoundationEnvironment
@@ -805,10 +805,10 @@ function Install-Lab
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         
         if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabMachine -IncludeLinux).HostType -contains 'HyperV') * 30)
+            $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
-        Wait-LabVM -ComputerName (Get-LabMachine -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60
+        Wait-LabVM -ComputerName (Get-LabVM -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

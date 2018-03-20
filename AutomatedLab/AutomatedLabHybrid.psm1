@@ -137,7 +137,7 @@ function Disconnect-Lab
         Import-Lab -Name $LabName -ErrorAction Stop -NoValidation
         $lab = Get-Lab
 
-        Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabVM -Role RootDC) -ScriptBlock {
             Get-DnsServerZone | Where-Object -Property ZoneType -EQ Forwarder | Remove-DnsServerZone -Force
         }
 
@@ -392,7 +392,7 @@ function Connect-OnPremisesWithAzure
     $lab = Get-Lab
     $sourceResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $sourceLocation = Get-LabAzureDefaultLocation
-    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
     
@@ -467,7 +467,7 @@ function Connect-OnPremisesWithAzure
     
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
-    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
     $gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
 
     if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -854,11 +854,11 @@ function Set-VpnDnsForwarders
 
     Import-Lab $SourceLab -NoValidation
     $lab = Get-Lab
-    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     Import-Lab $DestinationLab -NoValidation    
     $lab = Get-Lab
-    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName
     $forwarders = Get-FullMesh -List $forestNames
@@ -866,7 +866,7 @@ function Set-VpnDnsForwarders
     foreach ($forwarder in $forwarders)
     {
         $targetMachine = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $forwarder.Source }
-        $machineExists = Get-LabMachine | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
+        $machineExists = Get-LabVM | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
 
         if (-not $machineExists)
         {

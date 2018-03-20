@@ -2029,7 +2029,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</dev:code>
 			<maml:introduction>
 				<maml:paragraph>PS C:\&gt;</maml:paragraph>
 			</maml:introduction>
-			<dev:code>Get-LabMachine FS1 | Enter-LabPSSession -UseLocalCredentials</dev:code>
+			<dev:code>Get-LabVM FS1 | Enter-LabPSSession -UseLocalCredentials</dev:code>
 			<dev:remarks>
 				<maml:para>Find the lab machine FS1 and enter a session</maml:para>
 				<maml:para />
@@ -7413,7 +7413,7 @@ SQLServer2008
 			<maml:introduction>
 				<maml:paragraph>PS C:\&gt;</maml:paragraph>
 			</maml:introduction>
-			<dev:code>Install-LabWindowsFeature -ComputerName (Get-LabMachine -Running) -FeatureName RSAT -IncludeAllSubFeature</dev:code>
+			<dev:code>Install-LabWindowsFeature -ComputerName (Get-LabVM -Running) -FeatureName RSAT -IncludeAllSubFeature</dev:code>
 			<dev:remarks>
 				<maml:para>Installs the full Remote Server Admin Tools on all running lab machines</maml:para>
 				<maml:para />

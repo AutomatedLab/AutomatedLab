@@ -174,13 +174,13 @@ the variable 'fc1725b7-0ff0-47ea-bdc1-1833103a679c'
 If you want to get the current time of all lab machines it just a
 one-liner:
 
-Invoke-LabCommand -ComputerName (Get-LabMachine -All) -ScriptBlock {
+Invoke-LabCommand -ComputerName (Get-LabVM -All) -ScriptBlock {
 Get-Date } -PassThru
 
 The same pattern works for scripts—simply use the **FilePath** parameter
 instead of **ScriptBlock**:
 
-\$data = Invoke-LabCommand -ComputerName (Get-LabMachine -All) -FilePath
+\$data = Invoke-LabCommand -ComputerName (Get-LabVM -All) -FilePath
 D:\\Get-DiagnosticData.ps1 -PassThru
 
 This could be quite a long-running operation. That’s why the
@@ -195,7 +195,7 @@ them. The jobs can be piped to **Wait-Job** and then further to
 **Receive-Job**. In this way, Windows PowerShell waits until all jobs
 are finished and then retrieves the date from the job objects.
 
-\$jobs = Invoke-LabCommand -ComputerName (Get-LabMachine -All) -FilePath
+\$jobs = Invoke-LabCommand -ComputerName (Get-LabVM -All) -FilePath
 D:\\Get-DiagnosticData.ps1 -PassThru -AsJob
 
 \$data = \$jobs | Wait-Job | Receive-Job
@@ -319,7 +319,7 @@ installation is finished.
 In the following command, Wireshark should be installed on all lab
 machines and Windows PowerShell should wait until all jobs are finished:
 
-Install-LabSoftwarePackage -ComputerName (Get-LabMachine -All) -Path
+Install-LabSoftwarePackage -ComputerName (Get-LabVM -All) -Path
 E:\\LabSources\\SoftwarePackages\\WireShark.exe -CommandLine /S
 -PassThru | Wait-Job
 
@@ -347,7 +347,7 @@ ADDLOCAL=ClassicStartMenu'
 \$packs += Get-LabSoftwarePackage -Path
 \$labSources\\SoftwarePackages\\winrar.exe -CommandLine /S
 
-Install-LabSoftwarePackages -Machine (Get-LabMachine -All)
+Install-LabSoftwarePackages -Machine (Get-LabVM -All)
 -SoftwarePackage \$packs -PassThru | Wait-Job
 
 So you can see that managing software in your lab can be a trivial and

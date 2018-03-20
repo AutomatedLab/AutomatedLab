@@ -123,7 +123,7 @@ function Install-LabTeamFoundationServer
             if (-not $sqlServer)
             {
                 Write-ScreenInfo -Message "No SQL server called $($role.Properties['DbServer']) found in lab." -NoNewLine -Type Warning
-                [string]$sqlServer = Get-LabMachine -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+                [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $sqlServer instead." -Type Warning
             }
         }
@@ -206,7 +206,7 @@ function Install-LabBuildWorker
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
-                $tfsServer = Get-LabMachine -Role Tfs2015, Tfs2017 | Select-Object -First 1
+                $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
             }
 

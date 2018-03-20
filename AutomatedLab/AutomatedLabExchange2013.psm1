@@ -145,7 +145,7 @@ function Install-LabExchange2013
     $jobs = @()
     $progressIndicatorForJob = 15
     
-    $exchangeServers = Get-LabMachine -Role Exchange2013
+    $exchangeServers = Get-LabVM -Role Exchange2013
     if (-not $exchangeServers)
     {
         Write-Error 'No Exchange 2013 servers defined in the lab. Skipping installation'
@@ -155,10 +155,10 @@ function Install-LabExchange2013
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
     Start-LabVM -ComputerName $exchangeServers -ProgressIndicator 15
 
-    $exchangeRootDomains = (Get-LabMachine -Role Exchange2013).DomainName | Sort-Object -Unique | ForEach-Object {
+    $exchangeRootDomains = (Get-LabVM -Role Exchange2013).DomainName | Sort-Object -Unique | ForEach-Object {
         $lab.GetParentDomain($_).Name
     }
-    $exchangeRootDCs = Get-LabMachine -Role RootDC | Where-Object DomainName -in $exchangeRootDomains
+    $exchangeRootDCs = Get-LabVM -Role RootDC | Where-Object DomainName -in $exchangeRootDomains
     
     Wait-LabVM -ComputerName $exchangeRootDCs
     Wait-LabVM -ComputerName $exchangeServers
@@ -174,12 +174,12 @@ function Install-LabExchange2013
         foreach ($machine in $exchangeServers)
         {
             $rootDomain = $lab.GetParentDomain($machine.DomainName)
-            $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $rootDomain
+            $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $rootDomain
 
             #if the exchange server is in a child domain the administrator of the child domain will be added to the group 'Organization Management' of the root domain
             if ($machine.DomainName -ne $rootDc.DomainName)
             {
-                $dc = Get-LabMachine -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
+                $dc = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
                 $userName = ($lab.Domains | Where-Object Name -eq $machine.DomainName).Administrator.UserName
 
                 Invoke-LabCommand -ComputerName $rootDc -ActivityName "Add '$userName' to Forest Management" -NoDisplay -ScriptBlock {
@@ -262,7 +262,7 @@ function Install-LabExchange2013
     if ($PrepareSchema -or $PrepareAD -or $PrepareAllDomains -or $All)
     {
         Write-ScreenInfo -Message 'Triggering AD replication'
-        Get-LabMachine -Role RootDC | ForEach-Object {
+        Get-LabVM -Role RootDC | ForEach-Object {
             Sync-LabActiveDirectory -ComputerName $_
         }
     

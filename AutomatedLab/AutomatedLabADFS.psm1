@@ -16,7 +16,7 @@ function Install-LabAdfs
         return
     }
     
-    $machines = Get-LabMachine -Role ADFS
+    $machines = Get-LabVM -Role ADFS
     
     if (-not $machines)
     {
@@ -42,7 +42,7 @@ function Install-LabAdfs
         
         $ca = Get-LabIssuingCA -DomainName $domainName
         Write-Verbose "The CA that will be used is '$ca'"
-        $adfsDc = Get-LabMachine -Role RootDC, FirstChildDC, DC | Where-Object DomainName -eq $domainName
+        $adfsDc = Get-LabVM -Role RootDC, FirstChildDC, DC | Where-Object DomainName -eq $domainName
         Write-Verbose "The DC that will be used is '$adfsDc'"
     
         $1stAdfsServer = $adfsServers | Select-Object -First 1
@@ -154,7 +154,7 @@ function Install-LabAdfsProxy
         return
     }
     
-    $machines = Get-LabMachine -Role ADFSProxy
+    $machines = Get-LabVM -Role ADFSProxy
     
     if (-not $machines)
     {
@@ -164,7 +164,7 @@ function Install-LabAdfsProxy
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName ADFSProxy -Wait -ProgressIndicator 15
 
-    $labAdfsProxies = Get-LabMachine -Role ADFSProxy
+    $labAdfsProxies = Get-LabVM -Role ADFSProxy
     $job = Install-LabWindowsFeature -ComputerName $labAdfsProxies -FeatureName Web-Application-Proxy -AsJob -PassThru
     Wait-LWLabJob -Job $job
 
@@ -177,7 +177,7 @@ function Install-LabAdfsProxy
         $adfsDomainName = $adfsProxyRole.Properties.AdfsDomainName
         Write-Verbose "ADFS Full Name is '$adfsFullName'"
         
-        $someAdfsServer = Get-LabMachine -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
+        $someAdfsServer = Get-LabVM -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
         Write-Verbose "Getting certificate from some ADFS server '$someAdfsServer'"
         $cert = Get-LabCertificate -ComputerName $someAdfsServer -DnsName $adfsFullName
         if (-not $cert)
