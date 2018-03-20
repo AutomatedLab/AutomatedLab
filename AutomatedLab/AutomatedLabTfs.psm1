@@ -414,7 +414,7 @@ function Get-LabBuildStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
+    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 
 function Get-LabReleaseStep
@@ -456,6 +456,6 @@ function Get-LabReleaseStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl)
+    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 #endregion
