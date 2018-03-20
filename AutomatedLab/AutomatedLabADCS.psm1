@@ -1137,7 +1137,7 @@ function Get-LabCertificate
         } -ArgumentList $certStoreTypes -NoDisplay
 
         Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -ScriptBlock {
-			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            $variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
             Sync-Parameter -Command (Get-Command -Name Get-Certificate2)
             Get-Certificate2 @ALBoundParameters
             
@@ -1202,7 +1202,7 @@ function Add-LabCertificate
         } -ArgumentList (,$Cert) -Variable $variables
     
         Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -ScriptBlock {
-			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            $variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
             Sync-Parameter -Command (Get-Command -Name Add-Certificate2)
             $ALBoundParameters.Add('Path', $tempFile)
             $ALBoundParameters.Remove('Cert')
@@ -2416,7 +2416,7 @@ function Install-LabCAMachine
         {
             $num++
         }
-        until (($caBaseName + [string]($num)) -notin ((Get-LabMachine).Roles.Properties.CACommonName) -and ($caBaseName + [string]($num)) -notin $caNamesAlreadyInUse)
+        until (($caBaseName + [string]($num)) -notin ((Get-LabVM).Roles.Properties.CACommonName) -and ($caBaseName + [string]($num)) -notin $caNamesAlreadyInUse)
         
         $param.CACommonName = $caBaseName + ([string]$num)
         ($machine.Roles | Where-Object Name -like Ca*).Properties.Add('CACommonName', $param.CACommonName)

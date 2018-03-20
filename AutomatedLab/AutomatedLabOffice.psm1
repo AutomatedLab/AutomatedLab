@@ -9,7 +9,7 @@ function Install-LabOffice2013
     $lab = Get-Lab    
     $roleName = [AutomatedLab.Roles]::Office2013
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -179,7 +179,7 @@ function Install-LabOffice2016
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::Office2016
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return

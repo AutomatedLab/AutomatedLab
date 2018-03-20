@@ -529,7 +529,7 @@ function Stop-LabVM
     }
     elseif ($All)
     {
-        $machines = Get-LabMachine
+        $machines = Get-LabVM
     }
 
     #filtering out all machines that are already stopped
@@ -1046,7 +1046,7 @@ function Get-LabVMStatus
     }
     else
     {
-        $vms = Get-LabMachine
+        $vms = Get-LabVM
     }
     
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
