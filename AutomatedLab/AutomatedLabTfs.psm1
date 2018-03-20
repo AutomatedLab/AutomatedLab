@@ -270,6 +270,11 @@ function New-LabReleasePipeline
         $ReleaseSteps
     )
 
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
 
     if ($ComputerName)
@@ -378,6 +383,11 @@ function Get-LabBuildStep
         $ComputerName
     )
 
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
@@ -414,6 +424,11 @@ function Get-LabReleaseStep
         [string]
         $ComputerName
     )
+
+	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
 
     $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
