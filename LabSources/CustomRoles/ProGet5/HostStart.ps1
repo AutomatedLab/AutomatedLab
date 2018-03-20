@@ -11,16 +11,12 @@ param(
 
 Import-Lab -Name $data.Name
 $proGetServer = Get-LabVM -ComputerName $ComputerName
-
-$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
-$dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
 
-$isDotnet452Installed = Invoke-LabCommand -ActivityName 'Test .net Framework 4.5.2 installation' -ComputerName $proGetServer -ScriptBlock {
-    [bool]((Get-Content -Path C:\dotnet452.txt -ErrorAction SilentlyContinue) -like '*Installation completed successfully with success code: (0x00000000)*')
-} -PassThru
-if (-not $isDotnet452Installed)
+if (-not (Get-LabVMDotNetFrameworkVersion -ComputerName PGWeb1 | Where-Object Version -GT 4.5))
 {
+	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
+    $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
     Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
 }
@@ -146,13 +142,9 @@ while (-not $isActivated -and $activationRetries -gt 0)
         iisreset.exe | Out-Null
 
         Start-Sleep -Seconds 30
-    } -NoDisplay
-
-    Invoke-LabCommand -ActivityName 'Trigger ProGet Activation' -ComputerName $proGetServer -ScriptBlock {
-        Restart-Service -Name INEDOPROGETSVC
-        iisreset.exe | Out-Null
-
+        Invoke-WebRequest -Uri http://localhost:8624
         Start-Sleep -Seconds 30
+
     } -NoDisplay
 
     $activationRetries--
