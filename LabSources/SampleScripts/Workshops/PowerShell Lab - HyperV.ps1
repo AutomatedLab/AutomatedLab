@@ -66,7 +66,7 @@ Install-Lab
 
 <# REMOVE THE COMMENT TO INSTALL CLASSIC SHELL, NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
@@ -88,9 +88,9 @@ Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabVM -Computer
 
 if (Get-LabVM -ComputerName POSHClient1)
 {
-	Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
-	Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1
-	Restart-LabVM -ComputerName POSHClient1 -Wait
+    Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
+    Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1
+    Restart-LabVM -ComputerName POSHClient1 -Wait
 }
 
 Show-LabDeploymentSummary -Detailed

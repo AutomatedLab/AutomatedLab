@@ -13,7 +13,7 @@ function Install-LabRouting
     
     $roleName = [AutomatedLab.Roles]::Routing
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit

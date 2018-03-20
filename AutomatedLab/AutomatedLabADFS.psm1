@@ -9,7 +9,7 @@ function Install-LabAdfs
 
     Write-ScreenInfo -Message 'Configuring ADFS roles...'
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
@@ -147,7 +147,7 @@ function Install-LabAdfsProxy
     
     $lab = Get-Lab
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit

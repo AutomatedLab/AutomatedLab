@@ -498,7 +498,7 @@ function Install-Lab
     
     $Global:AL_DeploymentStart = Get-Date
 
-    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
@@ -815,7 +815,7 @@ function Install-Lab
 
     if (($PostInstallations -or $performAll) -and (Get-LabVM))
     {
-        $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
+        $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabVM) -PassThru -NoDisplay 
         #PostInstallations can be installed as jobs or as direct calls. If there are jobs returned, wait until they are finished
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
     }
@@ -1100,7 +1100,7 @@ function Get-LabAvailableOperatingSystem
             }
         }
 
-		# SuSE, openSuSE et al
+        # SuSE, openSuSE et al
         $susePath = "$letter`:\content"
         if (Test-Path -Path $susePath -PathType Leaf)
         {
@@ -1112,17 +1112,17 @@ function Get-LabAvailableOperatingSystem
             $os.OperatingSystemName = $Matches.Distro            
             $os.Size = $isoFile.Length
             if($Matches.Version -like '*.*')
-			{
-				$os.Version = $Matches.Version
-			}
-			elseif ($Matches.Version)
-			{
-				$os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
-			}
-			else
-			{
-				$os.Version = [AutomatedLab.Version]::new(0,0)
-			}
+            {
+                $os.Version = $Matches.Version
+            }
+            elseif ($Matches.Version)
+            {
+                $os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
+            }
+            else
+            {
+                $os.Version = [AutomatedLab.Version]::new(0,0)
+            }
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
 
@@ -1138,16 +1138,16 @@ function Get-LabAvailableOperatingSystem
             $osList.Add($os)
         }
 
-		# RHEL, CentOS, Fedora et al
+        # RHEL, CentOS, Fedora et al
         $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
         $rhelDiscinfo = "$letter`:\.discinfo"
         $rhelPackageInfo = "$letter`:\repodata"
         if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
         {
-			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
+            [void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
             $discInfoContent = Get-Content -Path $rhelDiscinfo
             $versionInfo = ($discInfoContent[1] -split " ")[-1]
-			$content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+            $content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
                         
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $content.Name            
@@ -1176,7 +1176,7 @@ function Get-LabAvailableOperatingSystem
                $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
             }
 
-			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
+            $os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
 
             # Unix time stamp...
             $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
@@ -1217,7 +1217,7 @@ function Enable-LabVMRemoting
     
     Write-LogFunctionEntry
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1273,7 +1273,7 @@ function Checkpoint-LabVM
     
     Write-LogFunctionEntry
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1331,7 +1331,7 @@ function Restore-LabVMSnapshot
     
     Write-LogFunctionEntry
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1395,7 +1395,7 @@ function Remove-LabVMSnapshot
     
     Write-LogFunctionEntry
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1441,7 +1441,7 @@ function Install-LabWebServers
     
     $roleName = [AutomatedLab.Roles]::WebServer
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1688,7 +1688,7 @@ function Install-VisualStudio2013
     
     $roleName = [AutomatedLab.Roles]::VisualStudio2013
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
@@ -1807,7 +1807,7 @@ function Install-VisualStudio2015
     
     $roleName = [AutomatedLab.Roles]::VisualStudio2015
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
@@ -2027,7 +2027,7 @@ function Install-LabOrchestrator2012
     
     $roleName = [AutomatedLab.Roles]::Orchestrator2012
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -2971,7 +2971,7 @@ function Invoke-LabCommand
                     $param.Add('ThrottleLimit', $ThrottleLimit)
                 }
 
-				$scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
+                $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
                 if ($item.Properties.Count -and (Test-Path -Path $scriptFullName))
                 {
                     $script = Get-Command -Name $scriptFullName
@@ -2981,17 +2981,17 @@ function Invoke-LabCommand
                     $param.ParameterVariableName = 'temp'
                 }
 
-				if ($item.IsCustomRole)
+                if ($item.IsCustomRole)
                 {
-					if (Test-Path -Path $scriptFullName)
-					{
-						$results += Invoke-LWCommand @param
-					}
-				}
-				else
-				{
-					$results += Invoke-LWCommand @param
-				}
+                    if (Test-Path -Path $scriptFullName)
+                    {
+                        $results += Invoke-LWCommand @param
+                    }
+                }
+                else
+                {
+                    $results += Invoke-LWCommand @param
+                }
 
                 if ($item.IsCustomRole)
                 {
@@ -3016,9 +3016,9 @@ function Invoke-LabCommand
             Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
         }
         if ($results.Count -gt 0)
-		{
-			$results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
-		}
+        {
+            $results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+        }
         Write-ScreenInfo -Message 'finihsed'
 
         Write-ScreenInfo -Message 'Post-installations done' -TaskEnd
@@ -3254,7 +3254,7 @@ function Update-LabMemorySettings
                 $plannedMaxMemoryUsage = (Get-LabVM -All).MaxMemory | Measure-Object -Sum | Select-Object -ExpandProperty Sum
                 if ($plannedMaxMemoryUsage -le ($totalMemory/3))
                 {
-                foreach ($machine in (Get-LabMachine))
+                foreach ($machine in (Get-LabVM))
                 {
                 (Get-LabVM -ComputerName $machine).Memory *= 2
                 (Get-LabVM -ComputerName $machine).MaxMemory *= 2

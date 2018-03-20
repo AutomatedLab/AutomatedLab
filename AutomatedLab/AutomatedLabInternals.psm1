@@ -327,7 +327,7 @@ function Restart-ServiceResilient
 function Remove-DeploymentFiles
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    Invoke-LabCommand -ComputerName (Get-LabMachine) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
+    Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path c:\unattend.xml
         Remove-Item -Path c:\WSManRegKey.reg
