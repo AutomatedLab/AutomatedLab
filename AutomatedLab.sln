@@ -447,6 +447,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{E47974
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-StringIncrement.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-VariableToPSSession.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-ConsoleText.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-DotNetFrameworkVersion.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-DotNetFrameworkVersion.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-FullMesh.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-StringSection.ps1
 		AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1 = AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-Type.ps1
