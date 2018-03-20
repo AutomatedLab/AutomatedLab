@@ -20,7 +20,7 @@ function Install-LabRouting
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName | Where-Object HostType -eq 'HyperV'
+    $machines = Get-LabVM -Role $roleName | Where-Object HostType -eq 'HyperV'
     
     if (-not $machines)
     {
@@ -94,7 +94,7 @@ function Install-LabRouting
         $jobs += Invoke-LabCommand @parameters -AsJob -PassThru -NoDisplay
     }
 
-    if (Get-LabMachine -Role RootDC)
+    if (Get-LabVM -Role RootDC)
     {
         Write-Verbose "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
         Set-LabADDNSServerForwarder

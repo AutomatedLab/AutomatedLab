@@ -2067,7 +2067,7 @@ function Add-LabMachineDefinition
 
         if ($AzureProperties)
         {
-            $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Select-Object -Unique) |
+            $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
             Where-Object SideIndicator -eq '=>' |
             Select-Object -ExpandProperty InputObject
 
@@ -2078,7 +2078,7 @@ function Add-LabMachineDefinition
         }
         if ($HypervProperties)
         {
-            $illegalKeys = Compare-Object -ReferenceObject $hypervPropertiesValidKeys -DifferenceObject ($HypervProperties.Keys | Select-Object -Unique) |
+            $illegalKeys = Compare-Object -ReferenceObject $hypervPropertiesValidKeys -DifferenceObject ($HypervProperties.Keys | Sort-Object -Unique) |
             Where-Object SideIndicator -eq '=>' |
             Select-Object -ExpandProperty InputObject
 

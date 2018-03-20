@@ -15,7 +15,7 @@ function Install-LabOffice2013
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName
+    $machines = Get-LabVM -Role $roleName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message "There is no machine with the role $roleName"
@@ -185,7 +185,7 @@ function Install-LabOffice2016
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName
+    $machines = Get-LabVM -Role $roleName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message "There is no machine with the role $roleName"

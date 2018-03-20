@@ -30,7 +30,7 @@ function Install-LabSqlServers
         return
     }
 
-    $machines = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
+    $machines = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
 
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
@@ -257,14 +257,14 @@ GO
                 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
-                $additionalMachinesToInstall = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
+                $additionalMachinesToInstall = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
                     Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
                     
-                    $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
+                    $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
                         Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
                         Select-Object -First 2
                     
@@ -284,7 +284,7 @@ GO
                         Write-Verbose -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
                         
-                        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
+                        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
                     }
                     Write-Verbose -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
@@ -306,7 +306,7 @@ GO
         }
         until ($machineIndex -ge $onPremisesMachines.Count)
         
-        $machinesToPrepare = Get-LabMachine -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
+        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
         {

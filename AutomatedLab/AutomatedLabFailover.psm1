@@ -4,7 +4,7 @@ function Install-LabFailoverCluster
     [CmdletBinding()]
     param ( )
 
-    # 1 Get-LabMachine -Role FailoverNode, Count ge 2. Wenn Machine bereits installiert, FC aktivieren, sonst Start-LabVm, DomJoin, ...
+    # 1 Get-LabVM -Role FailoverNode, Count ge 2. Wenn Machine bereits installiert, FC aktivieren, sonst Start-LabVm, DomJoin, ...
     # Validator: DomJoin, min count 2, Role FailoverStorage in Lab
 
     $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
@@ -25,7 +25,7 @@ function Install-LabFailoverCluster
     foreach ($cluster in $clusters)
     {
         $firstNode = $cluster.Group | Select-Object -First 1
-        $clusterDomains = $cluster.Group.DomainName | Select-Object -Unique
+        $clusterDomains = $cluster.Group.DomainName | Sort-Object -Unique
         $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
         $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']

@@ -72,7 +72,7 @@ function New-LWHypervVM
     if ($Machine.IsDomainJoined)
     {
         #move the adapter that connects the machine to the domain to the top
-        $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
+        $dc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
         if ($dc)
         {
@@ -128,7 +128,7 @@ function New-LWHypervVM
                 
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
-            $rootDomainName = Get-LabMachine -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
+            $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
         }
                 
@@ -763,7 +763,7 @@ function Wait-LWHypervVMRestart
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
@@ -931,7 +931,7 @@ function Start-LWHypervVM
     
     foreach ($Name in $ComputerName)
     {
-        $machine = Get-LabMachine -ComputerName $Name
+        $machine = Get-LabVM -ComputerName $Name
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
@@ -1302,7 +1302,7 @@ function Enable-LWHypervVMRemoting
         [string[]]$ComputerName
     )
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     
     $script = {
         param ($DomainName, $UserName, $Password)
@@ -1354,7 +1354,7 @@ function Mount-LWIsoImage
         return
     }
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
     {
@@ -1432,7 +1432,7 @@ function Dismount-LWIsoImage
         [string[]]$ComputerName
     )
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
     {
@@ -1461,7 +1461,7 @@ function Repair-LWHypervNetworkConfig
 
     Write-LogFunctionEntry
 
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Wait-LabVM -ComputerName $machine
 

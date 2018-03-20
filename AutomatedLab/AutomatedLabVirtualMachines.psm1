@@ -103,7 +103,7 @@ function New-LabVM
     if ($completedJobs)
     {
         $azureVMs = $completedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }
-        $azureVMs = Get-LabMachine -ComputerName $azureVMs
+        $azureVMs = Get-LabVM -ComputerName $azureVMs
     }
 
     if ($azureVMs)
@@ -199,7 +199,7 @@ function Start-LabVM
         
         if ($PSCmdlet.ParameterSetName -eq 'ByName' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabMachine -ComputerName $ComputerName
+            $vms = Get-LabVM -ComputerName $ComputerName
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'ByRole' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
@@ -227,60 +227,60 @@ function Start-LabVM
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and -not $StartNextMachines -and $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'DC' }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
 
             $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms } 
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms } 
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
 
             #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
             {
-                $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
+                $vms = $vms | Where-Object { (Get-LabVM -ComputerName $_) -eq $Domain }
             }
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
-            $vms += Get-LabMachine | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
+            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
 
             $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
             {
-                $vms = $vms | Where-Object { (Get-LabMachine -ComputerName $_) -eq $Domain }
+                $vms = $vms | Where-Object { (Get-LabVM -ComputerName $_) -eq $Domain }
             }
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabMachine | Where-Object { $_.DomainName -in (Get-LabMachine -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabMachine -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
+            $vms = Get-LabVM | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
             $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Select-Object -First $StartNextMachines
         }
@@ -409,7 +409,7 @@ function Save-LabVM
     
     end
     {
-        $vms = Get-LabMachine -ComputerName $vms
+        $vms = Get-LabVM -ComputerName $vms
         
         #if there are no VMs to start, just write a warning
         if (-not $vms)
@@ -468,7 +468,7 @@ function Restart-LabVM
         return
     }
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     
     if (-not $machines)
     {
@@ -525,7 +525,7 @@ function Stop-LabVM
     
     if ($ComputerName)
     {
-        $machines = Get-LabMachine -ComputerName $ComputerName
+        $machines = Get-LabVM -ComputerName $ComputerName
     }
     elseif ($All)
     {
@@ -650,7 +650,7 @@ function Wait-LabVM
         
     $jobs = @()
     
-    $vms = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
+    $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     
     if (-not $vms)
     {
@@ -844,7 +844,7 @@ function Wait-LabVMRestart
         return
     }
     
-    $vms = Get-LabMachine -ComputerName $ComputerName
+    $vms = Get-LabVM -ComputerName $ComputerName
     
     $azureVms = $vms | Where-Object HostType -eq 'Azure'
     $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
@@ -904,7 +904,7 @@ function Wait-LabVMShutdown
         return
     }
     
-    $vms = Get-LabMachine -ComputerName $ComputerName
+    $vms = Get-LabVM -ComputerName $ComputerName
     
     $vms | Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force
     
@@ -1042,7 +1042,7 @@ function Get-LabVMStatus
     
     if ($ComputerName)
     {
-        $vms = Get-LabMachine -ComputerName $ComputerName
+        $vms = Get-LabVM -ComputerName $ComputerName
     }
     else
     {
@@ -1118,7 +1118,7 @@ function Connect-LabVM
         [switch]$UseLocalCredential
     )
     
-    $machines = Get-LabMachine -ComputerName $ComputerName -IncludeLinux
+    $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     $lab = Get-Lab
     
     foreach ($machine in $machines)
@@ -1208,11 +1208,11 @@ function Get-LabVMRdpFile
     
     if ($ComputerName)
     {
-        $machines = Get-LabMachine -ComputerName $ComputerName
+        $machines = Get-LabVM -ComputerName $ComputerName
     }
     else
     {
-        $machines = Get-LabMachine -All
+        $machines = Get-LabVM -All
     }
 
     $lab = Get-Lab
@@ -1416,7 +1416,7 @@ function Mount-LabIsoImage
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -1467,7 +1467,7 @@ function Dismount-LabIsoImage
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     if (-not $machines)
     {
         Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
@@ -1594,7 +1594,7 @@ function Set-LabMachineUacStatus
 
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     
     if (-not $machines)
     {
@@ -1630,7 +1630,7 @@ function Get-LabMachineUacStatus
 
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     
     if (-not $machines)
     {
@@ -1927,5 +1927,3 @@ function Test-LabAutoLogon
     return $returnValues
 }
 #endregion
-
-New-Alias -Name Get-LabMachine -Value Get-LabVM -Scope Global -Force

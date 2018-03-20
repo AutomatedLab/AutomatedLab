@@ -962,7 +962,7 @@ Add-VariableToPSSession -Variable varA -Session $Sessions</Cmd>
       <Examples>
         <Example>
           <Name>Example 1</Name>
-          <Cmd>Get-LabMachine FS1 | Enter-LabPSSession -UseLocalCredentials</Cmd>
+          <Cmd>Get-LabVM FS1 | Enter-LabPSSession -UseLocalCredentials</Cmd>
           <Description>Find the lab machine FS1 and enter a session</Description>
           <Output>A PowerShell session to FS1 with local credentials</Output>
         </Example>
@@ -3433,7 +3433,7 @@ SQLServer2008
       <Examples>
         <Example>
           <Name>Example 1</Name>
-          <Cmd>Install-LabWindowsFeature -ComputerName (Get-LabMachine -Running) -FeatureName RSAT -IncludeAllSubFeature</Cmd>
+          <Cmd>Install-LabWindowsFeature -ComputerName (Get-LabVM -Running) -FeatureName RSAT -IncludeAllSubFeature</Cmd>
           <Description>Installs the full Remote Server Admin Tools on all running lab machines</Description>
           <Output />
         </Example>

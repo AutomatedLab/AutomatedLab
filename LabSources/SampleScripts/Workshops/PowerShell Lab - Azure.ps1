@@ -96,7 +96,7 @@ $cmd = {
     ([ADSI]"WinNT://$(HOSTNAME.EXE)/Administrators,group").Add($trustee)
 }
 
-Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabMachine -ComputerName POSHFS1) -ScriptBlock $cmd
+Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabVM -ComputerName POSHFS1) -ScriptBlock $cmd
 #endregion
 
 Install-LabWindowsFeature -ComputerName PoshClient1 -FeatureName RSAT -IncludeAllSubFeature

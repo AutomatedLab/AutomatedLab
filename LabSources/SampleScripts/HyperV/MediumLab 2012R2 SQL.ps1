@@ -56,9 +56,9 @@ $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\ClassicShell
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
 
-Install-LabSoftwarePackages -Machine (Get-LabMachine -All) -SoftwarePackage $packs
+Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 
 #Install Reflector to the first VisualStudio2015 machines
-Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabMachine -Role VisualStudio2015)[0].Name
+Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabVM -Role VisualStudio2015)[0].Name
 
 Show-LabDeploymentSummary -Detailed

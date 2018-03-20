@@ -63,13 +63,13 @@ Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168
 Install-Lab
 
 #Installs RSAT on ContosoMember1 if the optional machine is part of the lab
-if (Get-LabMachine -ComputerName ContosoMember1 -ErrorAction SilentlyContinue)
+if (Get-LabVM -ComputerName ContosoMember1 -ErrorAction SilentlyContinue)
 {
     Install-LabWindowsFeature -ComputerName ContosoMember1 -FeatureName RSAT
 }
 
 #Install the Windows-Server-Backup feature on all DCs
-Install-LabWindowsFeature -ComputerName (Get-LabMachine | Where-Object { $_.Disks }) -FeatureName Windows-Server-Backup
+Install-LabWindowsFeature -ComputerName (Get-LabVM | Where-Object { $_.Disks }) -FeatureName Windows-Server-Backup
 
 #Install software to all lab machines
 $machines = Get-LabMachine
@@ -78,7 +78,7 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabVM -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 
@@ -97,7 +97,7 @@ Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMach
     Remove-ADReplicationSite -Identity 'Default-First-Site-Name' -Confirm:$false -Server $rootDc
 }
 
-Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
+Sync-LabActiveDirectory -ComputerName (Get-LabVM -Role RootDC)
 
 Stop-LabVM -All -Wait
 

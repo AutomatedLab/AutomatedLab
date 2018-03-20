@@ -348,7 +348,7 @@ function Wait-LWVMWareRestartVM
 	
     Write-Verbose "Starting monitoring the servers at '$start'"
 	
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 	
     $cmd = {
         param (
@@ -439,11 +439,11 @@ function Enable-LWVMWareVMRemoting
 
     if ($ComputerName)
     {
-        $machines = Get-LabMachine -All | Where-Object Name -in $ComputerName
+        $machines = Get-LabVM -All | Where-Object Name -in $ComputerName
     }
     else
     {
-        $machines = Get-LabMachine -All
+        $machines = Get-LabVM -All
     }
 	
     $script = {
