@@ -594,6 +594,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Repository", "Repository", 
 		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseDefinition.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseStep.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseStep.ps1
+		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -695,6 +702,7 @@ Global
 		{D30ED7EF-3594-41E1-8D41-58C92F71460E} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{CDE85675-45A5-4C67-B79D-64F336751D5F} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{5A35AA7F-30CF-4AC2-915B-0F41530CA9A9} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
