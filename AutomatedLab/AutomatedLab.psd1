@@ -26,6 +26,7 @@
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
     
     NestedModules          = @(
+        'AutomatedLabAzureServices.psm1',
         'AutomatedLab.dll',
         'AutomatedLabADDS.psm1',
         'AutomatedLabADCS.psm1',
@@ -44,7 +45,8 @@
         'AutomatedLabDsc.psm1',
         'AutomatedLabOffice.psm1',
         'AutomatedLabHybrid.psm1',
-        'AutomatedLabFailover.psm1'
+        'AutomatedLabFailover.psm1',
+        'AutomatedLabTfs.psm1'
     )
 
     RequiredModules        = @(
@@ -83,6 +85,7 @@
         'Export-Lab',
         'Get-Lab',
         'Get-LabAvailableOperatingSystem',
+        'Get-LabAzureAppServicePlan',
         'Get-LabAzureCertificate',
         'Get-LabAzureDefaultLocation',
         'Get-LabAzureDefaultResourceGroup',
@@ -92,6 +95,8 @@
         'Get-LabAzureLocation',
         'Get-LabAzureResourceGroup',
         'Get-LabAzureSubscription',
+        'Get-LabAzureWebApp',
+        'Get-LabAzureWebAppStatus',
         'Get-LabCertificate',
         'Get-LabHyperVAvailableMemory',
         'Get-LabInternetFile',
@@ -104,6 +109,7 @@
         'Get-LabVariable',
         'Get-LabVHDX',
         'Get-LabVM',
+        'Get-LabVMDotNetFrameworkVersion',
         'Get-LabVMRdpFile',
         'Get-LabVMStatus',
         'Get-LabVMUptime',
@@ -114,6 +120,7 @@
         'Install-LabADDSTrust',
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
+        'Install-LabAzureServices',
         'Install-LabDcs',
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
@@ -131,12 +138,16 @@
         'Install-LabSqlSampleDatabases',
         'Install-LabSqlServers',
         'Install-LabWindowsFeature',
+        'Install-LabTeamFoundationEnvironment',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
         'Mount-LabIsoImage',
         'New-LabADSubnet',
         'New-LabAzureLabSourcesStorage',
+        'New-LabAzureAppServicePlan',
+        'New-LabAzureWebApp',
+        'New-LabAzureRmResourceGroup',
         'New-LabCATemplate',
         'New-LabPSSession',
         'New-LabVHDX',
@@ -161,6 +172,7 @@
         'Set-LabAutoLogon',
         'Set-LabAzureDefaultLocation',
         'Set-LabAzureDefaultStorageAccount',
+        'Set-LabAzureWebAppContent',
         'Set-LabDefaultOperatingSystem',
         'Set-LabDefaultVirtualizationEngine',
         'Set-LabDscLocalConfigurationManagerConfiguration',
@@ -168,7 +180,9 @@
         'Set-LabInstallationCredential',
         'Set-LabMachineUacStatus',
         'Show-LabDeploymentSummary',
+        'Start-LabAzureWebApp',
         'Start-LabVM',
+        'Stop-LabAzureWebApp',
         'Stop-LabVM',
         'Sync-LabActiveDirectory',
         'Sync-LabAzureLabSources',
@@ -188,30 +202,36 @@
         'Wait-LabADReady',
         'Wait-LabVM',
         'Wait-LabVMRestart',
-        'Wait-LabVMShutdown'
+        'Wait-LabVMShutdown',
+        'Get-LabBuildStep',
+        'Get-LabReleaseStep',
+        'New-LabReleasePipeline'
     )
     
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
         'AutomatedLab.psd1', 
-        'AutomatedLab.psm1', 
+        'AutomatedLab.psm1',
+        'AutomatedLabADCS.psm1',
         'AutomatedLabADDS.psm1',
-        'AutomatedLabADCS.psm1', 
+        'AutomatedLabADFS.psm1',
+        'AutomatedLabAzure.psm1',
+        'AutomatedLabAzureServices.psm1',
         'AutomatedLabDisks.psm1',
-        'AutomatedLabInternals.psm1',
-        'AutomatedLabVirtualMachines.psm1',
+        'AutomatedLabDsc.psm1',
         'AutomatedLabExchange2013.psm1',
         'AutomatedLabExchange2016.psm1',
-        'AutomatedLabSQL.psm1',
-        'AutomatedLabNetwork.psm1',
-        'AutomatedLabAzure.psm1', 
-        'AutomatedLabVMWare.psm1',
-        'AutomatedLabRouting.psm1',
-        'AutomatedLabDsc.psm1',
-        'AutomatedLabOffice.psm1',
+        'AutomatedLabFailover.psm1',
         'AutomatedLabHybrid.psm1',
-        'AutomatedLabFailover.psm1'
+        'AutomatedLabInternals.psm1',
+        'AutomatedLabNetwork.psm1',
+        'AutomatedLabOffice.psm1',
+        'AutomatedLabRouting.psm1',
+        'AutomatedLabSharePoint.psm1',
+        'AutomatedLabSQL.psm1',
+        'AutomatedLabVirtualMachines.psm1',
+        'AutomatedLabVMWare.psm1'
     )
     
     PrivateData            = @{
@@ -285,8 +305,16 @@
         SQLServer2012                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2012.bak'
         SQLServer2014                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2014.bak'
         SQLServer2016                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
+        SQLServer2017                          = 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak'
 
         #Access Database Engine
         AccessDatabaseEngine2016x86            = 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe'
+
+        #TFS Build Agent
+        BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
+
+
+        # OpenSSH
+        OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
     }
 }

@@ -72,11 +72,6 @@ function Add-LabAzureSubscription
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
 
-    if (-not $DefaultResourceGroupName)
-    {
-        $DefaultResourceGroupName = $script:lab.Name
-    }
-
     #This needs to be loaded manually to import the required DLLs
     $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
     if (-not (Get-Module -Name AzureRM -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
@@ -186,51 +181,38 @@ function Add-LabAzureSubscription
     }
     
     Write-ScreenInfo -Message "Trying to locate or create default resource group"
-    # Create if no default given or default set and not existing as RG
-    if (-not $DefaultResourceGroupName -or ($DefaultResourceGroupName -and -not (Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue)))
+    
+    #Create new lab resource group as default        
+    if (-not $DefaultResourceGroupName)
     {
-        # Create new lab resource group as default		
-        $rgName = $DefaultResourceGroupName
-        if (-not $rgName)
-        {
-            $rgName = $script:lab.Name
-        }
+        $DefaultResourceGroupName = $script:lab.Name
+    }
 
+    #Create if no default given or default set and not existing as RG
+    $rg = Get-AzureRmResourceGroup -Name $DefaultResourceGroupName -ErrorAction SilentlyContinue
+    if (-not $rg)
+    {
         $rgParams = @{
-            Name     = $rgName
+            Name     = $DefaultResourceGroupName
             Location = $DefaultLocationName
             Tag      = @{ 
                 AutomatedLab = $script:lab.Name
                 CreationTime = Get-Date
             }
         }
-
-        $createResourceGroup = $true
-        
-        if (Get-AzureRmResourceGroup $rgName -ErrorAction SilentlyContinue)
-        {
-            $createResourceGroup = $false
-        }
-
-        if ($createResourceGroup)
-        {
-            $DefaultResourceGroupName = (New-AzureRmResourceGroup @rgParams -ErrorAction Stop).ResourceGroupName
-        }
-        else
-        {
-            $DefaultResourceGroupName = $rgName
-        }
-        Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
-    }	
+            
+        $defaultResourceGroup = New-AzureRmResourceGroup @rgParams -ErrorAction Stop
+        $script:lab.AzureSettings.DefaultResourceGroup = [AutomatedLab.Azure.AzureRmResourceGroup]::Create($defaultResourceGroup)
+    }
+    else
+    {
+        $script:lab.AzureSettings.DefaultResourceGroup = [AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzureRmResourceGroup -Name $DefaultResourceGroupName))
+    }
+    Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
 
     $resourceGroups = Get-AzureRmResourceGroup
-    $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureResourceGroup]::Create($resourceGroups)
+    $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureRmResourceGroup]::Create($resourceGroups)
     Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
-
-    if (-not (Get-LabAzureDefaultResourceGroup -ErrorAction SilentlyContinue))
-    {
-        New-LabAzureResourceGroup -ResourceGroupNames (Get-LabDefinition).Name -LocationName $DefaultLocationName
-    }
 
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
     foreach ($storageAccount in $storageAccounts)
@@ -332,51 +314,61 @@ function Add-LabAzureSubscription
         
         # Server
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Desktop
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # SQL
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftSQLServer' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Skus -eq 'Enterprise' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Skus -eq 'Enterprise' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
         # VisualStudio
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Offer -eq 'VisualStudio' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'VisualStudio' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Client OS
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Offer -eq 'Windows' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'Windows' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+        # Sharepoint 2013 and 2016
+        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
+        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'MicrosoftSharePointServer' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         $global:cacheVmImages = $vmImages
     }
@@ -839,7 +831,7 @@ function Get-LabAzureCertificate
     Write-LogFunctionExit
 }
 
-function New-LabAzureResourceGroup
+function New-LabAzureRmResourceGroup
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
@@ -867,14 +859,18 @@ function New-LabAzureResourceGroup
         {
             if (-not $script:lab.AzureSettings.ResourceGroups.ResourceGroupName.Contains($name))
             {
-                $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
+                $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
                 Write-Verbose "The resource group '$name' does already exist"
             }
             continue
         }
 
-        $result = New-AzureRmResourceGroup -Name $name -Location $LocationName
-        $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
+        $result = New-AzureRmResourceGroup -Name $name -Location $LocationName -Tag @{ 
+            AutomatedLab = $script:lab.Name
+            CreationTime = Get-Date
+        }
+
+        $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzureRmResourceGroup -ResourceGroupName $name)))
         if ($PassThru)
         {
             $result
@@ -903,23 +899,21 @@ function Remove-LabAzureResourceGroup
         
         Update-LabAzureSettings
         
-        $resourceGroups = Get-LabAzureResourceGroup
+        $resourceGroups = Get-LabAzureResourceGroup -CurrentLab
     }
 
     process
     {
-        Write-ScreenInfo -Message "Removing the Resource Group '$ResourceGroupName'" -Type Warning
-
         foreach ($name in $ResourceGroupName)
         {
+            Write-ScreenInfo -Message "Removing the Resource Group '$name'" -Type Warning
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
                 Remove-AzureRmResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
-                Write-Verbose "RG '$($name)' removed"
+                Write-Verbose "Resource Group '$($name)' removed"
                 
-                $RgObject = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
-                $Index = $script:lab.AzureSettings.ResourceGroups.IndexOf($RgObject)
-                $script:lab.AzureSettings.ResourceGroups.RemoveAt($Index)
+                $resourceGroup = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
+                $script:lab.AzureSettings.ResourceGroups.Remove($resourceGroup) | Out-Null
             }
             else
             {
@@ -937,10 +931,13 @@ function Remove-LabAzureResourceGroup
 function Get-LabAzureResourceGroup
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletbinding()]
+    [cmdletbinding(DefaultParameterSetName = 'ByName')]
     param (
-        [Parameter(Position = 0)]
-        [string[]]$ResourceGroupName
+        [Parameter(Position = 0, ParameterSetName = 'ByName')]
+        [string[]]$ResourceGroupName,
+
+        [Parameter(Position = 0, ParameterSetName = 'ByLab')]
+        [switch]$CurrentLab
     )
 
     Write-LogFunctionEntry
@@ -953,6 +950,10 @@ function Get-LabAzureResourceGroup
     {
         Write-Verbose "Getting the resource groups '$($ResourceGroupName -join ', ')'"
         $resourceGroups | Where-Object ResourceGroupName -in $ResourceGroupName
+    }
+    elseif ($CurrentLab)
+    {
+        $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name } 
     }
     else
     {
@@ -1324,8 +1325,8 @@ function Get-LabAzureLabSourcesContent
     }
 
     $content = $content |
-        Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
-        Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
+    Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
+    Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
         
     return $content
 }

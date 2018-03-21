@@ -6,16 +6,107 @@ using System.Management.Automation;
 using System.Reflection;
 using AutomatedLab;
 using LabXml;
+using AutomatedLab.Azure;
+using System.Xml;
 
 namespace TestClient
 {
+    public enum MyColor
+    {
+        Black = 0,
+        DarkBlue = 1,
+        DarkGreen = 2,
+        DarkCyan = 3,
+        DarkRed = 4,
+        DarkMagenta = 5,
+        DarkYellow = 6,
+        Gray = 7,
+        DarkGray = 8,
+        Blue = 9,
+        Green = 10,
+        Cyan = 11,
+        Red = 12,
+        Magenta = 13,
+        Yellow = 14,
+        White = 15
+    }
+
+    public class SubTestClass1
+    {
+        public string Name { get; set; }
+        public DateTime Date { get; set; }
+        public List<string> Items { get; set; }
+    }
+
+    public class TestClass1 : XmlStore<TestClass1>
+    {
+        public string ResourceGroupName { get; set; }
+        public SerializableDictionary<string, string> Tags { get; set; }
+        public SerializableDictionary<string, string> Tags2 { get; set; }
+        public List<string> SomeList { get; set; }
+        public int? SomeInt1 { get; set; }
+        public int SomeInt2 { get; set; }
+        public System.ConsoleColor Color1 { get; set; }
+        public System.ConsoleColor Color2 { get; set; }
+        public MyColor? Color3 { get; set; }
+        public MyColor? Color4 { get; set; }
+        public SubTestClass1 Sub1 { get; set; }
+
+        public TestClass1()
+        {
+            Tags = new SerializableDictionary<string, string>(); //new System.Collections.Hashtable();
+            SomeList = new List<string>();
+        }
+    }
+
+    public class Book : CopiedObject<Book>
+    {
+        public int PublicationDate { get; set; }
+        public string Genre { get; set; }
+        public string Test1 { get; set; }
+        public string aaa { get; set; }
+    }
 
     class Program
     {
         static void Main(string[] args)
         {
-            //SerializationTest1();
-            var labName = "failover";
+            //XmlDocument doc = new XmlDocument();
+            //doc.LoadXml("<book genre='novel' Publicationdate='1997' Test1=''> " +
+            //            "  <title>Pride And Prejudice</title>" +
+            //            "</book>");
+
+            //var b = Book.Create(doc.ChildNodes[0]);
+
+
+            var o1 = new TestClass1();
+            o1.ResourceGroupName = "T1";
+            o1.SomeList.AddRange(new string[] { "1", "2" });
+            o1.Tags.Add("K1", "V1"); o1.SomeInt1 = 11;
+            o1.SomeInt2 = 22;
+            o1.Color1 = ConsoleColor.DarkBlue;
+            o1.Color2 = ConsoleColor.Yellow;
+            o1.Color3 = MyColor.Green;
+            o1.Color4 = MyColor.Red;
+            o1.Sub1 = new SubTestClass1() { Date = DateTime.Now, Name = "Test1", Items = new List<string>() { "T1", "T2" } };
+            var o2 = CopiedObject<AzureRmResourceGroup>.Create(o1);
+
+            var exportBytes = o1.Export();
+            var import = TestClass1.Import(exportBytes);
+
+
+            var p = new PowerShellHelper();
+            //var result11 = p.InvokeScript(@"Import-AzureRmContext -Path D:\AL1.json | Out-Null; Get-AzureRmResourceGroup").ToArray();
+            //var result12 = CopiedObject<AzureRmResourceGroup>.Create(result11).ToArray();
+
+            //var result21 = p.InvokeScript(@"Import-AzureRmContext -Path D:\AL1.json | Out-Null; Get-AzureRmStorageAccount").ToArray();
+            //var result22 = CopiedObject<AzureRmStorageAccount>.Create(result21).ToArray();
+
+
+
+            return;
+            SerializationTest1();
+            var labName = "AzureLab24";
 
             var labPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "AutomatedLab-Labs", labName, "Lab.xml");
             var ltest1 = XmlStore<Lab>.Import(labPath);
@@ -66,7 +157,8 @@ namespace TestClient
 
                 try
                 {
-                    var result = PowerShellHelper.InvokeCommand(scriptContent, out errors);
+
+                    var result = p.InvokeCommand(scriptContent);
 
                     var labXmlPath = System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Lab.xml");
                     var labPaths = new List<string>() { System.IO.Path.Combine(labsDirectory.FullName, id.ToString(), "Machines.xml") };
@@ -86,9 +178,9 @@ namespace TestClient
             var l1 = XmlStore<Lab>.Import(@"D:\POSH\Lab.xml");
             //var l1 = XmlStore<Lab>.Import(@"C:\Users\randr_000\Documents\AutomatedLab-Labs\Small1\Lab.xml");
 
-            //var w2012r2 = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 SERVERDATACENTER");
-            //var w2012 = new AutomatedLab.OperatingSystem("Windows Server 2012 SERVERDATACENTER");
-            //var w2008r2 = new AutomatedLab.OperatingSystem("Windows Server 2008 R2 SERVERSTANDARD");
+            //var w2012r2 = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 Datacenter (Server with a GUI)");
+            //var w2012 = new AutomatedLab.OperatingSystem("Windows Server 2012 Datacenter (Server with a GUI)");
+            //var w2008r2 = new AutomatedLab.OperatingSystem("Windows Server 2008 R2 Standard (Full Installation)");
             //var w2008 = new AutomatedLab.OperatingSystem("Windows Server 2008 SERVERSTANDARD");
             //var w10 = new AutomatedLab.OperatingSystem("Windows Technical Preview");
             //var w7 = new AutomatedLab.OperatingSystem("Windows 7 ENTERPRISE");
@@ -138,7 +230,7 @@ namespace TestClient
             m.HostType = VirtualizationHost.HyperV;
             m.IsDomainJoined = false;
             m.UnattendedXml = "unattended.xml";
-            m.OperatingSystem = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 SERVERDATACENTER", "E:\\", (AutomatedLab.Version)"6.4.12.0");
+            m.OperatingSystem = new AutomatedLab.OperatingSystem("Windows Server 2012 R2 Datacenter (Server with a GUI)", "E:\\", (AutomatedLab.Version)"6.4.12.0");
             m.InstallationUser = new User("Administrator", "Password1");
             m.DomainName = "vm.net";
             m.HostType = VirtualizationHost.HyperV;

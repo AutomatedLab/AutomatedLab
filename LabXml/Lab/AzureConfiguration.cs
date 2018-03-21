@@ -13,6 +13,7 @@ namespace AutomatedLab
         private string subscriptionFileContent;
         private List<AzureLocation> locations;
         private AzureRmStorageAccount defaultStorageAccount;
+        private AzureRmResourceGroup defaultResourceGroup;
         private string defaultStorageAccountKey;
         private AzureLocation defaultLocation;
         private string vnetConfig;
@@ -20,7 +21,7 @@ namespace AutomatedLab
         private List<AzureOSImage> vmImages;
         private List<AzureVirtualMachine> virtualMachines;
         private List<AzureRmVmSize> roleSizes;
-        private List<AzureResourceGroup> resourceGroups;
+        private List<AzureRmResourceGroup> resourceGroups;
         private List<string> vmDisks;
         private string defaultRoleSize;
         private string labSourcesStorageAccountName;
@@ -32,8 +33,6 @@ namespace AutomatedLab
             get { return loadBalancerPortCounter; }
             set { loadBalancerPortCounter = value; }
         }
-
-
 
         public string LabSourcesResourceGroupName
         {
@@ -48,7 +47,6 @@ namespace AutomatedLab
             set { labSourcesStorageAccountName = value; }
         }
 
-
         public List<AzureRmStorageAccount> StorageAccounts
         {
             get { return storageAccounts; }
@@ -60,7 +58,6 @@ namespace AutomatedLab
             get { return azureRmProfilePath; }
             set { azureRmProfilePath = value; }
         }
-
 
         public string SubscriptionFileContent
         {
@@ -104,6 +101,12 @@ namespace AutomatedLab
             set { defaultStorageAccount = value; }
         }
 
+        public AzureRmResourceGroup DefaultResourceGroup
+        {
+            get { return defaultResourceGroup; }
+            set { defaultResourceGroup = value; }
+        }
+
         public List<AzureSubscription> Subscriptions
         {
             get { return subscriptions; }
@@ -128,10 +131,10 @@ namespace AutomatedLab
             set { roleSizes = value; }
         }
 
-        public List<AzureResourceGroup> ResourceGroups
+        public List<AzureRmResourceGroup> ResourceGroups
         {
             get { return resourceGroups; }
-            set { resourceGroups = NonEmptyList<AzureResourceGroup>(value); }
+            set { resourceGroups = NonEmptyList<AzureRmResourceGroup>(value); }
         }
 
         public List<string> VmDisks
@@ -148,16 +151,16 @@ namespace AutomatedLab
 
         public AzureSettings()
         {
-            this.locations = new List<AzureLocation>();
-            this.storageAccounts = new List<AzureRmStorageAccount>();
-            this.vmImages = new List<AzureOSImage>();
-            this.roleSizes = new List<AzureRmVmSize>();
-            this.resourceGroups = new List<AzureResourceGroup>();
-            this.subscriptions = new List<AzureSubscription>();
-            this.vmDisks = new List<string>();
+            locations = new List<AzureLocation>();
+            storageAccounts = new List<AzureRmStorageAccount>();
+            vmImages = new List<AzureOSImage>();
+            roleSizes = new List<AzureRmVmSize>();
+            resourceGroups = new List<AzureRmResourceGroup>();
+            subscriptions = new List<AzureSubscription>();
+            vmDisks = new List<string>();
 
             // Start port counter above well-known ports
-            this.LoadBalancerPortCounter = 5000;
+            LoadBalancerPortCounter = 5000;
         }
 
         protected List<T> NonEmptyList<T>(List<T> value)

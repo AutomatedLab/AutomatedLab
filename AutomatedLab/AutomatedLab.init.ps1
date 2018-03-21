@@ -1,12 +1,12 @@
 function Get-ALTypeComplete_AvailableLabs
 {
-    $path = "$([System.Environment]::GetFolderPath('MyDocuments'))\AutomatedLab-Labs"
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
     Get-ChildItem -Path $path -Directory
 }
 
 function Get-ALTypeComplete_LabVMs
 {
-    (Get-LabVM -All).Name
+    (Get-LabVM -All -IncludeLinux).Name
 }
 
 function Get-ALTypeComplete_DiskName

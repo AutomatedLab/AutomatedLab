@@ -34,6 +34,18 @@ function New-LWHypervVM
         return $false
     }
 
+    if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
+    if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
+
+    if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
+    {        
+        $PSDefaultParameterValues['*:IsKickstart'] = $true
+    }
+    if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
+    {
+        $PSDefaultParameterValues['*:IsAutoYast'] = $true
+    }
+
     Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
 
     #region Unattend XML settings
@@ -43,25 +55,24 @@ function New-LWHypervVM
     }
             
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
-    Set-UnattendedComputerName -ComputerName $Machine.Name
     
     #region network adapter settings
     $macAddressPrefix = '0017FA'
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
-    $macAddressesInUse += (Get-LabMachine).NetworkAdapters.MacAddress
+    $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
     while ("$macAddressPrefix{0:X6}" -f $macIdx -in $macAddressesInUse) { $macIdx++ }
 
-	$type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
+    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.NetworkAdapter
     $adapters = New-Object $type
-	$Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
-	$Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
+    $Machine.NetworkAdapters | Where-Object { $_.Ipv4Address } | Sort-Object -Property { $_.Ipv4Address[0] } | ForEach-Object {$adapters.Add($_)}
+    $Machine.NetworkAdapters | Where-Object { -not $_.Ipv4Address } | ForEach-Object {$adapters.Add($_)}
 
     if ($Machine.IsDomainJoined)
     {
         #move the adapter that connects the machine to the domain to the top
-        $dc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
+        $dc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
         
         if ($dc)
         {
@@ -117,7 +128,7 @@ function New-LWHypervVM
                 
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
-            $rootDomainName = Get-LabMachine -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
+            $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
         }
                 
@@ -125,29 +136,35 @@ function New-LWHypervVM
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
-
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
-                
-                
+        
+        if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'RedHat')
+        {
+            $ipSettings.Add('IsKickstart', $true)
+        }
+        if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'Suse')
+        {
+            $ipSettings.Add('IsAutoYast', $true)
+        }
 
         switch ($Adapter.NetbiosOptions)
         {                
             'Default'  { $ipSettings.Add('NetBIOSOptions', '0') }
             'Enabled'  { $ipSettings.Add('NetBIOSOptions', '1') }
             'Disabled' { $ipSettings.Add('NetBIOSOptions', '2') }
-        }
-                
+        }                
                 
         Add-UnattendedNetworkAdapter @ipSettings
     }
 
-	$Machine.NetworkAdapters = $adapters
+    $Machine.NetworkAdapters = $adapters
             
-    Add-UnattendedRenameNetworkAdapters
+    if ($Machine.OperatingSystemType -eq 'Windows') {Add-UnattendedRenameNetworkAdapters}
     #endregion network adapter settings
             
-    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password
+    Set-UnattendedComputerName -ComputerName $Machine.Name
     Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName
+    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password    
             
     if ($Machine.ProductKey)
     {
@@ -182,7 +199,7 @@ function New-LWHypervVM
     $disableWindowsDefender = (Get-Module -Name AutomatedLab)[0].PrivateData.DisableWindowsDefender
     if (-not $disableWindowsDefender)
     {
-        Set-UnattendedWindowsDefender -Enabled $false
+        Set-UnattendedAntiMalware -Enabled $false
     }
 
     $setLocalIntranetSites = (Get-Module -Name AutomatedLab)[0].PrivateData.SetLocalIntranetSites
@@ -211,12 +228,11 @@ function New-LWHypervVM
         #Set-LocalIntranetSites -Values $localIntranetSites
     }
 
-    Set-WindowsFirewallState -State $Machine.EnableWindowsFirewall
+    Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
 
     if ($Machine.Roles.Name -contains 'RootDC' -or 
         $Machine.Roles.Name -contains 'FirstChildDC' -or 
-        $Machine.Roles.Name -contains 'DC' -or 
-    $Machine.OperatingSystem.Installation -eq 'Nano Server')
+        $Machine.Roles.Name -contains 'DC')
     {
         #machine will not be added to domain or workgroup
     }
@@ -230,7 +246,19 @@ function New-LWHypervVM
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
             $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
-            Set-UnattendedDomain -DomainName $Machine.DomainName -Username $domain.Administrator.UserName -Password $domain.Administrator.Password
+
+            $parameters = @{
+                DomainName = $Machine.DomainName
+                Username = $domain.Administrator.UserName 
+                Password = $domain.Administrator.Password
+            }
+            if ($Machine.OperatingSystemType -eq 'Linux')
+            {
+                $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
+                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'             
+            }
+            
+            Set-UnattendedDomain @parameters            
         }
     }
 
@@ -239,7 +267,7 @@ function New-LWHypervVM
 
     $generation = if ($PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.SupportGen2VMs)
     {
-        if ($hostOsVersion -ge [System.Version]6.3 -and $Machine.OperatingSystem.Version -ge [System.Version]6.2)
+        if ($hostOsVersion -ge [System.Version]6.3 -and $Machine.Gen2VmSupported)
         {
             2
         }
@@ -265,18 +293,116 @@ function New-LWHypervVM
     
     Write-ProgressIndicator
     
-    $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
-    $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
-    Write-Verbose "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
-    
+    if ($Machine.OperatingSystemType -eq 'Linux')
+    {
+        $nextDriveLetter = [char[]](67..90) | 
+                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+                            Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+                            Select-Object -First 1
+        $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
+        $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
+        $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
+        $size = 6GB
+        if ($Machine.LinuxType -eq 'RedHat')
+        {
+            $size = 100MB
+        }
+        $unattendPartition = $mountedOsDisk | New-Partition -Size $size
+
+        # Use a small FAT32 partition to hold AutoYAST and Kickstart configuration
+        $diskpartCmd = "@
+            select disk $($mountedOsDisk.DiskNumber)
+            select partition $($unattendPartition.PartitionNumber)
+            format quick fs=fat32 label=OEMDRV
+            exit
+        @"
+        $diskpartCmd | diskpart.exe | Out-Null
+
+        $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
+        $unattendPartition = $unattendPartition | Get-Partition
+        $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+
+        if ( $machine.InternalNotes.LinuxPackage )
+        {
+            Set-UnattendedPackage -Package $machine.InternalNotes.LinuxPackage
+        }
+
+        # Copy Unattend-Stuff here
+        if ($Machine.LinuxType -eq 'RedHat')
+        {            
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
+        }
+        else
+        {
+            Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
+            # Mount ISO
+            $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
+            $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
+            # Copy data
+            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
+                Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+
+            # Unmount ISO
+            Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
+
+            # Copy additional packages
+            $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
+            if (Test-Path -Path $additionalPackagePath)
+            {
+                switch -Regex ($Machine.OperatingSystem.OperatingSystemName)
+                {
+                    'Suse'
+                    {
+                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\suse\x86_64" -Force
+                    }
+                    'Red Hat|Centos'
+                    {
+                        Copy-Item -Path $additionalPackagePath -Destination "$letter`:\Packages" -Force
+                    }
+                    'Fedora'
+                    {
+                        # Why...
+                        Get-ChildItem $additionalPackagePath -File | ForEach-Object {
+                            $targetPath = Join-Path -Path "$letter`:\Packages" -ChildPath $_.Name.Substring(0, 1)
+                            $_ | Copy-Item -Destination $targetPath -Force
+                        }
+                    }
+                }
+            }
+
+            # AutoYast XML file is not picked up properly without modifying bootloader config
+            # Change grub and isolinux configuration            
+            $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
+            $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
+
+            ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName        
+        }
+
+        $mountedOsDisk | Dismount-VHD
+
+        if ($PSDefaultParameterValues.ContainsKey('*:IsKickstart')) { $PSDefaultParameterValues.Remove('*:IsKickstart') }
+        if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
+    }
+    else
+    {
+        $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
+        $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
+        Write-Verbose "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
+    }
+
     Write-ProgressIndicator
 
-    $vm = New-VM -Name $Machine.Name `
-    -MemoryStartupBytes ($Machine.Memory) `
-    -VHDPath $systemDisk.Path `
-    -Path $VmPath `
-    -Generation $generation `
-    -ErrorAction Stop
+    $vmParameter = @{
+        Name = $Machine.Name
+        MemoryStartupBytes = ($Machine.Memory)
+        VHDPath = $systemDisk.Path
+        Path = $VmPath
+        Generation = $generation
+        ErrorAction = 'Stop'
+    }
+
+    $vm = New-VM @vmParameter
     
     Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
@@ -323,114 +449,69 @@ function New-LWHypervVM
     $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
     
     Write-ProgressIndicator
-    
-    Mount-DiskImage -ImagePath $path
-    $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
-    $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
-    
-    if ($VhdPartition.Count -gt 1)
-    {
-        #for Generation 2 VMs
-        $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
-        $VhdVolume = "$($VhdOsPartition.DriveLetter):"
-    }
-    else
-    {
-        #for Generation 1 VMs
-        $VhdVolume = "$($VhdPartition.DriveLetter):"
-    }
-    
-    Write-Verbose "`tDisk mounted to drive $VhdVolume"
 
-    #Get-PSDrive needs to be called to update the PowerShell drive list
-    Get-PSDrive | Out-Null
-    
-    $unattendXmlContent = Get-UnattendedContent
-    $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
-    Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
-    
-    if ($Machine.OperatingSystem.Installation -eq 'Nano Server')
+    if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
-        $cmd = New-Object System.Text.StringBuilder
-        $cmd.AppendLine('cd c:\')
-        foreach ($adapter in $Machine.NetworkAdapters)
-        {
-            # Defining these as variables in case at some point need to allow them to be overridden.
-            $interfaceAlias = 'Ethernet'
-            $addressFamiyly = 'IPv4'
-            
-            If ($adapter.Ipv4Address.Count)
-            {
-                $mac = (Get-StringSection -String $adapter.MacAddress -SectionSize 2) -join '-'                
-                $cmd.AppendLine(('for /f "tokens=*" %%a in (''powershell -noprofile -command "Get-NetAdapter | where-object MacAddress -eq {0} | Select-object -ExpandProperty Name -f 1"'') do (set adapterName=%%a)' -f $mac)) | Out-Null
-                $cmd.AppendLine("ECHO Adapter Name is '%adapterName%'")
-                
-                if ($adapter.Ipv4Gateway.Count)
-                {
-                    $cmd.AppendLine(('netsh interface ip set address "%adapterName%" static addr={0} mask={1} gateway={2}' -f $adapter.Ipv4Address[0].IpAddress, $adapter.Ipv4Address[0].Netmask, $adapter.Ipv4Gateway[0].IpAddress)) | Out-Null
-                }
-                else
-                {
-                    $cmd.AppendLine(('netsh interface ip set address "%adapterName%" static addr={0} mask={1}' -f $adapter.Ipv4Address[0].IpAddress, $adapter.Ipv4Address[0].Netmask)) | Out-Null
-                }
-                
-            }
-            
-            if ($adapter.Ipv4DnsServers.Count)
-            {
-                $index = 1
-                foreach ($dnsSever in $adapter.Ipv4DnsServers)
-                {
-                    if ($dnsSever -eq '0.0.0.0') { continue }
-                    
-                    if ($index -eq 1)
-                    {
-                        $cmd.AppendLine(('netsh interface ip set dns "%adapterName%" static addr={0}' -f $dnsSever.IpAddress)) | Out-Null
-                    }
-                    else
-                    {
-                        $cmd.AppendLine(('netsh interface ip set dns "%adapterName%" static addr={0} index={1}' -f $dnsSever.IpAddress, $index)) | Out-Null
-                    }
-                    $index++
-                }
-            }
-        }
-        
-        New-Item "$VhdVolume\Windows\Setup\Scripts" -ItemType Directory | Out-Null
-        Set-Content -Path "$VhdVolume\Windows\Setup\Scripts\SetupComplete.cmd" -Value $cmd.ToString()
-        Set-Content -Path "$VhdVolume\net.cmd" -Value $cmd.ToString()
+        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
     }
+    
+    if ( $Machine.OperatingSystemType -eq 'Windows')
+    {
+        Mount-DiskImage -ImagePath $path
+        $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
+        $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
+    
+        if ($VhdPartition.Count -gt 1)
+        {
+            #for Generation 2 VMs
+            $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
+            $VhdVolume = "$($VhdOsPartition.DriveLetter):"
+        }
+        else
+        {
+            #for Generation 1 VMs
+            $VhdVolume = "$($VhdPartition.DriveLetter):"
+        }
+    
+        Write-Verbose "`tDisk mounted to drive $VhdVolume"
+
+        #Get-PSDrive needs to be called to update the PowerShell drive list
+        Get-PSDrive | Out-Null
+    
+        $unattendXmlContent = Get-UnattendedContent
+        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
+        Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
     
     #copy AL tools to lab machine and optionally the tools folder
     $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
-    Write-Verbose 'Copying AL tools to VHD...'
-    $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
-    New-Item -ItemType Directory -Path $tempPath | Out-Null
-    Copy-Item -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
-    foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
-    {
-        $file.Decrypt()
-    }
-    Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
-
-    Remove-Item -Path $tempPath -Recurse
-    
-    Write-Verbose '...done'
-
-    if ($Machine.ToolsPath.Value)
-    {
-        $toolsDestination = "$vhdVolume\Tools"
-        if ($Machine.ToolsPathDestination)
+        Write-Verbose 'Copying AL tools to VHD...'
+        $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
+        New-Item -ItemType Directory -Path $tempPath | Out-Null
+        Copy-Item -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
+        foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
         {
-            $toolsDestination = "$($toolsDestination[0])$($Machine.ToolsPathDestination.Substring(1,$Machine.ToolsPathDestination.Length - 1))"
+            $file.Decrypt()
         }
-        Write-Verbose 'Copying tools to VHD...'
-        Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
-        Write-Verbose '...done'
-    }
+        Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
+
+        Remove-Item -Path $tempPath -Recurse
     
-    $enableWSManRegDump = @'
+        Write-Verbose '...done'
+
+        if ($Machine.ToolsPath.Value)
+        {
+            $toolsDestination = "$vhdVolume\Tools"
+            if ($Machine.ToolsPathDestination)
+            {
+                $toolsDestination = "$($toolsDestination[0])$($Machine.ToolsPathDestination.Substring(1,$Machine.ToolsPathDestination.Length - 1))"
+            }
+            Write-Verbose 'Copying tools to VHD...'
+            Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
+            Write-Verbose '...done'
+        }
+    
+        $enableWSManRegDump = @'
 Windows Registry Editor Version 5.00
 
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WSMAN]
@@ -459,13 +540,14 @@ Windows Registry Editor Version 5.00
 [HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion\WSMAN\Service]
 "allow_remote_requests"=dword:00000001
 '@
-    #Using the .net class as the PowerShell provider usually does not recognize the new drive
-    [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
+        #Using the .net class as the PowerShell provider usually does not recognize the new drive
+        [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
     
-    Dismount-DiskImage -ImagePath $path
-    Write-Verbose "`tdisk image dismounted"
+        Dismount-DiskImage -ImagePath $path
+        Write-Verbose "`tdisk image dismounted"
     
-    Write-ProgressIndicator
+        Write-ProgressIndicator
+    }
     
     Write-Verbose "`tSettings RAM, start and stop actions"
     $param = @{}
@@ -523,6 +605,13 @@ Windows Registry Editor Version 5.00
     return $true
 }
 #endregion New-LWHypervVM
+
+#region New-LWHypervLinuxVm
+function New-LWHypervLinuxVm
+{
+
+}
+#endregion
 
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
@@ -674,7 +763,7 @@ function Wait-LWHypervVMRestart
     
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
@@ -842,7 +931,14 @@ function Start-LWHypervVM
     
     foreach ($Name in $ComputerName)
     {
-        $machine = Get-LabMachine -ComputerName $Name
+        $machine = Get-LabVM -ComputerName $Name
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            Write-Verbose -Message "Skipping the wait period for $machine as it is a Linux system"
+            continue
+        }
+
         $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
             
         try
@@ -873,17 +969,6 @@ function Start-LWHypervVM
     {
         $job = Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay 
-    }
-    
-    $nanoServersToJoin = Get-LabMachine -ComputerName $ComputerName |
-    Where-Object { $_.IsDomainJoined -and -not $_.HasDomainJoined -and $_.OperatingSystem.Installation -eq 'Nano Server' }
-    
-    if ($nanoServersToJoin)
-    {
-        Wait-LabVM -ComputerName $nanoServersToJoin
-            
-        Join-LabVMDomain -Machine $nanoServersToJoin
-        Restart-LabVM -ComputerName $nanoServersToJoin -Wait
     }
     
     Write-LogFunctionExit
@@ -999,7 +1084,7 @@ workflow Checkpoint-LWHypervVM
         {
             foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
             {
-                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
                 {
                     Suspend-VM -Name $n -ErrorAction SilentlyContinue
                     Save-VM -Name $n -ErrorAction SilentlyContinue
@@ -1014,7 +1099,14 @@ workflow Checkpoint-LWHypervVM
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            Checkpoint-VM -Name $n -SnapshotName $SnapshotName
+            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
+            {
+                Checkpoint-VM -Name $n -SnapshotName $SnapshotName
+            }
+            else
+            {
+                Write-ScreenInfo "A snapshot with the name '$SnapshotName' already exists for machine '$n'" -Type Warning
+            }
         }
         
         Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
@@ -1210,7 +1302,7 @@ function Enable-LWHypervVMRemoting
         [string[]]$ComputerName
     )
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     
     $script = {
         param ($DomainName, $UserName, $Password)
@@ -1262,7 +1354,7 @@ function Mount-LWIsoImage
         return
     }
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
     {
@@ -1340,7 +1432,7 @@ function Dismount-LWIsoImage
         [string[]]$ComputerName
     )
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
     {
@@ -1369,7 +1461,7 @@ function Repair-LWHypervNetworkConfig
 
     Write-LogFunctionEntry
 
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Wait-LabVM -ComputerName $machine
 

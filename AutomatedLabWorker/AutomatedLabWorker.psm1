@@ -39,6 +39,8 @@ function Invoke-LWCommand
         [string]$IsoImagePath,
         
         [object[]]$ArgumentList,
+        
+        [string]$ParameterVariableName,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'FileContentDependencyScriptBlock')]
@@ -127,10 +129,20 @@ function Invoke-LWCommand
         
         if ($PSCmdlet.ParameterSetName -eq 'FileContentDependencyRemoteScript')
         {
-            $cmd = @"
-                $(if ($ScriptFileName) { "&' $(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
-                $(if (-not $KeepFolder) { "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" } )
-"@
+            $cmd = ''
+            if ($ScriptFileName) 
+            {
+                $cmd +=  "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
+            }
+            if ($ParameterVariableName)
+            {
+                $cmd += " @$ParameterVariableName"
+            }
+            $cmd += "`n"
+            if (-not $KeepFolder) 
+            {
+                $cmd += "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" 
+            }
             
             Write-Verbose -Message "Invoking script '$ScriptFileName'"
             
@@ -205,7 +217,7 @@ function Invoke-LWCommand
     {
         Write-Debug 'Adding LABHOSTNAME to scriptblock' 
         #in some situations a retry makes sense. In order to know which machines have done the job, the scriptblock must return the hostname
-        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$(HOSTNAME.EXE)`"`n")
+        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$([System.Net.Dns]::GetHostName())`"`n")
     }
 
     if ($AsJob)

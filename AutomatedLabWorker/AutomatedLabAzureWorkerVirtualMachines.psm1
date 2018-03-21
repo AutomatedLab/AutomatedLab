@@ -197,10 +197,14 @@ function New-LWAzureVM
         Write-Verbose -Message 'This is going to be a SharePoint VM'
 
         # AzureRM currently has only one SharePoint offer
+
+        $sharePointRoleName -match '\w+(?<Version>\d{4})'
         
         $sharePointImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -Match 'SharePoint' |
-        Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
+        Where-Object Offer -Match 'MicrosoftSharePoint' |
+        Sort-Object -Property PublishedDate -Descending |
+        Where-Object Skus -eq $Matches.Version |
+        Select-Object -First 1
 
         # Add the SP version
         foreach ($sharePointImage in $sharePointImages)
@@ -299,7 +303,7 @@ function New-LWAzureVM
 
     # List-serialization issues when passing to job. Disks will be added to a hashtable
     $Disks = @{}
-    $Machine.Disks | % {$Disks.Add($_.Name, $_.DiskSize)}
+    $Machine.Disks | ForEach-Object { $Disks.Add($_.Name, $_.DiskSize) }
 
     Start-Job -Name "CreateAzureVM ($machineResourceGroup) ($Machine)" -ArgumentList $Machine,
     $Disks,

@@ -13,14 +13,14 @@ function Install-LabRouting
     
     $roleName = [AutomatedLab.Roles]::Routing
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         Write-LogFunctionExit
         return
     }
     
-    $machines = Get-LabMachine -Role $roleName | Where-Object HostType -eq 'HyperV'
+    $machines = Get-LabVM -Role $roleName | Where-Object HostType -eq 'HyperV'
     
     if (-not $machines)
     {
@@ -94,7 +94,7 @@ function Install-LabRouting
         $jobs += Invoke-LabCommand @parameters -AsJob -PassThru -NoDisplay
     }
 
-    if (Get-LabMachine -Role RootDC)
+    if (Get-LabVM -Role RootDC)
     {
         Write-Verbose "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
         Set-LabADDNSServerForwarder
@@ -131,7 +131,7 @@ function Set-LabADDNSServerForwarder
     {
         $gateway = if ($dc -eq $router)
         {
-            Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName ALDC1 -ScriptBlock {
+            Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
             
                 Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
                 

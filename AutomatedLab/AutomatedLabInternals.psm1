@@ -327,7 +327,7 @@ function Restart-ServiceResilient
 function Remove-DeploymentFiles
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    Invoke-LabCommand -ComputerName (Get-LabMachine) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
+    Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path c:\unattend.xml
         Remove-Item -Path c:\WSManRegKey.reg
@@ -352,7 +352,7 @@ function Enable-LabVMFirewallGroup
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Invoke-LabCommand -ComputerName $machine -ActivityName 'Enable firewall group' -NoDisplay -ScriptBlock `
     {
@@ -390,7 +390,7 @@ function Disable-LabVMFirewallGroup
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Invoke-LabCommand -ComputerName $machine -ActivityName 'Disable firewall group' -NoDisplay -ScriptBlock `
     {
@@ -466,7 +466,7 @@ function Get-LabInternetFile
 
         if ((Test-Path -Path $Path) -and -not $Force)
         {
-            Write-Warning "The file '$Path' does already exist, skipping the download"
+            Write-ScreenInfo "The file '$Path' does already exist, skipping the download"
         }
         else
         {
@@ -483,6 +483,8 @@ function Get-LabInternetFile
                 $bytesProcessed = 0
                 $request = [System.Net.WebRequest]::Create($Uri)
                 $request.AllowAutoRedirect = $true
+                
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
         
                 if ($request)
                 {
@@ -540,7 +542,7 @@ function Get-LabInternetFile
     
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
-        $machine = Get-LabMachine -IsRunning | Select-Object -First 1
+        $machine = Get-LabVM -IsRunning | Select-Object -First 1
         Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
         $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru
