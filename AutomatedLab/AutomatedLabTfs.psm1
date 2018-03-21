@@ -270,7 +270,7 @@ function New-LabReleasePipeline
         $ReleaseSteps
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -287,10 +287,23 @@ function New-LabReleasePipeline
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        {
+            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
+            return
+        }
+
+        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -308,12 +321,18 @@ function New-LabReleasePipeline
         Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
     }
 
-    $project = New-TfsProject -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
+    $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
 
     if ($gitBinary)
     {
-        $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+        $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
+
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            $repoUrl = $repoUrl -replace $tfsvm.Name,$tfsvm.AzureConnectionInfo.DnsName
+        }
+        
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
         $repoparent = Join-Path -Path $global:labSources -ChildPath GitRepositories
         if (-not (Test-Path $repoparent))
@@ -349,7 +368,7 @@ function New-LabReleasePipeline
     }
 
     $parameters = @{
-        InstanceName   = $tfsvm.FQDN
+        InstanceName   = $tfsInstance
         Port           = $tfsPort
         CollectionName = $initialCollection
         ProjectName    = $ProjectName
@@ -383,7 +402,7 @@ function Get-LabBuildStep
         $ComputerName
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -401,10 +420,23 @@ function Get-LabBuildStep
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        {
+            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
+            return
+        }
+
+        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -414,7 +446,7 @@ function Get-LabBuildStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsBuildStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 
 function Get-LabReleaseStep
@@ -425,7 +457,7 @@ function Get-LabReleaseStep
         $ComputerName
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -443,10 +475,23 @@ function Get-LabReleaseStep
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        {
+            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
+            return
+        }
+
+        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -456,6 +501,6 @@ function Get-LabReleaseStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsReleaseStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 #endregion

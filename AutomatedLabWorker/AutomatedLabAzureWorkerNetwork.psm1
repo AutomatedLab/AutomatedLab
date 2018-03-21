@@ -295,3 +295,77 @@ function Set-LWAzureDnsServer
 
     Write-LogFunctionExit
 }
+
+function Add-LWAzureLoadBalancedPort
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        [int]
+        $Port,
+
+        [AutomatedLab.Machine]
+        $ComputerName
+    )
+
+    if (Get-LWAzureLoadBalancedPort @PSBoundParameters)
+    {
+        Write-Verbose -Message ('Port {0} already configured for {1}' -f $Port, $ComputerName)
+        return
+    }
+
+    $lab = Get-Lab
+    $resourceGroup = $lab.Name
+
+    $lb = AzureRmLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    if (-not $lb)
+    {
+        Write-Verbose "No load balancer found to add port rules to"
+        return
+    }
+
+    $frontendConfig = $lb | Get-AzureRmLoadBalancerFrontendIpConfig
+
+    $lab.AzureSettings.LoadBalancerPortCounter++
+    $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+    $inboundRule= New-AzureRmLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())$Port" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $remotePort -BackendPort $Port
+    $inboundRule | Add-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $lb
+
+    if(-not $ComputerName.InternalNotes.AdditionalLoadBalancedPorts)
+    {
+        $ComputerName.InternalNotes.AdditionalLoadBalancedPorts = @{}
+    }
+
+    $ComputerName.InternalNotes.AdditionalLoadBalancedPorts.$Port = $remotePort
+}
+
+function Get-LWAzureLoadBalancedPort
+{
+    param
+    (
+        [int]
+        $Port,
+
+        [AutomatedLab.Machine]
+        $ComputerName
+    )
+
+    $lab = Get-Lab
+    $resourceGroup = $lab.Name
+
+    $lb = AzureRmLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    if (-not $lb)
+    {
+        Write-Verbose "No load balancer found to add port rules to"
+        return
+    }
+
+    $existingConfiguration = $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig
+
+    if($Port)
+    {
+        return ($existingConfiguration | Where-Object -Property BackendPort -eq $Port)
+    }
+    
+    return $existingConfiguration
+}
