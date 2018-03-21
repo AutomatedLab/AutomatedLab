@@ -13,6 +13,12 @@ Import-Lab -Name $data.Name
 $proGetServer = Get-LabVM -ComputerName $ComputerName
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 
+if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -like 'SQLServer*' }))
+{
+    Write-Error "The SQL Server '$SqlServer' could not be found in the lab. ProGet cannot be installed."
+    return
+}
+
 $installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName PGWeb1
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
