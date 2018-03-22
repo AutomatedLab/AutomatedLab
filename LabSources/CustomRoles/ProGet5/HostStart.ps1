@@ -19,7 +19,7 @@ if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -lik
     return
 }
 
-$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName PGWeb1
+$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
 	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
