@@ -495,8 +495,6 @@ function Install-Lab
     }
     
     Unblock-LabSources
-    
-    $Global:AL_DeploymentStart = Get-Date
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
