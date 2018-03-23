@@ -1112,6 +1112,11 @@ function Write-ScreenInfo
         
         [switch]$TaskEnd
     )
+
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    {
+        return
+    }
     
     if (-not $Global:AL_DeploymentStart)
     {
