@@ -139,7 +139,6 @@ function Install-LabTeamFoundationServer
 
             # Create unattend file with fitting parameters and replace all we can find
             [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
-            $cert = Get-ChildItem -Path Cert:\LocalMachine\my -SSLServerAuthentication -ErrorAction SilentlyContinue
             
             $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
@@ -174,7 +173,7 @@ function Install-LabTeamFoundationServer
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -531,6 +530,7 @@ function Open-LabTfsSite
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
+    $credential = $tfsVm.GetCredential((Get-Lab))
     
     if ($role.Properties.ContainsKey('Port'))
     {
@@ -550,11 +550,11 @@ function Open-LabTfsSite
 
     $requestUrl = if ($UseSsl) 
     {
-        'https://{0}:{1}' -f $tfsInstance, $tfsPort
+        'https://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
     } 
     else
      {
-         'http://{0}:{1}' -f $tfsInstance, $tfsPort
+         'http://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
         }
     
         Start-Process -FilePath $requestUrl
