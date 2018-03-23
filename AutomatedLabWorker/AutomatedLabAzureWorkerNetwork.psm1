@@ -373,7 +373,15 @@ function Get-LWAzureLoadBalancedPort
         return
     }
 
-    $existingConfiguration = $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -eq "$ComputerName$Port"
+    $existingConfiguration = if ($Port)
+    {
+        $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -eq "$ComputerName$Port"
+    }
+    else 
+    {
+        $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -like "$ComputerName*"
+    }
+    
 
     if ($Port)
     {
