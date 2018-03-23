@@ -162,7 +162,7 @@ function Install-LabDscPullServer
     }
 
 
-    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path (Get-LabSourcesLocationInternal -Local)\SoftwarePackages -PassThru
+    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labsources\SoftwarePackages -PassThru
     $jobs = @()
 
     foreach ($machine in $machines)

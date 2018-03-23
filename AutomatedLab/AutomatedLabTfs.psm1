@@ -185,13 +185,11 @@ function Install-LabBuildWorker
     ( )
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
-    $locallabsources = Get-LabSourcesLocationInternal -Local
 
-    [void] (New-Item -Path (Join-Path -Path $locallabsources -ChildPath Tools\TFS) -ErrorAction SilentlyContinue -ItemType Directory)
     $buildWorkerUri = (Get-Module AutomatedLab -ListAvailable).PrivateData["BuildAgentUri"]
-    $buildWorkerPath = Join-Path -Path $locallabsources -ChildPath Tools\TFS\TfsBuildWorker.zip
-    Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath
-    Copy-LabFileItem -ComputerName $buildWorkers -Path $buildWorkerPath
+    $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
+    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
+    Copy-LabFileItem -ComputerName $buildWorkers -Path $download.FullName
 
     $installationJobs = @()
     foreach ( $machine in $buildWorkers)
