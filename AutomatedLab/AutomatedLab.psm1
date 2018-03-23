@@ -3741,7 +3741,14 @@ Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -S
 
     Get-LabVM -All -IncludeLinux |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+        if ($_.Roles)
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
     }
 }
 
