@@ -467,6 +467,10 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
+	$telemetryClient = [AutomatedLab.LabTelemetry]::Instance
+	$telemetryClient.LabXmlPath = (Get-LabDefinition).LabFilePath
+	$telemetryClient.LabStarted((Get-Module AutomatedLab).Version, $PSVersionTable.BuildVersion)
+
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
@@ -827,6 +831,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
+	$telemetryClient.LabFinished()
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
