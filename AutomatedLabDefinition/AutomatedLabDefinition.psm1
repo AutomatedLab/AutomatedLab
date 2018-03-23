@@ -913,16 +913,15 @@ function New-LabDefinition
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {
-        if (Get-ChildItem -Path "$(Get-LabSourcesLocation)\ISOs" -Filter *.iso -Recurse)
-        {
-            Write-ScreenInfo -Message 'Auto-adding ISO files' -TaskStart
-            Add-LabIsoImageDefinition -Path "$(Get-LabSourcesLocation)\ISOs"
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        }
-        else
+        if (-not (Get-ChildItem -Path "$(Get-LabSourcesLocation)\ISOs" -Filter *.iso -Recurse))
         {
             Write-ScreenInfo -Message "No ISO files found in $(Get-LabSourcesLocation)\ISOs folder. If using Hyper-V for lab machines, please add ISO files manually using 'Add-LabIsoImageDefinition'" -Type Warning
         }
+
+        Write-ScreenInfo -Message 'Auto-adding ISO files' -TaskStart
+        Get-LabAvailableOperatingSystem -Path "$(Get-LabSourcesLocation)\ISOs" | Out-Null #for updating the cache if necessary
+        Add-LabIsoImageDefinition -Path "$(Get-LabSourcesLocation)\ISOs"
+        Write-ScreenInfo -Message 'Done' -TaskEnd
     }    
     
     if ($DefaultVirtualizationEngine)
@@ -1043,7 +1042,7 @@ function Export-LabDefinition
             
     if (Get-LabMachineDefinition | Where-Object HostType -eq 'HyperV')
     {
-        $osesCount = (Get-LabAvailableOperatingSystem).Count
+        $osesCount = (Get-LabAvailableOperatingSystem -NoDisplay).Count
     }
     
     #Automatic DNS configuration in Azure if no DNS server is specified and an AD is being deployed
@@ -1167,7 +1166,7 @@ function Export-LabDefinition
     if (Get-LabMachineDefinition | Where-Object HostType -eq HyperV)
     {
         $hypervMachines = Get-LabMachineDefinition | Where-Object HostType -eq HyperV
-        $hypervUsedOperatingSystems = Get-LabAvailableOperatingSystem | Where-Object OperatingSystemImageName -in $hypervMachines.OperatingSystem.OperatingSystemName
+        $hypervUsedOperatingSystems = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemImageName -in $hypervMachines.OperatingSystem.OperatingSystemName
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
@@ -1675,7 +1674,7 @@ function Add-LabIsoImageDefinition
         $duplicateOperatingSystems.Group | 
         ForEach-Object { $_ } -PipelineVariable iso | 
         ForEach-Object { $_.OperatingSystems } |
-        ForEach-Object { Write-Warning "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" }
+        ForEach-Object { Write-ScreenInfo "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" -Type Warning }
     }
 
     $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
@@ -2724,11 +2723,11 @@ function Add-LabMachineDefinition
 
             if ($OperatingSystemVersion)
             {
-                $os = Get-LabAvailableOperatingSystem | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
+                $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
             }
             else
             {
-                $os = Get-LabAvailableOperatingSystem | Where-Object OperatingSystemName -eq $OperatingSystem
+                $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemName -eq $OperatingSystem
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Group-Object -Property Version | Sort-Object -Property Name -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Group

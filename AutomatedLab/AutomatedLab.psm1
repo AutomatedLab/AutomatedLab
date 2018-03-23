@@ -987,9 +987,11 @@ function Get-LabAvailableOperatingSystem
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
-        [string[]]$Path,
+        [string[]]$Path = "$labSources\ISOs",
 
-        [switch]$UseOnlyCache
+        [switch]$UseOnlyCache,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -998,59 +1000,42 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-
-    if (-not $Path)
-    {
-        $lab = Get-LabDefinition
-        if (-not $lab)
-        {
-            $lab = Get-Lab -ErrorAction SilentlyContinue
-        }
-
-        if ($lab)
-        {
-            $Path = $lab.Sources.Isos | Split-Path -Parent | Sort-Object -Unique
-        }
-        else
-        {
-            Write-Error 'No lab loaded and no path defined, hence it is not sure where to look for operating systems.'
-            return
-        }
-    }
     
+    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
     $singleFile = Test-Path -Path $Path -PathType Leaf
-
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
     Write-Verbose "Found $($isoFiles.Count) ISO files"
 
-    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
-    #read the cache
-    try
+    if (-not $singleFile)
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
-        Write-ScreenInfo "Found $($cachedOsList.Count) OS images in the cache"
-    }
-    catch
-    {
-        Write-Verbose 'Could not read OS image info from the cache'
-    }
-
-    if ($cachedOsList -and -not $singleFile)
-    {
-        $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
-        $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
-
-        if ($cachedIsoFileSize -eq $actualIsoFileSize)
+        #read the cache
+        try
         {
-            Write-Verbose 'Cached data is still up to date'
-            Write-LogFunctionExit -ReturnValue $cachedOsList
-            return $cachedOsList
+            $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+            $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
+            Write-ScreenInfo "Found $($cachedOsList.Count) OS images in the cache"
         }
-        else
+        catch
         {
-            Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
-            Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+            Write-Verbose 'Could not read OS image info from the cache'
+        }
+
+        if ($cachedOsList)
+        {
+            $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
+            $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
+
+            if ($cachedIsoFileSize -eq $actualIsoFileSize)
+            {
+                Write-Verbose 'Cached data is still up to date'
+                Write-LogFunctionExit -ReturnValue $cachedOsList
+                return $cachedOsList
+            }
+            else
+            {
+                Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
+                Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+            }
         }
     }
 
@@ -1061,7 +1046,14 @@ function Get-LabAvailableOperatingSystem
 
     $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
     $osList = New-Object $type
-    Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
+    if ($singleFile)
+    {
+        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems" -NoNewLine
+    }
+    else
+    {
+        Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
+    }
 
     foreach ($isoFile in $isoFiles)
     {
@@ -1092,7 +1084,7 @@ function Get-LabAvailableOperatingSystem
                 
                 if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
-                    Write-Warning "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped."
+                    Write-ScreenInfo "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped." -Type Warning
                     continue
                 }
 
@@ -1200,17 +1192,21 @@ function Get-LabAvailableOperatingSystem
         Write-ProgressIndicator
     }
     
-    if (-not $singleFile)
+    $osList.ToArray()
+    
+    if ($singleFile)
+    {
+        Write-ScreenInfo "Found $($osList.Count) OS images."
+    }
+    else
     {
         $osList.Timestamp = Get-Date
         $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
         $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+
+        Write-ProgressIndicatorEnd
+        Write-ScreenInfo "Found $($osList.Count) OS images."
     }
-    
-    $osList.ToArray()
-    
-    Write-ProgressIndicatorEnd
-    Write-ScreenInfo "Found $($osList.Count) OS images."
     Write-LogFunctionExit
 }
 #endregion Get-LabAvailableOperatingSystem
@@ -3730,7 +3726,7 @@ if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
         }
     }
 
-    Register-ArgumentCompleter -CommandName Import-Lab -ParameterName Name -ScriptBlock {
+    Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
         $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
