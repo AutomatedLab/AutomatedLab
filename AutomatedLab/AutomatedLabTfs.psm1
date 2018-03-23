@@ -186,10 +186,11 @@ function Install-LabBuildWorker
     ( )
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
+    $locallabsources = Get-LabSourcesLocationInternal -Local
 
-    [void] (New-Item -Path (Join-Path -Path $labsources -ChildPath Tools\TFS) -ErrorAction SilentlyContinue -ItemType Directory)
+    [void] (New-Item -Path (Join-Path -Path $locallabsources -ChildPath Tools\TFS) -ErrorAction SilentlyContinue -ItemType Directory)
     $buildWorkerUri = (Get-Module AutomatedLab -ListAvailable).PrivateData["BuildAgentUri"]
-    $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TFS\TfsBuildWorker.zip
+    $buildWorkerPath = Join-Path -Path $locallabsources -ChildPath Tools\TFS\TfsBuildWorker.zip
     Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath
     Copy-LabFileItem -ComputerName $buildWorkers -Path $buildWorkerPath
 
@@ -283,6 +284,8 @@ function New-LabReleasePipeline
     }
 
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+
+    $locallabsources = Get-LabSourcesLocationInternal -Local
     
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
@@ -296,13 +299,12 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
         {
-            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
-            return
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
         }
 
-        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -314,7 +316,7 @@ function New-LabReleasePipeline
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
     
-    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $global:labSources\Tools\git.exe) {"$global:labSources\Tools\git.exe"}
+    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $locallabsources\Tools\git.exe) {"$locallabsources\Tools\git.exe"}
 
     if (-not $gitBinary)
     {
@@ -334,7 +336,7 @@ function New-LabReleasePipeline
         }
         
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
-        $repoparent = Join-Path -Path $global:labSources -ChildPath GitRepositories
+        $repoparent = Join-Path -Path $locallabsources -ChildPath GitRepositories
         if (-not (Test-Path $repoparent))
         {
             [void] (New-Item -ItemType Directory -Path $repoparent)
@@ -429,13 +431,12 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
         {
-            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
-            return
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
         }
 
-        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -484,13 +485,12 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort)
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
         {
-            Write-Error -Message ('No port {0} on Azure load balancer for machine {1}. Cannot comply.' -f $tfsport, $tfsvm)
-            return
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
         }
 
-        $tfsPort = $tfsvm.InternalNotes.AdditionalLoadBalancedPort.$tfsPort
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -502,5 +502,61 @@ function Get-LabReleaseStep
     $credential = $tfsVm.GetCredential((Get-Lab))
     
     return (Get-TfsReleaseStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+}
+
+function Open-LabTfsSite
+{
+    param
+    (
+        [string]
+        $ComputerName
+    )
+
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+
+    if ($ComputerName)
+    {
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
+    }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        {
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+        }
+
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
+    }
+
+    $requestUrl = if ($UseSsl) 
+    {
+        'https://{0}:{1}' -f $tfsInstance, $tfsPort
+    } 
+    else
+     {
+         'http://{0}:{1}' -f $tfsInstance, $tfsPort
+        }
+    
+        Start-Process -FilePath $requestUrl
 }
 #endregion

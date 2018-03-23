@@ -204,7 +204,9 @@
         'Wait-LabVMShutdown',
         'Get-LabBuildStep',
         'Get-LabReleaseStep',
-        'New-LabReleasePipeline'
+        'New-LabReleasePipeline',
+        'Get-LabAzureLoadBalancedPort',
+        'Open-LabTfsSite'
     )
     
     FileList               = @(
