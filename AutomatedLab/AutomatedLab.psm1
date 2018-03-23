@@ -3714,7 +3714,7 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
 
     Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache | Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } | Sort-Object -Property OperatingSystemImageName |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', $_.OperatingSystemImageName)
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", $_.OperatingSystemImageName, 'ParameterValue', $_.OperatingSystemImageName)
     }
 }
 
