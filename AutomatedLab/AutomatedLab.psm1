@@ -3706,59 +3706,57 @@ function New-LabSourcesFolder
     }
 }
 
-#--------------------------------
+$dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
+$executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache | Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } | Sort-Object -Property OperatingSystemImageName |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', $_.OperatingSystemImageName)
+    }
+}
+
+Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    Get-ChildItem -Path $path -Directory |
+    ForEach-Object {
+        if ($_.Name -contains ' ')
+        {
+            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}
+
+$commands = Get-Command -Module AutomatedLab, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
+Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabVM -All -IncludeLinux |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+    }
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    (Get-LabDefinition).Domains |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+    }
+}
 
 #importing the module results in calling the following code multiple times due to module import recursion
 #the following line makes sure that the following code runs only once when called from an external source
 if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
 {
-    $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
-    $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
-
     Get-LabAvailableOperatingSystem -Path $labSources\ISOs
-
-    Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-        Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache | Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } | Sort-Object -Property OperatingSystemImageName |
-        ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', $_.OperatingSystemImageName)
-        }
-    }
-
-    Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-        $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
-        Get-ChildItem -Path $path -Directory |
-        ForEach-Object {
-            if ($_.Name -contains ' ')
-            {
-                [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
-            }
-            else
-            {
-                [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-            }
-        }
-    }
-
-    $commands = Get-Command -Module AutomatedLab, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
-    Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-        Get-LabVM -All -IncludeLinux |
-        ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
-        }
-    }
-
-    Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-        (Get-LabDefinition).Domains |
-        ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
 }

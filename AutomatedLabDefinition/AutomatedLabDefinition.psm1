@@ -1649,7 +1649,7 @@ function Add-LabIsoImageDefinition
                     {
                         if ($isos.OperatingSystems -contains $os)
                         {
-                            Write-Warning "The operating system '$($os.OperatingSystemName)' with version '$($os.Version)' is already added to the lab. If this is an issue with cached information, use Clear-LabCache to solve the issue."
+                            Write-ScreenInfo "The operating system '$($os.OperatingSystemName)' with version '$($os.Version)' is already added to the lab. If this is an issue with cached information, use Clear-LabCache to solve the issue." -Type Warning
                         }
                         $iso.OperatingSystems.Add($os) | Out-Null
                     }
