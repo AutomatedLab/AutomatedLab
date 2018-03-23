@@ -205,7 +205,9 @@
         'Wait-LabVMShutdown',
         'Get-LabBuildStep',
         'Get-LabReleaseStep',
-        'New-LabReleasePipeline'
+        'New-LabReleasePipeline',
+        'Enable-LabTelemetry',
+        'Disable-LabTelemetry'
     )
     
     FileList               = @(

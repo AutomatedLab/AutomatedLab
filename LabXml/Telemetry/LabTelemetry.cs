@@ -17,16 +17,40 @@ namespace AutomatedLab
         private Lab lab;
         private ListXmlStore<Machine> machines = new ListXmlStore<Machine>();
         private DateTime labStarted;
-
+        private const string _telemetryOptoutEnvVar = "AUTOMATEDLAB_TELEMETRY_OPTOUT";
+        public bool TelemetryEnabled { get; private set; }
         public string LabXmlPath { get; set; }
 
         private LabTelemetry()
         {
             TelemetryConfiguration.Active.InstrumentationKey = telemetryKey;
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = false;
-
             telemetryClient = new TelemetryClient();
+            TelemetryEnabled = !GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false);
+        }
 
+        // taken from https://github.com/powershell/powershell
+        private static bool GetEnvironmentVariableAsBool(string name, bool defaultValue)
+        {
+            var str = Environment.GetEnvironmentVariable(name);
+            if (string.IsNullOrEmpty(str))
+            {
+                return defaultValue;
+            }
+
+            switch (str.ToLowerInvariant())
+            {
+                case "true":
+                case "1":
+                case "yes":
+                    return true;
+                case "false":
+                case "0":
+                case "no":
+                    return false;
+                default:
+                    return defaultValue;
+            }
         }
 
         public static LabTelemetry Instance

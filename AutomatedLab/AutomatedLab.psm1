@@ -467,10 +467,6 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
-	$telemetryClient = [AutomatedLab.LabTelemetry]::Instance
-	$telemetryClient.LabXmlPath = (Get-LabDefinition).LabFilePath
-	$telemetryClient.LabStarted((Get-Module AutomatedLab).Version, $PSVersionTable.BuildVersion)
-
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
@@ -497,6 +493,10 @@ function Install-Lab
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
     }
+
+	$telemetryClient = [AutomatedLab.LabTelemetry]::Instance
+	$telemetryClient.LabXmlPath = (Get-LabDefinition).LabFilePath
+	$telemetryClient.LabStarted((Get-Module AutomatedLab).Version, $PSVersionTable.BuildVersion)
     
     Unblock-LabSources
 
@@ -3710,6 +3710,52 @@ function New-LabSourcesFolder
         $Path
     }
 }
+#endregion
+
+#region Telemetry
+function Enable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+}
+
+function Disable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+}
+
+$telemetryChoice = @"
+Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
+and to bring you fancy dashboards with e.g. the community's favorite roles.
+
+We are collecting the following with Azure Application Insights:
+- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your number of lab machines
+- The roles you used
+- The time it took your lab to finish
+- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+
+We collect no personally identifiable information.
+
+If you change your mind later on, you can always set the environment
+variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
+Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
+
+We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
+
+If you want to opt out ( :-( ), you can tell us now!
+"@
+
+if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+{
+    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    
+    # This is actually enough for the telemetry client.
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
+
+    # We cannot refresh the env drive, so we add the same variable here as well.
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice 
+}
+#endregion
 
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
