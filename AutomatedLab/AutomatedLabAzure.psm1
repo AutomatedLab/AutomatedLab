@@ -1105,7 +1105,7 @@ function Remove-LabAzureLabSourcesStorage
         if ($PSCmdlet.ShouldProcess($azureLabStorage.ResourceGroupName, 'Remove Resource Group'))
         {
             Remove-AzureRmResourceGroup -Name $azureLabStorage.ResourceGroupName -Force | Out-Null
-            Write-Warning "Azure Resource Group '$($azureLabStorage.ResourceGroupName)' was removed"
+            Write-ScreenInfo "Azure Resource Group '$($azureLabStorage.ResourceGroupName)' was removed" -Type Warning
         }
     }
     
@@ -1240,7 +1240,7 @@ function Sync-LabAzureLabSources
             $apiResponse = $uploadedFile.SetPropertiesAsync()
             if (-not $apiResponse.Status -eq "RanToCompletion")
             {
-                Write-Warning "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)"
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
                 continue
             }
 

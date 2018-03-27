@@ -615,7 +615,7 @@ function New-LabSqlAccount
 
             if (-not $dc)
             {
-                Write-Warning -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain)
+                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain) -Type Warning
             }
 
             Invoke-LabCommand -ComputerName $dc -ActivityName ('Creating {0} in {1}' -f $user,$domain) -ScriptBlock {

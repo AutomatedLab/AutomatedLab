@@ -239,7 +239,7 @@ function Install-LabBuildWorker
 
             if ($configurationProcess.ExitCode -ne 0)
             {
-                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
+                Write-ScreenInfo -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)" -Type Warning
             }
         } -AsJob -Variable (Get-Variable tfsServer, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }

@@ -141,7 +141,7 @@ $adInstallFirstChildDc2012 = {
         }
         else
         {
-            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -173,7 +173,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         try
@@ -272,7 +272,7 @@ $adInstallFirstChildDcPre2012 = {
         }
         else
         {
-            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -358,7 +358,7 @@ $adInstallFirstChildDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-Warning "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -424,7 +424,7 @@ $adInstallDc2012 = {
         }
         else
         {
-            Write-Warning "Domain $DomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -489,7 +489,7 @@ $adInstallDc2012 = {
     $retriesDone = 0
     while ($result.Status -eq 'Error' -and $retriesDone -lt $Retries)
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -605,7 +605,7 @@ $adInstallDcPre2012 = {
         }
         else
         {
-            Write-Warning "Domain $DomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -630,7 +630,7 @@ $adInstallDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -683,7 +683,7 @@ function Install-LabRootDcs
     
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'RootDC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'RootDC'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -941,7 +941,7 @@ function Install-LabFirstChildDcs
     $machines = $lab.Machines | Where-Object { $_.Roles.Name -contains 'FirstChildDC' }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'FirstChildDC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'FirstChildDC'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1184,7 +1184,7 @@ function Install-LabDcs
     
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'DC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'DC'" -Type Warning
         Write-LogFunctionExit
         return
     }

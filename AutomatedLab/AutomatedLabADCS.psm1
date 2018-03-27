@@ -1463,7 +1463,7 @@ function Install-LabCA
     $machines = Get-LabVM -Role CaRoot, CaSubordinate
     if (-not $machines)
     {
-        Write-Warning -Message 'There is no machine(s) with CA role'
+        Write-ScreenInfo -Message 'There is no machine(s) with CA role' -Type Warning
         return
     }
     
@@ -1821,18 +1821,18 @@ function Install-LabCAMachine
     {
         if ($keySet.Key -cnotin $knownParameters)
         {
-            Write-Warning -Message "Parameter name '$($keySet.Key)' is unknown/ignored)"
+            Write-ScreenInfo -Message "Parameter name '$($keySet.Key)' is unknown/ignored)" -Type Warning
             $unkownParFound = $true
         }
     }
     if ($unkownParFound)
     {
-        Write-Warning -Message 'Valid parameter names are:'
+        Write-ScreenInfo -Message 'Valid parameter names are:' -Type Warning
         Foreach ($name in ($knownParameters.GetEnumerator()))
         {
-            Write-Warning -Message "  $($name)"
+            Write-ScreenInfo -Message "  $($name)" -Type Warning
         }
-        Write-Warning -Message 'NOTE that all parameter names are CASE SENSITIVE!'
+        Write-ScreenInfo -Message 'NOTE that all parameter names are CASE SENSITIVE!' -Type Warning
     }
     #endregion - Check if any unknown parameter names was passed
     
@@ -2114,7 +2114,7 @@ function Install-LabCAMachine
     
     if (($role.Properties.ContainsKey('OCSPHTTPURL01')) -or ($role.Properties.ContainsKey('OCSPHTTPURL02')) -or ($role.Properties.ContainsKey('InstallOCSP')))
     {
-        Write-Warning -Message 'OCSP is not yet supported. OCSP parameters will be ignored and OCSP will not be installed!'
+        Write-ScreenInfo -Message 'OCSP is not yet supported. OCSP parameters will be ignored and OCSP will not be installed!' -Type Warning
     }
     
     
@@ -2212,9 +2212,9 @@ function Install-LabCAMachine
     }
     if (($param.CAType -like '*root*') -and ($role.Properties.ContainsKey('ValidityPeriod')) -and ($validityPeriodUnitsHours) -and ($validityPeriodUnitsHours -gt (10 * 365 * 24)))
     {
-        Write-Warning -Message "ValidityPeriod is more than 10 years. Overall validity of all issued certificates by Enterprise Root CAs will be set to specified value. `
+        Write-ScreenInfo -Message "ValidityPeriod is more than 10 years. Overall validity of all issued certificates by Enterprise Root CAs will be set to specified value. `
             However, the default validity (specified by 2012/2012R2 Active Directory) of issued by Enterprise Root CAs to Subordinate CAs, is 5 years. `
-        If more than 5 years is needed, a custom certificate template is needed wherein the validity can be changed."
+        If more than 5 years is needed, a custom certificate template is needed wherein the validity can be changed." -Type Warning
     }
     
     
@@ -2293,12 +2293,12 @@ function Install-LabCAMachine
             if ($role.Name -eq 'CaRoot')
             {
                 $param.CAType = 'EnterpriseRootCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseRootCA" since machine is domain joined and Root CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseRootCA" since machine is domain joined and Root CA role is specified' -Type Warning }
             }
             else
             {
                 $param.CAType = 'EnterpriseSubordinateCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseSubordinateCA" since machine is domain joined and Subordinate CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseSubordinateCA" since machine is domain joined and Subordinate CA role is specified' -Type Warning }
             }
         }
         else
@@ -2306,12 +2306,12 @@ function Install-LabCAMachine
             if ($role.Name -eq 'CaRoot')
             {
                 $param.CAType = 'StandAloneRootCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneRootCA" since machine is not domain joined and Root CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneRootCA" since machine is not domain joined and Root CA role is specified' -Type Warning }
             }
             else
             {
                 $param.CAType = 'StandAloneSubordinateCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneSubordinateCA" since machine is not domain joined and Subordinate CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneSubordinateCA" since machine is not domain joined and Subordinate CA role is specified' -Type Warning }
             }
         }
     }
@@ -2679,12 +2679,12 @@ function Install-LabCAMachine
     $role = $machine.Roles | Where-Object { ([AutomatedLab.Roles]$_.Name -band $roles) -ne 0 }
     if (($param.CAType -like '*root*') -and !($role.Properties.ContainsKey('CertsValidityPeriodUnits')))
     {
-        if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message "Adding parameter 'CertsValidityPeriodUnits' with value of '$($param.CertsValidityPeriodUnits)' to machine roles properties of machine $($machine.Name)" }
+        if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message "Adding parameter 'CertsValidityPeriodUnits' with value of '$($param.CertsValidityPeriodUnits)' to machine roles properties of machine $($machine.Name)" -Type Warning }
         $role.Properties.Add('CertsValidityPeriodUnits', $param.CertsValidityPeriodUnits)
     }
     if (($param.CAType -like '*root*') -and !($role.Properties.ContainsKey('CertsValidityPeriod')))
     {
-        if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message "Adding parameter 'CertsValidityPeriod' with value of '$($param.CertsValidityPeriod)' to machine roles properties of machine $($machine.Name)" }
+        if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message "Adding parameter 'CertsValidityPeriod' with value of '$($param.CertsValidityPeriod)' to machine roles properties of machine $($machine.Name)" -Type Warning }
         $role.Properties.Add('CertsValidityPeriod', $param.CertsValidityPeriod)
     }
     
@@ -2706,7 +2706,7 @@ function Install-LabCAMachine
             #$param.InstallWebRole = (($machine.Name + "." + $machine.domainname) -in $URLs)
             if (($machine.Name + '.' + $machine.domainname) -notin $URLs)
             {
-                Write-Warning -Message 'Http based AIA or CDP specified but is NOT pointing to this server. Make sure to MANUALLY establish this web server and DNS name as well as copy AIA and CRL(s) to this web server'
+                Write-ScreenInfo -Message 'Http based AIA or CDP specified but is NOT pointing to this server. Make sure to MANUALLY establish this web server and DNS name as well as copy AIA and CRL(s) to this web server' -Type Warning
             }
         }
     }
@@ -2718,10 +2718,10 @@ function Install-LabCAMachine
     
     
     #Test for existence of AIA location
-    if (!($param.UseLDAPAia) -and !($param.UseHTTPAia)) { Write-Warning -Message 'AIA information will not be included in issued certificates because both LDAP and HTTP based AIA has been disabled' }
+    if (!($param.UseLDAPAia) -and !($param.UseHTTPAia)) { Write-ScreenInfo -Message 'AIA information will not be included in issued certificates because both LDAP and HTTP based AIA has been disabled' -Type Warning }
     
     #Test for existence of CDP location
-    if (!($param.UseLDAPCrl) -and !($param.UseHTTPCrl)) { Write-Warning -Message 'CRL information will not be included in issued certificates because both LDAP and HTTP based CRLs has been disabled' }
+    if (!($param.UseLDAPCrl) -and !($param.UseHTTPCrl)) { Write-ScreenInfo -Message 'CRL information will not be included in issued certificates because both LDAP and HTTP based CRLs has been disabled' -Type Warning }
     
     
     if (!($param.InstallWebRole) -and ($param.InstallWebEnrollment))
@@ -2741,7 +2741,7 @@ function Install-LabCAMachine
         {
             if (Get-LabVM -Role CaSubordinate -ErrorAction SilentlyContinue)
             {
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' -Type Warning }
                 $param.DoNotLoadDefaultTemplates = $True
             }
             else
@@ -2851,7 +2851,7 @@ function Publish-LabCAInstallCertificates
     if ($machinesNotTargeted)
     {
         Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and SUbordinate certificate servers. Please update these manually.' -Type Warning
-        $machinesNotTargeted | ForEach-Object { Write-Warning -Message "  $_" }
+        $machinesNotTargeted | ForEach-Object { Write-ScreenInfo -Message "  $_" -Type Warning }
     }
     
     foreach ($machine in $targetMachines)

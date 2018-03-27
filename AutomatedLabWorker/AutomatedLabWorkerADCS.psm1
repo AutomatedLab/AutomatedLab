@@ -610,7 +610,7 @@ function Install-LWLabCAServers2008
             }
             catch
             {
-                Write-Warning "Unable to load necessary interfaces. Your Windows Server operating system is not supported!"
+                Write-ScreenInfo "Unable to load necessary interfaces. Your Windows Server operating system is not supported!" -Type Warning
                 return
             }
 

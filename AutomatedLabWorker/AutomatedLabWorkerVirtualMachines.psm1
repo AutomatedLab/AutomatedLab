@@ -1168,7 +1168,7 @@ workflow Remove-LWHypervVMSnapshot
         
         if (-not $snapshot)
         {
-            Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+            Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
         }
         else
         {
@@ -1228,7 +1228,7 @@ workflow Restore-LWHypervVMSnapshot
             
             if (-not $snapshot)
             {
-                Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+                Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
             }
             else
             {

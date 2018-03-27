@@ -32,7 +32,7 @@ function Enable-LabHostRemoting
     
     if (-not ($trustedHostsList -contains '*'))
     {
-        Write-Warning -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'"
+        Write-ScreenInfo -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'" -Type Warning
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
@@ -44,7 +44,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFresh', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1', 'WSMAN/*') | Out-Null
@@ -57,7 +57,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', 'TERMSRV/*') | Out-Null
@@ -70,7 +70,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFreshNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1', 'WSMAN/*') | Out-Null
@@ -83,7 +83,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSavedNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', 'TERMSRV/*') | Out-Null
@@ -1461,7 +1461,7 @@ function Install-LabWebServers
     $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role '$roleName'"
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1524,7 +1524,7 @@ function Get-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
@@ -1632,7 +1632,7 @@ function Install-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     Write-ScreenInfo -Message "Installing Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
@@ -1698,7 +1698,7 @@ function Install-VisualStudio2013
     
     if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1817,7 +1817,7 @@ function Install-VisualStudio2015
     
     if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -2177,7 +2177,7 @@ function Install-LabSoftwarePackage
         $unknownMachines = (Compare-Object -ReferenceObject $ComputerName -DifferenceObject $Machine.Name).InputObject
         if ($unknownMachines)
         {
-            Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+            Write-ScreenInfo "The machine(s) '$($unknownMachines -join ', ')' could not be found." -Type Warning
         }
 
         if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
@@ -2558,7 +2558,7 @@ function New-LabPSSession
                 )
                 {
                     #remove the existing session if connecting to Azure LabSoruce did not work in case the session connects to an Azure VM.
-                    Write-Warning "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false"
+                    Write-ScreenInfo "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false" -Type Warning
                     Remove-LabPSSession -ComputerName $internalSession.LabMachineName
                     $internalSession = $null
                 }
@@ -2922,7 +2922,7 @@ function Invoke-LabCommand
 
     if (-not $machines)
     {
-        Write-Warning "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab."
+        Write-ScreenInfo "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab." -Type Warning
         return
     }
         
@@ -3262,7 +3262,7 @@ function Update-LabMemorySettings
             
             if ($memoryCalculated -lt 256)
             {
-                Write-Warning -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab"
+                Write-ScreenInfo -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab" -Type Warning
             }
         }
         

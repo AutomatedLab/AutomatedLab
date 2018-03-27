@@ -417,7 +417,7 @@ function Save-LabVM
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
-            Write-Warning 'There is no machine to start'
+            Write-ScreenInfo 'There is no machine to start' -Type Warning
             return
         }
         
@@ -617,7 +617,7 @@ function Stop-LabVM2
     
     if ($jobs.Count -ne ($jobs | Where-Object State -eq Completed).Count)
     {
-        Write-Warning "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes"
+        Write-ScreenInfo "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes" -Type Warning
     }
 }
 #endregion Stop-LabVM2
@@ -1430,10 +1430,10 @@ function Mount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -in HyperV,Azure
@@ -1481,10 +1481,10 @@ function Dismount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
@@ -1550,7 +1550,7 @@ function Set-MachineUacStatus
 
     if ($uacStatusChanges)
     {
-        Write-Warning "Setting this requires a reboot of $ComputerName."
+        Write-ScreenInfo "Setting this requires a reboot of $ComputerName." -Type Warning
     }
 }
 
