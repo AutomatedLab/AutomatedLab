@@ -1,6 +1,6 @@
 # Changelog
 
-## 4.5.0 - yyyy-MM-dd
+## 5.0 - yyyy-MM-dd
 
 ## Enhancements
 
@@ -18,7 +18,7 @@
 - Documentation moved to markdown
 - Lab XML folder moved out of "My Documents" to avoid triggering Defender
 
-## v4.7.* - yyyy-mm-dd
+## v4.7.2.2 - 2018-01-18
 
 ### Fixes
 

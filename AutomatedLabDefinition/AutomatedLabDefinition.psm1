@@ -3325,14 +3325,17 @@ function Set-LabLocalVirtualMachineDiskAuto
         }
         #Fastest drive is the boot drive. If speed on next fastest drive is close to the boot drive in speed (within 50%), select this drive now instead of the boot drive
         #If not, select the boot drive
-        elseif ((($drives[1].TotalSpeed - $drives[0].TotalSpeed) / $drives[1].TotalSpeed * 100) -lt 50)
+        elseif (($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed) -gt 50)
         {
             Write-Verbose "Selecing drive $($drives[1].DriveLetter) for VMs based on speed and NOT being the boot drive"
+            Write-Verbose "Selected disk speed compared to system disk is $(($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed))%"
+            
             $script:lab.Target.Path = "$($drives[1].DriveLetter):\AutomatedLab-VMs"
         }
         else
         {
             Write-Verbose "Selecing drive $($drives[0].DriveLetter) for VMs based on speed though this drive is actually the boot drive but is much faster than second fastest drive ($($drives[1].DriveLetter))"
+            Write-Verbose ('Selected system disk, speed of next fastest disk compared to system disk is {0:P}' -f ($drives[1].TotalSpeed / $drives[0].TotalSpeed))
             $script:lab.Target.Path = "$($drives[0].DriveLetter):\AutomatedLab-VMs"
         }
     }
