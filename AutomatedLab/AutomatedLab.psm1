@@ -495,8 +495,7 @@ function Install-Lab
     }
 
 	$telemetryClient = [AutomatedLab.LabTelemetry]::Instance
-	$telemetryClient.LabXmlPath = (Get-LabDefinition).LabFilePath
-	$telemetryClient.LabStarted((Get-Module AutomatedLab).Version, $PSVersionTable.BuildVersion)
+	$telemetryClient.LabStarted((Get-Lab).Export(), (Get-Module AutomatedLab)[-1].Version, $PSVersionTable.BuildVersion, $PSVersionTable.PSVersion)
     
     Unblock-LabSources
 
@@ -831,7 +830,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-	$telemetryClient.LabFinished()
+	$telemetryClient.LabFinished((Get-Lab).Export())
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit

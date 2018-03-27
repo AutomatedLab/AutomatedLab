@@ -2,8 +2,8 @@
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.Extensibility;
 using System.Collections.Generic;
-using System.Xml;
-using System.Linq;
+using Microsoft.ApplicationInsights.Channel;
+using Microsoft.ApplicationInsights.DataContracts;
 
 namespace AutomatedLab
 {
@@ -13,18 +13,17 @@ namespace AutomatedLab
         private static object syncRoot = new Object();
         private TelemetryClient telemetryClient = null;
         private const string telemetryKey = "03367df3-a45f-4ba8-9163-e73999e2c7b6";
-        private List<XmlDocument> docs = new List<XmlDocument>();
-        private Lab lab;
-        private ListXmlStore<Machine> machines = new ListXmlStore<Machine>();
         private DateTime labStarted;
         private const string _telemetryOptoutEnvVar = "AUTOMATEDLAB_TELEMETRY_OPTOUT";
         public bool TelemetryEnabled { get; private set; }
-        public string LabXmlPath { get; set; }
 
         private LabTelemetry()
         {
             TelemetryConfiguration.Active.InstrumentationKey = telemetryKey;
             TelemetryConfiguration.Active.TelemetryChannel.DeveloperMode = false;
+
+            // Add our own initializer to filter out any personal information before sending telemetry data
+            TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());
             telemetryClient = new TelemetryClient();
             TelemetryEnabled = !GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false);
         }
@@ -69,46 +68,24 @@ namespace AutomatedLab
                 return instance;
             }
         }
-
-        private void ImportLabData()
+        
+        public void LabStarted(byte[] labData, string version, string osVersion, string psVersion)
         {
-            if (string.IsNullOrWhiteSpace(LabXmlPath)) return;
-
-            XmlDocument mainDoc = new XmlDocument();
-            mainDoc.Load(LabXmlPath);
-            docs.Add(mainDoc);
-
-            var xmlPaths = mainDoc.SelectNodes("//@Path").OfType<XmlAttribute>().Select(e => e.Value).Where(text => text.EndsWith(".xml"));
-
-            foreach (var path in xmlPaths)
-            {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(path);
-                docs.Add(doc);
-            }
-
-            lab = Lab.Import(LabXmlPath);
-            lab.MachineDefinitionFiles.ForEach(file => machines.AddFromFile(file.Path));
-            machines.ForEach(m => SendUsedRole(m.Roles.Select(r => r.ToString()).ToList()));
-            lab.Machines = machines;
-        }
-
-        public void LabStarted(string version, string osVersion)
-        {
-            if (string.IsNullOrWhiteSpace(LabXmlPath)) return;
-            if (lab == null) ImportLabData();
+            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            var lab = Lab.Import(labData);
 
             var properties = new Dictionary<string, string>
             {
                 { "version", version},
                 { "hypervisor", lab.DefaultVirtualizationEngine},
-                { "osversion", osVersion}
+                { "osversion", osVersion},
+                { "psversion", psVersion}
             };
 
             var metrics = new Dictionary<string, double>
             {
                 {
-                    "machineCount", machines.Count
+                    "machineCount", lab.Machines.Count
                 }
             };
 
@@ -125,10 +102,10 @@ namespace AutomatedLab
             }
         }
 
-        public void LabFinished()
+        public void LabFinished(byte[] labData)
         {
-            if (string.IsNullOrWhiteSpace(LabXmlPath)) return;
-            if (lab == null) ImportLabData();
+            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            var lab = Lab.Import(labData);
 
             var labDuration = DateTime.Now - labStarted;
 
@@ -155,8 +132,7 @@ namespace AutomatedLab
 
         private void SendUsedRole(List<string> roleName)
         {
-            if (string.IsNullOrWhiteSpace(LabXmlPath)) return;
-            if (lab == null) ImportLabData();
+            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
 
             roleName.ForEach(name =>
             {
@@ -184,6 +160,20 @@ namespace AutomatedLab
             {
                 ; //nothing to catch. If it doesn't work, it doesn't work.
             }
+        }
+    }
+
+    public class LabTelemetryInitializer : ITelemetryInitializer
+    {
+        public void Initialize(ITelemetry telemetry)
+        {
+            var requestTelemetry = telemetry as EventTelemetry;
+            // Is this a TrackRequest() ?
+            if (requestTelemetry == null) return;
+            
+            // Strip personally identifiable info from request
+            requestTelemetry.Context.Cloud.RoleInstance = "nope";
+            requestTelemetry.Context.Cloud.RoleName = "nope";
         }
     }
 }
