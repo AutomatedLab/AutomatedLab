@@ -2261,6 +2261,11 @@ function Add-LabMachineDefinition
             }
             $machine.DomainName = $DomainName
         }
+
+        if (-not $OperatingSystem.Version)
+        {
+            throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
+        }
     
         switch ($OperatingSystem.Version.ToString(2))
         {
