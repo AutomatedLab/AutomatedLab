@@ -162,7 +162,7 @@ function Install-LabDscPullServer
     }
 
 
-    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labSources\SoftwarePackages -PassThru
+    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labsources\SoftwarePackages -PassThru
     $jobs = @()
 
     foreach ($machine in $machines)
@@ -181,6 +181,12 @@ function Install-LabDscPullServer
         else
         {
             $databaseEngine = 'edb'
+        }
+
+        if ($machine.DefaultVirtualizationEngine -eq 'Azure')
+        {
+            Write-Verbose -Message ('Adding external port 8080 to Azure load balancer')
+            Add-LWAzureLoadBalancedPort -Port 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
         Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru

@@ -206,6 +206,8 @@
         'Get-LabBuildStep',
         'Get-LabReleaseStep',
         'New-LabReleasePipeline',
+        'Get-LabAzureLoadBalancedPort',
+        'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry'
     )
