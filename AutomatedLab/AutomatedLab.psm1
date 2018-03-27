@@ -3712,7 +3712,11 @@ $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache | Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } | Sort-Object -Property OperatingSystemImageName |
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+    Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } |
+    Group-Object -Property OperatingSystemImageName |
+    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+    Sort-Object -Property OperatingSystemImageName |
     ForEach-Object {
         [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
     }
