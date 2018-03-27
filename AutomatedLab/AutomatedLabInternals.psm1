@@ -481,6 +481,7 @@ function Get-LabInternetFile
             try
             {
                 $bytesProcessed = 0
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
                 $request = [System.Net.WebRequest]::Create($Uri)
                 $request.AllowAutoRedirect = $true
                 
