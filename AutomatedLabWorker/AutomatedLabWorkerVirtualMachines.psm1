@@ -22,6 +22,8 @@ function New-LWHypervVM
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
+
+    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
     
     Write-LogFunctionEntry
 
@@ -636,7 +638,7 @@ function Remove-LWHypervVM
         else
         {
             Write-Verbose "Stopping VM '$($Name)'"
-            Stop-VM -TurnOff -Name $Name -Force
+            Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
     
         Write-Verbose "Removing VM '$($Name)'"

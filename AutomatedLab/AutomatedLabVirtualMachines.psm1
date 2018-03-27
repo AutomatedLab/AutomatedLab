@@ -169,7 +169,8 @@ function Start-LabVM
 
         [switch]$RootDomainMachines,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [int]$PreDelaySeconds = 0,
 
@@ -179,6 +180,8 @@ function Start-LabVM
     begin
     {
         Write-LogFunctionEntry
+
+        if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator        
         
         $lab = Get-Lab
         
@@ -507,7 +510,7 @@ function Stop-LabVM
         
         [switch]$Wait,
 
-        [int]$ProgressIndicator,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [switch]$NoNewLine,
 
@@ -632,12 +635,14 @@ function Wait-LabVM
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = 0,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     Write-LogFunctionEntry
         
@@ -657,7 +662,7 @@ function Wait-LabVM
         Write-Error 'None of the given machines could be found'
         return
     }
-        
+
     foreach ($vm in $vms)
     {
         $session = $null
@@ -706,7 +711,7 @@ function Wait-LabVM
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
-                Import-Lab -LabBytes $LabBytes
+                Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
 
                 #do 5000 retries. This job is cancelled anyway if the timeout is reached
                 Write-Verbose "Trying to create session to '$ComputerName'"
@@ -718,9 +723,9 @@ function Wait-LabVM
     }
 
     Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
-        
-    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay
-        
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay -Timeout $TimeoutInMinutes
+
     $completed = $jobs | Where-Object State -eq Completed | Receive-Job -ErrorAction SilentlyContinue -Verbose:$VerbosePreference
         
     if ($completed)
@@ -823,8 +828,8 @@ function Wait-LabVMRestart
         
         [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
         
-        [ValidateRange(1, 300)]
-        [int]$ProgressIndicator = 10,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
         

@@ -64,7 +64,6 @@
     
     FunctionsToExport      = @(
         'New-LabSourcesFolder',
-        'Add-LabAzureProfile',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
         'Add-LabVMUserRight',
@@ -252,6 +251,8 @@
 
         Timeout_VisualStudio2013Installation   = 90
         Timeout_VisualStudio2015Installation   = 90
+
+        DefaultProgressIndicator               = 10
 
         #PSSession settings
         InvokeLabCommandRetries                = 3

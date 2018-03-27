@@ -964,41 +964,6 @@ function Get-LabAzureResourceGroup
     Write-LogFunctionExit
 }
 
-function Add-LabAzureProfile
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletbinding()]
-    param
-    (
-        [switch]$PassThru,
-        [switch]$NoDisplay
-    )
-    
-    Write-LogFunctionEntry
-    
-    $publishSettingFile = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*azurermsettings*' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
-    if (-not $NoDisplay)
-    {
-        Write-ScreenInfo -Message "Auto-detected and using publish setting file '$publishSettingFile'" -Type Info
-    }
-
-    if (-not $publishSettingFile)
-    {
-        return
-    }
-
-    if ($NoDisplay)
-    {
-        $null = Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-    }
-    else
-    {
-        Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-    }   
-    
-    Write-LogFunctionExit
-}
-
 #region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
