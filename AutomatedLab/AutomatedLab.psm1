@@ -886,11 +886,20 @@ function Remove-Lab
     {
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
-    }
+    }    
 
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+
+        try 
+        {
+            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
+        }
+        catch 
+        {
+            Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+        }
     
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All

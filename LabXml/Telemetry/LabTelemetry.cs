@@ -4,6 +4,7 @@ using Microsoft.ApplicationInsights.Extensibility;
 using System.Collections.Generic;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
+using System.Linq;
 
 namespace AutomatedLab
 {
@@ -73,6 +74,8 @@ namespace AutomatedLab
         {
             if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
             var lab = Lab.Import(labData);
+            lab.Machines.ForEach(m => SendUsedRole(m.Roles.Select(r => r.Name.ToString()).ToList()));
+            lab.Machines.ForEach(m => SendUsedRole(m.PostInstallationActivity.Where(p => p.IsCustomRole).Select(c => System.IO.Path.GetFileNameWithoutExtension(c.ScriptFileName)).ToList(), true));
 
             var properties = new Dictionary<string, string>
             {
@@ -121,6 +124,29 @@ namespace AutomatedLab
 
             try
             {
+                telemetryClient.TrackEvent("LabFinished", properties, metrics);
+                telemetryClient.Flush();
+            }
+            catch
+            {
+                ; //nothing to catch. If it doesn't work, it doesn't work.
+            }
+        }
+
+        public void LabRemoved(byte[] labData)
+        {
+            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            var lab = Lab.Import(labData);
+            var f = new System.IO.FileInfo(lab.LabFilePath);
+            var duration = DateTime.Now - f.CreationTime;
+
+            var metrics = new Dictionary<string, double>
+            {
+                { "labRunningTicks", duration.Ticks }
+            };
+
+            try
+            {
                 telemetryClient.TrackEvent("LabFinished", null, metrics);
                 telemetryClient.Flush();
             }
@@ -130,7 +156,7 @@ namespace AutomatedLab
             }
         }
 
-        private void SendUsedRole(List<string> roleName)
+        private void SendUsedRole(List<string> roleName, bool isCustomRole = false)
         {
             if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
 
@@ -143,7 +169,8 @@ namespace AutomatedLab
 
                 try
                 {
-                    telemetryClient.TrackEvent("Role", properties, null);
+                    var telemetryType = isCustomRole ? "CustomRole" : "Role";
+                    telemetryClient.TrackEvent(telemetryType, properties, null);
                 }
                 catch
                 {
