@@ -3755,7 +3755,7 @@ Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomp
 
 We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
 
-If you want to opt out ( :-( ), you can tell us now!
+If you want to opt out, please select Yes.
 "@
 
 if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
