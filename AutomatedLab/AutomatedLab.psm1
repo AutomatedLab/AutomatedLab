@@ -501,6 +501,7 @@ function Install-Lab
     catch
     {
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
     
     Unblock-LabSources
@@ -843,6 +844,7 @@ function Install-Lab
     catch
     {
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
     
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
