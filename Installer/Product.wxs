@@ -1750,7 +1750,12 @@ Get-Content D:\LabSources.wxs | ForEach-Object { if ($_ -like '*PUT-GUID-HERE*')
 Commands to create the command in the project's pre-build that creates the file Includes.wxi:
 Base64 encoding is required due to escaping madness
 $string = '
-$version = (Find-Module -Name AutomatedLab.Common).Version;
+$version = (Find-Module -Name AutomatedLab.Common -ErrorAction SilentlyContinue).Version;
+if (-not $version)
+{
+    $version = (Select-String -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Pattern "(ModuleVersion([ =]+))('')(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})").Matches[0].Groups["Version"].Value
+}
+Write-Host "Version of AutomatedLab.Common is ''$version''"
 (''<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?></Include>'' -f $version) | Out-File -FilePath ..\Installer\Includes.wxi -Encoding UTF8;
 (Get-Content -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Raw) -replace "(ModuleVersion([ =]+))('')(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})", "`$1''$version" | Out-File -FilePath .\AutomatedLab.Common\AutomatedLab.Common.psd1
 '
