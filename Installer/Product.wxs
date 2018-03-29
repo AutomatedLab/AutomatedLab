@@ -369,6 +369,8 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
                   <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
+                  <File Id="AppInsightsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\Microsoft.ApplicationInsights.dll" />
+                  <File Id="AppInsightsDiagnosticsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\System.Diagnostics.DiagnosticSource.dll" />
                   <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="both"/>
                   <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="both"/>
                   <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="both"/>

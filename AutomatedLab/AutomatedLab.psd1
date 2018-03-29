@@ -208,6 +208,8 @@
         'New-LabReleasePipeline',
         'Get-LabAzureLoadBalancedPort',
         'Open-LabTfsSite'
+        'Enable-LabTelemetry',
+        'Disable-LabTelemetry'
     )
     
     FileList               = @(
