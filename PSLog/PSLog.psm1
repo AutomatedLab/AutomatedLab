@@ -1075,7 +1075,7 @@ function Write-ProgressIndicator
 {
     # .ExternalHelp AutomatedLab.Help.xml
 
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
@@ -1088,10 +1088,15 @@ function Write-ProgressIndicatorEnd
 {
     # .ExternalHelp AutomatedLab.Help.xml
 
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoNewLine'].IsPresent)
+    {
+        return
+    }
+    
     Write-ScreenInfo -Message '.'
 }
 #endregion Write-ProgressIndicatorEnd

@@ -189,7 +189,8 @@ function Install-LabDscPullServer
             Add-LWAzureLoadBalancedPort -Port 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
-        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru
+        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru | Out-Null
+
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $guid = (New-Guid).Guid

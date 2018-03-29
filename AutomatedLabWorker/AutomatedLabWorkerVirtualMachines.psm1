@@ -22,6 +22,8 @@ function New-LWHypervVM
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
+
+    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
     
     Write-LogFunctionEntry
 
@@ -636,7 +638,7 @@ function Remove-LWHypervVM
         else
         {
             Write-Verbose "Stopping VM '$($Name)'"
-            Stop-VM -TurnOff -Name $Name -Force
+            Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
     
         Write-Verbose "Removing VM '$($Name)'"
@@ -1166,7 +1168,7 @@ workflow Remove-LWHypervVMSnapshot
         
         if (-not $snapshot)
         {
-            Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+            Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
         }
         else
         {
@@ -1226,7 +1228,7 @@ workflow Restore-LWHypervVMSnapshot
             
             if (-not $snapshot)
             {
-                Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+                Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
             }
             else
             {

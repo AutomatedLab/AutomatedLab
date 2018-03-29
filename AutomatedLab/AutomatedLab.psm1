@@ -32,7 +32,7 @@ function Enable-LabHostRemoting
     
     if (-not ($trustedHostsList -contains '*'))
     {
-        Write-Warning -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'"
+        Write-ScreenInfo -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'" -Type Warning
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
@@ -44,7 +44,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFresh', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1', 'WSMAN/*') | Out-Null
@@ -57,7 +57,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', 'TERMSRV/*') | Out-Null
@@ -70,7 +70,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFreshNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1', 'WSMAN/*') | Out-Null
@@ -83,7 +83,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSavedNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', 'TERMSRV/*') | Out-Null
@@ -115,7 +115,9 @@ function Import-Lab
         
         [switch]$PassThru,
         
-        [switch]$NoValidation
+        [switch]$NoValidation,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -164,8 +166,8 @@ function Import-Lab
     
         if ((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Force).Value -ne '*')
         {
-            Write-Warning 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements'
-            Write-Warning 'After installing the lab you should undo the changes for security reasons'
+            Write-ScreenInfo 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements' -Type Warning
+            Write-ScreenInfo 'After installing the lab you should undo the changes for security reasons' -Type Warning
             throw "TrustedHosts need to be set to '*' in order to be able to connect to the new VMs. Please run the cmdlet 'Set-LabHostRemoting' to make the required changes."
         }
     
@@ -289,7 +291,7 @@ function Import-Lab
         }
         catch
         {
-            Write-Warning "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)"
+            Write-ScreenInfo "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)" -Type Warning
         }
     
         if($Script:data.AzureSettings.AzureProfilePath -and (Test-Path -Path $Script:data.AzureSettings.AzureProfilePath))
@@ -1042,7 +1044,7 @@ function Get-LabAvailableOperatingSystem
         {
             $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
             $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
-            Write-ScreenInfo "Found $($cachedOsList.Count) OS images in the cache"
+            Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
         }
         catch
         {
@@ -1077,7 +1079,7 @@ function Get-LabAvailableOperatingSystem
     $osList = New-Object $type
     if ($singleFile)
     {
-        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems" -NoNewLine
+        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems..." -NoNewLine
     }
     else
     {
@@ -1488,7 +1490,7 @@ function Install-LabWebServers
     $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role '$roleName'"
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1551,7 +1553,7 @@ function Get-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
@@ -1659,17 +1661,14 @@ function Install-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
-    if (-not $NoDisplay)
-    {
-        Write-ScreenInfo -Message "Installing Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
+    Write-ScreenInfo -Message "Installing Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
         
-        if ($AsJob)
-        {
-            if (-not $NoDisplay) { Write-ScreenInfo -Message 'Windows Feature(s) is being installed in the background' -TaskEnd }
-        }
+    if ($AsJob)
+    {
+        Write-ScreenInfo -Message 'Windows Feature(s) is being installed in the background' -TaskEnd
     }    
     
     $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
@@ -1701,7 +1700,7 @@ function Install-LabWindowsFeature
         {
             Dismount-LabIsoImage -ComputerName $hyperVMachines -SupressOutput
         }
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Done' -TaskEnd }
+        Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
     if ($PassThru)
@@ -1728,7 +1727,7 @@ function Install-VisualStudio2013
     
     if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1847,7 +1846,7 @@ function Install-VisualStudio2015
     
     if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -2207,7 +2206,7 @@ function Install-LabSoftwarePackage
         $unknownMachines = (Compare-Object -ReferenceObject $ComputerName -DifferenceObject $Machine.Name).InputObject
         if ($unknownMachines)
         {
-            Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+            Write-ScreenInfo "The machine(s) '$($unknownMachines -join ', ')' could not be found." -Type Warning
         }
 
         if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
@@ -2220,16 +2219,16 @@ function Install-LabSoftwarePackage
     
     if ($Path)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart }
+        Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart }
+        Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart
     }
     
     if ('Stopped' -in (Get-LabVMStatus $ComputerName -AsHashTable).Values)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine }
+         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         Start-LabVM -ComputerName $ComputerName -Wait -ProgressIndicator 30 -NoNewline
     }
     
@@ -2307,7 +2306,7 @@ function Install-LabSoftwarePackage
         
     $parameters.Add('NoDisplay', $True)
         
-    if (-not $AsJob -and -not $NoDisplay) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
+    if (-not $AsJob) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
         
     $results += Invoke-LabCommand @parameters
         
@@ -2321,11 +2320,11 @@ function Install-LabSoftwarePackage
     
     if ($AsJob)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Installation started in background' -TaskEnd
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation done' -TaskEnd }
+        Write-ScreenInfo -Message 'Installation done' -TaskEnd
     }
     
     if ($PassThru)
@@ -2588,7 +2587,7 @@ function New-LabPSSession
                 )
                 {
                     #remove the existing session if connecting to Azure LabSoruce did not work in case the session connects to an Azure VM.
-                    Write-Warning "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false"
+                    Write-ScreenInfo "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false" -Type Warning
                     Remove-LabPSSession -ComputerName $internalSession.LabMachineName
                     $internalSession = $null
                 }
@@ -2643,12 +2642,20 @@ function New-LabPSSession
                 {
                     Write-Verbose 'Port was NOT open, cannot create session.'
                     Start-Sleep -Seconds $Interval
+                    $machineRetries--
                 }
             }
 
             if (-not $internalSession)
             {
-                Write-Error -ErrorRecord $sessionError[0]
+                if ($sessionError.Count -gt 0)
+                {
+                    Write-Error -ErrorRecord $sessionError[0]
+                }
+                elseif ($machineRetries -lt 1)
+                {
+                    Write-Error -Message "Could not create a session to machine '$m' in $Retries retries."
+                }
             }
         }
     }
@@ -2893,15 +2900,15 @@ function Invoke-LabCommand
     
     if ($AsJob)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart }
+        Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart
         
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Activity started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity started in background' -TaskEnd
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart }
+        Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart
         
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Waiting for completion' }
+        Write-ScreenInfo -Message 'Waiting for completion'
     }
     
     Write-Verbose -Message "Executing lab command activity '$ActivityName' on machines '$($ComputerName -join ', ')'"
@@ -2944,7 +2951,7 @@ function Invoke-LabCommand
 
     if (-not $machines)
     {
-        Write-Warning "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab."
+        Write-ScreenInfo "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab." -Type Warning
         return
     }
         
@@ -3110,11 +3117,11 @@ function Invoke-LabCommand
 
     if ($AsJob)
     {
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Activity started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity started in background' -TaskEnd
     }
     else
     {
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Activity done' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity done' -TaskEnd
     }
 
     if ($PassThru) { $results }
@@ -3284,7 +3291,7 @@ function Update-LabMemorySettings
             
             if ($memoryCalculated -lt 256)
             {
-                Write-Warning -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab"
+                Write-ScreenInfo -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab" -Type Warning
             }
         }
         
@@ -3519,7 +3526,7 @@ function Set-LabDefaultOperatingSystem
             if ($os.Count -gt 1)
             {
                 $os = $os | Sort-Object Version -Descending | Select-Object -First 1
-                Write-Warning "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os.Version)) as default operating system"
+                Write-ScreenInfo "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os.Version)) as default operating system" -Type Warning
             }
         }
 
@@ -3820,7 +3827,14 @@ Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -S
 
     Get-LabVM -All -IncludeLinux |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+        if ($_.Roles)
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
     }
 }
 
@@ -3837,5 +3851,5 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
 #the following line makes sure that the following code runs only once when called from an external source
 if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
 {
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay
 }

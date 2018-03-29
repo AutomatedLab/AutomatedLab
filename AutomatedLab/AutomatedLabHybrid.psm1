@@ -259,7 +259,7 @@ function Restore-LabConnection
     }
     catch
     {
-        Write-Warning -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.'
+        Write-ScreenInfo -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.' -Type Warning
     }
 
     if ($localGateway.GatewayIpAddress -ne $labIp)
@@ -577,7 +577,7 @@ function Connect-OnPremisesWithAzure
             }
             catch
             {
-                Write-Warning -Message "Could not connect to $AzureDnsEntry ($count/3)"
+                Write-ScreenInfo -Message "Could not connect to $AzureDnsEntry ($count/3)" -Type Warning
                 $connectionEstablished = $false
             }
 

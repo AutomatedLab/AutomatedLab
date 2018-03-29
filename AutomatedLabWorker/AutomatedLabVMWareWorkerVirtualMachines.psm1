@@ -319,7 +319,7 @@ function Stop-LWVMWareVM
         }
         else
         {
-            Write-Warning "The machine '$name' does not exist on the connected ESX Server"
+            Write-ScreenInfo "The machine '$name' does not exist on the connected ESX Server" -Type Warning
         }
     }
 	

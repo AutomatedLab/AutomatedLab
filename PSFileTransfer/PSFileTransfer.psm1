@@ -467,7 +467,7 @@ function Copy-LabFileItem
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     $connectedMachines = @{ }
