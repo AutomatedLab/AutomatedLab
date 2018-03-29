@@ -1077,7 +1077,7 @@ function Install-LabFirstChildDcs
         Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
-        
+        Write-ProgressIndicatorEnd
         
         #Make sure the specified installation user will be domain admin
         $cmd = {
