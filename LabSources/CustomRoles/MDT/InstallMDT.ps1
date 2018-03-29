@@ -577,7 +577,7 @@ function Import-MDTTaskSequences {
     }  -ArgumentList $DeploymentFolder, $AdminPassword -PassThru
 }
 
-Import-Lab -Name $data.Name
+Import-Lab -Name $data.Name -NoDisplay
 
 #Installs MDT and performs majority of configuration
 Install-MDT -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -DeploymentShare DeploymentShare$ -InstallUserID $InstallUserID -InstallPassword $InstallPassword

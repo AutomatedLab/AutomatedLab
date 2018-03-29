@@ -29,7 +29,7 @@ if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 }
 else
 {
-    Write-ScreenInfo ".net Version installed on '$proGetServer' is $installedDotnetVersion, skipping .net Framework 4.5.2 installation"
+    Write-ScreenInfo ".net Versions installed on '$proGetServer' are '$($installedDotnetVersion.Version -join ', ')', skipping .net Framework 4.5.2 installation"
 }
 
 if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
