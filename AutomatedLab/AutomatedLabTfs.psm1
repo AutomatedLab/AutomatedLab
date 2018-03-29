@@ -139,7 +139,6 @@ function Install-LabTeamFoundationServer
 
             # Create unattend file with fitting parameters and replace all we can find
             [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
-            $cert = Get-ChildItem -Path Cert:\LocalMachine\my -SSLServerAuthentication -ErrorAction SilentlyContinue
             
             $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
@@ -174,7 +173,7 @@ function Install-LabTeamFoundationServer
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -187,11 +186,10 @@ function Install-LabBuildWorker
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
 
-    [void] (New-Item -Path (Join-Path -Path $labsources -ChildPath Tools\TFS) -ErrorAction SilentlyContinue -ItemType Directory)
     $buildWorkerUri = (Get-Module AutomatedLab -ListAvailable).PrivateData["BuildAgentUri"]
-    $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TFS\TfsBuildWorker.zip
-    Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath
-    Copy-LabFileItem -ComputerName $buildWorkers -Path $buildWorkerPath
+    $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
+    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
+    Copy-LabFileItem -ComputerName $buildWorkers -Path $download.FullName
 
     $installationJobs = @()
     foreach ( $machine in $buildWorkers)
@@ -270,7 +268,7 @@ function New-LabReleasePipeline
         $ReleaseSteps
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -283,14 +281,28 @@ function New-LabReleasePipeline
     }
 
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+
+    $locallabsources = Get-LabSourcesLocationInternal -Local
     
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        {
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+        }
+
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -301,21 +313,27 @@ function New-LabReleasePipeline
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
     
-    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $global:labSources\Tools\git.exe) {"$global:labSources\Tools\git.exe"}
+    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $locallabsources\Tools\git.exe) {"$locallabsources\Tools\git.exe"}
 
     if (-not $gitBinary)
     {
         Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
     }
 
-    $project = New-TfsProject -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
+    $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
 
     if ($gitBinary)
     {
-        $repository = Get-TfsGitRepository -InstanceName $tfsvm.FQDN -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+        $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
+
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            $repoUrl = $repoUrl -replace $tfsvm.Name,$tfsvm.AzureConnectionInfo.DnsName
+        }
+        
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
-        $repoparent = Join-Path -Path $global:labSources -ChildPath GitRepositories
+        $repoparent = Join-Path -Path $locallabsources -ChildPath GitRepositories
         if (-not (Test-Path $repoparent))
         {
             [void] (New-Item -ItemType Directory -Path $repoparent)
@@ -349,7 +367,7 @@ function New-LabReleasePipeline
     }
 
     $parameters = @{
-        InstanceName   = $tfsvm.FQDN
+        InstanceName   = $tfsInstance
         Port           = $tfsPort
         CollectionName = $initialCollection
         ProjectName    = $ProjectName
@@ -383,7 +401,7 @@ function Get-LabBuildStep
         $ComputerName
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -401,10 +419,22 @@ function Get-LabBuildStep
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        {
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+        }
+
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -414,7 +444,7 @@ function Get-LabBuildStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsBuildStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsBuildStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
 }
 
 function Get-LabReleaseStep
@@ -425,7 +455,7 @@ function Get-LabReleaseStep
         $ComputerName
     )
 
-	if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
@@ -443,10 +473,22 @@ function Get-LabReleaseStep
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        {
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+        }
+
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -456,6 +498,63 @@ function Get-LabReleaseStep
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     
-    return (Get-TfsReleaseStep -InstanceName $tfsvm.FQDN -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsReleaseStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+}
+
+function Open-LabTfsSite
+{
+    param
+    (
+        [string]
+        $ComputerName
+    )
+
+    if (-not (Get-Lab -ErrorAction SilentlyContinue))
+    {
+        throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+
+    if ($ComputerName)
+    {
+        $tfsVm = Get-LabVm -ComputerName $ComputerName
+    }
+
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    
+    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = 8080
+    $tfsInstance = $tfsvm.FQDN
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        {
+            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+        }
+
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
+    }
+
+    $requestUrl = if ($UseSsl) 
+    {
+        'https://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
+    } 
+    else
+     {
+         'http://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
+        }
+    
+        Start-Process -FilePath $requestUrl
 }
 #endregion

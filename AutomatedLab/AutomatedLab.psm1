@@ -495,6 +495,16 @@ function Install-Lab
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
     }
+
+    try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabStarted((Get-Lab).Export(), (Get-Module AutomatedLab)[-1].Version, $PSVersionTable.BuildVersion, $PSVersionTable.PSVersion)
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
     
     Unblock-LabSources
 
@@ -829,6 +839,16 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
+	try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
+    
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
@@ -868,11 +888,20 @@ function Remove-Lab
     {
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
-    }
+    }    
 
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+
+        try 
+        {
+            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
+        }
+        catch 
+        {
+            Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+        }
     
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All
@@ -3712,6 +3741,52 @@ function New-LabSourcesFolder
         $Path
     }
 }
+#endregion
+
+#region Telemetry
+function Enable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+}
+
+function Disable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+}
+
+$telemetryChoice = @"
+Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
+and to bring you fancy dashboards with e.g. the community's favorite roles.
+
+We are collecting the following with Azure Application Insights:
+- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your number of lab machines
+- The roles you used
+- The time it took your lab to finish
+- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+
+We collect no personally identifiable information.
+
+If you change your mind later on, you can always set the environment
+variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
+Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
+
+We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
+
+If you want to opt out, please select Yes.
+"@
+
+if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+{
+    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    
+    # This is actually enough for the telemetry client.
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
+
+    # We cannot refresh the env drive, so we add the same variable here as well.
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice 
+}
+#endregion
 
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
@@ -3719,9 +3794,13 @@ $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache | Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } | Sort-Object -Property OperatingSystemImageName |
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+    Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } |
+    Group-Object -Property OperatingSystemImageName |
+    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+    Sort-Object -Property OperatingSystemImageName |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', $_.OperatingSystemImageName)
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
     }
 }
 

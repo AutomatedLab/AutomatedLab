@@ -1080,11 +1080,18 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [string]$Path
     )
     
-    if (Test-LabAzureLabSourcesStorage)
+    try
     {
-        $azureLabSources = Get-LabAzureLabSourcesStorage
+        if (Test-LabAzureLabSourcesStorage)
+        {
+            $azureLabSources = Get-LabAzureLabSourcesStorage
         
-        $Path -like "$($azureLabSources.Path)*"
+            return $Path -like "$($azureLabSources.Path)*"
+        }
+    }
+    catch
+    {
+        return $false
     }
 }
 

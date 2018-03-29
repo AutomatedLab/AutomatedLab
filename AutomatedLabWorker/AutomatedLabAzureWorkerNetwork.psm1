@@ -1,6 +1,6 @@
 $PSDefaultParameterValues = @{
-    '*-Azure*:Verbose' = $false
-    '*-Azure*:Warning' = $false
+    '*-Azure*:Verbose'      = $false
+    '*-Azure*:Warning'      = $false
     'Import-Module:Verbose' = $false
 }
 
@@ -34,12 +34,12 @@ function New-LWAzureNetworkSwitch
         
              
         $azureNetworkParameters = @{
-            Name = $network.Name
+            Name              = $network.Name
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
-            Location = (Get-LabAzureDefaultLocation)
-            AddressPrefix = $network.AddressSpace
-            ErrorAction = 'Stop'
-            Tag = @{ 
+            Location          = (Get-LabAzureDefaultLocation)
+            AddressPrefix     = $network.AddressSpace
+            ErrorAction       = 'Stop'
+            Tag               = @{ 
                 AutomatedLab = $script:lab.Name
                 CreationTime = Get-Date	
             }
@@ -63,10 +63,10 @@ function New-LWAzureNetworkSwitch
             # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
             if ($Subnets)
             {
-				foreach ($subnet in $Subnets)
-				{
-					$azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
-				}
+                foreach ($subnet in $Subnets)
+                {
+                    $azureSubnets += New-AzureRmVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
+                }
             }
 
             if (-not $azureSubnets)
@@ -87,10 +87,10 @@ function New-LWAzureNetworkSwitch
     #Wait for network creation jobs and configure vnet peering    
     Wait-LWLabJob -Job $jobs
 
-	if($jobs.State -contains 'Failed')
-	{
-		throw ('Creation of at least one Azure Vnet failed. Examine the jobs output. Failed jobs: {0}' -f (($jobs | Where-Object State -EQ 'Failed').Id -join ','))
-	}
+    if ($jobs.State -contains 'Failed')
+    {
+        throw ('Creation of at least one Azure Vnet failed. Examine the jobs output. Failed jobs: {0}' -f (($jobs | Where-Object State -EQ 'Failed').Id -join ','))
+    }
 
     Write-ScreenInfo -Message "Done" -TaskEnd
     Write-ProgressIndicator
@@ -193,9 +193,9 @@ function Get-LWAzureNetworkSwitch
         Write-Verbose -Message "Locating Azure virtual network '$($network.Name)'"
          
         $azureNetworkParameters = @{
-            Name = $network.Name
+            Name              = $network.Name
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
-            ErrorAction = 'SilentlyContinue'
+            ErrorAction       = 'SilentlyContinue'
         }
         
         Get-AzureRmVirtualNetwork @azureNetworkParameters
@@ -223,8 +223,8 @@ function New-LWAzureLoadBalancer
         if (-not $publicIp)
         {
             $publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
-            -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
-            -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
+                -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
         $frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
@@ -294,4 +294,137 @@ function Set-LWAzureDnsServer
     }
 
     Write-LogFunctionExit
+}
+
+function Add-LWAzureLoadBalancedPort
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        [int]
+        $Port,
+
+        [Parameter(Mandatory)]
+        [string]
+        $ComputerName
+    )
+
+    if (Get-LabAzureLoadBalancedPort @PSBoundParameters)
+    {
+        Write-Verbose -Message ('Port {0} already configured for {1}' -f $Port, $ComputerName)
+        return
+    }
+
+    $lab = Get-Lab
+    $resourceGroup = $lab.Name
+    $machine = Get-LabVm -ComputerName $ComputerName
+
+
+    $lb = Get-AzureRmLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    if (-not $lb)
+    {
+        Write-Verbose "No load balancer found to add port rules to"
+        return
+    }
+
+    $frontendConfig = $lb | Get-AzureRmLoadBalancerFrontendIpConfig
+
+    $lab.AzureSettings.LoadBalancerPortCounter++
+    $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+    $lb = Add-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())$Port" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $remotePort -BackendPort $Port
+    $lb = $lb | Set-AzureRmLoadBalancer
+
+    $vm = Get-AzureRmVm -ResourceGroupName $resourceGroup -Name $ComputerName
+    $nic = $vm.NetworkProfile.NetworkInterfaces | Get-AzureRmResource | Get-AzureRmNetworkInterface
+    $rules = Get-LWAzureLoadBalancedPort -ComputerName $ComputerName
+    $nic.IpConfigurations[0].LoadBalancerInboundNatRules = $rules
+    [void] ($nic | Set-AzureRmNetworkInterface)
+
+    if (-not $machine.InternalNotes."AdditionalPort$Port")
+    {
+        $machine.InternalNotes.Add("AdditionalPort$Port", $remotePort)
+    }
+
+    $machine.InternalNotes."AdditionalPort$Port" = $remotePort
+    
+    Export-Lab
+}
+
+function Get-LWAzureLoadBalancedPort
+{
+    param
+    (
+        
+        [int]
+        $Port,
+
+        [Parameter(Mandatory)]
+        [string]
+        $ComputerName
+    )
+
+    $lab = Get-Lab
+    $resourceGroup = $lab.Name
+
+    $lb = Get-AzureRmLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    if (-not $lb)
+    {
+        Write-Verbose "No load balancer found to list port rules of"
+        return
+    }
+
+    $existingConfiguration = if ($Port)
+    {
+        $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -eq "$ComputerName$Port"
+    }
+    else 
+    {
+        $lb | Get-AzureRmLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -like "$ComputerName*"
+    }
+    
+
+    if ($Port)
+    {
+        return ($existingConfiguration | Where-Object -Property BackendPort -eq $Port)
+    }
+    
+    return $existingConfiguration
+}
+
+function Get-LabAzureLoadBalancedPort
+{
+    param
+    (
+        [int]
+        $Port,
+
+        [Parameter(Mandatory)]
+        [string]
+        $ComputerName
+    )
+
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+
+    if (-not $lab)
+    {
+        Write-ScreenInfo -Type Warning -Message 'Lab data not available. Cannot list ports. Use Import-Lab to import an existing lab'
+        return
+    }
+
+    $machine = Get-LabVm -ComputerName $ComputerName
+
+    if (-not $machine)
+    {
+        Write-Verbose -Message "$ComputerName not found. Cannot list ports."
+        return
+    }
+
+    if ($Port)
+    {
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -eq "AdditionalPort$Port" | Select-Object -ExpandProperty Value
+    }
+    else
+    {
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like 'AdditionalPort*' | Select-Object -ExpandProperty Value
+    }
 }

@@ -52,7 +52,11 @@ namespace AutomatedLab
                         case "10":
                             return "10.0";
                         case "":
-                            if (operatingSystemName == "Windows Server Datacenter" | operatingSystemName == "Windows Server Standard")
+                            if (operatingSystemName == "Windows Server Datacenter" |
+                                operatingSystemName == "Windows Server Standard" |
+                                operatingSystemName == "Windows Server Datacenter (Desktop Experience)" |
+                                operatingSystemName == "Windows Server Standard (Desktop Experience)"
+                                )
                                 return "10.0";
                             throw new Exception("Operating System Version could not be retrieved");
                         default:
@@ -263,6 +267,7 @@ namespace AutomatedLab
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 Standard (Desktop Experience)":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+
                     case "Windows Server 2016 Datacenter":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
                     case "Windows Server 2016 Datacenter (Desktop Experience)":
@@ -278,17 +283,22 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    // Windows Server 1709 new names
+                    // Windows Server 1709+ new names
                     case "Windows Server Standard":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
-                    case "Windows Server Datacenter":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server Standard (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
 
-                    // Windows Server 1709 old names
+                    case "Windows Server Datacenter":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server Datacenter (Desktop Experience)":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    // Windows Server 1709+ old names
                     case "Windows Server 2016 SERVERSTANDARDACORE":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 SERVERDATACENTERACORE":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
                     default:
                         return string.Empty;

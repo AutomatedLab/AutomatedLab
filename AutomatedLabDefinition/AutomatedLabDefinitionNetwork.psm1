@@ -242,7 +242,7 @@ function New-LabNetworkAdapterDefinition
         [switch]$UseDhcp,
 
         [Parameter(ParameterSetName = 'manual')]
-        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))/([3][0-1]|[1-2][0-9]|[2-9])$')]
+        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))/([3][0-2]|[1-2][0-9]|[2-9])$')]
         [AutomatedLab.IPNetwork[]]$Ipv4Address,
         
         [Parameter(ParameterSetName = 'manual')]
