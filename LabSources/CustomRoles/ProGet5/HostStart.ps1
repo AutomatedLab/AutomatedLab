@@ -13,12 +13,23 @@ Import-Lab -Name $data.Name
 $proGetServer = Get-LabVM -ComputerName $ComputerName
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 
-if (-not (Get-LabVMDotNetFrameworkVersion -ComputerName PGWeb1 | Where-Object Version -GT 4.5))
+if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -like 'SQLServer*' }))
+{
+    Write-Error "The SQL Server '$SqlServer' could not be found in the lab. ProGet cannot be installed."
+    return
+}
+
+$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer
+if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
 	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
     Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
+}
+else
+{
+    Write-ScreenInfo ".net Version installed on '$proGetServer' is $installedDotnetVersion, skipping .net Framework 4.5.2 installation"
 }
 
 if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
@@ -37,7 +48,7 @@ $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSource
 $installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /LogFile=C:\ProGetInstallation.log /S'
 $installArgs = $installArgs -f $SqlServer
 
-Write-Host "Installing ProGet on server '$proGetServer'"
+Write-ScreenInfo "Installing ProGet on server '$proGetServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
 Install-LabSoftwarePackage -ComputerName $proGetServer -Path $proGetSetupFile.FullName -CommandLine $installArgs
 
@@ -103,7 +114,7 @@ VALUES('Internal', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NU
 GO
 '@ -f $ComputerName, $proGetServer.DomainName, $flatDomainName
 
-Write-Host "Making changes to ProGet in the SQL database on '$sqlServer'..."
+Write-ScreenInfo "Making changes to ProGet in the SQL database on '$sqlServer'..."
 Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -ScriptBlock {
     $args[0] | Out-File C:\ProGetQuery.sql
 
@@ -111,14 +122,14 @@ Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -Script
     sqlcmd.exe -i C:\ProGetQuery.sql | Out-Null
 } -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
 
-Write-Host "Restarting '$proGetServer'"
+Write-ScreenInfo "Restarting '$proGetServer'"
 Restart-LabVM -ComputerName $proGetServer -Wait
 
 $isActivated = $false
 $activationRetries = 10
 while (-not $isActivated -and $activationRetries -gt 0)
 {
-    Write-Host 'ProGet is not activated yet, retrying...'
+    Write-ScreenInfo 'ProGet is not activated yet, retrying...'
     $isActivated = Invoke-LabCommand -ActivityName 'Verifying ProGet activation' -ComputerName $sqlServer -ScriptBlock { 
         $cn = New-Object System.Data.SqlClient.SqlConnection("Server=localhost;Database=ProGet;Trusted_Connection=True;")
         $cn.Open() | Out-Null

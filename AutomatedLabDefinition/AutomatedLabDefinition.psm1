@@ -645,30 +645,26 @@ function New-LabDefinition
     Write-LogFunctionEntry
 
     $hostOSVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version 
-    if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion -lt [System.Version]'10.0.10122')))
+    if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
     {
         $osName = $((Get-CimInstance -ClassName Win32_OperatingSystem).Caption.PadRight(10))
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11)) 
-        '***************************************************************************' 
-        ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        '' 
-        '   Operating System detected as:'
-        "     Name:  $osName"
-        "     Build: $osBuild"
-        '' 
-        ' AutomatedLab is supported on the following virtualization platforms'
-        '' 
-        ' - Microsoft Azure'
-        ' - Windows 10 build 10.0.10122 or newer'
-        ' - Windows 8.0 Professional'
-        ' - Windows 8.0 Enterprise' 
-        ' - Windows 8.1 Professional'
-        ' - Windows 8.1 Enterprise'
-        ' - Windows 2012 Server Standard' 
-        ' - Windows 2012 Server DataCenter'
-        ' - Windows 2012 R2 Server Standard'
-        ' - Windows 2012 R2 Server DataCenter'
-        '***************************************************************************'
+        Write-Host '***************************************************************************' 
+        Write-Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
+        Write-Host
+        Write-Host '   Operating System detected as:'
+        Write-Host "     Name:  $osName"
+        Write-Host "     Build: $osBuild"
+        Write-Host
+        Write-Host ' AutomatedLab is supported on the following virtualization platforms'
+        Write-Host
+        Write-Host ' - Microsoft Azure'
+        Write-Host ' - Windows 2016 1607 or newer'
+        Write-Host ' - Windows 10 1607 or newer'
+        Write-Host ' - Windows 8.1 Professional or Enterprise'
+        Write-Host ' - Windows 2012 R2'
+
+        Write-Host '***************************************************************************'
     }
     
     #settings for a new log
@@ -917,16 +913,15 @@ function New-LabDefinition
     
     if (-not (Get-LabIsoImageDefinition) -and $DefaultVirtualizationEngine -ne 'Azure')
     {
-        if (Get-ChildItem -Path "$(Get-LabSourcesLocation)\ISOs" -Filter *.iso -Recurse)
-        {
-            Write-ScreenInfo -Message 'Auto-adding ISO files' -TaskStart
-            Add-LabIsoImageDefinition -Path "$(Get-LabSourcesLocation)\ISOs"
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        }
-        else
+        if (-not (Get-ChildItem -Path "$(Get-LabSourcesLocation)\ISOs" -Filter *.iso -Recurse))
         {
             Write-ScreenInfo -Message "No ISO files found in $(Get-LabSourcesLocation)\ISOs folder. If using Hyper-V for lab machines, please add ISO files manually using 'Add-LabIsoImageDefinition'" -Type Warning
         }
+
+        Write-ScreenInfo -Message 'Auto-adding ISO files' -TaskStart
+        Get-LabAvailableOperatingSystem -Path "$(Get-LabSourcesLocation)\ISOs" | Out-Null #for updating the cache if necessary
+        Add-LabIsoImageDefinition -Path "$(Get-LabSourcesLocation)\ISOs"
+        Write-ScreenInfo -Message 'Done' -TaskEnd
     }    
     
     if ($DefaultVirtualizationEngine)
@@ -1047,7 +1042,7 @@ function Export-LabDefinition
             
     if (Get-LabMachineDefinition | Where-Object HostType -eq 'HyperV')
     {
-        $osesCount = (Get-LabAvailableOperatingSystem).Count
+        $osesCount = (Get-LabAvailableOperatingSystem -NoDisplay).Count
     }
     
     #Automatic DNS configuration in Azure if no DNS server is specified and an AD is being deployed
@@ -1171,7 +1166,7 @@ function Export-LabDefinition
     if (Get-LabMachineDefinition | Where-Object HostType -eq HyperV)
     {
         $hypervMachines = Get-LabMachineDefinition | Where-Object HostType -eq HyperV
-        $hypervUsedOperatingSystems = Get-LabAvailableOperatingSystem | Where-Object OperatingSystemImageName -in $hypervMachines.OperatingSystem.OperatingSystemName
+        $hypervUsedOperatingSystems = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemImageName -in $hypervMachines.OperatingSystem.OperatingSystemName
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
@@ -1654,7 +1649,7 @@ function Add-LabIsoImageDefinition
                     {
                         if ($isos.OperatingSystems -contains $os)
                         {
-                            Write-Warning "The operating system '$($os.OperatingSystemName)' with version '$($os.Version)' is already added to the lab. If this is an issue with cached information, use Clear-LabCache to solve the issue."
+                            Write-ScreenInfo "The operating system '$($os.OperatingSystemName)' with version '$($os.Version)' is already added to the lab. If this is an issue with cached information, use Clear-LabCache to solve the issue." -Type Warning
                         }
                         $iso.OperatingSystems.Add($os) | Out-Null
                     }
@@ -1679,7 +1674,7 @@ function Add-LabIsoImageDefinition
         $duplicateOperatingSystems.Group | 
         ForEach-Object { $_ } -PipelineVariable iso | 
         ForEach-Object { $_.OperatingSystems } |
-        ForEach-Object { Write-Warning "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" }
+        ForEach-Object { Write-ScreenInfo "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" -Type Warning }
     }
 
     $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
@@ -1861,17 +1856,6 @@ function Add-LabMachineDefinition
         [ValidatePattern('^([a-zA-Z0-9-_]){2,30}$')]
         [string[]]$DiskName,
         
-        [ValidateSet(
-                'Windows 7 Professional', 'Windows 7 Ultimate', 'Windows 7 Enterprise',
-                'Windows 8 Pro', 'Windows 8 Enterprise',
-                'Windows 8.1 Pro', 'Windows 8.1 Enterprise',
-                'Windows 10 Pro', 'Windows 10 Enterprise', 'Windows 10 Enterprise Evaluation', 'Windows 10 Enterprise 2015 LTSB','Windows 10 Enterprise 2016 LTSB', 'Windows 10 Pro Technical Preview', 'Windows 10 Enterprise Technical Preview', 'Windows 10 Enterprise Insider Preview', 'Windows 10 Pro Insider Preview',
-                'Windows Server 2008 R2 Datacenter (Full Installation)', 'Windows Server 2008 R2 Datacenter (Server Core Installation)', 'Windows Server 2008 R2 Standard (Full Installation)', 'Windows Server 2008 R2 Standard (Server Core Installation)',
-                'Windows Server 2012 Datacenter (Server with a GUI)', 'Windows Server 2012 Datacenter (Server Core Installation)', 'Windows Server 2012 Standard (Server with a GUI)', 'Windows Server 2012 Standard (Server Core Installation)',
-                'Windows Server 2012 R2 Datacenter (Server with a GUI)', 'Windows Server 2012 R2 Datacenter (Server Core Installation)', 'Windows Server 2012 R2 Standard (Server with a GUI)', 'Windows Server 2012 R2 Standard (Server Core Installation)',
-                'Windows Server 2016 Datacenter (Desktop Experience)', 'Windows Server 2016 Datacenter', 'Windows Server 2016 Standard (Desktop Experience)', 'Windows Server 2016 Standard',
-                'Windows Server Standard', 'Windows Server Datacenter', 'CentOS 7.4','Fedora 27.0','openSUSE Leap 42.3','openSUSE Tumbleweed','Red Hat Enterprise Linux 7.4','SUSE Linux Enterprise Server 12 SP3'
-        )]
         [Alias('OS')]
         [AutomatedLab.OperatingSystem]$OperatingSystem = (Get-LabDefinition).DefaultOperatingSystem,
         
@@ -1948,7 +1932,8 @@ function Add-LabMachineDefinition
     {
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
-        $ParameterName = 'AzureRoleSize'        
+        #Parameter 'AzureRoleSize'
+        $ParameterName = 'AzureRoleSize'
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
@@ -1956,25 +1941,27 @@ function Add-LabMachineDefinition
         if ($defaultLocation)
         {
             $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
-            $arrSet = $vmSizes | Select-Object -ExpandProperty Name
-            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $validateSetValues = $vmSizes | Select-Object -ExpandProperty Name
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
             $AttributeCollection.Add($ValidateSetAttribute)
         }
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
 
-        $ParameterName = 'TimeZone'        
+        #Parameter 'TimeZone'
+        $ParameterName = 'TimeZone'
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
-        $arrSet = ([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object)
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+        $validateSetValues = ([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object)
+        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
         $AttributeCollection.Add($ValidateSetAttribute)
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
 
-        $ParameterName = 'RhelPackage'        
+        #Parameter 'RhelPackage'
+        $ParameterName = 'RhelPackage'
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
@@ -1987,8 +1974,8 @@ function Add-LabMachineDefinition
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
 
-
-        $ParameterName = 'SusePackage'        
+        #Parameter 'SusePackage'
+        $ParameterName = 'SusePackage'
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
@@ -2273,6 +2260,11 @@ function Add-LabMachineDefinition
                 }
             }
             $machine.DomainName = $DomainName
+        }
+
+        if (-not $OperatingSystem.Version)
+        {
+            throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
         }
     
         switch ($OperatingSystem.Version.ToString(2))
@@ -2736,11 +2728,11 @@ function Add-LabMachineDefinition
 
             if ($OperatingSystemVersion)
             {
-                $os = Get-LabAvailableOperatingSystem | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
+                $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object { $_.OperatingSystemName -eq $OperatingSystem -and $_.Version -eq $OperatingSystemVersion }
             }
             else
             {
-                $os = Get-LabAvailableOperatingSystem | Where-Object OperatingSystemName -eq $OperatingSystem
+                $os = Get-LabAvailableOperatingSystem -NoDisplay | Where-Object OperatingSystemName -eq $OperatingSystem
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Group-Object -Property Version | Sort-Object -Property Name -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Group
@@ -3333,14 +3325,17 @@ function Set-LabLocalVirtualMachineDiskAuto
         }
         #Fastest drive is the boot drive. If speed on next fastest drive is close to the boot drive in speed (within 50%), select this drive now instead of the boot drive
         #If not, select the boot drive
-        elseif ((($drives[1].TotalSpeed - $drives[0].TotalSpeed) / $drives[1].TotalSpeed * 100) -lt 50)
+        elseif (($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed) -gt 50)
         {
             Write-Verbose "Selecing drive $($drives[1].DriveLetter) for VMs based on speed and NOT being the boot drive"
+            Write-Verbose "Selected disk speed compared to system disk is $(($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed))%"
+            
             $script:lab.Target.Path = "$($drives[1].DriveLetter):\AutomatedLab-VMs"
         }
         else
         {
             Write-Verbose "Selecing drive $($drives[0].DriveLetter) for VMs based on speed though this drive is actually the boot drive but is much faster than second fastest drive ($($drives[1].DriveLetter))"
+            Write-Verbose ('Selected system disk, speed of next fastest disk compared to system disk is {0:P}' -f ($drives[1].TotalSpeed / $drives[0].TotalSpeed))
             $script:lab.Target.Path = "$($drives[0].DriveLetter):\AutomatedLab-VMs"
         }
     }

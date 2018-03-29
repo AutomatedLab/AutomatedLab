@@ -493,10 +493,18 @@ function Install-Lab
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
     }
+
+    try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabStarted((Get-Lab).Export(), (Get-Module AutomatedLab)[-1].Version, $PSVersionTable.BuildVersion, $PSVersionTable.PSVersion)
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
     
     Unblock-LabSources
-    
-    $Global:AL_DeploymentStart = Get-Date
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
@@ -829,6 +837,16 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
+	try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
+    
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     Write-LogFunctionExit
@@ -868,11 +886,20 @@ function Remove-Lab
     {
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
-    }
+    }    
 
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+
+        try 
+        {
+            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
+        }
+        catch 
+        {
+            Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+        }
     
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All
@@ -989,7 +1016,11 @@ function Get-LabAvailableOperatingSystem
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
-        [string[]]$Path
+        [string[]]$Path = "$labSources\ISOs",
+
+        [switch]$UseOnlyCache,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -998,65 +1029,64 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-
-    if (-not $Path)
-    {
-        $lab = Get-LabDefinition
-        if (-not $lab)
-        {
-            $lab = Get-Lab -ErrorAction SilentlyContinue
-        }
-
-        if ($lab)
-        {
-            $Path = $lab.Sources.Isos | Split-Path -Parent | Sort-Object -Unique
-        }
-        else
-        {
-            Write-Error 'No lab loaded and no path defined, hence it is not sure where to look for operating systems.'
-            return
-        }
-    }
     
+    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
     $singleFile = Test-Path -Path $Path -PathType Leaf
-
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
     Write-Verbose "Found $($isoFiles.Count) ISO files"
 
-    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
-    #read the cache
-    try
+    if (-not $singleFile)
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
-        Write-Verbose "Read $($cachedOsList.Count) OS images from the cache"
-    }
-    catch
-    {
-        Write-Verbose 'Could not read OS image info from the cache'
-    }
-
-    if ($cachedOsList -and -not $singleFile)
-    {
-        $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
-        $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
-
-        if ($cachedIsoFileSize -eq $actualIsoFileSize)
+        #read the cache
+        try
         {
-            Write-Verbose 'Cached data is still up to date'
-            Write-LogFunctionExit -ReturnValue $cachedOsList
-            return $cachedOsList
+            $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+            $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
+            Write-ScreenInfo "Found $($cachedOsList.Count) OS images in the cache"
         }
-    
-        Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
-        Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+        catch
+        {
+            Write-Verbose 'Could not read OS image info from the cache'
+        }
+
+        if ($cachedOsList)
+        {
+            $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
+            $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
+
+            if ($cachedIsoFileSize -eq $actualIsoFileSize)
+            {
+                Write-Verbose 'Cached data is still up to date'
+                Write-LogFunctionExit -ReturnValue $cachedOsList
+                return $cachedOsList
+            }
+            else
+            {
+                Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
+                Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+            }
+        }
+    }
+
+    if ($UseOnlyCache)
+    {
+        Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
     $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
     $osList = New-Object $type
+    if ($singleFile)
+    {
+        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems" -NoNewLine
+    }
+    else
+    {
+        Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
+    }
 
     foreach ($isoFile in $isoFiles)
     {
+        Write-ProgressIndicator
         Write-Verbose "Mounting ISO image '$($isoFile.FullName)'"
         $drive = Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
 
@@ -1077,12 +1107,13 @@ function Get-LabAvailableOperatingSystem
 
             foreach ($dismMatch in $dismMatches.Matches)
             {
+                Write-ProgressIndicator
                 $index = $dismMatch.Groups['Index'].Value
                 $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $index
                 
                 if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
-                    Write-Warning "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped."
+                    Write-ScreenInfo "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped." -Type Warning
                     continue
                 }
 
@@ -1158,10 +1189,10 @@ function Get-LabAvailableOperatingSystem
             {
                 # CentOS ISO for some reason contained only GUIDs
                 $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
-                    Get-Content -TotalCount 2 |
-                    Where-Object {$_ -like "*comps*"} |
-                    Foreach-Object { $file.FullName } |
-                    Select-Object -First 1
+                Get-Content -TotalCount 2 |
+                Where-Object {$_ -like "*comps*"} |
+                Foreach-Object { $file.FullName } |
+                Select-Object -First 1
             }
 
             [xml]$packageInfo = Get-Content -Path $packageXml -Raw
@@ -1173,7 +1204,7 @@ function Get-LabAvailableOperatingSystem
             }
             else
             {
-               $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
+                $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
             }
 
             $os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
@@ -1187,17 +1218,24 @@ function Get-LabAvailableOperatingSystem
 
         Write-Verbose 'Dismounting ISO'
         Dismount-DiskImage -ImagePath $isoFile.FullName
-    }
-    
-    if (-not $singleFile)
-    {
-        $osList.Timestamp = Get-Date
-        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
-        $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+        Write-ProgressIndicator
     }
     
     $osList.ToArray()
     
+    if ($singleFile)
+    {
+        Write-ScreenInfo "Found $($osList.Count) OS images."
+    }
+    else
+    {
+        $osList.Timestamp = Get-Date
+        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
+        $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+
+        Write-ProgressIndicatorEnd
+        Write-ScreenInfo "Found $($osList.Count) OS images."
+    }
     Write-LogFunctionExit
 }
 #endregion Get-LabAvailableOperatingSystem
@@ -3696,6 +3734,108 @@ function New-LabSourcesFolder
         $Path
     }
 }
+#endregion
+
+#region Telemetry
+function Enable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+}
+
+function Disable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+}
+
+$telemetryChoice = @"
+Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
+and to bring you fancy dashboards with e.g. the community's favorite roles.
+
+We are collecting the following with Azure Application Insights:
+- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your number of lab machines
+- The roles you used
+- The time it took your lab to finish
+- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+
+We collect no personally identifiable information.
+
+If you change your mind later on, you can always set the environment
+variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
+Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
+
+We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
+
+If you want to opt out, please select Yes.
+"@
+
+if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+{
+    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    
+    # This is actually enough for the telemetry client.
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
+
+    # We cannot refresh the env drive, so we add the same variable here as well.
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice 
+}
+#endregion
 
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+    Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } |
+    Group-Object -Property OperatingSystemImageName |
+    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+    Sort-Object -Property OperatingSystemImageName |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
+    }
+}
+
+Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    Get-ChildItem -Path $path -Directory |
+    ForEach-Object {
+        if ($_.Name -contains ' ')
+        {
+            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}
+
+$commands = Get-Command -Module AutomatedLab, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
+Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabVM -All -IncludeLinux |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+    }
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    (Get-LabDefinition).Domains |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+    }
+}
+
+#importing the module results in calling the following code multiple times due to module import recursion
+#the following line makes sure that the following code runs only once when called from an external source
+if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
+{
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs
+}

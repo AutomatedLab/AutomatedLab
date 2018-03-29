@@ -52,7 +52,11 @@ namespace AutomatedLab
                         case "10":
                             return "10.0";
                         case "":
-                            if (operatingSystemName == "Windows Server Datacenter" | operatingSystemName == "Windows Server Standard")
+                            if (operatingSystemName == "Windows Server Datacenter" |
+                                operatingSystemName == "Windows Server Standard" |
+                                operatingSystemName == "Windows Server Datacenter (Desktop Experience)" |
+                                operatingSystemName == "Windows Server Standard (Desktop Experience)"
+                                )
                                 return "10.0";
                             throw new Exception("Operating System Version could not be retrieved");
                         default:
@@ -164,21 +168,25 @@ namespace AutomatedLab
             {
                 switch (operatingSystemName)
                 {
+                    //Windows 7
                     case "Windows 7 Professional":
                         return "FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4";
                     case "Windows 7 Enterprise":
                         return "33PXH-7Y6KF-2VJC9-XBBR8-HVTHH";
 
+                    //Windows 8
                     case "Windows 8 Pro":
                         return "NG4HW-VH26C-733KW-K6F98-J8CK4";
                     case "Windows 8 Enterprise":
                         return "32JNW-9KQ84-P47T8-D8GGY-CWCK7";
 
+                    //Windows 8.1
                     case "Windows 8.1 Pro":
                         return "GCRJD-8NW9H-F2CDX-CCM8D-9D6T9";
                     case "Windows 8.1 Enterprise":
                         return "MHF9N-XY6XB-WVXMC-BTDCT-MKKG7";
 
+                    //Windows 2008 new names
                     case "Windows Server 2008 R2 Standard (Full Installation)":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
                     case "Windows Server 2008 R2 Standard (Server Core Installation)":
@@ -188,6 +196,17 @@ namespace AutomatedLab
                     case "Windows Server 2008 R2 Datacenter (Server Core Installation)":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
 
+                    //Windows 2008 old names
+                    case "Windows Server 2008 R2 SERVERSTANDARD":
+                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 SERVERSTANDARDCORE":
+                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
+                    case "Windows Server 2008 R2 SERVERDATACENTERCORE":
+                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
+
+                    //Windows Server 2012 new names
                     case "Windows Server 2012 Standard (Server Core Installation)":
                         return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
                     case "Windows Server 2012 Standard (Server with a GUI)":
@@ -197,6 +216,17 @@ namespace AutomatedLab
                     case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
 
+                    //Windows Server 2012 new names
+                    case "Windows Server 2012 SERVERSTANDARDCORE":
+                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
+                    case "Windows Server 2012 SERVERSTANDARD":
+                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
+                    case "Windows Server 2012 SERVERDATACENTERCORE":
+                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
+                    case "Windows Server 2012 SERVERDATACENTER":
+                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
+
+                    //Windows Server 2012 R2 new names
                     case "Windows Server 2012 R2 Standard (Server Core Installation)":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
                     case "Windows Server 2012 R2 Standard (Server with a GUI)":
@@ -206,6 +236,17 @@ namespace AutomatedLab
                     case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
 
+                    //Windows Server 2012 R2 old names
+                    case "Windows Server 2012 R2 SERVERSTANDARDCORE":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 SERVERSTANDARD":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 SERVERDATACENTERCORE":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+
+                    //Windows 10
                     case "Windows 10 Pro":
                         return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise":
@@ -221,20 +262,43 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise 2016 LTSB":
                         return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
 
+                    //Windows Server 2016 new names
                     case "Windows Server 2016 Standard":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 Standard (Desktop Experience)":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+
                     case "Windows Server 2016 Datacenter":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
                     case "Windows Server 2016 Datacenter (Desktop Experience)":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    // Windows Server after 1709
+                    //Windows Server 2016 old names
+                    case "Windows Server 2016 SERVERSTANDARDCORE":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERSTANDARD":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server 2016 SERVERDATACENTER":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    // Windows Server 1709+ new names
                     case "Windows Server Standard":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server Standard (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+
                     case "Windows Server Datacenter":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server Datacenter (Desktop Experience)":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    // Windows Server 1709+ old names
+                    case "Windows Server 2016 SERVERSTANDARDACORE":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
                     default:
                         return string.Empty;
@@ -398,7 +462,7 @@ namespace AutomatedLab
                 }
                 else
                 {
-                    if(!string.IsNullOrEmpty(match.Groups[9].Value))
+                    if (!string.IsNullOrEmpty(match.Groups[9].Value))
                     {
                         return $"{match.Groups[8].Value}.{match.Groups[9].Value[match.Groups[9].Value.Length - 1]}";
                     }

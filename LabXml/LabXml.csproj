@@ -35,8 +35,14 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.ApplicationInsights, Version=2.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.ApplicationInsights.2.5.1\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.2.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.4.1\lib\net45\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
     <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\Windows\assembly\GAC_MSIL\System.Management.Automation\1.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
@@ -104,6 +110,7 @@
     <Compile Include="Stores\SerializableDictionary.cs" />
     <Compile Include="Stores\SerializableList.cs" />
     <Compile Include="Stores\XmlStore.cs" />
+    <Compile Include="Telemetry\LabTelemetry.cs" />
     <Compile Include="Validator\ActiveDirectory\DomainInformation.cs" />
     <Compile Include="Validator\ActiveDirectory\DuplicateDomainRoles.cs" />
     <Compile Include="Validator\ActiveDirectory\EmptyDomains.cs" />
@@ -152,10 +159,15 @@
     <Compile Include="Validator\XmlValidator.cs" />
     <Compile Include="Validator\Xml\PathValidator.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)AutomatedLab\AutomatedLab.dll /Y</PostBuildEvent>
+    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)AutomatedLab\AutomatedLab.dll /Y
+copy $(TargetPath) $(SolutionDir)AutomatedLab\Microsoft.ApplicationInsights.dll /Y
+copy $(TargetPath) $(SolutionDir)AutomatedLab\System.Diagnostics.DiagnosticSource.dll /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
