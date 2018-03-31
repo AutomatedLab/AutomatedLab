@@ -440,6 +440,8 @@ function Get-LabInternetFile
         [string]$Path,
 
         [switch]$Force,
+
+        [switch]$NoDisplay,
         
         [switch]$PassThru
     )

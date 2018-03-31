@@ -667,10 +667,15 @@ function Install-LabRootDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)
@@ -790,8 +795,7 @@ function Install-LabRootDcs
         #Create reverse lookup zone (forest scope)
         foreach ($network in ((Get-LabVirtualNetworkDefinition).AddressSpace.IpAddress.AddressAsString))
         {
-            Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Create reverse lookup zone' -NoDisplay -ScriptBlock `
-            {
+            Invoke-LabCommand -ActivityName 'Create reverse lookup zone' -ComputerName $machines[0] -ScriptBlock {
                 param
                 (
                     [string]$ip
@@ -801,12 +805,12 @@ function Install-LabRootDcs
                 dnscmd . /ZoneAdd "$zoneName" /DsPrimary /DP /forest
                 dnscmd . /Config "$zoneName" /AllowUpdate 2
                 ipconfig.exe -registerdns
-            } -ArgumentList $network
+            } -ArgumentList $network -NoDisplay
         }
         
 
         #Make sure the specified installation user will be forest admin
-        $cmd = {
+        Invoke-LabCommand -ActivityName 'Make installation user Domain Admin' -ComputerName $machines -ScriptBlock {
             $PSDefaultParameterValues = @{
                 '*-AD*:Server' = $env:COMPUTERNAME
             }
@@ -816,8 +820,7 @@ function Install-LabRootDcs
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Schema Admins' -Members $user -Server localhost
-        }
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Make installation user Domain Admin' -NoDisplay -ScriptBlock $cmd -ErrorAction SilentlyContinue
+        } -NoDisplay -ErrorAction SilentlyContinue
     
         #Non-domain-joined machine are not registered in DNS hence cannot be found from inside the lab.
         #creating an A record for each non-domain-joined machine in the first forst solves that.
@@ -826,14 +829,15 @@ function Install-LabRootDcs
             "dnscmd /recordadd $(@($rootDomains)[0]) $_ A $($_.IpV4Address)`n"
         }
         $dnsCmd += "Restart-Service -Name DNS -WarningAction SilentlyContinue`n"	
-        Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Register non domain joined machines in DNS' -NoDisplay -ScriptBlock ([scriptblock]::Create($dnsCmd))
+        Invoke-LabCommand -ActivityName 'Register non domain joined machines in DNS' -ComputerName $machines[0]`
+        -ScriptBlock ([scriptblock]::Create($dnsCmd)) -NoDisplay
 
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -NoDisplay -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -ComputerName $machines -ScriptBlock {
             $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
-        } -ArgumentList $machines
+        } -ArgumentList $machines -NoDisplay
 
-        $linuxMachines = Get-LabVm -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
+        $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
 
         if ($linuxMachines)
         {
@@ -843,14 +847,14 @@ function Install-LabRootDcs
                 $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
                 if (-not $domainJoinedMachines) { continue }
                 $oneTimePassword = ($root.Group)[0].InstallationUser.Password
-                Invoke-LabCommand -ComputerName ($root.Group)[0] -ActivityName 'Add computer objects for domain-joined Linux machines' -NoDisplay -ScriptBlock {
+                Invoke-LabCommand -ActivityName 'Add computer objects for domain-joined Linux machines' -ComputerName ($root.Group)[0] -ScriptBlock {
                     foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
-                } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword)
+                } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword) -NoDisplay
             }
         }
 
-        Restart-LabVM -ComputerName $machines -Wait
-        Wait-LabADReady -ComputerName $machines
+        Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+        Wait-LabADReady -ComputerName $machines -NoNewLine
         
         Enable-LabVMRemoting -ComputerName $machines
         
@@ -868,7 +872,6 @@ function Install-LabRootDcs
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 5 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -NoDisplay -NoNewLine
-        Write-ProgressIndicatorEnd
         
         foreach ($machine in $machines)
         {
@@ -879,8 +882,7 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
-        }        
-        
+        }
         
         if ($CreateCheckPoints)
         {
@@ -908,9 +910,10 @@ function Install-LabRootDcs
         $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
 
         Write-ScreenInfo "Restarting the $($machinesToJoin.Count) machines to complete the domain join of ($($machinesToJoin.Name -join ', ')). Retries remaining = $retries"
-        Restart-LabVM -ComputerName $machinesToJoin -Wait
+        Restart-LabVM -ComputerName $machinesToJoin -Wait -NoNewLine
         $retries--
     }
+    Write-ProgressIndicatorEnd
     
     Write-LogFunctionExit
 }
@@ -926,10 +929,15 @@ function Install-LabFirstChildDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)
@@ -1168,10 +1176,15 @@ function Install-LabDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)

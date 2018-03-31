@@ -6,8 +6,15 @@ function Install-LabSqlServers
     param (
         [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_Sql2012Installation,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
+    
+    Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     function Write-ArgumentVerbose
     {
@@ -35,13 +42,13 @@ function Install-LabSqlServers
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
     $azureMachines = $machines | Where-Object {
-            $_.HostType -eq 'Azure' -and -not (($_.Roles | 
-                Where-Object Name -like 'SQL*').Properties.Keys |
-                    Where-Object {$_ -ne 'InstallSampleDatabase'})}
+        $_.HostType -eq 'Azure' -and -not (($_.Roles | 
+            Where-Object Name -like 'SQL*').Properties.Keys |
+    Where-Object {$_ -ne 'InstallSampleDatabase'})}
 
     if ($azureMachines)
     {
-        Write-ScreenInfo -Message 'Waiting for machines to start up'
+        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         Start-LabVM -ComputerName $azureMachines -Wait -ProgressIndicator 2
         Enable-LabVMRemoting -ComputerName $azureMachines
         
@@ -78,8 +85,8 @@ GO
     
     $onPremisesMachines = @($machines | Where-Object HostType -eq HyperV)
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles | 
-    Where-Object Name -like 'SQL*').Properties.Keys |
-        Where-Object {$_ -ne 'InstallSampleDatabase'})}
+            Where-Object Name -like 'SQL*').Properties.Keys |
+    Where-Object {$_ -ne 'InstallSampleDatabase'})}
 
     if ($onPremisesMachines)
     {        
@@ -96,22 +103,15 @@ GO
             
             $machinesBatch = $($onPremisesMachines[$machineIndex..($machineIndex + $parallelInstalls - 1)])
             
-            Write-ScreenInfo -Message "Starting machines '$($machinesBatch -join ', ')'"
-            Start-LabVM -ComputerName $machinesBatch
+            Write-ScreenInfo -Message "Starting machines '$($machinesBatch -join ', ')'" -NoNewLine
+            Start-LabVM -ComputerName $machinesBatch -Wait
             
-            $installFrameworkJobs = @()
-            foreach ($m in $machinesBatch)
-            {
-                Write-ScreenInfo -Message "Waiting for machine '$m' to be ready" -Type Info
-                Wait-LabVM -ComputerName $m -ProgressIndicator 30
-                Write-ScreenInfo -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$m'" -Type Info
-                $installFrameworkJobs += Install-LabWindowsFeature -ComputerName $m -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru                
-            }
+            Write-ScreenInfo -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesBatch -join ', ')'" -Type Verbose
+            $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $machinesBatch -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
             
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
-            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 45
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        
+            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15
+
             foreach ($machine in $machinesBatch)
             {
                 $role = $machine.Roles | Where-Object Name -like SQLServer*
@@ -124,7 +124,7 @@ GO
                 while (-not $autoLogon -and $retryCount -gt 0)
                 {
                     Set-LabAutoLogon -ComputerName $machine
-                    Restart-LabVm -ComputerName $machine -Wait
+                    Restart-LabVM -ComputerName $machine -Wait -NoDisplay
 
                     $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                     $retryCount--
@@ -253,34 +253,28 @@ GO
             if ($jobs)
             {
                 Write-ScreenInfo -Type Verbose -Message "Waiting $InstallationTimeout minutes until the installation is finished"
-                Write-ScreenInfo -Message "Waiting for installation of SQL server to complete on machines '$($machinesBatch -join ', ')'" -NoNewline
+                Write-ScreenInfo -Message "Waiting for installation of SQL server to complete on machines '$($machinesBatch -join ', ')'" -NoNewLine
                 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
                 $additionalMachinesToInstall = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
-                    Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
+                Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
                     
                     $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
-                        Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
-                        Select-Object -First 2
+                    Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
+                    Select-Object -First 2
                     
                     while ($startTime.AddMinutes(5) -gt (Get-Date) -and $machinesToPrepare)
                     {
                         Write-Verbose -Message "Starting machines '$($machinesToPrepare -join ', ')'"
-                        Start-LabVM -ComputerName $machinesToPrepare
+                        Start-LabVM -ComputerName $machinesToPrepare -Wait -NoNewline
                         
-                        $installFrameworkJobs = @()
-                        foreach ($m in $machinesToPrepare)
-                        {
-                            Write-Verbose -Message "Waiting for machine '$m' to be ready"
-                            Wait-LabVM -ComputerName $m -ProgressIndicator 120 -NoNewLine
-                            Write-Verbose -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$m'"
-                            $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $m -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
-                        }
+                        Write-Verbose -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesToPrepare -join ', ')'"
+                        $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $m -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
                         Write-Verbose -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
                         
@@ -290,9 +284,9 @@ GO
                 }
                 
                 $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }
-                Wait-LabVMRestart -ComputerName $installMachines -TimeoutInMinutes $InstallationTimeout -ProgressIndicator 120
+                Wait-LabVMRestart -ComputerName $installMachines -TimeoutInMinutes $InstallationTimeout -ProgressIndicator 30 -NoNewLine
                 
-                Wait-LabVM -ComputerName $installMachines -PostDelaySeconds 30
+                Wait-LabVM -ComputerName $installMachines -PostDelaySeconds 30 -NoNewLine
                 
                 Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
                 
@@ -310,7 +304,11 @@ GO
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
         {
-            Start-LabVM -ComputerName $machinesToPrepare -Wait
+            Start-LabVM -ComputerName $machinesToPrepare -Wait -NoNewline
+        }
+        else
+        {
+            Write-ProgressIndicatorEnd
         }
         
         Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
@@ -321,10 +319,10 @@ GO
         Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} |
         Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {
             $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
-            $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force | 
+        $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force | 
         Add-Member -Name 'SsmsUri' -Value {
-                (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
-            } -MemberType ScriptProperty -PassThru -Force
+            (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
+        } -MemberType ScriptProperty -PassThru -Force
     
         if ($servers)
         {
@@ -333,7 +331,7 @@ GO
         
         $jobs = @()
 
-        foreach ( $server in $servers)
+        foreach ($server in $servers)
         {
             if (-not $server.SsmsUri)
             {
@@ -349,15 +347,15 @@ GO
                 [void] (New-Item -ItemType Directory -Path $downloadFolder)
             }
 
-            Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath
+            Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath -NoDisplay
 
-            $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -AsJob -PassThru            
+            $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -NoDisplay -AsJob -PassThru            
         }
 
         if ($jobs)
         {
-            Write-Verbose -Message 'Waiting for SQL Server Management Studio installation jobs to finish'
-            Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 60 -NoNewLine
+            Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish'
+            Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
         }
 
         if ($CreateCheckPoints)

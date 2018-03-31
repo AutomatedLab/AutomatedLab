@@ -52,12 +52,11 @@ function New-LabVM
             
             if ('RootDC' -in $machine.Roles.Name)
             {
-                Start-LabVM -ComputerName $machine.Name
+                Start-LabVM -ComputerName $machine.Name -NoNewline
             }
             
             if ($result)
             {
-                Write-ProgressIndicatorEnd
                 Write-ScreenInfo -Message 'Done' -TaskEnd
             }
             else
@@ -181,7 +180,7 @@ function Start-LabVM
     {
         Write-LogFunctionEntry
 
-        if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator        
+        if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
         
         $lab = Get-Lab
         
@@ -234,7 +233,7 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
 
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+            $vms = $vms | Select-Object *, @{ Name='OSversion'; Expression = { $_.OperatingSystem.Version }} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
@@ -339,10 +338,7 @@ function Start-LabVM
             Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
         }
         
-        if ($ProgressIndicator -and (-not $NoNewline))
-        {
-            Write-ProgressIndicatorEnd
-        }
+        Write-ProgressIndicatorEnd
 
         Write-LogFunctionExit
     }
@@ -457,7 +453,10 @@ function Restart-LabVM
         
         [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_RestartLabMachine_Shutdown,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+
+        [switch]$NoDisplay,
 
         [switch]$NoNewLine
     )
