@@ -34,8 +34,10 @@ function Install-LabRouting
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
 
     Write-ScreenInfo -Message 'Configuring Routing role...' -NoNewLine
-    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Routing, RSAT-RemoteAccess -IncludeAllSubFeature -NoDisplay -AsJob
+    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName RSAT ,Routing, RSAT-RemoteAccess -IncludeAllSubFeature -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout 15 -NoDisplay
+
+    Restart-LabVM -ComputerName $machines -Wait -NoDisplay -NoNewLine
 
     $jobs = @()
 

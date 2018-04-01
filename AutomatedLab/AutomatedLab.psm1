@@ -817,8 +817,7 @@ function Install-Lab
         if ($DelayBetweenComputers){
             $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
-        Wait-LabVM -ComputerName (Get-LabVM -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60 -NoNewLine
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -NoNewline
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

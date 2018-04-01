@@ -430,8 +430,11 @@ function Wait-LWLabJob
         [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [int]$Timeout = 60,
+
         [switch]$NoNewLine,
+
         [switch]$NoDisplay,
+
         [switch]$PassThru
     )
 

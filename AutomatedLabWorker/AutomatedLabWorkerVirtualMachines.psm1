@@ -1002,7 +1002,7 @@ function Stop-LWHypervVM
         $jobs = @()
         $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f; $LastExitCode }
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
-        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        $failedJobs = $jobs | Where-Object { $_.State -eq 'Failed' }
         if ($failedJobs)
         {
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
@@ -1465,7 +1465,7 @@ function Repair-LWHypervNetworkConfig
 
     $machine = Get-LabVM -ComputerName $ComputerName
 
-    Wait-LabVM -ComputerName $machine
+    Wait-LabVM -ComputerName $machine -NoNewLine
 
     #remoting does serialization with a depth of 1. Here we need more
     $machineStream = [System.Management.Automation.PSSerializer]::Serialize($machine, 4)

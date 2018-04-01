@@ -455,6 +455,8 @@ function Get-LabInternetFile
             [Parameter(Mandatory = $true)]
             [string]$Path,
 
+            [switch]$NoDisplay,
+
             [switch]$Force
         )
         

@@ -9,7 +9,7 @@ param(
     [string]$ComputerName
 )
 
-Import-Lab -Name $data.Name -NoDisplay
+Import-Lab -Name $data.Name -NoValidation -NoDisplay
 $proGetServer = Get-LabVM -ComputerName $ComputerName
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 

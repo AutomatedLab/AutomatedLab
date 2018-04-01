@@ -110,7 +110,7 @@ GO
             $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $machinesBatch -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
             
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
-            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15
+            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
             foreach ($machine in $machinesBatch)
             {
@@ -124,7 +124,7 @@ GO
                 while (-not $autoLogon -and $retryCount -gt 0)
                 {
                     Set-LabAutoLogon -ComputerName $machine
-                    Restart-LabVM -ComputerName $machine -Wait -NoDisplay
+                    Restart-LabVM -ComputerName $machine -Wait -NoDisplay -NoNewLine
 
                     $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                     $retryCount--
@@ -134,6 +134,7 @@ GO
                 {
                     throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with SQL Server setup for $machine"
                 }
+                Write-ScreenInfo 'Done'
                                 
                 Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput
                 
@@ -239,9 +240,9 @@ GO
                 $param = @{}
                 $param.Add('ComputerName', $machine)
                 $param.Add('ActivityName', 'Install SQL Server')
-                $param.Add('AsJob', $True)
-                $param.Add('PassThru', $True)
-                $param.Add('NoDisplay', $True)
+                $param.Add('AsJob', $true)
+                $param.Add('PassThru', $true)
+                $param.Add('NoDisplay', $true)
                 $param.Add('Scriptblock', $scriptBlock)
                 $param.Add('Variable', (Get-Variable -Name setupArguments))
                 
@@ -252,7 +253,7 @@ GO
             
             if ($jobs)
             {
-                Write-ScreenInfo -Type Verbose -Message "Waiting $InstallationTimeout minutes until the installation is finished"
+                Write-ScreenInfo -Message "Waiting $InstallationTimeout minutes until the installation is finished" -Type Verbose
                 Write-ScreenInfo -Message "Waiting for installation of SQL server to complete on machines '$($machinesBatch -join ', ')'" -NoNewLine
                 
                 #Start other machines while waiting for SQL server to install
@@ -354,7 +355,7 @@ GO
 
         if ($jobs)
         {
-            Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish'
+            Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish' -NoNewLine
             Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
         }
 
