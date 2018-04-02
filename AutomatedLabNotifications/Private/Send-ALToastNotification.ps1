@@ -11,17 +11,25 @@ function Send-ALToastNotification
         $Message
     )
     
-    if (Get-Item 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -ErrorAction SilentlyContinue)
+    try
     {
-        [bool]$core = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore -ErrorAction SilentlyContinue).ServerCore
-        [bool]$guimgmt = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Mgmt -ErrorAction SilentlyContinue).'Server-Gui-Mgmt'
-        [bool]$guimgmtshell = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Shell -ErrorAction SilentlyContinue).'Server-Gui-Shell'
+        if (Get-Item 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -ErrorAction Stop)
+        {
+            [bool]$core = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore -ErrorAction SilentlyContinue).ServerCore
+            [bool]$guimgmt = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Mgmt -ErrorAction SilentlyContinue).'Server-Gui-Mgmt'
+            [bool]$guimgmtshell = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name Server-Gui-Shell -ErrorAction SilentlyContinue).'Server-Gui-Shell'
 
-        $isFullGui = $core -and $guimgmt -and $guimgmtshell
-    }    
+            $isFullGui = $core -and $guimgmt -and $guimgmtshell
+        }
+    }
+    catch
+    {
+        #if the Server registry key does not exist, we are on a client OS and have a UI
+        $isFullGui = $true
+    }
 
     if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
-	{
+    {
         Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Core'
         return
     }
@@ -31,7 +39,6 @@ function Send-ALToastNotification
 
     $template = "<toast><visual><binding template=`"ToastText02`"><text id=`"1`">$toastProvider</text><text id=`"2`">Deployment of {0} on {1}, current status '{2}'. Message {3}.</text></binding></visual></toast>" -f `
         $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message
-
 
     [void] ([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
     [void] ([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
