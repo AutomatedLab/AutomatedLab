@@ -63,6 +63,8 @@ function Install-LabTeamFoundationEnvironment
 
     Wait-LWLabJob -Job $jobs
 
+    Restart-LabVm -ComputerName $tfsMachines -Wait
+
     Install-LabTeamFoundationServer
 
     Install-LabBuildWorker
