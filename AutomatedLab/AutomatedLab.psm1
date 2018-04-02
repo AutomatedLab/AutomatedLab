@@ -843,7 +843,7 @@ function Install-Lab
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
-        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+        Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
         
         if ($DelayBetweenComputers){
             $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
