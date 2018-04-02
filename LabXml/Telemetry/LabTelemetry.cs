@@ -147,7 +147,7 @@ namespace AutomatedLab
 
             try
             {
-                telemetryClient.TrackEvent("LabFinished", null, metrics);
+                telemetryClient.TrackEvent("LabRemoved", null, metrics);
                 telemetryClient.Flush();
             }
             catch

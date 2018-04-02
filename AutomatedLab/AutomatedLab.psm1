@@ -469,6 +469,8 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
+	$labDiskDeploymentInProgressPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\LabDiskDeploymentInProgress.txt"
+
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
     
@@ -526,16 +528,44 @@ function Install-Lab
     
     if (($BaseImages -or $performAll) -and (Get-LabVM -All | Where-Object HostType -eq 'HyperV'))
     {
+        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        {
+            Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+            do
+            {
+                Write-ScreenInfo -Message . -NoNewLine
+                Start-Sleep -Seconds 15
+            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+        }
+        Write-ScreenInfo 'done'
+
         Write-ScreenInfo -Message 'Creating base images' -TaskStart
+
+        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
         
         New-LabBaseImages
+
+        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
     if ($VMs -or $performAll)
     {
+        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        {
+            Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+            do
+            {
+                Write-ScreenInfo -Message . -NoNewLine
+                Start-Sleep -Seconds 15
+            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+        }
+        Write-ScreenInfo 'done'
+
         Write-ScreenInfo -Message 'Creating VMs' -TaskStart
+
+        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
 
         if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
         {
@@ -566,10 +596,11 @@ function Install-Lab
         #VMs created, export lab definition again to update MAC addresses
         Set-LabDefinition -Machines $Script:data.Machines
         Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
+
+        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC))
