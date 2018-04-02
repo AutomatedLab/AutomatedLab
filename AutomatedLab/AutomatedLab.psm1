@@ -817,7 +817,7 @@ function Install-Lab
         if ($DelayBetweenComputers){
             $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -NoNewline
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -2961,7 +2961,7 @@ function Invoke-LabCommand
     
     if ($PostInstallationActivity)
     {
-        Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart
+        Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart -OverrideNoDisplay
 
         $results = @()
 
@@ -2971,6 +2971,7 @@ function Invoke-LabCommand
             {
                 if ($item.IsCustomRole)
                 {
+                    Write-ScreenInfo "Installing Custom Role '$(Split-Path -Path $item.DependencyFolder -Leaf)' on machine '$machine'" -TaskStart -OverrideNoDisplay
                     $customRoles++
                     #if there is a HostStart.ps1 script for the role
                     $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
@@ -3057,15 +3058,15 @@ function Invoke-LabCommand
         
         if ($customRoles)
         {
-            Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
+            Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine -OverrideNoDisplay
         }
         if ($results.Count -gt 0)
         {
-            $results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+            $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] }
+            Wait-LWLabJob -Job $jobs -Timeout 60
         }
-        Write-ScreenInfo -Message 'finihsed'
 
-        Write-ScreenInfo -Message 'Post-installations done' -TaskEnd
+        Write-ScreenInfo -Message 'Post-installations done' -TaskEnd -OverrideNoDisplay
     }
     else
     {

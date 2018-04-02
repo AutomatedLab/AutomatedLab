@@ -1124,10 +1124,12 @@ function Write-ScreenInfo
         
         [switch]$TaskStart,
         
-        [switch]$TaskEnd
+        [switch]$TaskEnd,
+
+        [switch]$OverrideNoDisplay
     )
 
-    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent -and -not $OverrideNoDisplay)
     {
         return
     }

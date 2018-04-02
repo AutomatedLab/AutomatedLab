@@ -35,9 +35,9 @@ function Install-LabRouting
 
     Write-ScreenInfo -Message 'Configuring Routing role...' -NoNewLine
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName RSAT ,Routing, RSAT-RemoteAccess -IncludeAllSubFeature -NoDisplay -AsJob -PassThru
-    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout 15 -NoDisplay
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout 15 -NoDisplay -NoNewLine
 
-    Restart-LabVM -ComputerName $machines -Wait -NoDisplay -NoNewLine
+    Restart-LabVM -ComputerName $machines -Wait -NoDisplay
 
     $jobs = @()
 

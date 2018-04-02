@@ -22,9 +22,10 @@ if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -lik
 $installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
+    Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
 	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
-    Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
+    Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob -NoDisplay
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
 }
 else
@@ -122,7 +123,7 @@ Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -Script
     sqlcmd.exe -i C:\ProGetQuery.sql | Out-Null
 } -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
 
-Write-ScreenInfo "Restarting '$proGetServer'"
+Write-ScreenInfo "Restarting '$proGetServer'" -NoNewLine
 Restart-LabVM -ComputerName $proGetServer -Wait
 
 $isActivated = $false
