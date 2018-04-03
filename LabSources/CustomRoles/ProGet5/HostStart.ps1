@@ -19,7 +19,7 @@ if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -lik
     return
 }
 
-$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer
+$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer -NoDisplay
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
     Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
@@ -171,3 +171,5 @@ else
 {
     Write-ScreenInfo 'ProGet was successfully activated' 
 }
+
+Write-ScreenInfo 'ProGet installation finished'

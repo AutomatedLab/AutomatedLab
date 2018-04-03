@@ -3092,12 +3092,16 @@ function Invoke-LabCommand
         
         if ($customRoles)
         {
-            Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine -OverrideNoDisplay
-        }
-        if ($results.Count -gt 0)
-        {
             $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] }
-            Wait-LWLabJob -Job $jobs -Timeout 60
+            if ($jobs)
+            {
+                Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine -OverrideNoDisplay
+                Wait-LWLabJob -Job $jobs -Timeout 60 -NoDisplay
+            }
+            else
+            {
+                Write-ScreenInfo -Message "$($results.Count) custom role installation finished." -OverrideNoDisplay
+            }
         }
 
         Write-ScreenInfo -Message 'Post-installations done' -TaskEnd -OverrideNoDisplay
