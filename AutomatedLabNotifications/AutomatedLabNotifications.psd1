@@ -49,7 +49,7 @@
         }
 
         Toast = @{
-            Provider = 'AutomatedLab'
+            Image = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png'
         }
 
     } # End of PrivateData hashtable
