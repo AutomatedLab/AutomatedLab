@@ -163,7 +163,7 @@ namespace Pki.CATemplate
         RequireUserInteraction = 256,// This flag instructs the client to obtain user consent before attempting to enroll for a certificate that is based on the specified template.
         RemoveInvalidFromStore = 1024,// This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048,//This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
-        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section �4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
+        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section 4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
         ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768,//This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536,//This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -1481,7 +1481,7 @@ function Install-LabCA
     #Bring the RootCA server online and start installing
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     
-    Start-LabVM -RoleName CaRoot, CaSubordinate
+    Start-LabVM -RoleName CaRoot, CaSubordinate -NoNewline
     
     Wait-LabVM -ComputerName (Get-LabVM -Role CaRoot) -ProgressIndicator 10
     
@@ -1507,26 +1507,26 @@ function Install-LabCA
         }
     }
     
-    if ($Jobs)
+    if ($jobs)
     {
         Write-ScreenInfo -Message 'Waiting for Root CA(s) to complete installation' -NoNewline
     
-        Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoNewLine -NoDisplay
+        Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoDisplay
     
         Write-Verbose -Message "Getting certificates from Root CA servers and placing them in '<labfolder>\Certs' on host machine"
         Get-LabVM -Role CaRoot | Get-LabCAInstallCertificates
     
-        Write-Verbose -Message 'Publishing certificates from CA servers to all online machines'
+        Write-ScreenInfo -Message 'Publishing certificates from CA servers to all online machines' -NoNewLine
         $jobs = Publish-LabCAInstallCertificates -PassThru
-    
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
     
         Write-Verbose -Message 'Waiting for all running machines to be contactable'
         Wait-LabVM -ComputerName (Get-LabVM -All -IsRunning) -ProgressIndicator 20 -NoNewLine
     
         Write-Verbose -Message 'Invoking a GPUpdate on all running machines'
-        $jobs = Invoke-LabCommand -ComputerName (Get-LabVM -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
-
+        $jobs = Invoke-LabCommand -ActivityName 'GPUpdate after Root CA install' -ComputerName (Get-LabVM -All -IsRunning) -ScriptBlock {
+            gpupdate.exe /force
+        } -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoDisplay
     }
     
@@ -2808,7 +2808,11 @@ function Get-LabCAInstallCertificates
         #Get all certificates from CA servers and place temporalily on host machine
         foreach ($machine in $machines)
         {
-            $sourceFile = Invoke-LabCommand -ComputerName $machine -PassThru -NoDisplay -ScriptBlock {(Get-Item -Path 'C:\Windows\System32\CertSrv\CertEnroll\*.crt' | Sort-Object -Property LastWritten -Descending | Select-Object -First 1).FullName}
+            $sourceFile = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                (Get-Item -Path 'C:\Windows\System32\CertSrv\CertEnroll\*.crt' |
+                    Sort-Object -Property LastWritten -Descending |
+                Select-Object -First 1).FullName
+            } -PassThru -NoDisplay
             
             $tempDestination = "$((Get-Lab).LabPath)\Certificates\$($Machine).crt"
             
@@ -2850,7 +2854,7 @@ function Publish-LabCAInstallCertificates
     
     if ($machinesNotTargeted)
     {
-        Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and SUbordinate certificate servers. Please update these manually.' -Type Warning
+        Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and Subordinate certificate servers. Please update these manually.' -Type Warning
         $machinesNotTargeted | ForEach-Object { Write-ScreenInfo -Message "  $_" -Type Warning }
     }
     
@@ -2945,7 +2949,7 @@ function Publish-LabCAInstallCertificates
             }
         }
         
-        $job = Invoke-LabCommand -ComputerName $machine -ScriptBlock $scriptBlock -ActivityName 'Publish Lab CA(s) and install certificates' -AsJob -PassThru
+        $job = Invoke-LabCommand -ActivityName 'Publish Lab CA(s) and install certificates' -ComputerName $machine -ScriptBlock $scriptBlock -NoDisplay -AsJob -PassThru
         if ($PassThru) { $job }
     }
     
@@ -3176,4 +3180,3 @@ function Enable-LabCertificateAutoenrollment
     Write-LogFunctionExit
 }
 #endregion Enable-LabCertificateAutoenrollment
-
