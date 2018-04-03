@@ -2242,7 +2242,7 @@ function Install-LabSoftwarePackage
         if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
         ($Machine | Group-Object -Property DomainName).Count -gt 1)
         {
-            Write-Error "If you install software in a background job and require the schedule job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
+            Write-Error "If you install software in a background job and require the scheduled job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
             return
         }
     }
@@ -2258,7 +2258,7 @@ function Install-LabSoftwarePackage
     
     if ('Stopped' -in (Get-LabVMStatus $ComputerName -AsHashTable).Values)
     {
-         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         Start-LabVM -ComputerName $ComputerName -Wait -ProgressIndicator 30 -NoNewline
     }
     
@@ -2336,14 +2336,17 @@ function Install-LabSoftwarePackage
         
     $parameters.Add('NoDisplay', $True)
         
-    if (-not $AsJob) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
+    if (-not $AsJob) 
+    {
+        Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
+    }
         
     $results += Invoke-LabCommand @parameters
         
     if (-not $AsJob)
     {
         Write-Verbose "Waiting on job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')'"
-        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 30 -NoDisplay:$NoDisplay
+        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 15 -NoDisplay
         $results = $results | Receive-Job
         Write-Verbose "Job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')' finished"
     }
