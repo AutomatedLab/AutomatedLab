@@ -84,7 +84,12 @@ function Add-LabAzureSubscription
     if (-not $Path)
     {
         # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $null = Get-AzureRmResource -ErrorAction Stop
+        $context = Get-AzureRmContext
+        if (-not $context.Subscription)
+        {
+            Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
+            $null = Login-AzureRmAccount -ErrorAction Stop
+        }
         
         $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
         $tempFolder = New-Item -ItemType Directory -Path ($tempFile.FullName -replace $tempFile.Extension, '') -Force
