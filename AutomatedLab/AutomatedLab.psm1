@@ -831,12 +831,12 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,TfsBuildWorker))
+    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,TfsBuildWorker).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker).Name -join ', ')'"
 
-        Start-LabVm -RoleName Tfs2015,Tfs2017,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
+        Start-LabVm -RoleName Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
         Install-LabTeamFoundationEnvironment
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
@@ -3255,7 +3255,7 @@ function Update-LabMemorySettings
         
         ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) })
         {
-            $memoryCalculated = [int]($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
+            $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)
             {
                 $machine.Memory = $memoryCalculated
