@@ -1,7 +1,0 @@
-Store custom roles to be used with Get-PostInstallationActivity here.
-
-Target Structure (Where CustomRoleName1 is the name of your role)
-
--Directory: CustomRoleName1
---File: CustomRoleName1.ps1
---Additional files and subfolders referenced in CustomRoleName1.ps1

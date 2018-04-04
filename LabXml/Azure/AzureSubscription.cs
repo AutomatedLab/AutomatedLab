@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace AutomatedLab.Azure
 {
@@ -10,29 +9,14 @@ namespace AutomatedLab.Azure
         public string Name { get; set; }
         public string State { get; set; }
         public string TenantId { get; set; }
+        public string SubscriptionId { get; set; }
+        public SerializableDictionary<string, string> Tags { get; set; }
+        public string CurrentStorageAccountName { get; set; }
+        public SerializableDictionary<string,string> ExtendedProperties { get; set; }
+
 
         public AzureSubscription()
         { }
-
-        public static AzureSubscription Create(object input)
-        {
-            return Create<AzureSubscription>(input);
-        }
-
-        public static IEnumerable<AzureSubscription> Create(object[] input)
-        {
-            if (input != null)
-            {
-                foreach (var item in input)
-                {
-                    yield return Create<AzureSubscription>(item);
-                }
-            }
-            else
-            {
-                yield break;
-            }
-        }
 
         public override string ToString()
         {

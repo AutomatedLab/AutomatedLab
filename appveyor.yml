@@ -1,4 +1,4 @@
-version: 4.7.2.{build}
+version: 5.0.0.{build}
 image:
 - Visual Studio 2017
 
@@ -27,6 +27,7 @@ assembly_info:
   assembly_informational_version: "{version}"
 
 before_build:
+  - nuget restore
   - ps: |
         Write-Host "'before_build' block"
 
@@ -57,6 +58,7 @@ after_build:
 deploy:
   - provider: GitHub
     release: AutomatedLab-v$(appveyor_build_version)
+    tag: v$(appveyor_build_version)
     description: 'This is an automated deployment'
     auth_token:
       secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub

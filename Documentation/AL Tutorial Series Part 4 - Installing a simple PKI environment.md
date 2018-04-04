@@ -109,7 +109,7 @@ Add-LabMachineDefinition -Name S1DC1 -MemoryInMb 512 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Since the Certificate Authority (like domain controller) is a **role**
 in AutomatedLab, this **role** needs to be specified when defining the
@@ -140,7 +140,7 @@ Add-LabMachineDefinition -Name S1CA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 After defining the lab machines, start the installation of the lab like
 usual. This would mean, export the lab definition, import it (which also
@@ -217,7 +217,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Now, when defining the role of the CA, we have the option of specifying
 configuration parameters. Take a look at the following:
@@ -254,7 +254,7 @@ Add-LabMachineDefinition -Name S1CA1 -MemoryInMb 512 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Just as before, perform the actual installation of the lab using:
 
@@ -710,7 +710,7 @@ Add-LabMachineDefinition -Name S1DC1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' \`
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' \`
 
 -Roles \$role
 
@@ -738,7 +738,7 @@ Add-LabMachineDefinition -Name S1CA1 \`
 
 -ToolsPath \$labSources\\Tools \`
 
--OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER' \`
+-OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' \`
 
 -Roles \$role
 

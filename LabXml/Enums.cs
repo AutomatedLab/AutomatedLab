@@ -17,6 +17,19 @@ namespace AutomatedLab
         VMWare = 3
     }
 
+    public enum OperatingSystemType
+    {
+        Windows,
+        Linux
+    }
+
+    public enum LinuxType
+    {
+        Unknown,
+        RedHat,
+        SuSE
+    }
+
     [Flags]
     public enum Roles : long
     {
@@ -51,7 +64,15 @@ namespace AutomatedLab
         FailoverStorage = 134217728,
         FailoverNode = 268435456,
 
-        SQLServer2017 = 536870912
+        SQLServer2017 = 536870912,
+
+        Tfs2015 = 1073741824,
+
+        Tfs2017 = 2147483648,
+
+        TfsBuildWorker = 4294967296,
+
+        Tfs2018  = 8589934592
     }
 
     public enum ActiveDirectoryFunctionalLevel

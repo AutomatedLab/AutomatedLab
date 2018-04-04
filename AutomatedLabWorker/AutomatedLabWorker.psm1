@@ -39,6 +39,8 @@ function Invoke-LWCommand
         [string]$IsoImagePath,
         
         [object[]]$ArgumentList,
+        
+        [string]$ParameterVariableName,
 
         [Parameter(ParameterSetName = 'IsoImageDependencyScriptBlock')]
         [Parameter(ParameterSetName = 'FileContentDependencyScriptBlock')]
@@ -127,10 +129,20 @@ function Invoke-LWCommand
         
         if ($PSCmdlet.ParameterSetName -eq 'FileContentDependencyRemoteScript')
         {
-            $cmd = @"
-                $(if ($ScriptFileName) { "&' $(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'" })
-                $(if (-not $KeepFolder) { "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" } )
-"@
+            $cmd = ''
+            if ($ScriptFileName) 
+            {
+                $cmd +=  "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
+            }
+            if ($ParameterVariableName)
+            {
+                $cmd += " @$ParameterVariableName"
+            }
+            $cmd += "`n"
+            if (-not $KeepFolder) 
+            {
+                $cmd += "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force" 
+            }
             
             Write-Verbose -Message "Invoking script '$ScriptFileName'"
             
@@ -205,7 +217,7 @@ function Invoke-LWCommand
     {
         Write-Debug 'Adding LABHOSTNAME to scriptblock' 
         #in some situations a retry makes sense. In order to know which machines have done the job, the scriptblock must return the hostname
-        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$(HOSTNAME.EXE)`"`n")
+        $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock.ToString() + "`n;`"LABHOSTNAME:`$([System.Net.Dns]::GetHostName())`"`n")
     }
 
     if ($AsJob)
@@ -414,16 +426,23 @@ function Wait-LWLabJob
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$Name,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+
         [int]$Timeout = 60,
+
         [switch]$NoNewLine,
+
         [switch]$NoDisplay,
+
         [switch]$PassThru
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     Write-LogFunctionEntry
     
-    if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
+    Write-ProgressIndicator
 
     if (-not $Job -and -not $Name)
     {
@@ -443,8 +462,8 @@ function Wait-LWLabJob
         $jobs = Get-Job -Name $Name
     }
 
-    if (-not $NoDisplay) { Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($Job.Id -join ', ')" -TaskStart }
-        
+    Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($Job.Id -join ', ')" -TaskStart
+
     if ($jobs -and ($jobs.State -contains 'Running' -or $jobs.State -contains 'AtBreakpoint'))
     {
         $jobs = Get-Job -Id $jobs.ID
@@ -454,14 +473,14 @@ function Wait-LWLabJob
             Start-Sleep -Seconds 1
             if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
             {
-                if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
+                Write-ProgressIndicator
                 $ProgressIndicatorTimer = (Get-Date)
             }
         }
         until (($jobs.State -notcontains 'Running' -and $jobs.State -notcontains 'AtBreakPoint') -or ((Get-Date) -gt ($Start.AddMinutes($Timeout))))
     }
     
-    if (-not $NoNewLine -and $ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicatorEnd }
+    Write-ProgressIndicatorEnd
     
     if ((Get-Date) -gt ($Start.AddMinutes($Timeout)))
     {
@@ -470,10 +489,7 @@ function Wait-LWLabJob
     }
     else
     {
-        if (-not $NoDisplay)
-        {
-            Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
-        }
+        Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
 
         if ($PassThru)
         {

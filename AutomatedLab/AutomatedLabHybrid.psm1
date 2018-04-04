@@ -48,14 +48,14 @@ function Connect-Lab
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFolder ="$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
     
-    $destinationFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $DestinationLab
+    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -137,7 +137,7 @@ function Disconnect-Lab
         Import-Lab -Name $LabName -ErrorAction Stop -NoValidation
         $lab = Get-Lab
 
-        Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Remove conditional forwarders' -ComputerName (Get-LabVM -Role RootDC) -ScriptBlock {
             Get-DnsServerZone | Where-Object -Property ZoneType -EQ Forwarder | Remove-DnsServerZone -Force
         }
 
@@ -218,14 +218,14 @@ function Restore-LabConnection
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $SourceLab
+    $sourceFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
     
-    $destinationFolder = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $DestinationLab
+    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -259,7 +259,7 @@ function Restore-LabConnection
     }
     catch
     {
-        Write-Warning -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.'
+        Write-ScreenInfo -Message 'Public IP address could not be determined. Reconnect-Lab will probably not work.' -Type Warning
     }
 
     if ($localGateway.GatewayIpAddress -ne $labIp)
@@ -392,7 +392,7 @@ function Connect-OnPremisesWithAzure
     $lab = Get-Lab
     $sourceResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $sourceLocation = Get-LabAzureDefaultLocation
-    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
     
@@ -467,7 +467,7 @@ function Connect-OnPremisesWithAzure
     
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
-    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
     $gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
 
     if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
@@ -484,7 +484,7 @@ function Connect-OnPremisesWithAzure
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 SERVERDATACENTER'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
 '@
     }
     
@@ -577,7 +577,7 @@ function Connect-OnPremisesWithAzure
             }
             catch
             {
-                Write-Warning -Message "Could not connect to $AzureDnsEntry ($count/3)"
+                Write-ScreenInfo -Message "Could not connect to $AzureDnsEntry ($count/3)" -Type Warning
                 $connectionEstablished = $false
             }
 
@@ -651,7 +651,7 @@ function Connect-OnPremisesWithEndpoint
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 SERVERDATACENTER'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
 '@
     }
     
@@ -854,11 +854,11 @@ function Set-VpnDnsForwarders
 
     Import-Lab $SourceLab -NoValidation
     $lab = Get-Lab
-    $sourceDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     Import-Lab $DestinationLab -NoValidation    
     $lab = Get-Lab
-    $destinationDcs = Get-LabMachine -Role DC, RootDC, FirstChildDC
+    $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName
     $forwarders = Get-FullMesh -List $forestNames
@@ -866,7 +866,7 @@ function Set-VpnDnsForwarders
     foreach ($forwarder in $forwarders)
     {
         $targetMachine = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -contains 'RootDC' -and $_.DomainName -eq $forwarder.Source }
-        $machineExists = Get-LabMachine | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
+        $machineExists = Get-LabVM | Where-Object {$_.Name -eq $targetMachine.Name -and $_.IpV4Address -eq $targetMachine.IpV4Address}
 
         if (-not $machineExists)
         {

@@ -23,7 +23,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:IsDomainJoined'= $true
 	'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
 	'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
-    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
     'Add-LabMachineDefinition:DomainName'= 'child1.test2.net'
 }
 
@@ -56,9 +56,9 @@ $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\ClassicShell
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
 
-Install-LabSoftwarePackages -Machine (Get-LabMachine -All) -SoftwarePackage $packs
+Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 
 #Install Reflector to the first VisualStudio2015 machines
-Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabMachine -Role VisualStudio2015)[0].Name
+Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabVM -Role VisualStudio2015)[0].Name
 
 Show-LabDeploymentSummary -Detailed

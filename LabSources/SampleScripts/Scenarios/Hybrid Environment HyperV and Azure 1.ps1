@@ -57,7 +57,7 @@ foreach ($lab in $labs.GetEnumerator())
         'Add-LabMachineDefinition:DomainName' = $lab.Domain
         'Add-LabMachineDefinition:DnsServer1' = $lab.Dns1
         'Add-LabMachineDefinition:DnsServer2' = $lab.Dns2
-        'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 SERVERDATACENTER'
+        'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     }
 
     #the first machine is the root domain controller
@@ -106,6 +106,6 @@ Invoke-LabCommand POSHDC1 -ScriptBlock {
     }
     else
     {
-        Write-Warning "Could not connect to $connectedLabMachine"
+        Write-ScreenInfo "Could not connect to $connectedLabMachine" -Type Warning
     }
 } -ArgumentList "POSHDC1.$($labs.Get(1).Domain)" -PassThru

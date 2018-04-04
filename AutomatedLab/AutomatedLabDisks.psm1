@@ -14,8 +14,7 @@ function New-LabBaseImages
         return
     }
     
-    $isos = $lab.Sources.ISOs | Where-Object { $_.IsOperatingSystem }
-    $oses = (Get-LabMachine -All | Select-Object).OperatingSystem
+    $oses = (Get-LabVm -All).OperatingSystem
     
     if (-not $lab.Sources.AvailableOperatingSystems)
     {
@@ -206,11 +205,19 @@ function New-LabVHDX
         return
     }
     
-    $diskPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
+    $disksPath = Join-Path -Path $lab.Target.Path -ChildPath Disks
     
     foreach ($disk in $disks)
     {
-        New-LWVHDX -VhdxPath (Join-Path -Path $diskPath -ChildPath ($disk.Name + '.vhdx')) -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
+        $diskPath = Join-Path -Path $disksPath -ChildPath ($disk.Name + '.vhdx')
+        if (-not (Test-Path -Path $diskPath))
+        {
+            New-LWVHDX -VhdxPath $diskPath -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
+        }
+        else
+        {
+            Write-ScreenInfo "The disk '$diskPath' does already exist, no new disk is created." -Type Warning
+        }
     }
     
     Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'

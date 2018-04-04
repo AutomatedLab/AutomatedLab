@@ -22,12 +22,12 @@ $role += Get-LabMachineRoleDefinition -Role WebServer
 $role += Get-LabMachineRoleDefinition -Role CaRoot
 Add-LabMachineDefinition -Name S1DC1 -Memory 4GB -Network $labName -IpAddress 192.168.81.10 `
     -DnsServer1 192.168.81.10 -DomainName test1.net -Roles $role `
-    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 SERVERDATACENTER'
+    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Install-Lab
 
-Install-LabSoftwarePackage -ComputerName (Get-LabMachine) -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
-Install-LabSoftwarePackage -ComputerName (Get-LabMachine) -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
+Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
+Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
 

@@ -28,7 +28,7 @@ if (-not (Get-VDPortgroup -Name VMWareLab)){
 
 Add-LabVirtualNetworkDefinition -Name VMWareLab -VirtualizationEngine VMWare -AddressSpace 192.168.10.0 
 
-Add-LabMachineDefinition -Name test1 -memory 1gb -Processors 1 -OS 'Windows Server 2012 R2 SERVERDATACENTER' -Roles webserver
+Add-LabMachineDefinition -Name test1 -memory 1gb -Processors 1 -OS 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -Roles webserver
 
 # unload Hyper-V
 get-module hyper-v | Remove-Module

@@ -25,7 +25,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DnsServer1' = '192.168.50.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.50.11'
     'Add-LabMachineDefinition:Memory' = 512MB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 }
 
 #the first machine is the root domain controller
@@ -111,12 +111,12 @@ Install-Lab -StartRemainingMachines
 Install-Lab -PostInstallations
 
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
 #Install Reflector to the second VisualStudio2015 machines
-Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabMachine -Role VisualStudio2015)[1] -AsJob
+Install-LabSoftwarePackage -Path $labSources\SoftwarePackages\ReflectorInstaller.exe -CommandLine '/qn /IAgreeToTheEula' -ComputerName (Get-LabVM -Role VisualStudio2015)[1] -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Show-LabDeploymentSummary -Detailed

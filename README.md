@@ -1,8 +1,13 @@
 # AutomatedLab
 
-[![Krihelimeter](http://krihelinator.xyz/badge/AutomatedLab/AutomatedLab)](http://krihelinator.xyz/repositories/AutomatedLab/AutomatedLab)
-[![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/master?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
-[![Build status dev](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/develop?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab)
+Build | Status | Last Commit | Latest Release
+--- | --- | --- | ---
+Develop | [![Build status dev](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/develop?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab) | [![GitHub last commit](https://img.shields.io/github/last-commit/AutomatedLab/AutomatedLab/develop.svg)](https://github.com/AutomatedLab/AutomatedLab/tree/develop/)
+Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k05nasp/branch/master?svg=true)](https://ci.appveyor.com/project/automatedlab/automatedlab) | [![GitHub last commit](https://img.shields.io/github/last-commit/AutomatedLab/AutomatedLab/master.svg)](https://github.com/AutomatedLab/AutomatedLab/tree/master/) | [![GitHub release](https://img.shields.io/github/release/AutomatedLab/AutomatedLab.svg)](https://github.com/AutomatedLab/AutomatedLab/releases)[![PowerShell Gallery](https://img.shields.io/powershellgallery/v/AutomatedLab.svg)](https://www.powershellgallery.com/packages/AutomatedLab/)
+
+[![GitHub issues](https://img.shields.io/github/issues/AutomatedLab/AutomatedLab.svg)](https://github.com/AutomatedLab/AutomatedLab/issues)
+[![Downloads](https://img.shields.io/github/downloads/AutomatedLab/AutomatedLab/total.svg?label=Downloads&maxAge=999)](https://github.com/AutomatedLab/AutomatedLab/releases)
+[![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/AutomatedLab.svg)](https://www.powershellgallery.com/packages/AutomatedLab/)
 
 ## Project Summary
 
@@ -21,9 +26,11 @@ Apart from the module itself your system needs to meet the following requirement
 - A decent amount of RAM
 - An SSD for your machines is highly recommended as many issues arise from slow HDDs
 
-### Download AutomatedLab (latest version 4.5.0 released on November 18 2017)
+### Download AutomatedLab (latest version 4.7.2.2 released on January 18 2018)
 
-You can find an [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) right here in GitHub if you do not want to compile your own version of AutomatedLab.
+There are two options installing AutomatedLab:
+- You can use the [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) published on GitHub.
+- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module. Please refer to the wiki for some details.
 
 ### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
 

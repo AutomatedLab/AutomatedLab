@@ -141,7 +141,7 @@ function Get-Mesh
 
 Add-Type -TypeDefinition $type
 
-$forestNames = (Get-LabMachine -Role RootDC).DomainName
+$forestNames = (Get-LabVM -Role RootDC).DomainName
 if (-not $forestNames)
 {
     Write-Error 'Could not get forest names from the lab'
@@ -152,8 +152,8 @@ $forwarders = Get-Mesh -List $forestNames
 
 foreach ($forwarder in $forwarders)
 {
-    $targetMachine = Get-LabMachine -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
-    $masterServers = Get-LabMachine -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
+    $targetMachine = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
+    $masterServers = Get-LabVM -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
     
     $cmd = @"
         `$VerbosePreference = 'Continue'
@@ -166,7 +166,7 @@ foreach ($forwarder in $forwarders)
     Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd))
 }
 
-$rootDcs = Get-LabMachine -Role RootDC
+$rootDcs = Get-LabVM -Role RootDC
 $syncJobs = foreach ($rootDc in $rootDcs)
 {
 	Sync-LabActiveDirectory -ComputerName $rootDc -AsJob

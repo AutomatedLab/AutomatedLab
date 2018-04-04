@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Xml.Serialization;
+using System.Collections.Generic;
 
 namespace AutomatedLab
 {
@@ -7,6 +9,7 @@ namespace AutomatedLab
     {
         private string operatingSystemName;
         private string operatingSystemImageName;
+        private string operatingSystemImageDescription;
         private string isoPath;
         private string baseDiskPath;
         private Version version;
@@ -48,8 +51,16 @@ namespace AutomatedLab
                             return "6.3";
                         case "10":
                             return "10.0";
-                        default:
+                        case "":
+                            if (operatingSystemName == "Windows Server Datacenter" |
+                                operatingSystemName == "Windows Server Standard" |
+                                operatingSystemName == "Windows Server Datacenter (Desktop Experience)" |
+                                operatingSystemName == "Windows Server Standard (Desktop Experience)"
+                                )
+                                return "10.0";
                             throw new Exception("Operating System Version could not be retrieved");
+                        default:
+                            return VersionString;
                     }
 
                 }
@@ -90,26 +101,23 @@ namespace AutomatedLab
 
                 switch (operatingSystemName)
                 {
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "2008-R2-SP1";
 
-                    case "Windows Server 2012 SERVERDATACENTER":
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "2012-Datacenter";
 
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "2012-R2-Datacenter";
 
-                    case "Windows Server 2016 SERVERDATACENTER":
+                    case "Windows Server 2016 Datacenter (Desktop Experience)":
                         return "2016-Datacenter";
 
-                    case "Windows Server 2016 SERVERDATACENTERCORE":
+                    case "Windows Server 2016 Datacenter":
                         return "2016-Datacenter-Server-Core";
 
-                    case "Windows Server 2016 SERVERDATACENTERACORE":
+                    case "Windows Server Datacenter":
                         return "Datacenter-Core-1709-smalldisk";
-
-                    case "Windows Server 2016 SERVERSTANDARDNANO":
-                        return "2016-Nano-Server";
 
                     case "Windows 8.1 Enterprise":
                         return "Win8.1-Ent-N";
@@ -120,7 +128,7 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise":
                         return "Windows-10-N-x64";
 
-                    case "Windows 7 ENTERPRISE":
+                    case "Windows 7 Enterprise":
                         return "Win7-SP1-Ent-N";
 
                     default:
@@ -136,13 +144,13 @@ namespace AutomatedLab
                 //the VMWare templates must be provided by the VMWare infrastructure
                 switch (operatingSystemName)
                 {
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "AL_WindowsServer2008R2DataCenter";
 
-                    case "Windows Server 2012 SERVERDATACENTER":
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
                         return "AL_WindowsServer2012DataCenter";
 
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
                         return "AL_WindowsServer2012R2DataCenter";
 
                     case "Windows Server vNext SERVERDATACENTER":
@@ -160,38 +168,55 @@ namespace AutomatedLab
             {
                 switch (operatingSystemName)
                 {
-                    case "Windows 7 PROFESSIONAL":
+                    //Windows 7
+                    case "Windows 7 Professional":
                         return "FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4";
-                    case "Windows 7 ENTERPRISE":
+                    case "Windows 7 Enterprise":
                         return "33PXH-7Y6KF-2VJC9-XBBR8-HVTHH";
 
+                    //Windows 8
                     case "Windows 8 Pro":
                         return "NG4HW-VH26C-733KW-K6F98-J8CK4";
                     case "Windows 8 Enterprise":
                         return "32JNW-9KQ84-P47T8-D8GGY-CWCK7";
 
+                    //Windows 8.1
                     case "Windows 8.1 Pro":
                         return "GCRJD-8NW9H-F2CDX-CCM8D-9D6T9";
                     case "Windows 8.1 Enterprise":
                         return "MHF9N-XY6XB-WVXMC-BTDCT-MKKG7";
 
+                    //Windows 2008 new names
+                    case "Windows Server 2008 R2 Standard (Full Installation)":
+                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 Standard (Server Core Installation)":
+                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
+                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
+                    case "Windows Server 2008 R2 Datacenter (Server Core Installation)":
+                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
+
+                    //Windows 2008 old names
                     case "Windows Server 2008 R2 SERVERSTANDARD":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
                     case "Windows Server 2008 R2 SERVERSTANDARDCORE":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 SERVERENTERPRISE":
-                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
-                    case "Windows Server 2008 R2 SERVERENTERPRISECORE":
-                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
                     case "Windows Server 2008 R2 SERVERDATACENTER":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
                     case "Windows Server 2008 R2 SERVERDATACENTERCORE":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-                    case "Windows Server 2008 R2 SERVERWEB":
-                        return "6TPJF-RBVHG-WBW2R-86QPH-6RTM4";
-                    case "Windows Server 2008 R2 SERVERWEBCORE":
-                        return "6TPJF-RBVHG-WBW2R-86QPH-6RTM4";
 
+                    //Windows Server 2012 new names
+                    case "Windows Server 2012 Standard (Server Core Installation)":
+                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
+                    case "Windows Server 2012 Standard (Server with a GUI)":
+                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
+                    case "Windows Server 2012 Datacenter (Server Core Installation)":
+                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
+                    case "Windows Server 2012 Datacenter (Server with a GUI)":
+                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
+
+                    //Windows Server 2012 new names
                     case "Windows Server 2012 SERVERSTANDARDCORE":
                         return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
                     case "Windows Server 2012 SERVERSTANDARD":
@@ -201,6 +226,17 @@ namespace AutomatedLab
                     case "Windows Server 2012 SERVERDATACENTER":
                         return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
 
+                    //Windows Server 2012 R2 new names
+                    case "Windows Server 2012 R2 Standard (Server Core Installation)":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 Standard (Server with a GUI)":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 Datacenter (Server Core Installation)":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+
+                    //Windows Server 2012 R2 old names
                     case "Windows Server 2012 R2 SERVERSTANDARDCORE":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
                     case "Windows Server 2012 R2 SERVERSTANDARD":
@@ -210,40 +246,34 @@ namespace AutomatedLab
                     case "Windows Server 2012 R2 SERVERDATACENTER":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
 
+                    //Windows 10
                     case "Windows 10 Pro":
-                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
-                    case "Windows 10 Pro Technical Preview":
                         return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Enterprise Technical Preview":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Evaluation":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Enterprise Insider Preview":
+                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                    case "Windows 10 Pro Insider Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise 2015 LTSB":
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":
                         return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
 
+                    //Windows Server 2016 new names
+                    case "Windows Server 2016 Standard":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 Standard (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
 
-                    case "Windows Server 2016 Technical Preview 4 SERVERDATACENTER":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERDATACENTERCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERSTANDARD":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 4 SERVERSTANDARDCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
+                    case "Windows Server 2016 Datacenter":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server 2016 Datacenter (Desktop Experience)":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    case "Windows Server 2016 Technical Preview 5 SERVERDATACENTER":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERDATACENTERCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERSTANDARD":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-                    case "Windows Server 2016 Technical Preview 5 SERVERSTANDARDCORE":
-                        return "2KNJJ-33Y9H-2GXGX-KMQWH-G6H67";
-
+                    //Windows Server 2016 old names
                     case "Windows Server 2016 SERVERSTANDARDCORE":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 SERVERSTANDARD":
@@ -253,16 +283,22 @@ namespace AutomatedLab
                     case "Windows Server 2016 SERVERDATACENTER":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    case "Windows Server 2016 SERVERSTANDARDNANO":
+                    // Windows Server 1709+ new names
+                    case "Windows Server Standard":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERDATACENTERNANO":
+                    case "Windows Server Standard (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+
+                    case "Windows Server Datacenter":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server Datacenter (Desktop Experience)":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    // Server 2016 Insider Preview
+                    // Windows Server 1709+ old names
                     case "Windows Server 2016 SERVERSTANDARDACORE":
-                        return "DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4";
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 SERVERDATACENTERACORE":
-                        return "6Y6KB-N82V8-D8CQV-23MJW-BWTG6";
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
                     default:
                         return string.Empty;
@@ -287,12 +323,17 @@ namespace AutomatedLab
             set { baseDiskPath = value; }
         }
 
+        [XmlArrayItem(ElementName = "Package")]
+        public List<String> LinuxPackageGroup { get; set; }
         public OperatingSystem()
-        { }
+        {
+            LinuxPackageGroup = new List<String>();
+        }
 
         public OperatingSystem(string operatingSystemName)
         {
             this.operatingSystemName = operatingSystemName;
+            LinuxPackageGroup = new List<String>();
             if (operatingSystemName.ToLower().Contains("windows server"))
             {
                 installation = "Server";
@@ -306,18 +347,21 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, AutomatedLab.Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.version = version;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
         }
 
         public OperatingSystem(string operatingSystemName, string isoPath, Version version)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
         }
@@ -325,6 +369,7 @@ namespace AutomatedLab
         public OperatingSystem(string operatingSystemName, string isoPath, Version version, string imageName)
             : this(operatingSystemName)
         {
+            LinuxPackageGroup = new List<String>();
             this.isoPath = isoPath;
             this.version = version;
             this.operatingSystemImageName = imageName;
@@ -335,10 +380,30 @@ namespace AutomatedLab
             return operatingSystemName;
         }
 
+        public LinuxType LinuxType
+        {
+            get
+            {
+                return (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystemName, "CentOS|Red Hat|Fedora")) ? LinuxType.RedHat : LinuxType.SuSE;
+            }
+        }
+        public OperatingSystemType OperatingSystemType
+        {
+            get
+            {
+                return ((bool)(OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+            }
+        }
         public string OperatingSystemImageName
         {
             get { return operatingSystemImageName; }
             set { operatingSystemImageName = value; }
+        }
+
+        public string OperatingSystemImageDescription
+        {
+            get { return operatingSystemImageDescription; }
+            set { operatingSystemImageDescription = value; }
         }
 
         public int ImageIndex
@@ -383,17 +448,25 @@ namespace AutomatedLab
         {
             get
             {
-                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)";
+                var exp = @"(?:Windows Server )?(\d{4})(( )?R2)?|(?:Windows )?((\d){1,2}(\.\d)?)|(?:(CentOS |Fedora |Red Hat Enterprise Linux |openSUSE Leap |SUSE Linux Enterprise Server ))?(\d+\.?\d?)((?: )?SP\d)?";
 
-                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp);
+                var match = System.Text.RegularExpressions.Regex.Match(operatingSystemName, exp, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
                 if (!string.IsNullOrEmpty(match.Groups[1].Value))
                 {
                     return match.Groups[1].Value;
                 }
-                else
+                else if (!string.IsNullOrEmpty(match.Groups[4].Value))
                 {
                     return match.Groups[4].Value;
+                }
+                else
+                {
+                    if (!string.IsNullOrEmpty(match.Groups[9].Value))
+                    {
+                        return $"{match.Groups[8].Value}.{match.Groups[9].Value[match.Groups[9].Value.Length - 1]}";
+                    }
+                    return match.Groups[8].Value;
                 }
             }
         }

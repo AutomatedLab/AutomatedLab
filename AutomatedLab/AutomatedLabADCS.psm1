@@ -163,7 +163,7 @@ namespace Pki.CATemplate
         RequireUserInteraction = 256,// This flag instructs the client to obtain user consent before attempting to enroll for a certificate that is based on the specified template.
         RemoveInvalidFromStore = 1024,// This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048,//This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
-        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section �4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
+        IncludeOcspRevNoCheck = 4096,// This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section 4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
         ReuseKeyTokenFull = 8192,//This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768,//This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536,//This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -1137,7 +1137,7 @@ function Get-LabCertificate
         } -ArgumentList $certStoreTypes -NoDisplay
 
         Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -ScriptBlock {
-			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            $variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
             Sync-Parameter -Command (Get-Command -Name Get-Certificate2)
             Get-Certificate2 @ALBoundParameters
             
@@ -1202,7 +1202,7 @@ function Add-LabCertificate
         } -ArgumentList (,$Cert) -Variable $variables
     
         Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -ScriptBlock {
-			$variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
+            $variables['Password']  = $variables['Password'] | ConvertTo-SecureString -AsPlainText -Force
             Sync-Parameter -Command (Get-Command -Name Add-Certificate2)
             $ALBoundParameters.Add('Path', $tempFile)
             $ALBoundParameters.Remove('Cert')
@@ -1287,7 +1287,7 @@ function New-LabCATemplate
         }
     } -Variable $variables -Function $functions -PassThru
     
-    Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
+    Sync-LabActiveDirectory -ComputerName (Get-LabVM -Role RootDC)
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $ComputerName -ScriptBlock {
 
@@ -1313,7 +1313,7 @@ function Test-LabCATemplate
 
     Write-LogFunctionEntry
     
-    $computer = Get-LabMachine -ComputerName $ComputerName
+    $computer = Get-LabVM -ComputerName $ComputerName
     if (-not $computer)
     {
         Write-Error "The given computer '$ComputerName' could not be found in the lab" -TargetObject $ComputerName
@@ -1351,11 +1351,11 @@ function Get-LabIssuingCA
     
     if ($DomainName)
     {
-        $machines = (Get-LabMachine -Role CaRoot, CaSubordinate) | Where-Object DomainName -eq $DomainName
+        $machines = (Get-LabVM -Role CaRoot, CaSubordinate) | Where-Object DomainName -eq $DomainName
     }
     else
     {
-        $machines = (Get-LabMachine -Role CaRoot, CaSubordinate)
+        $machines = (Get-LabVM -Role CaRoot, CaSubordinate)
     }
     
     $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
@@ -1372,7 +1372,7 @@ function Get-LabIssuingCA
         return
     }
 
-    Get-LabMachine -ComputerName $issuingCAs | ForEach-Object {
+    Get-LabVM -ComputerName $issuingCAs | ForEach-Object {
         $caName = Invoke-LabCommand -ComputerName $_ -ScriptBlock { ((certutil -config $args[0] -ping)[1] -split '"')[1] } -ArgumentList $_.Name -PassThru -NoDisplay
         
         $_ | Add-Member -Name CaName -MemberType NoteProperty -Value $caName -Force
@@ -1460,33 +1460,33 @@ function Install-LabCA
         return
     }
     
-    $machines = Get-LabMachine -Role CaRoot, CaSubordinate
+    $machines = Get-LabVM -Role CaRoot, CaSubordinate
     if (-not $machines)
     {
-        Write-Warning -Message 'There is no machine(s) with CA role'
+        Write-ScreenInfo -Message 'There is no machine(s) with CA role' -Type Warning
         return
     }
     
-    if (-not (Get-LabMachine -Role CaRoot))
+    if (-not (Get-LabVM -Role CaRoot))
     {
         Write-ScreenInfo -Message 'Subordinate CA(s) defined but lab has no Root CA(s) defined. Skipping installation of CA(s).' -Type Error
         return
     }
 
-    if ((Get-LabMachine -Role CaRoot).Name)
+    if ((Get-LabVM -Role CaRoot).Name)
     {
-        Write-ScreenInfo -Message "Machines with Root CA role to be installed: '$((Get-LabMachine -Role CaRoot).Name -join ', ')'" -TaskStart
+        Write-ScreenInfo -Message "Machines with Root CA role to be installed: '$((Get-LabVM -Role CaRoot).Name -join ', ')'" -TaskStart
     }
     
     #Bring the RootCA server online and start installing
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     
-    Start-LabVM -RoleName CaRoot, CaSubordinate
+    Start-LabVM -RoleName CaRoot, CaSubordinate -NoNewline
     
-    Wait-LabVM -ComputerName (Get-LabMachine -Role CaRoot) -ProgressIndicator 10
+    Wait-LabVM -ComputerName (Get-LabVM -Role CaRoot) -ProgressIndicator 10
     
-    $caRootMachines = Get-LabMachine -Role CaRoot -IsRunning
-    if ($caRootMachines.Count -ne (Get-LabMachine -Role CaRoot).Count)
+    $caRootMachines = Get-LabVM -Role CaRoot -IsRunning
+    if ($caRootMachines.Count -ne (Get-LabVM -Role CaRoot).Count)
     {
         Write-Error 'Not all machines of type Root CA could be started, aborting the installation'
         return
@@ -1507,26 +1507,26 @@ function Install-LabCA
         }
     }
     
-    if ($Jobs)
+    if ($jobs)
     {
         Write-ScreenInfo -Message 'Waiting for Root CA(s) to complete installation' -NoNewline
     
-        Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoNewLine -NoDisplay
+        Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoDisplay
     
         Write-Verbose -Message "Getting certificates from Root CA servers and placing them in '<labfolder>\Certs' on host machine"
-        Get-LabMachine -Role CaRoot | Get-LabCAInstallCertificates
+        Get-LabVM -Role CaRoot | Get-LabCAInstallCertificates
     
-        Write-Verbose -Message 'Publishing certificates from CA servers to all online machines'
+        Write-ScreenInfo -Message 'Publishing certificates from CA servers to all online machines' -NoNewLine
         $jobs = Publish-LabCAInstallCertificates -PassThru
-    
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
     
         Write-Verbose -Message 'Waiting for all running machines to be contactable'
-        Wait-LabVM -ComputerName (Get-LabMachine -All -IsRunning) -ProgressIndicator 20 -NoNewLine
+        Wait-LabVM -ComputerName (Get-LabVM -All -IsRunning) -ProgressIndicator 20 -NoNewLine
     
         Write-Verbose -Message 'Invoking a GPUpdate on all running machines'
-        $jobs = Invoke-LabCommand -ComputerName (Get-LabMachine -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
-
+        $jobs = Invoke-LabCommand -ActivityName 'GPUpdate after Root CA install' -ComputerName (Get-LabVM -All -IsRunning) -ScriptBlock {
+            gpupdate.exe /force
+        } -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoDisplay
     }
     
@@ -1535,21 +1535,21 @@ function Install-LabCA
     #If any Subordinate CA servers to install, bring these online and start installing
     if ($machines | Where-Object { $_.Roles.Name -eq ([AutomatedLab.Roles]::CaSubordinate) })
     {
-        $caSubordinateMachines = Get-LabMachine -Role CaSubordinate -IsRunning
-        if ($caSubordinateMachines.Count -ne (Get-LabMachine -Role CaSubordinate).Count)
+        $caSubordinateMachines = Get-LabVM -Role CaSubordinate -IsRunning
+        if ($caSubordinateMachines.Count -ne (Get-LabVM -Role CaSubordinate).Count)
         {
             Write-Error 'Not all machines of type CaSubordinate could be started, aborting the installation'
             return
         }
         
-        if ((Get-LabMachine -Role CaSubordinate).Name)
+        if ((Get-LabVM -Role CaSubordinate).Name)
         {
-            Write-ScreenInfo -Message "Machines with Subordinate CA role to be installed: '$((Get-LabMachine -Role CaSubordinate).Name -join ', ')'" -TaskStart
+            Write-ScreenInfo -Message "Machines with Subordinate CA role to be installed: '$((Get-LabVM -Role CaSubordinate).Name -join ', ')'" -TaskStart
         }
         
         
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
-        Wait-LabVM -ComputerName (Get-LabMachine -Role CaSubordinate).Name -ProgressIndicator 10
+        Wait-LabVM -ComputerName (Get-LabVM -Role CaSubordinate).Name -ProgressIndicator 10
         
         $installSequence = 0
         $jobs = @()
@@ -1575,14 +1575,14 @@ function Install-LabCA
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoNewLine -NoDisplay
         
             Write-Verbose -Message "- Getting certificates from CA servers and placing them in '<labfolder>\Certs' on host machine"
-            Get-LabMachine -Role CaRoot, CaSubordinate | Get-LabCAInstallCertificates
+            Get-LabVM -Role CaRoot, CaSubordinate | Get-LabCAInstallCertificates
         
             Write-Verbose -Message '- Publishing certificates from Subordinate CA servers to all online machines'
             $jobs = Publish-LabCAInstallCertificates -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
         
             Write-Verbose -Message 'Invoking a GPUpdate on all machines that are online'
-            $jobs = Invoke-LabCommand -ComputerName (Get-LabMachine -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
+            $jobs = Invoke-LabCommand -ComputerName (Get-LabVM -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoDisplay
         }
         
@@ -1632,7 +1632,7 @@ function Install-LabCAMachine
         $param.Add('UserName', ('{0}\{1}' -f $domain.Name, $domain.Administrator.UserName))
         $param.Add('Password', $domain.Administrator.Password)
         
-        $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+        $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
         if ($rootDc) #if there is a root domain controller in the same domain as the machine
         {
             $rootDomain = (Get-Lab).Domains | Where-Object Name -eq $rootDc.DomainName
@@ -1642,7 +1642,7 @@ function Install-LabCAMachine
         {
             $rootDomain = $lab.GetParentDomain($machine.DomainName)
             $rootDomainNetBIOSName = ($rootDomain.Name -split '\.')[0]
-            $rootDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $rootDomain
+            $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $rootDomain
         }
         
         $param.Add('ForestAdminUserName', ('{0}\{1}' -f $rootDomainNetBIOSName, $rootDomain.Administrator.UserName))
@@ -1821,18 +1821,18 @@ function Install-LabCAMachine
     {
         if ($keySet.Key -cnotin $knownParameters)
         {
-            Write-Warning -Message "Parameter name '$($keySet.Key)' is unknown/ignored)"
+            Write-ScreenInfo -Message "Parameter name '$($keySet.Key)' is unknown/ignored)" -Type Warning
             $unkownParFound = $true
         }
     }
     if ($unkownParFound)
     {
-        Write-Warning -Message 'Valid parameter names are:'
+        Write-ScreenInfo -Message 'Valid parameter names are:' -Type Warning
         Foreach ($name in ($knownParameters.GetEnumerator()))
         {
-            Write-Warning -Message "  $($name)"
+            Write-ScreenInfo -Message "  $($name)" -Type Warning
         }
-        Write-Warning -Message 'NOTE that all parameter names are CASE SENSITIVE!'
+        Write-ScreenInfo -Message 'NOTE that all parameter names are CASE SENSITIVE!' -Type Warning
     }
     #endregion - Check if any unknown parameter names was passed
     
@@ -2114,7 +2114,7 @@ function Install-LabCAMachine
     
     if (($role.Properties.ContainsKey('OCSPHTTPURL01')) -or ($role.Properties.ContainsKey('OCSPHTTPURL02')) -or ($role.Properties.ContainsKey('InstallOCSP')))
     {
-        Write-Warning -Message 'OCSP is not yet supported. OCSP parameters will be ignored and OCSP will not be installed!'
+        Write-ScreenInfo -Message 'OCSP is not yet supported. OCSP parameters will be ignored and OCSP will not be installed!' -Type Warning
     }
     
     
@@ -2212,9 +2212,9 @@ function Install-LabCAMachine
     }
     if (($param.CAType -like '*root*') -and ($role.Properties.ContainsKey('ValidityPeriod')) -and ($validityPeriodUnitsHours) -and ($validityPeriodUnitsHours -gt (10 * 365 * 24)))
     {
-        Write-Warning -Message "ValidityPeriod is more than 10 years. Overall validity of all issued certificates by Enterprise Root CAs will be set to specified value. `
+        Write-ScreenInfo -Message "ValidityPeriod is more than 10 years. Overall validity of all issued certificates by Enterprise Root CAs will be set to specified value. `
             However, the default validity (specified by 2012/2012R2 Active Directory) of issued by Enterprise Root CAs to Subordinate CAs, is 5 years. `
-        If more than 5 years is needed, a custom certificate template is needed wherein the validity can be changed."
+        If more than 5 years is needed, a custom certificate template is needed wherein the validity can be changed." -Type Warning
     }
     
     
@@ -2293,12 +2293,12 @@ function Install-LabCAMachine
             if ($role.Name -eq 'CaRoot')
             {
                 $param.CAType = 'EnterpriseRootCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseRootCA" since machine is domain joined and Root CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseRootCA" since machine is domain joined and Root CA role is specified' -Type Warning }
             }
             else
             {
                 $param.CAType = 'EnterpriseSubordinateCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseSubordinateCA" since machine is domain joined and Subordinate CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "EnterpriseSubordinateCA" since machine is domain joined and Subordinate CA role is specified' -Type Warning }
             }
         }
         else
@@ -2306,12 +2306,12 @@ function Install-LabCAMachine
             if ($role.Name -eq 'CaRoot')
             {
                 $param.CAType = 'StandAloneRootCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneRootCA" since machine is not domain joined and Root CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneRootCA" since machine is not domain joined and Root CA role is specified' -Type Warning }
             }
             else
             {
                 $param.CAType = 'StandAloneSubordinateCA'
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneSubordinateCA" since machine is not domain joined and Subordinate CA role is specified' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Parameter "CAType" is not specified. Automatically setting CAtype to "StandAloneSubordinateCA" since machine is not domain joined and Subordinate CA role is specified' -Type Warning }
             }
         }
     }
@@ -2324,17 +2324,17 @@ function Install-LabCAMachine
         {
             if ($param.CAType -like 'Enterprise*')
             {
-                $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object DomainName -eq $machine.DomainName | Sort-Object -Property DomainName) | Select-Object -First 1
+                $rootCA = [array](Get-LabVM -Role CaRoot | Where-Object DomainName -eq $machine.DomainName | Sort-Object -Property DomainName) | Select-Object -First 1
                 
                 if (-not $rootCA)
                 {
-                    $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
+                    $rootCA = [array](Get-LabVM -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
                 }
                 
             }
             else
             {
-                $rootCA = [array](Get-LabMachine -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
+                $rootCA = [array](Get-LabVM -Role CaRoot | Where-Object { -not $_.IsDomainJoined }) | Select-Object -First 1
             }
             
             if ($rootCA)
@@ -2404,7 +2404,7 @@ function Install-LabCAMachine
         if ($role.Name -eq 'CaRoot')        { $caBaseName = 'LabRootCA' }
         if ($role.Name -eq 'CaSubordinate') { $caBaseName = 'LabSubCA'  }
         
-        [array]$caNamesAlreadyInUse = Invoke-LabCommand -ComputerName (Get-LabMachine -Role $role.Name) -ScriptBlock {
+        [array]$caNamesAlreadyInUse = Invoke-LabCommand -ComputerName (Get-LabVM -Role $role.Name) -ScriptBlock {
             $name = certutil.exe -getreg CA\CommonName | Where-Object { $_ -match 'CommonName REG' }
             if ($name)
             {
@@ -2416,7 +2416,7 @@ function Install-LabCAMachine
         {
             $num++
         }
-        until (($caBaseName + [string]($num)) -notin ((Get-LabMachine).Roles.Properties.CACommonName) -and ($caBaseName + [string]($num)) -notin $caNamesAlreadyInUse)
+        until (($caBaseName + [string]($num)) -notin ((Get-LabVM).Roles.Properties.CACommonName) -and ($caBaseName + [string]($num)) -notin $caNamesAlreadyInUse)
         
         $param.CACommonName = $caBaseName + ([string]$num)
         ($machine.Roles | Where-Object Name -like Ca*).Properties.Add('CACommonName', $param.CACommonName)
@@ -2679,12 +2679,12 @@ function Install-LabCAMachine
     $role = $machine.Roles | Where-Object { ([AutomatedLab.Roles]$_.Name -band $roles) -ne 0 }
     if (($param.CAType -like '*root*') -and !($role.Properties.ContainsKey('CertsValidityPeriodUnits')))
     {
-        if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message "Adding parameter 'CertsValidityPeriodUnits' with value of '$($param.CertsValidityPeriodUnits)' to machine roles properties of machine $($machine.Name)" }
+        if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message "Adding parameter 'CertsValidityPeriodUnits' with value of '$($param.CertsValidityPeriodUnits)' to machine roles properties of machine $($machine.Name)" -Type Warning }
         $role.Properties.Add('CertsValidityPeriodUnits', $param.CertsValidityPeriodUnits)
     }
     if (($param.CAType -like '*root*') -and !($role.Properties.ContainsKey('CertsValidityPeriod')))
     {
-        if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message "Adding parameter 'CertsValidityPeriod' with value of '$($param.CertsValidityPeriod)' to machine roles properties of machine $($machine.Name)" }
+        if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message "Adding parameter 'CertsValidityPeriod' with value of '$($param.CertsValidityPeriod)' to machine roles properties of machine $($machine.Name)" -Type Warning }
         $role.Properties.Add('CertsValidityPeriod', $param.CertsValidityPeriod)
     }
     
@@ -2706,7 +2706,7 @@ function Install-LabCAMachine
             #$param.InstallWebRole = (($machine.Name + "." + $machine.domainname) -in $URLs)
             if (($machine.Name + '.' + $machine.domainname) -notin $URLs)
             {
-                Write-Warning -Message 'Http based AIA or CDP specified but is NOT pointing to this server. Make sure to MANUALLY establish this web server and DNS name as well as copy AIA and CRL(s) to this web server'
+                Write-ScreenInfo -Message 'Http based AIA or CDP specified but is NOT pointing to this server. Make sure to MANUALLY establish this web server and DNS name as well as copy AIA and CRL(s) to this web server' -Type Warning
             }
         }
     }
@@ -2718,10 +2718,10 @@ function Install-LabCAMachine
     
     
     #Test for existence of AIA location
-    if (!($param.UseLDAPAia) -and !($param.UseHTTPAia)) { Write-Warning -Message 'AIA information will not be included in issued certificates because both LDAP and HTTP based AIA has been disabled' }
+    if (!($param.UseLDAPAia) -and !($param.UseHTTPAia)) { Write-ScreenInfo -Message 'AIA information will not be included in issued certificates because both LDAP and HTTP based AIA has been disabled' -Type Warning }
     
     #Test for existence of CDP location
-    if (!($param.UseLDAPCrl) -and !($param.UseHTTPCrl)) { Write-Warning -Message 'CRL information will not be included in issued certificates because both LDAP and HTTP based CRLs has been disabled' }
+    if (!($param.UseLDAPCrl) -and !($param.UseHTTPCrl)) { Write-ScreenInfo -Message 'CRL information will not be included in issued certificates because both LDAP and HTTP based CRLs has been disabled' -Type Warning }
     
     
     if (!($param.InstallWebRole) -and ($param.InstallWebEnrollment))
@@ -2739,9 +2739,9 @@ function Install-LabCAMachine
         #Only for Root CA server
         if ($param.CaType -like '*Root*')
         {
-            if (Get-LabMachine -Role CaSubordinate -ErrorAction SilentlyContinue)
+            if (Get-LabVM -Role CaSubordinate -ErrorAction SilentlyContinue)
             {
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-Warning -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' }
+                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' -Type Warning }
                 $param.DoNotLoadDefaultTemplates = $True
             }
             else
@@ -2758,13 +2758,13 @@ function Install-LabCAMachine
     
     
     $job = @()
-    $targets = (Get-LabMachine -Role FirstChildDC).Name
+    $targets = (Get-LabVM -Role FirstChildDC).Name
     foreach ($target in $targets)
     {
         $job += Sync-LabActiveDirectory -ComputerName $target -AsJob -PassThru
     }
     Wait-LWLabJob -Job $job -Timeout 15 -NoDisplay
-    $targets = (Get-LabMachine -Role DC).Name
+    $targets = (Get-LabVM -Role DC).Name
     foreach ($target in $targets)
     {
         $job += Sync-LabActiveDirectory -ComputerName $target -AsJob -PassThru
@@ -2808,7 +2808,11 @@ function Get-LabCAInstallCertificates
         #Get all certificates from CA servers and place temporalily on host machine
         foreach ($machine in $machines)
         {
-            $sourceFile = Invoke-LabCommand -ComputerName $machine -PassThru -NoDisplay -ScriptBlock {(Get-Item -Path 'C:\Windows\System32\CertSrv\CertEnroll\*.crt' | Sort-Object -Property LastWritten -Descending | Select-Object -First 1).FullName}
+            $sourceFile = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
+                (Get-Item -Path 'C:\Windows\System32\CertSrv\CertEnroll\*.crt' |
+                    Sort-Object -Property LastWritten -Descending |
+                Select-Object -First 1).FullName
+            } -PassThru -NoDisplay
             
             $tempDestination = "$((Get-Lab).LabPath)\Certificates\$($Machine).crt"
             
@@ -2840,18 +2844,18 @@ function Publish-LabCAInstallCertificates
     $targetMachines = @()
     
     #Publish to all Root DC machines (only one DC from each Root domain)
-    $targetMachines += Get-LabMachine -All -IsRunning | Where-Object { ($_.Roles.Name -eq 'RootDC') -or ($_.Roles.Name -eq 'FirstChildDC') }
+    $targetMachines += Get-LabVM -All -IsRunning | Where-Object { ($_.Roles.Name -eq 'RootDC') -or ($_.Roles.Name -eq 'FirstChildDC') }
     
     #Also publish to any machines not domain joined
-    $targetMachines += Get-LabMachine -All -IsRunning | Where-Object { -not $_.IsDomainJoined }
+    $targetMachines += Get-LabVM -All -IsRunning | Where-Object { -not $_.IsDomainJoined }
     Write-Verbose -Message "Target machines for publishing: '$($targetMachines -join ', ')'"
     
-    $machinesNotTargeted = Get-LabMachine -All | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Name -notin $targetMachines.Name -and -not $_.IsDomainJoined }
+    $machinesNotTargeted = Get-LabVM -All | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Name -notin $targetMachines.Name -and -not $_.IsDomainJoined }
     
     if ($machinesNotTargeted)
     {
-        Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and SUbordinate certificate servers. Please update these manually.' -Type Warning
-        $machinesNotTargeted | ForEach-Object { Write-Warning -Message "  $_" }
+        Write-ScreenInfo -Message 'The following machines are not updated with Root and Subordinate certificates from the newly installed Root and Subordinate certificate servers. Please update these manually.' -Type Warning
+        $machinesNotTargeted | ForEach-Object { Write-ScreenInfo -Message "  $_" -Type Warning }
     }
     
     foreach ($machine in $targetMachines)
@@ -2945,7 +2949,7 @@ function Publish-LabCAInstallCertificates
             }
         }
         
-        $job = Invoke-LabCommand -ComputerName $machine -ScriptBlock $scriptBlock -ActivityName 'Publish Lab CA(s) and install certificates' -AsJob -PassThru
+        $job = Invoke-LabCommand -ActivityName 'Publish Lab CA(s) and install certificates' -ComputerName $machine -ScriptBlock $scriptBlock -NoDisplay -AsJob -PassThru
         if ($PassThru) { $job }
     }
     
@@ -2984,7 +2988,7 @@ function Enable-LabCertificateAutoenrollment
 
     Write-ScreenInfo -Message 'Configuring certificate auto enrollment' -TaskStart
         
-    $domainsToProcess = (Get-LabMachine -Role RootDC, FirstChildDC, DC | Where-Object DomainName -in $issuingCAs.DomainName | Group-Object DomainName).Name | Select-Object -Unique
+    $domainsToProcess = (Get-LabVM -Role RootDC, FirstChildDC, DC | Where-Object DomainName -in $issuingCAs.DomainName | Group-Object DomainName).Name | Sort-Object -Unique
     Write-Verbose -Message "Domains to process: '$($domainsToProcess -join ', ')'"
 
     $issuingCAsToProcess = ($issuingCAs | Where-Object DomainName -in $domainsToProcess).Name
@@ -2993,9 +2997,9 @@ function Enable-LabCertificateAutoenrollment
     $dcsToProcess = @()
     foreach ($domain in $issuingCAs.DomainName)
     {
-        $dcsToProcess += Get-LabMachine -Role RootDC | Where-Object { $domain -like "*$($_.DomainName)"}
+        $dcsToProcess += Get-LabVM -Role RootDC | Where-Object { $domain -like "*$($_.DomainName)"}
     }
-    $dcsToProcess = $dcsToProcess.Name | Select-Object -Unique
+    $dcsToProcess = $dcsToProcess.Name | Sort-Object -Unique
         
     Write-Verbose -Message "DCs to process: '$($dcsToProcess -join ', ')'"
         
@@ -3136,7 +3140,7 @@ function Enable-LabCertificateAutoenrollment
     }
         
         
-    $machines = Get-LabMachine | Where-Object {$_.DomainName -in $domainsToProcess}
+    $machines = Get-LabVM | Where-Object {$_.DomainName -in $domainsToProcess}
     if ($Computer -and ($User -or $CodeSigning))
     {
         $out = 'computer and user'
@@ -3176,4 +3180,3 @@ function Enable-LabCertificateAutoenrollment
     Write-LogFunctionExit
 }
 #endregion Enable-LabCertificateAutoenrollment
-

@@ -141,7 +141,7 @@ $adInstallFirstChildDc2012 = {
         }
         else
         {
-            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -173,7 +173,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         try
@@ -272,7 +272,7 @@ $adInstallFirstChildDcPre2012 = {
         }
         else
         {
-            Write-Warning "Domain $ParentDomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $ParentDomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -358,7 +358,7 @@ $adInstallFirstChildDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-Warning "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "Promoting the Domain Controller '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -424,7 +424,7 @@ $adInstallDc2012 = {
         }
         else
         {
-            Write-Warning "Domain $DomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -489,7 +489,7 @@ $adInstallDc2012 = {
     $retriesDone = 0
     while ($result.Status -eq 'Error' -and $retriesDone -lt $Retries)
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -605,7 +605,7 @@ $adInstallDcPre2012 = {
         }
         else
         {
-            Write-Warning "Domain $DomainName was not reachable ($count)"
+            Write-ScreenInfo "Domain $DomainName was not reachable ($count)" -Type Warning
         }
         
         Start-Sleep -Seconds 1
@@ -630,7 +630,7 @@ $adInstallDcPre2012 = {
     $retriesDone = 0
     while ($LASTEXITCODE -ge 11 -and $retriesDone -lt $Retries)
     {
-        Write-Warning "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries."
+        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error code was '$LASTEXITCODE'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
         
         Start-Sleep -Seconds $SecondsBetweenRetries
@@ -667,10 +667,15 @@ function Install-LabRootDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)
@@ -683,7 +688,7 @@ function Install-LabRootDcs
     
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'RootDC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'RootDC'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -769,11 +774,11 @@ function Install-LabRootDcs
         Write-ScreenInfo -Message 'Waiting for Root Domain Controllers to complete installation of Active Directory and restart' -NoNewLine
         
         $machinesToStart = @()
-        $machinesToStart += Get-LabMachine -Role FirstChildDC, DC
+        $machinesToStart += Get-LabVM -Role FirstChildDC, DC
         #starting machines in a multi net environment may not work
-        if (-not (Get-LabMachine -Role Routing))
+        if (-not (Get-LabVM -Role Routing))
         {
-            $machinesToStart += Get-LabMachine | Where-Object { -not $_.IsDomainJoined }
+            $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
         Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
@@ -790,8 +795,7 @@ function Install-LabRootDcs
         #Create reverse lookup zone (forest scope)
         foreach ($network in ((Get-LabVirtualNetworkDefinition).AddressSpace.IpAddress.AddressAsString))
         {
-            Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Create reverse lookup zone' -NoDisplay -ScriptBlock `
-            {
+            Invoke-LabCommand -ActivityName 'Create reverse lookup zone' -ComputerName $machines[0] -ScriptBlock {
                 param
                 (
                     [string]$ip
@@ -801,12 +805,12 @@ function Install-LabRootDcs
                 dnscmd . /ZoneAdd "$zoneName" /DsPrimary /DP /forest
                 dnscmd . /Config "$zoneName" /AllowUpdate 2
                 ipconfig.exe -registerdns
-            } -ArgumentList $network
+            } -ArgumentList $network -NoDisplay
         }
         
 
         #Make sure the specified installation user will be forest admin
-        $cmd = {
+        Invoke-LabCommand -ActivityName 'Make installation user Domain Admin' -ComputerName $machines -ScriptBlock {
             $PSDefaultParameterValues = @{
                 '*-AD*:Server' = $env:COMPUTERNAME
             }
@@ -816,25 +820,41 @@ function Install-LabRootDcs
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user -Server localhost
             Add-ADGroupMember -Identity 'Schema Admins' -Members $user -Server localhost
-        }
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Make installation user Domain Admin' -NoDisplay -ScriptBlock $cmd -ErrorAction SilentlyContinue
+        } -NoDisplay -ErrorAction SilentlyContinue
     
         #Non-domain-joined machine are not registered in DNS hence cannot be found from inside the lab.
         #creating an A record for each non-domain-joined machine in the first forst solves that.
         #Every non-domain-joined machine get the first forest's name as the primary DNS domain.
-        $dnsCmd = Get-LabMachine -All | Where-Object { -not $_.IsDomainJoined -and $_.IpV4Address } | ForEach-Object {
+        $dnsCmd = Get-LabVM -All -IncludeLinux | Where-Object { -not $_.IsDomainJoined -and $_.IpV4Address } | ForEach-Object {
             "dnscmd /recordadd $(@($rootDomains)[0]) $_ A $($_.IpV4Address)`n"
         }
         $dnsCmd += "Restart-Service -Name DNS -WarningAction SilentlyContinue`n"	
-        Invoke-LabCommand -ComputerName $machines[0] -ActivityName 'Register non domain joined machines in DNS' -NoDisplay -ScriptBlock ([scriptblock]::Create($dnsCmd))
+        Invoke-LabCommand -ActivityName 'Register non domain joined machines in DNS' -ComputerName $machines[0]`
+        -ScriptBlock ([scriptblock]::Create($dnsCmd)) -NoDisplay
 
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -NoDisplay -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -ComputerName $machines -ScriptBlock {
             $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
-        } -ArgumentList $machines
+        } -ArgumentList $machines -NoDisplay
 
-        Restart-LabVM -ComputerName $machines -Wait
-        Wait-LabADReady -ComputerName $machines
+        $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
+
+        if ($linuxMachines)
+        {
+            $rootDomains = $machines | Group-Object -Property DomainName
+            foreach($root in $rootDomains)
+            {
+                $domainJoinedMachines = ($linuxMachines | Where-Object DomainName -eq $root.Name).Name
+                if (-not $domainJoinedMachines) { continue }
+                $oneTimePassword = ($root.Group)[0].InstallationUser.Password
+                Invoke-LabCommand -ActivityName 'Add computer objects for domain-joined Linux machines' -ComputerName ($root.Group)[0] -ScriptBlock {
+                    foreach ($m in $domainJoinedMachines) { New-ADComputer -Name $m -AccountPassword ($oneTimePassword | ConvertTo-SecureString -AsPlaintext -Force)}
+                } -Variable (Get-Variable -Name domainJoinedMachines,oneTimePassword) -NoDisplay
+            }
+        }
+
+        Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+        Wait-LabADReady -ComputerName $machines -NoNewLine
         
         Enable-LabVMRemoting -ComputerName $machines
         
@@ -842,17 +862,16 @@ function Install-LabRootDcs
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
         
         #DNS client configuration is change by DCpromo process. Change this back
-        Reset-DNSConfiguration -ComputerName (Get-LabMachine -Role RootDC) -ProgressIndicator 30 -NoNewLine
+        Reset-DNSConfiguration -ComputerName (Get-LabVM -Role RootDC) -ProgressIndicator 30 -NoNewLine
         
         #Need to make sure that A records for domain is registered
         Write-Verbose -Message 'Restarting DNS and Netlogon service on Root Domain Controllers'
         $jobs = @()
-        foreach ($dc in (@(Get-LabMachine -Role RootDC)))
+        foreach ($dc in (@(Get-LabVM -Role RootDC)))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 5 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -NoDisplay -NoNewLine
-        Write-ProgressIndicatorEnd
         
         foreach ($machine in $machines)
         {
@@ -863,8 +882,7 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
-        }        
-        
+        }
         
         if ($CreateCheckPoints)
         {
@@ -892,9 +910,10 @@ function Install-LabRootDcs
         $machinesToJoin = Get-LabVM | Where-Object -FilterScript $filterScript
 
         Write-ScreenInfo "Restarting the $($machinesToJoin.Count) machines to complete the domain join of ($($machinesToJoin.Name -join ', ')). Retries remaining = $retries"
-        Restart-LabVM -ComputerName $machinesToJoin -Wait
+        Restart-LabVM -ComputerName $machinesToJoin -Wait -NoNewLine
         $retries--
     }
+    Write-ProgressIndicatorEnd
     
     Write-LogFunctionExit
 }
@@ -910,10 +929,15 @@ function Install-LabFirstChildDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)
@@ -925,7 +949,7 @@ function Install-LabFirstChildDcs
     $machines = $lab.Machines | Where-Object { $_.Roles.Name -contains 'FirstChildDC' }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'FirstChildDC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'FirstChildDC'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -980,10 +1004,10 @@ function Install-LabFirstChildDcs
             #create a DNS zone for the child domain in the parent domain
             if ($NewDomainName.Contains('.'))
             {
-                $parentDc = Get-LabMachine -Role RootDC, FirstChildDC | Where-Object DomainName -eq $ParentDomainName
+                $parentDc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object DomainName -eq $ParentDomainName
                 Write-Verbose -Message "Setting up a new domain tree hence creating a stub zone on Domain Controller '$($parentDc.Name)'"
                 
-                $cmd = "dnscmd . /zoneadd $NewDomainName /dsstub $((Get-LabMachine -Role RootDC,FirstChildDC,DC | Where-Object DomainName -eq $NewDomainName).IpV4Address -join ', ') /dp /forest"
+                $cmd = "dnscmd . /zoneadd $NewDomainName /dsstub $((Get-LabVM -Role RootDC,FirstChildDC,DC | Where-Object DomainName -eq $NewDomainName).IpV4Address -join ', ') /dp /forest"
                 
                 Invoke-LabCommand -ScriptBlock ([scriptblock]::Create($cmd)) -ComputerName $parentDc -NoDisplay -ActivityName 'Add DNS zones'
                 Invoke-LabCommand -ScriptBlock {Restart-Service Dns} -ComputerName $parentDc -NoDisplay -ActivityName 'Restart DNS'
@@ -1033,22 +1057,22 @@ function Install-LabFirstChildDcs
         
         Write-ScreenInfo -Message 'Waiting for First Child Domain Controllers to complete installation of Active Directory and restart' -NoNewline
         
-        $domains = @((Get-LabMachine -Role RootDC).DomainName)
+        $domains = @((Get-LabVM -Role RootDC).DomainName)
         foreach ($domain in $domains)
         {
-            if (Get-LabMachine -Role DC | Where-Object DomainName -eq $domain)
+            if (Get-LabVM -Role DC | Where-Object DomainName -eq $domain)
             {
                 $domains = $domain | Where-Object { $_ -ne $domain }
             }
         }
 
         $machinesToStart = @()
-        $machinesToStart += Get-LabMachine -Role DC
+        $machinesToStart += Get-LabVM -Role DC
         #starting machines in a multi net environment may not work
-        if (-not (Get-LabMachine -Role Routing))
+        if (-not (Get-LabVM -Role Routing))
         {
-            $machinesToStart += Get-LabMachine | Where-Object { -not $_.IsDomainJoined }
-            $machinesToStart += Get-LabMachine | Where-Object DomainName -in $domains
+            $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
+            $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
         
         Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
@@ -1061,7 +1085,7 @@ function Install-LabFirstChildDcs
         Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
-        
+        Write-ProgressIndicatorEnd
         
         #Make sure the specified installation user will be domain admin
         $cmd = {
@@ -1089,18 +1113,18 @@ function Install-LabFirstChildDcs
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
         
         #DNS client configuration is change by DCpromo process. Change this back
-        Reset-DNSConfiguration -ComputerName (Get-LabMachine -Role FirstChildDC) -ProgressIndicator 20 -NoNewLine
+        Reset-DNSConfiguration -ComputerName (Get-LabVM -Role FirstChildDC) -ProgressIndicator 20 -NoNewLine
         
         
         Write-Verbose -Message 'Restarting DNS and Netlogon services on Root and Child Domain Controllers and triggering replication'
         $jobs = @()
-        foreach ($dc in (@(Get-LabMachine -Role RootDC)))
+        foreach ($dc in (@(Get-LabVM -Role RootDC)))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
         $jobs = @()
-        foreach ($dc in (@(Get-LabMachine -Role FirstChildDC)))
+        foreach ($dc in (@(Get-LabVM -Role FirstChildDC)))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
@@ -1152,10 +1176,15 @@ function Install-LabDcs
         
         [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
         
-        [switch]$CreateCheckPoints
+        [switch]$CreateCheckPoints,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab.Machines)
@@ -1164,11 +1193,11 @@ function Install-LabDcs
         return
     }
     
-    $machines = Get-LabMachine -Role DC
+    $machines = Get-LabVM -Role DC
     
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role 'DC'"
+        Write-ScreenInfo -Message "There is no machine with the role 'DC'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1202,8 +1231,8 @@ function Install-LabDcs
             Set-Acl -Path C:\DeployDebug -AclObject $acl
         } -DoNotUseCredSsp
         
-        $rootDcs = Get-LabMachine -Role RootDC
-        $childDcs = Get-LabMachine -Role FirstChildDC
+        $rootDcs = Get-LabVM -Role RootDC
+        $childDcs = Get-LabVM -Role FirstChildDC
         
         $jobs = @()
         
@@ -1222,7 +1251,7 @@ function Install-LabDcs
             }
             
             #get the root domain to build the root domain credentials
-            $parentDc = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $lab.GetParentDomain($machine.DomainName).Name
+            $parentDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $lab.GetParentDomain($machine.DomainName).Name
             $parentCredential = $parentDc.GetCredential((Get-Lab))
             
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
@@ -1265,14 +1294,14 @@ function Install-LabDcs
         
         Write-ScreenInfo -Message 'Waiting for additional Domain Controllers to complete installation of Active Directory and restart' -NoNewLine
         
-        $domains = (Get-LabMachine -Role DC).DomainName
+        $domains = (Get-LabVM -Role DC).DomainName
 
         $machinesToStart = @()
         #starting machines in a multi net environment may not work
-        if (-not (Get-LabMachine -Role Routing))
+        if (-not (Get-LabVM -Role Routing))
         {
-            $machinesToStart += Get-LabMachine | Where-Object { -not $_.IsDomainJoined }
-            $machinesToStart += Get-LabMachine | Where-Object DomainName -notin $domains
+            $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
+            $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
         }
 
         Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -ProgressIndicator 60 -MonitorJob $jobs
@@ -1292,24 +1321,24 @@ function Install-LabDcs
         Enable-LabVMRemoting -ComputerName $machines
         
         #DNS client configuration is change by DCpromo process. Change this back
-        Reset-DNSConfiguration -ComputerName (Get-LabMachine -Role DC) -ProgressIndicator 20 -NoNewLine
+        Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
         
         
         Write-Verbose -Message 'Restarting DNS and Netlogon services on all Domain Controllers and triggering replication'
         $jobs = @()
-        foreach ($dc in (Get-LabMachine -Role RootDC))
+        foreach ($dc in (Get-LabVM -Role RootDC))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
         $jobs = @()
-        foreach ($dc in (Get-LabMachine -Role FirstChildDC))
+        foreach ($dc in (Get-LabVM -Role FirstChildDC))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
         $jobs = @()
-        foreach ($dc in (Get-LabMachine -Role DC))
+        foreach ($dc in (Get-LabVM -Role DC))
         {
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
@@ -1355,7 +1384,7 @@ function Wait-LabADReady
     
     $start = Get-Date
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     $machines | Add-Member -Name AdRetries -MemberType NoteProperty -Value 2 -Force
     
     $ProgressIndicatorTimer = (Get-Date)
@@ -1443,7 +1472,7 @@ function Test-LabADReady
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
     if (-not $machine)
     {
         Write-Error "The machine '$ComputerName' could not be found in the lab"
@@ -1491,7 +1520,7 @@ function Reset-DNSConfiguration
 
     Write-LogFunctionEntry
     
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
 
     $jobs = @()
     foreach ($machine in $machines)
@@ -1538,7 +1567,7 @@ function Sync-LabActiveDirectory
     
     Write-LogFunctionEntry
 
-    $machines = Get-LabMachine -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName
     $lab = Get-Lab
 
     if (-not $machines)
@@ -1727,7 +1756,7 @@ function New-LabADSubnet
         }
     }
   
-    $machines = Get-LabMachine -Role RootDC, FirstChildDC
+    $machines = Get-LabVM -Role RootDC, FirstChildDC
     $lab = Get-Lab
   
     foreach ($machine in $machines)
@@ -1782,7 +1811,7 @@ function New-LabADSite
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
     $dcRole = $machine.Roles | Where-Object Name -like '*DC'
     
     if (-not $dcRole)
@@ -1794,12 +1823,12 @@ function New-LabADSite
     $forest = $dcRole.Properties.ParentDomain
             
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
     if (-not $domainRootMachine)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
-        $domainRootMachine = Get-LabMachine -role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
+        $domainRootMachine = Get-LabVM -role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
 
     #if no domain tree
@@ -1820,10 +1849,10 @@ function New-LabADSite
         }
     }
     
-    $rootDcForMachine = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $forest
+    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
     if (-not $rootDcForMachine)
     {
-        $rootDcForMachine = Get-LabMachine -Role FirstChildDC | Where-Object DomainName -eq $forest
+        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
         $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
         $forest = $dcRole.Properties.ParentDomain
     }
@@ -1907,7 +1936,7 @@ function Move-LabDomainController
     Write-LogFunctionEntry
     
     
-    $dcRole = (Get-LabMachine -ComputerName $ComputerName).Roles | Where-Object Name -like '*DC'
+    $dcRole = (Get-LabVM -ComputerName $ComputerName).Roles | Where-Object Name -like '*DC'
     
     if (-not $dcRole)
     {
@@ -1916,15 +1945,15 @@ function Move-LabDomainController
     }
     
     $forest = $dcRole.Properties.ParentDomain
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
             
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
     if (-not $domainRootMachine)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
-        $domainRootMachine = Get-LabMachine -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
+        $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
 
     #if no domain tree
@@ -1945,10 +1974,10 @@ function Move-LabDomainController
         }
     }
     
-    $rootDcForMachine = Get-LabMachine -Role RootDC | Where-Object DomainName -eq $forest
+    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
     if (-not $rootDcForMachine)
     {
-        $rootDcForMachine = Get-LabMachine -Role FirstChildDC | Where-Object DomainName -eq $forest
+        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
         $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
         $forest = $dcRole.Properties.ParentDomain
     }
@@ -1980,7 +2009,7 @@ function Move-LabDomainController
 function Install-LabDnsForwarder
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    $forestNames = (Get-LabMachine -Role RootDC).DomainName
+    $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
         Write-Error 'Could not get forest names from the lab'
@@ -1991,8 +2020,8 @@ function Install-LabDnsForwarder
 
     foreach ($forwarder in $forwarders)
     {
-        $targetMachine = Get-LabMachine -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
-        $masterServers = Get-LabMachine -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
+        $targetMachine = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
+        $masterServers = Get-LabVM -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
     
         $cmd = @"
             `$hostname = hostname.exe
@@ -2005,7 +2034,7 @@ function Install-LabDnsForwarder
         Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
     }
     
-    $azureRootDCs = Get-LabMachine -Role RootDC | Where-Object HostType -eq Azure
+    $azureRootDCs = Get-LabVM -Role RootDC | Where-Object HostType -eq Azure
     if ($azureRootDCs)
     {
         Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $azureRootDCs -ScriptBlock {
@@ -2019,7 +2048,7 @@ function Install-LabDnsForwarder
 function Install-LabADDSTrust
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    $forestNames = (Get-LabMachine -Role RootDC).DomainName
+    $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
         Write-Error 'Could not get forest names from the lab'
@@ -2030,8 +2059,8 @@ function Install-LabADDSTrust
 
     foreach ($forwarder in $forwarders)
     {
-        $targetMachine = Get-LabMachine -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
-        $masterServers = Get-LabMachine -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
+        $targetMachine = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
+        $masterServers = Get-LabVM -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
     
         $cmd = @"
             `$hostname = hostname.exe
@@ -2044,7 +2073,7 @@ function Install-LabADDSTrust
         Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
     }
 
-    Get-LabMachine -Role RootDC | ForEach-Object {
+    Get-LabVM -Role RootDC | ForEach-Object {
         Invoke-LabCommand -ComputerName $_ -NoDisplay -ScriptBlock {
             Write-Verbose -Message "Replicating forest `$(`$env:USERDNSDOMAIN)..."
         
@@ -2065,7 +2094,7 @@ function Install-LabADDSTrust
         }
     }
 
-    $rootDcs = Get-LabMachine -Role RootDC
+    $rootDcs = Get-LabVM -Role RootDC
     $trustMesh = Get-FullMesh -List $forestNames -OneWay
 
     foreach ($rootDc in $rootDcs)
