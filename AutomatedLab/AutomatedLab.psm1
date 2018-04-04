@@ -469,7 +469,7 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
-    $labDiskDeploymentInProgressPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\LabDiskDeploymentInProgress.txt"
+    $labDiskDeploymentInProgressPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\LabDiskDeploymentInProgress.txt"
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
@@ -530,7 +530,8 @@ function Install-Lab
     {
         if (Test-Path -Path $labDiskDeploymentInProgressPath)
         {
-            Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+            Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+            Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
             do
             {
                 Write-ScreenInfo -Message . -NoNewLine
@@ -699,8 +700,11 @@ function Install-Lab
     
     if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer))
     {
-		Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
+        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        
+        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
         Install-LabDscPullServer
+        
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -3089,7 +3093,7 @@ function Invoke-LabCommand
         
         if ($customRoles)
         {
-            $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] }
+            $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] -and $_.State -eq 'Running' }
             if ($jobs)
             {
                 Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine -OverrideNoDisplay
