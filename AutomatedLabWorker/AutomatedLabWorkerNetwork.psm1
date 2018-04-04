@@ -113,7 +113,7 @@ function Remove-LWNetworkSwitch
 	
     if (-not (Get-VMSwitch -Name $Name -ErrorAction SilentlyContinue))
     {
-        Write-Warning 'The network switch does not exist'
+        Write-ScreenInfo 'The network switch does not exist' -Type Warning
         return
     }
     

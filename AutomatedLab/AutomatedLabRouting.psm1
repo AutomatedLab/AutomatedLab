@@ -4,18 +4,21 @@ function Install-LabRouting
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = 15
+        [int]$InstallationTimeout = 15,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
     
     Write-LogFunctionEntry
 
-    Write-ScreenInfo -Message 'Configuring Routing role...'
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $roleName = [AutomatedLab.Roles]::Routing
     
     if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -27,11 +30,15 @@ function Install-LabRouting
         return
     }
     
-    Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
+    Write-ScreenInfo -Message 'Waiting for machines with Routing Role to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
 
-    Install-LabWindowsFeature -ComputerName $machines -FeatureName Routing, RSAT-RemoteAccess -IncludeAllSubFeature
-    
+    Write-ScreenInfo -Message 'Configuring Routing role...' -NoNewLine
+    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName RSAT ,Routing, RSAT-RemoteAccess -IncludeAllSubFeature -NoDisplay -AsJob -PassThru
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout 15 -NoDisplay -NoNewLine
+
+    Restart-LabVM -ComputerName $machines -Wait -NoDisplay
+
     $jobs = @()
 
     foreach ($machine in $machines)
@@ -97,17 +104,18 @@ function Install-LabRouting
     if (Get-LabVM -Role RootDC)
     {
         Write-Verbose "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
-        Set-LabADDNSServerForwarder
+        Set-LabADDNSServerForwarder 
     }
     
     Write-ScreenInfo -Message 'Waiting for configuration of routing to complete' -NoNewline
 
-    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay -NoNewLine
 
     #to make sure the routing service works, restart the routers
     Write-Verbose "Restarting machines '$($machines -join ', ')'"
-    Restart-LabVM -ComputerName $machines -Wait
+    Restart-LabVM -ComputerName $machines -Wait -NoNewLine
     
+    Write-ProgressIndicatorEnd
     Write-LogFunctionExit
 }
 #endregion Install-LabRouting
@@ -147,7 +155,7 @@ function Set-LabADDNSServerForwarder
     
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {
             dnscmd /resetforwarders $args[0]
-        } -ArgumentList $gateway -AsJob
+        } -ArgumentList $gateway -AsJob -NoDisplay
     }
 }
 #endregion Set-LabADDNSServerForwarder

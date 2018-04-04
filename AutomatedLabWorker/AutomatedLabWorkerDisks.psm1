@@ -222,7 +222,7 @@ function Remove-LWVHDX
     $VmDisk = Get-VHD -Path $VhdxPath -ErrorAction SilentlyContinue
     if (-not $VmDisk)
     {
-        Write-Warning -Message "VHDX '$VhdxPath' does not exist, cannot remove it"
+        Write-ScreenInfo -Message "VHDX '$VhdxPath' does not exist, cannot remove it" -Type Warning
     }
     else
     {

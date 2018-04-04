@@ -1075,7 +1075,7 @@ function Write-ProgressIndicator
 {
     # .ExternalHelp AutomatedLab.Help.xml
 
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
@@ -1087,11 +1087,15 @@ function Write-ProgressIndicator
 function Write-ProgressIndicatorEnd
 {
     # .ExternalHelp AutomatedLab.Help.xml
-
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoNewLine'].IsPresent)
+    {
+        return
+    }
+    
     Write-ScreenInfo -Message '.'
 }
 #endregion Write-ProgressIndicatorEnd
@@ -1120,10 +1124,12 @@ function Write-ScreenInfo
         
         [switch]$TaskStart,
         
-        [switch]$TaskEnd
+        [switch]$TaskEnd,
+
+        [switch]$OverrideNoDisplay
     )
 
-    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent -and -not $OverrideNoDisplay)
     {
         return
     }
@@ -1160,10 +1166,11 @@ function Write-ScreenInfo
         $TimeDelta2 = (Get-Date) - $Global:taskStart[-1]
     }
     
-    $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f ($TimeDelta.Hours), ($TimeDelta.Minutes), ($TimeDelta.Seconds)
-    $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f ($TimeDelta2.Hours), ($TimeDelta2.Minutes), ($TimeDelta2.Seconds), ($TimeDelta2.Milliseconds)
+    $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f $TimeDelta.Hours, $TimeDelta.Minutes, $TimeDelta.Seconds
+    $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f $TimeDelta2.Hours, $TimeDelta2.Minutes, $TimeDelta2.Seconds, $TimeDelta2.Milliseconds
     
-    $TimeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f ((Get-Date).Hour), ((Get-Date).Minute), ((Get-Date).Second)
+    $date = Get-Date
+    $TimeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
     
     if ($NoNewLine)
     {
@@ -1180,7 +1187,7 @@ function Write-ScreenInfo
         }
         else
         {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
+            if ($Global:indent -gt 0) { $Message = ('  ' * ($Global:indent - 1)) + '- ' + $message }
 
             switch ($Type)
             {
@@ -1192,7 +1199,7 @@ function Write-ScreenInfo
             }
 
         }
-        $Global:labDeploymentNoNewLine = $True
+        $Global:labDeploymentNoNewLine = $true
     }
     else
     {
@@ -1219,7 +1226,7 @@ function Write-ScreenInfo
                 Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
             }
         }
-        $Global:labDeploymentNoNewLine = $False
+        $Global:labDeploymentNoNewLine = $false
     }
 
     if ($TaskStart)
