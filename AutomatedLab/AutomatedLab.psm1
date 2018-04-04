@@ -699,11 +699,8 @@ function Install-Lab
     
     if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer))
     {
-        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
-        
-        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
+		Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
         Install-LabDscPullServer
-        
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
