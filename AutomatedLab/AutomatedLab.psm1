@@ -3240,7 +3240,7 @@ function Update-LabMemorySettings
         
         ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) })
         {
-            $memoryCalculated = [int]($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
+            $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)
             {
                 $machine.Memory = $memoryCalculated
