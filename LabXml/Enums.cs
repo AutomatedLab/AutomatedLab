@@ -70,7 +70,9 @@ namespace AutomatedLab
 
         Tfs2017 = 2147483648,
 
-        TfsBuildWorker = 4294967296
+        TfsBuildWorker = 4294967296,
+
+        Tfs2018  = 8589934592
     }
 
     public enum ActiveDirectoryFunctionalLevel

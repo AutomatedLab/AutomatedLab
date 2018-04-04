@@ -52,12 +52,11 @@ function New-LabVM
             
             if ('RootDC' -in $machine.Roles.Name)
             {
-                Start-LabVM -ComputerName $machine.Name
+                Start-LabVM -ComputerName $machine.Name -NoNewline
             }
             
             if ($result)
             {
-                Write-ProgressIndicatorEnd
                 Write-ScreenInfo -Message 'Done' -TaskEnd
             }
             else
@@ -169,7 +168,8 @@ function Start-LabVM
 
         [switch]$RootDomainMachines,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [int]$PreDelaySeconds = 0,
 
@@ -179,6 +179,8 @@ function Start-LabVM
     begin
     {
         Write-LogFunctionEntry
+
+        if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
         
         $lab = Get-Lab
         
@@ -231,7 +233,7 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
 
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
+            $vms = $vms | Select-Object *, @{ Name='OSversion'; Expression = { $_.OperatingSystem.Version }} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
@@ -336,10 +338,7 @@ function Start-LabVM
             Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
         }
         
-        if ($ProgressIndicator -and (-not $NoNewline))
-        {
-            Write-ProgressIndicatorEnd
-        }
+        Write-ProgressIndicatorEnd
 
         Write-LogFunctionExit
     }
@@ -414,7 +413,7 @@ function Save-LabVM
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
-            Write-Warning 'There is no machine to start'
+            Write-ScreenInfo 'There is no machine to start' -Type Warning
             return
         }
         
@@ -454,7 +453,10 @@ function Restart-LabVM
         
         [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_RestartLabMachine_Shutdown,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+
+        [switch]$NoDisplay,
 
         [switch]$NoNewLine
     )
@@ -507,7 +509,7 @@ function Stop-LabVM
         
         [switch]$Wait,
 
-        [int]$ProgressIndicator,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [switch]$NoNewLine,
 
@@ -614,7 +616,7 @@ function Stop-LabVM2
     
     if ($jobs.Count -ne ($jobs | Where-Object State -eq Completed).Count)
     {
-        Write-Warning "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes"
+        Write-ScreenInfo "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes" -Type Warning
     }
 }
 #endregion Stop-LabVM2
@@ -632,12 +634,14 @@ function Wait-LabVM
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = 0,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     Write-LogFunctionEntry
         
@@ -657,7 +661,7 @@ function Wait-LabVM
         Write-Error 'None of the given machines could be found'
         return
     }
-        
+
     foreach ($vm in $vms)
     {
         $session = $null
@@ -706,7 +710,7 @@ function Wait-LabVM
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
-                Import-Lab -LabBytes $LabBytes
+                Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
 
                 #do 5000 retries. This job is cancelled anyway if the timeout is reached
                 Write-Verbose "Trying to create session to '$ComputerName'"
@@ -718,9 +722,9 @@ function Wait-LabVM
     }
 
     Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
-        
-    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay
-        
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay -Timeout $TimeoutInMinutes
+
     $completed = $jobs | Where-Object State -eq Completed | Receive-Job -ErrorAction SilentlyContinue -Verbose:$VerbosePreference
         
     if ($completed)
@@ -823,8 +827,8 @@ function Wait-LabVMRestart
         
         [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
         
-        [ValidateRange(1, 300)]
-        [int]$ProgressIndicator = 10,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
         
@@ -836,6 +840,8 @@ function Wait-LabVMRestart
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab)
@@ -1425,10 +1431,10 @@ function Mount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -in HyperV,Azure
@@ -1476,10 +1482,10 @@ function Dismount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
@@ -1545,7 +1551,7 @@ function Set-MachineUacStatus
 
     if ($uacStatusChanges)
     {
-        Write-Warning "Setting this requires a reboot of $ComputerName."
+        Write-ScreenInfo "Setting this requires a reboot of $ComputerName." -Type Warning
     }
 }
 
@@ -1870,10 +1876,10 @@ function Test-LabAutoLogon
 
     Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
 
-    $Machines = Get-LabVm @PSBoundParameters
+    $Machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
     
-    foreach ( $Machine in $Machines)
+    foreach ($Machine in $Machines)
     {
         $parameters = @{
             Username = $Machine.InstallationUser.UserName
@@ -1891,10 +1897,10 @@ function Test-LabAutoLogon
 
         $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
             $values = @{}
-            $values['AutoAdminLogon'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultDomainName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
+            $values['AutoAdminLogon'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue } catch { }
+            $values['DefaultDomainName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue }catch { }
+            $values['DefaultUserName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue }catch { }
+            $values['DefaultPassword'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue }catch { }
             $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
             Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
             Select-Object -ExpandProperty Caption -Unique
@@ -1904,7 +1910,7 @@ function Test-LabAutoLogon
 
         Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
 
-        if ( $settings.AutoAdminLogon -ne 1 -or
+        if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
             $settings.DefaultUserName -ne $parameters.Username -or
         $settings.DefaultPassword -ne $parameters.Password)
@@ -1935,7 +1941,9 @@ function Get-LabVMDotNetFrameworkVersion
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [string[]]$ComputerName,
+
+		[switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -1950,7 +1958,7 @@ function Get-LabVMDotNetFrameworkVersion
     
     Invoke-LabCommand -ActivityName 'Get .net Framework version' -ComputerName $machines -ScriptBlock {
         Get-DotNetFrameworkVersion
-    } -Function (Get-Command -Name Get-DotNetFrameworkVersion) -PassThru
+    } -Function (Get-Command -Name Get-DotNetFrameworkVersion) -PassThru -NoDisplay:$NoDisplay
 
     Write-LogFunctionExit
 }

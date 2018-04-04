@@ -45,7 +45,7 @@ function Install-LabSharePoint2013
     $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role '$roleName'"
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
         Write-LogFunctionExit
         return
     }

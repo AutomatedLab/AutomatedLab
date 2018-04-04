@@ -5,7 +5,7 @@ function Install-LabTeamFoundationEnvironment
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018
     $lab = Get-Lab
     $jobs = @()
 
@@ -63,6 +63,8 @@ function Install-LabTeamFoundationEnvironment
 
     Wait-LWLabJob -Job $jobs
 
+    Restart-LabVm -ComputerName $tfsMachines -Wait
+
     Install-LabTeamFoundationServer
 
     Install-LabBuildWorker
@@ -74,7 +76,7 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
     [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
     
     # Assign unassigned build workers to our most current TFS machine
@@ -196,7 +198,7 @@ function Install-LabBuildWorker
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
         $tfsPort = 8080
-        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
 
         if ($role.Properties.ContainsKey('TfsServer'))
         {
@@ -204,7 +206,7 @@ function Install-LabBuildWorker
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
-                $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017 | Select-Object -First 1
+                $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
             }
 
@@ -237,7 +239,7 @@ function Install-LabBuildWorker
 
             if ($configurationProcess.ExitCode -ne 0)
             {
-                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
+                Write-ScreenInfo -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)" -Type Warning
             }
         } -AsJob -Variable (Get-Variable tfsServer, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
@@ -273,7 +275,7 @@ function New-LabReleasePipeline
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
 
     if ($ComputerName)
     {
@@ -406,7 +408,7 @@ function Get-LabBuildStep
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
     if ($ComputerName)
@@ -460,7 +462,7 @@ function Get-LabReleaseStep
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
     if ($ComputerName)
@@ -514,7 +516,7 @@ function Open-LabTfsSite
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
     if ($ComputerName)

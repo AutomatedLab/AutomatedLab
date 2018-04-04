@@ -212,7 +212,7 @@ function Remove-LabVirtualNetworkDefinition
     
         if (-not $network)
         {
-            Write-Warning "There is no network defined with the name '$n'"
+            Write-ScreenInfo "There is no network defined with the name '$n'" -Type Warning
         }
         else
         {

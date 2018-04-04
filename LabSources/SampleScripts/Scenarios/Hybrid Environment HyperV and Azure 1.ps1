@@ -106,6 +106,6 @@ Invoke-LabCommand POSHDC1 -ScriptBlock {
     }
     else
     {
-        Write-Warning "Could not connect to $connectedLabMachine"
+        Write-ScreenInfo "Could not connect to $connectedLabMachine" -Type Warning
     }
 } -ArgumentList "POSHDC1.$($labs.Get(1).Domain)" -PassThru
