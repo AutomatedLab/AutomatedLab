@@ -234,7 +234,7 @@ function New-LWHypervVM
 
     if ($Machine.Roles.Name -contains 'RootDC' -or 
         $Machine.Roles.Name -contains 'FirstChildDC' -or 
-        $Machine.Roles.Name -contains 'DC')
+    $Machine.Roles.Name -contains 'DC')
     {
         #machine will not be added to domain or workgroup
     }
@@ -298,9 +298,9 @@ function New-LWHypervVM
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
         $nextDriveLetter = [char[]](67..90) | 
-                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
-                            Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
-                            Select-Object -First 1
+        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+        Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+        Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
         $mountedOsDisk | Initialize-Disk -PartitionStyle GPT
@@ -342,7 +342,7 @@ function New-LWHypervVM
             $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
             # Copy data
             Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
-                Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
+            Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
 
             # Unmount ISO
             Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
@@ -484,8 +484,8 @@ function New-LWHypervVM
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
         Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
     
-    #copy AL tools to lab machine and optionally the tools folder
-    $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
+        #copy AL tools to lab machine and optionally the tools folder
+        $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
         Write-Verbose 'Copying AL tools to VHD...'
         $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
@@ -808,11 +808,11 @@ function Wait-LWHypervVMRestart
                     {
                         Write-Verbose -Message 'Starting next machine'
                         $lastMachineStart = (Get-Date)
-                        Start-LabVM -ComputerName $StartMachinesWhileWaiting[0]
+                        Start-LabVM -ComputerName $StartMachinesWhileWaiting[0] -NoNewline:$NoNewLine
                         $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
                         if ($StartMachinesWhileWaiting)
                         {
-                            Start-LabVM -ComputerName $StartMachinesWhileWaiting[0]
+                            Start-LabVM -ComputerName $StartMachinesWhileWaiting[0] -NoNewline:$NoNewLine
                             $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
                         }
                     }
@@ -899,10 +899,7 @@ function Wait-LWHypervVMRestart
         Start-LabVM -ComputerName $delayedStart
     }
     
-    if ((-not $NoNewLine) -and $ProgressIndicator)
-    {
-        Write-ProgressIndicatorEnd
-    }
+    Write-ProgressIndicatorEnd
     
     Write-LogFunctionExit
 }

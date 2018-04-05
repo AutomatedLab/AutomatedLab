@@ -781,7 +781,8 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
-        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
+        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
+        Write-ScreenInfo -Message done
         
         Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
