@@ -232,8 +232,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
-
-            $vms = $vms | Select-Object *, @{ Name='OSversion'; Expression = { $_.OperatingSystem.Version }} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
@@ -249,8 +247,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-
-            #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -271,8 +267,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -283,7 +277,6 @@ function Start-LabVM
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
             $vms = Get-LabVM | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
@@ -1943,7 +1936,7 @@ function Get-LabVMDotNetFrameworkVersion
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
 
-		[switch]$NoDisplay
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
