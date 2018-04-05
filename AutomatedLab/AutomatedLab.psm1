@@ -102,9 +102,9 @@ function Import-Lab
 {
     #.ExternalHelp AutomatedLab.help.xml
     
-    [CmdletBinding(DefaultParameterSetName = 'ByPath')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'ByPath')]
+        [Parameter(Mandatory, ParameterSetName = 'ByPath', Position = 1)]
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
@@ -469,7 +469,7 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
-    $labDiskDeploymentInProgressPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\LabDiskDeploymentInProgress.txt"
+    $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
