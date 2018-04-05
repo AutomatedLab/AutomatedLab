@@ -890,7 +890,12 @@ function Wait-LabVMShutdown
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
         
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online
+        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        
+        [switch]$NoNewLine
     )
     
     Write-LogFunctionEntry
@@ -907,6 +912,7 @@ function Wait-LabVMShutdown
     
     $vms | Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force
     
+    $ProgressIndicatorTimer = Get-Date
     do
     {
         foreach ($vm in $vms)
@@ -919,6 +925,11 @@ function Wait-LabVMShutdown
             }
             
             Start-Sleep -Seconds 5
+        }
+        if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
+        {
+            Write-ProgressIndicator
+            $ProgressIndicatorTimer = (Get-Date)
         }
     }
     until (($vms | Where-Object { $_.HasShutdown }).Count -eq $vms.Count -or (Get-Date).AddMinutes(- $TimeoutInMinutes) -gt $start)
