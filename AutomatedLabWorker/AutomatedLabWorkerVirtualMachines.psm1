@@ -652,98 +652,6 @@ function Remove-LWHypervVM
 }
 #endregion Remove-LWHypervVM
 
-#region Wait-LWHypervVM
-workflow Wait-LWHypervVM
-{
-    param (
-        [Parameter(Mandatory)]
-        [string[]]$ComputerName,
-        
-        [int]$Port = 5985,
-        
-        [switch]$TestCredSsp
-    )
-    
-    Write-LogFunctionEntry
-    
-    foreach -parallel -throttlelimit 50 ($machine in $ComputerName)
-    {
-        sequence
-        {
-            Write-Verbose -Message "Waiting for machine '$machine' to come online..."
-            $uptimeCheck = 1
-            $uptimeCheckTotal = 5
-            
-            $uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
-            if ($uptime -gt 180)
-            {
-                Write-Verbose -Message "Machine '$machine' has been been running for more than 3 minutes. Only one online check is done."
-                $uptimeCheckTotal = 1
-            }
-            
-            $ping = New-Object -TypeName System.Net.Networkinformation.Ping
-            
-            $pingAnswer = ''
-            $pingCount = 0
-            Do
-            {
-                try
-                {
-                    $pingAnswer = $ping.Send($machine, 1000)
-                    $pingCount++
-                    
-                    #for each 10th test print out a message
-                    if ($pingCount % 10 -eq 0)
-                    {
-                        Write-Verbose -Message "'$machine' was not reachable by ICMP"
-                    }
-                }
-                catch
-                {
-                    
-                }
-                Start-Sleep -Milliseconds 500
-                Write-ProgressIndicator
-            }
-            Until ($pingAnswer.Status -eq 'Success')
-            Write-Verbose -Message "'$machine' was reachable by ICMP, testing WinRM"
-            
-            $i = 0
-            while ($uptimeCheck -le $uptimeCheckTotal)
-            {
-                $result = Test-WSMan -ComputerName $machine -ErrorAction SilentlyContinue
-                if ($result)
-                {
-                    Write-Verbose -Message "'$machine' was reachable by WinRM, check $uptimeCheck of $uptimeCheckTotal"
-                    $uptimeCheck++
-                }
-                else
-                {
-                    if ($i % 10 -eq 0)
-                    {
-                        Write-Verbose -Message "'$machine' was not reachable by WinRM"
-                    }
-                }
-                Start-Sleep -Seconds 3
-                $i++
-                Write-ProgressIndicator
-            }
-            
-            if ($result)
-            {
-                Write-Verbose -Message "'$machine' is online and reachable by WinRM"
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
-                InlineScript { $machineMetadata.InitState = 1 } #ReachedByAutomatedLab
-                
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
-            }
-        }
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Wait-LWHypervVM
-
 #region Wait-LWHypervVMRestart
 function Wait-LWHypervVMRestart
 {
@@ -784,7 +692,7 @@ function Wait-LWHypervVMRestart
     
     do
     {
-        if (((Get-Date) - $progressIndicatorStart).TotalSeconds -gt 45)
+        if (((Get-Date) - $progressIndicatorStart).TotalSeconds -gt $ProgressIndicator)
         {
             Write-ProgressIndicator
             $progressIndicatorStart = (Get-Date)
@@ -804,7 +712,7 @@ function Wait-LWHypervVMRestart
                 Write-Debug -Message "Disk Time: $($diskTime[-1]). Average (20): $([int](($diskTime[(($diskTime).Count-15)..(($diskTime).Count)] | Measure-Object -Average).Average)) - Average (5): $([int](($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average))"
                 if (((Get-Date) - $lastMachineStart).TotalSeconds -ge 20)
                 {
-                    if (($diskTime[(($diskTime).Count-15)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 50 -and ($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 60)
+                    if (($diskTime[(($diskTime).Count - 15)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 50 -and ($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 60)
                     {
                         Write-Verbose -Message 'Starting next machine'
                         $lastMachineStart = (Get-Date)
@@ -849,7 +757,7 @@ function Wait-LWHypervVMRestart
             Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
-                Write-Verbose -Message "Machine '$machine' has now restarted"
+                Write-Verbose -Message "Machine '$machine' is now stopped"
                 $machine.Uptime = 0
             }
         }
@@ -880,10 +788,10 @@ function Wait-LWHypervVMRestart
 
     if (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0)
     {
-        Write-Verbose -Message "All machines have now restarted ($($machines.name -join ', ')"
+        Write-Verbose -Message "All machines have stopped: ($($machines.name -join ', '))"
     }
     
-    if ((Get-Date).AddMinutes(- $TimeoutInMinutes) -gt $start)
+    if ((Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)
     {
         foreach ($Computer in $ComputerName)
         {
@@ -893,10 +801,13 @@ function Wait-LWHypervVMRestart
             }
         }
     }
+
+    $remainingMinutes = $TimeoutInMinutes - ((Get-Date) - $start).TotalMinutes
+    Wait-LabVM -ComputerName $ComputerName -ProgressIndicator $ProgressIndicator -TimeoutInMinutes $remainingMinutes -NoNewLine:$NoNewLine
     
     if ($delayedStart)
     {
-        Start-LabVM -ComputerName $delayedStart
+        Start-LabVM -ComputerName $delayedStart -NoNewline:$NoNewLine
     }
     
     Write-ProgressIndicatorEnd
@@ -1269,7 +1180,7 @@ function Get-LWHypervVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $vms = Get-VM | Where-Object Name -in $ComputerName
+    $vms = Get-VM -Name $ComputerName
     
     foreach ($vm in $vms)
     {
