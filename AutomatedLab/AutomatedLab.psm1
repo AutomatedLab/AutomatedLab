@@ -2924,7 +2924,7 @@ function Invoke-LabCommand
     )
     
     Write-LogFunctionEntry
-    $customRoles = 0
+    $customRoleCount = 0
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
@@ -3007,7 +3007,7 @@ function Invoke-LabCommand
                 if ($item.IsCustomRole)
                 {
                     Write-ScreenInfo "Installing Custom Role '$(Split-Path -Path $item.DependencyFolder -Leaf)' on machine '$machine'" -TaskStart -OverrideNoDisplay
-                    $customRoles++
+                    $customRoleCount++
                     #if there is a HostStart.ps1 script for the role
                     $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
                     if (Test-Path -Path $hostStartPath)
@@ -3091,7 +3091,7 @@ function Invoke-LabCommand
             }
         }
         
-        if ($customRoles)
+        if ($customRoleCount)
         {
             $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] -and $_.State -eq 'Running' }
             if ($jobs)
@@ -3101,7 +3101,7 @@ function Invoke-LabCommand
             }
             else
             {
-                Write-ScreenInfo -Message "$($results.Count) custom role installation finished." -OverrideNoDisplay
+                Write-ScreenInfo -Message "$($customRoleCount) custom role installation finished." -OverrideNoDisplay
             }
         }
 
