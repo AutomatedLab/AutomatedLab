@@ -274,6 +274,9 @@
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
 
+        #Host Settings
+        DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
+
         #Azure
         MinimumAzureModuleVersion              = '4.0.0'
         DefaultAzureRoleSize                   = 'D'

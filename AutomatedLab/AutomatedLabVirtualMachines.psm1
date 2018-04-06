@@ -232,8 +232,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
-
-            $vms = $vms | Select-Object *, @{ Name='OSversion'; Expression = { $_.OperatingSystem.Version }} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
@@ -249,8 +247,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-
-            #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -271,8 +267,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -283,7 +277,6 @@ function Start-LabVM
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
             $vms = Get-LabVM | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
@@ -897,7 +890,12 @@ function Wait-LabVMShutdown
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
         
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online
+        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        
+        [switch]$NoNewLine
     )
     
     Write-LogFunctionEntry
@@ -914,6 +912,7 @@ function Wait-LabVMShutdown
     
     $vms | Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force
     
+    $ProgressIndicatorTimer = Get-Date
     do
     {
         foreach ($vm in $vms)
@@ -926,6 +925,11 @@ function Wait-LabVMShutdown
             }
             
             Start-Sleep -Seconds 5
+        }
+        if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
+        {
+            Write-ProgressIndicator
+            $ProgressIndicatorTimer = (Get-Date)
         }
     }
     until (($vms | Where-Object { $_.HasShutdown }).Count -eq $vms.Count -or (Get-Date).AddMinutes(- $TimeoutInMinutes) -gt $start)
@@ -1943,7 +1947,7 @@ function Get-LabVMDotNetFrameworkVersion
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
 
-		[switch]$NoDisplay
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
