@@ -407,7 +407,6 @@
       </Directory>
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
-          <!--<Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation"><Component Id='DocumentationComponent' Guid='ec60d79b-cf47-457b-bfd8-b1e2c98e096a'><RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" /><File Id='AutomatedLabDocumentationDocx' Name='AutomatedLab Documentation.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AutomatedLab Documentation.docx' /><File Id='ALTutorialSeriesPart1' Name='AL Tutorial Series Part 1 - Architecture.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 1 - Architecture.docx' /><File Id='ALTutorialSeriesPart2' Name='AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx' /><File Id='ALTutorialSeriesPart3' Name='AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx' /><File Id='ALTutorialSeriesPart4' Name='AL Tutorial Series Part 4 - Installing a simple PKI environment.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx' /><File Id='ALTutorialSeriesPart5' Name='AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' /><File Id='ALTutorialSeriesPart6' Name='AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' /><RemoveFolder Id="RemoveFolderDOCUMENTATIONDIR" Directory="DOCUMENTATIONDIR" On="both"/></Component></Directory>-->
           <Directory Id="SAMPLESDIR" Name="Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
               <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesComponent" />
@@ -1759,7 +1758,12 @@ Get-Content D:\LabSources.wxs | ForEach-Object { if ($_ -like '*PUT-GUID-HERE*')
 Commands to create the command in the project's pre-build that creates the file Includes.wxi:
 Base64 encoding is required due to escaping madness
 $string = '
-$version = (Find-Module -Name AutomatedLab.Common).Version;
+$version = (Find-Module -Name AutomatedLab.Common -ErrorAction SilentlyContinue).Version;
+if (-not $version)
+{
+    $version = (Select-String -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Pattern "(ModuleVersion([ =]+))('')(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})").Matches[0].Groups["Version"].Value
+}
+Write-Host "Version of AutomatedLab.Common is ''$version''"
 (''<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?></Include>'' -f $version) | Out-File -FilePath ..\Installer\Includes.wxi -Encoding UTF8;
 (Get-Content -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Raw) -replace "(ModuleVersion([ =]+))('')(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})", "`$1''$version" | Out-File -FilePath .\AutomatedLab.Common\AutomatedLab.Common.psd1
 '

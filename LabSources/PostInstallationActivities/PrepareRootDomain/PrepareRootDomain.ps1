@@ -2,7 +2,7 @@
 
 if (-not (Get-Command -Name Get-ADReplicationSite -ErrorAction SilentlyContinue))
 {
-	Write-Warning 'The script "PrepareRootDomain.ps1" script runs only if the ADReplication cmdlets are available'
+	Write-ScreenInfo 'The script "PrepareRootDomain.ps1" script runs only if the ADReplication cmdlets are available' -Type Warning
 	return
 }
 

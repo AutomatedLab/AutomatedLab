@@ -1139,7 +1139,7 @@ function Export-LabDefinition
                             }
                             else
                             {
-                                Write-Warning "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'"
+                                Write-ScreenInfo "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'" -Type Warning
                             }
                         }
                     }
@@ -1267,7 +1267,7 @@ function Export-LabDefinition
     {
         if ($script:machines.Count -eq 0)
         {
-            Write-Warning 'There are no machines defined, nothing to export'
+            Write-ScreenInfo 'There are no machines defined, nothing to export' -Type Warning
         }
         else
         {
@@ -1375,7 +1375,7 @@ function Test-LabDefinition
                 }
                 catch
                 {
-                    Write-Warning "Could not invoke validator $t"
+                    Write-ScreenInfo "Could not invoke validator $t" -Type Warning
                 }
             }
         }    
@@ -1515,7 +1515,7 @@ function Remove-LabDomainDefinition
     
     if (-not $domain)
     {
-        Write-Warning "There is no domain defined with the name '$Name'"
+        Write-ScreenInfo "There is no domain defined with the name '$Name'" -Type Warning
     }
     else
     {
@@ -1550,7 +1550,7 @@ function Add-LabIsoImageDefinition
     
     if ($IsOperatingSystem)
     {
-        Write-Warning -Message 'The -IsOperatingSystem switch parameter is obsolete and thereby ignored'
+        Write-ScreenInfo -Message 'The -IsOperatingSystem switch parameter is obsolete and thereby ignored' -Type Warning
     }
     
     if (-not $script:lab)
@@ -1694,10 +1694,7 @@ function Add-LabIsoImageDefinition
 
         #$script:lab.Sources.ISOs.Remove($iso) | Out-Null
         $script:lab.Sources.ISOs.Add($iso)
-        if (-not $NoDisplay)
-        {
-            Write-ScreenInfo -Message "Added '$($iso.Path)'"
-        }
+        Write-ScreenInfo -Message "Added '$($iso.Path)'"
     }
     Write-Verbose "Final Lab ISO count: $($script:lab.Sources.ISOs.Count)"
     
@@ -1737,7 +1734,7 @@ function Remove-LabIsoImageDefinition
     
     if (-not $iso)
     {
-        Write-Warning "There is no Iso Image defined with the name '$Name'"
+        Write-ScreenInfo "There is no Iso Image defined with the name '$Name'" -Type Warning
     }
     else
     {
@@ -1764,7 +1761,7 @@ function Add-LabDiskDefinition
                     $doesAlreadyExist = Test-Path -Path $_
                     if ($doesAlreadyExist)
                     {
-                        Write-Warning 'The disk does already exist'
+                        Write-ScreenInfo 'The disk does already exist' -Type Warning
                         return $false
                     }
                     else
@@ -2736,13 +2733,13 @@ function Add-LabMachineDefinition
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Group-Object -Property Version | Sort-Object -Property Name -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Group
-                    Write-Warning "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os[0].Version))"
+                    Write-ScreenInfo "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os[0].Version))" -Type Warning
                 }
 
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Sort-Object -Property { (Get-Item -Path $_.IsoPath).LastWriteTime } -Descending | Select-Object -First 1
-                    Write-Warning "The operating system '$OperatingSystem' with the same version is available on multiple images. Choosing the one with the highest LastWriteTime to honor updated images ($((Get-Item -Path $os.IsoPath).LastWriteTime))"
+                    Write-ScreenInfo "The operating system '$OperatingSystem' with the same version is available on multiple images. Choosing the one with the highest LastWriteTime to honor updated images ($((Get-Item -Path $os.IsoPath).LastWriteTime))" -Type Warning
                 }
             }
         
@@ -2934,7 +2931,7 @@ function Remove-LabMachineDefinition
     
     if (-not $machine)
     {
-        Write-Warning "There is no machine defined with the name '$Name'"
+        Write-ScreenInfo "There is no machine defined with the name '$Name'" -Type Warning
     }
     else
     {

@@ -22,6 +22,8 @@ function New-LWHypervVM
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
+
+    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
     
     Write-LogFunctionEntry
 
@@ -636,7 +638,7 @@ function Remove-LWHypervVM
         else
         {
             Write-Verbose "Stopping VM '$($Name)'"
-            Stop-VM -TurnOff -Name $Name -Force
+            Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
     
         Write-Verbose "Removing VM '$($Name)'"
@@ -1000,7 +1002,7 @@ function Stop-LWHypervVM
         $jobs = @()
         $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f; $LastExitCode }
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
-        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        $failedJobs = $jobs | Where-Object { $_.State -eq 'Failed' }
         if ($failedJobs)
         {
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
@@ -1166,7 +1168,7 @@ workflow Remove-LWHypervVMSnapshot
         
         if (-not $snapshot)
         {
-            Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+            Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
         }
         else
         {
@@ -1226,7 +1228,7 @@ workflow Restore-LWHypervVMSnapshot
             
             if (-not $snapshot)
             {
-                Write-Warning -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+                Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
             }
             else
             {
@@ -1463,7 +1465,7 @@ function Repair-LWHypervNetworkConfig
 
     $machine = Get-LabVM -ComputerName $ComputerName
 
-    Wait-LabVM -ComputerName $machine
+    Wait-LabVM -ComputerName $machine -NoNewLine
 
     #remoting does serialization with a depth of 1. Here we need more
     $machineStream = [System.Management.Automation.PSSerializer]::Serialize($machine, 4)

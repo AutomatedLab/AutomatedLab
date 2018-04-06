@@ -84,7 +84,12 @@ function Add-LabAzureSubscription
     if (-not $Path)
     {
         # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $null = Get-AzureRmResource -ErrorAction Stop
+        $context = Get-AzureRmContext
+        if (-not $context.Subscription)
+        {
+            Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
+            $null = Login-AzureRmAccount -ErrorAction Stop
+        }
         
         $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
         $tempFolder = New-Item -ItemType Directory -Path ($tempFile.FullName -replace $tempFile.Extension, '') -Force
@@ -964,41 +969,6 @@ function Get-LabAzureResourceGroup
     Write-LogFunctionExit
 }
 
-function Add-LabAzureProfile
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletbinding()]
-    param
-    (
-        [switch]$PassThru,
-        [switch]$NoDisplay
-    )
-    
-    Write-LogFunctionEntry
-    
-    $publishSettingFile = (Get-ChildItem -Path (Get-LabSourcesLocation) -Filter '*azurermsettings*' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
-    if (-not $NoDisplay)
-    {
-        Write-ScreenInfo -Message "Auto-detected and using publish setting file '$publishSettingFile'" -Type Info
-    }
-
-    if (-not $publishSettingFile)
-    {
-        return
-    }
-
-    if ($NoDisplay)
-    {
-        $null = Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-    }
-    else
-    {
-        Add-LabAzureSubscription -Path $publishSettingFile -PassThru:$PassThru
-    }   
-    
-    Write-LogFunctionExit
-}
-
 #region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
@@ -1147,7 +1117,7 @@ function Remove-LabAzureLabSourcesStorage
         if ($PSCmdlet.ShouldProcess($azureLabStorage.ResourceGroupName, 'Remove Resource Group'))
         {
             Remove-AzureRmResourceGroup -Name $azureLabStorage.ResourceGroupName -Force | Out-Null
-            Write-Warning "Azure Resource Group '$($azureLabStorage.ResourceGroupName)' was removed"
+            Write-ScreenInfo "Azure Resource Group '$($azureLabStorage.ResourceGroupName)' was removed" -Type Warning
         }
     }
     
@@ -1282,7 +1252,7 @@ function Sync-LabAzureLabSources
             $apiResponse = $uploadedFile.SetPropertiesAsync()
             if (-not $apiResponse.Status -eq "RanToCompletion")
             {
-                Write-Warning "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)"
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
                 continue
             }
 

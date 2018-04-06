@@ -143,7 +143,7 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'SQL Server image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'SQL Server image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sqlServerImage in $sqlServerImages)
             {
                 Write-Host $sqlServerImage.Offer
@@ -183,10 +183,10 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'Visual Studio image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'Visual Studio image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($visualStudioImage in $visualStudioImages)
             {
-                Write-Host ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
+                Write-ScreenInfo ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -214,7 +214,7 @@ function New-LWAzureVM
 
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        Write-Warning "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available."
+        Write-ScreenInfo "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available." -Type Warning
         
         #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
         $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
@@ -226,7 +226,7 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'SharePoint image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sharePointImage in $sharePointImages)
             {
                 Write-Host $sharePointImage.Offer $sharePointImage.Skus

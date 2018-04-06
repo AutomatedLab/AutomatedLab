@@ -166,8 +166,8 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy $(TargetPath) $(SolutionDir)AutomatedLab\AutomatedLab.dll /Y
-copy $(TargetPath) $(SolutionDir)AutomatedLab\Microsoft.ApplicationInsights.dll /Y
-copy $(TargetPath) $(SolutionDir)AutomatedLab\System.Diagnostics.DiagnosticSource.dll /Y</PostBuildEvent>
+copy $(TargetDir)Microsoft.ApplicationInsights.dll $(SolutionDir)AutomatedLab\Microsoft.ApplicationInsights.dll /Y
+copy $(TargetDir)System.Diagnostics.DiagnosticSource.dll $(SolutionDir)AutomatedLab\System.Diagnostics.DiagnosticSource.dll /Y</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

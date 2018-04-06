@@ -81,7 +81,7 @@ function Remove-LabNetworkSwitches
 		
         if ($virtualNetwork.SwitchType -eq 'External')
         {
-            Write-Warning "The virtual switch '$($virtualNetwork.Name)' is of type external and will not be removed as it may also be used by other labs"
+            Write-ScreenInfo "The virtual switch '$($virtualNetwork.Name)' is of type external and will not be removed as it may also be used by other labs"
             continue
         }
         else

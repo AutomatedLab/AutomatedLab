@@ -9,7 +9,7 @@ param(
     [string]$ComputerName
 )
 
-Import-Lab -Name $data.Name
+Import-Lab -Name $data.Name -NoValidation -NoDisplay
 $proGetServer = Get-LabVM -ComputerName $ComputerName
 $flatDomainName = $proGetServer.DomainName.Split('.')[0]
 
@@ -19,17 +19,18 @@ if (-not (Get-LabVM -ComputerName $SqlServer | Where-Object { $_.Roles.Name -lik
     return
 }
 
-$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer
+$installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetServer -NoDisplay
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
+    Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
 	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
-    Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob
+    Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob -NoDisplay
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
 }
 else
 {
-    Write-ScreenInfo ".net Version installed on '$proGetServer' is $installedDotnetVersion, skipping .net Framework 4.5.2 installation"
+    Write-ScreenInfo ".net Versions installed on '$proGetServer' are '$($installedDotnetVersion.Version -join ', ')', skipping .net Framework 4.5.2 installation"
 }
 
 if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
@@ -122,7 +123,7 @@ Invoke-LabCommand -ActivityName ConfigureProGet -ComputerName $sqlServer -Script
     sqlcmd.exe -i C:\ProGetQuery.sql | Out-Null
 } -ArgumentList $sqlQuery -PassThru -ErrorAction SilentlyContinue
 
-Write-ScreenInfo "Restarting '$proGetServer'"
+Write-ScreenInfo "Restarting '$proGetServer'" -NoNewLine
 Restart-LabVM -ComputerName $proGetServer -Wait
 
 $isActivated = $false
@@ -170,3 +171,5 @@ else
 {
     Write-ScreenInfo 'ProGet was successfully activated' 
 }
+
+Write-ScreenInfo 'ProGet installation finished'
