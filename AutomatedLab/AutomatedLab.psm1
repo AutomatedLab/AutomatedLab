@@ -3839,7 +3839,7 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
     ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
     Sort-Object -Property OperatingSystemImageName |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", $_.OperatingSystemImageName, 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
     }
 }
 
