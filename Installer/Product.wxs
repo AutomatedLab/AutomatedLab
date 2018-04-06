@@ -41,6 +41,7 @@
                 <Component Id="ShipsComponent" Guid="cdf71f71-f452-4eb4-82c1-243d8923f363">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="ShipsComponent" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psd1" />
                 </Component>
               </Directory>
             </Directory>
