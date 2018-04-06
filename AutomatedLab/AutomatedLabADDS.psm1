@@ -1300,8 +1300,9 @@ function Install-LabDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
         }
 
-        Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -ErrorAction Stop
-        
+        Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -NoNewLine -ErrorAction Stop
+        Write-ScreenInfo -Message done
+
         Write-ScreenInfo -Message 'Additional Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
         #Wait a little to be able to connect in first attempt
