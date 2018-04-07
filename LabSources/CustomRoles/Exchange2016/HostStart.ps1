@@ -17,8 +17,8 @@ function Download-ExchangeSources
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
-    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnet462DownloadLink'"
-    $script:dotnet462InstallFile = Get-LabInternetFile -Uri $dotnet462DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnetDownloadLink'"
+    $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     Write-ScreenInfo 'finished' -TaskEnd
 }
@@ -70,7 +70,7 @@ function Install-ExchangeRequirements
         if ($dotnetFrameworkVersion.Version -lt '4.6.2')
         {
             Write-ScreenInfo "Installing .net Framework 4.6.2 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnet462InstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
@@ -272,7 +272,7 @@ function Start-ExchangeInstallation
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
 $exchangeDownloadLink = 'https://download.microsoft.com/download/5/8/C/58CA2823-6764-4355-B9DE-EB196E43BC81/ExchangeServer2016-x64-cu9.iso'
-$dotnet462DownloadLink = (Get-Module -Name AutomatedLab -ListAvailable)[0].PrivateData.dotnet462DownloadLink
+$dotnetDownloadLink = (Get-Module -Name AutomatedLab -ListAvailable)[0].PrivateData.dotnet471DownloadLink
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 
