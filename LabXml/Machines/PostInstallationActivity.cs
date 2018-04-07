@@ -65,6 +65,16 @@ namespace AutomatedLab
             get { return isCustomRole; }
             set { isCustomRole = value; }
         }
+        
+        public string RoleName
+        {
+            get {
+                if (!string.IsNullOrEmpty(scriptFileName))
+                    return ScriptFileName.Split('.')[0];
+                else
+                    return string.Empty;
+            }
+        }
 
         public SerializableDictionary<string, List<object>> Properties
         {

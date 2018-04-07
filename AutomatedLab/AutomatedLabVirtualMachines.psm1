@@ -243,8 +243,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms } 
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
@@ -263,8 +261,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
