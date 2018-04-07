@@ -493,11 +493,10 @@ function Wait-LWLabJob
 
         if ($PassThru)
         {
-            $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
-
+            $result = $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
+            $result
             #PSRemotingTransportException are very likely due to restarts or problems AL cannot recover
             $jobErrors = $jobErrors | Where-Object { $_.Exception -isnot [System.Management.Automation.Remoting.PSRemotingTransportException] }
-
             foreach ($jobError in $jobErrors)
             {
                 Write-Error -ErrorRecord $jobError
