@@ -36,6 +36,15 @@
                 </Component>
               </Directory>
             </Directory>
+            <Directory Id="InstallFolder_Ships" Name="AutomatedLab.Ships">
+              <Directory Id="InstallFolder_ShipsVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="ShipsComponent" Guid="cdf71f71-f452-4eb4-82c1-243d8923f363">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="ShipsComponent" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psd1" />
+                </Component>
+              </Directory>
+            </Directory>
             <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
               <Directory Id="InstallFolder_CommonVersion" Name="$(var.AutomatedLabCommonVersion)">
                 <Directory Id="InstallFolder_CommonCommon" Name="Common">
@@ -503,6 +512,7 @@
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
+        <ComponentRef Id='ShipsComponent' />
         <ComponentRef Id ='CommonComponent' />
         <ComponentRef Id ='ALCommonComponent1' />
         <ComponentRef Id ='ALCommonComponent2' />

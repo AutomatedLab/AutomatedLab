@@ -1481,9 +1481,7 @@ function Install-LabCA
     #Bring the RootCA server online and start installing
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     
-    Start-LabVM -RoleName CaRoot, CaSubordinate -NoNewline
-    
-    Wait-LabVM -ComputerName (Get-LabVM -Role CaRoot) -ProgressIndicator 10
+    Start-LabVM -RoleName CaRoot, CaSubordinate -Wait -ProgressIndicator 15
     
     $caRootMachines = Get-LabVM -Role CaRoot -IsRunning
     if ($caRootMachines.Count -ne (Get-LabVM -Role CaRoot).Count)
@@ -1542,11 +1540,8 @@ function Install-LabCA
             return
         }
         
-        if ((Get-LabVM -Role CaSubordinate).Name)
-        {
-            Write-ScreenInfo -Message "Machines with Subordinate CA role to be installed: '$((Get-LabVM -Role CaSubordinate).Name -join ', ')'" -TaskStart
-        }
-        
+        Write-ScreenInfo -Message "Machines with Subordinate CA role to be installed: '$($caSubordinateMachines -join ', ')'" -TaskStart
+                
         
         Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
         Wait-LabVM -ComputerName (Get-LabVM -Role CaSubordinate).Name -ProgressIndicator 10
@@ -1562,7 +1557,7 @@ function Install-LabCA
             }
             else
             {
-                $jobs += Install-LabCAMachine -Machine $caSubordinateMachine -PassThru -PreDelaySeconds ($installSequence++*30)
+                $jobs += Install-LabCAMachine -Machine $caSubordinateMachine -PassThru -PreDelaySeconds ($installSequence++ * 30)
             }
         }
         
@@ -1570,7 +1565,7 @@ function Install-LabCA
         {
             Write-ScreenInfo -Message 'Waiting for Subordinate CA(s) to complete installation' -NoNewline
 
-            Start-LabVm -StartNextMachines 1
+            Start-LabVM -StartNextMachines 1
         
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoNewLine -NoDisplay
         
@@ -2369,11 +2364,11 @@ function Install-LabCAMachine
                         [string]$ParentCALogicalName
                     )
                     Invoke-Expression -Command "certutil -ping $ParentCA\$ParentCALogicalName"
-                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -PassThru
+                } -ArgumentList $param.ParentCA, $param.ParentCALogicalName -PassThru -NoDisplay
                 
                 if (-not ($result | Where-Object { $_ -like '*interface is alive*' }))
                 {
-                    $result | Foreach { Write-Debug -Message $_ }
+                    $result | ForEach-Object { Write-Debug -Message $_ }
                     $retries++
                     Write-Verbose -Message "Could not contact ParentCA. (Computername=$($param.ParentCA), LogicalCAName=$($param.ParentCALogicalName)). (Check $retries of $totalretries)"
                     if ($retries -lt $totalretries) { Start-Sleep -Seconds 5 }

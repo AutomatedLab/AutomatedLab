@@ -102,9 +102,9 @@ function Import-Lab
 {
     #.ExternalHelp AutomatedLab.help.xml
     
-    [CmdletBinding(DefaultParameterSetName = 'ByPath')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'ByPath')]
+        [Parameter(Mandatory, ParameterSetName = 'ByPath', Position = 1)]
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
@@ -467,7 +467,7 @@ function Install-Lab
     
     Write-LogFunctionEntry
 
-    $labDiskDeploymentInProgressPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\LabDiskDeploymentInProgress.txt"
+    $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
@@ -2174,6 +2174,8 @@ function Install-LabSoftwarePackage
         
         [switch]$UseShellExecute,
 
+        [int[]]$ExpectedReturnCodes,
+
         [switch]$PassThru,
         
         [switch]$NoDisplay,
@@ -2254,8 +2256,6 @@ function Install-LabSoftwarePackage
         
     if ($parameterSetName -eq 'SinglePackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($Path))'")
-            
         if ($CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
@@ -2265,32 +2265,14 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
         
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($LocalPath))'")
-            
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = $LocalPath
     }
     else
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($SoftwarePackage.Path))'")
-            
         if ($SoftwarePackage.CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($SoftwarePackage.Path))
@@ -2300,21 +2282,26 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
-    $parameters.Add('ArgumentList', $installArgs)
+    
+    $installParams = @{
+        Path = $installPath
+        CommandLine = $CommandLine
+    }
+    if ($AsScheduledJob) { $installParams.AsScheduledJob = $true }
+    if ($UseShellExecute) { $installParams.UseShellExecute = $true }
+    if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
+    if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+
+    $parameters.Add('ActivityName', "Installation of '$installPath'")
         
     Write-Verbose -Message "Starting background job for '$($parameters.ActivityName)'"
         
-    $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock)
-        
+    $parameters.ScriptBlock = {
+        Install-SoftwarePackage @installParams
+    }
+
     $parameters.Add('NoDisplay', $True)
         
     if (-not $AsJob) 
@@ -2322,28 +2309,25 @@ function Install-LabSoftwarePackage
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
         
-    $results += Invoke-LabCommand @parameters
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
         
     if (-not $AsJob)
     {
-        Write-Verbose "Waiting on job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')'"
-        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 15 -NoDisplay
-        $results = $results | Receive-Job
+        Write-Verbose "Waiting on job ID '$($job.ID -join ', ')' with name '$($job.Name -join ', ')'"
+        $results = Wait-LWLabJob -Job $job -Timeout $Timeout -ProgressIndicator 15 -NoDisplay -PassThru
+        #$results = $results | Receive-Job
         Write-Verbose "Job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')' finished"
     }
     
     if ($AsJob)
     {
         Write-ScreenInfo -Message 'Installation started in background' -TaskEnd
+        if ($PassThru) { $job }
     }
     else
     {
         Write-ScreenInfo -Message 'Installation done' -TaskEnd
-    }
-    
-    if ($PassThru)
-    {
-        $results
+        if ($PassThru) { $results }
     }
     
     Write-LogFunctionExit
@@ -2904,7 +2888,7 @@ function Invoke-LabCommand
     )
     
     Write-LogFunctionEntry
-    $customRoles = 0
+    $customRoleCount = 0
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
@@ -2987,7 +2971,7 @@ function Invoke-LabCommand
                 if ($item.IsCustomRole)
                 {
                     Write-ScreenInfo "Installing Custom Role '$(Split-Path -Path $item.DependencyFolder -Leaf)' on machine '$machine'" -TaskStart -OverrideNoDisplay
-                    $customRoles++
+                    $customRoleCount++
                     #if there is a HostStart.ps1 script for the role
                     $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
                     if (Test-Path -Path $hostStartPath)
@@ -3071,7 +3055,7 @@ function Invoke-LabCommand
             }
         }
         
-        if ($customRoles)
+        if ($customRoleCount)
         {
             $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] -and $_.State -eq 'Running' }
             if ($jobs)
@@ -3081,7 +3065,7 @@ function Invoke-LabCommand
             }
             else
             {
-                Write-ScreenInfo -Message "$($results.Count) custom role installation finished." -OverrideNoDisplay
+                Write-ScreenInfo -Message "$($customRoleCount) custom role installation finished." -OverrideNoDisplay
             }
         }
 
