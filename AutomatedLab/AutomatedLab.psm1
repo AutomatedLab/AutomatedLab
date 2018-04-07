@@ -2194,6 +2194,8 @@ function Install-LabSoftwarePackage
         
         [switch]$UseShellExecute,
 
+        [int[]]$ExpectedReturnCodes,
+
         [switch]$PassThru,
         
         [switch]$NoDisplay,
@@ -2274,8 +2276,6 @@ function Install-LabSoftwarePackage
         
     if ($parameterSetName -eq 'SinglePackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($Path))'")
-            
         if ($CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
@@ -2285,32 +2285,14 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
         
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($LocalPath))'")
-            
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = $LocalPath
     }
     else
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($SoftwarePackage.Path))'")
-            
         if ($SoftwarePackage.CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($SoftwarePackage.Path))
@@ -2320,21 +2302,26 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
-    $parameters.Add('ArgumentList', $installArgs)
+    
+    $installParams = @{
+        Path = $installPath
+        CommandLine = $CommandLine
+    }
+    if ($AsScheduledJob) { $installParams.AsScheduledJob = $true }
+    if ($UseShellExecute) { $installParams.UseShellExecute = $true }
+    if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
+    if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+
+    $parameters.Add('ActivityName', "Installation of '$installPath'")
         
     Write-Verbose -Message "Starting background job for '$($parameters.ActivityName)'"
         
-    $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock)
-        
+    $parameters.ScriptBlock = {
+        Install-SoftwarePackage @installParams
+    }
+
     $parameters.Add('NoDisplay', $True)
         
     if (-not $AsJob) 
@@ -2342,28 +2329,25 @@ function Install-LabSoftwarePackage
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
         
-    $results += Invoke-LabCommand @parameters
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
         
     if (-not $AsJob)
     {
-        Write-Verbose "Waiting on job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')'"
-        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 15 -NoDisplay
-        $results = $results | Receive-Job
+        Write-Verbose "Waiting on job ID '$($job.ID -join ', ')' with name '$($job.Name -join ', ')'"
+        $results = Wait-LWLabJob -Job $job -Timeout $Timeout -ProgressIndicator 15 -NoDisplay -PassThru
+        #$results = $results | Receive-Job
         Write-Verbose "Job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')' finished"
     }
     
     if ($AsJob)
     {
         Write-ScreenInfo -Message 'Installation started in background' -TaskEnd
+        if ($PassThru) { $job }
     }
     else
     {
         Write-ScreenInfo -Message 'Installation done' -TaskEnd
-    }
-    
-    if ($PassThru)
-    {
-        $results
+        if ($PassThru) { $results }
     }
     
     Write-LogFunctionExit
@@ -3839,7 +3823,7 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
     ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
     Sort-Object -Property OperatingSystemImageName |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", $_.OperatingSystemImageName, 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
     }
 }
 
