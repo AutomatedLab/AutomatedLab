@@ -542,6 +542,12 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{2BBF
 		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "AutomatedLab.Ships", "{0509B199-B442-4716-9ED6-E059FDA45754}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Ships\AutomatedLab.Ships.psd1 = AutomatedLab.Ships\AutomatedLab.Ships.psd1
+		AutomatedLab.Ships\AutomatedLab.Ships.psm1 = AutomatedLab.Ships\AutomatedLab.Ships.psm1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
