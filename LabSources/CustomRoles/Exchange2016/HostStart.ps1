@@ -17,7 +17,7 @@ function Download-ExchangeSources
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
-    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnetDownloadLink'"
+    Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'"
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     Write-ScreenInfo 'finished' -TaskEnd
@@ -67,14 +67,14 @@ function Install-ExchangeRequirements
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -lt '4.6.2')
+        if ($dotnetFrameworkVersion.Version -lt '4.7.1')
         {
-            Write-ScreenInfo "Installing .net Framework 4.6.2 on '$machine'" -Type Verbose
+            Write-ScreenInfo "Installing .net Framework 4.7.1 on '$machine'" -Type Verbose
             $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
-            Write-ScreenInfo ".net Framework 4.6.2 is already installed on '$machine'" -Type Verbose
+            Write-ScreenInfo ".net Framework 4.7.1 is already installed on '$machine'" -Type Verbose
         }
     }
 
