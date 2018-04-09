@@ -322,7 +322,7 @@ GO
             $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
         $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force | 
         Add-Member -Name 'SsmsUri' -Value {
-            (Get-Module AutomatedLab -ListAvailable).PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
+            (Get-Module AutomatedLab -ListAvailable)[0].PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
         } -MemberType ScriptProperty -PassThru -Force
     
         if ($servers)
