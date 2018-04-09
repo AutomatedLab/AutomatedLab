@@ -1152,7 +1152,7 @@ function Connect-LabVM
 
                 if ([bool]$download)
                 {
-                    $downloadUri = (Get-Module AutomatedLab).PrivateData['OpenSshUri']
+                    $downloadUri = (Get-Module AutomatedLab)[0].PrivateData['OpenSshUri']
                     $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
