@@ -1,4 +1,4 @@
-$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker).PrivateData.AzureRetryCount
+$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker)[0].PrivateData.AzureRetryCount
 
 #region New-LWAzureVM
 function New-LWAzureVM

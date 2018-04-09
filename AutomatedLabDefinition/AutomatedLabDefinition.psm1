@@ -3009,27 +3009,24 @@ function Get-LabPostInstallationActivity
         [switch]$DoNotUseCredSsp
     )
     DynamicParam
-    {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path (Get-LabSourcesLocation)))
-        {        
-            $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+    {      
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
-            $ParameterName = 'CustomRole'        
-            $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-            $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-            $ParameterAttribute.ParameterSetName = 'CustomRole'
-            $AttributeCollection.Add($ParameterAttribute)
-            $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
+        $ParameterName = 'CustomRole'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute.ParameterSetName = 'CustomRole'
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
 
-            if ($arrSet)
-            {
-                $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-                $AttributeCollection.Add($ValidateSetAttribute)
-                $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+        if ($arrSet)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+            $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
-                $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-                return $RuntimeParameterDictionary
-            }
+            $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+            return $RuntimeParameterDictionary
         }
     }
 
@@ -3156,7 +3153,7 @@ function Get-LabPostInstallationActivity
             {
                 foreach ($kvp in $Properties.GetEnumerator())
                 {
-                    $activity.Properties.Add($kvp.Key, [string]$kvp.Value)
+                    $activity.Properties.Add($kvp.Key, $kvp.Value)
                 }
             }
         }
@@ -3242,12 +3239,6 @@ function Set-LabLocalVirtualMachineDiskAuto
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.LocalDisk
     $drives = New-Object $type
     
-    #Retrieve drives with enough space for placement of VMs
-    foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
-    {
-        $drives.Add($drive)
-    }
-    
     #read the cache
     try
     {
@@ -3260,15 +3251,50 @@ function Set-LabLocalVirtualMachineDiskAuto
         Write-Verbose 'Could not read info from the cache'
     }
 
-    Write-Debug -Message "Drive letters placed on physical drives: $($drives.DriveLetter -Join ', ')"
-    foreach ($drive in $drives)
+    #Retrieve drives with enough space for placement of VMs
+    foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
     {
-        Write-Debug -Message "Drive $drive free space: $($drive.FreeSpaceGb)GB)"
+        $drives.Add($drive)
     }
         
     if (-not $drives)
     {
         return $false
+    }
+
+    #if the current disk config is different from the is in the cache, wait until the running lab deploymet is done.
+    if (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter)
+    {
+        $labDiskDeploymentInProgressPath = (Get-Module -Name AutomatedLab)[0].PrivateData.DiskDeploymentInProgressPath
+        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        {
+            Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+            Write-ScreenInfo "Waiting with 'Get-DiskSpeed' until other disk deployment is finished. Otherwise a mounted virtual disk could be chosen for deployment." -NoNewLine
+            do
+            {
+                Write-ScreenInfo -Message . -NoNewLine
+                Start-Sleep -Seconds 15
+            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+        }
+        Write-ScreenInfo 'done'
+
+        #refresh the list of drives with enough space for placement of VMs
+        $drives.Clear()
+        foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
+        {
+            $drives.Add($drive)
+        }
+        
+        if (-not $drives)
+        {
+            return $false
+        }
+    }
+
+    Write-Debug -Message "Drive letters placed on physical drives: $($drives.DriveLetter -Join ', ')"
+    foreach ($drive in $drives)
+    {
+        Write-Debug -Message "Drive $drive free space: $($drive.FreeSpaceGb)GB)"
     }
         
     #Measure speed on drives found

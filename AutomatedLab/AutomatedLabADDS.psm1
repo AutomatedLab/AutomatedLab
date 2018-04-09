@@ -728,8 +728,7 @@ function Install-LabRootDcs
         {
             $rootDcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
         
-            $version = (New-Object -TypeName AutomatedLab.OperatingSystem -ArgumentList ($machine.OperatingSystem)).Version
-            if ($version -le 6.1)
+            if ($machine.OperatingSystem.Version -le 6.1)
             {
                 #Pre 2012
                 $scriptblock = $adInstallRootDcScriptPre2012
@@ -781,7 +780,8 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
-        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
+        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
+        Write-ScreenInfo -Message done
         
         Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
@@ -902,7 +902,7 @@ function Install-LabRootDcs
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
     $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
-        -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
+    -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
     while ((Get-LabVM | Where-Object -FilterScript $filterScript) -or $retries -le 0 )
@@ -1009,13 +1009,12 @@ function Install-LabFirstChildDcs
                 
                 $cmd = "dnscmd . /zoneadd $NewDomainName /dsstub $((Get-LabVM -Role RootDC,FirstChildDC,DC | Where-Object DomainName -eq $NewDomainName).IpV4Address -join ', ') /dp /forest"
                 
-                Invoke-LabCommand -ScriptBlock ([scriptblock]::Create($cmd)) -ComputerName $parentDc -NoDisplay -ActivityName 'Add DNS zones'
-                Invoke-LabCommand -ScriptBlock {Restart-Service Dns} -ComputerName $parentDc -NoDisplay -ActivityName 'Restart DNS'
+                Invoke-LabCommand -ActivityName 'Add DNS zones' -ComputerName $parentDc -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay
+                Invoke-LabCommand -ActivityName 'Restart DNS' -ComputerName $parentDc -ScriptBlock { Restart-Service -Name Dns } -NoDisplay
             }
             
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            $version = (New-Object -TypeName AutomatedLab.OperatingSystem -ArgumentList ($machine.OperatingSystem)).Version
-            if ($version -le 6.1)
+            if ($machine.OperatingSystem.Version -le 6.1)
             {
                 $scriptBlock = $adInstallFirstChildDcPre2012
                 $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$domainFunctionalLevel
@@ -1068,27 +1067,27 @@ function Install-LabFirstChildDcs
 
         $machinesToStart = @()
         $machinesToStart += Get-LabVM -Role DC
-        #starting machines in a multi net environment may not work
+        #starting machines in a multi net environment may not work at this point of the deployment
         if (-not (Get-LabVM -Role Routing))
         {
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
             $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
         
-        Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs
+        Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
+        Write-ScreenInfo done
         
         Write-ScreenInfo -Message 'First Child Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
         #Wait a little to be able to connect in first attempt
-        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {Start-Sleep -Seconds 60}) -ProgressIndicator 20 -NoDisplay -NoNewLine
+        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock { Start-Sleep -Seconds 60 }) -ProgressIndicator 20 -NoDisplay -NoNewLine
         
         Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
-        Write-ProgressIndicatorEnd
         
         #Make sure the specified installation user will be domain admin
-        $cmd = {
+        Invoke-LabCommand -ActivityName 'Make installation user Domain Admin' -ComputerName $machines -ScriptBlock {
             $PSDefaultParameterValues = @{
                 '*-AD*:Server' = $env:COMPUTERNAME
             }
@@ -1096,16 +1095,15 @@ function Install-LabFirstChildDcs
             $user = Get-ADUser -Identity ([System.Security.Principal.WindowsIdentity]::GetCurrent().User)
             
             Add-ADGroupMember -Identity 'Domain Admins' -Members $user
-        }
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Make installation user Domain Admin' -NoDisplay -ScriptBlock $cmd -ErrorAction SilentlyContinue
+        } -NoDisplay
 
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -NoDisplay -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Add flat domain name DNS record to speed up start of gpsvc in 2016' -ComputerName $machines -ScriptBlock {
             $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
-        } -ArgumentList $machines
+        } -ArgumentList $machines -NoDisplay
 
-        Restart-LabVM -ComputerName $machines -Wait
-        Wait-LabADReady -ComputerName $machines
+        Restart-LabVM -ComputerName $machines -Wait -NoDisplay -NoNewLine
+        Wait-LabADReady -ComputerName $machines -NoNewLine
         
         Enable-LabVMRemoting -ComputerName $machines
         
@@ -1114,8 +1112,7 @@ function Install-LabFirstChildDcs
         
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role FirstChildDC) -ProgressIndicator 20 -NoNewLine
-        
-        
+
         Write-Verbose -Message 'Restarting DNS and Netlogon services on Root and Child Domain Controllers and triggering replication'
         $jobs = @()
         foreach ($dc in (@(Get-LabVM -Role RootDC)))
@@ -1129,7 +1126,6 @@ function Install-LabFirstChildDcs
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
-        Write-ProgressIndicatorEnd
         
         if ($CreateCheckPoints)
         {
@@ -1150,7 +1146,7 @@ function Install-LabFirstChildDcs
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
     $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
-        -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
+    -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
     while ((Get-LabVM | Where-Object -FilterScript $filterScript) -or $retries -le 0 )
@@ -1161,7 +1157,8 @@ function Install-LabFirstChildDcs
         Restart-LabVM -ComputerName $machinesToJoin -Wait
         $retries--
     }
-    
+
+    Write-ProgressIndicatorEnd
     Write-LogFunctionExit
 }
 #endregion Install-LabFirstChildDcs
@@ -1255,8 +1252,7 @@ function Install-LabDcs
             $parentCredential = $parentDc.GetCredential((Get-Lab))
             
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            $version = (New-Object -TypeName AutomatedLab.OperatingSystem -ArgumentList ($machine.OperatingSystem)).Version
-            if ($version -le 6.1)
+            if ($machine.OperatingSystem.Version -le 6.1)
             {
                 $scriptblock = $adInstallDcPre2012
             }
@@ -1304,12 +1300,15 @@ function Install-LabDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
         }
 
-        Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -ProgressIndicator 60 -MonitorJob $jobs
-        
+        Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -NoNewLine -ErrorAction Stop
+        Write-ScreenInfo -Message done
+
         Write-ScreenInfo -Message 'Additional Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
         
         #Wait a little to be able to connect in first attempt
-        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {Start-Sleep -Seconds 60}) -ProgressIndicator 20 -NoDisplay -NoNewLine
+        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {
+                Start-Sleep -Seconds 60
+        }) -ProgressIndicator 20 -NoDisplay -NoNewLine
         
         Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         
@@ -1322,7 +1321,6 @@ function Install-LabDcs
         
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
-        
         
         Write-Verbose -Message 'Restarting DNS and Netlogon services on all Domain Controllers and triggering replication'
         $jobs = @()
