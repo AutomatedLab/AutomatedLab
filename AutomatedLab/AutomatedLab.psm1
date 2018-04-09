@@ -449,8 +449,6 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Exchange2013,
-        [switch]$Exchange2016,
         [switch]$Sharepoint2013,
         [switch]$CA,
         [switch]$ADFS,
@@ -760,24 +758,6 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Orchestrator Servers' -TaskStart
         Install-LabOrchestrator2012
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-    
-    if (($Exchange2013 -or $performAll) -and (Get-LabVM -Role Exchange2013))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2013' -TaskStart
-        
-        Install-LabExchange2013 -All
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    if (($Exchange2016 -or $performAll) -and (Get-LabVM -Role Exchange2016))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2016' -TaskStart
-        
-        Install-LabExchange2016 -All
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

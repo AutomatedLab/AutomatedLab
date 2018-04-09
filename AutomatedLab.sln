@@ -82,8 +82,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
-		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
-		AutomatedLab\AutomatedLabExchange2016.psm1 = AutomatedLab\AutomatedLabExchange2016.psm1
 		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
@@ -542,6 +540,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{2BBF
 		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2013", "Exchange2013", "{38C82807-0968-4EBC-B5C8-693B969CF13F}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2013\HostStart.ps1 = LabSources\CustomRoles\Exchange2013\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2016", "Exchange2016", "{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2016\HostStart.ps1 = LabSources\CustomRoles\Exchange2016\HostStart.ps1
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "AutomatedLab.Ships", "{0509B199-B442-4716-9ED6-E059FDA45754}"
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLab.Ships\AutomatedLab.Ships.psd1 = AutomatedLab.Ships\AutomatedLab.Ships.psd1
@@ -649,6 +657,8 @@ Global
 		{CDE85675-45A5-4C67-B79D-64F336751D5F} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{5A35AA7F-30CF-4AC2-915B-0F41530CA9A9} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
