@@ -3009,27 +3009,24 @@ function Get-LabPostInstallationActivity
         [switch]$DoNotUseCredSsp
     )
     DynamicParam
-    {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path (Get-LabSourcesLocation)))
-        {        
-            $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+    {      
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
-            $ParameterName = 'CustomRole'        
-            $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-            $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-            $ParameterAttribute.ParameterSetName = 'CustomRole'
-            $AttributeCollection.Add($ParameterAttribute)
-            $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
+        $ParameterName = 'CustomRole'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute.ParameterSetName = 'CustomRole'
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
 
-            if ($arrSet)
-            {
-                $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-                $AttributeCollection.Add($ValidateSetAttribute)
-                $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+        if ($arrSet)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+            $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
-                $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-                return $RuntimeParameterDictionary
-            }
+            $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+            return $RuntimeParameterDictionary
         }
     }
 
