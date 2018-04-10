@@ -9,7 +9,6 @@
     DotNetFrameworkVersion = '4.0'    
     CLRVersion             = '4.0'
     RequiredModules        = @('SHiPS')
-    RequiredAssemblies     = @('Microsoft.PowerShell.SHiPS')
     ModuleList             = @('AutomatedLab.Ships')
     FileList               = @('AutomatedLab.Ships.psm1', 'AutomatedLab.Ships.psd1')
 }
