@@ -1989,9 +1989,9 @@ function Checkpoint-LabVM
         return
     }
     
-    if ($Name)
+    if ($ComputerName)
     {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
     }
     else
     {
