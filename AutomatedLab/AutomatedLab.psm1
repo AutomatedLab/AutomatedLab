@@ -528,79 +528,89 @@ function Install-Lab
     
     if (($BaseImages -or $performAll) -and (Get-LabVM -All | Where-Object HostType -eq 'HyperV'))
     {
-        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        try
         {
-            Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
-            Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
-            do
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                Write-ScreenInfo -Message . -NoNewLine
-                Start-Sleep -Seconds 15
-            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+                Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+                Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+            }
+            Write-ScreenInfo 'done'
+
+            Write-ScreenInfo -Message 'Creating base images' -TaskStart
+
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            
+            New-LabBaseImages        
+
+            Write-ScreenInfo -Message 'Done' -TaskEnd
         }
-        Write-ScreenInfo 'done'
-
-        Write-ScreenInfo -Message 'Creating base images' -TaskStart
-
-        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
-        
-        New-LabBaseImages
-
-        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
-
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
     
     if ($VMs -or $performAll)
     {
-        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        try
         {
-            Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
-            do
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                Write-ScreenInfo -Message . -NoNewLine
-                Start-Sleep -Seconds 15
-            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
-        }
-        Write-ScreenInfo 'done'
-
-        Write-ScreenInfo -Message 'Creating VMs' -TaskStart
-
-        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
-
-        if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
-        {
-            New-LabVHDX
-        }
-
-        #add a hosts entry for each lab machine
-        $hostFileAddedEntries = 0
-        foreach ($machine in $Script:data.Machines)
-        {
-            if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
-            {
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
             }
-        }
-    
-        if ($hostFileAddedEntries)
-        {
-            Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
-        }
-        
-        if ($script:data.Machines)
-        {
-            New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
-        }
+            Write-ScreenInfo 'done'
 
-        #VMs created, export lab definition again to update MAC addresses
-        Set-LabDefinition -Machines $Script:data.Machines
-        Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
+            Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-LabVHDX
+            }
+
+            #add a hosts entry for each lab machine
+            $hostFileAddedEntries = 0
+            foreach ($machine in $Script:data.Machines)
+            {
+                if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
+                {
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                }
+            }
         
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+            if ($hostFileAddedEntries)
+            {
+                Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
+            }
+            
+            if ($script:data.Machines)
+            {
+                New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+            }
+
+            #VMs created, export lab definition again to update MAC addresses
+            Set-LabDefinition -Machines $Script:data.Machines
+            Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent        
+            
+            Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
