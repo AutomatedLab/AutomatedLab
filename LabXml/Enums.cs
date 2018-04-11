@@ -65,7 +65,8 @@ namespace AutomatedLab
         Tfs2015 = 1073741824,
         Tfs2017 = 2147483648,
         TfsBuildWorker = 4294967296,
-        Tfs2018  = 8589934592
+        Tfs2018 = 8589934592,
+        SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017
     }
 
     public enum ActiveDirectoryFunctionalLevel
