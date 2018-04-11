@@ -286,7 +286,6 @@ AutomatedLab does this by associating a logical name with a definition of an ISO
  SQLServer2008R2
  SQLServer2012
  SQLServer2014
- Exchange2013
  VisualStudio
  Office2013</maml:para>
 				</maml:description>
@@ -325,7 +324,6 @@ AutomatedLab does this by associating a logical name with a definition of an ISO
  SQLServer2008R2
  SQLServer2012
  SQLServer2014
- Exchange2013
  VisualStudio
  Office2013</maml:para>
 			</maml:description>

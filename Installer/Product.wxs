@@ -360,8 +360,6 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
@@ -1590,6 +1588,12 @@
         <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1" />
         <File Id="filF8132E52FC96455F841EC3746134B102" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostStart.ps1" />
       </Component>
+      <Component Id="cmpB7A4553235714D3980022AD29B59E524" Directory="dirD153285282514AC29784E8EEC0425DF4" Guid="6fac1fe1-56ef-4bd6-9126-4350e63d9a44">
+        <File Id="filF56497E6FC8F489F817C687FC78899BB" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2016\HostStart.ps1" />
+      </Component>
+      <Component Id="cmpAC7C8B81D23F4769994947F0CECD3180" Directory="dir0E259F3D4465478A9ACD45BFE861109E" Guid="17bdbdfb-799d-48a7-b8aa-bb70463492af">
+        <File Id="fil0ECB36EBB468421ABD44DCA1F37CC377" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2013\HostStart.ps1" />
+      </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\README.md" />
       </Component>
@@ -1738,6 +1742,16 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dir81AC7AA67CD84A6B9CBA05139A977B45" Name="ProGet5" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir0E259F3D4465478A9ACD45BFE861109E" Name="Exchange2013" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD153285282514AC29784E8EEC0425DF4" Name="Exchange2016" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

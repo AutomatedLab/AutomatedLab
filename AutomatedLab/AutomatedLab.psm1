@@ -449,8 +449,6 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Exchange2013,
-        [switch]$Exchange2016,
         [switch]$Sharepoint2013,
         [switch]$CA,
         [switch]$ADFS,
@@ -528,79 +526,89 @@ function Install-Lab
     
     if (($BaseImages -or $performAll) -and (Get-LabVM -All | Where-Object HostType -eq 'HyperV'))
     {
-        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        try
         {
-            Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
-            Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
-            do
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                Write-ScreenInfo -Message . -NoNewLine
-                Start-Sleep -Seconds 15
-            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+                Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+                Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+            }
+            Write-ScreenInfo 'done'
+
+            Write-ScreenInfo -Message 'Creating base images' -TaskStart
+
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            
+            New-LabBaseImages        
+
+            Write-ScreenInfo -Message 'Done' -TaskEnd
         }
-        Write-ScreenInfo 'done'
-
-        Write-ScreenInfo -Message 'Creating base images' -TaskStart
-
-        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
-        
-        New-LabBaseImages
-
-        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
-
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
     
     if ($VMs -or $performAll)
     {
-        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        try
         {
-            Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
-            do
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                Write-ScreenInfo -Message . -NoNewLine
-                Start-Sleep -Seconds 15
-            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
-        }
-        Write-ScreenInfo 'done'
-
-        Write-ScreenInfo -Message 'Creating VMs' -TaskStart
-
-        New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
-
-        if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
-        {
-            New-LabVHDX
-        }
-
-        #add a hosts entry for each lab machine
-        $hostFileAddedEntries = 0
-        foreach ($machine in $Script:data.Machines)
-        {
-            if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
-            {
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
             }
-        }
-    
-        if ($hostFileAddedEntries)
-        {
-            Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
-        }
-        
-        if ($script:data.Machines)
-        {
-            New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
-        }
+            Write-ScreenInfo 'done'
 
-        #VMs created, export lab definition again to update MAC addresses
-        Set-LabDefinition -Machines $Script:data.Machines
-        Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
+            Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-        Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-LabVHDX
+            }
+
+            #add a hosts entry for each lab machine
+            $hostFileAddedEntries = 0
+            foreach ($machine in $Script:data.Machines)
+            {
+                if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
+                {
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                }
+            }
         
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+            if ($hostFileAddedEntries)
+            {
+                Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
+            }
+            
+            if ($script:data.Machines)
+            {
+                New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+            }
+
+            #VMs created, export lab definition again to update MAC addresses
+            Set-LabDefinition -Machines $Script:data.Machines
+            Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent        
+            
+            Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
@@ -760,24 +768,6 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Orchestrator Servers' -TaskStart
         Install-LabOrchestrator2012
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-    
-    if (($Exchange2013 -or $performAll) -and (Get-LabVM -Role Exchange2013))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2013' -TaskStart
-        
-        Install-LabExchange2013 -All
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    if (($Exchange2016 -or $performAll) -and (Get-LabVM -Role Exchange2016))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2016' -TaskStart
-        
-        Install-LabExchange2016 -All
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1324,182 +1314,6 @@ function Enable-LabVMRemoting
     Write-LogFunctionExit
 }
 #endregion Enable-LabVMRemoting
-
-#region Checkpoint-LabVM
-function Checkpoint-LabVM
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [string[]]$ComputerName,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [switch]$All
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabVM))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($Name)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
-    }
-    else
-    {
-        $machines = Get-LabVm -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to checkpoint. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
-            $sessions | Remove-PSSession
-        }
-    }
-    
-    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
-    
-    Write-LogFunctionExit
-}
-#endregion Checkpoint-LabVM
-
-#region Restore-LabVMSnapshot
-function Restore-LabVMSnapshot
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [string[]]$ComputerName,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [switch]$All
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabVM))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($ComputerName)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
-    }
-    else
-    {
-        $machines = Get-LabVM -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to restore the snapshot. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
-            $sessions | Remove-PSSession
-        }
-    }
-    
-    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
-    
-    Write-LogFunctionExit
-}
-#endregion Restore-LabVMSnapshot
-
-#region Remove-LabVMSnapshot
-function Remove-LabVMSnapshot
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
-        [string[]]$Name,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
-        [switch]$AllMachines,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
-        [switch]$AllSnapShots
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabVM))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($Name)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
-    }
-    else
-    {
-        $machines = Get-LabVm -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to remove the snapshot. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    if ($SnapshotName)
-    {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
-    }
-    elseif ($AllSnapShots)
-    {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -All
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Remove-LabVMSnapshot
 
 #region Install-LabWebServers
 function Install-LabWebServers

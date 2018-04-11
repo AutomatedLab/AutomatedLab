@@ -171,7 +171,6 @@ Names are case sensitive. Built-in possible options:
  SQLServer2008R2
  SQLServer2012
  SQLServer2014
- Exchange2013
  VisualStudio
  Office2013</Description>
           <DefaultValue />

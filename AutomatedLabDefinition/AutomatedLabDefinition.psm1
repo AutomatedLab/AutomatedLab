@@ -2309,22 +2309,6 @@ function Add-LabMachineDefinition
             }
         }
     
-        $role = $roles | Where-Object Name -in Exchange2013, Exchange2016
-        if ($role)
-        {
-            if ($role.Properties)
-            {
-                if (-not $role.Properties.ContainsKey('OrganizationName'))
-                {
-                    $role.Properties.Add('OrganizationName', 'ExOrg')
-                }
-            }
-            else
-            {
-                $role.Properties = @{ 'OrganizationName' = 'ExOrg' }
-            }
-        }
-    
         #Virtual network detection and automatic creation
         if ($VirtualizationHost -eq 'Azure')
         {

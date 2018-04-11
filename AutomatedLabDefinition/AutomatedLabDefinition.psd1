@@ -98,9 +98,6 @@
                 FirstChildDC = 'ParentDomain', 'NewDomain', 'DomainFunctionalLevel', 'SiteName', 'SiteSubnet', 'NetBIOSDomainName'
                 DC = 'IsReadOnly', 'SiteName', 'SiteSubnet'
 
-                Exchange2013 = 'OrganizationName'
-                Exchange2016 = 'OrganizationName'
-
                 Office2016 = 'SharedComputerLicensing'
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
