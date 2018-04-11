@@ -118,6 +118,16 @@ function Install-LabTeamFoundationServer
             $tfsPort = $role.Properties['Port']
         }
 
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine))
+            {
+                Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+            }
+
+            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+        }
+
         if ($role.Properties.ContainsKey('DbServer'))
         {
             [string]$sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
@@ -302,7 +312,7 @@ function New-LabReleasePipeline
         {
             Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
         }
-
+        $originalPort = $tfsPort
         $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
@@ -331,6 +341,7 @@ function New-LabReleasePipeline
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
+            $repoUrl = $repoUrl -replace ":$originalPort",":$tfsPort"
             $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
         }
         
