@@ -118,6 +118,16 @@ function Install-LabTeamFoundationServer
             $tfsPort = $role.Properties['Port']
         }
 
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine))
+            {
+                Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+            }
+
+            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+        }
+
         if ($role.Properties.ContainsKey('DbServer'))
         {
             [string]$sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
@@ -302,7 +312,7 @@ function New-LabReleasePipeline
         {
             Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
         }
-
+        $originalPort = $tfsPort
         $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
@@ -331,19 +341,25 @@ function New-LabReleasePipeline
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            $repoUrl = $repoUrl -replace $tfsvm.Name,$tfsvm.AzureConnectionInfo.DnsName
+            $repoUrl = $repoUrl -replace ":$originalPort",":$tfsPort"
+            $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
         }
         
         $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
+
+        Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
+
         $repoparent = Join-Path -Path $locallabsources -ChildPath GitRepositories
         if (-not (Test-Path $repoparent))
         {
+            Write-ScreenInfo -Type Verbose -Message "Creating $repoparent to contain your cloned repos"
             [void] (New-Item -ItemType Directory -Path $repoparent)
         }
 
         $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
         if (-not (Test-Path $repositoryPath))
         {
+            Write-ScreenInfo -Type Verbose -Message "Creating $repositoryPath to contain your cloned repo"
             [void] (New-Item -ItemType Directory -Path $repositoryPath)
         }
 
@@ -352,18 +368,59 @@ function New-LabReleasePipeline
 
         if (Join-Path -Path $repositoryPath -ChildPath '.git' -Resolve -ErrorAction SilentlyContinue)
         {
-            Write-Verbose -Message ('There already is a clone of {0} in {1}. Pulling latest changes from remote if possible.' -f $SourceRepository, $repositoryPath)
-            Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'pull', 'origin') -Wait -NoNewWindow
+            Write-ScreenInfo -Type Verbose -Message ('There already is a clone of {0} in {1}. Pulling latest changes from remote if possible.' -f $SourceRepository, $repositoryPath)
+            try
+            {
+                $errorFile = [System.IO.Path]::GetTempFileName()
+                $pullResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'pull', 'origin') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+
+                if ($pullResult.ExitCode -ne 0)
+                {
+                    Write-ScreenInfo -Type Warning -Message "Could not pull from $SourceRepository. Git returned: $(Get-Content -Path $errorFile)"
+                }
+            }
+            finally
+            {
+                Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
+            }
         }        
         else
         {
-            Write-Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
-            Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow
+            Write-ScreenInfo -Type Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
+            try
+            {
+                $errorFile = [System.IO.Path]::GetTempFileName()
+                $cloneResult = Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+
+                if ($cloneResult.ExitCode -ne 0)
+                {
+                    Write-ScreenInfo -Type Warning -Message "Could not clone from $SourceRepository. Git returned: $(Get-Content -Path $errorFile)"
+                }
+            }
+            finally
+            {
+                Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
+            }
+
             Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow            
         }
         
-        Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow
-        Write-Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+        try
+        {
+            $errorFile = [System.IO.Path]::GetTempFileName()
+            $pushResult = Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+
+            if ($pushResult.ExitCode -ne 0)
+            {
+                Write-ScreenInfo -Type Warning -Message "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
+            }
+        }
+        finally
+        {
+            Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
+        }
+        
+        Write-ScreenInfo -Type Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
 
         Pop-Location
     }
@@ -553,10 +610,10 @@ function Open-LabTfsSite
         'https://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
     } 
     else
-     {
-         'http://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
-        }
+    {
+        'http://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
+    }
     
-        Start-Process -FilePath $requestUrl
+    Start-Process -FilePath $requestUrl
 }
 #endregion

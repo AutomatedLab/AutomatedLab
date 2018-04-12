@@ -601,6 +601,8 @@ Windows Registry Editor Version 5.00
             Add-LWVMVHDX -VMName $Machine.Name -VhdxPath $disk.Path
         }
     }
+
+    Write-ProgressIndicatorEnd
             
     Write-LogFunctionExit
     
@@ -990,22 +992,19 @@ workflow Checkpoint-LWHypervVM
         $WORKFLOW:runningMachines = @()
         
         Write-Verbose -Message 'Remembering all running machines'
-        if ($ComputerName.Count -gt 1)
+        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
             {
-                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
-                {
-                    Suspend-VM -Name $n -ErrorAction SilentlyContinue
-                    Save-VM -Name $n -ErrorAction SilentlyContinue
+                Suspend-VM -Name $n -ErrorAction SilentlyContinue
+                Save-VM -Name $n -ErrorAction SilentlyContinue
                     
-                    Write-Verbose -Message "    '$n' was running"
-                    $WORKFLOW:runningMachines += $n
-                }
+                Write-Verbose -Message "    '$n' was running"
+                $WORKFLOW:runningMachines += $n
             }
-            
-            Start-Sleep -Seconds 5
         }
+            
+        Start-Sleep -Seconds 5
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
@@ -1015,26 +1014,23 @@ workflow Checkpoint-LWHypervVM
             }
             else
             {
-                Write-ScreenInfo "A snapshot with the name '$SnapshotName' already exists for machine '$n'" -Type Warning
+                Write-Error "A snapshot with the name '$SnapshotName' already exists for machine '$n'"
             }
         }
         
         Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        if ($ComputerName.Count -gt 1)
-        {
-            Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 5
             
-            foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+        {
+            if ($n -in $WORKFLOW:runningMachines)
             {
-                if ($n -in $WORKFLOW:runningMachines)
-                {
-                    Write-Verbose -Message "Machine '$n' was running, starting it."
-                    Start-VM -Name $n -ErrorAction SilentlyContinue
-                }
-                else
-                {
-                    Write-Verbose -Message "Machine '$n' was NOT running."
-                }
+                Write-Verbose -Message "Machine '$n' was running, starting it."
+                Start-VM -Name $n -ErrorAction SilentlyContinue
+            }
+            else
+            {
+                Write-Verbose -Message "Machine '$n' was NOT running."
             }
         }
         
@@ -1076,7 +1072,7 @@ workflow Remove-LWHypervVMSnapshot
         
         if (-not $snapshot)
         {
-            Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
+            Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
         }
         else
         {
@@ -1116,17 +1112,13 @@ workflow Restore-LWHypervVMSnapshot
             }
         }
         
-        if ($ComputerName.Count -gt 1)
+        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-            {
-                Suspend-VM -Name $n -ErrorAction SilentlyContinue
-                Save-VM -Name $n -ErrorAction SilentlyContinue
-            }
+            Suspend-VM -Name $n -ErrorAction SilentlyContinue
+            Save-VM -Name $n -ErrorAction SilentlyContinue
         }
         
         Start-Sleep -Seconds 5
-        
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
@@ -1136,7 +1128,7 @@ workflow Restore-LWHypervVMSnapshot
             
             if (-not $snapshot)
             {
-                Write-ScreenInfo -Message "The machine '$n' does not have a snapshot named '$SnapshotName'" -Type Warning
+                Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
             }
             else
             {
@@ -1146,21 +1138,19 @@ workflow Restore-LWHypervVMSnapshot
         }
         
         Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        if ($ComputerName.Count -gt 1)
-        {
-            Start-Sleep -Seconds 5
+        
+        Start-Sleep -Seconds 5
             
-            foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+        {
+            if ($n -in $WORKFLOW:runningMachines)
             {
-                if ($n -in $WORKFLOW:runningMachines)
-                {
-                    Write-Verbose -Message "Machine '$n' was running, starting it."
-                    Start-VM -Name $n -ErrorAction SilentlyContinue
-                }
-                else
-                {
-                    Write-Verbose -Message "Machine '$n' was NOT running."
-                }
+                Write-Verbose -Message "Machine '$n' was running, starting it."
+                Start-VM -Name $n -ErrorAction SilentlyContinue
+            }
+            else
+            {
+                Write-Verbose -Message "Machine '$n' was NOT running."
             }
         }
         

@@ -1963,3 +1963,179 @@ function Get-LabVMDotNetFrameworkVersion
     Write-LogFunctionExit
 }
 #endregion Get-LabVMDotNetFrameworkVersion
+
+#region Checkpoint-LabVM
+function Checkpoint-LabVM
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVm -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to checkpoint. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    foreach ($machine in $machines)
+    {
+        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
+        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
+        if ($sessions)
+        {
+            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
+            $sessions | Remove-PSSession
+        }
+    }
+    
+    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
+    
+    Write-LogFunctionExit
+}
+#endregion Checkpoint-LabVM
+
+#region Restore-LabVMSnapshot
+function Restore-LabVMSnapshot
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVM -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to restore the snapshot. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    foreach ($machine in $machines)
+    {
+        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
+        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
+        if ($sessions)
+        {
+            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
+            $sessions | Remove-PSSession
+        }
+    }
+    
+    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    
+    Write-LogFunctionExit
+}
+#endregion Restore-LabVMSnapshot
+
+#region Remove-LabVMSnapshot
+function Remove-LabVMSnapshot
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
+        [switch]$AllMachines,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
+        [switch]$AllSnapShots
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVm -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to remove the snapshot. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    if ($SnapshotName)
+    {
+        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    }
+    elseif ($AllSnapShots)
+    {
+        Remove-LWHypervVMSnapshot -ComputerName $machines -All
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Remove-LabVMSnapshot

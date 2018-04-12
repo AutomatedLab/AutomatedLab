@@ -1,5 +1,5 @@
 ﻿@{
-    RootModule             = 'AutomatedLab.Ships'
+    RootModule             = 'AutomatedLab.Ships.psm1'
     ModuleVersion          = '1.0'
     GUID                   = 'fc08e0e1-d274-41a3-afdd-09247e497c08'
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'    
@@ -9,7 +9,6 @@
     DotNetFrameworkVersion = '4.0'    
     CLRVersion             = '4.0'
     RequiredModules        = @('SHiPS')
-    RequiredAssemblies     = @('Microsoft.PowerShell.SHiPS')
     ModuleList             = @('AutomatedLab.Ships')
     FileList               = @('AutomatedLab.Ships.psm1', 'AutomatedLab.Ships.psd1')
 }
