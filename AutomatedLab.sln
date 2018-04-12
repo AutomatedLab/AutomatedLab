@@ -556,6 +556,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "Autom
 		AutomatedLab.Ships\AutomatedLab.Ships.psm1 = AutomatedLab.Ships\AutomatedLab.Ships.psm1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\SCCM\DownloadAdk.ps1 = LabSources\CustomRoles\SCCM\DownloadAdk.ps1
+		LabSources\CustomRoles\SCCM\HostStart.ps1 = LabSources\CustomRoles\SCCM\HostStart.ps1
+		LabSources\CustomRoles\SCCM\InstallSCCM.ps1 = LabSources\CustomRoles\SCCM\InstallSCCM.ps1
+		LabSources\CustomRoles\SCCM\README.md = LabSources\CustomRoles\SCCM\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -659,6 +667,7 @@ Global
 		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
