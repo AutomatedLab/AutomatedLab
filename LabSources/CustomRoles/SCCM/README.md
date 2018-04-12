@@ -3,7 +3,7 @@
 ## Defining the role
 
 ``` PowerShell
-$sccmRole = Get-LabPostInstallationActivity -CustomRole  -Properties @{
+$sccmRole = Get-LabPostInstallationActivity -CustomRole SCCM -Properties @{
     SccmSiteCode = "CM1"
     SccmBinariesDirectory = "$labSources\SoftwarePackages\SCCM1702"
     SccmPreReqsDirectory = "$labSources\SoftwarePackages\SCCMPreReqs"
