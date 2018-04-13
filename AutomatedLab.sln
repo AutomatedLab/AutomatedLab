@@ -231,6 +231,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1 = LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1
 		LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
 		LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+		LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1
 		LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1
 		LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1
 		LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1 = LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1
