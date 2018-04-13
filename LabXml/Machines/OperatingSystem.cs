@@ -284,7 +284,7 @@ namespace AutomatedLab
                     case "Windows Server 2016 Datacenter (Desktop Experience)":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
-                    case "Windows Server 2016 Evaluation Standard":
+                    case "Windows Server 2016 Standard Evaluation":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 Standard Evaluation (Desktop Experience)":
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
