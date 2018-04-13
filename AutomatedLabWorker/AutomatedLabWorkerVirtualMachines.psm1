@@ -601,6 +601,8 @@ Windows Registry Editor Version 5.00
             Add-LWVMVHDX -VMName $Machine.Name -VhdxPath $disk.Path
         }
     }
+
+    Write-ProgressIndicatorEnd
             
     Write-LogFunctionExit
     

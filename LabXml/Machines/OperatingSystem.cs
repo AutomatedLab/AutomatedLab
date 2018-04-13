@@ -229,11 +229,22 @@ namespace AutomatedLab
                     //Windows Server 2012 R2 new names
                     case "Windows Server 2012 R2 Standard (Server Core Installation)":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 Standard Evaluation (Server Core Installation)":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+
                     case "Windows Server 2012 R2 Standard (Server with a GUI)":
                         return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                    case "Windows Server 2012 R2 Standard Evaluation (Server with a GUI)":
+                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+
                     case "Windows Server 2012 R2 Datacenter (Server Core Installation)":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                    case "Windows Server 2012 R2 Datacenter Evaluation (Server Core Installation)":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+
                     case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
+                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                    case "Windows Server 2012 R2 Datacenter Evaluation (Server with a GUI)":
                         return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
 
                     //Windows Server 2012 R2 old names
@@ -271,6 +282,16 @@ namespace AutomatedLab
                     case "Windows Server 2016 Datacenter":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
                     case "Windows Server 2016 Datacenter (Desktop Experience)":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    case "Windows Server 2016 Standard Evaluation":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2016 Standard Evaluation (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+
+                    case "Windows Server 2016 Datacenter Evaluation":
+                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+                    case "Windows Server 2016 Datacenter Evaluation (Desktop Experience)":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
 
                     //Windows Server 2016 old names
