@@ -239,22 +239,27 @@ UseProxy=0
 
     Copy-LabFileItem -Path "$($lab.LabPath)\ConfigMgrUnattend.ini" -DestinationFolderPath C:\Install -ComputerName $SccmServerName
     
+    $sccmComputerAccount = '{0}\{1}$' -f
+    $sccmServer.DomainName.Substring(0, $sccmServer.DomainName.IndexOf('.')),
+    $SccmServerName
+    
     Invoke-LabCommand -ActivityName 'Create Folders for SQL DB' -ComputerName $sqlServer -ScriptBlock {
         #SQL Server does not like creating databases without the directories already existing, so make sure to create them first
         New-Item -Path 'C:\CMSQL\SQLDATA' -ItemType Directory -Force | Out-Null
         New-Item -Path 'C:\CMSQL\SQLLOGS' -ItemType Directory -Force | Out-Null
         
-        #TODO: Add-LocalGroupMember -Group Administrators -Member contoso\sccm1$
-        Add-LocalGroupMember -Group Administrators -Member contoso\sccm1$
-    } -NoDisplay
-
-    Invoke-LabCommand -ActivityName 'Install SCCM' -ComputerName $SccmServerName -ScriptBlock {
-        #Install SCCM. This step will take quite some time.
-        C:\Install\SCCM1702\SMSSETUP\BIN\X64\setup.exe /Script "C:\Install\ConfigMgrUnattend.ini" /NoUserInput
-    }
+        if (-not (Get-LocalGroupMember -Group Administrators -Member $sccmComputerAccount -ErrorAction SilentlyContinue))
+        {
+            Add-LocalGroupMember -Group Administrators -Member $sccmComputerAccount
+        }
+    } -Variable (Get-Variable -Name sccmComputerAccount) -NoDisplay
+    
+    Write-ScreenInfo 'Install SCCM. This step will take quite some time...' -NoNewLine
+    $job = Install-LabSoftwarePackage -ComputerName $SccmServerName -LocalPath C:\Install\SCCM1702\SMSSETUP\BIN\X64\setup.exe -CommandLine '/Script "C:\Install\ConfigMgrUnattend.ini" /NoUserInput' -AsJob -PassThru
+    Wait-LWLabJob -Job $job -NoDisplay
 }
 
-
+Write-ScreenInfo ''
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Install-SCCM -SccmServerName $ComputerName -SccmBinariesDirectory $SCCMBinariesDirectory -SccmPreReqsDirectory $SCCMPreReqsDirectory -SccmSiteCode $SCCMSiteCode -SqlServerName $SqlServerName
