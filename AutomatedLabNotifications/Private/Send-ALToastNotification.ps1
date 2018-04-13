@@ -31,12 +31,12 @@ function Send-ALToastNotification
     # Hardcoded toaster from PowerShell - no custom Toast providers after 1709
     $toastProvider = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
     $imageLocation = (Get-Module AutomatedLabNotifications)[0].PrivateData.Toast.Image
-    $imagePath = Join-Path (Get-Module AutomatedLabNotifications)[0].ModuleBase -ChildPath Assets
+    $imagePath = 'C:\ProgramData\AutomatedLab\Assets'
     $imageFilePath = Join-Path $imagePath -ChildPath (Split-Path $imageLocation -Leaf)
 
     if (-not (Test-Path -Path $imagePath))
     {
-        [void] (New-Item -ItemType Directory -Path $imagePath)
+        [void](New-Item -ItemType Directory -Path $imagePath)
     }
 
     if (-not (Test-Path -Path $imageFilePath))
@@ -50,9 +50,9 @@ function Send-ALToastNotification
         $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message, $imageFilePath
 
 
-    [void] ([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
-    [void] ([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
-    [void] ([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
+    [void]([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
+    [void]([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
+    [void]([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
     $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
 
     $xml.LoadXml($template)
