@@ -1587,6 +1587,7 @@
         <File Id="filFAB673E653D046F3ADC67F2DCB2E2FAE" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\HostStart.ps1" />
         <File Id="fil27651624415947528BC5DB9144162BF3" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\README.md" />
         <File Id="fil182CF76CCEC748E9B6A6D4723CFE7623" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadAdk.ps1" />
+        <File Id="fil342BDDCDD4734ECC9B26FD76634CA36D" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadSCCM.ps1" />
         <File Id="fil566509688A384CCDA6EB4A512EBB9BA4" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\InstallSCCM.ps1" />
       </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">

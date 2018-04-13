@@ -559,6 +559,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\SCCM\DownloadAdk.ps1 = LabSources\CustomRoles\SCCM\DownloadAdk.ps1
+		LabSources\CustomRoles\SCCM\DownloadSCCM.ps1 = LabSources\CustomRoles\SCCM\DownloadSCCM.ps1
 		LabSources\CustomRoles\SCCM\HostStart.ps1 = LabSources\CustomRoles\SCCM\HostStart.ps1
 		LabSources\CustomRoles\SCCM\InstallSCCM.ps1 = LabSources\CustomRoles\SCCM\InstallSCCM.ps1
 		LabSources\CustomRoles\SCCM\README.md = LabSources\CustomRoles\SCCM\README.md
