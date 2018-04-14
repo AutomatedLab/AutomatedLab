@@ -47,9 +47,6 @@ $PSDefaultParameterValues = @{
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $postInstallActivity
 
-#the root domain gets a second domain controller
-Add-LabMachineDefinition -Name DDC2 -Roles DC
-
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
