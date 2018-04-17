@@ -345,7 +345,7 @@ function New-LabReleasePipeline
             $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
         }
         
-        $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
+        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 
