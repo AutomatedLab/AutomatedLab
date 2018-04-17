@@ -332,7 +332,7 @@ function New-LabReleasePipeline
         Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
     }
 
-    $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile'
+    $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
 
     if ($gitBinary)
     {
@@ -345,7 +345,7 @@ function New-LabReleasePipeline
             $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
         }
         
-        $repoUrl = $repoUrl -f $credential.UserName, $credential.GetNetworkCredential().Password
+        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 

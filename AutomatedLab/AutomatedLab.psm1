@@ -560,7 +560,7 @@ function Install-Lab
         {
             if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                Write-ScreenInfo "Another lab disk deployment is in progress. Waiting until other disk deployment is finished." -NoNewLine
+                Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
                 do
                 {
                     Write-ScreenInfo -Message . -NoNewLine

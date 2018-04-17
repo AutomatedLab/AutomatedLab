@@ -171,7 +171,7 @@ function Install-LabDscPullServer
     foreach ($machine in $machines)
     {
         #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
-        if ((Get-LabVM -ComputerName dpull1).OperatingSystem.Version -gt '6.3.0.0')
+        if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
         {
             Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
         }

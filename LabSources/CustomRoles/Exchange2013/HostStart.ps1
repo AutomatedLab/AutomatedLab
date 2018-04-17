@@ -7,9 +7,6 @@ param(
 
 function Copy-ExchangeSources
 {
-    Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
-    Start-LabVM -ComputerName $machines -Wait
-    
     Write-ScreenInfo -Message 'Download Exchange 2013 requirements' -TaskStart
     $downloadTargetFolder = "$labSources\SoftwarePackages"
     Write-ScreenInfo -Message "Downloading Exchange 2013 from '$exchangeDownloadLink'"
@@ -26,7 +23,7 @@ function Copy-ExchangeSources
     {
         Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
         Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
-        Copy-LabFileItem -Path $dotnet462InstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+        Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
     }
     Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
 
@@ -35,7 +32,7 @@ function Copy-ExchangeSources
     {
         Write-ScreenInfo "Copying sources to Root DC '$rootDc'" -TaskStart
         Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path $dotnet462InstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $rootDc
+        Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $rootDc
         Write-ScreenInfo 'finished' -TaskEnd
     }
 
@@ -283,6 +280,10 @@ $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 $vm = Get-LabVM -ComputerName $ComputerName
 $rootDc = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $vm.DomainName }
 $machines = (@($vm) + $rootDc)
+
+Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
+Start-LabVM -ComputerName $machines -Wait
+    
 if (-not $OrganizationName)
 {
     $OrganizationName = $lab.Name + 'ExOrg'
