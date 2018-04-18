@@ -107,11 +107,11 @@ function New-LWAzureVM
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
                 
         #get all SQL images matching the RegEx pattern and then get only the latest one
-        $sqlServerImages = $lab.AzureSettings.VmImages
+        $sqlServerImages = $lab.AzureSettings.VmImages | Where-Object Offer -notlike "*BYOL*"
 
         if ([System.Convert]::ToBoolean($Machine.AzureProperties['UseByolImage']))
         {
-            $sqlServerImages = $sqlServerImages | Where-Object Offer -like '*-BYOL'
+            $sqlServerImages = $lab.AzureSettings.VmImages | Where-Object Offer -like '*-BYOL'
         }
 
         $sqlServerImages = $sqlServerImages |
