@@ -305,28 +305,11 @@ function New-LWAzureVM
     $Disks = @{}
     $Machine.Disks | ForEach-Object { $Disks.Add($_.Name, $_.DiskSize) }
 
-    <#$Machine,
-    $Disks,
-    $Machine.NetworkAdapters[0].VirtualSwitch.Name,
-    $roleSize.Name,
-    $vmImageName,
-    $osVhdLocation,
-    $adminUserName,
-    $adminPassword,
-    $machineResourceGroup,
-    $labVirtualNetworkDefinition,
-    $Machine.NetworkAdapters[0].Ipv4Address.IpAddress,
-    $storageContext,
-    $resourceGroupName,
-    $lab.AzureSettings.DefaultLocation.DisplayName,
-    $lab.AzureSettings.AzureProfilePath,
-    $lab.AzureSettings.DefaultSubscription.Name,
-    $lab.Name,
-    $publisherName,
-    $offerName,
-    $skusName,
-    $AzureRetryCount#> `
-        Write-Verbose '-------------------------------------------------------'
+    $Vnet = $Machine.NetworkAdapters[0].VirtualSwitch.Name
+    $Location = $lab.AzureSettings.DefaultLocation.DisplayName
+    $DefaultIpAddress  = $Machine.NetworkAdapters[0].Ipv4Address.IpAddress
+
+    Write-Verbose '-------------------------------------------------------'
     Write-Verbose "Machine: $($Machine.name)"
     Write-Verbose "Vnet: $Vnet"
     Write-Verbose "RoleSize: $RoleSize"
@@ -339,8 +322,6 @@ function New-LWAzureVM
     Write-Verbose "BlobEndpoint: $($StorageContext.BlobEndpoint)"
     Write-Verbose "DefaultIpAddress: $DefaultIpAddress"
     Write-Verbose "Location: $Location"
-    Write-Verbose "Subscription file: $SubscriptionPath"
-    Write-Verbose "Subscription name: $SubscriptionName"
     Write-Verbose "Lab name: $LabName"
     Write-Verbose "Publisher: $PublisherName"
     Write-Verbose "Offer: $OfferName"
@@ -359,8 +340,7 @@ function New-LWAzureVM
         
     Write-Verbose -Message "Calling 'New-AzureVMConfig'"
                                      
-    $securePassword = ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force
-    $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($AdminUserName, $securePassword)
+    $cred = $machine.GetLocalCredential()
 
     $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
     if (-not ($machineAvailabilitySet))
