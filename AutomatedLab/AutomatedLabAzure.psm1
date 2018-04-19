@@ -248,6 +248,10 @@ function Add-LabAzureSubscription
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
+    if ($roleSizes.Count -eq 0)
+    {
+        throw "No available role sizes in region '$DefaultLocationName'! Cannot continue."
+    }
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
 
     # Add LabSources storage
