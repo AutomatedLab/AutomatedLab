@@ -120,12 +120,12 @@ function Install-LabTeamFoundationServer
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine))
+            if (-not (Get-LabAzureLoadBalancedPort -ComputerName $machine))
             {
-                Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+                Add-LWAzureLoadBalancedPort -ComputerName $machine
             }
 
-            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+            $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
         }
 
         if ($role.Properties.ContainsKey('DbServer'))
@@ -308,12 +308,12 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
         }
         $originalPort = $tfsPort
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -487,12 +487,12 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
         }
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -541,12 +541,12 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
         }
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
