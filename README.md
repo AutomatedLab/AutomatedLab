@@ -45,10 +45,13 @@ There are two options installing AutomatedLab:
 This solution supports setting up virtual machines with the following products
 
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016
-- SQL Server 2008, 2008R2, 2012, 2014, 2016
+- SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
 - Visual Studio 2012, 2013, 2015
 - Exchange 2013, Exchange 2016
 - System Center Orchestrator 2012
+- System Center Configuration Manager 1703
+- MDT
+- ProGet (Private PowerShell Gallery)
 - Office 2013, 2016
 - DSC Pull Server
 
