@@ -115,9 +115,9 @@ function New-LWAzureVM
         }
 
         $sqlServerImages = $sqlServerImages |
-        Where-Object Offer -Match $pattern | 
-        Group-Object -Property Sku, Offer | 
-        ForEach-Object {
+            Where-Object Offer -Match $pattern | 
+            Group-Object -Property Sku, Offer | 
+            ForEach-Object {
             $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
         }
 
@@ -136,7 +136,7 @@ function New-LWAzureVM
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
-        Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
+            Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
         $skusName = $vmImage | Select-Object -ExpandProperty Skus
@@ -160,7 +160,7 @@ function New-LWAzureVM
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $visualStudioImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -EQ VisualStudio
+            Where-Object Offer -EQ VisualStudio
 
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($visualStudioImage in $visualStudioImages)
@@ -176,7 +176,7 @@ function New-LWAzureVM
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version.Major -eq $machineOs.Version.Major } |
-        Sort-Object -Property Update -Descending | Select-Object -First 1
+            Sort-Object -Property Update -Descending | Select-Object -First 1
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
         $skusName = $vmImage | Select-Object -ExpandProperty Skus
@@ -201,10 +201,10 @@ function New-LWAzureVM
         $sharePointRoleName -match '\w+(?<Version>\d{4})'
         
         $sharePointImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -Match 'MicrosoftSharePoint' |
-        Sort-Object -Property PublishedDate -Descending |
-        Where-Object Skus -eq $Matches.Version |
-        Select-Object -First 1
+            Where-Object Offer -Match 'MicrosoftSharePoint' |
+            Sort-Object -Property PublishedDate -Descending |
+            Where-Object Skus -eq $Matches.Version |
+            Select-Object -First 1
 
         # Add the SP version
         foreach ($sharePointImage in $sharePointImages)
@@ -218,7 +218,7 @@ function New-LWAzureVM
         
         #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
         $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-        Sort-Object -Property Update -Descending | Select-Object -First 1
+            Sort-Object -Property Update -Descending | Select-Object -First 1
 
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
@@ -244,8 +244,8 @@ function New-LWAzureVM
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName  |
-        Select-Object -First 1
+            Where-Object Skus -eq $vmImageName  |
+            Select-Object -First 1
 
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
@@ -258,16 +258,16 @@ function New-LWAzureVM
     if ($machine.AzureProperties.RoleSize)
     {
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
+            Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
         Write-Verbose -Message "Using specified role size of '$($roleSize.Name)'"
     }
     elseif ($machine.AzureProperties.UseAllRoleSizes)
     {
         $DefaultAzureRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
-        Sort-Object -Property MemoryInMB, NumberOfCores |
-        Select-Object -First 1
+            Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
+            Sort-Object -Property MemoryInMB, NumberOfCores |
+            Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
     }
@@ -284,10 +284,10 @@ function New-LWAzureVM
         }
         
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
-        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
-        Select-Object -First 1
+            Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
+            Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
+            Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
+            Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
@@ -305,7 +305,7 @@ function New-LWAzureVM
     $Disks = @{}
     $Machine.Disks | ForEach-Object { $Disks.Add($_.Name, $_.DiskSize) }
 
-    Start-Job -Name "CreateAzureVM ($machineResourceGroup) ($Machine)" -ArgumentList $Machine,
+    <#$Machine,
     $Disks,
     $Machine.NetworkAdapters[0].VirtualSwitch.Name,
     $roleSize.Name,
@@ -325,206 +325,157 @@ function New-LWAzureVM
     $publisherName,
     $offerName,
     $skusName,
-    $AzureRetryCount `
-    -ScriptBlock {
-        param
-        (
-            [object]$Machine, #AutomatedLab.Machine
-            [object]$Disks,
-            [string]$Vnet,
-            [string]$RoleSize,
-            [string]$VmImageName,
-            [string]$OsVhdLocation,
-            [string]$AdminUserName,
-            [string]$AdminPassword,
-            [string]$MachineResourceGroup,
-            [object[]]$LabVirtualNetworkDefinition, #AutomatedLab.VirtualNetwork[]
-            [object]$DefaultIpAddress, #AutomatedLab.IPAddress
-            [object]$StorageContext,
-            [string]$ResourceGroupName,
-            [string]$Location,
-            [string]$SubscriptionPath,
-            [string]$SubscriptionName,
-            [string]$LabName,
-            [string]$PublisherName,
-            [string]$OfferName,
-            [string]$SkusName,
-            [int]$AzureRetryCount
-        )
-
-        $i = 0
-        $vmCreated = $false
-
-        while (-not $vmCreated -and $i -le $AzureRetryCount)
-        {
-            $i++
-            try
-            {
-                $VerbosePreference = 'Continue'
+    $AzureRetryCount#> `
+        Write-Verbose '-------------------------------------------------------'
+    Write-Verbose "Machine: $($Machine.name)"
+    Write-Verbose "Vnet: $Vnet"
+    Write-Verbose "RoleSize: $RoleSize"
+    Write-Verbose "VmImageName: $VmImageName"
+    Write-Verbose "OsVhdLocation: $OsVhdLocation"
+    Write-Verbose "AdminUserName: $AdminUserName"
+    Write-Verbose "AdminPassword: $AdminPassword"
+    Write-Verbose "ResourceGroupName: $ResourceGroupName"
+    Write-Verbose "StorageAccountName: $($StorageContext.StorageAccountName)"
+    Write-Verbose "BlobEndpoint: $($StorageContext.BlobEndpoint)"
+    Write-Verbose "DefaultIpAddress: $DefaultIpAddress"
+    Write-Verbose "Location: $Location"
+    Write-Verbose "Subscription file: $SubscriptionPath"
+    Write-Verbose "Subscription name: $SubscriptionName"
+    Write-Verbose "Lab name: $LabName"
+    Write-Verbose "Publisher: $PublisherName"
+    Write-Verbose "Offer: $OfferName"
+    Write-Verbose "Skus: $SkusName"
+    Write-Verbose '-------------------------------------------------------'
+    
+    $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
+        Get-AzureRmVirtualNetworkSubnetConfig |
+        Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
         
-                Write-Verbose '-------------------------------------------------------'
-                Write-Verbose "Machine: $($Machine.name)"
-                Write-Verbose "Vnet: $Vnet"
-                Write-Verbose "RoleSize: $RoleSize"
-                Write-Verbose "VmImageName: $VmImageName"
-                Write-Verbose "OsVhdLocation: $OsVhdLocation"
-                Write-Verbose "AdminUserName: $AdminUserName"
-                Write-Verbose "AdminPassword: $AdminPassword"
-                Write-Verbose "ResourceGroupName: $ResourceGroupName"
-                Write-Verbose "StorageAccountName: $($StorageContext.StorageAccountName)"
-                Write-Verbose "BlobEndpoint: $($StorageContext.BlobEndpoint)"
-                Write-Verbose "DefaultIpAddress: $DefaultIpAddress"
-                Write-Verbose "Location: $Location"
-                Write-Verbose "Subscription file: $SubscriptionPath"
-                Write-Verbose "Subscription name: $SubscriptionName"
-                Write-Verbose "Lab name: $LabName"
-                Write-Verbose "Publisher: $PublisherName"
-                Write-Verbose "Offer: $OfferName"
-                Write-Verbose "Skus: $SkusName"
-                Write-Verbose '-------------------------------------------------------'
-                
-                [void] (Import-AzureRmContext -Path $SubscriptionPath -ErrorAction Stop)
-                [void] (Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
+    if (-not $subnet)
+    {
+        throw 'No subnet configuration found to fit machine in! Review the IP address of your machine and your lab virtual network.'
+    }
+    Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
         
-                $VerbosePreference = 'Continue'
-
-                $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
-                Get-AzureRmVirtualNetworkSubnetConfig |
-                Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
-        
-                if (-not $subnet)
-                {
-                    throw 'No subnet configuration found to fit machine in! Review the IP address of your machine and your lab virtual network.'
-                }
-                Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
-        
-                Write-Verbose -Message "Calling 'New-AzureVMConfig'"
+    Write-Verbose -Message "Calling 'New-AzureVMConfig'"
                                      
-                $securePassword = ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force
-                $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($AdminUserName, $securePassword)
+    $securePassword = ConvertTo-SecureString -String $AdminPassword -AsPlainText -Force
+    $cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($AdminUserName, $securePassword)
 
-                $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
-                if (-not ($machineAvailabilitySet))
-                {
-                    $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
-                }
+    $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
+    if (-not ($machineAvailabilitySet))
+    {
+        $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
+    }
 
-                $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $machineAvailabilitySet.Id
-                $vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
+    $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $machineAvailabilitySet.Id
+    $vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
                            
-                Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
-                $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
+    Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
+    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
 
-                Write-Verbose -Message "Setting private IP address."
-                $defaultIPv4Address = $DefaultIpAddress
+    Write-Verbose -Message "Setting private IP address."
+    $defaultIPv4Address = $DefaultIpAddress
 
-                Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
+    Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
 
-                Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
-                $LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
+    Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
+    $LoadBalancer = Get-AzureRmLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop		
         
-                $inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
-                $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
-                $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
+    $inboundNatRules = @(Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
+    $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
+    $inboundNatRules += Get-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
 
-                $nicProperties = @{
-                    Name                           = "$($Machine.Name.ToLower())nic0"
-                    ResourceGroupName              = $ResourceGroupName
-                    Location                       = $Location
-                    Subnet                         = $subnet
-                    PrivateIpAddress               = $defaultIPv4Address
-                    LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
-                    LoadBalancerInboundNatRule     = $inboundNatRules
-                    ErrorAction                    = "Stop"
-                    Force                          = $true
-                }
+    $nicProperties = @{
+        Name                           = "$($Machine.Name.ToLower())nic0"
+        ResourceGroupName              = $ResourceGroupName
+        Location                       = $Location
+        Subnet                         = $subnet
+        PrivateIpAddress               = $defaultIPv4Address
+        LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
+        LoadBalancerInboundNatRule     = $inboundNatRules
+        ErrorAction                    = "Stop"
+        Force                          = $true
+    }
         
-                Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
-                $networkInterface = New-AzureRmNetworkInterface @nicProperties
+    Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
+    $networkInterface = New-AzureRmNetworkInterface @nicProperties
         
-                Write-Verbose -Message 'Adding NIC to VM'
-                $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
+    Write-Verbose -Message 'Adding NIC to VM'
+    $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
         
                                    
-                $DiskName = "$($machine.Name)_os"
-                $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
+    $DiskName = "$($machine.Name)_os"
+    $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
         
-                Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
-                $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop
+    Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
+    $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop
 
-                if ($Disks)
-                {
-                    Write-Verbose "Adding $($Disks.Count) data disks"
-                    $lun = 0
+    if ($Disks)
+    {
+        Write-Verbose "Adding $($Disks.Count) data disks"
+        $lun = 0
         
-                    foreach ($Disk in $Disks.GetEnumerator())
-                    {
-                        $DataDiskName = $Disk.Key.ToLower()
-                        $DiskSize = $Disk.Value
-                        $VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
-
-                        Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
-                        $vm = $vm | Add-AzureRmVMDataDisk -Name $DataDiskName -VhdUri $VhdUri -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty				
-                        $lun++
-                    }
-                }
-           
-                Write-ProgressIndicator        
-
-                #Add any additional NICs to the VM configuration
-                if ($Machine.NetworkAdapters.Count -gt 1)
-                {
-                    Write-Verbose -Message "Adding $($Machine.NetworkAdapters.Count) additional NICs to the VM config"
-                    foreach ($adapter in ($Machine.NetworkAdapters | Where-Object Ipv4Address -ne $defaultIPv4Address))
-                    {
-                        if ($adapter.Ipv4Address.ToString() -ne $defaultIPv4Address)
-                        {
-                            $adapterStartAddress = Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix) | Select-Object -First 1
-                            $additionalSubnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
-                            Get-AzureRmVirtualNetworkSubnetConfig
-        
-                            Write-Verbose -Message "adapterStartAddress = '$adapterStartAddress'"
-                            $vNet = $LabVirtualNetworkDefinition | Where-Object { $_.AddressSpace.AddressAsString -eq $adapterStartAddress }
-                            if ($vNet)
-                            {
-                                Write-Verbose -Message "Adding additional network adapter with Vnet '$($vNet.Name)' in subnet '$adapterStartAddress' with IP address '$($adapter.Ipv4Address.AddressAsString)'"
-                                $additionalNicParameters = @{
-                                    Name              = ($adapter.Ipv4Address.AddressAsString)
-                                    ResourceGroupName = $ResourceGroupName
-                                    Location          = $Location
-                                    Subnet            = $additionalSubnet
-                                    PrivateIpAddress  = ($adapter.Ipv4Address.AddressAsString)
-                                    Force             = $true
-                                }
-
-                                $networkInterface = New-AzureRmNetworkInterface @additionalNicParameters        
-                                $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
-                            }
-                            else
-                            {
-                                throw "Vnet could not be determined for network adapter with IP address of '$(Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix)))'"
-                            }
-                        }
-                    }
-                }
-
-                Write-Verbose -Message 'Calling New-AzureRMVm'
-            
-                New-AzureRmVM -ResourceGroupName $ResourceGroupName -Location $Location -VM $vm -Tags @{ AutomatedLab = $script:lab.Name; CreationTime = Get-Date } -ErrorAction Stop -ErrorVariable vmErrors
-                $vmCreated = $true
-            }
-            catch
-            {
-                $vmCreated = $false
-            }
-        }
-
-        if (-not $vmCreated)
+        foreach ($Disk in $Disks.GetEnumerator())
         {
-            throw ("One or more errors occured during VM creation.`r`n{0}" -f ($vmErrors -join '`r`n'))
+            $DataDiskName = $Disk.Key.ToLower()
+            $DiskSize = $Disk.Value
+            $VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
+
+            Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
+            $vm = $vm | Add-AzureRmVMDataDisk -Name $DataDiskName -VhdUri $VhdUri -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty				
+            $lun++
+        }
+    }
+           
+    Write-ProgressIndicator        
+
+    #Add any additional NICs to the VM configuration
+    if ($Machine.NetworkAdapters.Count -gt 1)
+    {
+        Write-Verbose -Message "Adding $($Machine.NetworkAdapters.Count) additional NICs to the VM config"
+        foreach ($adapter in ($Machine.NetworkAdapters | Where-Object Ipv4Address -ne $defaultIPv4Address))
+        {
+            if ($adapter.Ipv4Address.ToString() -eq $defaultIPv4Address) {continue}
+
+            $adapterStartAddress = Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix) | Select-Object -First 1
+            $additionalSubnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
+                Get-AzureRmVirtualNetworkSubnetConfig
+        
+            Write-Verbose -Message "adapterStartAddress = '$adapterStartAddress'"
+            $vNet = $LabVirtualNetworkDefinition | Where-Object { $_.AddressSpace.AddressAsString -eq $adapterStartAddress }
+            if (-not $vNet)
+            {
+                Write-Error -Message "Vnet could not be determined for network adapter with IP address of '$(Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix)))'"
+            }
+            
+            Write-Verbose -Message "Adding additional network adapter with Vnet '$($vNet.Name)' in subnet '$adapterStartAddress' with IP address '$($adapter.Ipv4Address.AddressAsString)'"
+            $additionalNicParameters = @{
+                Name              = ($adapter.Ipv4Address.AddressAsString)
+                ResourceGroupName = $ResourceGroupName
+                Location          = $Location
+                Subnet            = $additionalSubnet
+                PrivateIpAddress  = ($adapter.Ipv4Address.AddressAsString)
+                Force             = $true
+            }
+
+            $networkInterface = New-AzureRmNetworkInterface @additionalNicParameters        
+            $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop           
         }
     }
 
+    Write-Verbose -Message 'Calling New-AzureRMVm'
+            
+    $vmParameters = @{
+        ResourceGroupName = $ResourceGroupName
+        Location          = $Location
+        VM                = $vm
+        Tag               = @{ AutomatedLab = $script:lab.Name; CreationTime = Get-Date }
+        ErrorAction       = 'Stop'
+        AsJob             = $true
+    }
+
+    New-AzureRmVM @vmParameters
     Write-LogFunctionExit
 }
 #endregion New-LWAzureVM
@@ -662,9 +613,9 @@ function Initialize-LWAzureVM
                 if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) GB')
                 {
                     $nextDriveLetter = [char[]](67..90) | 
-                    Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
-                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
-                    Select-Object -First 1
+                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+                                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+                        Select-Object -First 1
 
                     $diskNumber = $Matches.DiskNumber
 
@@ -1031,7 +982,7 @@ function Stop-LWAzureVM
                     {
                         ($_.Name -split "_")[1]
                     }
-            }) -join ", "
+                }) -join ", "
             
             Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
         }
@@ -1207,7 +1158,7 @@ function Get-LWAzureVMConnectionInfo
     if (-not $lab)
     {
         Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f `
-        ($ComputerName.Name -join ','))
+            ($ComputerName.Name -join ','))
     }
 
     if (-not (Get-AzureRmContext).Subscription)
@@ -1294,7 +1245,7 @@ function Enable-LWAzureVMRemoting
         try
         {
             Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay `
-            -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
+                -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
         }
         catch
         {
@@ -1412,9 +1363,9 @@ catch
             while (-not $vmExtension.IsSuccessStatusCode -and $i -le $AzureRetryCount)
             {
                 $vmExtension = Set-AzureRmVMCustomScriptExtension -VMName $MachineName -ContainerName 'labsources' `
-                -FileName 'Enable-WinRm.ps1' -StorageAccountName $StorageAccountName `
-                -StorageAccountKey $StorageAccountKey -Run Enable-WinRm.ps1 `
-                -ResourceGroupName $ResourceGroup -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
+                    -FileName 'Enable-WinRm.ps1' -StorageAccountName $StorageAccountName `
+                    -StorageAccountKey $StorageAccountKey -Run Enable-WinRm.ps1 `
+                    -ResourceGroupName $ResourceGroup -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
                 $i++
                 Start-Sleep -Seconds 1
             }
