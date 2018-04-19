@@ -340,7 +340,7 @@ function New-LWAzureVM
         
     Write-Verbose -Message "Calling 'New-AzureVMConfig'"
                                      
-    $cred = $machine.GetLocalCredential()
+    $cred = $machine.InstallationUser
 
     $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
     if (-not ($machineAvailabilitySet))
