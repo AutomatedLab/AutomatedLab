@@ -219,6 +219,15 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureRmResourceGroup]::Create($resourceGroups)
     Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
+    # Pre-seed availability groups to use later
+    foreach ($vnet in $script:lab.VirtualNetworks.Name)
+    {
+        # Ignore errors, only available size reporting will be wrong
+        if (Get-AzureRmAvailabilitySet -ResourceGroupName $DefaultResourceGroupName -Name $vnet -ErrorAction SilentlyContinue) { continue }
+
+        [void] (New-AzureRmAvailabilitySet -ResourceGroupName $DefaultResourceGroupName -Name $vnet -Location $DefaultLocationName -ErrorAction SilentlyContinue)
+    }
+
     $storageAccounts = Get-AzureRmStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
     foreach ($storageAccount in $storageAccounts)
     {
@@ -237,7 +246,12 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
-        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName
+        $roleSizes = foreach ($vnet in $script:lab.VirtualNetworks.Name)
+        {
+            # Ignore errors, only available size reporting will be wrong
+            Get-AzureRmVmSize -AvailabilitySetName $vnet -ResourceGroupName $DefaultResourceGroupName
+        }
+
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
