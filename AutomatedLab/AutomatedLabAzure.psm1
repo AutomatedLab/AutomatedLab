@@ -237,11 +237,21 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
-        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName
+        $azLocation = Get-AzureRmLocation | Where-Object -Property DisplayName -eq $DefaultLocationName
+        
+        $availableRoleSizes = Get-AzureRmComputeResourceSku | Where-Object {
+            $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        } | Select-Object -ExpandProperty Name
+
+        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName | Where-Object -Property Name -in $availableRoleSizes
+
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
-
+    if ($roleSizes.Count -eq 0)
+    {
+        throw "No available role sizes in region '$DefaultLocationName'! Cannot continue."
+    }
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
 
     # Add LabSources storage
