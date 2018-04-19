@@ -300,7 +300,7 @@ function Add-LWAzureLoadBalancedPort
 {
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter()]
         [int]
         $Port,
 
@@ -331,6 +331,11 @@ function Add-LWAzureLoadBalancedPort
 
     $lab.AzureSettings.LoadBalancerPortCounter++
     $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+    
+    if (-not $Port)
+    {
+        $Port = $remotePort
+    }
     $lb = Add-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())$Port" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $remotePort -BackendPort $Port
     $lb = $lb | Set-AzureRmLoadBalancer
 
