@@ -88,7 +88,7 @@ function Add-LabAzureSubscription
         if (-not $context.Subscription)
         {
             Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-            $null = Login-AzureRmAccount -ErrorAction Stop
+            $null = Connect-AzureRmAccount -ErrorAction Stop
         }
         
         $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
@@ -117,7 +117,7 @@ function Add-LabAzureSubscription
         $context = Get-AzureRmContext -ErrorAction SilentlyContinue
         if (-not $context)
         {
-            throw 'Your Azure Resource Manager profile has expired. Please use Login-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
+            throw 'Your Azure Resource Manager profile has expired. Please use Connect-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
         }
     }
     catch
@@ -160,7 +160,7 @@ function Add-LabAzureSubscription
     }
     catch
     {
-        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Login-AzureRmAccount and Save-AzureRmContext."
+        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Connect-AzureRmAccount and Save-AzureRmContext."
     }
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
@@ -237,14 +237,7 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
-        $azLocation = Get-AzureRmLocation | Where-Object -Property DisplayName -eq $DefaultLocationName
-        
-        $availableRoleSizes = Get-AzureRmComputeResourceSku | Where-Object {
-            $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
-        } | Select-Object -ExpandProperty Name
-
-        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName | Where-Object -Property Name -in $availableRoleSizes
-
+        $roleSizes = Get-LabAzureAvailableRoleSize -Location $DefaultLocationName
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
@@ -329,61 +322,61 @@ function Add-LabAzureSubscription
         
         # Server
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Desktop
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # SQL
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Skus -eq 'Enterprise' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Where-Object Skus -eq 'Enterprise' |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
         # VisualStudio
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'VisualStudio' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Where-Object Offer -eq 'VisualStudio' |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Client OS
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'Windows' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Where-Object Offer -eq 'Windows' |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Sharepoint 2013 and 2016
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'MicrosoftSharePointServer' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+            Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+            Get-AzureRmVMImageOffer |
+            Get-AzureRmVMImageSku |
+            Get-AzureRmVMImage |
+            Where-Object Offer -eq 'MicrosoftSharePointServer' |
+            Group-Object -Property Skus, Offer |
+            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         $global:cacheVmImages = $vmImages
     }
@@ -1312,8 +1305,8 @@ function Get-LabAzureLabSourcesContent
     }
 
     $content = $content |
-    Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
-    Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
+        Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
+        Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
         
     return $content
 }
@@ -1357,6 +1350,34 @@ function Test-LabAzureSubscription
     }
     catch
     {
-        throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Import-AzureRmContext ' first"
+        throw "No Azure Context found, Please run 'Connect-AzureRmAccount' or 'Import-AzureRmContext ' first"
     }
+}
+
+function Get-LabAzureAvailableRoleSize
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        $Location,
+
+        $Path
+    )
+
+    if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue) -and $Path)
+    {
+        [void] (Import-AzureRmContext -Path $Path)
+    }
+    elseif (-not (Get-AzureRmContext -ErrorAction SilentlyContinue))
+    {
+        [void] (Connect-AzureRmAccount)
+    }
+
+    $azLocation = Get-AzureRmLocation | Where-Object -Property DisplayName -eq $Location
+
+    $availableRoleSizes = Get-AzureRmComputeResourceSku | Where-Object {
+        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+    } | Select-Object -ExpandProperty Name
+
+    Get-AzureRmVmSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
 }
