@@ -11,6 +11,8 @@ function Send-ALToastNotification
         $Message
     )
     
+    $isFullGui = $true # Client
+
     if (Get-Item 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -ErrorAction SilentlyContinue)
     {
         [bool]$core = [int](Get-ItemProperty 'HKLM:\software\Microsoft\Windows NT\CurrentVersion\Server\ServerLevels' -Name ServerCore -ErrorAction SilentlyContinue).ServerCore
@@ -21,24 +23,39 @@ function Send-ALToastNotification
     }    
 
     if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
-	{
+    {
         Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Core'
         return
     }
     
-    $toastProvider = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Toast.Provider
+    # Hardcoded toaster from PowerShell - no custom Toast providers after 1709
+    $toastProvider = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
+    $imageLocation = (Get-Module AutomatedLabNotifications)[0].PrivateData.Toast.Image
+    $imagePath = 'C:\ProgramData\AutomatedLab\Assets'
+    $imageFilePath = Join-Path $imagePath -ChildPath (Split-Path $imageLocation -Leaf)
+
+    if (-not (Test-Path -Path $imagePath))
+    {
+        [void](New-Item -ItemType Directory -Path $imagePath)
+    }
+
+    if (-not (Test-Path -Path $imageFilePath))
+    {
+        $file = Get-LabInternetFile -Uri $imageLocation -Path $imagePath -PassThru
+    }
+
     $lab = Get-Lab
+    
+    $template = "<?xml version=`"1.0`" encoding=`"utf-8`"?><toast><visual><binding template=`"ToastGeneric`"><text>{2}</text><text>Deployment of {0} on {1}, current status '{2}'. Message {3}.</text><image src=`"{4}`" placement=`"appLogoOverride`" hint-crop=`"circle`" /></binding></visual></toast>" -f `
+        $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message, $imageFilePath
 
-    $template = "<toast><visual><binding template=`"ToastText02`"><text id=`"1`">$toastProvider</text><text id=`"2`">Deployment of {0} on {1}, current status '{2}'. Message {3}.</text></binding></visual></toast>" -f `
-        $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message
 
-
-    [void] ([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
-    [void] ([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
-    [void] ([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
+    [void]([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
+    [void]([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
+    [void]([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
     $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
 
     $xml.LoadXml($template)
     $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
-    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier("$toastProvider").Show($toast)
+    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastProvider).Show($toast)
 }

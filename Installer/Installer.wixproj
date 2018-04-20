@@ -18,7 +18,7 @@
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
     <IntermediateOutputPath>obj\$(Configuration)\</IntermediateOutputPath>
-    <DefineConstants>Debug</DefineConstants>
+    <DefineConstants>Debug;</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\$(Configuration)\</OutputPath>
@@ -31,6 +31,7 @@
     <Folder Include="Resources" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Includes.wxi" />
     <Content Include="Resources\AutomatedLab.ico" />
     <Content Include="Resources\Banner.bmp" />
     <Content Include="Resources\Complete.ico" />
@@ -60,9 +61,25 @@
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" />
   <PropertyGroup>
-    <PreBuildEvent>git submodule -q update --init --recursive
-cd $(SolutionDir)AutomatedLab.Common\
-git pull origin master</PreBuildEvent>
+    <PostBuildEvent>echo Restoring AutomatedLab.Common.psd1
+del $(SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1
+ren $(SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original AutomatedLab.Common.psd1
+
+echo Restoring Includes.wxi
+del $(SolutionDir)Installer\Includes.wxi
+ren $(SolutionDir)Installer\Includes.wxi.original Includes.wxi</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>cd $(SolutionDir)AutomatedLab.Common\
+git reset --hard
+git submodule -q update --init --recursive
+git pull origin master
+
+echo Creating backup of file AutomatedLab.Common.psd1
+copy $(SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1 $(SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original
+echo Creating backup of file Includes.wxi
+copy $(SolutionDir)Installer\Includes.wxi $(SolutionDir)Installer\Includes.wxi.original
+PowerShell -NoProfile -ExecutionPolicy unrestricted -Command "&amp; { $sb = [scriptblock]::Create([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String(%27DQAKACQAdgBlAHIAcwBpAG8AbgAgAD0AIAAoAEYAaQBuAGQALQBNAG8AZAB1AGwAZQAgAC0ATgBhAG0AZQAgAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAC4AQwBvAG0AbQBvAG4AIAAtAEUAcgByAG8AcgBBAGMAdABpAG8AbgAgAFMAaQBsAGUAbgB0AGwAeQBDAG8AbgB0AGkAbgB1AGUAKQAuAFYAZQByAHMAaQBvAG4AOwANAAoAaQBmACAAKAAtAG4AbwB0ACAAJAB2AGUAcgBzAGkAbwBuACkADQAKAHsADQAKACAAIAAgACAAJAB2AGUAcgBzAGkAbwBuACAAPQAgACgAUwBlAGwAZQBjAHQALQBTAHQAcgBpAG4AZwAgAC0AUABhAHQAaAAgAC4AXABBAHUAdABvAG0AYQB0AGUAZABMAGEAYgAuAEMAbwBtAG0AbwBuAFwAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgAuAHAAcwBkADEAIAAtAFAAYQB0AHQAZQByAG4AIAAiACgATQBvAGQAdQBsAGUAVgBlAHIAcwBpAG8AbgAoAFsAIAA9AF0AKwApACkAKAAnACkAKAA/ADwAVgBlAHIAcwBpAG8AbgA+AFwAZAB7ADEALAAyAH0AXAAuAFwAZAB7ADEALAAyAH0AXAAuAFwAZAB7ADEALAAyAH0AKQAiACkALgBNAGEAdABjAGgAZQBzAFsAMABdAC4ARwByAG8AdQBwAHMAWwAiAFYAZQByAHMAaQBvAG4AIgBdAC4AVgBhAGwAdQBlAA0ACgB9AA0ACgBXAHIAaQB0AGUALQBIAG8AcwB0ACAAIgBWAGUAcgBzAGkAbwBuACAAbwBmACAAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgAgAGkAcwAgACcAJAB2AGUAcgBzAGkAbwBuACcAIgANAAoAKAAnADwAPwB4AG0AbAAgAHYAZQByAHMAaQBvAG4APQAiADEALgAwACIAIABlAG4AYwBvAGQAaQBuAGcAPQAiAHUAdABmAC0AOAAiAD8APgA8AEkAbgBjAGwAdQBkAGUAIABJAGQAPQAiAFYAZQByAHMAaQBvAG4ATgB1AG0AYgBlAHIASQBuAGMAbAB1AGQAZQAiAD4APAA/AGQAZQBmAGkAbgBlACAAQQB1AHQAbwBtAGEAdABlAGQATABhAGIAQwBvAG0AbQBvAG4AVgBlAHIAcwBpAG8AbgA9ACIAewAwAH0AIgAgAD8APgA8AC8ASQBuAGMAbAB1AGQAZQA+ACcAIAAtAGYAIAAkAHYAZQByAHMAaQBvAG4AKQAgAHwAIABPAHUAdAAtAEYAaQBsAGUAIAAtAEYAaQBsAGUAUABhAHQAaAAgAC4ALgBcAEkAbgBzAHQAYQBsAGwAZQByAFwASQBuAGMAbAB1AGQAZQBzAC4AdwB4AGkAIAAtAEUAbgBjAG8AZABpAG4AZwAgAFUAVABGADgAOwANAAoAKABHAGUAdAAtAEMAbwBuAHQAZQBuAHQAIAAtAFAAYQB0AGgAIAAuAFwAQQB1AHQAbwBtAGEAdABlAGQATABhAGIALgBDAG8AbQBtAG8AbgBcAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAC4AQwBvAG0AbQBvAG4ALgBwAHMAZAAxACAALQBSAGEAdwApACAALQByAGUAcABsAGEAYwBlACAAIgAoAE0AbwBkAHUAbABlAFYAZQByAHMAaQBvAG4AKABbACAAPQBdACsAKQApACgAJwApACgAPwA8AFYAZQByAHMAaQBvAG4APgBcAGQAewAxACwAMgB9AFwALgBcAGQAewAxACwAMgB9AFwALgBcAGQAewAxACwAMgB9ACkAIgAsACAAIgBgACQAMQAnACQAdgBlAHIAcwBpAG8AbgAiACAAfAAgAE8AdQB0AC0ARgBpAGwAZQAgAC0ARgBpAGwAZQBQAGEAdABoACAALgBcAEEAdQB0AG8AbQBhAHQAZQBkAEwAYQBiAC4AQwBvAG0AbQBvAG4AXABBAHUAdABvAG0AYQB0AGUAZABMAGEAYgAuAEMAbwBtAG0AbwBuAC4AcABzAGQAMQANAAoA%27)))%3b &amp;$sb }"</PreBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.

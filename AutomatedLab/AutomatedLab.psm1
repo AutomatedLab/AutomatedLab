@@ -32,7 +32,7 @@ function Enable-LabHostRemoting
     
     if (-not ($trustedHostsList -contains '*'))
     {
-        Write-Warning -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'"
+        Write-ScreenInfo -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'" -Type Warning
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
@@ -44,7 +44,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFresh', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1', 'WSMAN/*') | Out-Null
@@ -57,7 +57,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', 'TERMSRV/*') | Out-Null
@@ -70,7 +70,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'WSMAN/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFreshNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1', 'WSMAN/*') | Out-Null
@@ -83,7 +83,7 @@ function Enable-LabHostRemoting
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
-        Write-Warning 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' -Type Warning
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentialsWhenNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSavedNTLMOnly', 1) | Out-Null
         [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', 'TERMSRV/*') | Out-Null
@@ -102,9 +102,9 @@ function Import-Lab
 {
     #.ExternalHelp AutomatedLab.help.xml
     
-    [CmdletBinding(DefaultParameterSetName = 'ByPath')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
-        [Parameter(Mandatory, ParameterSetName = 'ByPath')]
+        [Parameter(Mandatory, ParameterSetName = 'ByPath', Position = 1)]
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
@@ -115,7 +115,9 @@ function Import-Lab
         
         [switch]$PassThru,
         
-        [switch]$NoValidation
+        [switch]$NoValidation,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -126,7 +128,7 @@ function Import-Lab
     {
         if ($Name)
         {
-            $Path = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $Name
+            $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
         }
 
         if (Test-Path -Path $Path -PathType Container)
@@ -164,8 +166,8 @@ function Import-Lab
     
         if ((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Force).Value -ne '*')
         {
-            Write-Warning 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements'
-            Write-Warning 'After installing the lab you should undo the changes for security reasons'
+            Write-ScreenInfo 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements' -Type Warning
+            Write-ScreenInfo 'After installing the lab you should undo the changes for security reasons' -Type Warning
             throw "TrustedHosts need to be set to '*' in order to be able to connect to the new VMs. Please run the cmdlet 'Set-LabHostRemoting' to make the required changes."
         }
     
@@ -289,7 +291,7 @@ function Import-Lab
         }
         catch
         {
-            Write-Warning "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)"
+            Write-ScreenInfo "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)" -Type Warning
         }
     
         if($Script:data.AzureSettings.AzureProfilePath -and (Test-Path -Path $Script:data.AzureSettings.AzureProfilePath))
@@ -384,7 +386,7 @@ function Get-Lab
     
     if ($List)
     {
-        $labsPath = '{0}\AutomatedLab-Labs' -f [System.Environment]::GetFolderPath('MyDocuments')
+        $labsPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
         
         foreach ($path in Get-ChildItem -Path $labsPath -Directory)
         {
@@ -447,8 +449,6 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Exchange2013,
-        [switch]$Exchange2016,
         [switch]$Sharepoint2013,
         [switch]$CA,
         [switch]$ADFS,
@@ -466,6 +466,8 @@ function Install-Lab
     )
     
     Write-LogFunctionEntry
+
+    $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
@@ -493,12 +495,20 @@ function Install-Lab
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
     }
+
+    try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabStarted((Get-Lab).Export(), (Get-Module AutomatedLab)[-1].Version, $PSVersionTable.BuildVersion, $PSVersionTable.PSVersion)
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
     
     Unblock-LabSources
-    
-    $Global:AL_DeploymentStart = Get-Date
 
-    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabMachine).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
     
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
@@ -516,50 +526,90 @@ function Install-Lab
     
     if (($BaseImages -or $performAll) -and (Get-LabVM -All | Where-Object HostType -eq 'HyperV'))
     {
-        Write-ScreenInfo -Message 'Creating base images' -TaskStart
-        
-        New-LabBaseImages
+        try
+        {
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
+            {
+                Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+                Write-ScreenInfo 'Waiting until other disk deployment is finished.' -NoNewLine
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+            }
+            Write-ScreenInfo 'done'
 
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+            Write-ScreenInfo -Message 'Creating base images' -TaskStart
+
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            
+            New-LabBaseImages        
+
+            Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
     
     if ($VMs -or $performAll)
     {
-        Write-ScreenInfo -Message 'Creating VMs' -TaskStart
-
-        if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+        try
         {
-            New-LabVHDX
-        }
-
-        #add a hosts entry for each lab machine
-        $hostFileAddedEntries = 0
-        foreach ($machine in $Script:data.Machines)
-        {
-            if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
+            if (Test-Path -Path $labDiskDeploymentInProgressPath)
             {
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
-                $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+                do
+                {
+                    Write-ScreenInfo -Message . -NoNewLine
+                    Start-Sleep -Seconds 15
+                } while (Test-Path -Path $labDiskDeploymentInProgressPath)
             }
-        }
-    
-        if ($hostFileAddedEntries)
-        {
-            Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
-        }
-        
-        if ($script:data.Machines)
-        {
-            New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
-        }
+            Write-ScreenInfo 'done'
 
-        #VMs created, export lab definition again to update MAC addresses
-        Set-LabDefinition -Machines $Script:data.Machines
-        Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
+            Write-ScreenInfo -Message 'Creating VMs' -TaskStart
+
+            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-LabVHDX
+            }
+
+            #add a hosts entry for each lab machine
+            $hostFileAddedEntries = 0
+            foreach ($machine in $Script:data.Machines)
+            {
+                if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address)
+                {
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.Name -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                    $hostFileAddedEntries += Add-HostEntry -HostName $machine.FQDN -IpAddress $machine.IpV4Address -Section $Script:data.Name
+                }
+            }
         
-        Write-ScreenInfo -Message 'Done' -TaskEnd
+            if ($hostFileAddedEntries)
+            {
+                Write-ScreenInfo -Message "The hosts file has been added $hostFileAddedEntries records. Clean them up using 'Remove-Lab' or manually if needed" -Type Warning
+            }
+            
+            if ($script:data.Machines)
+            {
+                New-LabVM -Name $script:data.Machines -CreateCheckPoints:$CreateCheckPoints
+            }
+
+            #VMs created, export lab definition again to update MAC addresses
+            Set-LabDefinition -Machines $Script:data.Machines
+            Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent        
+            
+            Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        finally
+        {
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+        }
     }
-
 
     #Root DCs are installed first, then the Routing role is installed in order to allow domain joined routers in the root domains
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC))
@@ -722,24 +772,6 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($Exchange2013 -or $performAll) -and (Get-LabVM -Role Exchange2013))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2013' -TaskStart
-        
-        Install-LabExchange2013 -All
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    if (($Exchange2016 -or $performAll) -and (Get-LabVM -Role Exchange2016))
-    {
-        Write-ScreenInfo -Message 'Installing Exchange 2016' -TaskStart
-        
-        Install-LabExchange2016 -All
-        
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-    
     if (($SharePoint2013 -or $performAll) -and (Get-LabVM -Role SharePoint2013))
     {
         Write-ScreenInfo -Message 'Installing SharePoint 2013 Servers' -TaskStart
@@ -789,12 +821,12 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($TeamFoundation -or $performAll) -and (Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker))
+    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabMachine -Role Tfs2015,Tfs2017,TfsBuildWorker).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker).Name -join ', ')'"
 
-        Start-LabVm -RoleName Tfs2015,Tfs2017,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
+        Start-LabVm -RoleName Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
         Install-LabTeamFoundationEnvironment
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
@@ -802,20 +834,19 @@ function Install-Lab
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
-        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
+        Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
         
         if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabMachine -IncludeLinux).HostType -contains 'HyperV') * 30)
+            $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
         }
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -NoNewline
-        Wait-LabVM -ComputerName (Get-LabMachine -IncludeLinux) -ProgressIndicator 30 -TimeoutInMinutes 60
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
     if (($PostInstallations -or $performAll) -and (Get-LabVM))
     {
-        $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabMachine) -PassThru -NoDisplay 
+        $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName (Get-LabVM) -PassThru -NoDisplay 
         #PostInstallations can be installed as jobs or as direct calls. If there are jobs returned, wait until they are finished
         $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
     }
@@ -827,6 +858,16 @@ function Install-Lab
         Install-LabAzureServices
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+    
+    try
+    {
+        [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
+    }
+    catch
+    {
+        # Nothing to catch - if an error occurs, we simply do not get telemetry.
+        Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
     
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
@@ -851,7 +892,7 @@ function Remove-Lab
     
     if ($Name)
     {
-        $Path = '{0}\AutomatedLab-Labs\{1}' -f [System.Environment]::GetFolderPath('MyDocuments'), $Name
+        $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
         $labName = $Name
     }
     else
@@ -868,11 +909,20 @@ function Remove-Lab
     {
         Write-Error 'No definitions imported, so there is nothing to test. Please use Import-Lab against the xml file'
         return
-    }
+    }    
 
     if($pscmdlet.ShouldProcess((Get-Lab).Name, 'Remove the lab completely'))
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
+
+        try 
+        {
+            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
+        }
+        catch 
+        {
+            Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
+        }
     
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All
@@ -989,7 +1039,11 @@ function Get-LabAvailableOperatingSystem
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
-        [string[]]$Path
+        [string[]]$Path = "$labSources\ISOs",
+
+        [switch]$UseOnlyCache,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -998,65 +1052,64 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-
-    if (-not $Path)
-    {
-        $lab = Get-LabDefinition
-        if (-not $lab)
-        {
-            $lab = Get-Lab -ErrorAction SilentlyContinue
-        }
-
-        if ($lab)
-        {
-            $Path = $lab.Sources.Isos | Split-Path -Parent | Select-Object -Unique
-        }
-        else
-        {
-            Write-Error 'No lab loaded and no path defined, hence it is not sure where to look for operating systems.'
-            return
-        }
-    }
     
+    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
     $singleFile = Test-Path -Path $Path -PathType Leaf
-
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
     Write-Verbose "Found $($isoFiles.Count) ISO files"
 
-    $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
-    #read the cache
-    try
+    if (-not $singleFile)
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
-        Write-Verbose "Read $($cachedOsList.Count) OS images from the cache"
-    }
-    catch
-    {
-        Write-Verbose 'Could not read OS image info from the cache'
-    }
-
-    if ($cachedOsList -and -not $singleFile)
-    {
-        $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
-        $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
-
-        if ($cachedIsoFileSize -eq $actualIsoFileSize)
+        #read the cache
+        try
         {
-            Write-Verbose 'Cached data is still up to date'
-            Write-LogFunctionExit -ReturnValue $cachedOsList
-            return $cachedOsList
+            $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+            $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
+            Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
         }
-    
-        Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
-        Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+        catch
+        {
+            Write-Verbose 'Could not read OS image info from the cache'
+        }
+
+        if ($cachedOsList)
+        {
+            $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
+            $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
+
+            if ($cachedIsoFileSize -eq $actualIsoFileSize)
+            {
+                Write-Verbose 'Cached data is still up to date'
+                Write-LogFunctionExit -ReturnValue $cachedOsList
+                return $cachedOsList
+            }
+            else
+            {
+                Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
+                Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+            }
+        }
+    }
+
+    if ($UseOnlyCache)
+    {
+        Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
     $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
     $osList = New-Object $type
+    if ($singleFile)
+    {
+        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems..." -NoNewLine
+    }
+    else
+    {
+        Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
+    }
 
     foreach ($isoFile in $isoFiles)
     {
+        Write-ProgressIndicator
         Write-Verbose "Mounting ISO image '$($isoFile.FullName)'"
         $drive = Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
 
@@ -1077,12 +1130,13 @@ function Get-LabAvailableOperatingSystem
 
             foreach ($dismMatch in $dismMatches.Matches)
             {
+                Write-ProgressIndicator
                 $index = $dismMatch.Groups['Index'].Value
                 $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $index
                 
                 if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
                 {
-                    Write-Warning "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped."
+                    Write-ScreenInfo "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped." -Type Warning
                     continue
                 }
 
@@ -1100,7 +1154,7 @@ function Get-LabAvailableOperatingSystem
             }
         }
 
-		# SuSE, openSuSE et al
+        # SuSE, openSuSE et al
         $susePath = "$letter`:\content"
         if (Test-Path -Path $susePath -PathType Leaf)
         {
@@ -1112,17 +1166,17 @@ function Get-LabAvailableOperatingSystem
             $os.OperatingSystemName = $Matches.Distro            
             $os.Size = $isoFile.Length
             if($Matches.Version -like '*.*')
-			{
-				$os.Version = $Matches.Version
-			}
-			elseif ($Matches.Version)
-			{
-				$os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
-			}
-			else
-			{
-				$os.Version = [AutomatedLab.Version]::new(0,0)
-			}
+            {
+                $os.Version = $Matches.Version
+            }
+            elseif ($Matches.Version)
+            {
+                $os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
+            }
+            else
+            {
+                $os.Version = [AutomatedLab.Version]::new(0,0)
+            }
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
 
@@ -1138,16 +1192,16 @@ function Get-LabAvailableOperatingSystem
             $osList.Add($os)
         }
 
-		# RHEL, CentOS, Fedora et al
+        # RHEL, CentOS, Fedora et al
         $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
         $rhelDiscinfo = "$letter`:\.discinfo"
         $rhelPackageInfo = "$letter`:\repodata"
         if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
         {
-			[void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
+            [void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
             $discInfoContent = Get-Content -Path $rhelDiscinfo
             $versionInfo = ($discInfoContent[1] -split " ")[-1]
-			$content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+            $content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
                         
             $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
             $os.OperatingSystemImageName = $content.Name            
@@ -1158,10 +1212,10 @@ function Get-LabAvailableOperatingSystem
             {
                 # CentOS ISO for some reason contained only GUIDs
                 $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
-                    Get-Content -TotalCount 2 |
-                    Where-Object {$_ -like "*comps*"} |
-                    Foreach-Object { $file.FullName } |
-                    Select-Object -First 1
+                Get-Content -TotalCount 2 |
+                Where-Object {$_ -like "*comps*"} |
+                Foreach-Object { $file.FullName } |
+                Select-Object -First 1
             }
 
             [xml]$packageInfo = Get-Content -Path $packageXml -Raw
@@ -1173,10 +1227,10 @@ function Get-LabAvailableOperatingSystem
             }
             else
             {
-               $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
+                $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
             }
 
-			$os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
+            $os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
 
             # Unix time stamp...
             $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
@@ -1187,17 +1241,24 @@ function Get-LabAvailableOperatingSystem
 
         Write-Verbose 'Dismounting ISO'
         Dismount-DiskImage -ImagePath $isoFile.FullName
-    }
-    
-    if (-not $singleFile)
-    {
-        $osList.Timestamp = Get-Date
-        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
-        $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+        Write-ProgressIndicator
     }
     
     $osList.ToArray()
     
+    if ($singleFile)
+    {
+        Write-ScreenInfo "Found $($osList.Count) OS images."
+    }
+    else
+    {
+        $osList.Timestamp = Get-Date
+        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
+        $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+
+        Write-ProgressIndicatorEnd
+        Write-ScreenInfo "Found $($osList.Count) OS images."
+    }
     Write-LogFunctionExit
 }
 #endregion Get-LabAvailableOperatingSystem
@@ -1217,7 +1278,7 @@ function Enable-LabVMRemoting
     
     Write-LogFunctionEntry
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1254,182 +1315,6 @@ function Enable-LabVMRemoting
 }
 #endregion Enable-LabVMRemoting
 
-#region Checkpoint-LabVM
-function Checkpoint-LabVM
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [string[]]$ComputerName,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [switch]$All
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabMachine))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($Name)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
-    }
-    else
-    {
-        $machines = Get-LabVm -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to checkpoint. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
-            $sessions | Remove-PSSession
-        }
-    }
-    
-    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
-    
-    Write-LogFunctionExit
-}
-#endregion Checkpoint-LabVM
-
-#region Restore-LabVMSnapshot
-function Restore-LabVMSnapshot
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [string[]]$ComputerName,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
-        [switch]$All
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabMachine))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($ComputerName)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
-    }
-    else
-    {
-        $machines = Get-LabVM -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to restore the snapshot. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
-            $sessions | Remove-PSSession
-        }
-    }
-    
-    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
-    
-    Write-LogFunctionExit
-}
-#endregion Restore-LabVMSnapshot
-
-#region Remove-LabVMSnapshot
-function Remove-LabVMSnapshot
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
-        [string[]]$Name,
-        
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
-        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
-        [string]$SnapshotName,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
-        [switch]$AllMachines,
-        
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
-        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
-        [switch]$AllSnapShots
-    )
-    
-    Write-LogFunctionEntry
-    
-    if (-not (Get-LabMachine))
-    {
-        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-        return
-    }
-    
-    if ($Name)
-    {
-        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $Name }
-    }
-    else
-    {
-        $machines = Get-LabVm -IncludeLinux
-    }
-    
-    if (-not $machines)
-    {
-        $message = 'No machine found to remove the snapshot. Either the given name is wrong or there is no machine defined yet'
-        Write-LogFunctionExitWithError -Message $message
-        return
-    }
-    
-    if ($SnapshotName)
-    {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
-    }
-    elseif ($AllSnapShots)
-    {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -All
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Remove-LabVMSnapshot
-
 #region Install-LabWebServers
 function Install-LabWebServers
 {
@@ -1441,7 +1326,7 @@ function Install-LabWebServers
     
     $roleName = [AutomatedLab.Roles]::WebServer
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -1450,7 +1335,7 @@ function Install-LabWebServers
     $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
     if (-not $machines)
     {
-        Write-Warning -Message "There is no machine with the role '$roleName'"
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1513,7 +1398,7 @@ function Get-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
@@ -1621,17 +1506,14 @@ function Install-LabWindowsFeature
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
-    if (-not $NoDisplay)
-    {
-        Write-ScreenInfo -Message "Installing Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
+    Write-ScreenInfo -Message "Installing Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
         
-        if ($AsJob)
-        {
-            if (-not $NoDisplay) { Write-ScreenInfo -Message 'Windows Feature(s) is being installed in the background' -TaskEnd }
-        }
+    if ($AsJob)
+    {
+        Write-ScreenInfo -Message 'Windows Feature(s) is being installed in the background' -TaskEnd
     }    
     
     $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
@@ -1663,7 +1545,7 @@ function Install-LabWindowsFeature
         {
             Dismount-LabIsoImage -ComputerName $hyperVMachines -SupressOutput
         }
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Done' -TaskEnd }
+        Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
     if ($PassThru)
@@ -1688,9 +1570,9 @@ function Install-VisualStudio2013
     
     $roleName = [AutomatedLab.Roles]::VisualStudio2013
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -1807,9 +1689,9 @@ function Install-VisualStudio2015
     
     $roleName = [AutomatedLab.Roles]::VisualStudio2015
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
-        Write-Warning -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -2027,7 +1909,7 @@ function Install-LabOrchestrator2012
     
     $roleName = [AutomatedLab.Roles]::Orchestrator2012
     
-    if (-not (Get-LabMachine))
+    if (-not (Get-LabVM))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -2126,6 +2008,8 @@ function Install-LabSoftwarePackage
         
         [switch]$UseShellExecute,
 
+        [int[]]$ExpectedReturnCodes,
+
         [switch]$PassThru,
         
         [switch]$NoDisplay,
@@ -2169,29 +2053,29 @@ function Install-LabSoftwarePackage
         $unknownMachines = (Compare-Object -ReferenceObject $ComputerName -DifferenceObject $Machine.Name).InputObject
         if ($unknownMachines)
         {
-            Write-Warning "The machine(s) '$($unknownMachines -join ', ')' could not be found."
+            Write-ScreenInfo "The machine(s) '$($unknownMachines -join ', ')' could not be found." -Type Warning
         }
 
         if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob -and
         ($Machine | Group-Object -Property DomainName).Count -gt 1)
         {
-            Write-Error "If you install software in a background job and require the schedule job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
+            Write-Error "If you install software in a background job and require the scheduled job to run with explicit credentials, this task can only be performed on VMs being member of the same domain."
             return
         }
     }
     
     if ($Path)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart }
+        Write-ScreenInfo -Message "Installing software package '$Path' on machines '$($ComputerName -join ', ')' " -TaskStart
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart }
+        Write-ScreenInfo -Message "Installing software package on VM '$LocalPath' on machines '$($ComputerName -join ', ')' " -TaskStart
     }
     
     if ('Stopped' -in (Get-LabVMStatus $ComputerName -AsHashTable).Values)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine }
+        Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewLine
         Start-LabVM -ComputerName $ComputerName -Wait -ProgressIndicator 30 -NoNewline
     }
     
@@ -2206,8 +2090,6 @@ function Install-LabSoftwarePackage
         
     if ($parameterSetName -eq 'SinglePackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($Path))'")
-            
         if ($CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
@@ -2217,32 +2099,14 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
         
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)), $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($LocalPath))'")
-            
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            $LocalPath, $CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = $LocalPath
     }
     else
     {
-        $parameters.Add('ActivityName', "Installation of '$([System.IO.Path]::GetFileName($SoftwarePackage.Path))'")
-            
         if ($SoftwarePackage.CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($SoftwarePackage.Path))
@@ -2252,47 +2116,52 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installArgs = if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob)
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute, $Machine[0].GetCredential((Get-Lab))
-        }
-        else
-        {
-            (Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)), $SoftwarePackage.CommandLine, $AsScheduledJob, $UseShellExecute
-        }
+        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
-    $parameters.Add('ArgumentList', $installArgs)
+    
+    $installParams = @{
+        Path = $installPath
+        CommandLine = $CommandLine
+    }
+    if ($AsScheduledJob) { $installParams.AsScheduledJob = $true }
+    if ($UseShellExecute) { $installParams.UseShellExecute = $true }
+    if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
+    if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+
+    $parameters.Add('ActivityName', "Installation of '$installPath'")
         
     Write-Verbose -Message "Starting background job for '$($parameters.ActivityName)'"
         
-    $parameters.ScriptBlock = [scriptblock]::Create($parameters.ScriptBlock)
-        
+    $parameters.ScriptBlock = {
+        Install-SoftwarePackage @installParams
+    }
+
     $parameters.Add('NoDisplay', $True)
         
-    if (-not $AsJob -and -not $NoDisplay) { Write-ScreenInfo -Message "Copying files/initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine }
+    if (-not $AsJob) 
+    {
+        Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
+    }
         
-    $results += Invoke-LabCommand @parameters
+    $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
         
     if (-not $AsJob)
     {
-        Write-Verbose "Waiting on job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')'"
-        Wait-LWLabJob -Job $results -Timeout $Timeout -ProgressIndicator 30 -NoDisplay:$NoDisplay
-        $results = $results | Receive-Job
+        Write-Verbose "Waiting on job ID '$($job.ID -join ', ')' with name '$($job.Name -join ', ')'"
+        $results = Wait-LWLabJob -Job $job -Timeout $Timeout -ProgressIndicator 15 -NoDisplay -PassThru
+        #$results = $results | Receive-Job
         Write-Verbose "Job ID '$($results.ID -join ', ')' with name '$($results.Name -join ', ')' finished"
     }
     
     if ($AsJob)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Installation started in background' -TaskEnd
+        if ($PassThru) { $job }
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Installation done' -TaskEnd }
-    }
-    
-    if ($PassThru)
-    {
-        $results
+        Write-ScreenInfo -Message 'Installation done' -TaskEnd
+        if ($PassThru) { $results }
     }
     
     Write-LogFunctionExit
@@ -2550,7 +2419,7 @@ function New-LabPSSession
                 )
                 {
                     #remove the existing session if connecting to Azure LabSoruce did not work in case the session connects to an Azure VM.
-                    Write-Warning "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false"
+                    Write-ScreenInfo "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false" -Type Warning
                     Remove-LabPSSession -ComputerName $internalSession.LabMachineName
                     $internalSession = $null
                 }
@@ -2605,12 +2474,20 @@ function New-LabPSSession
                 {
                     Write-Verbose 'Port was NOT open, cannot create session.'
                     Start-Sleep -Seconds $Interval
+                    $machineRetries--
                 }
             }
 
             if (-not $internalSession)
             {
-                Write-Error -ErrorRecord $sessionError[0]
+                if ($sessionError.Count -gt 0)
+                {
+                    Write-Error -ErrorRecord $sessionError[0]
+                }
+                elseif ($machineRetries -lt 1)
+                {
+                    Write-Error -Message "Could not create a session to machine '$m' in $Retries retries."
+                }
             }
         }
     }
@@ -2845,7 +2722,7 @@ function Invoke-LabCommand
     )
     
     Write-LogFunctionEntry
-    $customRoles = 0
+    $customRoleCount = 0
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
@@ -2855,15 +2732,15 @@ function Invoke-LabCommand
     
     if ($AsJob)
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart }
+        Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart
         
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Activity started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity started in background' -TaskEnd
     }
     else
     {
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart }
+        Write-ScreenInfo -Message "Executing lab command activity: '$ActivityName' on machines '$($ComputerName -join ', ')'" -TaskStart
         
-        if (-not ($NoDisplay)) { Write-ScreenInfo -Message 'Waiting for completion' }
+        Write-ScreenInfo -Message 'Waiting for completion'
     }
     
     Write-Verbose -Message "Executing lab command activity '$ActivityName' on machines '$($ComputerName -join ', ')'"
@@ -2906,7 +2783,7 @@ function Invoke-LabCommand
 
     if (-not $machines)
     {
-        Write-Warning "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab."
+        Write-ScreenInfo "Cannot invoke the command '$ActivityName', as the specified machines ($($ComputerName -join ', ')) could not be found in the lab." -Type Warning
         return
     }
         
@@ -2917,7 +2794,7 @@ function Invoke-LabCommand
     
     if ($PostInstallationActivity)
     {
-        Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart
+        Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart -OverrideNoDisplay
 
         $results = @()
 
@@ -2927,18 +2804,19 @@ function Invoke-LabCommand
             {
                 if ($item.IsCustomRole)
                 {
-                    $customRoles++
-                    #if there is a HostInit.ps1 script for the role
-                    $hostInitPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostInit.ps1'
-                    if (Test-Path -Path $hostInitPath)
+                    Write-ScreenInfo "Installing Custom Role '$(Split-Path -Path $item.DependencyFolder -Leaf)' on machine '$machine'" -TaskStart -OverrideNoDisplay
+                    $customRoleCount++
+                    #if there is a HostStart.ps1 script for the role
+                    $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
+                    if (Test-Path -Path $hostStartPath)
                     {
-                        $hostInitScript = Get-Command -Name $hostInitPath
-                        $hostInitParam = Sync-Parameter -Command $hostInitScript -Parameters $item.Properties
-                        if ($hostInitScript.Parameters.ContainsKey('ComputerName'))
+                        $hostStartScript = Get-Command -Name $hostStartPath
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties
+                        if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
-                            $hostInitParam['ComputerName'] = $machine.Name
+                            $hostStartParam['ComputerName'] = $machine.Name
                         }
-                        $results += & $hostInitPath @hostInitParam
+                        $results += & $hostStartPath @hostStartParam
                     }
                 }
 
@@ -2971,7 +2849,7 @@ function Invoke-LabCommand
                     $param.Add('ThrottleLimit', $ThrottleLimit)
                 }
 
-				$scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
+                $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
                 if ($item.Properties.Count -and (Test-Path -Path $scriptFullName))
                 {
                     $script = Get-Command -Name $scriptFullName
@@ -2981,47 +2859,51 @@ function Invoke-LabCommand
                     $param.ParameterVariableName = 'temp'
                 }
 
-				if ($item.IsCustomRole)
+                if ($item.IsCustomRole)
                 {
-					if (Test-Path -Path $scriptFullName)
-					{
-						$results += Invoke-LWCommand @param
-					}
-				}
-				else
-				{
-					$results += Invoke-LWCommand @param
-				}
+                    if (Test-Path -Path $scriptFullName)
+                    {
+                        $results += Invoke-LWCommand @param
+                    }
+                }
+                else
+                {
+                    $results += Invoke-LWCommand @param
+                }
 
                 if ($item.IsCustomRole)
                 {
-                    #if there is a HostCleanup.ps1 script for the role
-                    $hostCleanupPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostCleanup.ps1'
-                    if (Test-Path -Path $hostCleanupPath)
+                    #if there is a HostEnd.ps1 script for the role
+                    $hostEndPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostEnd.ps1'
+                    if (Test-Path -Path $hostEndPath)
                     {
-                        $hostCleanupScript = Get-Command -Name $hostCleanupPath
-                        $hostCleanupParam = Sync-Parameter -Command $hostCleanupScript -Parameters $item.Properties
-                        if ($hostCleanupScript.Parameters.ContainsKey('ComputerName'))
+                        $hostEndScript = Get-Command -Name $hostEndPath
+                        $hostEndParam = Sync-Parameter -Command $hostEndScript -Parameters $item.Properties
+                        if ($hostEndScript.Parameters.ContainsKey('ComputerName'))
                         {
-                            $hostCleanupParam['ComputerName'] = $machine.Name
+                            $hostEndParam['ComputerName'] = $machine.Name
                         }
-                        $results += & $hostCleanupPath @hostCleanupParam
+                        $results += & $hostEndPath @hostEndParam
                     }
                 }
             }
         }
         
-        if ($customRoles)
+        if ($customRoleCount)
         {
-            Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine
+            $jobs = $results | Where-Object { $_ -is [System.Management.Automation.Job] -and $_.State -eq 'Running' }
+            if ($jobs)
+            {
+                Write-ScreenInfo -Message "Waiting on $($results.Count) custom role installations to finish..." -NoNewLine -OverrideNoDisplay
+                Wait-LWLabJob -Job $jobs -Timeout 60 -NoDisplay
+            }
+            else
+            {
+                Write-ScreenInfo -Message "$($customRoleCount) custom role installation finished." -OverrideNoDisplay
+            }
         }
-        if ($results.Count -gt 0)
-		{
-			$results | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
-		}
-        Write-ScreenInfo -Message 'finihsed'
 
-        Write-ScreenInfo -Message 'Post-installations done' -TaskEnd
+        Write-ScreenInfo -Message 'Post-installations done' -TaskEnd -OverrideNoDisplay
     }
     else
     {
@@ -3072,11 +2954,11 @@ function Invoke-LabCommand
 
     if ($AsJob)
     {
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Activity started in background' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity started in background' -TaskEnd
     }
     else
     {
-        if (-not $NoDisplay) { Write-ScreenInfo -Message 'Activity done' -TaskEnd }
+        Write-ScreenInfo -Message 'Activity done' -TaskEnd
     }
 
     if ($PassThru) { $results }
@@ -3171,7 +3053,7 @@ function Update-LabMemorySettings
         
         ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) })
         {
-            $memoryCalculated = [int]($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
+            $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)
             {
                 $machine.Memory = $memoryCalculated
@@ -3246,7 +3128,7 @@ function Update-LabMemorySettings
             
             if ($memoryCalculated -lt 256)
             {
-                Write-Warning -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab"
+                Write-ScreenInfo -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab" -Type Warning
             }
         }
         
@@ -3254,7 +3136,7 @@ function Update-LabMemorySettings
                 $plannedMaxMemoryUsage = (Get-LabVM -All).MaxMemory | Measure-Object -Sum | Select-Object -ExpandProperty Sum
                 if ($plannedMaxMemoryUsage -le ($totalMemory/3))
                 {
-                foreach ($machine in (Get-LabMachine))
+                foreach ($machine in (Get-LabVM))
                 {
                 (Get-LabVM -ComputerName $machine).Memory *= 2
                 (Get-LabVM -ComputerName $machine).MaxMemory *= 2
@@ -3481,7 +3363,7 @@ function Set-LabDefaultOperatingSystem
             if ($os.Count -gt 1)
             {
                 $os = $os | Sort-Object Version -Descending | Select-Object -First 1
-                Write-Warning "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os.Version)) as default operating system"
+                Write-ScreenInfo "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os.Version)) as default operating system" -Type Warning
             }
         }
 
@@ -3696,10 +3578,124 @@ function New-LabSourcesFolder
         $Path
     }
 }
+#endregion
 
-#New-Alias -Name Invoke-LabPostInstallActivity -Value Invoke-LabCommand -Scope Global
-#New-Alias -Name Set-LabVMRemoting -Value Enable-LabVMRemoting -Scope Global
-#New-Alias -Name Set-LabHostRemoting -Value Enable-LabHostRemoting -Scope Global
+#region Telemetry
+function Enable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+}
+
+function Disable-LabTelemetry
+{
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+}
+
+$telemetryChoice = @"
+Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
+and to bring you fancy dashboards with e.g. the community's favorite roles.
+
+We are collecting the following with Azure Application Insights:
+- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your number of lab machines
+- The roles you used
+- The time it took your lab to finish
+- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+
+We collect no personally identifiable information.
+
+If you change your mind later on, you can always set the environment
+variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
+Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
+
+We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
+
+If you want to opt out, please select Yes.
+"@
+
+if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+{
+    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    
+    # This is actually enough for the telemetry client.
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
+
+    # We cannot refresh the env drive, so we add the same variable here as well.
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice 
+}
+#endregion
 
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+    Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } |
+    Group-Object -Property OperatingSystemImageName |
+    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+    Sort-Object -Property OperatingSystemImageName |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
+    }
+}
+
+Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    Get-ChildItem -Path $path -Directory |
+    ForEach-Object {
+        if ($_.Name -contains ' ')
+        {
+            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}
+
+$commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
+Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    Get-LabVM -All -IncludeLinux |
+    ForEach-Object {
+        if ($_.Roles)
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    (Get-LabDefinition).Domains |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+    }
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName Roles -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    [System.Enum]::GetNames([AutomatedLab.Roles]) |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+    }
+}
+
+#importing the module results in calling the following code multiple times due to module import recursion
+#the following line makes sure that the following code runs only once when called from an external source
+if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
+{
+    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay
+}

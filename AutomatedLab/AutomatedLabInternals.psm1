@@ -327,7 +327,7 @@ function Restart-ServiceResilient
 function Remove-DeploymentFiles
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    Invoke-LabCommand -ComputerName (Get-LabMachine) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
+    Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path c:\unattend.xml
         Remove-Item -Path c:\WSManRegKey.reg
@@ -352,7 +352,7 @@ function Enable-LabVMFirewallGroup
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Invoke-LabCommand -ComputerName $machine -ActivityName 'Enable firewall group' -NoDisplay -ScriptBlock `
     {
@@ -390,7 +390,7 @@ function Disable-LabVMFirewallGroup
     
     Write-LogFunctionEntry
     
-    $machine = Get-LabMachine -ComputerName $ComputerName
+    $machine = Get-LabVM -ComputerName $ComputerName
 
     Invoke-LabCommand -ComputerName $machine -ActivityName 'Disable firewall group' -NoDisplay -ScriptBlock `
     {
@@ -440,6 +440,8 @@ function Get-LabInternetFile
         [string]$Path,
 
         [switch]$Force,
+
+        [switch]$NoDisplay,
         
         [switch]$PassThru
     )
@@ -452,6 +454,8 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
+
+            [switch]$NoDisplay,
 
             [switch]$Force
         )
@@ -542,7 +546,7 @@ function Get-LabInternetFile
     
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
-        $machine = Get-LabMachine -IsRunning | Select-Object -First 1
+        $machine = Get-LabVM -IsRunning | Select-Object -First 1
         Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
         $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru

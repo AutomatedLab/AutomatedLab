@@ -47,9 +47,6 @@ $PSDefaultParameterValues = @{
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $postInstallActivity
 
-#the root domain gets a second domain controller
-Add-LabMachineDefinition -Name DDC2 -Roles DC
-
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
@@ -75,7 +72,7 @@ Add-LabMachineDefinition -Name DServer3
 Install-Lab
 
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob

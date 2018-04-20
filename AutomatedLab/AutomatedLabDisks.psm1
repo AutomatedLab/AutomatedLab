@@ -216,7 +216,7 @@ function New-LabVHDX
         }
         else
         {
-            Write-Warning "The disk '$diskPath' does already exist, no new disk is created."
+            Write-ScreenInfo "The disk '$diskPath' does already exist, no new disk is created." -Type Warning
         }
     }
     

@@ -60,7 +60,7 @@ function Add-LabVirtualNetworkDefinition
 
     if ($AzureProperties)
     {
-        $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Select-Object -Unique) |
+        $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
         Where-Object SideIndicator -eq '=>' |
         Select-Object -ExpandProperty InputObject
 
@@ -212,7 +212,7 @@ function Remove-LabVirtualNetworkDefinition
     
         if (-not $network)
         {
-            Write-Warning "There is no network defined with the name '$n'"
+            Write-ScreenInfo "There is no network defined with the name '$n'" -Type Warning
         }
         else
         {
@@ -242,7 +242,7 @@ function New-LabNetworkAdapterDefinition
         [switch]$UseDhcp,
 
         [Parameter(ParameterSetName = 'manual')]
-        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))/([3][0-1]|[1-2][0-9]|[2-9])$')]
+        [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))/([3][0-2]|[1-2][0-9]|[2-9])$')]
         [AutomatedLab.IPNetwork[]]$Ipv4Address,
         
         [Parameter(ParameterSetName = 'manual')]

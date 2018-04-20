@@ -2,6 +2,7 @@ $moduleNames = @(
     'AutomatedLab'
     'AutomatedLabDefinition'
     'AutomatedLabNotifications'
+    'AutomatedLab.Ships'
     'AutomatedLabTest'
     'AutomatedLabUnattended'
     'AutomatedLabWorker'
