@@ -99,11 +99,7 @@ function New-LabVM
         throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a look at the background job's result (Get-Job, Receive-Job)"
     }
             
-    if ($completedJobs)
-    {
-        $azureVMs = $completedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }
-        $azureVMs = Get-LabVM -ComputerName $azureVMs
-    }
+    $azureVms = $machines | Where-Object HostType -eq Azure
 
     if ($azureVMs)
     {
