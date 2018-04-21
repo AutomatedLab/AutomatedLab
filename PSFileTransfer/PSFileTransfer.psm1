@@ -86,7 +86,7 @@ function Send-File
         return
     }
     
-    $sourceFileStream = [IO.File]::OpenRead($sourcePath)
+    $sourceFileStream = [System.IO.File]::OpenRead($sourcePath)
     
     for ($position = 0; $position -lt $sourceFileStream.Length; $position += $chunkSize)
     {
@@ -360,10 +360,11 @@ function Write-File
         }
     }
     
-    $destFileStream = [IO.File]::Create($DestinationFullName)
+    $destFileStream = [System.IO.File]::OpenWrite($DestinationFullName)
     $destBinaryWriter = New-Object -TypeName System.IO.BinaryWriter -ArgumentList ($destFileStream)
     
     [void]$destBinaryWriter.Seek(0, 'End')
+    
     $destBinaryWriter.Write($Bytes)
     
     $destBinaryWriter.Close()
@@ -403,7 +404,7 @@ function Read-File
         throw 'Source file could not be found'
     }
     
-    $sourceFileStream = [IO.File]::OpenRead($sourcePath)
+    $sourceFileStream = [System.IO.File]::OpenRead($sourcePath)
     
     $chunk = New-Object -TypeName byte[] -ArgumentList $Length
     [void]$sourceFileStream.Seek($Offset, 'Begin')
@@ -467,7 +468,7 @@ function Copy-LabFileItem
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     
     $connectedMachines = @{ }

@@ -52,12 +52,11 @@ function New-LabVM
             
             if ('RootDC' -in $machine.Roles.Name)
             {
-                Start-LabVM -ComputerName $machine.Name
+                Start-LabVM -ComputerName $machine.Name -NoNewline
             }
             
             if ($result)
             {
-                Write-ProgressIndicatorEnd
                 Write-ScreenInfo -Message 'Done' -TaskEnd
             }
             else
@@ -169,7 +168,8 @@ function Start-LabVM
 
         [switch]$RootDomainMachines,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [int]$PreDelaySeconds = 0,
 
@@ -179,6 +179,8 @@ function Start-LabVM
     begin
     {
         Write-LogFunctionEntry
+
+        if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
         
         $lab = Get-Lab
         
@@ -230,8 +232,6 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
-
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
@@ -241,14 +241,10 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms } 
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-
-            #$vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -261,16 +257,12 @@ function Start-LabVM
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Exchange2016' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
             $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -281,7 +273,6 @@ function Start-LabVM
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
             $vms = Get-LabVM | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
-            $vms = $vms | Select-Object *, @{name='OSversion';expression={$_.OperatingSystem.Version}} | Sort-Object -Property OSversion
             $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
@@ -336,10 +327,7 @@ function Start-LabVM
             Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
         }
         
-        if ($ProgressIndicator -and (-not $NoNewline))
-        {
-            Write-ProgressIndicatorEnd
-        }
+        Write-ProgressIndicatorEnd
 
         Write-LogFunctionExit
     }
@@ -414,7 +402,7 @@ function Save-LabVM
         #if there are no VMs to start, just write a warning
         if (-not $vms)
         {
-            Write-Warning 'There is no machine to start'
+            Write-ScreenInfo 'There is no machine to start' -Type Warning
             return
         }
         
@@ -454,7 +442,10 @@ function Restart-LabVM
         
         [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_RestartLabMachine_Shutdown,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+
+        [switch]$NoDisplay,
 
         [switch]$NoNewLine
     )
@@ -507,7 +498,7 @@ function Stop-LabVM
         
         [switch]$Wait,
 
-        [int]$ProgressIndicator,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [switch]$NoNewLine,
 
@@ -614,7 +605,7 @@ function Stop-LabVM2
     
     if ($jobs.Count -ne ($jobs | Where-Object State -eq Completed).Count)
     {
-        Write-Warning "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes"
+        Write-ScreenInfo "Not all machines stopped in the timeout of $ShutdownTimeoutInMinutes" -Type Warning
     }
 }
 #endregion Stop-LabVM2
@@ -632,12 +623,14 @@ function Wait-LabVM
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = 0,
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     Write-LogFunctionEntry
         
@@ -657,7 +650,7 @@ function Wait-LabVM
         Write-Error 'None of the given machines could be found'
         return
     }
-        
+
     foreach ($vm in $vms)
     {
         $session = $null
@@ -706,7 +699,7 @@ function Wait-LabVM
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
-                Import-Lab -LabBytes $LabBytes
+                Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
 
                 #do 5000 retries. This job is cancelled anyway if the timeout is reached
                 Write-Verbose "Trying to create session to '$ComputerName'"
@@ -718,9 +711,9 @@ function Wait-LabVM
     }
 
     Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
-        
-    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay
-        
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay -Timeout $TimeoutInMinutes
+
     $completed = $jobs | Where-Object State -eq Completed | Receive-Job -ErrorAction SilentlyContinue -Verbose:$VerbosePreference
         
     if ($completed)
@@ -823,8 +816,8 @@ function Wait-LabVMRestart
         
         [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
         
-        [ValidateRange(1, 300)]
-        [int]$ProgressIndicator = 10,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
         
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
         
@@ -836,6 +829,8 @@ function Wait-LabVMRestart
     )
     
     Write-LogFunctionEntry
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     if (-not $lab)
@@ -891,7 +886,12 @@ function Wait-LabVMShutdown
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
         
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online
+        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        
+        [switch]$NoNewLine
     )
     
     Write-LogFunctionEntry
@@ -908,6 +908,7 @@ function Wait-LabVMShutdown
     
     $vms | Add-Member -Name HasShutdown -MemberType NoteProperty -Value $false -Force
     
+    $ProgressIndicatorTimer = Get-Date
     do
     {
         foreach ($vm in $vms)
@@ -920,6 +921,11 @@ function Wait-LabVMShutdown
             }
             
             Start-Sleep -Seconds 5
+        }
+        if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
+        {
+            Write-ProgressIndicator
+            $ProgressIndicatorTimer = (Get-Date)
         }
     }
     until (($vms | Where-Object { $_.HasShutdown }).Count -eq $vms.Count -or (Get-Date).AddMinutes(- $TimeoutInMinutes) -gt $start)
@@ -1142,7 +1148,7 @@ function Connect-LabVM
 
                 if ([bool]$download)
                 {
-                    $downloadUri = (Get-Module AutomatedLab).PrivateData['OpenSshUri']
+                    $downloadUri = (Get-Module AutomatedLab)[0].PrivateData['OpenSshUri']
                     $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
@@ -1425,10 +1431,10 @@ function Mount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -in HyperV,Azure
@@ -1476,10 +1482,10 @@ function Dismount-LabIsoImage
     if ($machines.Count -ne $ComputerName.Count)
     {
         $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-Warning "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found"
+        Write-ScreenInfo "The specified machine(s) $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
     }
     $machines | Where-Object HostType -notin HyperV, Azure | ForEach-Object {
-        Write-Warning "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'"
+        Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
     $machines = $machines | Where-Object HostType -eq HyperV
@@ -1545,7 +1551,7 @@ function Set-MachineUacStatus
 
     if ($uacStatusChanges)
     {
-        Write-Warning "Setting this requires a reboot of $ComputerName."
+        Write-ScreenInfo "Setting this requires a reboot of $ComputerName." -Type Warning
     }
 }
 
@@ -1870,10 +1876,10 @@ function Test-LabAutoLogon
 
     Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
 
-    $Machines = Get-LabVm @PSBoundParameters
+    $Machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
     
-    foreach ( $Machine in $Machines)
+    foreach ($Machine in $Machines)
     {
         $parameters = @{
             Username = $Machine.InstallationUser.UserName
@@ -1891,10 +1897,10 @@ function Test-LabAutoLogon
 
         $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
             $values = @{}
-            $values['AutoAdminLogon'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultDomainName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultUserName'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue}catch{ }
-            $values['DefaultPassword'] = try{Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue}catch{ }
+            $values['AutoAdminLogon'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue } catch { }
+            $values['DefaultDomainName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue }catch { }
+            $values['DefaultUserName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue }catch { }
+            $values['DefaultPassword'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue }catch { }
             $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
             Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
             Select-Object -ExpandProperty Caption -Unique
@@ -1904,7 +1910,7 @@ function Test-LabAutoLogon
 
         Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
 
-        if ( $settings.AutoAdminLogon -ne 1 -or
+        if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
             $settings.DefaultUserName -ne $parameters.Username -or
         $settings.DefaultPassword -ne $parameters.Password)
@@ -1935,7 +1941,9 @@ function Get-LabVMDotNetFrameworkVersion
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
-        [string[]]$ComputerName
+        [string[]]$ComputerName,
+
+        [switch]$NoDisplay
     )
 
     Write-LogFunctionEntry
@@ -1950,8 +1958,184 @@ function Get-LabVMDotNetFrameworkVersion
     
     Invoke-LabCommand -ActivityName 'Get .net Framework version' -ComputerName $machines -ScriptBlock {
         Get-DotNetFrameworkVersion
-    } -Function (Get-Command -Name Get-DotNetFrameworkVersion) -PassThru
+    } -Function (Get-Command -Name Get-DotNetFrameworkVersion) -PassThru -NoDisplay:$NoDisplay
 
     Write-LogFunctionExit
 }
 #endregion Get-LabVMDotNetFrameworkVersion
+
+#region Checkpoint-LabVM
+function Checkpoint-LabVM
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVm -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to checkpoint. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    foreach ($machine in $machines)
+    {
+        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
+        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
+        if ($sessions)
+        {
+            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
+            $sessions | Remove-PSSession
+        }
+    }
+    
+    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
+    
+    Write-LogFunctionExit
+}
+#endregion Checkpoint-LabVM
+
+#region Restore-LabVMSnapshot
+function Restore-LabVMSnapshot
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'All')]
+        [switch]$All
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVM -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to restore the snapshot. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    foreach ($machine in $machines)
+    {
+        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
+        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
+        if ($sessions)
+        {
+            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
+            $sessions | Remove-PSSession
+        }
+    }
+    
+    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    
+    Write-LogFunctionExit
+}
+#endregion Restore-LabVMSnapshot
+
+#region Remove-LabVMSnapshot
+function Remove-LabVMSnapshot
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]
+        [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
+        [string]$SnapshotName,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesSnapshotByName')]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
+        [switch]$AllMachines,
+        
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
+        [Parameter(ValueFromPipelineByPropertyName, ParameterSetName = 'AllMachinesAllSnapshots')]
+        [switch]$AllSnapShots
+    )
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Get-LabVM))
+    {
+        Write-Error 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+    
+    if ($ComputerName)
+    {
+        $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
+    }
+    else
+    {
+        $machines = Get-LabVm -IncludeLinux
+    }
+    
+    if (-not $machines)
+    {
+        $message = 'No machine found to remove the snapshot. Either the given name is wrong or there is no machine defined yet'
+        Write-LogFunctionExitWithError -Message $message
+        return
+    }
+    
+    if ($SnapshotName)
+    {
+        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    }
+    elseif ($AllSnapShots)
+    {
+        Remove-LWHypervVMSnapshot -ComputerName $machines -All
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Remove-LabVMSnapshot

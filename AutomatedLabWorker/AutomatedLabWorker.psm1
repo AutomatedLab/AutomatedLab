@@ -316,22 +316,22 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
             }
         }
         else
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
             }
             else
             {
-                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
             }
         }
         
@@ -382,22 +382,22 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart -WarningAction SilentlyContinue")
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
             }
         }
         else
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart -WarningAction SilentlyContinue")
             }
             else
             {
-                $cmd = [scriptblock]::Create("Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools")
+                $cmd = [scriptblock]::Create("Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
             }
         }
         
@@ -426,16 +426,23 @@ function Wait-LWLabJob
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$Name,
 
-        [int]$ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+
         [int]$Timeout = 60,
+
         [switch]$NoNewLine,
+
         [switch]$NoDisplay,
+
         [switch]$PassThru
     )
+
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     Write-LogFunctionEntry
     
-    if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
+    Write-ProgressIndicator
 
     if (-not $Job -and -not $Name)
     {
@@ -455,25 +462,25 @@ function Wait-LWLabJob
         $jobs = Get-Job -Name $Name
     }
 
-    if (-not $NoDisplay) { Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($Job.Id -join ', ')" -TaskStart }
-        
+    Write-ScreenInfo -Message "Waiting for job(s) to complete with ID(s): $($Job.Id -join ', ')" -TaskStart
+
     if ($jobs -and ($jobs.State -contains 'Running' -or $jobs.State -contains 'AtBreakpoint'))
     {
         $jobs = Get-Job -Id $jobs.ID
-        $ProgressIndicatorTimer = (Get-Date)
+        $ProgressIndicatorTimer = Get-Date
         do
         {
             Start-Sleep -Seconds 1
             if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
             {
-                if ($ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicator }
-                $ProgressIndicatorTimer = (Get-Date)
+                Write-ProgressIndicator
+                $ProgressIndicatorTimer = Get-Date
             }
         }
         until (($jobs.State -notcontains 'Running' -and $jobs.State -notcontains 'AtBreakPoint') -or ((Get-Date) -gt ($Start.AddMinutes($Timeout))))
     }
     
-    if (-not $NoNewLine -and $ProgressIndicator -and -not $NoDisplay) { Write-ProgressIndicatorEnd }
+    Write-ProgressIndicatorEnd
     
     if ((Get-Date) -gt ($Start.AddMinutes($Timeout)))
     {
@@ -482,18 +489,14 @@ function Wait-LWLabJob
     }
     else
     {
-        if (-not $NoDisplay)
-        {
-            Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
-        }
+        Write-ScreenInfo -Message 'Job(s) no longer running' -TaskEnd
 
         if ($PassThru)
         {
-            $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
-
+            $result = $jobs | Receive-Job -ErrorAction SilentlyContinue -ErrorVariable jobErrors
+            $result
             #PSRemotingTransportException are very likely due to restarts or problems AL cannot recover
             $jobErrors = $jobErrors | Where-Object { $_.Exception -isnot [System.Management.Automation.Remoting.PSRemotingTransportException] }
-
             foreach ($jobError in $jobErrors)
             {
                 Write-Error -ErrorRecord $jobError

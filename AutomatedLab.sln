@@ -7,17 +7,6 @@ Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Inst
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{3662119A-C291-4BEC-8C6C-EBE802042E7B}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Documentation", "Documentation", "{F53EE2B3-B14E-4266-9018-18CDEC02D2DA}"
-	ProjectSection(SolutionItems) = preProject
-		Documentation\AL Tutorial Series Part 1 - Architecture.md = Documentation\AL Tutorial Series Part 1 - Architecture.md
-		Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.md = Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.md
-		Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.md = Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.md
-		Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.md = Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.md
-		Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.md = Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.md
-		Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.md = Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.md
-		Documentation\AutomatedLab Documentation.md = Documentation\AutomatedLab Documentation.md
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Sample Scripts", "Sample Scripts", "{0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LabSources", "LabSources", "{D1448154-F3BD-4E59-9B97-B8E83767336F}"
@@ -93,8 +82,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
-		AutomatedLab\AutomatedLabExchange2013.psm1 = AutomatedLab\AutomatedLabExchange2013.psm1
-		AutomatedLab\AutomatedLabExchange2016.psm1 = AutomatedLab\AutomatedLabExchange2016.psm1
 		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
 		AutomatedLab\AutomatedLabInternals.psm1 = AutomatedLab\AutomatedLabInternals.psm1
@@ -244,6 +231,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1 = LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1
 		LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1 = LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1
 		LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1 = LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1
+		LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1
 		LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1
 		LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1 = LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1
 		LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1 = LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1
@@ -291,55 +279,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Help", "Help", "{A93F6FB3-E
 	ProjectSection(SolutionItems) = preProject
 		Help\AutomatedLab.Help.pshproj = Help\AutomatedLab.Help.pshproj
 		Help\AutomatedLabDefinition.Help.pshproj = Help\AutomatedLabDefinition.Help.pshproj
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "media", "media", "{99649F48-1216-41A4-9315-22EA5706AAA4}"
-	ProjectSection(SolutionItems) = preProject
-		Documentation\media\al2_image1.png = Documentation\media\al2_image1.png
-		Documentation\media\AL2_image2.png = Documentation\media\AL2_image2.png
-		Documentation\media\AL2_image3.png = Documentation\media\AL2_image3.png
-		Documentation\media\AL2_image4.png = Documentation\media\AL2_image4.png
-		Documentation\media\al3_image1.png = Documentation\media\al3_image1.png
-		Documentation\media\al3_image2.png = Documentation\media\al3_image2.png
-		Documentation\media\al4_image1.png = Documentation\media\al4_image1.png
-		Documentation\media\al4_image10.png = Documentation\media\al4_image10.png
-		Documentation\media\al4_image11.png = Documentation\media\al4_image11.png
-		Documentation\media\al4_image12.png = Documentation\media\al4_image12.png
-		Documentation\media\al4_image13.png = Documentation\media\al4_image13.png
-		Documentation\media\al4_image14.png = Documentation\media\al4_image14.png
-		Documentation\media\al4_image15.png = Documentation\media\al4_image15.png
-		Documentation\media\al4_image16.png = Documentation\media\al4_image16.png
-		Documentation\media\al4_image17.png = Documentation\media\al4_image17.png
-		Documentation\media\al4_image18.png = Documentation\media\al4_image18.png
-		Documentation\media\al4_image19.png = Documentation\media\al4_image19.png
-		Documentation\media\al4_image2.png = Documentation\media\al4_image2.png
-		Documentation\media\al4_image20.png = Documentation\media\al4_image20.png
-		Documentation\media\al4_image21.png = Documentation\media\al4_image21.png
-		Documentation\media\al4_image22.png = Documentation\media\al4_image22.png
-		Documentation\media\al4_image23.png = Documentation\media\al4_image23.png
-		Documentation\media\al4_image24.png = Documentation\media\al4_image24.png
-		Documentation\media\al4_image25.png = Documentation\media\al4_image25.png
-		Documentation\media\al4_image26.png = Documentation\media\al4_image26.png
-		Documentation\media\al4_image27.png = Documentation\media\al4_image27.png
-		Documentation\media\al4_image28.png = Documentation\media\al4_image28.png
-		Documentation\media\al4_image29.png = Documentation\media\al4_image29.png
-		Documentation\media\al4_image3.png = Documentation\media\al4_image3.png
-		Documentation\media\al4_image30.png = Documentation\media\al4_image30.png
-		Documentation\media\al4_image31.png = Documentation\media\al4_image31.png
-		Documentation\media\al4_image32.png = Documentation\media\al4_image32.png
-		Documentation\media\al4_image33.png = Documentation\media\al4_image33.png
-		Documentation\media\al4_image34.png = Documentation\media\al4_image34.png
-		Documentation\media\al4_image35.png = Documentation\media\al4_image35.png
-		Documentation\media\al4_image36.png = Documentation\media\al4_image36.png
-		Documentation\media\al4_image37.png = Documentation\media\al4_image37.png
-		Documentation\media\al4_image38.png = Documentation\media\al4_image38.png
-		Documentation\media\al4_image39.png = Documentation\media\al4_image39.png
-		Documentation\media\al4_image4.png = Documentation\media\al4_image4.png
-		Documentation\media\al4_image5.png = Documentation\media\al4_image5.png
-		Documentation\media\al4_image6.png = Documentation\media\al4_image6.png
-		Documentation\media\al4_image7.png = Documentation\media\al4_image7.png
-		Documentation\media\al4_image8.png = Documentation\media\al4_image8.png
-		Documentation\media\al4_image9.png = Documentation\media\al4_image9.png
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLabNotifications", "AutomatedLabNotifications", "{9C1CF008-E02A-4CC5-B1D7-C8DD8BF91E3D}"
@@ -602,6 +541,31 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Release", "Release", "{2BBF
 		AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1 = AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2013", "Exchange2013", "{38C82807-0968-4EBC-B5C8-693B969CF13F}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2013\HostStart.ps1 = LabSources\CustomRoles\Exchange2013\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2016", "Exchange2016", "{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2016\HostStart.ps1 = LabSources\CustomRoles\Exchange2016\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "AutomatedLab.Ships", "{0509B199-B442-4716-9ED6-E059FDA45754}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Ships\AutomatedLab.Ships.psd1 = AutomatedLab.Ships\AutomatedLab.Ships.psd1
+		AutomatedLab.Ships\AutomatedLab.Ships.psm1 = AutomatedLab.Ships\AutomatedLab.Ships.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\SCCM\DownloadAdk.ps1 = LabSources\CustomRoles\SCCM\DownloadAdk.ps1
+		LabSources\CustomRoles\SCCM\DownloadSCCM.ps1 = LabSources\CustomRoles\SCCM\DownloadSCCM.ps1
+		LabSources\CustomRoles\SCCM\HostStart.ps1 = LabSources\CustomRoles\SCCM\HostStart.ps1
+		LabSources\CustomRoles\SCCM\InstallSCCM.ps1 = LabSources\CustomRoles\SCCM\InstallSCCM.ps1
+		LabSources\CustomRoles\SCCM\README.md = LabSources\CustomRoles\SCCM\README.md
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -667,7 +631,6 @@ Global
 		{6BF9A116-7E73-4D94-8E57-4E1CCBC5DA62} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{1D008E01-0359-4EF9-AB13-ADC357240D25} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B} = {0EFBFD4C-D963-4AFC-8C75-D6DBD05DA4C9}
-		{99649F48-1216-41A4-9315-22EA5706AAA4} = {F53EE2B3-B14E-4266-9018-18CDEC02D2DA}
 		{DFDF84A2-F080-47E7-ADC9-F03AD15CB7F0} = {9C1CF008-E02A-4CC5-B1D7-C8DD8BF91E3D}
 		{6E731563-09B0-4F2E-ABEC-FE4EB9376894} = {9C1CF008-E02A-4CC5-B1D7-C8DD8BF91E3D}
 		{EB139A97-DC93-405A-BBBC-CD5EB12D6E3C} = {D1448154-F3BD-4E59-9B97-B8E83767336F}
@@ -704,6 +667,9 @@ Global
 		{CDE85675-45A5-4C67-B79D-64F336751D5F} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{5A35AA7F-30CF-4AC2-915B-0F41530CA9A9} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
+		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}

@@ -1075,7 +1075,7 @@ function Write-ProgressIndicator
 {
     # .ExternalHelp AutomatedLab.Help.xml
 
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
@@ -1087,11 +1087,15 @@ function Write-ProgressIndicator
 function Write-ProgressIndicatorEnd
 {
     # .ExternalHelp AutomatedLab.Help.xml
-
-	if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
     }
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoNewLine'].IsPresent)
+    {
+        return
+    }
+    
     Write-ScreenInfo -Message '.'
 }
 #endregion Write-ProgressIndicatorEnd
@@ -1116,14 +1120,14 @@ function Write-ScreenInfo
         
         [switch]$NoNewLine,
         
-        [int]$Indent,
-        
         [switch]$TaskStart,
         
-        [switch]$TaskEnd
+        [switch]$TaskEnd,
+
+        [switch]$OverrideNoDisplay
     )
 
-    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent)
+    if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent -and -not $OverrideNoDisplay)
     {
         return
     }
@@ -1160,78 +1164,118 @@ function Write-ScreenInfo
         $TimeDelta2 = (Get-Date) - $Global:taskStart[-1]
     }
     
-    $TimeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f ($TimeDelta.Hours), ($TimeDelta.Minutes), ($TimeDelta.Seconds)
-    $TimeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f ($TimeDelta2.Hours), ($TimeDelta2.Minutes), ($TimeDelta2.Seconds), ($TimeDelta2.Milliseconds)
+    $timeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f $TimeDelta.Hours, $TimeDelta.Minutes, $TimeDelta.Seconds
+    $timeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f $TimeDelta2.Hours, $TimeDelta2.Minutes, $TimeDelta2.Seconds, $TimeDelta2.Milliseconds
     
-    $TimeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f ((Get-Date).Hour), ((Get-Date).Minute), ((Get-Date).Second)
+    $date = Get-Date
+    $timeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
     
     if ($NoNewLine)
     {
-        if ($Global:labDeploymentNoNewLine)
+        if ($Global:PSLog_NoNewLine)
         {
             switch ($Type)
             {
-                Error   { Write-Host $message -NoNewline -ForegroundColor Red}
-                Warning { Write-Host $message -NoNewline -ForegroundColor DarkYellow }
-                Info    { Write-Host $message -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host $message -NoNewline -ForegroundColor Cyan } }
+                Error   { Write-Host $Message -NoNewline -ForegroundColor Red}
+                Warning { Write-Host $Message -NoNewline -ForegroundColor DarkYellow }
+                Info    { Write-Host $Message -NoNewline }
+                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host $Message -NoNewline -ForegroundColor Cyan } }
+                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host $Message -NoNewline -ForegroundColor Cyan } }
             }
         }
         else
         {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
+            if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent - 1)) + '- ' + $Message }
 
             switch ($Type)
             {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -NoNewline -ForegroundColor Cyan } }
+                Error   { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Red }
+                Warning { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Yellow }
+                Info    { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline }
+                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
+                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
             }
 
         }
-        $Global:labDeploymentNoNewLine = $True
+        $Global:PSLog_NoNewLine = $true
     }
     else
     {
-        if ($Global:labDeploymentNoNewLine)
+        if ($Global:PSLog_NoNewLine)
         {
             switch ($Type)
             {
-                Error   { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red } }
-                Warning { $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow } }
-                Info    { $Message | ForEach-Object { Write-Host $_ } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
-                Debug   { if ($DebugPreference -eq 'Continue') { $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } } }
+                Error   {
+                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red } 
+                    $Global:PSLog_NoNewLine = $false
+                }
+                Warning { 
+                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
+                    $Global:PSLog_NoNewLine = $false
+                }
+                Info    {
+                    $Message | ForEach-Object { Write-Host $_ } 
+                    $Global:PSLog_NoNewLine = $false
+                }
+                Verbose { 
+                    if ($VerbosePreference -eq 'Continue') 
+                    {
+                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan }
+                        $Global:PSLog_NoNewLine = $false
+                    } 
+                }
+                Debug { 
+                    if ($DebugPreference -eq 'Continue') 
+                    {
+                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } 
+                        $Global:PSLog_NoNewLine = $false
+                    }
+                }
             }
         }
         else
         {
-            if ($Global:indent -gt 0) { $Message = ('  '*($Global:indent-1)) + '- ' + $message }
+            if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent-1)) + '- ' + $Message }
             switch ($Type)
             {
-                Error   { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Red }
-                Warning { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Yellow }
-                Info    { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$TimeCurrent|$TimeDeltaString|$TimeDeltaString2| $message" -ForegroundColor Cyan } }
+                Error
+                {
+                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Red }
+                }
+                Warning {
+                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Yellow }
+                }
+                Info {
+                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
+                }
+                Debug
+                {
+                    if ($DebugPreference -eq 'Continue')
+                    {
+                        $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
+                    }
+                }
+                Verbose
+                {
+                    if ($VerbosePreference -eq 'Continue')
+                    {
+                        $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
+                    }
+                }
             }
         }
-        $Global:labDeploymentNoNewLine = $False
     }
 
     if ($TaskStart)
     {
-        $Global:indent++
+        $Global:PSLog_Indent++
     }
     
     if ($TaskEnd)
     {
-        $Global:indent--
-        if ($Global:indent -lt 0) { $Global:indent = 0 }
+        $Global:PSLog_Indent--
+        if ($Global:PSLog_Indent -lt 0) { $Global:PSLog_Indent = 0 }
     }
     
 }
-#endregion function Write-ScreenInfo
+#endregion Write-ScreenInfo

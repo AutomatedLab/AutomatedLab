@@ -34,8 +34,6 @@
         'AutomatedLabDisks.psm1',
         'AutomatedLabInternals.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabExchange2013.psm1',
-        'AutomatedLabExchange2016.psm1', 
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabNetwork.psm1',
@@ -64,7 +62,6 @@
     
     FunctionsToExport      = @(
         'New-LabSourcesFolder',
-        'Add-LabAzureProfile',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
         'Add-LabVMUserRight',
@@ -125,8 +122,6 @@
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
         'Install-LabDscPullServer',
-        'Install-LabExchange2013',
-        'Install-LabExchange2016',
         'Install-LabFailoverCluster',
         'Install-LabFirstChildDcs',
         'Install-LabOffice2013',
@@ -224,8 +219,6 @@
         'AutomatedLabAzureServices.psm1',
         'AutomatedLabDisks.psm1',
         'AutomatedLabDsc.psm1',
-        'AutomatedLabExchange2013.psm1',
-        'AutomatedLabExchange2016.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabHybrid.psm1',
         'AutomatedLabInternals.psm1',
@@ -257,6 +250,8 @@
         Timeout_VisualStudio2013Installation   = 90
         Timeout_VisualStudio2015Installation   = 90
 
+        DefaultProgressIndicator               = 10
+
         #PSSession settings
         InvokeLabCommandRetries                = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
@@ -273,14 +268,12 @@
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
 
+        #Host Settings
+        DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
+
         #Azure
         MinimumAzureModuleVersion              = '4.0.0'
         DefaultAzureRoleSize                   = 'D'
-
-        #Exchange
-        ExchangeUcmaDownloadLink               = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-        Exchange2013DownloadLink               = 'https://download.microsoft.com/download/D/E/1/DE1C3D22-28A6-4A30-9811-0A0539385E51/Exchange2013-x64-cu17.exe'
-        #Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' the Exchange CUs are ISOs again
 
         #Office
         OfficeDeploymentTool                   = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_7614-3602.exe'
@@ -293,6 +286,7 @@
         dotnet452DownloadLink                  = 'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
         dotnet46DownloadLink                   = 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe'
         dotnet462DownloadLink                  = 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
+        dotnet471DownloadLink                  = 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe'
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio                = 'https://go.microsoft.com/fwlink/?LinkID=840946'

@@ -36,6 +36,15 @@
                 </Component>
               </Directory>
             </Directory>
+            <Directory Id="InstallFolder_Ships" Name="AutomatedLab.Ships">
+              <Directory Id="InstallFolder_ShipsVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+                <Component Id="ShipsComponent" Guid="cdf71f71-f452-4eb4-82c1-243d8923f363">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="ShipsComponent" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psd1" />
+                </Component>
+              </Directory>
+            </Directory>
             <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
               <Directory Id="InstallFolder_CommonVersion" Name="$(var.AutomatedLabCommonVersion)">
                 <Directory Id="InstallFolder_CommonCommon" Name="Common">
@@ -113,7 +122,7 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
                     </Component>
-                  </Directory>                  
+                  </Directory>
                 </Directory>
                 <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
                   <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
@@ -351,8 +360,6 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2013.psm1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabExchange2016.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
@@ -399,7 +406,6 @@
       </Directory>
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
-          <!--<Directory Id="DOCUMENTATIONDIR" Name="AutomatedLab Documentation"><Component Id='DocumentationComponent' Guid='ec60d79b-cf47-457b-bfd8-b1e2c98e096a'><RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" /><File Id='AutomatedLabDocumentationDocx' Name='AutomatedLab Documentation.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AutomatedLab Documentation.docx' /><File Id='ALTutorialSeriesPart1' Name='AL Tutorial Series Part 1 - Architecture.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 1 - Architecture.docx' /><File Id='ALTutorialSeriesPart2' Name='AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 2 - Creating a Simple Lab with AutomatedLab.docx' /><File Id='ALTutorialSeriesPart3' Name='AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 3 - Working with Predefined Server Roles.docx' /><File Id='ALTutorialSeriesPart4' Name='AL Tutorial Series Part 4 - Installing a simple PKI environment.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 4 - Installing a simple PKI environment.docx' /><File Id='ALTutorialSeriesPart5' Name='AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 5 - Installing a 2-tier Certificate Authority (PKI) hierarchy using AutomatedLab.docx' /><File Id='ALTutorialSeriesPart6' Name='AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' DiskId='1' Source='$(var.SolutionDir)Documentation\AL Tutorial Series Part 6 - Installing Software and Running Custom Activities.docx' /><RemoveFolder Id="RemoveFolderDOCUMENTATIONDIR" Directory="DOCUMENTATIONDIR" On="both"/></Component></Directory>-->
           <Directory Id="SAMPLESDIR" Name="Sample Scripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
               <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesComponent" />
@@ -474,6 +480,7 @@
                 <File Id='Sample_Tfs2017Environment' Name='TFS 2017 Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1' />
                 <File Id='Sample_MDTLab1' Name='MDT Lab 1, MDT Server 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 1, MDT Server 1.ps1' />
                 <File Id='Sample_MDTLab2' Name='MDT Lab 2, DC and MDT Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1' />
+                <File Id='Sample_SCCMLab1' Name='SCCM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>
@@ -506,6 +513,7 @@
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
+        <ComponentRef Id='ShipsComponent' />
         <ComponentRef Id ='CommonComponent' />
         <ComponentRef Id ='ALCommonComponent1' />
         <ComponentRef Id ='ALCommonComponent2' />
@@ -1576,10 +1584,23 @@
         <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
         <File Id="filE256ED55FB34497690F40A3DFD18B4F8" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\README.md" />
       </Component>
+      <Component Id="cmp86C615E77FDE477B92A7924F45BA8D9B" Directory="dirD5857EAD5CA449FAA8DEB6655159C72F" Guid="078973d4-58d5-4f5f-b0b2-e246feae64d6">
+        <File Id="filFAB673E653D046F3ADC67F2DCB2E2FAE" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\HostStart.ps1" />
+        <File Id="fil27651624415947528BC5DB9144162BF3" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\README.md" />
+        <File Id="fil182CF76CCEC748E9B6A6D4723CFE7623" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadAdk.ps1" />
+        <File Id="fil342BDDCDD4734ECC9B26FD76634CA36D" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadSCCM.ps1" />
+        <File Id="fil566509688A384CCDA6EB4A512EBB9BA4" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\InstallSCCM.ps1" />
+      </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
         <File Id="fil611A290B504B40AC8067CF36E9A1FE16" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
         <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1" />
         <File Id="filF8132E52FC96455F841EC3746134B102" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostStart.ps1" />
+      </Component>
+      <Component Id="cmpB7A4553235714D3980022AD29B59E524" Directory="dirD153285282514AC29784E8EEC0425DF4" Guid="6fac1fe1-56ef-4bd6-9126-4350e63d9a44">
+        <File Id="filF56497E6FC8F489F817C687FC78899BB" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2016\HostStart.ps1" />
+      </Component>
+      <Component Id="cmpAC7C8B81D23F4769994947F0CECD3180" Directory="dir0E259F3D4465478A9ACD45BFE861109E" Guid="17bdbdfb-799d-48a7-b8aa-bb70463492af">
+        <File Id="fil0ECB36EBB468421ABD44DCA1F37CC377" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2013\HostStart.ps1" />
       </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\README.md" />
@@ -1729,6 +1750,21 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dir81AC7AA67CD84A6B9CBA05139A977B45" Name="ProGet5" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir0E259F3D4465478A9ACD45BFE861109E" Name="Exchange2013" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD153285282514AC29784E8EEC0425DF4" Name="Exchange2016" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD5857EAD5CA449FAA8DEB6655159C72F" Name="SCCM" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

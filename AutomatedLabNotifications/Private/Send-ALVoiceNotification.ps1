@@ -12,7 +12,7 @@ function Send-ALVoiceNotification
     )
 
     $lab = Get-Lab
-    $voiceInfo = (Get-Module AutomatedLabNotifications).PrivateData.Voice
+    $voiceInfo = (Get-Module AutomatedLabNotifications)[0].PrivateData.Voice
 
     try
     {

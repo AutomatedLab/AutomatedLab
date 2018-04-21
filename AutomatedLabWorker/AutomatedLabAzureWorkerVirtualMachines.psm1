@@ -1,4 +1,4 @@
-$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker).PrivateData.AzureRetryCount
+$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker)[0].PrivateData.AzureRetryCount
 
 #region New-LWAzureVM
 function New-LWAzureVM
@@ -107,11 +107,11 @@ function New-LWAzureVM
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
                 
         #get all SQL images matching the RegEx pattern and then get only the latest one
-        $sqlServerImages = $lab.AzureSettings.VmImages
+        $sqlServerImages = $lab.AzureSettings.VmImages | Where-Object Offer -notlike "*BYOL*"
 
         if ([System.Convert]::ToBoolean($Machine.AzureProperties['UseByolImage']))
         {
-            $sqlServerImages = $sqlServerImages | Where-Object Offer -like '*-BYOL'
+            $sqlServerImages = $lab.AzureSettings.VmImages | Where-Object Offer -like '*-BYOL'
         }
 
         $sqlServerImages = $sqlServerImages |
@@ -143,7 +143,7 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'SQL Server image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'SQL Server image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sqlServerImage in $sqlServerImages)
             {
                 Write-Host $sqlServerImage.Offer
@@ -183,10 +183,10 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'Visual Studio image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'Visual Studio image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($visualStudioImage in $visualStudioImages)
             {
-                Write-Host ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
+                Write-ScreenInfo ('{0} - {1} - {2}' -f $visualStudioImage.Offer, $visualStudioImage.Skus, $visualStudioImage.Id)
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -214,7 +214,7 @@ function New-LWAzureVM
 
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        Write-Warning "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available."
+        Write-ScreenInfo "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available." -Type Warning
         
         #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
         $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
@@ -226,7 +226,7 @@ function New-LWAzureVM
 
         if (-not $vmImageName)
         {
-            Write-Warning 'SharePoint image could not be found. The following combinations are currently supported by Azure:'
+            Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sharePointImage in $sharePointImages)
             {
                 Write-Host $sharePointImage.Offer $sharePointImage.Skus
@@ -847,61 +847,13 @@ function Start-LWAzureVM
 
     $machinesToJoin = @()
 
-    $jobs = @()		
-
-    foreach ($name in $ComputerName)
+    $jobs = foreach ($name in $ComputerName)
     {
         $vm = $azureVms | Where-Object Name -eq $name			
-        $jobs += Start-Job -Name "StartAzureVm_$name" -ScriptBlock {
-            param
-            (
-                [object]$Machine,
-                [string]$SubscriptionPath,
-                [int]$AzureRetryCount
-            )
-            #retry 3 times
-            $i = 0
-            while (-not $azureContext -and $i -le $AzureRetryCount)
-            {
-                $azureContext = Import-AzureRmContext -Path $SubscriptionPath -ErrorVariable azureContextError
-                $i++
-                Start-Sleep -Seconds 5
-            }
-
-            if (-not $azureContext)
-            {
-                throw (New-Object System.Exception("Azure Context could not be created using the file '$SubscriptionPath'", $azureContextError.Exception))
-            }
-
-            $i = 0
-            while ($result.Status -ne 'Succeeded' -and $i -lt $AzureRetryCount)
-            {
-                $result = $Machine | Start-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
-                $i++
-                Start-Sleep -Seconds 5
-            }
-
-            if ($result.Status -ne 'Succeeded')
-            {
-                Write-Error -Message ('Could not start Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error)-TargetObject $Machine.Name -ErrorAction Stop
-            }
-        } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount)
-        
-        Start-Sleep -Seconds $DelayBetweenComputers
+        $vm | Start-AzureRmVM -AsJob
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-
-    $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-    if (-not $azureVms)
-    {
-        Start-Sleep -Seconds 2
-        $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
-        if (-not $azureVms)
-        {
-            throw 'Get-AzureRmVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
-        }
-    }
 
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName}
 
@@ -947,8 +899,8 @@ function Stop-LWAzureVM
         [string[]]
         $ComputerName,
 
-        [int]
-        $ProgressIndicator,
+        [ValidateRange(0, 300)]
+        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
 
         [switch]
         $NoNewLine,
@@ -961,6 +913,8 @@ function Stop-LWAzureVM
     )
     
     Write-LogFunctionEntry
+    
+    if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
     
     $lab = Get-Lab
     $azureVms = Get-AzureRmVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
@@ -980,68 +934,29 @@ function Stop-LWAzureVM
     }
     else
     {
-        $jobs = @()		
-
-        foreach ($name in $ComputerName)
+        $jobs = foreach ($name in $ComputerName)
         {
-            $vm = $azureVms | Where-Object Name -eq $name			
-            $jobs += Start-Job -Name "StopAzureVm_$name" -ScriptBlock {
-                param
-                (
-                    [object]$Machine,
-                    [string]$SubscriptionPath,
-                    [int]$AzureRetryCount,
-                    [bool]$StayProvisioned = $false
-                )
-
-                $i = 0
-                while (-not $azureContext -and $i -le $AzureRetryCount)
-                {
-                    $azureContext = Import-AzureRmContext -Path $SubscriptionPath -ErrorVariable azureContextError
-                    $i++
-                    Start-Sleep -Seconds 5
-                }
-
-                if (-not $azureContext)
-                {
-                    throw (New-Object System.Exception("Azure Context could not be created using the file '$SubscriptionPath'", $azureContextError.Exception))
-                }
-
-                $i = 0
-                while ($result.Status -ne 'Succeeded' -and $i -lt $AzureRetryCount)
-                {
-                    $result = $Machine | Stop-AzureRmVM -ErrorAction SilentlyContinue -WarningAction SilentlyContinue -Force -StayProvisioned:$StayProvisioned
-                    $i++
-                    Start-Sleep -Seconds 5
-                }
-
-                if ($result.Status -ne 'Succeeded')
-                {
-                    Write-Error -Message ('Could not stop Azure VM. Status was {0}. Error was {1}' -f $result.Status, $result.Error) -TargetObject $Machine.Name -ErrorAction Stop
-                }
-            } -ArgumentList @($vm, $lab.AzureSettings.AzureProfilePath, $azureRetryCount, $StayProvisioned)
-        }
-
-        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
-        if ($failedJobs)
-        {
-            $jobNames = ($failedJobs | ForEach-Object {
-                    if ($_.Name.StartsWith("StopAzureVm_"))
-                    {
-                        ($_.Name -split "_")[1]
-                    }
-            }) -join ", "
+            $vm = $azureVms | Where-Object Name -eq $name
+            $vm | Stop-AzureRmVM -Force -StayProvisioned:$StayProvisioned -AsJob
+                    
+            Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+            $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+            if ($failedJobs)
+            {
+                $jobNames = ($failedJobs | ForEach-Object {
+                        if ($_.Name.StartsWith("StopAzureVm_"))
+                        {
+                            ($_.Name -split "_")[1]
+                        }
+                }) -join ", "
             
-            Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
-        }
+                Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
+            }
 
+        }
     }
     
-    if ($ProgressIndicator -and (-not $NoNewLine))
-    {
-        Write-ProgressIndicatorEnd
-    }
+    Write-ProgressIndicatorEnd
     
     Write-LogFunctionExit
 }

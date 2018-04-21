@@ -1,22 +1,46 @@
 # Changelog
 
-## 5.0 - yyyy-MM-dd
+## 5.0.1 - 2018-04-13
 
-## Enhancements
+### Enhancements
+
+- New SCCM custom role incl. sample script
+- Added SHiPS provider
+- Moved Exchange 2013 and 2016 role into custom roles and fixed some issues
+- Enhanced auto-completers (works after a lab is imported)
+- Support for TFS 2018
+
+### Fixes
+- Some evaluation SKUs were missing product keys
+- TFS port in Azure
+- Fixed bugs in Hyper-V snapshot functions
+- AL will no longer try to deploy disks in parallel but waits until a job is finished
+- Custom Roles now work on Azure
+- Progress indicators work again
+
+## 5.0 - 2018-04-04
+
+### Enhancements
 
 - TFS deployment now possible including release pipeline
 - AL.Common received a new suite of cmdlets regarding TFS/VSTS management
 - Linux support as domain-joined lab machines (no roles yet) capable of remoting
-- Custom roles have been extended
+- Custom roles have been heavily extended
+- Sample custom roles have been added
 - Labs can now contain Azure Services apart from IaaS workloads
 - ProGet implemented as Custom Role
+- Lab telemetry added
+- Voice notifications added
+- Added possibility to add more external ports to Azure labs
 
-## Fixes
+### Fixes
 
 - Small fixes here and there
 - Issues with Windows image names fixed
 - Documentation moved to markdown
 - Lab XML folder moved out of "My Documents" to avoid triggering Defender
+- Missing Toast messages fixed
+- Display messages, timer fixed
 
 ## v4.7.2.2 - 2018-01-18
 

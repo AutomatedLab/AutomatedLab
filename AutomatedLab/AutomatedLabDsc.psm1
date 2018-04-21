@@ -13,6 +13,9 @@ function Install-LabDscPullServer
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::DSCPullServer
     $requiredModules = 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'
+
+    Write-ScreenInfo "Starting Pull Servers and waiting until they are ready" -NoNewLine
+    Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -Wait
     
     if (-not (Get-LabVM))
     {
@@ -168,7 +171,7 @@ function Install-LabDscPullServer
     foreach ($machine in $machines)
     {
         #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
-        if ((Get-LabVM -ComputerName dpull1).OperatingSystem.Version -gt '6.3.0.0')
+        if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
         {
             Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
         }
@@ -189,7 +192,8 @@ function Install-LabDscPullServer
             Add-LWAzureLoadBalancedPort -Port 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
-        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru
+        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru | Out-Null
+
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
         $guid = (New-Guid).Guid
@@ -238,15 +242,15 @@ function Install-LabDscPullServer
         throw ('Setting up the DSC pull server failed. Please review the output of the following jobs: {0}' -f ($jobs.Id -join ','))
     }
 
-    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob
-    Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
-    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
+    $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob -NoDisplay
+    Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete'
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 0 -Timeout $InstallationTimeout -NoDisplay
     
     foreach ($machine in $machines)
     {
         $registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $machine -ScriptBlock {
             Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
-        } -PassThru
+        } -PassThru -NoDisplay
         
         $machine.InternalNotes.DscRegistrationKey = $registrationKey
     }

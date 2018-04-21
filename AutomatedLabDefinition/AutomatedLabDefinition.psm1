@@ -1139,7 +1139,7 @@ function Export-LabDefinition
                             }
                             else
                             {
-                                Write-Warning "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'"
+                                Write-ScreenInfo "Automatic assignment of DNS server did not work for machine '$machine'. No domain controller could be found for domain '$($machine.DomainName)'" -Type Warning
                             }
                         }
                     }
@@ -1267,7 +1267,7 @@ function Export-LabDefinition
     {
         if ($script:machines.Count -eq 0)
         {
-            Write-Warning 'There are no machines defined, nothing to export'
+            Write-ScreenInfo 'There are no machines defined, nothing to export' -Type Warning
         }
         else
         {
@@ -1375,7 +1375,7 @@ function Test-LabDefinition
                 }
                 catch
                 {
-                    Write-Warning "Could not invoke validator $t"
+                    Write-ScreenInfo "Could not invoke validator $t" -Type Warning
                 }
             }
         }    
@@ -1515,7 +1515,7 @@ function Remove-LabDomainDefinition
     
     if (-not $domain)
     {
-        Write-Warning "There is no domain defined with the name '$Name'"
+        Write-ScreenInfo "There is no domain defined with the name '$Name'" -Type Warning
     }
     else
     {
@@ -1550,7 +1550,7 @@ function Add-LabIsoImageDefinition
     
     if ($IsOperatingSystem)
     {
-        Write-Warning -Message 'The -IsOperatingSystem switch parameter is obsolete and thereby ignored'
+        Write-ScreenInfo -Message 'The -IsOperatingSystem switch parameter is obsolete and thereby ignored' -Type Warning
     }
     
     if (-not $script:lab)
@@ -1694,10 +1694,7 @@ function Add-LabIsoImageDefinition
 
         #$script:lab.Sources.ISOs.Remove($iso) | Out-Null
         $script:lab.Sources.ISOs.Add($iso)
-        if (-not $NoDisplay)
-        {
-            Write-ScreenInfo -Message "Added '$($iso.Path)'"
-        }
+        Write-ScreenInfo -Message "Added '$($iso.Path)'"
     }
     Write-Verbose "Final Lab ISO count: $($script:lab.Sources.ISOs.Count)"
     
@@ -1737,7 +1734,7 @@ function Remove-LabIsoImageDefinition
     
     if (-not $iso)
     {
-        Write-Warning "There is no Iso Image defined with the name '$Name'"
+        Write-ScreenInfo "There is no Iso Image defined with the name '$Name'" -Type Warning
     }
     else
     {
@@ -1764,7 +1761,7 @@ function Add-LabDiskDefinition
                     $doesAlreadyExist = Test-Path -Path $_
                     if ($doesAlreadyExist)
                     {
-                        Write-Warning 'The disk does already exist'
+                        Write-ScreenInfo 'The disk does already exist' -Type Warning
                         return $false
                     }
                     else
@@ -2312,22 +2309,6 @@ function Add-LabMachineDefinition
             }
         }
     
-        $role = $roles | Where-Object Name -in Exchange2013, Exchange2016
-        if ($role)
-        {
-            if ($role.Properties)
-            {
-                if (-not $role.Properties.ContainsKey('OrganizationName'))
-                {
-                    $role.Properties.Add('OrganizationName', 'ExOrg')
-                }
-            }
-            else
-            {
-                $role.Properties = @{ 'OrganizationName' = 'ExOrg' }
-            }
-        }
-    
         #Virtual network detection and automatic creation
         if ($VirtualizationHost -eq 'Azure')
         {
@@ -2736,13 +2717,13 @@ function Add-LabMachineDefinition
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Group-Object -Property Version | Sort-Object -Property Name -Descending | Select-Object -First 1 | Select-Object -ExpandProperty Group
-                    Write-Warning "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os[0].Version))"
+                    Write-ScreenInfo "The operating system '$OperatingSystem' is available multiple times. Choosing the one with the highest version ($($os[0].Version))" -Type Warning
                 }
 
                 if ($os.Count -gt 1)
                 {
                     $os = $os | Sort-Object -Property { (Get-Item -Path $_.IsoPath).LastWriteTime } -Descending | Select-Object -First 1
-                    Write-Warning "The operating system '$OperatingSystem' with the same version is available on multiple images. Choosing the one with the highest LastWriteTime to honor updated images ($((Get-Item -Path $os.IsoPath).LastWriteTime))"
+                    Write-ScreenInfo "The operating system '$OperatingSystem' with the same version is available on multiple images. Choosing the one with the highest LastWriteTime to honor updated images ($((Get-Item -Path $os.IsoPath).LastWriteTime))" -Type Warning
                 }
             }
         
@@ -2934,7 +2915,7 @@ function Remove-LabMachineDefinition
     
     if (-not $machine)
     {
-        Write-Warning "There is no machine defined with the name '$Name'"
+        Write-ScreenInfo "There is no machine defined with the name '$Name'" -Type Warning
     }
     else
     {
@@ -3012,27 +2993,24 @@ function Get-LabPostInstallationActivity
         [switch]$DoNotUseCredSsp
     )
     DynamicParam
-    {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path (Get-LabSourcesLocation)))
-        {        
-            $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
+    {      
+        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
-            $ParameterName = 'CustomRole'        
-            $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-            $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-            $ParameterAttribute.ParameterSetName = 'CustomRole'
-            $AttributeCollection.Add($ParameterAttribute)
-            $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
+        $ParameterName = 'CustomRole'        
+        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
+        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
+        $ParameterAttribute.ParameterSetName = 'CustomRole'
+        $AttributeCollection.Add($ParameterAttribute)
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
 
-            if ($arrSet)
-            {
-                $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-                $AttributeCollection.Add($ValidateSetAttribute)
-                $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
+        if ($arrSet)
+        {
+            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
+            $AttributeCollection.Add($ValidateSetAttribute)
+            $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
 
-                $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-                return $RuntimeParameterDictionary
-            }
+            $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+            return $RuntimeParameterDictionary
         }
     }
 
@@ -3159,7 +3137,7 @@ function Get-LabPostInstallationActivity
             {
                 foreach ($kvp in $Properties.GetEnumerator())
                 {
-                    $activity.Properties.Add($kvp.Key, [string]$kvp.Value)
+                    $activity.Properties.Add($kvp.Key, $kvp.Value)
                 }
             }
         }
@@ -3245,12 +3223,6 @@ function Set-LabLocalVirtualMachineDiskAuto
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.LocalDisk
     $drives = New-Object $type
     
-    #Retrieve drives with enough space for placement of VMs
-    foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
-    {
-        $drives.Add($drive)
-    }
-    
     #read the cache
     try
     {
@@ -3263,15 +3235,50 @@ function Set-LabLocalVirtualMachineDiskAuto
         Write-Verbose 'Could not read info from the cache'
     }
 
-    Write-Debug -Message "Drive letters placed on physical drives: $($drives.DriveLetter -Join ', ')"
-    foreach ($drive in $drives)
+    #Retrieve drives with enough space for placement of VMs
+    foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
     {
-        Write-Debug -Message "Drive $drive free space: $($drive.FreeSpaceGb)GB)"
+        $drives.Add($drive)
     }
         
     if (-not $drives)
     {
         return $false
+    }
+
+    #if the current disk config is different from the is in the cache, wait until the running lab deploymet is done.
+    if (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter)
+    {
+        $labDiskDeploymentInProgressPath = (Get-Module -Name AutomatedLab)[0].PrivateData.DiskDeploymentInProgressPath
+        if (Test-Path -Path $labDiskDeploymentInProgressPath)
+        {
+            Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
+            Write-ScreenInfo "Waiting with 'Get-DiskSpeed' until other disk deployment is finished. Otherwise a mounted virtual disk could be chosen for deployment." -NoNewLine
+            do
+            {
+                Write-ScreenInfo -Message . -NoNewLine
+                Start-Sleep -Seconds 15
+            } while (Test-Path -Path $labDiskDeploymentInProgressPath)
+        }
+        Write-ScreenInfo 'done'
+
+        #refresh the list of drives with enough space for placement of VMs
+        $drives.Clear()
+        foreach ($drive in (Get-LabVolumesOnPhysicalDisks | Where-Object FreeSpace -ge $SpaceNeeded))
+        {
+            $drives.Add($drive)
+        }
+        
+        if (-not $drives)
+        {
+            return $false
+        }
+    }
+
+    Write-Debug -Message "Drive letters placed on physical drives: $($drives.DriveLetter -Join ', ')"
+    foreach ($drive in $drives)
+    {
+        Write-Debug -Message "Drive $drive free space: $($drive.FreeSpaceGb)GB)"
     }
         
     #Measure speed on drives found
