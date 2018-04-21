@@ -1468,9 +1468,8 @@ function Get-LabWindowsFeature
         [ValidateNotNullOrEmpty()]
         [string[]]$ComputerName,
         
-        [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string[]]$FeatureName,
+        [string[]]$FeatureName = '*',
 
         [switch]$UseLocalCredential,
         
@@ -1521,7 +1520,7 @@ function Get-LabWindowsFeature
             AsJob              = $AsJob
         }
 
-        $jobs = Get-LWHypervWindowsFeature @params    
+        $result = Get-LWHypervWindowsFeature @params    
     }
     elseif ($azureMachines)
     {
@@ -1532,14 +1531,15 @@ function Get-LabWindowsFeature
             AsJob              = $AsJob
         }
 
-        $jobs = Get-LWAzureWindowsFeature @params        
+        $result = Get-LWAzureWindowsFeature @params        
     }
 
+    $result
+    
     if (-not $AsJob)
     {
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-   
     Write-LogFunctionExit
 }
 #endregion Get-LabWindowsFeature
