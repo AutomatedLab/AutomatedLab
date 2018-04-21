@@ -117,9 +117,19 @@ exit
     Write-Verbose 'Applying image to the volume...'
     
     $wimPath = "$isoDrive\Sources\install.wim"
-    $job = Start-Job -ScriptBlock { Dism.exe /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\ }
+    $job = Start-Job -ScriptBlock { 
+        $output = Dism.exe /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\
+        New-Object PSObject -Property @{
+            Outout = $output
+            LastExitCode = $LASTEXITCODE
+        }
+    }
 	
-    Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 20 -Timeout 60
+    $dismResult = Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 20 -Timeout 60 -PassThru
+    if ($dismResult.LastExitCode)
+    {
+        throw (New-Object System.ComponentModel.Win32Exception($dismResult.LastExitCode, "The base image for operating system '$OsName' could not be created"))
+    }
     Start-Sleep -Seconds 5
     
     Write-Verbose 'Setting BCDBoot'
