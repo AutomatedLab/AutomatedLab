@@ -312,9 +312,9 @@ function Get-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                    foreach($feature in $FeatureName)
+                    foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
                         $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
@@ -322,8 +322,8 @@ function Get-LWHypervWindowsFeature
                 }
                 else
                 {
-                   $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
-                   $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName) -WarningAction SilentlyContinue")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }                
             }
             else
@@ -336,42 +336,42 @@ function Get-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
-                      $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                     
-                      $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
-                      [string]$featureNamedismOutput = $parseddismOutput[0]
-                      [string]$featureRRdismOutput = $parseddismOutput[1]
-                      [string]$featureStatedismOutput = $parseddismOutput[2]
+                        $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                        [string]$featureNamedismOutput = $parseddismOutput[0]
+                        [string]$featureRRdismOutput = $parseddismOutput[1]
+                        [string]$featureStatedismOutput = $parseddismOutput[2]
                   
                   
-                      $result += [PSCustomObject]@{
-                        FeatureName = $featureNamedismOutput.Split(":")[1].Trim()
-                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
-                        State = $featureStatedismOutput.Split(":")[1].Trim()
-                      }
-                  }
+                        $result += [PSCustomObject]@{
+                            FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                            RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                            State           = $featureStatedismOutput.Split(":")[1].Trim()
+                        }
+                    }
                 }
                 else
                 {
-                  $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
-                  $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                    $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                   
-                  [string]$featureNamedismOutput = $parseddismOutput[0]
-                  [string]$featureRRdismOutput = $parseddismOutput[1]
-                  [string]$featureStatedismOutput = $parseddismOutput[2]
+                    [string]$featureNamedismOutput = $parseddismOutput[0]
+                    [string]$featureRRdismOutput = $parseddismOutput[1]
+                    [string]$featureStatedismOutput = $parseddismOutput[2]
                   
                   
-                  $result += [PSCustomObject]@{
-                    FeatureName = $featureNamedismOutput.Split(":")[1].Trim()
-                    RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
-                    State = $featureStatedismOutput.Split(":")[1].Trim()
-                  }
+                    $result += [PSCustomObject]@{
+                        FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                        State           = $featureStatedismOutput.Split(":")[1].Trim()
+                    }
                 }
             }
             else
@@ -422,9 +422,9 @@ function Get-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                    foreach($feature in $FeatureName)
+                    foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
                         $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
@@ -432,8 +432,8 @@ function Get-LWAzureWindowsFeature
                 }
                 else
                 {
-                   $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
-                   $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }                
             }
             else
@@ -446,42 +446,42 @@ function Get-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
-                      $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                     
-                      $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
-                      [string]$featureNamedismOutput = $parseddismOutput[0]
-                      [string]$featureRRdismOutput = $parseddismOutput[1]
-                      [string]$featureStatedismOutput = $parseddismOutput[2]
+                        $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                        [string]$featureNamedismOutput = $parseddismOutput[0]
+                        [string]$featureRRdismOutput = $parseddismOutput[1]
+                        [string]$featureStatedismOutput = $parseddismOutput[2]
                   
                   
-                      $result += [PSCustomObject]@{
-                        FeatureName = $featureNamedismOutput.Split(":")[1].Trim()
-                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
-                        State = $featureStatedismOutput.Split(":")[1].Trim()
-                      }
-                  }
+                        $result += [PSCustomObject]@{
+                            FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                            RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                            State           = $featureStatedismOutput.Split(":")[1].Trim()
+                        }
+                    }
                 }
                 else
                 {
-                  $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
-                  $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                    $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                   
-                  [string]$featureNamedismOutput = $parseddismOutput[0]
-                  [string]$featureRRdismOutput = $parseddismOutput[1]
-                  [string]$featureStatedismOutput = $parseddismOutput[2]
+                    [string]$featureNamedismOutput = $parseddismOutput[0]
+                    [string]$featureRRdismOutput = $parseddismOutput[1]
+                    [string]$featureStatedismOutput = $parseddismOutput[2]
                   
                   
-                  $result += [PSCustomObject]@{
-                    FeatureName = $featureNamedismOutput.Split(":")[1].Trim()
-                    RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
-                    State = $featureStatedismOutput.Split(":")[1].Trim()
-                  }
+                    $result += [PSCustomObject]@{
+                        FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                        State           = $featureStatedismOutput.Split(":")[1].Trim()
+                    }
                 }
             }
             else
@@ -549,18 +549,18 @@ function Install-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  }
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
                 }
                 else
                 {
-                      $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }
             }
             else
@@ -628,18 +628,18 @@ function Install-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  }
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
                 }
                 else
                 {
-                      $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }
             }
             else
@@ -705,18 +705,18 @@ function Uninstall-LWHypervWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  }
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
                 }
                 else
                 {
-                      $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }
             }
             else
@@ -782,18 +782,18 @@ function Uninstall-LWAzureWindowsFeature
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                if($FeatureName.Count -gt 1)
+                if ($FeatureName.Count -gt 1)
                 {
-                  foreach($feature in $FeatureName)
-                  {
-                      $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
-                  }
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
                 }
                 else
                 {
-                      $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
-                      $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
                 }
             }
             else
