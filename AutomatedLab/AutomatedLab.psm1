@@ -1365,105 +1365,6 @@ function Install-LabWebServers
 }
 #endregion Install-LabWebServers
 
-#region Get-LabWindowsFeature
-function Get-LabWindowsFeature
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string[]]$ComputerName,
-        
-        [ValidateNotNullOrEmpty()]
-        [string[]]$FeatureName,
-        
-        [switch]$UseLocalCredential,
-        
-        [int]$ProgressIndicator = 5,
-        
-        [switch]$NoDisplay   
-    )
-    
-    Write-LogFunctionEntry
-    
-    $results = @()
-    
-    $machines = Get-LabVM -ComputerName $ComputerName
-    if (-not $machines)
-    {
-        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
-        return
-    }
-    if ($machines.Count -ne $ComputerName.Count)
-    {
-        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
-    }
-    
-    $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
-    
-    $results = @()
-    foreach ($machine in $machines)
-    {
-        if ($machine.OperatingSystem.Installation -eq 'Client')
-        {
-            #Add-Memer is required as the PSComputerName will be the IP address
-            $cmd = { Get-WindowsOptionalFeature -Online | Add-Member -Name ComputerName -MemberType NoteProperty -Value (HOSTNAME.EXE) -PassThru }
-        }
-        else
-        {
-            #Add-Memer is required as the PSComputerName will be the IP address
-            $cmd = {  Import-Module -Name ServerManager; Get-WindowsFeature | Add-Member -Name ComputerName -MemberType NoteProperty -Value (HOSTNAME.EXE) -PassThru }
-        }
-        
-        $results += Invoke-LabCommand -ComputerName $machine -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -PassThru
-
-        foreach ($result in $results)
-        {
-            $feature = New-Object AutomatedLab.WindowsFeature
-            $feature.ComputerName =  $result.ComputerName
-
-            #depending on whether the result is from a client or server machine, it is either the 'Name' or 'FeatureName' property
-            if ([string]::IsNullOrEmpty($result.Name))
-            {
-                $feature.Name = $result.FeatureName
-            }
-            else
-            {
-                $feature.Name = $result.Name
-            }
-
-            #do not continue if the feature is not requested
-            if ($FeatureName -and $feature.Name -notin $FeatureName)
-            { continue }
-            
-            if ($result.State)
-            {
-                switch($result.State)
-                {
-                    'Disabled' { $feature.State = 'Available' }
-                    'Enabled' { $feature.State = 'Installed' }
-                    'DisabledWithPayloadRemoved' { $feature.State = 'Removed' }
-                }
-            }
-            elseif ($result.InstallState)
-            {
-                $feature.State = [string]$result.InstallState
-            }
-            else
-            {
-                $feature.State = ?? { $result.Installed } { 'Installed' } { 'Available' }
-            }
-
-            $feature
-        }
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Get-LabWindowsFeature
-
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
 {
@@ -1611,16 +1512,16 @@ function Get-LabWindowsFeature
     }
     
     $hyperVMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
-    $azureMachines  = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
+    $azureMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
 
-    if($hyperVMachines)
+    if ($hyperVMachines)
     {        
         $params = @{
-            Machine = $hyperVMachines 
-            FeatureName = $FeatureName 
+            Machine            = $hyperVMachines 
+            FeatureName        = $FeatureName 
             UseLocalCredential = $UseLocalCredential 
-            AsJob = $AsJob 
-            PassThru = $PassThru
+            AsJob              = $AsJob 
+            PassThru           = $PassThru
         }
 
         $jobs = Get-LWHypervWindowsFeature @params    
@@ -1628,11 +1529,11 @@ function Get-LabWindowsFeature
     elseif ($azureMachines)
     {
         $params = @{
-            Machine = $azureMachines 
-            FeatureName = $FeatureName 
+            Machine            = $azureMachines 
+            FeatureName        = $FeatureName 
             UseLocalCredential = $UseLocalCredential 
-            AsJob = $AsJob 
-            PassThru = $PassThru
+            AsJob              = $AsJob 
+            PassThru           = $PassThru
         }
 
         $jobs = Get-LWAzureWindowsFeature @params        
@@ -1651,6 +1552,7 @@ function Get-LabWindowsFeature
     Write-LogFunctionExit
 }
 #endregion Get-LabWindowsFeature
+
 
 #region Uninstall-LabWindowsFeature
 function Uninstall-LabWindowsFeature
@@ -1707,15 +1609,15 @@ function Uninstall-LabWindowsFeature
     }
     
     $hyperVMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
-    $azureMachines  = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
+    $azureMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
 
     if ($hyperVMachines)
     {        
-        $jobs = Uninstall-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Uninstall-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     elseif ($azureMachines)
     {
-        $jobs = Uninstall-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeAllSubFeature:$IncludeAllSubFeature -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
+        $jobs = Uninstall-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
     }
     
     if (-not $AsJob)
@@ -1731,7 +1633,6 @@ function Uninstall-LabWindowsFeature
     Write-LogFunctionExit
 }
 #endregion Uninstall-LabWindowsFeature
-
 
 #region Install-VisualStudio2013
 function Install-VisualStudio2013

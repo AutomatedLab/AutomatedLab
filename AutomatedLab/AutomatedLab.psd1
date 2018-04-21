@@ -191,6 +191,7 @@
         'Test-LabMachineInternetConnectivity',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Unblock-LabSources',
+        'Uninstall-LabWindowsFeature'
         'Update-LabAzureSettings',
         'Update-LabIsoImage',
         'Update-LabBaseImage',
