@@ -128,7 +128,8 @@ exit
     $dismResult = Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 20 -Timeout 60 -PassThru
     if ($dismResult.LastExitCode)
     {
-        throw (New-Object System.ComponentModel.Win32Exception($dismResult.LastExitCode, "The base image for operating system '$OsName' could not be created"))
+        throw (New-Object System.ComponentModel.Win32Exception($dismResult.LastExitCode,
+        "The base image for operating system '$OsName' could not be created. The error is $($dismResult.LastExitCode)"))
     }
     Start-Sleep -Seconds 5
     
