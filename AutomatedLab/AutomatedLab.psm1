@@ -1478,8 +1478,6 @@ function Get-LabWindowsFeature
         
         [switch]$NoDisplay,
         
-        [switch]$PassThru,
-        
         [switch]$AsJob        
     )
     
@@ -1520,8 +1518,7 @@ function Get-LabWindowsFeature
             Machine            = $hyperVMachines 
             FeatureName        = $FeatureName 
             UseLocalCredential = $UseLocalCredential 
-            AsJob              = $AsJob 
-            PassThru           = $PassThru
+            AsJob              = $AsJob
         }
 
         $jobs = Get-LWHypervWindowsFeature @params    
@@ -1532,8 +1529,7 @@ function Get-LabWindowsFeature
             Machine            = $azureMachines 
             FeatureName        = $FeatureName 
             UseLocalCredential = $UseLocalCredential 
-            AsJob              = $AsJob 
-            PassThru           = $PassThru
+            AsJob              = $AsJob
         }
 
         $jobs = Get-LWAzureWindowsFeature @params        
@@ -1542,11 +1538,6 @@ function Get-LabWindowsFeature
     if (-not $AsJob)
     {
         Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    if ($PassThru)
-    {
-        $jobs
     }
    
     Write-LogFunctionExit

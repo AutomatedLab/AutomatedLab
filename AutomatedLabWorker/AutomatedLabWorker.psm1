@@ -296,9 +296,7 @@ function Get-LWHypervWindowsFeature
         
         [switch]$UseLocalCredential,
         
-        [switch]$AsJob,
-        
-        [switch]$PassThru
+        [switch]$AsJob
     )
     
     Write-LogFunctionEntry
@@ -317,19 +315,19 @@ function Get-LWHypervWindowsFeature
                     foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
-                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     }                  
                 }
                 else
                 {
                     $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName) -WarningAction SilentlyContinue")
-                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                 }                
             }
             else
             {
                 $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
-                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru                
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob                
             }
         }
         else
@@ -341,7 +339,7 @@ function Get-LWHypervWindowsFeature
                     foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
-                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     
                         $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                         [string]$featureNamedismOutput = $parseddismOutput[0]
@@ -359,7 +357,7 @@ function Get-LWHypervWindowsFeature
                 else
                 {
                     $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
-                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                   
                     [string]$featureNamedismOutput = $parseddismOutput[0]
@@ -377,14 +375,9 @@ function Get-LWHypervWindowsFeature
             else
             {
                 $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
-                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
             }
         }
-    }
-
-    if ($PassThru)
-    {
-        $result
     }
 
     Write-LogFunctionExit
@@ -406,9 +399,7 @@ function Get-LWAzureWindowsFeature
         
         [switch]$UseLocalCredential,
         
-        [switch]$AsJob,
-        
-        [switch]$PassThru
+        [switch]$AsJob
     )
     
     Write-LogFunctionEntry
@@ -427,19 +418,19 @@ function Get-LWAzureWindowsFeature
                     foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
-                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     }                  
                 }
                 else
                 {
                     $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
-                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                 }                
             }
             else
             {
                 $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
-                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru                
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob                
             }
         }
         else
@@ -451,7 +442,7 @@ function Get-LWAzureWindowsFeature
                     foreach ($feature in $FeatureName)
                     {
                         $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
-                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     
                         $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                         [string]$featureNamedismOutput = $parseddismOutput[0]
@@ -469,7 +460,7 @@ function Get-LWAzureWindowsFeature
                 else
                 {
                     $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
-                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
                     $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
                   
                     [string]$featureNamedismOutput = $parseddismOutput[0]
@@ -487,7 +478,7 @@ function Get-LWAzureWindowsFeature
             else
             {
                 $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
-                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
             }
         }
     }

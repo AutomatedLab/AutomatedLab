@@ -4208,13 +4208,6 @@ kb-edge01                        Stopped
 				<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			</command:parameter>
 			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
-				<maml:name>PassThru</maml:name>
-				<maml:description>
-					<maml:para>Indicates if output should be returned to the user.</maml:para>
-				</maml:description>
-				<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
-			</command:parameter>
-			<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
 				<maml:name>AsJob</maml:name>
 				<maml:description>
 					<maml:para>Indicates if output should be running as a background Job</maml:para>
@@ -4276,18 +4269,6 @@ kb-edge01                        Stopped
 			<maml:name>NoDisplay</maml:name>
 			<maml:description>
 				<maml:para>Indicates if output should be suppressed</maml:para>
-			</maml:description>
-			<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
-			<dev:type>
-				<maml:name>SwitchParameter</maml:name>
-				<maml:uri/>
-			</dev:type>
-			<dev:defaultValue></dev:defaultValue>
-		</command:parameter>
-		<command:parameter required="false" variableLength="false" globbing="false" pipelineInput="false" position="named">
-			<maml:name>Passthru</maml:name>
-			<maml:description>
-				<maml:para>Indicates if output should be returned to the user.</maml:para>
 			</maml:description>
 			<command:parameterValue required="false" variableLength="false">SwitchParameter</command:parameterValue>
 			<dev:type>
