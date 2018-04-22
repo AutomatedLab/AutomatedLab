@@ -120,7 +120,7 @@ exit
     
         $wimPath = "$isoDrive\Sources\install.wim"
         $job = Start-Job -ScriptBlock { 
-            $output = Dism.exe /English /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\ /english
+            $output = Dism.exe /English /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\
             New-Object PSObject -Property @{
                 Outout = $output
                 LastExitCode = $LASTEXITCODE
