@@ -1123,7 +1123,7 @@ function Get-LabAvailableOperatingSystem
         $standardImagePath = "$letter`:\Sources\Install.wim"    
         if (Test-Path -Path $standardImagePath)
         {
-            $dismOutput = Dism.exe /Get-WimInfo /WimFile:$standardImagePath
+            $dismOutput = Dism.exe /English /Get-WimInfo /WimFile:$standardImagePath
             $dismOutput = $dismOutput -join "`n"
             $dismMatches = $dismOutput | Select-String -Pattern $dismPattern -AllMatches
             Write-Verbose "The Windows Image list contains $($dismMatches.Matches.Count) items"
