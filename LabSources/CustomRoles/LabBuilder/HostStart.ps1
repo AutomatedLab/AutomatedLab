@@ -1,17 +1,22 @@
 param(
     [Parameter(Mandatory)]
-    [string]$ComputerName
+    [string]
+    $ComputerName,
+
+    [Parameter()]
+    [switch]
+    $CopyLabSources
 )
 
-if (-not (Get-Lab))
+if (-not (Get-Lab -ErrorAction SilentlyContinue))
 {
-    Import-Lab -Name $data.Name
+    Import-Lab -Name $data.Name -NoDisplay -NoValidation
 }
 
 $polarisUri = 'https://github.com/PowerShell/Polaris/archive/master.zip'
 
 # Enable Virtualization
-$vm = Get-LabVm -Role LabBuilder
+$vm = Get-LabVm -Name $ComputerName
 Stop-LabVm -ComputerName $vm
 $hyperVvm = Get-Vm -Name $vm.Name
 $hyperVvm | Set-VMProcessor -ExposeVirtualizationExtensions $true
@@ -22,6 +27,14 @@ $downloadPath = Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPa
 $polarisArchive = Get-LabInternetFile -Uri $polarisUri -Path $downloadPath -PassThru
 Copy-LabFileItem -Path $polarisArchive.Fullname -ComputerName $vm
 Copy-LabFileItem -Path .\PolarisLabBuilder.ps1 -ComputerName $vm
+
+$session = New-LabPSSession -Machine $vm
+Send-ModuleToPSSession -Module (Get-Module AutomatedLab -ListAvailable)[0] -Session $session
+
+if ($CopyLabSources)
+{
+    Copy-LabFileItem -Path $global:labSources -ComputerName $ComputerName -DestinationFolderPath C:\ -Recurse
+}
 
 Invoke-LabCommand -ComputerName $vm -ActivityName EnablePolaris -ScriptBlock {
     Expand-Archive -Path C:\Polaris.zip -DestinationPath C:\
