@@ -349,11 +349,12 @@ function New-LabReleasePipeline
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 
-        $repoparent = Join-Path -Path $locallabsources -ChildPath GitRepositories
+        $repoparent = Join-Path -Path (Join-Path -Path $locallabsources -ChildPath GitRepositories) -ChildPath (Get-Lab).Name
+
         if (-not (Test-Path $repoparent))
         {
             Write-ScreenInfo -Type Verbose -Message "Creating $repoparent to contain your cloned repos"
-            [void] (New-Item -ItemType Directory -Path $repoparent)
+            [void] (New-Item -ItemType Directory -Path $repoparent -Force)
         }
 
         $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
