@@ -348,11 +348,11 @@ function New-LWAzureVM
         $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop	
     }
 
-    $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -ErrorAction Stop -AvailabilitySetId $machineAvailabilitySet.Id
+    $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -WarningAction SilentlyContinue
     $vm = Set-AzureRmVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
                            
     Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
-    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
+    $vm = Set-AzureRmVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop -WarningAction SilentlyContinue
 
     Write-Verbose -Message "Setting private IP address."
     $defaultIPv4Address = $DefaultIpAddress
@@ -382,14 +382,14 @@ function New-LWAzureVM
     $networkInterface = New-AzureRmNetworkInterface @nicProperties
         
     Write-Verbose -Message 'Adding NIC to VM'
-    $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
+    $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
         
                                    
     $DiskName = "$($machine.Name)_os"
     $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
         
     Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
-    $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop
+    $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop -WarningAction SilentlyContinue
 
     if ($Disks)
     {
@@ -440,7 +440,7 @@ function New-LWAzureVM
             }
 
             $networkInterface = New-AzureRmNetworkInterface @additionalNicParameters        
-            $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop           
+            $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
         }
     }
 
@@ -452,6 +452,7 @@ function New-LWAzureVM
         VM                = $vm
         Tag               = @{ AutomatedLab = $script:lab.Name; CreationTime = Get-Date }
         ErrorAction       = 'Stop'
+		WarningAction     = 'SilentlyContinue'
         AsJob             = $true
     }
 
