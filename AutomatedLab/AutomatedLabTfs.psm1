@@ -126,6 +126,7 @@ function Install-LabTeamFoundationServer
             }
 
             $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
+            $machineName = $machine.AzureConnectionInfo.DnsName
         }
 
         if ($role.Properties.ContainsKey('DbServer'))
@@ -227,6 +228,19 @@ function Install-LabBuildWorker
             }
         }
 
+        [string]$machineName = $tfsServer
+
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            if (-not (Get-LabAzureLoadBalancedPort -ComputerName $machine))
+            {
+                Add-LWAzureLoadBalancedPort -ComputerName $machine
+            }
+
+            $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
+            $machineName = $tfsServer.AzureConnectionInfo.DnsName
+        }
+
         $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint')
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
@@ -238,11 +252,11 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
@@ -251,7 +265,7 @@ function Install-LabBuildWorker
             {
                 Write-ScreenInfo -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)" -Type Warning
             }
-        } -AsJob -Variable (Get-Variable tfsServer, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -312,7 +326,7 @@ function New-LabReleasePipeline
         {
             Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
         }
-        $originalPort = $tfsPort
+        
         $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
@@ -337,14 +351,7 @@ function New-LabReleasePipeline
     if ($gitBinary)
     {
         $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
-        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
-
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
-        {
-            $repoUrl = $repoUrl -replace ":$originalPort",":$tfsPort"
-            $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
-        }
-        
+        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')       
         $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
