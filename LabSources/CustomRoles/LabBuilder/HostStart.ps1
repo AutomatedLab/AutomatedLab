@@ -40,7 +40,12 @@ else
 }
 
 $session = New-LabPSSession -Machine $vm
-Send-ModuleToPSSession -Module (Get-Module AutomatedLab -ListAvailable)[0] -Session $session
+
+foreach ($moduleInfo in (Get-Module AutomatedLab*,PSFileTransfer,HostsFile,PSLog -ListAvailable))
+{
+    Send-ModuleToPSSession -Module $moduleInfo -Session $session
+}
+
 Copy-LabFileItem -Path $global:labSources -ComputerName $ComputerName -DestinationFolderPath "$($driveLetter):\" -Recurse
 
 Invoke-LabCommand -ComputerName $vm -ActivityName EnablePolaris -ScriptBlock {
@@ -50,5 +55,5 @@ Invoke-LabCommand -ComputerName $vm -ActivityName EnablePolaris -ScriptBlock {
 
     $trigger = New-ScheduledTaskTrigger -Daily -At 9:00
     $action = New-ScheduledTaskAction -Execute "$pshome\powershell.exe" -Argument '-NoProfile -File "C:\PolarisLabBuilder.ps1'
-    Register-ScheduledTask -TaskName AutomatedLabBuilder -Action $action -Trigger $trigger
+    Register-ScheduledTask -TaskName AutomatedLabBuilder -Action $action -Trigger $trigger | Start-ScheduledTask
 } -Variable (Get-Variable driveLetter)
