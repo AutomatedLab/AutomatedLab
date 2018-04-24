@@ -41,7 +41,7 @@ New-PolarisGetRoute -Force -Verbose -Path /Lab -ScriptBlock {
             $response.Json(($lab | ConvertTo-Json))
         }
     }
-    elseif($request.Query['Id'])
+    elseif ($request.Query['Id'])
     {
         $jobGuid = $request.Query['Id']
         $scheduledJob = Get-ScheduledJob -Name $jobGuid -ErrorAction SilentlyContinue
@@ -51,15 +51,15 @@ New-PolarisGetRoute -Force -Verbose -Path /Lab -ScriptBlock {
         {
             $jsonResponse = @{
                 Status = 'Running'
-                Name = $jobGuid
+                Name   = $jobGuid
             } | ConvertTo-Json
             $response.Json($jsonResponse)
         }
-        elseif($scheduledJob -and $job)
+        elseif ($scheduledJob -and $job)
         {
             $jsonResponse = @{
                 Status = $job.State
-                Name = $jobGuid
+                Name   = $jobGuid
             } | ConvertTo-Json
             $response.Json($jsonResponse)
         }
@@ -72,7 +72,21 @@ New-PolarisGetRoute -Force -Verbose -Path /Lab -ScriptBlock {
 }
 
 New-PolarisDeleteRoute -Path /Lab -ScriptBlock {
-    $labName = $request.Body.Name
+    if ($request.Query['Name'])
+    {
+        $labName = $request.Query['Name']
+    }
+    else
+    {
+        $labName = $request.Body.Name
+    }
+
+    if (-not $labName)
+    {
+        $response.SetStatusCode(404)
+        $response.Send("No lab name supplied")
+        return
+    }
     try
     {
         Remove-Lab -Name $labName -Confirm:$false -ErrorAction Stop
