@@ -16,10 +16,12 @@ $vm = Get-LabVm -ComputerName $ComputerName
 Stop-LabVm -ComputerName $vm -Wait
 $hyperVvm = Get-Vm -Name $vm.Name
 $hyperVvm | Set-VMProcessor -ExposeVirtualizationExtensions $true
-Start-LabVM $vm
+Start-LabVM $vm -Wait
 
 Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
-    Get-Disk | Where-Object IsOffline | Set-Disk -IsOffline $false
+    $disk = Get-Disk | Where-Object IsOffline
+    $disk | Set-Disk -IsOffline $false
+    $disk | Set-Disk -IsReadOnly $false
 }
 
 # Download Polaris (as long as it isn't in the Gallery)
