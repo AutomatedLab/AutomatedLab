@@ -127,6 +127,17 @@ function Install-LabTeamFoundationServer
 
             $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
             $machineName = $machine.AzureConnectionInfo.DnsName
+
+            if ($role.Properties.ContainsKey('Port'))
+            {
+                $role.Properties['Port'] = $tfsPort
+            }
+            else
+            {
+                $role.Properties.Add('Port', $tfsPort)
+            }
+
+            Export-Lab # Export lab again since we changed role properties
         }
 
         if ($role.Properties.ContainsKey('DbServer'))
@@ -232,12 +243,13 @@ function Install-LabBuildWorker
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            if (-not (Get-LabAzureLoadBalancedPort -ComputerName $machine))
-            {
-                Add-LWAzureLoadBalancedPort -ComputerName $machine
-            }
+            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-            $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
+            if (-not $tfsPort)
+            {
+                Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue installing build worker.'
+                return
+            }
             $machineName = $tfsServer.AzureConnectionInfo.DnsName
         }
 
@@ -322,12 +334,14 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+
+        if (-not $tfsPort)
         {
-            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue rolling out release pipeline'
+            return
         }
-        
-        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
+
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -494,12 +508,14 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+
+        if (-not $tfsPort)
         {
-            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve build steps'
+            return
         }
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -548,12 +564,13 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -ComputerName $tfsvm))
-        {
-            Add-LWAzureLoadBalancedPort -ComputerName $tfsVm
-        }
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $tfsvm
+        if (-not $tfsPort)
+        {
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve lab release steps.'
+            return
+        }
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -603,12 +620,14 @@ function Open-LabTfsSite
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
-        {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
-        }
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        if (-not $tfsPort)
+        {
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot open TFS site.'
+            return
+        }
+        
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
