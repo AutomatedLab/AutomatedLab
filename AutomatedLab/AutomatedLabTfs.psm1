@@ -352,7 +352,7 @@ function New-LabReleasePipeline
     {
         $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')       
-        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password
+        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName.ToLower(), $credential.GetNetworkCredential().Password
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 
