@@ -470,7 +470,7 @@ function Get-LabInternetFile
 
         if ((Test-Path -Path $Path) -and -not $Force)
         {
-            Write-ScreenInfo "The file '$Path' does already exist, skipping the download"
+            Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
         }
         else
         {
@@ -519,7 +519,7 @@ function Get-LabInternetFile
                             }
                             else
                             {
-                                Write-ScreenInfo -Message "Could not determine the ContentLength of '$Uri'" -Type Verbose
+                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
                             }
                         
                         } while ($bytesRead -gt 0)
