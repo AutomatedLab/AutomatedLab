@@ -508,14 +508,15 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-        if (-not $tfsPort)
+        if (-not $loadbalancedPort)
         {
             Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve build steps'
             return
         }
 
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -564,13 +565,15 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-        if (-not $tfsPort)
+        if (-not $loadbalancedPort)
         {
             Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve lab release steps.'
             return
         }
+
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -620,14 +623,15 @@ function Open-LabTfsSite
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
 
-        if (-not $tfsPort)
+        if (-not $loadbalancedPort)
         {
             Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot open TFS site.'
             return
         }
         
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
