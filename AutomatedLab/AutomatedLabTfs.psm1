@@ -128,14 +128,7 @@ function Install-LabTeamFoundationServer
             $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
             $machineName = $machine.AzureConnectionInfo.DnsName
 
-            if ($role.Properties.ContainsKey('Port'))
-            {
-                $role.Properties['Port'] = $tfsPort
-            }
-            else
-            {
-                $role.Properties.Add('Port', $tfsPort)
-            }
+            $machine.Roles.Where({$_.Name -like 'TFS????'}).ForEach({$_.Properties.Add('Port', $tfsPort)})
 
             Export-Lab # Export lab again since we changed role properties
         }
