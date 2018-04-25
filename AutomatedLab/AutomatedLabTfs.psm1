@@ -243,7 +243,7 @@ function Install-LabBuildWorker
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue
 
             if (-not $tfsPort)
             {
@@ -334,7 +334,7 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
 
         if (-not $tfsPort)
         {
@@ -508,7 +508,7 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue
 
         if (-not $loadbalancedPort)
         {
@@ -565,7 +565,7 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
 
         if (-not $loadbalancedPort)
         {
@@ -623,7 +623,7 @@ function Open-LabTfsSite
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
 
         if (-not $loadbalancedPort)
         {
