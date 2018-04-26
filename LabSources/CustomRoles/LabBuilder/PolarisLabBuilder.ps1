@@ -15,6 +15,12 @@ New-PolarisPostRoute -Path /Lab -ScriptBlock {
     [string]$labScript = $request.Body.LabScript
     $labScriptBlock = [scriptblock]::Create($labScript)
     $labGuid = (New-Guid).Guid
+
+    if (-not (Test-Path -Path C:\Polaris\LabJobs))
+    {
+        [void] (New-Item -Path C:\Polaris\LabJobs -ItemType Directory)
+    }
+    
     New-Item -ItemType File -Path C:\Polaris\LabJobs\$labGuid
     $t = New-JobTrigger -Once -At (Get-Date).AddSeconds(5)
     $job = Register-ScheduledJob -ScriptBlock $labScriptBlock -Name $labGuid -Trigger $t
