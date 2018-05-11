@@ -322,61 +322,61 @@ function Add-LabAzureSubscription
         
         # Server
         $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Desktop
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # SQL
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftSQLServer' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Skus -eq 'Enterprise' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Skus -eq 'Enterprise' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
         
         # VisualStudio
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Offer -eq 'VisualStudio' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'VisualStudio' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Client OS
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Offer -eq 'Windows' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'Windows' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         # Sharepoint 2013 and 2016
         $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-            Where-Object PublisherName -eq 'MicrosoftSharePoint' |
-            Get-AzureRmVMImageOffer |
-            Get-AzureRmVMImageSku |
-            Get-AzureRmVMImage |
-            Where-Object Offer -eq 'MicrosoftSharePointServer' |
-            Group-Object -Property Skus, Offer |
-            ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+        Get-AzureRmVMImageOffer |
+        Get-AzureRmVMImageSku |
+        Get-AzureRmVMImage |
+        Where-Object Offer -eq 'MicrosoftSharePointServer' |
+        Group-Object -Property Skus, Offer |
+        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
         $global:cacheVmImages = $vmImages
     }
@@ -509,39 +509,20 @@ function Get-LabAzureLocation
             #if lab already exists, use the location used when this was deployed to create lab stickyness
             return (Get-Lab).AzureSettings.DefaultLocation.Name
         }
-        
-        $urls = @{
-            'North Central US'    = 'speedtestnsus.blob.core.windows.net'
-            'Central US'          = 'speedtestcus.blob.core.windows.net'
-            'West Central US'     = 'speedtestwcus.blob.core.windows.net'
-            'South Central US'    = 'speedtestscus.blob.core.windows.net'
-            'West US'             = 'speedtestwus.blob.core.windows.net'
-            'West US 2'           = 'speedtestwus2.blob.core.windows.net'
-            'East US'             = 'speedtesteus.blob.core.windows.net'
-            'East US 2'           = 'speedtesteus2.blob.core.windows.net'
-            'West Europe'         = 'speedtestwe.blob.core.windows.net'
-            'North Europe'        = 'speedtestne.blob.core.windows.net'
-            'Southeast Asia'      = 'speedtestsea.blob.core.windows.net'
-            'East Asia'           = 'speedtestea.blob.core.windows.net'
-            'Japan East'          = 'speedtestjpe.blob.core.windows.net'
-            'Japan West'          = 'speedtestjpw.blob.core.windows.net'
-            'Brazil South'        = 'speedtestbs.blob.core.windows.net'
-            'Australia Southeast' = 'mickmel.blob.core.windows.net'
-            'Australia East'      = 'micksyd.blob.core.windows.net'
-            'UK West'             = 'speedtestukw.blob.core.windows.net'
-            'UK South'            = 'speedtestuks.blob.core.windows.net'
-            'Canada Central'      = 'speedtestcac.blob.core.windows.net'
-            'Canada East'         = 'speedtestcae.blob.core.windows.net'
-        }
+
+        $locationUrls = $MyInvocation.MyCommand.Module.PrivateData.AzureLocationsUrls
         
         foreach ($location in $azureLocations)
         {
-            $location | Add-Member -MemberType NoteProperty -Name 'Url'     -Value ($urls."$($location.DisplayName)")
+            if ($locationUrls."$($location.DisplayName)")
+            {
+                $location | Add-Member -MemberType NoteProperty -Name 'Url' -Value ($locationUrls."$($location.DisplayName)" + '.blob.core.windows.net')
+            }
             $location | Add-Member -MemberType NoteProperty -Name 'Latency' -Value 9999
         }
         
         $jobs = @()
-        foreach ($location in $azureLocations)
+        foreach ($location in ($azureLocations | Where-Object { $_.Url }))
         {
             $url = $location.Url
             $jobs += Start-Job -Name $location.DisplayName -ScriptBlock {
@@ -1305,8 +1286,8 @@ function Get-LabAzureLabSourcesContent
     }
 
     $content = $content |
-        Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
-        Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
+    Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
+    Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
         
     return $content
 }

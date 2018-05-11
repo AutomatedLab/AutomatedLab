@@ -315,5 +315,35 @@
 
         # OpenSSH
         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
+
+        AzureLocationsUrls                     = @{
+            "West Europe"         = "speedtestwe"
+            "Southeast Asia"      = "speedtestsea" 
+            "East Asia"           = "speedtestea"
+            "North Central US"    = "speedtestnsus"
+            "North Europe"        = "speedtestne"
+            "South Central US"    = "speedtestscus"
+            "West US"             = "speedtestwus"
+            "East US"             = "speedtesteus"
+            "Japan East"          = "speedtestjpe"
+            "Japan West"          = "speedtestjpw"
+            "Brazil South"        = "speedtestbs"
+            "Central US"          = "speedtestcus"
+            "East US 2"           = "speedtesteus2"
+            "Australia Southeast" = "mickmel"
+            "Australia East"      = "micksyd"
+            "West UK"             = "speedtestukw"
+            "South UK"            = "speedtestuks"
+            "Canada Central"      = "speedtestcac"
+            "Canada East"         = "speedtestcae"
+            "West US 2"           = "speedtestwestus2"
+            "West India"          = "speedtestwestindia"
+            "East India"          = "speedtesteastindia"
+            "Central India"       = "speedtestcentralindia"
+            "Korea Central"       = "speedtestkoreacentral"
+            "Korea South"         = "speedtestkoreasouth"
+            "West Central US"     = "speedtestwestcentralus"
+            "France Central"      = "speedtestfrc"
+        }
     }
 }
