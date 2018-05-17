@@ -414,7 +414,7 @@ function Connect-OnPremisesWithAzure
     $publicIpParameters.Add('Name', 's2sip')
     $publicIpParameters.Add('AllocationMethod', 'Dynamic')
     $publicIpParameters.Add('IpAddressVersion', 'IPv4')
-    $publicIpParameters.Add('DomainNameLabel', "$($lab.name)-s2s".ToLower())
+    $publicIpParameters.Add('DomainNameLabel', "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')".ToLower())
     $publicIpParameters.Add('Force', $true)
     
     $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
@@ -748,7 +748,7 @@ function Connect-AzureLab
         Name              = 's2sip'
         AllocationMethod  = 'Dynamic'
         IpAddressVersion  = 'IPv4'
-        DomainNameLabel   = "$($SourceLab)-s2s".ToLower()
+        DomainNameLabel   = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
         Force             = $true
     }
 
@@ -758,7 +758,7 @@ function Connect-AzureLab
         Name              = 's2sip'
         AllocationMethod  = 'Dynamic'
         IpAddressVersion  = 'IPv4'
-        DomainNameLabel   = "$($DestinationLab)-s2s".ToLower()
+        DomainNameLabel   = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
         Force             = $true
     }   
     
