@@ -1035,15 +1035,22 @@ function Remove-Lab
 function Get-LabAvailableOperatingSystem
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
+    [cmdletBinding(DefaultParameterSetName='Local')]
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
+        [Parameter(ParameterSetName='Local')]
         [string[]]$Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs",
 
         [switch]$UseOnlyCache,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [Parameter(ParameterSetName = 'Azure')]
+        [switch]$Azure,
+
+        [Parameter(Mandatory, ParameterSetName = 'Azure')]
+        $Location
     )
 
     Write-LogFunctionEntry
@@ -1051,6 +1058,13 @@ function Get-LabAvailableOperatingSystem
     if (-not (Test-IsAdministrator))
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
+    }
+
+    if ($Azure)
+    {
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $osList = New-Object $type
+        return (Get-LabAzureAvailableSku -Location $Location)
     }
     
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
