@@ -1062,6 +1062,11 @@ function Get-LabAvailableOperatingSystem
 
     if ($Azure)
     {
+        if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue).Subscription)
+        {
+            throw 'Please login to Azure before trying to list Azure image SKUs'
+        }
+
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
         $osList = New-Object $type
         return (Get-LabAzureAvailableSku -Location $Location)
