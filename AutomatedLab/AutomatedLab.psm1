@@ -1067,7 +1067,18 @@ function Get-LabAvailableOperatingSystem
             throw 'Please login to Azure before trying to list Azure image SKUs'
         }
 
-        return (Get-LabAzureAvailableSku -Location $Location)
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $osList = New-Object $type
+        $skus = (Get-LabAzureAvailableSku -Location 'West Europe')
+
+        foreach ($sku in $skus)
+        {
+            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus, $true))
+            if (-not $azureOs.OperatingSystemName) { continue }
+
+            $osList.Add($azureOs )
+        }
+        return $osList.ToArray()
     }
     
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
