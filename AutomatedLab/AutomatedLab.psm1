@@ -1039,7 +1039,7 @@ function Get-LabAvailableOperatingSystem
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
-        [string[]]$Path = "$labSources\ISOs",
+        [string[]]$Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs",
 
         [switch]$UseOnlyCache,
 
