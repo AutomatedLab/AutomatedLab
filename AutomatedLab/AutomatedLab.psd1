@@ -196,6 +196,7 @@
         'Update-LabAzureSettings',
         'Update-LabIsoImage',
         'Update-LabBaseImage',
+        'Update-LabSysinternalsTools',
         'Wait-LabADReady',
         'Wait-LabVM',
         'Wait-LabVMRestart',

@@ -249,6 +249,8 @@ namespace AutomatedLab
                     //Windows 10
                     case "Windows 10 Pro":
                         return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
+                    case "Windows 10 Pro for Workstations":
+                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Evaluation":

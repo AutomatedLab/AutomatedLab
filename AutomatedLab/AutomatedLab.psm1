@@ -3711,7 +3711,7 @@ If you want to opt out, please select Yes.
 
 if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
-    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
     
     # This is actually enough for the telemetry client.
     [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
