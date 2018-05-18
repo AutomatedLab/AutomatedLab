@@ -1,3 +1,3 @@
 # ISOs folder
 
-Please all ISOs that AutomatedLab should find automatically in here.
+Place all ISOs that AutomatedLab should find automatically in here.
