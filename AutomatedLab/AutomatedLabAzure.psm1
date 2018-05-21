@@ -319,66 +319,8 @@ function Add-LabAzureSubscription
             Write-Verbose ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
         }
         Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
-        
-        # Server
-        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 
-        # Desktop
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # SQL
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Skus -eq 'Enterprise' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-        
-        # VisualStudio
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'VisualStudio' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # Client OS
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'Windows' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # Sharepoint 2013 and 2016
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'MicrosoftSharePointServer' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        $global:cacheVmImages = $vmImages
+        $global:cacheVmImages = Get-LabAzureAvailableSku -Location $DefaultLocationName
     }
     
     $osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
@@ -1361,4 +1303,73 @@ function Get-LabAzureAvailableRoleSize
     } | Select-Object -ExpandProperty Name
 
     Get-AzureRmVmSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
+}
+
+function Get-LabAzureAvailableSku
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $Location
+    )
+
+    # Server
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Desktop
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # SQL
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Skus -eq 'Enterprise' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    
+    # VisualStudio
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'VisualStudio' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Client OS
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'Windows' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Sharepoint 2013 and 2016
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'MicrosoftSharePointServer' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 }

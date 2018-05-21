@@ -1265,15 +1265,22 @@ function Remove-Lab
 function Get-LabAvailableOperatingSystem
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
+    [cmdletBinding(DefaultParameterSetName='Local')]
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
+        [Parameter(ParameterSetName='Local')]
         [string[]]$Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs",
 
         [switch]$UseOnlyCache,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [Parameter(ParameterSetName = 'Azure')]
+        [switch]$Azure,
+
+        [Parameter(Mandatory, ParameterSetName = 'Azure')]
+        $Location
     )
 
     Write-LogFunctionEntry
@@ -1281,6 +1288,27 @@ function Get-LabAvailableOperatingSystem
     if (-not (Test-IsAdministrator))
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
+    }
+
+    if ($Azure)
+    {
+        if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue).Subscription)
+        {
+            throw 'Please login to Azure before trying to list Azure image SKUs'
+        }
+
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $osList = New-Object $type
+        $skus = (Get-LabAzureAvailableSku -Location 'West Europe')
+
+        foreach ($sku in $skus)
+        {
+            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus, $true))
+            if (-not $azureOs.OperatingSystemName) { continue }
+
+            $osList.Add($azureOs )
+        }
+        return $osList.ToArray()
     }
     
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
