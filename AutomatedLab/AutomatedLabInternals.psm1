@@ -688,13 +688,20 @@ function Get-LabSourcesLocationInternal
     {
         $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
 
-        foreach ($drive in $hardDrives)
+        $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
             {
                 "$drive\LabSources"
             }
         }
+        
+        if ($folders.Count -gt 1)
+        {
+            Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
+        }
+        
+        $folders
     }
     elseif ($defaultEngine -eq 'Azure')
     {
