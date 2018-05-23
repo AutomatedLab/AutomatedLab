@@ -2583,8 +2583,8 @@ function Add-LabMachineDefinition
     
         if ($machine.HostType -eq 'HyperV')
         {
-            if ($RhelPackage) { $machine.InternalNotes.LinuxPackage = $RhelPackage}
-            if ($SusePackage) { $machine.InternalNotes.LinuxPackage = $SusePackage}
+            if ($RhelPackage) { $machine.LinuxPackageGroup = $RhelPackage}
+            if ($SusePackage) { $machine.LinuxPackageGroup = $SusePackage}
 
             if ($OperatingSystemVersion)
             {

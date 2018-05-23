@@ -190,8 +190,10 @@
         'Test-LabAzureLabSourcesStorage',
         'Test-LabCATemplate',
         'Test-LabMachineInternetConnectivity',
+        'Test-LabHostRemoting',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Unblock-LabSources',
+        'Undo-LabHostRemoting',
         'Uninstall-LabWindowsFeature'
         'Update-LabAzureSettings',
         'Update-LabIsoImage',

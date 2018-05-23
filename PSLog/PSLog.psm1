@@ -1126,6 +1126,8 @@ function Write-ScreenInfo
 
         [switch]$OverrideNoDisplay
     )
+    
+    Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent -and -not $OverrideNoDisplay)
     {
@@ -1258,7 +1260,7 @@ function Write-ScreenInfo
                 Verbose
                 {
                     if ($VerbosePreference -eq 'Continue')
-                    {
+                    {                    
                         $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
                     }
                 }

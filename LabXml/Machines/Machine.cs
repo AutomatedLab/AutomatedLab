@@ -74,6 +74,8 @@ namespace AutomatedLab
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
+        public List<string> LinuxPackageGroup { get; set; }
+
         public OperatingSystemType OperatingSystemType
         {
             get
@@ -347,6 +349,7 @@ namespace AutomatedLab
         public Machine()
         {
             roles = new List<Role>();
+            LinuxPackageGroup = new List<string>();
             postInstallationActivity = new List<PostInstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
             internalNotes = new SerializableDictionary<string, string>();
