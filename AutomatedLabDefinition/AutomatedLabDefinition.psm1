@@ -1861,7 +1861,8 @@ function Add-LabMachineDefinition
         }
         
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
-
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+        
         return $RuntimeParameterDictionary
     }
 
