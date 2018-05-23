@@ -14,7 +14,7 @@ Add-LabIsoImageDefinition -Name SQLServer2017 -Path $labSources\ISOs\en_sql_serv
 Add-LabMachineDefinition -Name DC1 -Memory 1GB -Roles RootDC
 
 $sccmRole = Get-LabPostInstallationActivity -CustomRole SCCM -Properties @{
-    SccmSiteCode = "Site1"
+    SccmSiteCode = "S01"
     SccmBinariesDirectory = "$labSources\SoftwarePackages\SCCM1702"
     SccmPreReqsDirectory = "$labSources\SoftwarePackages\SCCMPreReqs"
     AdkDownloadPath = "$labSources\SoftwarePackages\ADK"
