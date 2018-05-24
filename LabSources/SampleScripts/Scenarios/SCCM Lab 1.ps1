@@ -11,14 +11,14 @@ $PSDefaultParameterValues = @{
 
 Add-LabIsoImageDefinition -Name SQLServer2017 -Path $labSources\ISOs\en_sql_server_2017_standard_x64_dvd_11294407.iso
 
-Add-LabMachineDefinition -Name DC1 -Memory 1GB -Roles RootDC
+Add-LabMachineDefinition -Name sDC1 -Memory 1GB -Roles RootDC
 
 $sccmRole = Get-LabPostInstallationActivity -CustomRole SCCM -Properties @{
-    SccmSiteCode = "Site1"
+    SccmSiteCode = "S01"
     SccmBinariesDirectory = "$labSources\SoftwarePackages\SCCM1702"
     SccmPreReqsDirectory = "$labSources\SoftwarePackages\SCCMPreReqs"
     AdkDownloadPath = "$labSources\SoftwarePackages\ADK"
-    SqlServerName = 'SQL1'
+    SqlServerName = 'sSQL1'
 }
 Add-LabMachineDefinition -Name sSCCM1 -Memory 4GB -DomainName contoso.com -PostInstallationActivity $sccmRole
 

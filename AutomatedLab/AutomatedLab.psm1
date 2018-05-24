@@ -155,7 +155,7 @@ Are you OK with that?
         Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Saved Credentials when NTLM only' configured correctly"
     }
     
-    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters).AllowEncryptionOracle
+    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -ErrorAction SilentlyContinue).AllowEncryptionOracle
     if ($allowEncryptionOracle -ne 2)
     {
         $message = @"
@@ -169,8 +169,9 @@ The security setting must be relexed in order to connect to machines using CredS
         {
             throw "AutomatedLab requires the the AllowEncryptionOracle setting to be 2. You can make the changes later by calling 'Enable-LabHostRemoting'"
         }
-        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle
-        Write-ScreenInfo "Removing registry value 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters\AllowEncryptionOracle'."
+        Write-ScreenInfo "Setting registry value 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters\AllowEncryptionOracle' to '2'."
+        New-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Force | Out-Null
+        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle -Value 2 -Force
     }
     
     
@@ -237,8 +238,8 @@ function Undo-LabHostRemoting
     [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSavedNTLMOnly', $null) | Out-Null
     [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', $null) | Out-Null
     
-    Write-ScreenInfo "Setting 'AllowEncryptionOracle' to '1'"
-    Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle -Value 1    
+    Write-ScreenInfo "removing 'AllowEncryptionOracle' registry setting"
+    Remove-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP -Recurse -Force
     
     Write-ScreenInfo "All settings changed by the cmdlet Enable-LabHostRemoting of AutomatedLab are back to Windows defaults."
     
@@ -311,7 +312,7 @@ function Test-LabHostRemoting
         $configOk = $false
     }
     
-    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters).AllowEncryptionOracle
+    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -ErrorAction SilentlyContinue).AllowEncryptionOracle
     if ($allowEncryptionOracle -ne 2)
     {
         Write-ScreenInfo "AllowEncryptionOracle is set to '$allowEncryptionOracle'. The value should be '2'" -Type Verbose
@@ -1354,7 +1355,7 @@ function Get-LabAvailableOperatingSystem
         Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
-    $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
+    $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
     $osList = New-Object $type
     if ($singleFile)
     {
