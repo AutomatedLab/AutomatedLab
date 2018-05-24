@@ -1472,8 +1472,8 @@ function Get-LabAvailableOperatingSystem
             {
                 # CentOS ISO for some reason contained only GUIDs
                 $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
-                Get-Content -TotalCount 2 |
-                Where-Object {$_ -like "*comps*"} |
+                Get-Content -TotalCount 10 |
+                Where-Object { $_ -like "*<comps>*" } |
                 Foreach-Object { $file.FullName } |
                 Select-Object -First 1
             }
