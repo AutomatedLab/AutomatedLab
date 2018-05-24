@@ -374,7 +374,8 @@ function New-LWAzureVM
         PrivateIpAddress               = $defaultIPv4Address
         LoadBalancerBackendAddressPool = $LoadBalancer.BackendAddressPools[0]
         LoadBalancerInboundNatRule     = $inboundNatRules
-        ErrorAction                    = "Stop"
+        ErrorAction                    = 'Stop'
+		WarningAction                  = 'SilentlyContinue'
         Force                          = $true
     }
         
