@@ -23,7 +23,7 @@ $installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetS
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
     Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
-	$net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
+    $net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
     Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob -NoDisplay
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30
@@ -43,10 +43,13 @@ Invoke-LabCommand -ActivityName 'Uninstalling the WebDAV feature' -ScriptBlock {
     Uninstall-WindowsFeature -Name Web-DAV-Publishing
 } -ComputerName $proGetServer #https://github.com/NuGet/NuGetGallery/issues/514
 
+#removing default web page
+Get-Website -Name 'Default Web Site' | Remove-Website
+
 #download ProGet
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
 
-$installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /LogFile=C:\ProGetInstallation.log /S'
+$installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
 $installArgs = $installArgs -f $SqlServer
 
 Write-ScreenInfo "Installing ProGet on server '$proGetServer'"
@@ -110,7 +113,7 @@ GO
 
 -- add a internal PowerShell feed
 INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [SyncToken_Bytes], [SyncTarget_Url], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
-VALUES('Internal', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
+VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
 
 GO
 '@ -f $ComputerName, $proGetServer.DomainName, $flatDomainName
