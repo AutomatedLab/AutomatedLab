@@ -1436,13 +1436,14 @@ function Get-LabAvailableOperatingSystem
             {
                 $os.Version = [AutomatedLab.Version]::new(0,0)
             }
+            
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
 
-            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
-                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
+            $packages = Get-ChildItem "$letter`:\suse" -Filter pattern*.rpm -File -Recurse | Foreach-Object {
+                if ( $_.Name -match '.*patterns-(openSUSE|SLE|sles)-(?<name>.*(32bit)?)-\d*-\d*\.\d*\.x86')
                 {
-                    $Matches.pack
+                    $Matches.name
                 }
             }
             
