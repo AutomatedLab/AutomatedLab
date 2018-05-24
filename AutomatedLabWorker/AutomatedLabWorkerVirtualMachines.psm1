@@ -324,9 +324,9 @@ function New-LWHypervVM
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
-        if ( $machine.InternalNotes.LinuxPackage )
+        if ( $machine.LinuxPackageGroup )
         {
-            Set-UnattendedPackage -Package $machine.InternalNotes.LinuxPackage
+            Set-UnattendedPackage -Package $machine.LinuxPackageGroup
         }
 
         # Copy Unattend-Stuff here

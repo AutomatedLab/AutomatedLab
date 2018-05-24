@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Xml.Serialization;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace AutomatedLab
 {
@@ -18,6 +19,18 @@ namespace AutomatedLab
         private string edition;
         private string installation;
         private int imageIndex;
+        private Dictionary<string, string> azureToIsoName = new Dictionary<string, string>(){
+            {"2008-R2-SP1", "Windows Server 2008 R2 Datacenter (Full Installation)" },
+            {"2012-Datacenter", "Windows Server 2012 Datacenter (Server with a GUI)" },
+            {"2012-R2-Datacenter", "Windows Server 2012 R2 Datacenter (Server with a GUI)" },
+            {"2016-Datacenter", "Windows Server 2016 Datacenter (Desktop Experience)" },
+            {"2016-Datacenter-Server-Core", "Windows Server 2016 Datacenter" },
+            {"Datacenter-Core-1709-smalldisk", "Windows Server Datacenter" },
+            {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
+            {"Windows-10-N-x64", "Windows 10 Enterprise" },
+            {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" }
+            };
+        private Dictionary<string, string> isoNameToAzureSku;
 
         public string OperatingSystemName
         {
@@ -96,44 +109,20 @@ namespace AutomatedLab
         {
             get
             {
-                //updating the list by getting the current list if Azure-VMImages:
-                //Get-AzureVMImage | Where-Object OS -eq Windows | Group-Object -Property Imagefamily | ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 } | Format-Table -Property Imagefamily, PublishedDate
-
-                switch (operatingSystemName)
+                try
                 {
-                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
-                        return "2008-R2-SP1";
-
-                    case "Windows Server 2012 Datacenter (Server with a GUI)":
-                        return "2012-Datacenter";
-
-                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
-                        return "2012-R2-Datacenter";
-
-                    case "Windows Server 2016 Datacenter (Desktop Experience)":
-                        return "2016-Datacenter";
-
-                    case "Windows Server 2016 Datacenter":
-                        return "2016-Datacenter-Server-Core";
-
-                    case "Windows Server Datacenter":
-                        return "Datacenter-Core-1709-smalldisk";
-
-                    case "Windows 8.1 Enterprise":
-                        return "Win8.1-Ent-N";
-
-                    case "Windows 10 Pro":
-                        return "Windows-10-N-x64";
-
-                    case "Windows 10 Enterprise":
-                        return "Windows-10-N-x64";
-
-                    case "Windows 7 Enterprise":
-                        return "Win7-SP1-Ent-N";
-
-                    default:
-                        return string.Empty;
+                    return isoNameToAzureSku[OperatingSystemName];
                 }
+                catch (ArgumentNullException)
+                {
+                    // Key is null - can happen
+                }
+                catch (KeyNotFoundException)
+                {
+                    // OS not in dictionary - can happen
+                }
+
+                return string.Empty;
             }
         }
 
@@ -260,6 +249,8 @@ namespace AutomatedLab
                     //Windows 10
                     case "Windows 10 Pro":
                         return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
+                    case "Windows 10 Pro for Workstations":
+                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Enterprise Evaluation":
@@ -349,10 +340,30 @@ namespace AutomatedLab
         public OperatingSystem()
         {
             LinuxPackageGroup = new List<String>();
+            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
+        }
+
+        public OperatingSystem(string azureSkuName, bool azure = true)
+        {
+            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
+
+            try
+            {
+                operatingSystemName = azureToIsoName[azureSkuName];
+            }
+            catch (ArgumentNullException)
+            {
+                // Key is null - can happen
+            }
+            catch (KeyNotFoundException)
+            {
+                // OS not in dictionary - can happen
+            }
         }
 
         public OperatingSystem(string operatingSystemName)
         {
+            isoNameToAzureSku = azureToIsoName.ToDictionary(kp => kp.Value, kp => kp.Key);
             this.operatingSystemName = operatingSystemName;
             LinuxPackageGroup = new List<String>();
             if (operatingSystemName.ToLower().Contains("windows server"))

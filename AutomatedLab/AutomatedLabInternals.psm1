@@ -1,4 +1,3 @@
-
 #region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
@@ -470,7 +469,7 @@ function Get-LabInternetFile
 
         if ((Test-Path -Path $Path) -and -not $Force)
         {
-            Write-ScreenInfo "The file '$Path' does already exist, skipping the download"
+            Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
         }
         else
         {
@@ -519,7 +518,7 @@ function Get-LabInternetFile
                             }
                             else
                             {
-                                Write-ScreenInfo -Message "Could not determine the ContentLength of '$Uri'" -Type Verbose
+                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
                             }
                         
                         } while ($bytesRead -gt 0)
@@ -689,13 +688,20 @@ function Get-LabSourcesLocationInternal
     {
         $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
 
-        foreach ($drive in $hardDrives)
+        $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
             {
                 "$drive\LabSources"
             }
         }
+        
+        if ($folders.Count -gt 1)
+        {
+            Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
+        }
+        
+        $folders
     }
     elseif ($defaultEngine -eq 'Azure')
     {
@@ -713,3 +719,132 @@ function Get-LabSourcesLocationInternal
         Get-LabSourcesLocationInternal -Local
     }
 }
+
+#region Update-LabSysinternalsTools
+function Update-LabSysinternalsTools
+{
+    #Update SysInternals suite if needed
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
+    
+    try
+    {
+        Write-Verbose -Message 'Get last check time of SysInternals suite'
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $lastChecked = $timestamps.SysInternalsUpdateLastChecked
+        Write-Verbose -Message "Last check was '$lastChecked'."
+    }
+    catch
+    {
+        Write-Verbose -Message 'Last check time could not be retrieved. SysInternals suite never updated'
+        $lastChecked = Get-Date -Year 1601
+        $timestamps = New-Object $type
+    }
+
+    if ($lastChecked)
+    {
+        $lastChecked = $lastChecked.AddDays(7)
+    }
+    
+    if ((Get-Date) -gt $lastChecked)
+    {
+        Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
+        
+        $sysInternalsUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsUrl
+        $sysInternalsDownloadUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsDownloadUrl
+    
+        try
+        {
+            Write-Verbose -Message 'Web page downloaded'
+            $webRequest = Invoke-WebRequest -Uri $sysInternalsURL -UseBasicParsing
+            $pageDownloaded = $true
+        }
+        catch
+        {
+            Write-Verbose -Message 'Web page could not be downloaded'
+            Write-ScreenInfo -Message "No connection to '$sysInternalsURL'. Skipping." -Type Error
+            $pageDownloaded = $false
+        }
+        
+        if ($pageDownloaded)
+        {
+            $updateStart = $webRequest.Content.IndexOf('Updated') + 'Updated:'.Length
+            $updateFinish = $webRequest.Content.IndexOf('</p>', $updateStart)
+            $updateStringFromWebPage = $webRequest.Content.Substring($updateStart, $updateFinish - $updateStart).Trim()
+            
+            Write-Verbose -Message "Update string from web page: '$updateStringFromWebPage'"
+            
+            $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String            
+            try
+            {
+                $versions = $type::ImportFromRegistry('Cache', 'Versions')
+            }
+            catch
+            {
+                $versions = New-Object $type
+            }
+            
+            Write-Verbose -Message "Update string from registry: '$currentVersion'"
+    
+            if ($versions['SysInternals'] -ne $updateStringFromWebPage)
+            {
+                Write-ScreenInfo -Message 'Performing update of SysInternals suite now' -Type Warning -TaskStart
+                Start-Sleep -Seconds 1
+                
+                #Download SysInternals suite
+                
+                $tempFilePath = [System.IO.Path]::GetTempFileName()
+                $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
+                Write-Verbose -Message "Temp file: '$tempFilePath'"
+
+                try
+                {
+                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
+                    $fileDownloaded = $true
+                    Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
+                }
+                catch
+                {
+                    Write-ScreenInfo -Message "File '$sysInternalsDownloadURL' could not be downloaded. Skipping." -Type Error -TaskEnd
+                    $fileDownloaded = $false
+                }
+                
+                if ($fileDownloaded)
+                {
+                    Unblock-File -Path $tempFilePath
+        
+                    #Extract files to Tools folder
+                    if (-not (Test-Path -Path "$labSources\Tools"))
+                    {
+                        Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
+                        New-Item -ItemType Directory -Path "$labSources\Tools" | Out-Null
+                    }
+                    if (-not (Test-Path -Path "$labSources\Tools\SysInternals"))
+                    {
+                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
+                        New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
+                    }
+                    else
+                    {
+                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
+                        Remove-Item -Path "$labSources\Tools\SysInternals" -Recurse | Out-Null
+                        New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
+                    }
+        
+                    Write-Verbose -Message 'Extracting files'
+                    Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
+                    Remove-Item -Path $tempFilePath
+        
+                    #Update registry
+                    $versions['SysInternals'] = $updateStringFromWebPage
+                    $versions.ExportToRegistry('Cache', 'Versions')
+
+                    $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
+                    $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    
+                    Write-ScreenInfo -Message "SysInternals Suite has been updated and placed in '$labSources\Tools\SysInternals'" -Type Warning -TaskEnd
+                }
+            }
+        }
+    }
+}
+#endregion Update-LabSysinternalsTools

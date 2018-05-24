@@ -764,129 +764,7 @@ function New-LabDefinition
     
     $script:lab.Name = $Name
     
-    #Update SysInternals suite if needed
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
-    
-    try
-    {
-        Write-Verbose -Message 'Get last check time of SysInternals suite'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
-        $lastChecked = $timestamps.SysInternalsUpdateLastChecked
-        Write-Verbose -Message "Last check was '$lastChecked'."
-    }
-    catch
-    {
-        Write-Verbose -Message 'Last check time could not be retrieved. SysInternals suite never updated'
-        $lastChecked = Get-Date -Year 1601
-        $timestamps = New-Object $type
-    }
-
-    if ($lastChecked)
-    {
-        $lastChecked = $lastChecked.AddDays(7)
-    }
-    
-    if ((Get-Date) -gt $lastChecked)
-    {
-        Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
-        
-        $sysInternalsUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsUrl
-        $sysInternalsDownloadUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsDownloadUrl
-    
-        try
-        {
-            Write-Verbose -Message 'Web page downloaded'
-            $webRequest = Invoke-WebRequest -Uri $sysInternalsURL -UseBasicParsing
-            $pageDownloaded = $true
-        }
-        catch
-        {
-            Write-Verbose -Message 'Web page could not be downloaded'
-            Write-ScreenInfo -Message "No connection to '$sysInternalsURL'. Skipping." -Type Error
-            $pageDownloaded = $false
-        }
-        
-        if ($pageDownloaded)
-        {
-            $updateStart = $webRequest.Content.IndexOf('Updated') + 'Updated:'.Length
-            $updateFinish = $webRequest.Content.IndexOf('</p>', $updateStart)
-            $updateStringFromWebPage = $webRequest.Content.Substring($updateStart, $updateFinish - $updateStart).Trim()
-            
-            Write-Verbose -Message "Update string from web page: '$updateStringFromWebPage'"
-            
-            $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String            
-            try
-            {
-                $versions = $type::ImportFromRegistry('Cache', 'Versions')
-            }
-            catch
-            {
-                $versions = New-Object $type
-            }
-            
-            Write-Verbose -Message "Update string from registry: '$currentVersion'"
-    
-            if ($versions['SysInternals'] -ne $updateStringFromWebPage)
-            {
-                Write-ScreenInfo -Message 'Performing update of SysInternals suite now' -Type Warning -TaskStart
-                Start-Sleep -Seconds 1
-                
-                #Download SysInternals suite
-                
-                $tempFilePath = [System.IO.Path]::GetTempFileName()
-                $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
-                Write-Verbose -Message "Temp file: '$tempFilePath'"
-
-                try
-                {
-                    Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
-                    $fileDownloaded = $true
-                    Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
-                }
-                catch
-                {
-                    Write-ScreenInfo -Message "File '$sysInternalsDownloadURL' could not be downloaded. Skipping." -Type Error -TaskEnd
-                    $fileDownloaded = $false
-                }
-                
-                if ($fileDownloaded)
-                {
-                    Unblock-File -Path $tempFilePath
-        
-                    #Extract files to Tools folder
-                    if (-not (Test-Path -Path "$labSources\Tools"))
-                    {
-                        Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
-                        New-Item -ItemType Directory -Path "$labSources\Tools" | Out-Null
-                    }
-                    if (-not (Test-Path -Path "$labSources\Tools\SysInternals"))
-                    {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
-                        New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
-                    }
-                    else
-                    {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
-                        Remove-Item -Path "$labSources\Tools\SysInternals" -Recurse | Out-Null
-                        New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
-                    }
-        
-                    Write-Verbose -Message 'Extracting files'
-                    Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
-                    Remove-Item -Path $tempFilePath
-        
-                    #Update registry
-                    $versions['SysInternals'] = $updateStringFromWebPage
-                    $versions.ExportToRegistry('Cache', 'Versions')
-
-                    $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
-                    $timestamps.ExportToRegistry('Cache', 'Timestamps')
-                    
-                    Write-ScreenInfo -Message "SysInternals Suite has been updated and placed in '$labSources\Tools\SysInternals'" -Type Warning -TaskEnd
-                }
-            }
-        }
-    }
+    Update-LabSysinternalsTools
     
     while (Get-LabVirtualNetworkDefinition)
     {
@@ -1983,7 +1861,8 @@ function Add-LabMachineDefinition
         }
         
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
-
+        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
+        
         return $RuntimeParameterDictionary
     }
 
@@ -2704,8 +2583,8 @@ function Add-LabMachineDefinition
     
         if ($machine.HostType -eq 'HyperV')
         {
-            if ($RhelPackage) { $machine.InternalNotes.LinuxPackage = $RhelPackage}
-            if ($SusePackage) { $machine.InternalNotes.LinuxPackage = $SusePackage}
+            if ($RhelPackage) { $machine.LinuxPackageGroup = $RhelPackage}
+            if ($SusePackage) { $machine.LinuxPackageGroup = $SusePackage}
 
             if ($OperatingSystemVersion)
             {

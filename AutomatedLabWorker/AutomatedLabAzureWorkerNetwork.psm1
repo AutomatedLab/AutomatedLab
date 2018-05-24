@@ -224,7 +224,7 @@ function New-LWAzureLoadBalancer
         {
             $publicIp = New-AzureRmPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
                 -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
-                -DomainNameLabel "$($resourceGroup.ToLower())$($vNet.Name.ToLower())" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                -DomainNameLabel "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
         $frontendConfig = New-AzureRmLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
@@ -300,7 +300,7 @@ function Add-LWAzureLoadBalancedPort
 {
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter()]
         [int]
         $Port,
 
@@ -331,6 +331,11 @@ function Add-LWAzureLoadBalancedPort
 
     $lab.AzureSettings.LoadBalancerPortCounter++
     $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+    
+    if (-not $Port)
+    {
+        $Port = $remotePort
+    }
     $lb = Add-AzureRmLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())$Port" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $remotePort -BackendPort $Port
     $lb = $lb | Set-AzureRmLoadBalancer
 

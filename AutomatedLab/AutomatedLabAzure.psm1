@@ -88,7 +88,7 @@ function Add-LabAzureSubscription
         if (-not $context.Subscription)
         {
             Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-            $null = Login-AzureRmAccount -ErrorAction Stop
+            $null = Connect-AzureRmAccount -ErrorAction Stop
         }
         
         $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
@@ -117,7 +117,7 @@ function Add-LabAzureSubscription
         $context = Get-AzureRmContext -ErrorAction SilentlyContinue
         if (-not $context)
         {
-            throw 'Your Azure Resource Manager profile has expired. Please use Login-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
+            throw 'Your Azure Resource Manager profile has expired. Please use Connect-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
         }
     }
     catch
@@ -160,7 +160,7 @@ function Add-LabAzureSubscription
     }
     catch
     {
-        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Login-AzureRmAccount and Save-AzureRmContext."
+        throw "Error selecting subscription $SubscriptionName. $($_.Exception.Message). The local Azure profile might have expired. Please try Connect-AzureRmAccount and Save-AzureRmContext."
     }
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
@@ -237,11 +237,14 @@ function Add-LabAzureSubscription
     else
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName'" -Type Info
-        $roleSizes = Get-AzureRmVmSize -Location $DefaultLocationName
+        $roleSizes = Get-LabAzureAvailableRoleSize -Location $DefaultLocationName
         $global:cacheAzureRoleSizes = $roleSizes
     }
 
-
+    if ($roleSizes.Count -eq 0)
+    {
+        throw "No available role sizes in region '$DefaultLocationName'! Cannot continue."
+    }
     $script:lab.AzureSettings.RoleSizes = [AutomatedLab.Azure.AzureRmVmSize]::Create($roleSizes)
 
     # Add LabSources storage
@@ -284,9 +287,6 @@ function Add-LabAzureSubscription
         }  
     }	  
 
-    $script:lab.AzureSettings.VmImages = $vmimages | % { [AutomatedLab.Azure.AzureOSImage]::Create($_)}
-    Write-Verbose "Added $($script:lab.AzureSettings.RoleSizes.Count) vm size information"
-    
     $script:lab.AzureSettings.VNetConfig = (Get-AzureRmVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
@@ -298,84 +298,28 @@ function Add-LabAzureSubscription
         $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
         $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
         Write-Verbose "Read $($global:cacheVmImages.Count) OS images from the cache"
-    }
-    catch
-    {
-        Write-Verbose 'Could not read OS image info from the cache'
-    }
-
-    if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
-    {
-        Write-ScreenInfo -Message 'Querying available operating system images (using cache)' -Type Info
-        $vmImages = $global:cacheVmImages
-    }
-    else
-    {
+        
         if ($global:cacheVmImages)
         {
             Write-Verbose ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
         }
-        Write-ScreenInfo -Message 'Querying available operating system images' -Type Info
         
-        # Server
-        $vmImages = Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # Desktop
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # SQL
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSQLServer' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Skus -eq 'Enterprise' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-        
-        # VisualStudio
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'VisualStudio' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # Client OS
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'Windows' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        # Sharepoint 2013 and 2016
-        $vmImages += Get-AzureRmVMImagePublisher -Location $DefaultLocationName |
-        Where-Object PublisherName -eq 'MicrosoftSharePoint' |
-        Get-AzureRmVMImageOffer |
-        Get-AzureRmVMImageSku |
-        Get-AzureRmVMImage |
-        Where-Object Offer -eq 'MicrosoftSharePointServer' |
-        Group-Object -Property Skus, Offer |
-        ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
-
-        $global:cacheVmImages = $vmImages
+        if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
+        {
+            Write-ScreenInfo 'Querying available operating system images (using cache)'
+            $vmImages = $global:cacheVmImages
+        }
+        else
+        {
+            Write-ScreenInfo 'Could not read OS image info from the cache'
+            throw 'Cache outdated or empty'
+        }
+    }
+    catch
+    {
+        Write-ScreenInfo 'Querying available operating system images from Azure'
+        $global:cacheVmImages = Get-LabAzureAvailableSku -Location $DefaultLocationName
+        $vmImages = $global:cacheVmImages
     }
     
     $osImageListType = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
@@ -506,39 +450,20 @@ function Get-LabAzureLocation
             #if lab already exists, use the location used when this was deployed to create lab stickyness
             return (Get-Lab).AzureSettings.DefaultLocation.Name
         }
-        
-        $urls = @{
-            'North Central US'    = 'speedtestnsus.blob.core.windows.net'
-            'Central US'          = 'speedtestcus.blob.core.windows.net'
-            'West Central US'     = 'speedtestwcus.blob.core.windows.net'
-            'South Central US'    = 'speedtestscus.blob.core.windows.net'
-            'West US'             = 'speedtestwus.blob.core.windows.net'
-            'West US 2'           = 'speedtestwus2.blob.core.windows.net'
-            'East US'             = 'speedtesteus.blob.core.windows.net'
-            'East US 2'           = 'speedtesteus2.blob.core.windows.net'
-            'West Europe'         = 'speedtestwe.blob.core.windows.net'
-            'North Europe'        = 'speedtestne.blob.core.windows.net'
-            'Southeast Asia'      = 'speedtestsea.blob.core.windows.net'
-            'East Asia'           = 'speedtestea.blob.core.windows.net'
-            'Japan East'          = 'speedtestjpe.blob.core.windows.net'
-            'Japan West'          = 'speedtestjpw.blob.core.windows.net'
-            'Brazil South'        = 'speedtestbs.blob.core.windows.net'
-            'Australia Southeast' = 'mickmel.blob.core.windows.net'
-            'Australia East'      = 'micksyd.blob.core.windows.net'
-            'UK West'             = 'speedtestukw.blob.core.windows.net'
-            'UK South'            = 'speedtestuks.blob.core.windows.net'
-            'Canada Central'      = 'speedtestcac.blob.core.windows.net'
-            'Canada East'         = 'speedtestcae.blob.core.windows.net'
-        }
+
+        $locationUrls = $MyInvocation.MyCommand.Module.PrivateData.AzureLocationsUrls
         
         foreach ($location in $azureLocations)
         {
-            $location | Add-Member -MemberType NoteProperty -Name 'Url'     -Value ($urls."$($location.DisplayName)")
+            if ($locationUrls."$($location.DisplayName)")
+            {
+                $location | Add-Member -MemberType NoteProperty -Name 'Url' -Value ($locationUrls."$($location.DisplayName)" + '.blob.core.windows.net')
+            }
             $location | Add-Member -MemberType NoteProperty -Name 'Latency' -Value 9999
         }
         
         $jobs = @()
-        foreach ($location in $azureLocations)
+        foreach ($location in ($azureLocations | Where-Object { $_.Url }))
         {
             $url = $location.Url
             $jobs += Start-Job -Name $location.DisplayName -ScriptBlock {
@@ -1347,6 +1272,103 @@ function Test-LabAzureSubscription
     }
     catch
     {
-        throw "No Azure Context found, Please run 'Login-AzureRmAccount' or 'Import-AzureRmContext ' first"
+        throw "No Azure Context found, Please run 'Connect-AzureRmAccount' or 'Import-AzureRmContext ' first"
     }
+}
+
+function Get-LabAzureAvailableRoleSize
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        $Location,
+
+        $Path
+    )
+
+    if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue) -and $Path)
+    {
+        [void] (Import-AzureRmContext -Path $Path)
+    }
+    elseif (-not (Get-AzureRmContext -ErrorAction SilentlyContinue))
+    {
+        [void] (Connect-AzureRmAccount)
+    }
+
+    $azLocation = Get-AzureRmLocation | Where-Object -Property DisplayName -eq $Location
+
+    $availableRoleSizes = Get-AzureRmComputeResourceSku | Where-Object {
+        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location #-and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+    } | Select-Object -ExpandProperty Name
+
+    Get-AzureRmVmSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
+}
+
+function Get-LabAzureAvailableSku
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $Location
+    )
+
+    # Server
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftWindowsServer' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Desktop
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftWindowsDesktop' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # SQL
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftSQLServer' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Skus -eq 'Enterprise' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+    
+    # VisualStudio
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'VisualStudio' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Client OS
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftVisualStudio' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'Windows' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
+
+    # Sharepoint 2013 and 2016
+    Get-AzureRmVMImagePublisher -Location $Location |
+    Where-Object PublisherName -eq 'MicrosoftSharePoint' |
+    Get-AzureRmVMImageOffer |
+    Get-AzureRmVMImageSku |
+    Get-AzureRmVMImage |
+    Where-Object Offer -eq 'MicrosoftSharePointServer' |
+    Group-Object -Property Skus, Offer |
+    ForEach-Object { $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1 }
 }

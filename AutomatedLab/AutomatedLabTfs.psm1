@@ -96,7 +96,7 @@ function Install-LabTeamFoundationServer
     {
         if ( Get-LabIssuingCA)
         {
-            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -ComputerName $machine -PassThru -ErrorAction Stop
+            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
             $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
         }
@@ -120,12 +120,24 @@ function Install-LabTeamFoundationServer
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine))
+            if (-not (Get-LabAzureLoadBalancedPort -ComputerName $machine))
             {
-                Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+                Add-LWAzureLoadBalancedPort -ComputerName $machine
             }
 
-            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $machine
+            $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
+            $machineName = $machine.AzureConnectionInfo.DnsName
+
+            if ($role.Properties.ContainsKey('Port'))
+            {
+                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties['Port'] = $tfsPort})
+            }
+            else
+            {
+                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties.Add('Port', $tfsPort)})
+            }
+
+            Export-Lab # Export lab again since we changed role properties
         }
 
         if ($role.Properties.ContainsKey('DbServer'))
@@ -227,6 +239,20 @@ function Install-LabBuildWorker
             }
         }
 
+        [string]$machineName = $tfsServer
+
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue
+
+            if (-not $tfsPort)
+            {
+                Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue installing build worker.'
+                return
+            }
+            $machineName = $tfsServer.AzureConnectionInfo.DnsName
+        }
+
         $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint')
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
@@ -238,11 +264,11 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $tfsServer, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
@@ -251,7 +277,7 @@ function Install-LabBuildWorker
             {
                 Write-ScreenInfo -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)" -Type Warning
             }
-        } -AsJob -Variable (Get-Variable tfsServer, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -308,12 +334,14 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
+
+        if (-not $tfsPort)
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue rolling out release pipeline'
+            return
         }
-        $originalPort = $tfsPort
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -337,23 +365,17 @@ function New-LabReleasePipeline
     if ($gitBinary)
     {
         $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
-        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
-
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
-        {
-            $repoUrl = $repoUrl -replace ":$originalPort",":$tfsPort"
-            $repoUrl = $repoUrl -replace $tfsvm.Name, $tfsvm.AzureConnectionInfo.DnsName
-        }
-        
-        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password
+        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')       
+        $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName.ToLower(), $credential.GetNetworkCredential().Password
 
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 
-        $repoparent = Join-Path -Path $locallabsources -ChildPath GitRepositories
+        $repoparent = Join-Path -Path (Join-Path -Path $locallabsources -ChildPath GitRepositories) -ChildPath (Get-Lab).Name
+
         if (-not (Test-Path $repoparent))
         {
             Write-ScreenInfo -Type Verbose -Message "Creating $repoparent to contain your cloned repos"
-            [void] (New-Item -ItemType Directory -Path $repoparent)
+            [void] (New-Item -ItemType Directory -Path $repoparent -Force)
         }
 
         $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
@@ -487,12 +509,15 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue
+
+        if (-not $loadbalancedPort)
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve build steps'
+            return
         }
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -541,12 +566,15 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
+
+        if (-not $loadbalancedPort)
         {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot retrieve lab release steps.'
+            return
         }
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
@@ -596,12 +624,15 @@ function Open-LabTfsSite
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if (-not (Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm))
-        {
-            Add-LWAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm
-        }
+        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
 
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm
+        if (-not $loadbalancedPort)
+        {
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot open TFS site.'
+            return
+        }
+        
+        $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 

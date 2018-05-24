@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using System.Linq;
+using System.Diagnostics;
 
 namespace AutomatedLab
 {
@@ -27,6 +28,9 @@ namespace AutomatedLab
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());
             telemetryClient = new TelemetryClient();
             TelemetryEnabled = !GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false);
+
+            // Initialize EventLog
+            if (!EventLog.SourceExists("AutomatedLab")) EventLog.CreateEventSource("AutomatedLab", "Application");
         }
 
         // taken from https://github.com/powershell/powershell
@@ -69,7 +73,7 @@ namespace AutomatedLab
                 return instance;
             }
         }
-        
+
         public void LabStarted(byte[] labData, string version, string osVersion, string psVersion)
         {
             if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
@@ -94,6 +98,17 @@ namespace AutomatedLab
 
             labStarted = DateTime.Now;
 
+            var eventMessage = "Lab started - Transmitting the following:" +
+                $"\r\nversion = {version}" +
+                $"\r\nhypervisor = {lab.DefaultVirtualizationEngine}" +
+                $"\r\nosversion = {osVersion}" +
+                $"\r\npsversion = {psVersion}" +
+                $"\r\nmachineCount = {lab.Machines.Count}";
+            try
+            {
+                EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 101);
+            }
+            catch { }
             try
             {
                 telemetryClient.TrackEvent("LabStarted", properties, metrics);
@@ -122,6 +137,14 @@ namespace AutomatedLab
                 { "timeTakenSeconds", labDuration.TotalSeconds }
             };
 
+            var eventMessage = "Lab finished - Transmitting the following:" +
+                            $"\r\ndayOfWeek = {labStarted.DayOfWeek.ToString()}" +
+                            $"\r\ntimeTakenSeconds = {labDuration.TotalSeconds}";
+            try
+            {
+                EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 102);
+            }
+            catch { }
             try
             {
                 telemetryClient.TrackEvent("LabFinished", properties, metrics);
@@ -145,6 +168,14 @@ namespace AutomatedLab
                 { "labRunningTicks", duration.Ticks }
             };
 
+            var eventMessage = "Lab removed - Transmitting the following:" +
+                            $"\r\nlabRunningTicks = {duration.Ticks}";
+            try
+            {
+                EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 103);
+            }
+            catch { }
+
             try
             {
                 telemetryClient.TrackEvent("LabRemoved", null, metrics);
@@ -159,9 +190,11 @@ namespace AutomatedLab
         private void SendUsedRole(List<string> roleName, bool isCustomRole = false)
         {
             if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            var eventMessage = "Sending role infos - Transmitting the following:";
 
             roleName.ForEach(name =>
             {
+                eventMessage += $"\r\nrole: {name}";
                 var properties = new Dictionary<string, string>
                 {
                     { "role", name},
@@ -178,6 +211,11 @@ namespace AutomatedLab
                 }
             });
 
+            try
+            {
+                EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 104);
+            }
+            catch { }
             try
             {
 
@@ -197,7 +235,7 @@ namespace AutomatedLab
             var requestTelemetry = telemetry as EventTelemetry;
             // Is this a TrackRequest() ?
             if (requestTelemetry == null) return;
-            
+
             // Strip personally identifiable info from request
             requestTelemetry.Context.Cloud.RoleInstance = "nope";
             requestTelemetry.Context.Cloud.RoleName = "nope";

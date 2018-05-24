@@ -1,24 +1,47 @@
 #region Enable-LabHostRemoting
 function Enable-LabHostRemoting
 {
+    param(
+        [switch]$Force,
+        
+        [switch]$NoDisplay
+    )
+    
     # .ExternalHelp AutomatedLab.Help.xml
+    
     Write-LogFunctionEntry
     
     if (-not (Test-IsAdministrator))
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
+    $message = "AutomatedLab needs to enable / relax some PowerShell Remoting features.`nYou will be asked before each individual change. Are you OK to proceed?"
+    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+    if ($choice -eq 0 -and -not $Force)
+    {
+        throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+    }    
     
     if ((Get-Service -Name WinRM).Status -ne 'Running')
     {
+        Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
         Start-Service -Name WinRM
         Start-Sleep -Seconds 5
+        Write-ScreenInfo done
     }
     
     if ((-not (Get-WSManCredSSP)[0].Contains('The machine is configured to') -and -not (Get-WSManCredSSP)[0].Contains('WSMAN/*')) -or (Get-Item -Path WSMan:\localhost\Client\Auth\CredSSP).Value -eq $false)
     {
-        Write-Verbose "Enabling CredSSP on the host machine for role 'Client'. Delegated computers = *"
+        $message = "AutomatedLab needs to enable CredSsp on the host in order to delegate credentials to the lab VMs.`nAre you OK with enabling CredSsp?"
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+        if ($choice -eq 0 -and -not $Force)
+        {
+            throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
+    
+        Write-ScreenInfo "Enabling CredSSP on the host machine for role 'Client'. Delegated computers = '*'..." -NoNewLine
         Enable-WSManCredSSP -Role Client -DelegateComputer * -Force | Out-Null
+        Write-ScreenInfo done
     }
     else
     {
@@ -34,11 +57,50 @@ function Enable-LabHostRemoting
     {
         Write-ScreenInfo -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'" -Type Warning
         
+        $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
+        if ($choice -eq 0 -and -not $Force)
+        {
+            throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
+        
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
     else
     {
-        Write-Verbose '''*'' added to TrustedHosts'
+        Write-Verbose "'*' added to TrustedHosts"
+    }
+    
+    $allowFreshCredentials = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
+    $allowFreshCredentialsWhenNTLMOnly = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
+    $allowSavedCredentials = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
+    $allowSavedCredentialsWhenNTLMOnly = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
+    
+    if (
+        ($allowFreshCredentials -ne '*' -and $allowFreshCredentials -ne 'WSMAN/*') -or
+        ($allowFreshCredentialsWhenNTLMOnly -ne '*' -and $allowFreshCredentialsWhenNTLMOnly -ne 'WSMAN/*') -or
+        ($allowSavedCredentials -ne '*' -and $allowSavedCredentials -ne 'TERMSRV/*') -or
+        ($allowSavedCredentialsWhenNTLMOnly -ne '*' -and $allowSavedCredentialsWhenNTLMOnly -ne 'TERMSRV/*')
+    )
+    {
+        $message = @'
+The following local policies will be configured if not already done.
+
+Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> 
+Allow Delegating Fresh Credentials                                   WSMAN/*
+Allow Delegating Fresh Credentials when NTLM only        WSMAN/*
+Allow Delegating Saved Credentials                                   TERMSRV/*
+Allow Delegating Saved Credentials when NTLM only       TERMSRV/*
+
+This is required to allow the host computer / AutomatedLab to delegate lab credentials to the lab VMs.
+
+Are you OK with that?
+'@
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
+        if ($choice -eq 0 -and -not $Force)
+        {
+            throw "AutomatedLab requires the the previously mentioned policies to be set. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
     }
     
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
@@ -52,19 +114,6 @@ function Enable-LabHostRemoting
     else
     {
         Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' configured correctly"
-    }
-
-    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
-    if ($value -ne '*' -and $value -ne 'TERMSRV/*')
-    {
-        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
-        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', 1) | Out-Null
-        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', 1) | Out-Null
-        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', 'TERMSRV/*') | Out-Null
-    }
-    else
-    {
-        Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Saved Credentials' configured correctly"
     }
     
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
@@ -80,6 +129,19 @@ function Enable-LabHostRemoting
         Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials when NTLM only' configured correctly"
     }
 
+    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
+    if ($value -ne '*' -and $value -ne 'TERMSRV/*')
+    {
+        Write-ScreenInfo 'Configuring the local policy for allowing credentials to be delegated to all machines (*). You can find the modified policy using gpedit.msc by navigating to: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' -Type Warning
+        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', 1) | Out-Null
+        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', 1) | Out-Null
+        [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', 'TERMSRV/*') | Out-Null
+    }
+    else
+    {
+        Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Saved Credentials' configured correctly"
+    }
+
     $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
     if ($value -ne '*' -and $value -ne 'TERMSRV/*')
     {
@@ -93,9 +155,175 @@ function Enable-LabHostRemoting
         Write-Verbose "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Saved Credentials when NTLM only' configured correctly"
     }
     
+    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -ErrorAction SilentlyContinue).AllowEncryptionOracle
+    if ($allowEncryptionOracle -ne 2)
+    {
+        $message = @"
+A CredSSP vulnerability has been addressed with`n`n
+CVE-2018-0886`n
+https://support.microsoft.com/en-us/help/4093492/credssp-updates-for-cve-2018-0886-march-13-2018`n`n
+The security setting must be relexed in order to connect to machines using CredSSP that do not have the security patch installed. Are you fine setting the value 'AllowEncryptionOracle' to '2'?
+"@
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting AllowEncryptionOracle to '2'" -Message $message -Default 1
+        if ($choice -eq 0 -and -not $Force)
+        {
+            throw "AutomatedLab requires the the AllowEncryptionOracle setting to be 2. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
+        Write-ScreenInfo "Setting registry value 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters\AllowEncryptionOracle' to '2'."
+        New-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Force | Out-Null
+        Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle -Value 2 -Force
+    }
+    
+    
     Write-LogFunctionExit
 }
 #endregion Enable-LabHostRemoting
+
+#region Undo-LabHostRemoting
+function Undo-LabHostRemoting
+{
+    param(
+        [switch]$Force,
+        
+        [switch]$NoDisplay
+    )
+    
+    # .ExternalHelp AutomatedLab.Help.xml
+    
+    Write-LogFunctionEntry
+    
+    if (-not (Test-IsAdministrator))
+    {
+        throw 'This function needs to be called in an elevated PowerShell session.'
+    }
+    $message = "All settings altered by 'Enable-LabHostRemoting' will be set back to Windows defaults. Are you OK to proceed?"
+    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+    if ($choice -eq 0 -and -not $Force)
+    {
+        throw "'Undo-LabHostRemoting' cancelled. You can make the changes later by calling 'Undo-LabHostRemoting'"
+    }
+        
+    if ((Get-Service -Name WinRM).Status -ne 'Running')
+    {
+        Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
+        Start-Service -Name WinRM
+        Start-Sleep -Seconds 5
+        Write-ScreenInfo done
+    }
+    
+    Write-ScreenInfo "Calling 'Disable-WSManCredSSP -Role Client'..." -NoNewline
+    Disable-WSManCredSSP -Role Client
+    Write-ScreenInfo done
+    
+    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empyt string"
+    Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '' -Force
+
+    Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'"
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentials', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFresh', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1', $null) | Out-Null
+    
+    Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'"
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowFreshCredentialsWhenNTLMOnly', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowFreshNTLMOnly', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1', $null) | Out-Null
+
+    Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'"
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentials', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSaved', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1', $null) | Out-Null
+    
+    Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication'"
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'AllowSavedCredentialsWhenNTLMOnly', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation', 'ConcatenateDefaults_AllowSavedNTLMOnly', $null) | Out-Null
+    [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', $null) | Out-Null
+    
+    Write-ScreenInfo "removing 'AllowEncryptionOracle' registry setting"
+    Remove-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP -Recurse -Force
+    
+    Write-ScreenInfo "All settings changed by the cmdlet Enable-LabHostRemoting of AutomatedLab are back to Windows defaults."
+    
+    Write-LogFunctionExit
+}
+#endregion Undo-LabHostRemoting
+
+#region Test-LabHostRemoting
+function Test-LabHostRemoting
+{
+    [CmdletBinding()]
+    
+    param()
+    
+    # .ExternalHelp AutomatedLab.Help.xml
+    Write-LogFunctionEntry
+
+    $configOk = $true
+    
+    if ((Get-Service -Name WinRM).Status -ne 'Running')
+    {
+        Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
+        Start-Service -Name WinRM
+        Start-Sleep -Seconds 5
+        Write-ScreenInfo done
+    }
+    
+    if ((-not (Get-WSManCredSSP)[0].Contains('The machine is configured to') -and -not (Get-WSManCredSSP)[0].Contains('WSMAN/*')) -or (Get-Item -Path WSMan:\localhost\Client\Auth\CredSSP).Value -eq $false)
+    {
+        Write-ScreenInfo "'Get-WSManCredSSP' returned that CredSSP is not enabled on the host machine for role 'Client' and being able to delegate to '*'..." -Type Verbose
+        $configOk = $false
+    }
+    
+    $trustedHostsList = @((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts).Value -split ',' |
+        ForEach-Object { $_.Trim() } |
+        Where-Object { $_ }
+    )
+    
+    if (-not ($trustedHostsList -contains '*'))
+    {
+        Write-ScreenInfo -Message "TrustedHosts does not include '*'." -Type Verbose
+        $configOk = $false
+    }
+
+    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
+    if ($value -ne '*' -and $value -ne 'WSMAN/*')
+    {
+        Write-ScreenInfo "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' is not configured as required" -Type Verbose
+        $configOk = $false
+    }
+    
+    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly', '1')
+    if ($value -ne '*' -and $value -ne 'WSMAN/*')
+    {
+        Write-ScreenInfo "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' is not configured as required" -Type Verbose
+        $configOk = $false
+    }
+
+    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials', '1')
+    if ($value -ne '*' -and $value -ne 'TERMSRV/*')
+    {
+        Write-ScreenInfo "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials' is not configured as required" -Type Verbose
+        $configOk = $false
+    }
+    
+    $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1')
+    if ($value -ne '*' -and $value -ne 'TERMSRV/*')
+    {
+        Write-ScreenInfo "Local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials with NTLM-only server authentication' is not configured as required" -Type Verbose
+        $configOk = $false
+    }
+    
+    $allowEncryptionOracle = (Get-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -ErrorAction SilentlyContinue).AllowEncryptionOracle
+    if ($allowEncryptionOracle -ne 2)
+    {
+        Write-ScreenInfo "AllowEncryptionOracle is set to '$allowEncryptionOracle'. The value should be '2'" -Type Verbose
+        $configOk = $false
+    }
+
+    $configOk
+    
+    Write-LogFunctionExit
+}
+#endregion Test-LabHostRemoting
 
 #region Import-Lab
 function Import-Lab
@@ -157,7 +385,10 @@ function Import-Lab
             Get-PSSession | Remove-PSSession -ErrorAction SilentlyContinue
         }
 
-        Enable-LabHostRemoting
+        if (-not (Test-LabHostRemoting))
+        {
+            Enable-LabHostRemoting
+        }
     
         if (-not (Test-IsAdministrator))
         {
@@ -1035,15 +1266,22 @@ function Remove-Lab
 function Get-LabAvailableOperatingSystem
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
+    [cmdletBinding(DefaultParameterSetName='Local')]
     [OutputType([AutomatedLab.OperatingSystem])]
     param
     (
-        [string[]]$Path = "$labSources\ISOs",
+        [Parameter(ParameterSetName='Local')]
+        [string[]]$Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs",
 
         [switch]$UseOnlyCache,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [Parameter(ParameterSetName = 'Azure')]
+        [switch]$Azure,
+
+        [Parameter(Mandatory, ParameterSetName = 'Azure')]
+        $Location
     )
 
     Write-LogFunctionEntry
@@ -1051,6 +1289,27 @@ function Get-LabAvailableOperatingSystem
     if (-not (Test-IsAdministrator))
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
+    }
+
+    if ($Azure)
+    {
+        if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue).Subscription)
+        {
+            throw 'Please login to Azure before trying to list Azure image SKUs'
+        }
+
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $osList = New-Object $type
+        $skus = (Get-LabAzureAvailableSku -Location 'West Europe')
+
+        foreach ($sku in $skus)
+        {
+            $azureOs = ([AutomatedLab.OperatingSystem]::new($sku.Skus, $true))
+            if (-not $azureOs.OperatingSystemName) { continue }
+
+            $osList.Add($azureOs )
+        }
+        return $osList.ToArray()
     }
     
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
@@ -1096,7 +1355,7 @@ function Get-LabAvailableOperatingSystem
         Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
-    $dismPattern = 'Index : (?<Index>\d{1,2})\nName : (?<Name>.+)'
+    $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
     $osList = New-Object $type
     if ($singleFile)
     {
@@ -1123,7 +1382,7 @@ function Get-LabAvailableOperatingSystem
         $standardImagePath = "$letter`:\Sources\Install.wim"    
         if (Test-Path -Path $standardImagePath)
         {
-            $dismOutput = Dism.exe /Get-WimInfo /WimFile:$standardImagePath
+            $dismOutput = Dism.exe /English /Get-WimInfo /WimFile:$standardImagePath
             $dismOutput = $dismOutput -join "`n"
             $dismMatches = $dismOutput | Select-String -Pattern $dismPattern -AllMatches
             Write-Verbose "The Windows Image list contains $($dismMatches.Matches.Count) items"
@@ -1177,13 +1436,14 @@ function Get-LabAvailableOperatingSystem
             {
                 $os.Version = [AutomatedLab.Version]::new(0,0)
             }
+            
             $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
             $os.Edition = $Matches.Edition
 
-            $packages = Get-ChildItem "$letter`:\suse" -Filter *.rpm -File -Recurse | Foreach-Object {
-                if ( $_.Name -match '\w(?<pack>[0-9a-z-_]+)-([0-9.-]+)(x86_64|noarch).rpm')
+            $packages = Get-ChildItem "$letter`:\suse" -Filter pattern*.rpm -File -Recurse | Foreach-Object {
+                if ( $_.Name -match '.*patterns-(openSUSE|SLE|sles)-(?<name>.*(32bit)?)-\d*-\d*\.\d*\.x86')
                 {
-                    $Matches.pack
+                    $Matches.name
                 }
             }
             
@@ -1212,8 +1472,8 @@ function Get-LabAvailableOperatingSystem
             {
                 # CentOS ISO for some reason contained only GUIDs
                 $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
-                Get-Content -TotalCount 2 |
-                Where-Object {$_ -like "*comps*"} |
+                Get-Content -TotalCount 10 |
+                Where-Object { $_ -like "*<comps>*" } |
                 Foreach-Object { $file.FullName } |
                 Select-Object -First 1
             }
@@ -1365,105 +1625,6 @@ function Install-LabWebServers
 }
 #endregion Install-LabWebServers
 
-#region Get-LabWindowsFeature
-function Get-LabWindowsFeature
-{
-    # .ExternalHelp AutomatedLab.Help.xml
-    [cmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [ValidateNotNullOrEmpty()]
-        [string[]]$ComputerName,
-        
-        [ValidateNotNullOrEmpty()]
-        [string[]]$FeatureName,
-        
-        [switch]$UseLocalCredential,
-        
-        [int]$ProgressIndicator = 5,
-        
-        [switch]$NoDisplay   
-    )
-    
-    Write-LogFunctionEntry
-    
-    $results = @()
-    
-    $machines = Get-LabVM -ComputerName $ComputerName
-    if (-not $machines)
-    {
-        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
-        return
-    }
-    if ($machines.Count -ne $ComputerName.Count)
-    {
-        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
-        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
-    }
-    
-    $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
-    
-    $results = @()
-    foreach ($machine in $machines)
-    {
-        if ($machine.OperatingSystem.Installation -eq 'Client')
-        {
-            #Add-Memer is required as the PSComputerName will be the IP address
-            $cmd = { Get-WindowsOptionalFeature -Online | Add-Member -Name ComputerName -MemberType NoteProperty -Value (HOSTNAME.EXE) -PassThru }
-        }
-        else
-        {
-            #Add-Memer is required as the PSComputerName will be the IP address
-            $cmd = {  Import-Module -Name ServerManager; Get-WindowsFeature | Add-Member -Name ComputerName -MemberType NoteProperty -Value (HOSTNAME.EXE) -PassThru }
-        }
-        
-        $results += Invoke-LabCommand -ComputerName $machine -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -PassThru
-
-        foreach ($result in $results)
-        {
-            $feature = New-Object AutomatedLab.WindowsFeature
-            $feature.ComputerName =  $result.ComputerName
-
-            #depending on whether the result is from a client or server machine, it is either the 'Name' or 'FeatureName' property
-            if ([string]::IsNullOrEmpty($result.Name))
-            {
-                $feature.Name = $result.FeatureName
-            }
-            else
-            {
-                $feature.Name = $result.Name
-            }
-
-            #do not continue if the feature is not requested
-            if ($FeatureName -and $feature.Name -notin $FeatureName)
-            { continue }
-            
-            if ($result.State)
-            {
-                switch($result.State)
-                {
-                    'Disabled' { $feature.State = 'Available' }
-                    'Enabled' { $feature.State = 'Installed' }
-                    'DisabledWithPayloadRemoved' { $feature.State = 'Removed' }
-                }
-            }
-            elseif ($result.InstallState)
-            {
-                $feature.State = [string]$result.InstallState
-            }
-            else
-            {
-                $feature.State = ?? { $result.Installed } { 'Installed' } { 'Available' }
-            }
-
-            $feature
-        }
-    }
-    
-    Write-LogFunctionExit
-}
-#endregion Get-LabWindowsFeature
-
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
 {
@@ -1556,6 +1717,173 @@ function Install-LabWindowsFeature
     Write-LogFunctionExit
 }
 #endregion Install-LabWindowsFeature
+
+#region Get-LabWindowsFeature
+function Get-LabWindowsFeature
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$ComputerName,
+        
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName = '*',
+
+        [switch]$UseLocalCredential,
+        
+        [int]$ProgressIndicator = 5,
+        
+        [switch]$NoDisplay,
+        
+        [switch]$AsJob        
+    )
+    
+    Write-LogFunctionEntry
+    
+    $machines = Get-LabVM -ComputerName $ComputerName
+    
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
+    }
+    
+    Write-ScreenInfo -Message "Getting Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
+        
+    if ($AsJob)
+    {
+        Write-ScreenInfo -Message 'Getting Windows Feature(s) in the background' -TaskEnd
+    }    
+    
+    $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
+    if ($stoppedMachines)
+    {
+        Start-LabVM -ComputerName $stoppedMachines.Name -Wait
+    }
+    
+    $hyperVMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
+    $azureMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
+
+    if ($hyperVMachines)
+    {        
+        $params = @{
+            Machine            = $hyperVMachines 
+            FeatureName        = $FeatureName 
+            UseLocalCredential = $UseLocalCredential 
+            AsJob              = $AsJob
+        }
+
+        $result = Get-LWHypervWindowsFeature @params    
+    }
+    elseif ($azureMachines)
+    {
+        $params = @{
+            Machine            = $azureMachines 
+            FeatureName        = $FeatureName 
+            UseLocalCredential = $UseLocalCredential 
+            AsJob              = $AsJob
+        }
+
+        $result = Get-LWAzureWindowsFeature @params        
+    }
+
+    $result
+    
+    if (-not $AsJob)
+    {
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+    Write-LogFunctionExit
+}
+#endregion Get-LabWindowsFeature
+
+
+#region Uninstall-LabWindowsFeature
+function Uninstall-LabWindowsFeature
+{
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName,
+
+        [switch]$IncludeManagementTools,
+        
+        [switch]$UseLocalCredential,
+        
+        [int]$ProgressIndicator = 5,
+        
+        [switch]$NoDisplay,
+        
+        [switch]$PassThru,
+        
+        [switch]$AsJob        
+    )
+    
+    Write-LogFunctionEntry
+    
+    $machines = Get-LabVM -ComputerName $ComputerName
+    if (-not $machines)
+    {
+        Write-LogFunctionExitWithError -Message 'The specified machines could not be found'
+        return
+    }
+    if ($machines.Count -ne $ComputerName.Count)
+    {
+        $machinesNotFound = Compare-Object -ReferenceObject $ComputerName -DifferenceObject ($machines.Name)
+        Write-ScreenInfo "The specified machines $($machinesNotFound.InputObject -join ', ') could not be found" -Type Warning
+    }
+    
+    Write-ScreenInfo -Message "Uninstalling Windows Feature(s) '$($FeatureName -join ', ')' on computer(s) '$($ComputerName -join ', ')'" -TaskStart
+        
+    if ($AsJob)
+    {
+        Write-ScreenInfo -Message 'Windows Feature(s) is being uninstalled in the background' -TaskEnd
+    }    
+    
+    $stoppedMachines = (Get-LabVMStatus -ComputerName $ComputerName -AsHashTable).GetEnumerator() | Where-Object Value -eq Stopped
+    if ($stoppedMachines)
+    {
+        Start-LabVM -ComputerName $stoppedMachines.Name -Wait
+    }
+    
+    $hyperVMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'HyperV'}
+    $azureMachines = Get-LabVM -ComputerName $ComputerName | Where-Object {$_.HostType -eq 'Azure'}
+
+    if ($hyperVMachines)
+    {        
+        $jobs = Uninstall-LWHypervWindowsFeature -Machine $hyperVMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
+    }
+    elseif ($azureMachines)
+    {
+        $jobs = Uninstall-LWAzureWindowsFeature -Machine $azureMachines -FeatureName $FeatureName -UseLocalCredential:$UseLocalCredential -IncludeManagementTools:$IncludeManagementTools -AsJob:$AsJob -PassThru:$PassThru
+    }
+    
+    if (-not $AsJob)
+    {
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+    
+    if ($PassThru)
+    {
+        $jobs
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Uninstall-LabWindowsFeature
 
 #region Install-VisualStudio2013
 function Install-VisualStudio2013
@@ -3615,7 +3943,7 @@ If you want to opt out, please select Yes.
 
 if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
-    $choice = Read-Choice -ChoiceList 'No','Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
     
     # This is actually enough for the telemetry client.
     [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
@@ -3632,12 +3960,12 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
     Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
-    Where-Object { $_.ProductKey -and $_.OperatingSystemImageName -like "*$wordToComplete*" } |
-    Group-Object -Property OperatingSystemImageName |
+    Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
+    Group-Object -Property OperatingSystemName |
     ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
-    Sort-Object -Property OperatingSystemImageName |
+    Sort-Object -Property OperatingSystemName |
     ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemImageName)'", "'$($_.OperatingSystemImageName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemImageName)")
+        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemName)'", "'$($_.OperatingSystemName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemName)")
     }
 }
 

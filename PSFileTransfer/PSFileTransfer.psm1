@@ -101,7 +101,7 @@ function Send-File
         try
         {
             Invoke-Command -Session $Session -ScriptBlock (Get-Command Write-File).ScriptBlock `
-            -ArgumentList $destinationFullName, $chunk, $firstChunk, $Force -ErrorAction Stop
+                -ArgumentList $destinationFullName, $chunk, $firstChunk, $Force -ErrorAction Stop
         }
         catch
         {
@@ -148,7 +148,7 @@ function Receive-File
     Write-Verbose -Message "PSFileTransfer: Receiving file $SourceFilePath to $DestinationFilePath from $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
     
     $sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Get-FileLength).ScriptBlock `
-    -ArgumentList $SourceFilePath -ErrorAction Stop
+        -ArgumentList $SourceFilePath -ErrorAction Stop
     
     $chunkSize = [Math]::Min($sourceLength, $chunkSize)
     
@@ -160,7 +160,7 @@ function Receive-File
         try
         {
             $chunk = Invoke-Command -Session $Session -ScriptBlock (Get-Command Read-File).ScriptBlock `
-            -ArgumentList $SourceFilePath, $position, $remaining -ErrorAction Stop
+                -ArgumentList $SourceFilePath, $position, $remaining -ErrorAction Stop
         }
         catch
         {
@@ -478,13 +478,21 @@ function Copy-LabFileItem
         $cred = $machine.GetCredential((Get-Lab))
         
         if ($machine.HostType -eq 'HyperV' -or
-        (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or 
-        ($path -notlike "$labSources*" -and $machine.HostType -eq 'Azure')
+            (-not $UseAzureLabSourcesOnAzureVm -and $machine.HostType -eq 'Azure') -or 
+            ($path -notlike "$labSources*" -and $machine.HostType -eq 'Azure')
         )
         {
             try
             {
-                $drive = New-PSDrive -Name "C_on_$machine" -PSProvider FileSystem -Root "\\$machine\c$" -Credential $cred -ErrorAction Stop
+                if ($DestinationFolderPath -match ':')
+                {
+                    $letter = ($DestinationFolderPath -split ':')[0]
+                    $drive = New-PSDrive -Name "$($letter)_on_$machine" -PSProvider FileSystem -Root "\\$machine\$($letter)`$" -Credential $cred -ErrorAction Stop
+                }
+                else
+                {
+                    $drive = New-PSDrive -Name "C_on_$machine" -PSProvider FileSystem -Root "\\$machine\c$" -Credential $cred -ErrorAction Stop
+                }
                 Write-Debug -Message "Drive '$($drive.Name)' created"
                 $connectedMachines.Add($machine.Name, $drive)
             }

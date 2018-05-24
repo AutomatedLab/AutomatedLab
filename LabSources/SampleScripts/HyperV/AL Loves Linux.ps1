@@ -9,7 +9,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:DnsServer1' = '192.168.130.10'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 SERVERDATACENTER'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter'
 }
 $PSDefaultParameterValues.Add('Add-LabMachineDefinition:Gateway', '192.168.130.50')
 
@@ -28,12 +28,12 @@ Add-LabMachineDefinition -Name LINGW1 -Memory 1GB -Roles Routing -NetworkAdapter
 
 # Make sure to download an ISO that contains the selected packages as well as SSSD,oddjob,oddjob-mkhomedir and adcli
 # Or use an internet-connected lab so that the packages can be loaded on the fly
-Add-LabMachineDefinition -RhelPackage domain-client -Name LINCN1 -OperatingSystem 'CentOS 7.4' -DomainName contoso.com
-Add-LabMachineDefinition -Name LINSU1 -OperatingSystem 'openSUSE Leap 42.3' -DomainName contoso.com -Memory 2GB
+Add-LabMachineDefinition -RhelPackage domain-client,gnome-desktop -Name LINCN1 -OperatingSystem 'CentOS 7.4' -DomainName contoso.com -Memory 2GB
+Add-LabMachineDefinition -Name LINSU1 -SusePackage gnome_basis -OperatingSystem 'openSUSE Leap 42.3' -DomainName contoso.com -Memory 2GB
 
 # Non domain-joined
-Add-LabMachineDefinition -Name LINCN2 -OperatingSystem 'CentOS 7.4'
-Add-LabMachineDefinition -Name LINSU2 -OperatingSystem 'openSUSE Leap 42.3' -Memory 2GB
+Add-LabMachineDefinition -Name LINCN2 -RhelPackage gnome-desktop -OperatingSystem 'CentOS 7.4' -Memory 2GB
+Add-LabMachineDefinition -Name LINSU2 -SusePackage gnome_basis -OperatingSystem 'openSUSE Leap 42.3' -Memory 2GB
 Install-Lab
 
 break

@@ -132,7 +132,7 @@ function Invoke-LWCommand
             $cmd = ''
             if ($ScriptFileName) 
             {
-                $cmd +=  "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
+                $cmd += "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
             }
             if ($ParameterVariableName)
             {
@@ -281,6 +281,219 @@ function Invoke-LWCommand
 }
 #endregion Invoke-LWCommand
 
+#region Get-LWHypervWindowsFeature
+function Get-LWHypervWindowsFeature
+{
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [AutomatedLab.Machine[]]$Machine,
+        
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName,
+        
+        [switch]$UseLocalCredential,
+        
+        [switch]$AsJob
+    )
+    
+    Write-LogFunctionEntry
+    
+    $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
+    
+    $result = @()
+    foreach ($m in $Machine)
+    {
+        if ($m.OperatingSystem.Version -ge [System.Version]'6.2')
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+                    }                  
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName) -WarningAction SilentlyContinue")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+                }                
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+            }
+        }
+        else
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+                    
+                        $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                        [string]$featureNamedismOutput = $parseddismOutput[0]
+                        [string]$featureRRdismOutput = $parseddismOutput[1]
+                        [string]$featureStatedismOutput = $parseddismOutput[2]
+                  
+                  
+                        $result += [PSCustomObject]@{
+                            FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                            RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                            State           = $featureStatedismOutput.Split(":")[1].Trim()
+                        }
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+                    $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                  
+                    [string]$featureNamedismOutput = $parseddismOutput[0]
+                    [string]$featureRRdismOutput = $parseddismOutput[1]
+                    [string]$featureStatedismOutput = $parseddismOutput[2]
+                  
+                  
+                    $result += [PSCustomObject]@{
+                        FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                        State           = $featureStatedismOutput.Split(":")[1].Trim()
+                    }
+                }
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
+            }
+        }
+    }
+    
+    $result
+
+    Write-LogFunctionExit
+}
+#endregion Get-LWHypervWindowsFeature
+
+#region Get-LWAzureWindowsFeature
+function Get-LWAzureWindowsFeature
+{
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [AutomatedLab.Machine[]]$Machine,
+        
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName,
+        
+        [switch]$UseLocalCredential,
+        
+        [switch]$AsJob
+    )
+    
+    Write-LogFunctionEntry
+    
+    $activityName = "Get Windows Feature(s): '$($FeatureName -join ', ')'"
+    
+    $result = @()
+    foreach ($m in $Machine)
+    {
+        if ($m.OperatingSystem.Version -ge [System.Version]'6.2')
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($feature) -WarningAction SilentlyContinue")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
+                    }                  
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("Get-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
+                }                
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob                
+            }
+        }
+        else
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($feature)")
+                        $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
+                    
+                        $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                        [string]$featureNamedismOutput = $parseddismOutput[0]
+                        [string]$featureRRdismOutput = $parseddismOutput[1]
+                        [string]$featureStatedismOutput = $parseddismOutput[2]
+                  
+                  
+                        $result += [PSCustomObject]@{
+                            FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                            RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                            State           = $featureStatedismOutput.Split(":")[1].Trim()
+                        }
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /get-featureinfo /featurename:$($FeatureName)")
+                    $featureList = Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
+                    $parseddismOutput = $featureList | Select-String -Pattern "Feature Name :", "State :", "Restart Required :"
+                  
+                    [string]$featureNamedismOutput = $parseddismOutput[0]
+                    [string]$featureRRdismOutput = $parseddismOutput[1]
+                    [string]$featureStatedismOutput = $parseddismOutput[2]
+                  
+                  
+                    $result += [PSCustomObject]@{
+                        FeatureName     = $featureNamedismOutput.Split(":")[1].Trim()
+                        RestartRequired = $featureRRdismOutput.Split(":")[1].Trim()
+                        State           = $featureStatedismOutput.Split(":")[1].Trim()
+                    }
+                }
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob
+            }
+        }
+    }
+    
+    if ($PassThru)
+    {
+        $result
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Get-LWAzureWindowsFeature
+
 #region Install-LWHypervWindowsFeature
 function Install-LWHypervWindowsFeature
 {
@@ -317,25 +530,38 @@ function Install-LWHypervWindowsFeature
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
                 $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
             else
             {
                 $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
         }
         else
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                }
             }
             else
             {
-                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
         }
-        
-        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
     }
 
     if ($PassThru)
@@ -376,32 +602,45 @@ function Install-LWAzureWindowsFeature
     $activityName = "Install Windows Feature(s): '$($FeatureName -join ', ')'"
     
     $result = @()
-    foreach ($m in $machine)
+    foreach ($m in $Machine)
     {
         if ($m.OperatingSystem.Version -ge [System.Version]'6.2')
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -All:`$$IncludeAllSubFeature -NoRestart -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
             else
             {
-                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Install-WindowsFeature $($FeatureName -join ', ') -Source ""`$(@(Get-WmiObject -Class Win32_CDRomDrive)[-1].Drive)\sources\sxs"" -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
         }
         else
         {
             if ($m.OperatingSystem.Installation -eq 'Client')
             {
-                $cmd = [scriptblock]::Create("Enable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -All -NoRestart -WarningAction SilentlyContinue")
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /enable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                }
             }
             else
             {
-                $cmd = [scriptblock]::Create("Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Add-WindowsFeature $($FeatureName -join ', ') -IncludeAllSubFeature:`$$IncludeAllSubFeature -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
             }
         }
-        
-        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
     }
     
     if ($PassThru)
@@ -412,6 +651,160 @@ function Install-LWAzureWindowsFeature
     Write-LogFunctionExit
 }
 #endregion Install-LWAzureWindowsFeature
+
+#region Uninstall-LWHypervWindowsFeature
+function Uninstall-LWHypervWindowsFeature
+{
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [AutomatedLab.Machine[]]$Machine,
+        
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName,
+        
+        [switch]$IncludeManagementTools,
+                        
+        [switch]$UseLocalCredential,
+        
+        [switch]$AsJob,
+        
+        [switch]$PassThru
+    )
+    
+    Write-LogFunctionEntry
+    
+    $activityName = "Uninstall Windows Feature(s): '$($FeatureName -join ', ')'"
+    
+    $result = @()
+    foreach ($m in $Machine)
+    {
+        if ($m.OperatingSystem.Version -ge [System.Version]'6.2')
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                $cmd = [scriptblock]::Create("Disable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -NoRestart -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("Uninstall-WindowsFeature $($FeatureName -join ', ') -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+        }
+        else
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                }
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Remove-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+        }
+    }
+
+    if ($PassThru)
+    {
+        $result
+    }
+
+    Write-LogFunctionExit
+}
+#endregion Uninstall-LWHypervWindowsFeature
+
+#region Uninstall-LWAzureWindowsFeature
+function Uninstall-LWAzureWindowsFeature
+{
+    [cmdletBinding()]
+    param (
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [AutomatedLab.Machine[]]$Machine,
+        
+        [Parameter(Mandatory)]
+        [ValidateNotNullOrEmpty()]
+        [string[]]$FeatureName,
+        
+        [switch]$IncludeManagementTools,
+        
+        [switch]$UseLocalCredential,
+        
+        [switch]$AsJob,
+        
+        [switch]$PassThru
+    )
+    
+    Write-LogFunctionEntry
+    
+    $activityName = "Uninstall Windows Feature(s): '$($FeatureName -join ', ')'"
+    
+    $result = @()
+    foreach ($m in $Machine)
+    {
+        if ($m.OperatingSystem.Version -ge [System.Version]'6.2')
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                $cmd = [scriptblock]::Create("Disable-WindowsOptionalFeature -Online -FeatureName $($FeatureName -join ', ') -NoRestart -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("Uninstall-WindowsFeature $($FeatureName -join ', ') -IncludeManagementTools:`$$IncludeManagementTools -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+        }
+        else
+        {
+            if ($m.OperatingSystem.Installation -eq 'Client')
+            {
+                if ($FeatureName.Count -gt 1)
+                {
+                    foreach ($feature in $FeatureName)
+                    {
+                        $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                        $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                    }
+                }
+                else
+                {
+                    $cmd = [scriptblock]::Create("DISM /online /disable-feature /featurename:$($feature)")
+                    $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+                }
+            }
+            else
+            {
+                $cmd = [scriptblock]::Create("`$null;Import-Module -Name ServerManager; Remove-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
+                $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru:$PassThru
+            }
+        }
+    }
+    
+    if ($PassThru)
+    {
+        $result
+    }
+    
+    Write-LogFunctionExit
+}
+#endregion Uninstall-LWAzureWindowsFeature
 
 #region Wait-LWLabJob
 function Wait-LWLabJob
