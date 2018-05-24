@@ -1,5 +1,22 @@
 # Changelog
 
+## 5.0.2 - 2018-05-24
+
+### Enhancements
+- New cmdlet Uninstall-WindowsFeature
+- Telemetry is more tranparent writing evnts into the application event log
+- AL as a Service is now available via REST API
+- AL takes care of security settings of the host computer, added Test-LabHostRemoting
+- AL looks for AllowEncryptionOracle CredSsp security setting
+- AL support rolling back security changes made to the host (Undo-LabHostRemoting)
+
+### Fixes
+- Azure works again now with AzureRM module 6.1 and higher
+  - Caching of operating systems was not working
+- Fixed port issues with TFS on Azure
+- AL now also runs on non eu-us hosts (still there is some trouble with Russian hosts)
+- SCCM custom role now really works
+
 ## 5.0.1 - 2018-04-13
 
 ### Enhancements
