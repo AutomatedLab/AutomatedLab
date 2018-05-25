@@ -683,14 +683,18 @@ function Wait-LabVM
             Write-Verbose "Computer '$($vm.ComputerName)' was not reachable, waiting..."
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param(
+                    [Parameter(Mandatory)]
                     [byte[]]$LabBytes,
 
+                    [Parameter(Mandatory)]
                     [string]$ComputerName,
-                        
+                    
+                    [Parameter(Mandatory)]
                     [bool]$DoNotUseCredSsp
                 )
 
                 $VerbosePreference = $using:VerbosePreference
+                Write-Host ($PSBoundParameters | Out-String)
 
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
