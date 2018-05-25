@@ -789,7 +789,7 @@ function Install-Lab
     {
         try
         {
-            if (Test-Path -Path $labDiskDeploymentInProgressPath)
+            if ((Test-Path -Path $labDiskDeploymentInProgressPath) -and (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV'))
             {
                 Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
                 do
@@ -802,7 +802,10 @@ function Install-Lab
 
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            }
 
             if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
             {
@@ -838,7 +841,7 @@ function Install-Lab
         }
         finally
         {
-            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force -ErrorAction SilentlyContinue
         }
     }
 
