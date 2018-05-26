@@ -117,18 +117,25 @@ function Remove-LWNetworkSwitch
         return
     }
     
-    try
+    if ((Get-VM | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
     {
-        Remove-VMSwitch -Name $Name -Force -ErrorAction Stop
-    }
-    catch
-    {
-        Start-Sleep -Seconds 2
-        Remove-VMSwitch -Name $Name -Force
-    }
+        try
+        {
+            Remove-VMSwitch -Name $Name -Force -ErrorAction Stop
+        }
+        catch
+        {
+            Start-Sleep -Seconds 2
+            Remove-VMSwitch -Name $Name -Force
+        }
     
-    Write-Verbose "Network switch '$Name' removed"
-	
+        Write-Verbose "Network switch '$Name' removed"
+    }
+    else
+    {
+        Write-ScreenInfo "Network switch '$Name' is still in use, skipping removal" -Type Warning
+    }
+
     Write-LogFunctionExit
 
 }
