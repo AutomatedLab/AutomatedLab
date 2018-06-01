@@ -2693,6 +2693,7 @@ function New-LabPSSession
             if ($m.HostType -eq 'Azure')
             {
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                Write-Verbose "Azure DNS name for machine '$m' is '$($param.ComputerName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
                 {
@@ -2710,10 +2711,12 @@ function New-LabPSSession
                 
                 if ($name)
                 {
+                    Write-Verbose "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
                 }
                 else
                 {
+                    Write-Verbose "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)
