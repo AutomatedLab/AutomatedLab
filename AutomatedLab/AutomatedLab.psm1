@@ -719,6 +719,7 @@ function Install-Lab
     )
     
     Write-LogFunctionEntry
+    $global:PSLog_Indent = 0
 
     $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
 
@@ -1141,7 +1142,9 @@ function Remove-Lab
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
         [string]$Name
     )
+
     Write-LogFunctionEntry
+    $global:PSLog_Indent = 0
     
     if ($Name)
     {

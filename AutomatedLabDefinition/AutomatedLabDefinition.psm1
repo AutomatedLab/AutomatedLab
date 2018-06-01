@@ -643,6 +643,7 @@ function New-LabDefinition
     )
 
     Write-LogFunctionEntry
+    $global:PSLog_Indent = 0
 
     $hostOSVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version 
     if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
@@ -1861,8 +1862,7 @@ function Add-LabMachineDefinition
         }
         
         $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
-        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-        
+
         return $RuntimeParameterDictionary
     }
 
@@ -1881,7 +1881,7 @@ function Add-LabMachineDefinition
         if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
     
         $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
-        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction', 'EnableSecureBoot', 'SecureBootTemplate'
+        $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
     
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
         {
