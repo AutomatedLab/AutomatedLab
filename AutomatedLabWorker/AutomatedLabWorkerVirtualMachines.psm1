@@ -413,15 +413,39 @@ function New-LWHypervVM
         InitState = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
-    $isUefi = try
-    {
-        Get-SecureBootUEFI -Name SetupMode
-    }
-    catch { }
+    #Removing this check as this 'Get-SecureBootUEFI' is not supported on Azure VMs for nested virtualization
+    #$isUefi = try
+    #{
+    #    Get-SecureBootUEFI -Name SetupMode
+    #}
+    #catch { }
     
-    if ($isUefi -and $vm.Generation -ge 2)
-    {
-        $vm | Set-VMFirmware -EnableSecureBoot Off -SecureBootTemplate MicrosoftUEFICertificateAuthority
+    #if ($isUefi -and $vm.Generation -ge 2)
+    if ($vm.Generation -ge 2)    
+    {        
+        $secureBootTemplate = if ($Machine.HypervProperties.SecureBootTemplate)
+        {
+            $Machine.HypervProperties.SecureBootTemplate
+        }
+        else
+        {
+            if ($Machine.LinuxType -eq 'unknown')
+            {
+                'MicrosoftWindows'
+            }
+            else
+            {
+                'MicrosoftUEFICertificateAuthority'
+            }
+        }
+        if ($Machine.HypervProperties.EnableSecureBoot)
+        {
+            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate
+        }
+        else
+        {
+            $vm | Set-VMFirmware -EnableSecureBoot Off
+        }        
     }
     
     #remove the unconnected default network adapter
