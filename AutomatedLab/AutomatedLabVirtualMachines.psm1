@@ -1826,6 +1826,7 @@ function Set-LabAutoLogon
 {
     param
     (
+        [Parameter(Mandatory)]
         [string[]]
         $ComputerName
     )
