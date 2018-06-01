@@ -94,9 +94,9 @@ function New-LabVM
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
     if ($failedJobs)
-    {
-        $machinesFailedToCreate = ($failedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
-        throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a look at the background job's result (Get-Job, Receive-Job)"
+    {        
+        $failedJobs | Receive-Job -Keep
+        throw "Failed to create the Azure machines mentioned in the errors above."
     }
             
     $azureVms = $machines | Where-Object HostType -eq Azure
