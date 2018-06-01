@@ -5,6 +5,15 @@ function Set-UnattendedKickstartPackage
         [string[]]$Package
     )
 
+    if ($Package -like '*Gnome*')
+    {
+        $script:un += 'xconfig  --defaultdesktop=GNOME'
+    }
+    elseif ($Package -like '*KDE*')
+    {
+        $script:un += 'xconfig  --defaultdesktop=KDE'
+    }
+
     $script:un += '%packages --ignoremissing'
     $script:un += '@core'    
 
