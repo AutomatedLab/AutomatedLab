@@ -694,8 +694,7 @@ function Wait-LabVM
                 )
 
                 $VerbosePreference = $using:VerbosePreference
-                Write-Host ($PSBoundParameters | Out-String)
-
+                
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
