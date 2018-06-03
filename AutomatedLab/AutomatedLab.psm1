@@ -3758,8 +3758,13 @@ function Set-LabDefaultVirtualizationEngine
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
-    $labSources
+	# .ExternalHelp AutomatedLab.Help.xml
+	param
+    (
+        [switch]$Local
+    )
+
+    Get-LabSourcesLocationInternal -Local:$Local
 }
 #endregion Get-LabSourcesLocation
 
