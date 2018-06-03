@@ -812,7 +812,7 @@ function Install-Lab
     {
         try
         {
-            if (Test-Path -Path $labDiskDeploymentInProgressPath)
+            if ((Test-Path -Path $labDiskDeploymentInProgressPath) -and (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV'))
             {
                 Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
                 do
@@ -825,7 +825,10 @@ function Install-Lab
 
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            }
 
             if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
             {
@@ -861,7 +864,7 @@ function Install-Lab
         }
         finally
         {
-            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -2716,6 +2719,7 @@ function New-LabPSSession
             if ($m.HostType -eq 'Azure')
             {
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                Write-Verbose "Azure DNS name for machine '$m' is '$($param.ComputerName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
                 {
@@ -2733,10 +2737,12 @@ function New-LabPSSession
                 
                 if ($name)
                 {
+                    Write-Verbose "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
                 }
                 else
                 {
+                    Write-Verbose "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)
