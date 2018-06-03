@@ -1051,6 +1051,7 @@ function Get-LWAzureVMConnectionInfo
     Write-LogFunctionEntry
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
+	$retryCount = 5
 
     if (-not $lab)
     {
@@ -1075,19 +1076,31 @@ function Get-LWAzureVMConnectionInfo
         if (-not $azureVM)
         { return }		
 
-        $nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where-Object {$_.virtualmachine.id -eq ($azureVM.Id)}
-        $ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+		$dnsName = ''
+		while (-not $dnsName -or $retryCount -gt 0)
+		{
+			Write-Verbose "Trying to get Azure connection info for machine '$name'. RetryCount = $retryCount"
+			$nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where-Object {$_.virtualmachine.id -eq ($azureVM.Id)}
+			$ip = Get-AzureRmPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
-        New-Object PSObject -Property @{
-            ComputerName      = $name.Name
-            DnsName           = $ip.DnsSettings.Fqdn
-            HttpsName         = $ip.DnsSettings.Fqdn
-            VIP               = $ip.IpAddress
-            Port              = $name.LoadBalancerWinrmHttpPort
-            HttpsPort         = $name.LoadBalancerWinrmHttpsPort
-            RdpPort           = $name.LoadBalancerRdpPort
-            ResourceGroupName = $azureVM.ResourceGroupName
-        }
+			$retryCount--
+			if ($ip)
+			{
+				$dnsName = $ip.DnsSettings.Fqdn
+				Write-Verbose "Succeeded getting Azure connection info for machine '$name'"
+
+				New-Object PSObject -Property @{
+					ComputerName      = $name.Name
+					DnsName           = $ip.DnsSettings.Fqdn
+					HttpsName         = $ip.DnsSettings.Fqdn
+					VIP               = $ip.IpAddress
+					Port              = $name.LoadBalancerWinrmHttpPort
+					HttpsPort         = $name.LoadBalancerWinrmHttpsPort
+					RdpPort           = $name.LoadBalancerRdpPort
+					ResourceGroupName = $azureVM.ResourceGroupName
+				}
+			}
+		}
     }
     
     Write-LogFunctionExit
