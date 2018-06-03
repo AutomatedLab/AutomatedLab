@@ -29,7 +29,7 @@ namespace AutomatedLab
             {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
             {"Windows-10-N-x64", "Windows 10 Enterprise" },
             {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" },
-            {"rs4pro", "Windows 10 Pro" }
+            {"rs4-pro", "Windows 10 Pro" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
