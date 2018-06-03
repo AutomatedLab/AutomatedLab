@@ -42,7 +42,7 @@ function New-LWAzureVM
         $global:cacheVMs = Get-AzureRmVM -WarningAction SilentlyContinue
     }
 
-    if ($global:cacheVMs | Where-Object {$_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName})
+    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
@@ -1055,8 +1055,7 @@ function Get-LWAzureVMConnectionInfo
 
     if (-not $lab)
     {
-        Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f `
-            ($ComputerName.Name -join ','))
+        Write-Verbose "Could not retrieve machine info for '$($ComputerName.Name -join ',')'. No lab was imported."
     }
 
     if (-not (Get-AzureRmContext).Subscription)
@@ -1077,7 +1076,7 @@ function Get-LWAzureVMConnectionInfo
         { return }		
 
 		$dnsName = ''
-		while (-not $dnsName -or $retryCount -gt 0)
+		while (-not $dnsName -and $retryCount -gt 0)
 		{
 			Write-Verbose "Trying to get Azure connection info for machine '$name'. RetryCount = $retryCount"
 			$nic = Get-AzureRmNetworkInterface -ErrorAction SilentlyContinue | Where-Object {$_.virtualmachine.id -eq ($azureVM.Id)}
