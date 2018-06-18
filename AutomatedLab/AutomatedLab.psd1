@@ -268,7 +268,7 @@
 
         #General VM settings
         DisableWindowsDefender                 = $true
-        DoNotSkipNonNonEnglishIso              = $false
+        DoNotSkipNonNonEnglishIso              = $false #even if AL detects non en-us images, these are not supported and may not work
 
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
