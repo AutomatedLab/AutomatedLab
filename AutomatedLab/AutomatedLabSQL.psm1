@@ -199,7 +199,10 @@ GO
                     }                    
                 }
                 
-                $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                if ($role.Name -notin 'SQLServer2008R2', 'SQLServer2008')
+                {
+                    $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                }
                 
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
