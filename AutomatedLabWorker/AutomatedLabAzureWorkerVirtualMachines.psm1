@@ -1057,7 +1057,7 @@ function Get-LWAzureVMConnectionInfo
         Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f ($ComputerName.Name -join ','))
     }
 
-    if (-not (Get-AzureRmContext).Subscription)
+    if (-not ((Get-AzureRmContext).Subscription.Name -eq $lab.AzureSettings.DefaultSubscription))
     {
         Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
         Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscription
