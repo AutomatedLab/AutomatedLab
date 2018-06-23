@@ -16,11 +16,14 @@ function Enable-LabHostRemoting
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
     $message = "AutomatedLab needs to enable / relax some PowerShell Remoting features.`nYou will be asked before each individual change. Are you OK to proceed?"
+    if (-not $Force)
+    {
     $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
     if ($choice -eq 0 -and -not $Force)
     {
         throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
     }    
+    }
     
     if ((Get-Service -Name WinRM).Status -ne 'Running')
     {
@@ -33,10 +36,13 @@ function Enable-LabHostRemoting
     if ((-not (Get-WSManCredSSP)[0].Contains('The machine is configured to') -and -not (Get-WSManCredSSP)[0].Contains('WSMAN/*')) -or (Get-Item -Path WSMan:\localhost\Client\Auth\CredSSP).Value -eq $false)
     {
         $message = "AutomatedLab needs to enable CredSsp on the host in order to delegate credentials to the lab VMs.`nAre you OK with enabling CredSsp?"
+        if (-not $Force)
+        {
         $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
         if ($choice -eq 0 -and -not $Force)
         {
             throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
         }
     
         Write-ScreenInfo "Enabling CredSSP on the host machine for role 'Client'. Delegated computers = '*'..." -NoNewLine
@@ -57,11 +63,14 @@ function Enable-LabHostRemoting
     {
         Write-ScreenInfo -Message "TrustedHosts does not include '*'. Replacing the current value '$($trustedHostsList -join ', ')' with '*'" -Type Warning
         
+        if (-not $Force)
+        {
         $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
         $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
         if ($choice -eq 0 -and -not $Force)
         {
             throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }
         }
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
@@ -96,10 +105,13 @@ This is required to allow the host computer / AutomatedLab to delegate lab crede
 
 Are you OK with that?
 '@
-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
-        if ($choice -eq 0 -and -not $Force)
+        if (-not $Force)
         {
-            throw "AutomatedLab requires the the previously mentioned policies to be set. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
+            if ($choice -eq 0 -and -not $Force)
+            {
+                throw "AutomatedLab requires the the previously mentioned policies to be set. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            }
         }
     }
     
@@ -164,11 +176,15 @@ CVE-2018-0886`n
 https://support.microsoft.com/en-us/help/4093492/credssp-updates-for-cve-2018-0886-march-13-2018`n`n
 The security setting must be relexed in order to connect to machines using CredSSP that do not have the security patch installed. Are you fine setting the value 'AllowEncryptionOracle' to '2'?
 "@
-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting AllowEncryptionOracle to '2'" -Message $message -Default 1
-        if ($choice -eq 0 -and -not $Force)
+        if (-not $Force)
         {
-            throw "AutomatedLab requires the the AllowEncryptionOracle setting to be 2. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting AllowEncryptionOracle to '2'" -Message $message -Default 1
+            if ($choice -eq 0 -and -not $Force)
+            {
+                throw "AutomatedLab requires the the AllowEncryptionOracle setting to be 2. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            }
         }
+        
         Write-ScreenInfo "Setting registry value 'HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters\AllowEncryptionOracle' to '2'."
         New-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Force | Out-Null
         Set-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle -Value 2 -Force
@@ -197,10 +213,13 @@ function Undo-LabHostRemoting
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
     $message = "All settings altered by 'Enable-LabHostRemoting' will be set back to Windows defaults. Are you OK to proceed?"
-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
-    if ($choice -eq 0 -and -not $Force)
+    if (-not $Force)
     {
-        throw "'Undo-LabHostRemoting' cancelled. You can make the changes later by calling 'Undo-LabHostRemoting'"
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+        if ($choice -eq 0)
+        {
+            throw "'Undo-LabHostRemoting' cancelled. You can make the changes later by calling 'Undo-LabHostRemoting'"
+        }
     }
         
     if ((Get-Service -Name WinRM).Status -ne 'Running')
@@ -239,7 +258,10 @@ function Undo-LabHostRemoting
     [GPO.Helper]::SetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly', '1', $null) | Out-Null
     
     Write-ScreenInfo "removing 'AllowEncryptionOracle' registry setting"
-    Remove-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP -Recurse -Force
+    if (Test-Path -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP)
+    {
+        Remove-Item -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP -Recurse -Force
+    }
     
     Write-ScreenInfo "All settings changed by the cmdlet Enable-LabHostRemoting of AutomatedLab are back to Windows defaults."
     
@@ -697,6 +719,7 @@ function Install-Lab
     )
     
     Write-LogFunctionEntry
+    $global:PSLog_Indent = 0
 
     $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
 
@@ -789,7 +812,7 @@ function Install-Lab
     {
         try
         {
-            if (Test-Path -Path $labDiskDeploymentInProgressPath)
+            if ((Test-Path -Path $labDiskDeploymentInProgressPath) -and (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV'))
             {
                 Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
                 do
@@ -802,7 +825,10 @@ function Install-Lab
 
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            }
 
             if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
             {
@@ -838,7 +864,7 @@ function Install-Lab
         }
         finally
         {
-            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -957,7 +983,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
@@ -1119,7 +1145,9 @@ function Remove-Lab
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
         [string]$Name
     )
+
     Write-LogFunctionEntry
+    $global:PSLog_Indent = 0
     
     if ($Name)
     {
@@ -1290,6 +1318,8 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
+    
+    $doNotSkipNonNonEnglishIso = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DoNotSkipNonNonEnglishIso
 
     if ($Azure)
     {
@@ -2691,6 +2721,7 @@ function New-LabPSSession
             if ($m.HostType -eq 'Azure')
             {
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                Write-Verbose "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
                 {
@@ -2708,10 +2739,12 @@ function New-LabPSSession
                 
                 if ($name)
                 {
+                    Write-Verbose "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
                 }
                 else
                 {
+                    Write-Verbose "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)

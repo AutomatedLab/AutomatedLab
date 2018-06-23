@@ -28,7 +28,8 @@ namespace AutomatedLab
             {"Datacenter-Core-1709-smalldisk", "Windows Server Datacenter" },
             {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
             {"Windows-10-N-x64", "Windows 10 Enterprise" },
-            {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" }
+            {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" },
+            {"rs4-pro", "Windows 10 Pro" }
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
@@ -311,6 +312,16 @@ namespace AutomatedLab
                         return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
                     case "Windows Server 2016 SERVERDATACENTERACORE":
                         return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
+
+                    // Windows Server 2019 new names
+                    case "Windows Server 2019 Standard (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2019 Datacenter (Desktop Experience)":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2019 Standard":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                    case "Windows Server 2019 Datacenter":
+                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
 
                     default:
                         return string.Empty;

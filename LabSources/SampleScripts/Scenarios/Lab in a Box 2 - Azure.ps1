@@ -61,6 +61,9 @@ Restart-LabVM -ComputerName ALClient1 -Wait
 
 Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources folder' -ComputerName $alServers -ScriptBlock {
 
+    #Add the AutomatedLab Telemetry setting to default to allow collection, otherwise will prompt during installation
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', '0')
+    
     Install-PackageProvider -Name Nuget -ForceBootstrap -Force -ErrorAction Stop | Out-Null
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 
