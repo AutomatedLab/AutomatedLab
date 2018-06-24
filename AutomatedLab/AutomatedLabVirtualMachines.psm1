@@ -1152,7 +1152,7 @@ function Connect-LabVM
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
-                    Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
+                    Microsoft.PowerShell.Archive\Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
                     $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
                 }
             }

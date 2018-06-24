@@ -3925,7 +3925,7 @@ function New-LabSourcesFolder
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
         Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+        Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
         {

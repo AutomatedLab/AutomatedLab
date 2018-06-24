@@ -831,7 +831,7 @@ function Update-LabSysinternalsTools
                     }
         
                     Write-Verbose -Message 'Extracting files'
-                    Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
+                    Microsoft.PowerShell.Archive\Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
                     Remove-Item -Path $tempFilePath
         
                     #Update registry

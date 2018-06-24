@@ -259,7 +259,7 @@ function Install-LabBuildWorker
 
             if (-not (Test-Path C:\TfsBuildWorker.zip)) {throw 'Build worker installation files not available'}
 
-            Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
+            Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
             $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
             $commandLine = if ($useSsl)
