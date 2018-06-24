@@ -2930,7 +2930,7 @@ function Get-LabPostInstallationActivity
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'CustomRole')
         {
-            $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation) -ChildPath 'CustomRoles') -ChildPath $CustomRole
+            $activity.DependencyFolder = Join-Path -Path (Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath 'CustomRoles') -ChildPath $CustomRole
             $activity.KeepFolder = $KeepFolder.ToBool()
             $activity.ScriptFileName = "$CustomRole.ps1"
             $activity.IsCustomRole = $true

@@ -42,7 +42,7 @@ function New-LWAzureVM
         $global:cacheVMs = Get-AzureRmVM -WarningAction SilentlyContinue
     }
 
-    if ($global:cacheVMs | Where-Object {$_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName})
+    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
@@ -1051,10 +1051,11 @@ function Get-LWAzureVMConnectionInfo
     Write-LogFunctionEntry
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
+	$retryCount = 5
 
     if (-not $lab)
     {
-        Write-Verbose -Message ('Could not retrieve machine info for {0}. No lab was imported.' -f ($ComputerName.Name -join ','))
+        Write-Verbose "Could not retrieve machine info for '$($ComputerName.Name -join ',')'. No lab was imported."
     }
 
     if (-not ((Get-AzureRmContext).Subscription.Name -eq $lab.AzureSettings.DefaultSubscription))

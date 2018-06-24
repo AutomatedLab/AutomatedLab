@@ -671,6 +671,7 @@ function Get-LabSourcesLocationInternal
     (
         [switch]$Local
     )
+
     $lab = Get-Lab -ErrorAction SilentlyContinue
     $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
 
