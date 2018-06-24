@@ -94,9 +94,9 @@ function New-LabVM
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
     if ($failedJobs)
-    {
-        $machinesFailedToCreate = ($failedJobs.Name | ForEach-Object { ($_ -split '\(|\)')[3] }) -join ', '
-        throw "Failed to create the following Azure machines: $machinesFailedToCreate'. For further information take a look at the background job's result (Get-Job, Receive-Job)"
+    {        
+        $failedJobs | Receive-Job -Keep
+        throw "Failed to create the Azure machines mentioned in the errors above."
     }
             
     $azureVms = $machines | Where-Object HostType -eq Azure
@@ -683,15 +683,18 @@ function Wait-LabVM
             Write-Verbose "Computer '$($vm.ComputerName)' was not reachable, waiting..."
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param(
+                    [Parameter(Mandatory)]
                     [byte[]]$LabBytes,
 
+                    [Parameter(Mandatory)]
                     [string]$ComputerName,
-                        
+                    
+                    [Parameter(Mandatory)]
                     [bool]$DoNotUseCredSsp
                 )
 
                 $VerbosePreference = $using:VerbosePreference
-
+                
                 Import-Module -Name Azure* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
@@ -1149,7 +1152,7 @@ function Connect-LabVM
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
-                    Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
+                    Microsoft.PowerShell.Archive\Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
                     $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
                 }
             }
@@ -1894,10 +1897,10 @@ function Test-LabAutoLogon
 
         $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
             $values = @{}
-            $values['AutoAdminLogon'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -ErrorAction SilentlyContinue } catch { }
-            $values['DefaultDomainName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -ErrorAction SilentlyContinue }catch { }
-            $values['DefaultUserName'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -ErrorAction SilentlyContinue }catch { }
-            $values['DefaultPassword'] = try { Get-ItemPropertyValue -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -ErrorAction SilentlyContinue }catch { }
+            $values['AutoAdminLogon'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).AutoAdminLogon } catch { }
+            $values['DefaultDomainName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultDomainName } catch { }
+            $values['DefaultUserName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultUserName } catch { }
+            $values['DefaultPassword'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultPassword } catch { }
             $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' | 
             Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue | 
             Select-Object -ExpandProperty Caption -Unique

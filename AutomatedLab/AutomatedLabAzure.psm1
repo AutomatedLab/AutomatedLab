@@ -1281,9 +1281,9 @@ function Get-LabAzureAvailableRoleSize
     param
     (
         [Parameter(Mandatory)]
-        $Location,
+        [string]$Location,
 
-        $Path
+        [string]$Path
     )
 
     if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue) -and $Path)

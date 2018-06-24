@@ -812,7 +812,7 @@ function Install-Lab
     {
         try
         {
-            if (Test-Path -Path $labDiskDeploymentInProgressPath)
+            if ((Test-Path -Path $labDiskDeploymentInProgressPath) -and (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV'))
             {
                 Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
                 do
@@ -825,7 +825,10 @@ function Install-Lab
 
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
 
-            New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
+            {
+                New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
+            }
 
             if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
             {
@@ -861,7 +864,7 @@ function Install-Lab
         }
         finally
         {
-            Remove-Item -Path $labDiskDeploymentInProgressPath -Force
+            Remove-Item -Path $labDiskDeploymentInProgressPath -Force -ErrorAction SilentlyContinue
         }
     }
 
@@ -980,7 +983,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
@@ -1315,6 +1318,8 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
+    
+    $doNotSkipNonNonEnglishIso = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DoNotSkipNonNonEnglishIso
 
     if ($Azure)
     {
@@ -2716,6 +2721,7 @@ function New-LabPSSession
             if ($m.HostType -eq 'Azure')
             {
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
+                Write-Verbose "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
                 if ($UseSSL)
                 {
@@ -2733,10 +2739,12 @@ function New-LabPSSession
                 
                 if ($name)
                 {
+                    Write-Verbose "Connecting to machine '$m' using the IP address '$name'"
                     $param.Add('ComputerName', $name)
                 }
                 else
                 {
+                    Write-Verbose "Connecting to machine '$m' using the DNS name '$m'"
                     $param.Add('ComputerName', $m)
                 }
                 $param.Add('Port', 5985)
@@ -3922,7 +3930,7 @@ function New-LabSourcesFolder
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
         Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+        Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
         {

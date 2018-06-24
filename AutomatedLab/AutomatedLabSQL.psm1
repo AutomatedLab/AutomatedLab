@@ -199,7 +199,10 @@ GO
                     }                    
                 }
                 
-                $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                if ($role.Name -notin 'SQLServer2008R2', 'SQLServer2008')
+                {
+                    $global:setupArguments += " /UpdateEnabled=`"False`"" # Otherwise we get AccessDenied
+                }
                 
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
@@ -433,7 +436,7 @@ function Install-LabSqlSampleDatabases
     {
         'SQLServer2008' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
+            Microsoft.PowerShell.Archive\Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $mdf = Get-Item -Path 'C:\SQLServer2008\AdventureWorksLT2008_Data.mdf' -ErrorAction SilentlyContinue
@@ -445,7 +448,7 @@ function Install-LabSqlSampleDatabases
         }
         'SQLServer2008R2' 
         {
-            Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
+            Microsoft.PowerShell.Archive\Expand-Archive $targetFile -DestinationPath $dependencyFolder -Force
 
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $mdf = Get-Item -Path 'C:\SQLServer2008R2\AdventureWorksLT2008R2_Data.mdf' -ErrorAction SilentlyContinue
