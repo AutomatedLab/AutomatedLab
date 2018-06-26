@@ -359,7 +359,7 @@ GO
         if ($jobs)
         {
             Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish' -NoNewLine
-            Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
+            Wait-LWLabJob -Job $jobs -Timeout 20 -NoDisplay -ProgressIndicator 30
         }
 
         if ($CreateCheckPoints)
