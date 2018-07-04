@@ -893,7 +893,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
         
-        Install-DHCP
+        #Install-DHCP
+		Write-Error 'The DHCP role is not implemented yet'
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
