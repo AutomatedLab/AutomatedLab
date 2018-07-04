@@ -2847,7 +2847,14 @@ function New-LabPSSession
                 }
                 elseif ($machineRetries -lt 1)
                 {
-                    Write-Error -Message "Could not create a session to machine '$m' in $Retries retries."
+                    if (-not $portTest.Open)
+                    {
+                        Write-Error -Message "Could not create a session to machine '$m' as the port is closed after $Retries retries."
+                    }
+                    else
+                    {
+                        Write-Error -Message "Could not create a session to machine '$m' after $Retries retries."
+                    }
                 }
             }
         }
