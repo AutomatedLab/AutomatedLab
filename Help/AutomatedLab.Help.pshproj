@@ -1550,9 +1550,9 @@ South India            9999</Output>
       <Publish>false</Publish>
     </CmdletObject>
     <CmdletObject verb="Get" noun="LabMachineUacStatus">
-      <Name>Get-LabMachineUacStatus</Name>
+      <Name>Get-LabVMUacStatus</Name>
       <Syntax>
-        <string>Get-LabMachineUacStatus [-ComputerName] &lt;String[]&gt;</string>
+        <string>Get-LabVMUacStatus [-ComputerName] &lt;String[]&gt;</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Get the UAC status of a machine</Synopsis>
@@ -5176,9 +5176,9 @@ c:\DeployDebug</Description>
       <Publish>false</Publish>
     </CmdletObject>
     <CmdletObject verb="Set" noun="LabMachineUacStatus">
-      <Name>Set-LabMachineUacStatus</Name>
+      <Name>Set-LabVMUacStatus</Name>
       <Syntax>
-        <string>Set-LabMachineUacStatus [-ComputerName] &lt;String[]&gt; [[-EnableLUA] &lt;Boolean&gt;] [[-ConsentPromptBehaviorAdmin] &lt;Int32&gt;] [[-ConsentPromptBehaviorUser] &lt;Int32&gt;] [-PassThru]</string>
+        <string>Set-LabVMUacStatus [-ComputerName] &lt;String[]&gt; [[-EnableLUA] &lt;Boolean&gt;] [[-ConsentPromptBehaviorAdmin] &lt;Int32&gt;] [[-ConsentPromptBehaviorUser] &lt;Int32&gt;] [-PassThru]</string>
       </Syntax>
       <GeneralHelp>
         <Synopsis>Set the UAC</Synopsis>

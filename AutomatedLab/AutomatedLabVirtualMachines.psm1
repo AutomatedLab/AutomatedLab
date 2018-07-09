@@ -1509,7 +1509,7 @@ function Dismount-LabIsoImage
 }
 #endregion Dismount-LabIsoImage
 
-#region Get / Set-LabMachineUacStatus
+#region Get / Set-LabVMUacStatus
 function Set-MachineUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
@@ -1580,7 +1580,7 @@ function Get-MachineUacStatus
     }
 }
 
-function Set-LabMachineUacStatus
+function Set-LabVMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
@@ -1618,13 +1618,13 @@ function Set-LabMachineUacStatus
 
     if ($PassThru)
     {
-        Get-LabMachineUacStatus -ComputerName $ComputerName
+        Get-LabVMUacStatus -ComputerName $ComputerName
     }
     
     Write-LogFunctionExit
 }
 
-function Get-LabMachineUacStatus
+function Get-LabVMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
@@ -1649,7 +1649,7 @@ function Get-LabMachineUacStatus
 
     Write-LogFunctionExit
 }
-#endregion Get / Set-LabMachineUacStatus
+#endregion Get / Set-LabVMUacStatus
 
 #region Test-LabMachineInternetConnectivity
 function Test-LabMachineInternetConnectivity
