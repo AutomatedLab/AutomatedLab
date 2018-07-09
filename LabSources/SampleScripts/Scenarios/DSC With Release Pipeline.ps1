@@ -1,4 +1,4 @@
-$labName = 'psconf18'
+$labName = 'DscReleasePipeline'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -9,12 +9,15 @@ $labName = 'psconf18'
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
+Add-LabIsoImageDefinition -Name Tfs2018 -Path $labSources\ISOs\mu_team_foundation_server_2018_update_2_x64_dvd_12199703.iso
+Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labSources\ISOs\en_sql_server_2016_standard_with_service_pack_1_x64_dvd_9540929.iso
+
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name psconf.eu -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
 Set-LabInstallationCredential -Username Install -Password Somepass1
@@ -23,7 +26,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-    'Add-LabMachineDefinition:DomainName' = 'psconf.eu'
+    'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Gateway' = '192.168.30.50'
@@ -31,29 +34,28 @@ $PSDefaultParameterValues = @{
 
 #The PostInstallationActivity is just creating some users
 $postInstallActivity = @()
-$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
 $postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
-Add-LabMachineDefinition -Name DSCDC01 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name DRPDC01 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
 
 # The good, the bad and the ugly
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
-Add-LabMachineDefinition -Name DSCCASQL01 -Memory 4GB -Roles CaRoot, SQLServer2016, Routing -NetworkAdapter $netAdapter
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
+Add-LabMachineDefinition -Name DRPCASQL01 -Memory 4GB -Roles CaRoot, SQLServer2016, Routing -NetworkAdapter $netAdapter
 
 # DSC Pull Server with SQL server backing, TFS Build Worker
 $role = @(
     Get-LabMachineRoleDefinition -Role DSCPullServer -Properties @{ DoNotPushLocalModules = 'true'; DatabaseEngine = 'mdb' }
     Get-LabMachineRoleDefinition -Role TfsBuildWorker
 )
-Add-LabMachineDefinition -Name DSCPULL01 -Memory 2GB -Roles $role
+Add-LabMachineDefinition -Name DRPPULL01 -Memory 2GB -Roles $role -OperatingSystem 'Windows Server Datacenter'
 
 # Build Server
-Add-LabMachineDefinition -Name DSCTFS01 -Memory 1GB -Roles Tfs2017
+Add-LabMachineDefinition -Name DRPTFS01 -Memory 1GB -Roles Tfs2018
 
 # DSC target nodes
-1..4 | Foreach-Object {
-    Add-LabMachineDefinition -Name "DSCSRV0$_" -Memory 1GB -OperatingSystem 'Windows Server 2016 Datacenter' # No GUI, we want DSC to configure our core servers
+1..2 | Foreach-Object {
+    Add-LabMachineDefinition -Name "DRPSRV0$_" -Memory 1GB -OperatingSystem 'Windows Server 2016 Datacenter' # No GUI, we want DSC to configure our core servers
 }
 
 Install-Lab
