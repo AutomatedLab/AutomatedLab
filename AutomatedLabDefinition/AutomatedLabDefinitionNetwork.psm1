@@ -13,9 +13,9 @@ function Add-LabVirtualNetworkDefinition
         
         [AutomatedLab.VirtualizationHost]$VirtualizationEngine,
 
-        [hashtable[]]$HyperVProperties,
+        [hashtable]$HyperVProperties,
 
-        [hashtable[]]$AzureProperties,
+        [hashtable]$AzureProperties,
         
         [switch]$PassThru
     )
