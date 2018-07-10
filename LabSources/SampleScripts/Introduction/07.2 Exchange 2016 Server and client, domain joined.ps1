@@ -15,7 +15,7 @@ $PSDefaultParameterValues = @{
 
 $r = Get-LabPostInstallationActivity -CustomRole Exchange2016 -Properties @{ OrganizationName = 'Test1' }
 Add-LabMachineDefinition -Name Lab2016DC1 -Roles RootDC -Memory 1GB
-Add-LabMachineDefinition -Name Lab2016EX1 -Memory 4GB -PostInstallationActivity $r
+Add-LabMachineDefinition -Name Lab2016EX1 -Memory 6GB -PostInstallationActivity $r
 Add-LabMachineDefinition -Name Lab2016Client1 -OperatingSystem 'Windows 10 Pro Insider Preview' -Memory 1GB
 
 #Exchange 2016 required at least kb3206632. Hence before installing Exchange 2016, the update is applied
