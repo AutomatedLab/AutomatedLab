@@ -259,7 +259,7 @@ function Install-LabBuildWorker
 
             if (-not (Test-Path C:\TfsBuildWorker.zip)) {throw 'Build worker installation files not available'}
 
-            Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
+            Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
             $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
             $commandLine = if ($useSsl)
@@ -411,12 +411,21 @@ function New-LabReleasePipeline
             Write-ScreenInfo -Type Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
             try
             {
+                $retries = 3
                 $errorFile = [System.IO.Path]::GetTempFileName()
+                
                 $cloneResult = Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                while ($cloneResult.ExitCode -ne 0 -and $retries -gt 0)
+                {
+                    Write-ScreenInfo "Could not clone the repository '$SourceRepository', retrying ($retries)..."
+                    Start-Sleep -Seconds 5
+                    $cloneResult = Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                    $retries--
+                }
 
                 if ($cloneResult.ExitCode -ne 0)
                 {
-                    Write-ScreenInfo -Type Warning -Message "Could not clone from $SourceRepository. Git returned: $(Get-Content -Path $errorFile)"
+                    Write-Error "Could not clone from $SourceRepository. Git returned: $(Get-Content -Path $errorFile)"
                 }
             }
             finally
@@ -429,12 +438,21 @@ function New-LabReleasePipeline
         
         try
         {
+            $retries = 3
             $errorFile = [System.IO.Path]::GetTempFileName()
+            
             $pushResult = Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
-
+            while ($pushResult.ExitCode -ne 0 -and $retries -gt 0)
+            {
+                Write-ScreenInfo "Could not push the repository in '$pwd' to TFS, retrying ($retries)..."
+                Start-Sleep -Seconds 5
+                $pushResult = Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                $retries--
+            }
+                
             if ($pushResult.ExitCode -ne 0)
             {
-                Write-ScreenInfo -Type Warning -Message "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
+                Write-Error "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
             }
         }
         finally

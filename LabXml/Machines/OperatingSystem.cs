@@ -57,6 +57,8 @@ namespace AutomatedLab
                             return (IsR2 ? "6.3" : "6.2");
                         case "2016":
                             return "10.0";
+                        case "2019":
+                            return "10.0";
                         case "7":
                             return "6.1";
                         case "8":

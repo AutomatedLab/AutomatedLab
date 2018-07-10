@@ -893,7 +893,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
         
-        Install-DHCP
+        #Install-DHCP
+		Write-Error 'The DHCP role is not implemented yet'
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -2847,7 +2848,14 @@ function New-LabPSSession
                 }
                 elseif ($machineRetries -lt 1)
                 {
-                    Write-Error -Message "Could not create a session to machine '$m' in $Retries retries."
+                    if (-not $portTest.Open)
+                    {
+                        Write-Error -Message "Could not create a session to machine '$m' as the port is closed after $Retries retries."
+                    }
+                    else
+                    {
+                        Write-Error -Message "Could not create a session to machine '$m' after $Retries retries."
+                    }
                 }
             }
         }
@@ -3766,8 +3774,13 @@ function Set-LabDefaultVirtualizationEngine
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
-    $labSources
+	# .ExternalHelp AutomatedLab.Help.xml
+	param
+    (
+        [switch]$Local
+    )
+
+    Get-LabSourcesLocationInternal -Local:$Local
 }
 #endregion Get-LabSourcesLocation
 
@@ -3925,7 +3938,7 @@ function New-LabSourcesFolder
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
         Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-        Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+        Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
         {

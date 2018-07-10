@@ -35,7 +35,7 @@ Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC, Routing -Network
 
 #web server
 $role = Get-LabPostInstallationActivity -CustomRole ProGet5 -Properties @{
-    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.0.10.exe'
+    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.0.13.exe'
     SqlServer = 'PGSql1'
 }
 Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 192.168.110.51 -PostInstallationActivity $role
@@ -69,14 +69,13 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName PGClient1 -Sc
     $targetNugetExe = Join-Path -Path $targetPath -ChildPath NuGet.exe
     Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
     
-    $path = "http://PGWeb1.contoso.com:8624/nuget/Internal"
+    $path = "http://PGWeb1.contoso.com:80/nuget/PowerShell"
     Register-PSRepository -Name Internal -SourceLocation $path -PublishLocation $path -InstallationPolicy Trusted
 
     #--------------------------------------------------------------------------------
 
     (New-ScriptFileInfo -Path C:\SomeScript2.ps1 -Version 1.0 -Author Me -Description Test -PassThru -Force) + 'Get-Date' | Out-File C:\SomeScript.ps1
     Publish-Script -Path C:\SomeScript.ps1 -Repository Internal -NuGetApiKey 'Install@Contoso.com:Somepass1'
-
 }
 
 Show-LabDeploymentSummary -Detailed

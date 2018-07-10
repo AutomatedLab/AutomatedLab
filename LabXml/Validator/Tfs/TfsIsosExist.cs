@@ -10,16 +10,16 @@ namespace AutomatedLab
     /// <summary>
     /// This validator makes sure the required ISOs are present
     /// </summary>
-    public class OrchestratorIsosExist : LabValidator, IValidate
+    public class TfsIsosExist : LabValidator, IValidate
     {
-        public OrchestratorIsosExist()
+        public TfsIsosExist()
         {
             messageContainer = RunValidation();
         }
 
         public override IEnumerable<ValidationMessage> Validate()
         {
-            var sqlRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("Orchestrator"));
+            var sqlRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("Tfs2"));
 
             foreach (var role in sqlRoles)
             {

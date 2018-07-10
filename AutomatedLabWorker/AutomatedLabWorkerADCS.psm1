@@ -562,8 +562,6 @@ function Install-LWLabCAServers2008
     )
     
     Write-LogFunctionEntry
-    #$VerbosePreference = 'Continue'
-    #$DebugPreference = 'Continue'
     
     #region - Parameters debug
     Write-Debug -Message '---------------------------------------------------------------------------------------'

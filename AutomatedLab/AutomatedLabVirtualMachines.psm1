@@ -1152,7 +1152,7 @@ function Connect-LabVM
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
-                    Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
+                    Microsoft.PowerShell.Archive\Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
                     $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
                 }
             }
@@ -1509,8 +1509,8 @@ function Dismount-LabIsoImage
 }
 #endregion Dismount-LabIsoImage
 
-#region Get / Set-LabMachineUacStatus
-function Set-MachineUacStatus
+#region Get / Set-LabVMUacStatus
+function Set-VMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
@@ -1522,8 +1522,8 @@ function Set-MachineUacStatus
         [int]$ConsentPromptBehaviorUser
     )
     
-    $currentSettings = Get-MachineUacStatus -ComputerName $ComputerName
-    $uacStatusChanges = $false
+    $currentSettings = Get-VMUacStatus -ComputerName $ComputerName
+    $uacStatusChanged = $false
     
     $registryPath = 'Software\Microsoft\Windows\CurrentVersion\Policies\System'
     $openRegistry = [Microsoft.Win32.RegistryKey]::OpenBaseKey([Microsoft.Win32.RegistryHive]::LocalMachine, 'Default')
@@ -1533,28 +1533,25 @@ function Set-MachineUacStatus
     if ($currentSettings.EnableLUA -ne $EnableLUA -and $PSBoundParameters.ContainsKey('EnableLUA'))
     {
         $subkey.SetValue('EnableLUA', [int]$EnableLUA)
-        $uacStatusChanges = $true
+        $uacStatusChanged = $true
     }
     
     if ($currentSettings.PromptBehaviorAdmin -ne $ConsentPromptBehaviorAdmin -and $PSBoundParameters.ContainsKey('ConsentPromptBehaviorAdmin'))
     {
         $subkey.SetValue('ConsentPromptBehaviorAdmin', $ConsentPromptBehaviorAdmin)
-        $uacStatusChanges = $true
+        $uacStatusChanged = $true
     }
     
     if ($currentSettings.PromptBehaviorUser -ne $ConsentPromptBehaviorUser -and $PSBoundParameters.ContainsKey('ConsentPromptBehaviorUser'))
     {
         $subkey.SetValue('ConsentPromptBehaviorUser', $ConsentPromptBehaviorUser)
-        $uacStatusChanges = $true
+        $uacStatusChanged = $true
     }
-
-    if ($uacStatusChanges)
-    {
-        Write-ScreenInfo "Setting this requires a reboot of $ComputerName." -Type Warning
-    }
+    
+    return (New-Object psobject -Property @{ UacStatusChanged = $uacStatusChanged } )
 }
 
-function Get-MachineUacStatus
+function Get-VMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding(SupportsShouldProcess = $true)]
@@ -1580,7 +1577,7 @@ function Get-MachineUacStatus
     }
 }
 
-function Set-LabMachineUacStatus
+function Set-LabVMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
@@ -1607,14 +1604,19 @@ function Set-LabMachineUacStatus
         return
     }
     
-    $functions = Get-Command -Name Get-MachineUacStatus, Set-MachineUacStatus, Sync-Parameter
+    $functions = Get-Command -Name Get-VMUacStatus, Set-VMUacStatus, Sync-Parameter
     $variables = Get-Variable -Name PSBoundParameters
-    Invoke-LabCommand -ActivityName 'Set Uac Status' -ComputerName $machines -ScriptBlock {
+    $result = Invoke-LabCommand -ActivityName 'Set Uac Status' -ComputerName $machines -ScriptBlock {
     
-        Sync-Parameter -Command (Get-Command -Name Set-MachineUacStatus)
-        Set-MachineUacStatus @ALBoundParameters
+        Sync-Parameter -Command (Get-Command -Name Set-VMUacStatus)
+        Set-VMUacStatus @ALBoundParameters
     
-    } -Function $functions -Variable $variables
+    } -Function $functions -Variable $variables -PassThru
+    
+    if ($result.UacStatusChanged)
+    {
+        Write-ScreenInfo "The change requires a reboot of '$ComputerName'." -Type Warning
+    }
 
     if ($PassThru)
     {
@@ -1624,7 +1626,7 @@ function Set-LabMachineUacStatus
     Write-LogFunctionExit
 }
 
-function Get-LabMachineUacStatus
+function Get-LabVMUacStatus
 {
     # .ExternalHelp AutomatedLab.Help.xml
     [Cmdletbinding()]
@@ -1644,12 +1646,12 @@ function Get-LabMachineUacStatus
     }
     
     Invoke-LabCommand -ActivityName 'Get Uac Status' -ComputerName $machines -ScriptBlock {
-        Get-MachineUacStatus
-    } -Function (Get-Command -Name Get-MachineUacStatus) -PassThru
+        Get-VMUacStatus
+    } -Function (Get-Command -Name Get-VMUacStatus) -PassThru
 
     Write-LogFunctionExit
 }
-#endregion Get / Set-LabMachineUacStatus
+#endregion Get / Set-LabVMUacStatus
 
 #region Test-LabMachineInternetConnectivity
 function Test-LabMachineInternetConnectivity
