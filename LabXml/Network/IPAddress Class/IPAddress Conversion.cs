@@ -89,6 +89,18 @@ namespace AutomatedLab
             return new IPAddress(ip);
         }
 
+        public IPAddress Increment(int iterations)
+        {
+            IPAddress tempIp = ip ;
+
+            for (int i = 0; i < iterations; i++)
+            {
+                tempIp = tempIp.Increment();
+            }
+
+            return tempIp;
+        }
+
         public IPAddress Decrement()
         {
             byte[] ip = GetAddressBytes();
@@ -104,6 +116,18 @@ namespace AutomatedLab
                 }
             }
             return new IPAddress(ip);
+        }
+
+        public IPAddress Decrement(int iterations)
+        {
+            IPAddress tempIp = ip;
+
+            for (int i = 0; i < iterations; i++)
+            {
+                tempIp = tempIp.Decrement();
+            }
+
+            return tempIp;
         }
 
         public static implicit operator IPAddress(string ipString)
