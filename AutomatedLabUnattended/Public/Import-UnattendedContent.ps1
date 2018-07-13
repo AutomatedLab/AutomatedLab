@@ -8,18 +8,18 @@ function Import-UnattendedContent
         [switch]$IsKickstart,
 
         [switch]$IsAutoYast
-    )    
-    
+    )
+
     if ($IsKickstart)
     {
         Import-UnattendedKickstartContent -Content $Content
         return
     }
-    
+
     if ($IsAutoYast)
     {
-        Import-UnattendedYastContent -Content $Content        
-        return        
+        Import-UnattendedYastContent -Content $Content
+        return
     }
 
     Import-UnattendedWindowsContent -Content $Content
