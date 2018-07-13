@@ -181,6 +181,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Azure", "Azure", "{00FED816
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{4121F376-E671-41E2-97D7-8C1DAEA4BBF2}"
 	ProjectSection(SolutionItems) = preProject
+		LabSources\SampleScripts\HyperV\AL Loves Linux.ps1 = LabSources\SampleScripts\HyperV\AL Loves Linux.ps1
 		LabSources\SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1 = LabSources\SampleScripts\HyperV\BigLab 2012R2 EX SQL ORCH VS OFF.ps1
 		LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1 = LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL EX.ps1
 		LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1 = LabSources\SampleScripts\HyperV\MediumLab 2012R2 SQL.ps1
