@@ -334,6 +334,7 @@ function New-LWHypervVM
         $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+        Get-PSDrive | Out-Null #to update the drive list in PowerShell
 
         if ( $machine.LinuxPackageGroup )
         {
