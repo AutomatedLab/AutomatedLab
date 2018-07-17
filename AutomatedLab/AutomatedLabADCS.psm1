@@ -1723,9 +1723,9 @@ function Install-LabCAMachine
     else { $param.Add('CRLDeltaPeriodUnits', $role.Properties.CRLDeltaPeriodUnits) }
     
     if (!($role.Properties.ContainsKey('UseLDAPAIA'))) { $param.Add('UseLDAPAIA', '<auto>') }
-    else { $param.Add('UseLDAPAIA', ($role.Properties.UseLDAPAIA -like '*Y*')) }
+    else { $param.Add('UseLDAPAIA', $role.Properties.UseLDAPAIA) }
     if (!($role.Properties.ContainsKey('UseHTTPAIA'))) { $param.Add('UseHTTPAIA', '<auto>') }
-    else { $param.Add('UseHTTPAIA', ($role.Properties.UseHTTPAIA -like '*Y*')) }
+    else { $param.Add('UseHTTPAIA', $role.Properties.UseHTTPAIA) }
     if (!($role.Properties.ContainsKey('AIAHTTPURL01'))) { $param.Add('AIAHTTPURL01', '<auto>') }
     else { $param.Add('AIAHTTPURL01', $role.Properties.AIAHTTPURL01) }
     if (!($role.Properties.ContainsKey('AIAHTTPURL02'))) { $param.Add('AIAHTTPURL02', '<auto>') }
@@ -1736,9 +1736,9 @@ function Install-LabCAMachine
     else { $param.Add('AIAHTTPURL02UploadLocation', $role.Properties.AIAHTTPURL02UploadLocation) }
     
     if (!($role.Properties.ContainsKey('UseLDAPCRL'))) { $param.Add('UseLDAPCRL', '<auto>') }
-    else { $param.Add('UseLDAPCRL', ($role.Properties.UseLDAPCRL -like '*Y*')) }
+    else { $param.Add('UseLDAPCRL', $role.Properties.UseLDAPCRL) }
     if (!($role.Properties.ContainsKey('UseHTTPCRL'))) { $param.Add('UseHTTPCRL', '<auto>') }
-    else { $param.Add('UseHTTPCRL', ($role.Properties.UseHTTPCRL -like '*Y*')) }
+    else { $param.Add('UseHTTPCRL', $role.Properties.UseHTTPCRL) }
     if (!($role.Properties.ContainsKey('CDPHTTPURL01'))) { $param.Add('CDPHTTPURL01', '<auto>') }
     else { $param.Add('CDPHTTPURL01', $role.Properties.CDPHTTPURL01) }
     if (!($role.Properties.ContainsKey('CDPHTTPURL02'))) { $param.Add('CDPHTTPURL02', '<auto>') }
@@ -1749,9 +1749,9 @@ function Install-LabCAMachine
     else { $param.Add('CDPHTTPURL02UploadLocation', $role.Properties.CDPHTTPURL02UploadLocation) }
     
     if (!($role.Properties.ContainsKey('InstallWebEnrollment'))) { $param.Add('InstallWebEnrollment', '<auto>') }
-    else { $param.Add('InstallWebEnrollment', ($role.Properties.InstallWebEnrollment -like '*Y*')) }
+    else { $param.Add('InstallWebEnrollment', $role.Properties.InstallWebEnrollment) }
     if (!($role.Properties.ContainsKey('InstallWebRole'))) { $param.Add('InstallWebRole', '<auto>') }
-    else { $param.Add('InstallWebRole', ($role.Properties.InstallWebRole -like '*Y*')) }
+    else { $param.Add('InstallWebRole', $role.Properties.InstallWebRole) }
     
     if (!($role.Properties.ContainsKey('CPSURL'))) { $param.Add('CPSURL', 'http://' + $caDNSName + '/cps/cps.html') }
     else { $param.Add('CPSURL', $role.Properties.CPSURL) }
@@ -1766,7 +1766,7 @@ function Install-LabCAMachine
     else { $param.Add('OCSPHTTPURL02', $role.Properties.OCSPHTTPURL02) }
     
     if (!($role.Properties.ContainsKey('DoNotLoadDefaultTemplates'))) { $param.Add('DoNotLoadDefaultTemplates', '<auto>') }
-    else { $param.Add('DoNotLoadDefaultTemplates', $role.Properties.DoNotLoadDefaultTemplates -like '*Y*') }
+    else { $param.Add('DoNotLoadDefaultTemplates', $role.Properties.DoNotLoadDefaultTemplates) }
     
     
     #region - Check if any unknown parameter name was passed
@@ -2463,7 +2463,7 @@ function Install-LabCAMachine
     }
     else
     {
-        $param.UseHTTPAIA = ($param.UseHTTPAIA -like '*Y*')
+        $param.UseLDAPAIA = ($param.UseLDAPAIA -like '*Y*')
     }
     
     if ($param.UseHTTPAIA -eq '<auto>')
