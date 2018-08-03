@@ -27,6 +27,8 @@ function New-LWHypervVM
     
     Write-LogFunctionEntry
 
+    Import-Module Hyper-V
+
     $script:lab = Get-Lab
     
     if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
@@ -663,6 +665,8 @@ function Remove-LWHypervVM
     
     Write-LogFunctionEntry
     
+    Import-Module Hyper-V
+    
     $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
     if ($vm)
     {
@@ -710,6 +714,8 @@ function Wait-LWHypervVMRestart
     )
     
     Write-LogFunctionEntry
+    
+    Import-Module Hyper-V
     
     $machines = Get-LabVM -ComputerName $ComputerName
 
@@ -871,7 +877,9 @@ function Start-LWHypervVM
         
         [switch]$NoNewLine
     )
-        
+    
+    Import-Module Hyper-V
+    
     if ($PreDelay) {
         $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
@@ -941,6 +949,8 @@ function Stop-LWHypervVM
 
     Write-LogFunctionEntry
     
+    Import-Module Hyper-V
+    
     $start = Get-Date
     
     if ($ShutdownFromOperatingSystem)
@@ -994,6 +1004,8 @@ workflow Save-LWHypervVM
     {
         Write-LogFunctionEntry
         
+        Import-Module Hyper-V
+        
         foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
         {
             Save-VM -Name $Name
@@ -1017,6 +1029,8 @@ workflow Checkpoint-LWHypervVM
     )
     
     Write-LogFunctionEntry
+    
+    Import-Module Hyper-V
     
     sequence
     {
@@ -1093,6 +1107,8 @@ workflow Remove-LWHypervVMSnapshot
     
     Write-LogFunctionEntry
     
+    Import-Module Hyper-V
+    
     foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
     {
         if ($SnapshotName)
@@ -1135,6 +1151,8 @@ workflow Restore-LWHypervVMSnapshot
     sequence
     {
         Write-LogFunctionEntry
+        
+        Import-Module Hyper-V
         
         $WORKFLOW:runningMachines = @()
         
@@ -1205,6 +1223,8 @@ function Get-LWHypervVMStatus
     
     Write-LogFunctionEntry
     
+    Import-Module Hyper-V
+    
     $result = @{ }
     $vms = Get-VM -Name $ComputerName
     
@@ -1237,6 +1257,8 @@ function Enable-LWHypervVMRemoting
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName
     )
+
+    Import-Module Hyper-V
 
     $machines = Get-LabVM -ComputerName $ComputerName
     
@@ -1284,6 +1306,8 @@ function Mount-LWIsoImage
         [switch]$PassThru
     )
 
+    Import-Module Hyper-V
+    
     if (-not (Test-Path -Path $IsoPath -PathType Leaf))
     {
         Write-Error "The path '$IsoPath' could not be found or is pointing to a folder"
@@ -1368,6 +1392,8 @@ function Dismount-LWIsoImage
         [string[]]$ComputerName
     )
 
+    Import-Module Hyper-V
+    
     $machines = Get-LabVM -ComputerName $ComputerName
 
     foreach ($machine in $machines)
@@ -1396,6 +1422,8 @@ function Repair-LWHypervNetworkConfig
     )
 
     Write-LogFunctionEntry
+    
+    Import-Module Hyper-V
 
     $machine = Get-LabVM -ComputerName $ComputerName
 
@@ -1494,6 +1522,8 @@ function Set-LWHypervVMDescription
     )
     
     Write-LogFunctionEntry
+    
+    Import-Module Hyper-V
     
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
     $disctionary = New-Object $type
