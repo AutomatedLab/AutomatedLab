@@ -1207,8 +1207,6 @@ function Remove-Lab
         
         if (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV)
         {
-            Import-Module Hyper-V
-            
             $labMachines = Get-LabVM -IncludeLinux | Where-Object HostType -eq 'HyperV'
             $labName = (Get-Lab).Name
 
@@ -3353,8 +3351,6 @@ function Update-LabMemorySettings
     
     $machines = Get-LabVM -All -IncludeLinux
     $lab = Get-LabDefinition
-    
-    Import-Module Hyper-V
 
     if ($machines | Where-Object Memory -lt 32)
     {
