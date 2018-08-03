@@ -269,8 +269,6 @@ function Add-LWVMVHDX
     )
 	
     Write-LogFunctionEntry
-    
-    Import-Module Hyper-V
 	
     if (-not (Test-Path -Path $VhdxPath))
     {
