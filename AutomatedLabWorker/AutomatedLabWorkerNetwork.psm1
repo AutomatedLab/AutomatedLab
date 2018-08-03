@@ -9,6 +9,8 @@ function New-LWHypervNetworkSwitch
     )
 	
     Write-LogFunctionEntry
+    
+    Import-Module Hyper-V
 
     foreach ($network in $VirtualNetwork)
     {	
@@ -108,9 +110,11 @@ function Remove-LWNetworkSwitch
         [Parameter(Mandatory)]
         [string]$Name
     )
-	
+
     Write-LogFunctionEntry
-	
+
+    Import-Module Hyper-V
+
     if (-not (Get-VMSwitch -Name $Name -ErrorAction SilentlyContinue))
     {
         Write-ScreenInfo 'The network switch does not exist' -Type Warning
