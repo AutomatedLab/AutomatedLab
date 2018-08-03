@@ -1,6 +1,17 @@
 # Changelog
 
-## 5.0.2 - 2018-05-24
+## 5.0.4 - 2018-08-03
+### Enhancements
+- Better Azure cache handling
+- Update to AzureRM module 6.1
+- Added support or Windows Server 2019
+- Added support again for SQL Server 2008
+- Added support for Windows 10 Pro on Azure
+### Fixes
+- Fixing a serious issue in Get-LWAzureVMConnectionInfo
+- Fixed issues installing SQL Server on VMs with PowerShell 4.0
+- Minor fixes
+## 5.0.3 - 2018-05-24
 
 ### Enhancements
 - New cmdlet Uninstall-WindowsFeature
