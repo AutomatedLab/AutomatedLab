@@ -10,7 +10,7 @@ $labName = 'ProGet'
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.110.0/24
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
 
@@ -30,7 +30,7 @@ $PSDefaultParameterValues = @{
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.110.10
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC, Routing -NetworkAdapter $netAdapter -PostInstallationActivity $postInstallActivity
 
 #web server

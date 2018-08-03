@@ -11,12 +11,12 @@ function Set-UnattendedKickstartUserLocale
     }
     catch
     {
-        Write-Verbose -Message "Could not determine culture from $UserLocale. Assuming en_us"        
-        $script:un += "keyboard 'us'"
-        $script:un += 'lang en_us'
+        Write-Verbose -Message "Could not determine culture from $UserLocale. Assuming en_us"
+        $script:un.Add("keyboard 'us'")
+        $script:un.Add('lang en_us')
         return
     }
 
-    $script:un += "keyboard '$($ci.TwoLetterISOLanguageName)'"
-    $script:un += "lang $($ci.IetfLanguageTag -replace '-','_')"
+    $script:un.Add("keyboard '$($ci.TwoLetterISOLanguageName)'")
+    $script:un.Add("lang $($ci.IetfLanguageTag -replace '-','_')")
 }

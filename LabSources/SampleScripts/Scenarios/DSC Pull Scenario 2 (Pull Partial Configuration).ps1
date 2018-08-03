@@ -27,7 +27,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
@@ -50,7 +50,7 @@ Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $pos
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name DRouter -Roles FileServer, Routing -NetworkAdapter $netAdapter
 
 #CA

@@ -244,7 +244,7 @@ function New-LWHypervVM
         {
             Set-UnattendedWorkgroup -WorkgroupName $Machine.WorkgroupName
         }
-                
+
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
             $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
@@ -254,13 +254,24 @@ function New-LWHypervVM
                 Username = $domain.Administrator.UserName 
                 Password = $domain.Administrator.Password
             }
+
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
-                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'             
+                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'
             }
-            
+
             Set-UnattendedDomain @parameters            
+
+            if ($Machine.OperatingSystemType -eq 'Linux')
+            {
+                $sudoParam = @{
+                    Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
+                    Description = 'Enable domain admin as sudoer without password'
+                }
+
+                Add-UnattendedSynchronousCommand @sudoParam
+            }
         }
     }
 
@@ -323,6 +334,7 @@ function New-LWHypervVM
         $unattendPartition | Set-Partition -NewDriveLetter $nextDriveLetter
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
+        Get-PSDrive | Out-Null #to update the drive list in PowerShell
 
         if ( $machine.LinuxPackageGroup )
         {
