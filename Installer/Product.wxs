@@ -455,6 +455,7 @@
                 <File Id='Sample_DFSHCAzure' Name='DFSHC - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1' />
                 <File Id='Sample_DFSHCHyperV' Name='DFSHC - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1' />
                 <File Id='Sample_Kerberos101LabHyperV' Name='Kerberos 101 Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1' />
+                <File Id='Sample_Kerberos101LabLinuxHyperV' Name='Kerberos 101 Lab with Linux - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\Kerberos 101 Lab with Linux - HyperV.ps1' />
                 <File Id='Sample_PowerShellLabAzure' Name='PowerShell Lab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1' />
                 <File Id='Sample_PowerShellLabHyperVwithInternet' Name='PowerShell Lab - HyperV with Internet.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1' />
                 <File Id='Sample_PowerShellLabHyperV' Name='PowerShell Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1' />

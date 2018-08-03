@@ -163,6 +163,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{
 		LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1 = LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1
 		LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1 = LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1
 		LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1
+		LabSources\SampleScripts\Workshops\Kerberos 101 Lab with Linux - HyperV.ps1 = LabSources\SampleScripts\Workshops\Kerberos 101 Lab with Linux - HyperV.ps1
 		LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1
 		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1
 		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
