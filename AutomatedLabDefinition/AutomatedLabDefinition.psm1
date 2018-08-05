@@ -606,6 +606,51 @@ function Get-LabVolumesOnPhysicalDisks
     }
 }
 #endregion Get-LabVolumesOnPhysicalDisks
+
+#region Get-LabFreeDiskSpace
+function Get-LabFreeDiskSpace
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+
+    $type = @'
+using System;
+using System.Runtime.InteropServices;
+
+namespace AutomatedLab
+{
+    public class DiskSpaceWin32
+    {
+        [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
+           out ulong lpFreeBytesAvailable,
+           out ulong lpTotalNumberOfBytes,
+           out ulong lpTotalNumberOfFreeBytes);
+    }
+}
+'@
+
+    Add-Type -TypeDefinition $type
+
+    [uint64]$freeBytesAvailable = 0
+    [uint64]$totalNumberOfBytes = 0
+    [uint64]$totalNumberOfFreeBytes = 0
+
+    $success = [AutomatedLab.DiskSpaceWin32]::GetDiskFreeSpaceEx($Path, [ref]$freeBytesAvailable, [ref]$totalNumberOfBytes, [ref]$totalNumberOfFreeBytes)
+    if(-not $success)
+    {
+        Write-Error "Could not determine free disk space of path '$Path'"
+    }
+
+    New-Object -TypeName PSObject -Property @{
+        TotalNumberOfBytes = $totalNumberOfBytes
+        FreeBytesAvailable = $freeBytesAvailable
+        TotalNumberOfFreeBytes = $totalNumberOfFreeBytes
+    }
+}
 #endregion Internals
 
 #region Lab Definition Functions
@@ -1064,7 +1109,7 @@ function Export-LabDefinition
         $labTargetPath = (Get-LabDefinition).Target.Path
         if ($labTargetPath)
         {
-            $freeSpace = (Get-PSDrive -Name $labTargetPath[0]).Free
+            $freeSpace = (Get-LabFreeDiskSpace -Path $labTargetPath).FreeBytesAvailable
             if ($freeSpace -lt $spaceNeeded)
             {
                 Throw "VmPath parameter is specified for the lab and contains: '$labTargetPath'. However, estimated needed space be $([int]($spaceNeeded / 1GB))GB but drive has only $([System.Math]::Round($freeSpace / 1GB)) GB of free space"
