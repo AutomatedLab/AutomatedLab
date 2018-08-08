@@ -525,11 +525,17 @@ function Import-Lab
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
         }
 
-        if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
+        if (($Script:data.Machines | Where-Object HostType -eq VMware) -and ((Get-Module -Name VMware.VimAutomation.* -ErrorAction SilentlyContinue).Count -lt 1))
         {
-            throw 'The VMWare snapin was not loaded. Maybe it is missing'
+            # http://www.vmware.com/resources/compatibility/sim/interop_matrix.php#interop&299=2247&2= 
+            # PowerCLI version 6.5.1 is backwards compatible with all vCenter Server editions, down to version 5.5.
+            # Import VMware modules, and check if VMware snapin is loaded as a result.
+            Get-Module -ListAvailable VMware.* | Import-Module 
+            if ((Get-Module -Name VMware.VimAutomation.*  -ErrorAction SilentlyContinue).Count -lt 1) {
+                throw 'The VMware modules were not loaded. Ensure that PowerCLI is installed.'
+            }
         }
-    
+
         #import all the disk files referenced in the lab.xml
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Disk
         $importMethodInfo = $type.GetMethod('Import',[System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static, [System.Type]::DefaultBinder, [Type[]]@([string]), $null)
@@ -571,13 +577,13 @@ function Import-Lab
             Remove-Item -Path $tempFilePath -Force
         }
 
-        if ($Script:data.VMWareSettings.DataCenterName)
+        if ($Script:data.VMwareSettings.DataCenterName)
         {
-            Add-LabVMWareSettings -DataCenterName $Script:data.VMWareSettings.DataCenterName `
-            -DataStoreName $Script:data.VMWareSettings.DataStoreName `
-            -ResourcePoolName $Script:data.VMWareSettings.ResourcePoolName `
-            -VCenterServerName $Script:data.VMWareSettings.VCenterServerName `
-            -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:data.VMWareSettings.Credential))
+            Add-LabVMwareSettings -DataCenterName $Script:data.VMwareSettings.DataCenterName `
+            -DataStoreName $Script:data.VMwareSettings.DataStoreName `
+            -ResourcePoolName $Script:data.VMwareSettings.ResourcePoolName `
+            -VCenterServerName $Script:data.VMwareSettings.VCenterServerName `
+            -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:data.VMwareSettings.Credential))
         }
     
         $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
@@ -1600,10 +1606,10 @@ function Enable-LabVMRemoting
         Enable-LWAzureVMRemoting -ComputerName $azureVms
     }
         
-    $vmwareVms = $machines | Where-Object HostType -eq 'VmWare'
-    if ($vmwareVms)
+    $VMwareVms = $machines | Where-Object HostType -eq 'VMware'
+    if ($VMwareVms)
     {
-        Enable-LWVMWareVMRemoting -ComputerName $vmwareVms
+        Enable-LWVMwareVMRemoting -ComputerName $VMwareVms
     }
     
     Write-LogFunctionExit
@@ -2734,7 +2740,7 @@ function New-LabPSSession
                     $param.UseSSL = $true
                 }
             }
-            elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+            elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMware')
             {
                 $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
@@ -2963,7 +2969,7 @@ function Remove-LabPSSession
             $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
             $param.Add('Port', $m.AzureConnectionInfo.Port)
         }
-        elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
+        elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMware')
         {
             if ($doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession)
             {

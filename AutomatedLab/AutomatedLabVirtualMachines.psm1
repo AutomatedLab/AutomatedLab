@@ -64,18 +64,18 @@ function New-LabVM
                 Write-ScreenInfo -Message "Could not create $($machine.HostType) machine '$machine'" -TaskEnd -Type Error
             }
         }
-        elseif ($machine.HostType -eq 'VMWare')
+        elseif ($machine.HostType -eq 'VMware')
         {
-            $vmImageName = (New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)).VMWareImageName
+            #TODO: see if this check can be moved up to validating the lab.
+            $vmImageName = (New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)).VMwareImageName
             if (-not $vmImageName)
             {
-                Write-Error "The VMWare image for operating system '$($machine.OperatingSystem)' is not defined in AutomatedLab. Cannot install the machine."
+                Write-Error "The VMware image for operating system '$($machine.OperatingSystem)' is not defined in AutomatedLab. Cannot install the machine."
                 continue
             }
-            
-            New-LWVMWareVM -Name $machine.Name -ReferenceVM $vmImageName -AdminUserName $machine.InstallationUser.UserName -AdminPassword $machine.InstallationUser.Password `
-            -DomainName $machine.DomainName -DomainJoinCredential $machine.GetCredential($lab)
-            
+
+            New-LWVMwareVM -Machine $machine -ReferenceVM $vmImageName
+
             Start-LabVM -ComputerName $machine
         }
         elseif ($machine.HostType -eq 'Azure')
@@ -120,9 +120,9 @@ function New-LabVM
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
     
-    $vmwareVMs = $machines | Where-Object HostType -eq VMWare
+    $VMwareVMs = $machines | Where-Object HostType -eq VMware
     
-    if ($vmwareVMs)
+    if ($VMwareVMs)
     {
         throw New-Object System.NotImplementedException
     }
@@ -312,10 +312,10 @@ function Start-LabVM
             Start-LWAzureVM -ComputerName $azureVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
         }
         
-        $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'
-        if ($vmwareVms)
+        $VMwareVms = $vms | Where-Object HostType -eq 'VMware'
+        if ($VMwareVms)
         {
-            Start-LWVMWareVM -ComputerName $vmwareVms -DelayBetweenComputers $DelayBetweenComputers
+            Start-LWVMwareVM -ComputerName $VMwareVms -DelayBetweenComputers $DelayBetweenComputers
         }
 
         if ($Wait)
@@ -414,9 +414,9 @@ function Save-LabVM
             {
                 Write-Error 'Azure does not support saving machines'
             }
-            elseif ($vm.HostType -eq 'VMWare')
+            elseif ($vm.HostType -eq 'VMware')
             {
-                Save-LWVMWareVM -ComputerName $vm
+                Save-LWVMwareVM -ComputerName $vm
             }
         }
         
@@ -539,19 +539,19 @@ function Stop-LabVM
     
     $hypervVms = $machines | Where-Object HostType -eq 'HyperV'
     $azureVms = $machines | Where-Object HostType -eq 'Azure'
-    $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
+    $VMwareVms = $machines | Where-Object HostType -eq 'VMware'
     
     if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
     if ($azureVms) { 
         $stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
         Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
-    if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
+    if ($VMwareVms) { Stop-LWVMwareVM -ComputerName $VMwareVms -ErrorVariable VMwareErrors -ErrorAction SilentlyContinue }
     
     $remainingTargets = @()
     if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
     if ($azureErrors) { $remainingTargets + $azureErrors.TargetObject }
-    if ($vmwareErrors) { $remainingTargets + $vmwareErrors.TargetObject }
+    if ($VMwareErrors) { $remainingTargets + $VMwareErrors.TargetObject }
     if ($remainingTargets) { Stop-LabVM2 -ComputerName $remainingTargets }
     
     if ($Wait)
@@ -842,7 +842,7 @@ function Wait-LabVMRestart
     
     $azureVms = $vms | Where-Object HostType -eq 'Azure'
     $hypervVms = $vms | Where-Object HostType -eq 'HyperV'
-    $vmwareVms = $vms | Where-Object HostType -eq 'VMWare'
+    $VMwareVms = $vms | Where-Object HostType -eq 'VMware'
     
     if ($azureVms)
     {
@@ -855,15 +855,15 @@ function Wait-LabVMRestart
         Wait-LWHypervVMRestart -ComputerName $hypervVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -StartMachinesWhileWaiting $StartMachinesWhileWaiting -ErrorAction SilentlyContinue -ErrorVariable hypervWaitError -MonitorJob $MonitorJob
     }
     
-    if ($vmwareVms)
+    if ($VMwareVms)
     {
-        Wait-LWVMWareRestartVM -ComputerName $vmwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable vmwareWaitError
+        Wait-LWVMwareRestartVM -ComputerName $VMwareVms -TimeoutInMinutes $TimeoutInMinutes -ProgressIndicator $ProgressIndicator -ErrorAction SilentlyContinue -ErrorVariable VMwareWaitError
     }
     
     $waitError = New-Object System.Collections.ArrayList
     if ($azureWaitError) { $waitError.AddRange($azureWaitError) }
     if ($hypervWaitError) { $waitError.AddRange($hypervWaitError) }
-    if ($vmwareWaitError) { $waitError.AddRange($vmwareWaitError) }
+    if ($VMwareWaitError) { $waitError.AddRange($VMwareWaitError) }
     
     $waitError = $waitError | Where-Object { $_.Exception.Message -like 'Timeout while waiting for computers to restart*' }
     if ($waitError)
@@ -1000,9 +1000,9 @@ function Remove-LabVM
         
         Write-ScreenInfo -Message "Removing Lab VM '$($machine.Name)' (and its associated disks)"
         
-        if ($virtualNetworkAdapter.HostType -eq 'VMWare')
+        if ($virtualNetworkAdapter.HostType -eq 'VMware')
         {
-            Write-Error 'Managing networks is not yet supported for VMWare'
+            Write-Error 'Managing networks is not yet supported for VMware'
             continue
         }
         
@@ -1014,9 +1014,9 @@ function Remove-LabVM
         {
             Remove-LWAzureVM -Name $machine
         }
-        elseif ($machine.HostType -eq 'VMWare')
+        elseif ($machine.HostType -eq 'VMware')
         {
-            Remove-LWVMWareVM -Name $machine
+            Remove-LWVMwareVM -Name $machine
         }
         
         if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
@@ -1060,13 +1060,13 @@ function Get-LabVMStatus
     $azureVMs = $vms | Where-Object HostType -eq 'Azure'
     if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.Name }
     
-    $vmwareVMs = $vms | Where-Object HostType -eq 'VMWare'
-    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.Name }
+    $VMwareVMs = $vms | Where-Object HostType -eq 'VMware'
+    if ($VMwareVMs) { $VMwareStatus = Get-LWVMwareVMStatus -ComputerName $VMwareVMs.Name }
     
     $result = @{ }
     if ($hypervStatus) { $result = $result + $hypervStatus }
     if ($azureStatus) { $result = $result + $azureStatus }
-    if ($vmwareStatus) { $result = $result + $vmwareStatus }
+    if ($VMwareStatus) { $result = $result + $VMwareStatus }
     
     if ($result.Count -eq 1 -and -not $AsHashTable)
     {

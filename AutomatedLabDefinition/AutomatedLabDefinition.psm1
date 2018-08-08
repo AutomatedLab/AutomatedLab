@@ -632,7 +632,7 @@ function New-LabDefinition
 
         [switch]$UseStaticMemory = $false,
 
-        [ValidateSet('Azure', 'HyperV', 'VMWare')]
+        [ValidateSet('Azure', 'HyperV', 'VMware')]
         [string]$DefaultVirtualizationEngine,
         
         [switch]$NoAzurePublishSettingsFile,
@@ -2623,7 +2623,7 @@ function Add-LabMachineDefinition
         {
             $machine.OperatingSystem = $OperatingSystem
         }
-        elseif ($machine.HostType -eq 'VMWare')
+        elseif ($machine.HostType -eq 'VMware')
         {
             $machine.OperatingSystem = $OperatingSystem
         }

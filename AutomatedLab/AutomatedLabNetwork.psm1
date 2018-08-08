@@ -13,40 +13,29 @@ function New-LabNetworkSwitches
         Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
-    $vmwareNetworks = $data.VirtualNetworks | Where-Object HostType -eq VMWare
-    if ($vmwareNetworks)
-    {
-        foreach ($vmwareNetwork in $vmwareNetworks)
-        {
-            $network = Get-LWVMWareNetworkSwitch -VirtualNetwork $vmwareNetwork
-            if (-not $vmwareNetworks)
-            {
-                throw "The networks '$($vmwareNetwork.Name)' does not exist and must be created before."
-            }
-            else
-            {
-                Write-Verbose "Network '$($vmwareNetwork.Name)' found"
-            }
-        }
-    }
-        
+
     Write-Verbose "Creating network switch '$($virtualNetwork.Name)'..."
+
+    $VMwareNetworks = $data.VirtualNetworks | Where-Object HostType -eq VMware
+    if ($VMwareNetworks)
+    {
+        New-LWVMwareNetworkSwitch -VirtualNetwork $VMwareNetworks
+    }
 
     $hypervNetworks = $data.VirtualNetworks | Where-Object HostType -eq HyperV
     if ($hypervNetworks)
     {
         New-LWHypervNetworkSwitch -VirtualNetwork $hypervNetworks
     }
-    
+
     $azureNetworks = $data.VirtualNetworks | Where-Object HostType -eq Azure
     if ($azureNetworks )
     {
         New-LWAzureNetworkSwitch -VirtualNetwork $azureNetworks 
     }    
-        
+
     Write-Verbose 'done'
-    
+
     Write-LogFunctionExit
 }
 #endregion New-LabNetworkSwitches
@@ -67,10 +56,10 @@ function Remove-LabNetworkSwitches
     
     Write-LogFunctionEntry
 
-    $virtualNetworks = $Script:data.VirtualNetworks | Where-Object HostType -eq VMWare
+    $virtualNetworks = $Script:data.VirtualNetworks | Where-Object HostType -eq VMware
     foreach ($virtualNetwork in $virtualNetworks)
     {
-        Write-Error "Cannot remove network '$virtualNetwork'. Managing networks is not yet supported for VMWare"
+        Write-Error "Cannot remove network '$virtualNetwork'. Managing networks is not yet supported for VMware"
         continue
     }
 

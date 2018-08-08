@@ -1,16 +1,21 @@
-﻿#region Get-LWVMWareNetworkSwitch
-function Get-LWVMWareNetworkSwitch
+﻿#region Get-LWVMwareNetworkSwitch
+function Get-LWVMwareNetworkSwitch
 {
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
     )
-	
+
     Write-LogFunctionEntry
 
     foreach ($network in $VirtualNetwork)
     {
-        $network = Get-VDPortgroup -Name $network.Name
+        $network = Get-VirtualPortgroup -Name $network.Name -ErrorAction SilentlyContinue
+
+        if (-not $network)
+        {
+            $network = Get-VDPortgroup -Name $network.Name -ErrorAction SilentlyContinue
+        }
 
         if (-not $network)
         {
@@ -19,7 +24,7 @@ function Get-LWVMWareNetworkSwitch
 
         $network
     }
-	
+
     Write-LogFunctionExit
 }
-#endregion Get-LWVMWareNetworkSwitch
+#endregion Get-LWVMwareNetworkSwitch

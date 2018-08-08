@@ -6,31 +6,29 @@
     - A snapshot of the VM above (this is to be used as master to the linked clones)
 #>
 
+#Requires -Modules @{ModuleName="VMware.VimAutomation.Core";ModuleVersion="6.5.1.0"}
+#Requires -RunAsAdministrator
+
 # Redirect $env:PSmodulepath to develop AutomatedLab modules
-$path = "C:\Users\Jos\Documents\GitHub\AutomatedLab"
+$path = "E:\i386\Users\torsten\GitHub\AutomatedLab"
 $env:PSModulePath += ";$path"
 
 # Save a credential for VMware access
-$cred = (get-credential administrator@vsphere.local)
+$cred = (Get-Credential administrator@vsphere.local)
 
 # Import VMware modules to current session
-get-module -ListAvailable vmware* | import-module
+# Get-Module -ListAvailable vmware* | import-module
 
-New-LabDefinition -Name VMWareLab -VmPath C:\AutomatedLab-VMs\ -DefaultVirtualizationEngine VMWare 
+$VerbosePreference = "Continue"
 
-Add-LabVMWareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName 192.168.1.30 -Credential $cred -ResourcePoolName Test
+New-LabDefinition -Name VMwareLab -VmPath C:\AutomatedLab-VMs\ -DefaultVirtualizationEngine VMware
 
-if (-not (Get-VDPortgroup -Name VMWareLab)){
-    # This should eventually be handled within AutomatedLab
-    #New-VDSwitch -Name VMWareVDSwitch -Server 192.168.1.30 -Location datacenter
-    New-VDPortgroup -VDSwitch vmwareVDSwitch -Name VMWareLab 
-}
+Add-LabVMwareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName vcenter -Credential $cred -ResourcePoolName Test
 
-Add-LabVirtualNetworkDefinition -Name VMWareLab -VirtualizationEngine VMWare -AddressSpace 192.168.10.0 
+Add-LabVirtualNetworkDefinition -Name AutomatedLabNetwork -VirtualizationEngine VMware -AddressSpace 192.168.10.0
 
-Add-LabMachineDefinition -Name test1 -memory 1gb -Processors 1 -OS 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -Roles webserver
+Add-LabMachineDefinition -Name test1 -Memory 1GB -Processors 1 -OS 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -Roles WebServer
 
-# unload Hyper-V
-get-module hyper-v | Remove-Module
+Import-Lab VMwareLab
 
 Install-Lab
