@@ -29,7 +29,7 @@ function New-LWHypervVM
 
     $script:lab = Get-Lab
     
-    if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
+    if (Hyper-V\Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
@@ -60,7 +60,7 @@ function New-LWHypervVM
     
     #region network adapter settings
     $macAddressPrefix = '0017FA'
-    $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
+    $macAddressesInUse = @(Hyper-V\Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
     $macIdx = 0
@@ -416,7 +416,7 @@ function New-LWHypervVM
         ErrorAction = 'Stop'
     }
 
-    $vm = New-VM @vmParameter
+    $vm = Hyper-V\New-VM @vmParameter
     
     Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
@@ -461,7 +461,7 @@ function New-LWHypervVM
     }
     
     #remove the unconnected default network adapter
-    $vm | Remove-VMNetworkAdapter
+    $vm | Hyper-V\Remove-VMNetworkAdapter
     foreach ($adapter in $adapters)
     {
         #external switches will be connected after the domain join and after the network order is configures correctly
@@ -490,7 +490,7 @@ function New-LWHypervVM
 
     if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
-        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+        $vm | Hyper-V\Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
     }
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
@@ -609,9 +609,9 @@ Windows Registry Editor Version 5.00
 
     $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
-    Set-VM -Name $Machine.Name @param
+    Hyper-V\Set-VM -Name $Machine.Name @param
     
-    Set-VM -Name $Machine.Name -ProcessorCount $Machine.Processors
+    Hyper-V\Set-VM -Name $Machine.Name -ProcessorCount $Machine.Processors
     
     if ($DisableIntegrationServices)
     {
@@ -626,7 +626,7 @@ Windows Registry Editor Version 5.00
     Write-Verbose "Creating snapshot named '$($Machine.Name) - post OS Installation'"
     if ($CreateCheckPoints)
     {
-        Checkpoint-VM -VM (Get-VM -Name $Machine.Name) -SnapshotName 'Post OS Installation'
+        Checkpoint-VM -VM (Hyper-V\Get-VM -Name $Machine.Name) -SnapshotName 'Post OS Installation'
     }
 
     if ($Machine.Disks.Name)
@@ -663,7 +663,7 @@ function Remove-LWHypervVM
     
     Write-LogFunctionEntry
     
-    $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
+    $vm = Hyper-V\Get-VM -Name $Name -ErrorAction SilentlyContinue
     if ($vm)
     {
         $vmPath = Split-Path -Path $vm.HardDrives[0].Path -Parent
@@ -671,16 +671,16 @@ function Remove-LWHypervVM
         if ($vm.State -eq 'Saved')
         {
             Write-Verbose "Deleting saved state of VM '$($Name)'"
-            Remove-VMSavedState -VMName $Name
+            Hyper-V\Remove-VMSavedState -VMName $Name
         }
         else
         {
             Write-Verbose "Stopping VM '$($Name)'"
-            Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
+            Hyper-V\Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
     
         Write-Verbose "Removing VM '$($Name)'"
-        Remove-VM -Name $Name -Force
+        Hyper-V\Remove-VM -Name $Name -Force
 
         Write-Verbose "Removing VM files for '$($Name)'"
         Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
@@ -716,7 +716,7 @@ function Wait-LWHypervVMRestart
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
     {
-        $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
+        $machine.Uptime = (Hyper-V\Get-VM -Name $machine).Uptime.TotalSeconds
     }
     
     $vmDrive = ((Get-Lab).Target.Path)[0]
@@ -791,7 +791,7 @@ function Wait-LWHypervVMRestart
         
         foreach ($machine in $machines)
         {
-            $currentMachineUptime = (Get-VM -Name $machine).Uptime.TotalSeconds
+            $currentMachineUptime = (Hyper-V\Get-VM -Name $machine).Uptime.TotalSeconds
             Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
@@ -891,7 +891,7 @@ function Start-LWHypervVM
             
         try
         {
-            Start-VM -Name $Name -ErrorAction Stop
+            Hyper-V\Start-VM -Name $Name -ErrorAction Stop
 
             if ($machine.NetworkAdapters.Count -gt 1 -and 
             ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
@@ -962,7 +962,7 @@ function Stop-LWHypervVM
             $job = Start-Job -Name "AL_Shutdown_$name" -ScriptBlock {
                 try
                 {
-                    Stop-VM -Name $using:name -Force -ErrorAction Stop
+                    Hyper-V\Stop-VM -Name $using:name -Force -ErrorAction Stop
                 }
                 catch
                 {
@@ -996,7 +996,7 @@ workflow Save-LWHypervVM
         
         foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
         {
-            Save-VM -Name $Name
+            Hyper-V\Save-VM -Name $Name
         }
         
         Write-LogFunctionExit
@@ -1030,10 +1030,10 @@ workflow Checkpoint-LWHypervVM
         Write-Verbose -Message 'Remembering all running machines'
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
+            if ((Hyper-V\Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
             {
-                Suspend-VM -Name $n -ErrorAction SilentlyContinue
-                Save-VM -Name $n -ErrorAction SilentlyContinue
+                Hyper-V\Suspend-VM -Name $n -ErrorAction SilentlyContinue
+                Hyper-V\Save-VM -Name $n -ErrorAction SilentlyContinue
                     
                 Write-Verbose -Message "    '$n' was running"
                 $WORKFLOW:runningMachines += $n
@@ -1044,9 +1044,9 @@ workflow Checkpoint-LWHypervVM
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
+            if (-not (Hyper-V\Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
             {
-                Checkpoint-VM -Name $n -SnapshotName $SnapshotName
+                Hyper-V\Checkpoint-VM -Name $n -SnapshotName $SnapshotName
             }
             else
             {
@@ -1062,7 +1062,7 @@ workflow Checkpoint-LWHypervVM
             if ($n -in $WORKFLOW:runningMachines)
             {
                 Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
+                Hyper-V\Start-VM -Name $n -ErrorAction SilentlyContinue
             }
             else
             {
@@ -1097,13 +1097,13 @@ workflow Remove-LWHypervVMSnapshot
     {
         if ($SnapshotName)
         {
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
+            $snapshot = Hyper-V\Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
                 $_.Name -eq $SnapshotName
             }
         }
         else
         {
-            $snapshot = Get-VMSnapshot -VMName $n
+            $snapshot = Hyper-V\Get-VMSnapshot -VMName $n
         }
         
         if (-not $snapshot)
@@ -1112,7 +1112,7 @@ workflow Remove-LWHypervVMSnapshot
         }
         else
         {
-            Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
+            Hyper-V\Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
         }
     }
     
@@ -1141,7 +1141,7 @@ workflow Restore-LWHypervVMSnapshot
         Write-Verbose -Message 'Remembering all running machines'
         foreach ($n in $ComputerName)
         {
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+            if ((Hyper-V\Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
             {
                 Write-Verbose -Message "    '$n' was running"
                 $WORKFLOW:runningMachines += $n
@@ -1150,8 +1150,8 @@ workflow Restore-LWHypervVMSnapshot
         
         foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
         {
-            Suspend-VM -Name $n -ErrorAction SilentlyContinue
-            Save-VM -Name $n -ErrorAction SilentlyContinue
+            Hyper-V\Suspend-VM -Name $n -ErrorAction SilentlyContinue
+            Hyper-V\Save-VM -Name $n -ErrorAction SilentlyContinue
         }
         
         Start-Sleep -Seconds 5
@@ -1168,8 +1168,8 @@ workflow Restore-LWHypervVMSnapshot
             }
             else
             {
-                Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
-                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
+                Hyper-V\Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
+                Hyper-V\Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
             }
         }
         
@@ -1182,7 +1182,7 @@ workflow Restore-LWHypervVMSnapshot
             if ($n -in $WORKFLOW:runningMachines)
             {
                 Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
+                Hyper-V\Start-VM -Name $n -ErrorAction SilentlyContinue
             }
             else
             {
@@ -1206,7 +1206,7 @@ function Get-LWHypervVMStatus
     Write-LogFunctionEntry
     
     $result = @{ }
-    $vms = Get-VM -Name $ComputerName
+    $vms = Hyper-V\Get-VM -Name $ComputerName
     
     foreach ($vm in $vms)
     {
@@ -1313,20 +1313,20 @@ function Mount-LWIsoImage
             {
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = Hyper-V\Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 else
                 {
-                    if (-not (Get-VMDvdDrive -VMName $machine))
+                    if (-not (Hyper-V\Get-VMDvdDrive -VMName $machine))
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = Hyper-V\Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
                     
-                if ((Get-VMDvdDrive -VMName $machine).Path -contains $IsoPath)
+                if ((Hyper-V\Get-VMDvdDrive -VMName $machine).Path -contains $IsoPath)
                 {
                     $done = $true
                 }
@@ -1375,12 +1375,12 @@ function Dismount-LWIsoImage
         if ($machine.OperatingSystem.Version -ge [System.Version]'6.2')
         {
             Write-Verbose -Message "Removing DVD drive for machine '$machine'"
-            Get-VMDvdDrive -VMName $machine | Remove-VMDvdDrive
+            Hyper-V\Get-VMDvdDrive -VMName $machine | Remove-VMDvdDrive
         }
         else
         {
             Write-Verbose -Message "Setting DVD drive for machine '$machine' to null"
-            Get-VMDvdDrive -VMName $machine | Set-VMDvdDrive -Path $null
+            Hyper-V\Get-VMDvdDrive -VMName $machine | Set-VMDvdDrive -Path $null
         }
     }
 }
@@ -1469,11 +1469,11 @@ function Repair-LWHypervNetworkConfig
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
-        $vmAdapter = Get-VMNetworkAdapter -VMName $machine -Name $adapterInfo.VirtualSwitch.Name
+        $vmAdapter = Hyper-V\Get-VMNetworkAdapter -VMName $machine -Name $adapterInfo.VirtualSwitch.Name
         
         if ($adapterInfo.VirtualSwitch.Name -ne $vmAdapter.SwitchName)
         {
-            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
+            $vmAdapter | Hyper-V\Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
         }
     }
     
@@ -1505,7 +1505,7 @@ function Set-LWHypervVMDescription
     
     $notes = $disctionary.ExportToString()    
     
-    Set-VM -Name $ComputerName -Notes $notes
+    Hyper-V\Set-VM -Name $ComputerName -Notes $notes
     
     Write-LogFunctionExit
 }
@@ -1520,7 +1520,7 @@ function Get-LWHypervVMDescription
     
     Write-LogFunctionEntry
     
-    $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
+    $vm = Hyper-V\Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         return
