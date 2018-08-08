@@ -112,10 +112,6 @@ function New-LWVMwareVM
         AdminPassword = $AdminPassword
         DomainName = $DomainName
         DomainCred = $DomainJoinCredential
-        AdminUserName = $Machine.InstallationUser.UserName
-        AdminPassword = $Machine.InstallationUser.Password
-        DomainName = $Machine.DomainName
-        DomainCred = $Machine.GetCredential($lab)
         FolderName = $FolderName
     }
 
