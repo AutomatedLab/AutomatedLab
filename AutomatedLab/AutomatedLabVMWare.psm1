@@ -1,51 +1,51 @@
 ﻿function Update-LabVMwareSettings
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	if ((Get-PSCallStack).Command -contains 'Import-Lab')
-	{
-		$Script:lab = Get-Lab
-	}
-	elseif ((Get-PSCallStack).Command -contains 'Add-LabVMwareSettings')
-	{
-		$Script:lab = Get-LabDefinition
-	}
+    # .ExternalHelp AutomatedLab.Help.xml
+    if ((Get-PSCallStack).Command -contains 'Import-Lab')
+    {
+        $Script:lab = Get-Lab
+    }
+    elseif ((Get-PSCallStack).Command -contains 'Add-LabVMwareSettings')
+    {
+        $Script:lab = Get-LabDefinition
+    }
 }
 
 function Add-LabVMwareSettings
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	param (
-		[Parameter(Mandatory)]
-		[string]$DataCenterName,
+    # .ExternalHelp AutomatedLab.Help.xml
+    param (
+        [Parameter(Mandatory)]
+        [string]$DataCenterName,
 
         [Parameter(Mandatory)]
-		[string]$DataStoreName,
-		
-		[Parameter(Mandatory)]
-		[string]$ResourcePoolName,
+        [string]$DataStoreName,
 
         [Parameter(Mandatory)]
-		[string]$VCenterServerName,
+        [string]$ResourcePoolName,
 
         [Parameter(Mandatory)]
-		[pscredential]$Credential,
+        [string]$VCenterServerName,
 
-		[switch]$PassThru
-	)
-	
-	Write-LogFunctionEntry
+        [Parameter(Mandatory)]
+        [pscredential]$Credential,
+
+        [switch]$PassThru
+    )
+
+    Write-LogFunctionEntry
 
     Update-LabVMwareSettings
 
-    #loading a snaping twice results in: Add-PSSnapin : An item with the same key has already been added
-	#Add-PSSnapin -Name VMware.VimAutomation.Core, VMware.VimAutomation.Vds -ErrorAction Stop
-	
-	if (-not $script:lab.VMwareSettings)
-	{
-		$script:lab.VMwareSettings = New-Object AutomatedLab.VMwareConfiguration
-	}
-	
-	Connect-VIServer -Server $VCenterServerName -Credential $Credential -ErrorAction Stop
+    # loading a snapin twice results in: Add-PSSnapin : An item with the same key has already been added
+    # Add-PSSnapin -Name VMware.VimAutomation.Core, VMware.VimAutomation.Vds -ErrorAction Stop
+
+    if (-not $script:lab.VMwareSettings)
+    {
+        $script:lab.VMwareSettings = New-Object AutomatedLab.VMwareConfiguration
+    }
+
+    Connect-VIServer -Server $VCenterServerName -Credential $Credential -ErrorAction Stop
 
     $script:lab.VMwareSettings.DataCenter = Get-Datacenter -Name $DataCenterName -ErrorAction Stop
     $Script:lab.VMwareSettings.DataCenterName = $DataCenterName
@@ -66,11 +66,11 @@ function Add-LabVMwareSettings
 
     $script:lab.VMwareSettings.VCenterServerName = $VCenterServerName
     $script:lab.VMwareSettings.Credential = [System.Management.Automation.PSSerializer]::Serialize($Credential)
-	
-	if ($PassThru)
-	{
-		$script:lab.VMwareSettings
-	}
-	
-	Write-LogFunctionExit
+
+    if ($PassThru)
+    {
+        $script:lab.VMwareSettings
+    }
+
+    Write-LogFunctionExit
 }

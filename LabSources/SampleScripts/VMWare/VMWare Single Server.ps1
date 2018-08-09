@@ -23,7 +23,7 @@ $VerbosePreference = "Continue"
 
 New-LabDefinition -Name VMwareLab -VmPath C:\AutomatedLab-VMs\ -DefaultVirtualizationEngine VMware
 
-Add-LabVMwareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName vcenter -Credential $cred -ResourcePoolName Test
+Add-LabVMwareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName vcenter -Credential $cred -ResourcePoolName Resources
 
 Add-LabVirtualNetworkDefinition -Name AutomatedLabNetwork -VirtualizationEngine VMware -AddressSpace 192.168.10.0
 
