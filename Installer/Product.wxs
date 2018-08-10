@@ -556,6 +556,7 @@
           <ComponentRef Id='SamplesComponent' />
           <ComponentRef Id='SamplesHypervComponent' />
           <ComponentRef Id='SamplesAzureComponent' />
+          <ComponentRef Id='SamplesVMwareComponent' />
           <ComponentRef Id='SamplesWorkshopComponent' />
           <ComponentRef Id='SamplesScenariosComponent' />
           <ComponentRef Id='SamplesIntroductionComponent' />
