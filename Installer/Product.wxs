@@ -446,6 +446,13 @@
                 <RemoveFolder Id="RemoveFolderSamplesAzureDir" Directory="SamplesAzureDir" On="both"/>
               </Component>
             </Directory>
+            <Directory Id="SamplesVMwareDir" Name="VMware">
+              <Component Id='SamplesVMwareComponent' Guid='47cd544f-d7c5-46fa-b428-3e18975f7603'>
+                <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesVMwareComponent"/>
+                <File Id='Sample_SingleServerVMware' Name='VMware Single Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\VMware\VMware Single Server.ps1' />
+                <RemoveFolder Id="RemoveFolderSamplesVMwareDir" Directory="SamplesVMwareDir" On="both"/>
+              </Component>
+            </Directory>
             <Directory Id="SAMPLESWORKSHOPSDIR" Name="Workshop Labs">
               <Component Id='SamplesWorkshopComponent' Guid='09b8b205-a1a4-4038-8b82-db45356e511f'>
                 <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesWorkshopComponent"/>
