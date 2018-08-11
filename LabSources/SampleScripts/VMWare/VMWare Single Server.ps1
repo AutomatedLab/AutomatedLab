@@ -6,7 +6,7 @@
     - A snapshot of the VM above (this is to be used as master to the linked clones)
 #>
 
-#bla Requires -Modules @{ModuleName="VMware.VimAutomation.Core";ModuleVersion="6.5.1.0"}
+#Requires -Modules @{ ModuleName="VMware.VimAutomation.Core" ; ModuleVersion="6.5.1.0" }
 #Requires -RunAsAdministrator
 
 # Redirect $env:PSmodulepath to develop AutomatedLab modules
