@@ -45,7 +45,7 @@ function Add-LabVMwareSettings
         $script:lab.VMwareSettings = New-Object AutomatedLab.VMwareConfiguration
     }
 
-    Connect-VIServer -Server $VCenterServerName -Credential $Credential -ErrorAction Stop
+    Connect-VIServer -Server $VCenterServerName -Credential $Credential -ErrorAction Stop | Out-Null
 
     $script:lab.VMwareSettings.DataCenter = Get-Datacenter -Name $DataCenterName -ErrorAction Stop
     $Script:lab.VMwareSettings.DataCenterName = $DataCenterName

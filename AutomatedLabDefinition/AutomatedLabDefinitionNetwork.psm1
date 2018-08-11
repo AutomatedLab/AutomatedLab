@@ -16,7 +16,9 @@ function Add-LabVirtualNetworkDefinition
         [hashtable]$HyperVProperties,
 
         [hashtable]$AzureProperties,
-        
+
+        [hashtable]$VMwareProperties,
+
         [switch]$PassThru
     )
     
@@ -29,6 +31,7 @@ function Add-LabVirtualNetworkDefinition
 
     $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName'
+    $VMwarePropertiesValidKeys = 'SwitchType'
     
     if (-not (Get-LabDefinition))
     {
@@ -97,7 +100,24 @@ function Add-LabVirtualNetworkDefinition
             $HyperVProperties.Add('SwitchType', 'Internal')
         }
     }
-    
+
+    if ($VMwareProperties)
+    {
+        $illegalKeys = Compare-Object -ReferenceObject $VMwarePropertiesValidKeys -DifferenceObject ($VMwareProperties.Keys | Select-Object -Unique) |
+        Where-Object SideIndicator -eq '=>' |
+        Select-Object -ExpandProperty InputObject
+
+        if ($illegalKeys)
+        {
+            throw "The key(s) '$($illegalKeys -join ', ')' are not supported in VMwareProperties. Valid keys are '$($VMwarePropertiesValidKeys -join ', ')'"
+        }
+
+        if (-not $VMwareProperties.SwitchType)
+        {
+            $VMwareProperties.Add('SwitchType', 'StandardSwitch')
+        }
+    }
+
     if ($script:lab.VirtualNetworks | Where-Object Name -eq $Name)
     {
         $errorMessage = "A network with the name '$Name' is already defined"
@@ -105,12 +125,24 @@ function Add-LabVirtualNetworkDefinition
         Write-LogFunctionExitWithError -Message $errorMessage
         return
     }
-    
+
     $network = New-Object -TypeName AutomatedLab.VirtualNetwork
     $network.AddressSpace = $AddressSpace
     $network.Name = $Name
     if ($HyperVProperties.SwitchType) { $network.SwitchType = $HyperVProperties.SwitchType }
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }
+    if ($VMwareProperties.SwitchType)
+    {
+        # the SwitchType property does not fit very well for VMware infrastructures, translate switch types internally
+        If($VMwareProperties.SwitchType -eq 'StandardSwitch')
+        {
+            $network.SwitchType = 'Internal'
+        }
+        ElseIf($VMwareProperties.SwitchType -eq 'DistributedSwitch')
+        {
+            $network.SwitchType = 'External'
+        }
+    }
     $network.HostType = $VirtualizationEngine
 
 	if($AzureProperties.LocationName)
