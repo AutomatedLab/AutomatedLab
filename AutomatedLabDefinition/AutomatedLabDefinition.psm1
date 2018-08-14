@@ -1109,10 +1109,26 @@ function Export-LabDefinition
         $labTargetPath = (Get-LabDefinition).Target.Path
         if ($labTargetPath)
         {
+			if (-not (Test-Path -Path $labTargetPath))
+			{
+				try
+				{
+					Write-Verbose "Creating new folder '$labTargetPath'"
+					New-Item -ItemType Directory -Path $labTargetPath -ErrorAction Stop | Out-Null
+				}
+				catch
+				{
+					Write-Error -Message "Could not create folder '$labTargetPath'. Please make sure that the folder is accessibe and you have permission to write."
+					return
+				}
+			}
+
+			Write-Verbose "Calling 'Get-LabFreeDiskSpace' targeting path '$labTargetPath'"
             $freeSpace = (Get-LabFreeDiskSpace -Path $labTargetPath).FreeBytesAvailable
+			Write-Verbose "Free disk space is '$([Math]::Round($freeSpace / 1GB, 2))GB'"
             if ($freeSpace -lt $spaceNeeded)
             {
-                Throw "VmPath parameter is specified for the lab and contains: '$labTargetPath'. However, estimated needed space be $([int]($spaceNeeded / 1GB))GB but drive has only $([System.Math]::Round($freeSpace / 1GB)) GB of free space"
+                throw "VmPath parameter is specified for the lab and contains: '$labTargetPath'. However, estimated needed space be $([int]($spaceNeeded / 1GB))GB but drive has only $([System.Math]::Round($freeSpace / 1GB)) GB of free space"
             }            
         }
         else
@@ -1129,12 +1145,6 @@ function Export-LabDefinition
         {
             Write-ScreenInfo -Message "Location of Hyper-V machines will be '$labTargetPath'"
         }
-        
-        if (-not (Test-Path -Path $labTargetPath))
-        {
-            New-Item -ItemType Directory -Path $labTargetPath | Out-Null
-        }
-
     }
     
     
