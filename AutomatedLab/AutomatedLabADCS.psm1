@@ -1771,8 +1771,8 @@ function Install-LabCAMachine
     
     #region - Check if any unknown parameter name was passed
     $knownParameters = @()
-    $knownParameters += 'ParentCA (only valid for Subordinate CA. Ignored for Root CAs)'
-    $knownParameters += 'ParentCALogicalName (only valid for Subordinate CAs. Ignored for Root CAs)'
+    $knownParameters += 'ParentCA' #(only valid for Subordinate CA. Ignored for Root CAs)
+    $knownParameters += 'ParentCALogicalName' #(only valid for Subordinate CAs. Ignored for Root CAs)
     $knownParameters += 'CACommonName'
     $knownParameters += 'CAType'
     $knownParameters += 'KeyLength'
