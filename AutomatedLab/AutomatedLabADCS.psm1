@@ -1349,8 +1349,16 @@ function Get-LabIssuingCA
         [string]$DomainName
     )
     
+    $lab = Get-Lab
+
     if ($DomainName)
     {
+        if ($DomainName -notin $lab.Domains.Name)
+        {
+            Write-Error "The domain '$DomainName' is not defined in the lab."
+            return
+        }
+        
         $machines = (Get-LabVM -Role CaRoot, CaSubordinate) | Where-Object DomainName -eq $DomainName
     }
     else
