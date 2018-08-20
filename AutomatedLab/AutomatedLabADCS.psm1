@@ -1265,12 +1265,6 @@ function New-LabCATemplate
         return
     }
     
-    if ((Get-LabIssuingCA) -notcontains $computer)
-    {
-        Write-Error "The given computer '$ComputerName' could is not a CA. This command needs to run on a CA." -TargetObject $ComputerName
-        return
-    }
-    
     $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
     $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
 
