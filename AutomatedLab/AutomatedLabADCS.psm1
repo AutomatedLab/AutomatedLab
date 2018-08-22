@@ -1266,7 +1266,7 @@ function New-LabCATemplate
     }
     
     $variables = Get-Variable -Name KeyUsage, ExtendedKeyUsages, ApplicationPolicies, pkiInternalsTypes, PSBoundParameters
-    $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter
+    $functions = Get-Command -Name New-CATemplate, Add-CATemplateStandardPermission, Publish-CATemplate, Get-NextOid, Sync-Parameter, Find-CertificateAuthority
 
     Invoke-LabCommand -ActivityName "Duplicating CA template $SourceTemplateName -> $TemplateName" -ComputerName $computerName -ScriptBlock {
         Add-Type -TypeDefinition $pkiInternalsTypes
@@ -1285,7 +1285,7 @@ function New-LabCATemplate
 
     Invoke-LabCommand -ActivityName "Publishing CA template $TemplateName" -ComputerName $ComputerName -ScriptBlock {
 
-        $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate) -Parameters $ALBoundParameters
+        $p = Sync-Parameter -Command (Get-Command -Name Publish-CATemplate, Find-CertificateAuthority) -Parameters $ALBoundParameters
         Publish-CATemplate @p
 
     } -Function $functions -Variable $variables
@@ -1411,13 +1411,20 @@ function Request-LabCertificate
     
     Write-LogFunctionEntry
 
+    $computer = Get-LabVM -ComputerName $ComputerName
+    
+    if (-not $computer.IsDomainJoined -and -not $OnlineCA)
+    {
+        Write-Error "Requesting a certificate from a non-domain joined machine '$ComputerName' requires the parameter OnlineCA to be used"
+        return
+    }
     if ($OnlineCA)
     {
         $onlienCAVM = Get-LabVM -ComputerName $OnlineCA
     }
     else
     {
-        $onlienCAVM = Get-LabIssuingCA
+        $onlienCAVM = Get-LabIssuingCA -DomainName (Get-LabVM -ComputerName $ComputerName).DomainName
     }
 
     #machine was found so only the machine name was given. Get the full CA path.
