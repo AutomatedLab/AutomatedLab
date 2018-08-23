@@ -1315,12 +1315,6 @@ function Test-LabCATemplate
         return
     }
     
-    if ((Get-LabIssuingCA) -notcontains $computer)
-    {
-        Write-Error "The given computer '$ComputerName' could is not a CA. This command needs to run on a CA." -TargetObject $ComputerName
-        return
-    }
-    
     $variables = Get-Variable -Name PSBoundParameters
     $functions = Get-Command -Name Test-CATemplate, Sync-Parameter
 
