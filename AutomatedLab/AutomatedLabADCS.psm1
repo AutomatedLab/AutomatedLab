@@ -153,6 +153,7 @@ namespace Pki.CATemplate
     [Flags]
     public enum EnrollmentFlags
     {
+        None = 0,
         IncludeSymmetricAlgorithms = 1,//This flag instructs the client and server to include a Secure/Multipurpose Internet Mail Extensions (S/MIME) certificate extension, as specified in RFC4262, in the request and in the issued certificate.  
         CAManagerApproval = 2,// This flag instructs the CA to put all requests in a pending state.  
         KraPublish = 4,// This flag instructs the CA to publish the issued certificate to the key recovery agent (KRA) container in Active Directory.  
