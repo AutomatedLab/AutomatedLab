@@ -1312,6 +1312,18 @@ function Join-LabVMDomain
             [bool]$AlwaysReboot = $false
         )
 
+        try 
+        {
+            if ([System.DirectoryServices.ActiveDirectory.Domain]::GetComputerDomain().Name -eq $DomainName)
+            {
+                return $true
+            }
+        }
+        catch
+        {
+            # Empty catch. If we are a workgroup member, it is domain join time.
+        }
+        
         try
         {
             Add-Computer -DomainName $DomainName -Credential $Credential -ErrorAction Stop -WarningAction SilentlyContinue
