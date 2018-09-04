@@ -1,6 +1,6 @@
 ﻿<# Prerequisites :
     - VMware environment with vCenter server
-    - ResourcePool 'AutomatedLab' must have been created beforehand
+    - ResourcePool 'Resources'
     - A VM folder named Templates
     - In that folder, a powered down VM named 'AL_WindowsServer2012R2DataCenter', fully installed with said OS, and VMware tools installed.\
     - A snapshot of the VM above (this is to be used as master to the linked clones)
@@ -14,7 +14,7 @@
 # $env:PSModulePath += ";$path"
 
 # Save a credential for VMware access
-$cred = (Get-Credential administrator@vsphere.local)
+$cred = (Get-Credential torsten@vsphere.local)
 
 # Import VMware modules to current session
 # Get-Module -ListAvailable vmware* | import-module
@@ -23,9 +23,9 @@ $VerbosePreference = "Continue"
 
 New-LabDefinition -Name VMwareLab -DefaultVirtualizationEngine VMware
 
-Add-LabVMwareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName vcenter -Credential $cred -ResourcePoolName AutomatedLab
+Add-LabVMwareSettings -DataCenterName "Datacenter" -DataStoreName datastore1 -VCenterServerName vcenter -Credential $cred -ResourcePoolName Resources
 
-Add-LabVirtualNetworkDefinition -Name AutomatedLabNetwork -VirtualizationEngine VMware -AddressSpace 192.168.10.0 -VMwareProperties @{ SwitchType = 'DistributedSwitch' }
+Add-LabVirtualNetworkDefinition -Name AutomatedLabNetwork -VirtualizationEngine VMware -AddressSpace 192.168.10.0
 
 Add-LabMachineDefinition -Name VMwareLab-Test1 -Memory 4GB -Processors 2 -OS 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -Roles WebServer
 

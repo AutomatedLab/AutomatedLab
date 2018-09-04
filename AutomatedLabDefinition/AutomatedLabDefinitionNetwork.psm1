@@ -31,7 +31,7 @@ function Add-LabVirtualNetworkDefinition
 
     $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName'
-    $VMwarePropertiesValidKeys = 'SwitchType'
+    $VMwarePropertiesValidKeys = 'SwitchType', 'LocationName'
     
     if (-not (Get-LabDefinition))
     {
@@ -101,20 +101,31 @@ function Add-LabVirtualNetworkDefinition
         }
     }
 
-    if ($VMwareProperties)
+    if ($VirtualizationEngine -eq 'VMware')
     {
-        $illegalKeys = Compare-Object -ReferenceObject $VMwarePropertiesValidKeys -DifferenceObject ($VMwareProperties.Keys | Select-Object -Unique) |
-        Where-Object SideIndicator -eq '=>' |
-        Select-Object -ExpandProperty InputObject
-
-        if ($illegalKeys)
+        if ($VMwareProperties)
         {
-            throw "The key(s) '$($illegalKeys -join ', ')' are not supported in VMwareProperties. Valid keys are '$($VMwarePropertiesValidKeys -join ', ')'"
-        }
+            $illegalKeys = Compare-Object -ReferenceObject $VMwarePropertiesValidKeys -DifferenceObject ($VMwareProperties.Keys | Select-Object -Unique) |
+            Where-Object SideIndicator -eq '=>' |
+            Select-Object -ExpandProperty InputObject
 
+            if ($illegalKeys)
+            {
+                throw "The key(s) '$($illegalKeys -join ', ')' are not supported in VMwareProperties. Valid keys are '$($VMwarePropertiesValidKeys -join ', ')'"
+            }
+        }
+        Else
+        {
+            $VMwareProperties = @{}
+        }
+    
         if (-not $VMwareProperties.SwitchType)
         {
-            $VMwareProperties.Add('SwitchType', 'StandardSwitch')
+            $VMwareProperties.Add('SwitchType', 'DistributedSwitch')
+        }
+        if (-not $VMwareProperties.LocationName)
+        {
+            $VMwareProperties.Add('LocationName', 'datacenter')
         }
     }
 
@@ -142,6 +153,10 @@ function Add-LabVirtualNetworkDefinition
         {
             $network.SwitchType = 'External'
         }
+    }
+    if ($VMwareProperties.LocationName)
+    {
+        $network.LocationName = $VMwareProperties.LocationName
     }
     $network.HostType = $VirtualizationEngine
 

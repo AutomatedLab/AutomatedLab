@@ -72,79 +72,50 @@ function New-LWVMwareNetworkSwitch
 
         Write-ScreenInfo -Message "Creating VMware virtual network '$($network.Name)' using $SwitchType" -TaskStart
 
-        exit
-
-        #if (Get-VMSwitch -Name $network.Name -ErrorAction SilentlyContinue)
-        # if (Get-VirtualSwitch -Name $network.Name -ErrorAction SilentlyContinue)
-        if (Get-VirtualPortgroup -Name $network.Name -ErrorAction SilentlyContinue)
-        {
-            Write-ScreenInfo -Message "The network switch '$($network.Name)' already exists" -Type Warning
-            continue
-        }
-
         if ((Get-NetIPAddress -AddressFamily IPv4) -contains $network.AddressSpace.FirstUsable)
         {
-            Write-ScreenInfo -Message "The IP '$($network.AddressSpace.FirstUsable)' Address for network switch '$($network.Name)' is already in use" -Type Error
+            Write-ScreenInfo -Message "The IP '$($network.AddressSpace.FirstUsable)' address for network switch '$($network.Name)' is already in use" -Type Error
             return
         }
 
-        if ($network.SwitchType -eq 'External')
+        # the SwitchType property does not fit very well for VMware infrastructures, translate switch types internally
+        If($network.SwitchType -eq 'Internal')
         {
-            $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
-            $adapterCountWithSameMac = (Get-NetAdapter | Where-Object MacAddress -eq $adapterMac | Group-Object -Property MacAddress).Count
-            if ($adapterCountWithSameMac -gt 1)
+            $SwitchType = 'StandardSwitch'
+            if (Get-VirtualPortgroup -Name $network.Name -ErrorAction SilentlyContinue)
             {
-                throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
+                Write-ScreenInfo -Message "The network standard switch '$($network.Name)' already exists" -Type Warning
+                continue
             }
-
-            $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.Name -ErrorAction Stop
         }
-        else
+        ElseIf($network.SwitchType -eq 'External')
         {
-            try
+            $SwitchType = 'DistributedSwitch'
+            
+            if(Get-VDSwitch -Name $network.Name -ErrorAction SilentlyContinue)
             {
-                $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
-            }
-            catch
-            {
-                Start-Sleep -Seconds 2
-                $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
-            }
-
-            Start-Sleep -Seconds 1
-
-            $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
-            if (-not $config)
-            {
-                throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
-            }
-
-            #if the network address was defined, get the first usable IP for the network adapter
-            $adapterIpAddress = if ($network.AddressSpace.IpAddress -eq $network.AddressSpace.Network)
-            {
-                $network.AddressSpace.FirstUsable
+                Write-ScreenInfo -Message "The network distributed switch '$($network.Name)' already exists" -Type Warning
             }
             else
             {
-                $network.AddressSpace.IpAddress
+                $Name = $network.Name
+                $Location = $network.LocationName
+                
+                New-VDSwitch -Name $Name -Location $Location -ErrorAction Stop
             }
-
-            while ($adapterIpAddress -in (Get-LabMachineDefinition).IpAddress.IpAddress)
+            
+            if (Get-VDPortgroup -Name $network.Name -ErrorAction SilentlyContinue)
             {
-                $adapterIpAddress = $adapterIpAddress.Increment()
+                Write-ScreenInfo -Message "The network distributed switch port group '$($network.Name)' already exists" -Type Warning
+                continue
             }
-
-            $arguments = @{
-                IPAddress = @($adapterIpAddress.AddressAsString)
-                SubnetMask = @($network.AddressSpace.Netmask.AddressAsString)
-            }
-
-            $result = $config | Invoke-CimMethod -MethodName EnableStatic -Arguments $arguments
-            if ($result.ReturnValue)
+            else
             {
-                throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
+                Get-VDSwitch -Name $Name | New-VDPortgroup -Name $Name
             }
         }
+
+        #### ToDo: implement creation of distributed port group and standard switch/port group
 
         Write-ScreenInfo -Message "Done" -TaskEnd
 
