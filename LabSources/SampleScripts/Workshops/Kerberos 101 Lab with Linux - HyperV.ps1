@@ -103,8 +103,8 @@ Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePac
 Install-LabSoftwarePackage -ComputerName KerbClient2 -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Show-LabDeploymentSummary -Detailed
 Checkpoint-LabVM -All -SnapshotName AfterInstall
+Show-LabDeploymentSummary -Detailed
 
 $fileServers = Get-LabVM -Role FileServer
 Install-LabWindowsFeature -FeatureName FS-SMB1 -ComputerName $fileServers -IncludeAllSubFeature
@@ -167,6 +167,11 @@ Invoke-LabCommand -ActivityName 'Installing Kerberos101 module' -ComputerName (G
 
     & C:\Kerberos101\Kerberos101.ps1
 
+}
+
+Invoke-LabCommand -ActivityName 'Enabling RDP Restricted Mode' -ComputerName (Get-LabVM) -ScriptBlock {
+
+    Set-ItemProperty -Path HKLM:\System\CurrentControlSet\Control\Lsa -Name DisableRestrictedAdmin -Value 0 -Type DWord
 }
 
 Checkpoint-LabVM -All -SnapshotName AfterCustomizations
