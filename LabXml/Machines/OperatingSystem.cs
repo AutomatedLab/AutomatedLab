@@ -266,6 +266,8 @@ namespace AutomatedLab
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":
                         return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
+                    case "Windows 10 Enterprise for Remote Sessions":
+                        return "CPWHC-NT2C7-VYW78-DHDB2-PG3GK";
 
                     //Windows Server 2016 new names
                     case "Windows Server 2016 Standard":
