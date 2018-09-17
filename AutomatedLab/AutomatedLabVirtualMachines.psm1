@@ -401,25 +401,15 @@ function Save-LabVM
             Write-ScreenInfo 'There is no machine to start' -Type Warning
             return
         }
-        
-        foreach ($vm in $vms)
+
+        Write-Verbose -Message "Saving VMs '$($vms -join ',')"
+        switch ($lab.DefaultVirtualizationEngine)
         {
-            Write-Verbose "Saving VMs '$vm'"
-            
-            if ($vm.HostType -eq 'HyperV')
-            {
-                Save-LWHypervVM -ComputerName $vm
-            }
-            elseif ($vm.HostType -eq 'Azure')
-            {
-                Write-Error 'Azure does not support saving machines'
-            }
-            elseif ($vm.HostType -eq 'VMWare')
-            {
-                Save-LWVMWareVM -ComputerName $vm
-            }
+            'HyperV' { Save-LWHypervVM -ComputerName $vms}
+            'VMWare' { Save-LWVMWareVM -ComputerName $vms}
+            'Azure'  { Write-Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
-        
+                
         Write-LogFunctionExit
     }
 }
