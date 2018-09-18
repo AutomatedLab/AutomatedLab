@@ -715,20 +715,15 @@ function Remove-LWAzureVM
         $job = Start-Job -ScriptBlock {
             param (
                 [Parameter(Mandatory)]
-                [hashtable]$ComputerName,
-                [Parameter(Mandatory)]
-                [string]$SubscriptionPath
+                [hashtable]$ComputerName
             )
             
-            Import-Module -Name Azure*
-            Import-AzureRmContext -Path $SubscriptionPath
-
             $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
 
             $vm = Get-AzureRmVM -ResourceGroupName $resourceGroup -Name $ComputerName -WarningAction SilentlyContinue
             
             $vm | Remove-AzureRmVM -Force
-        } -ArgumentList $ComputerName, $Lab.AzureSettings.AzureProfilePath
+        } -ArgumentList $ComputerName
         
         if ($PassThru)
         {
@@ -1060,8 +1055,7 @@ function Get-LWAzureVMConnectionInfo
 
     if (-not ((Get-AzureRmContext).Subscription.Name -eq $lab.AzureSettings.DefaultSubscription))
     {
-        Import-AzureRmContext -Path $lab.AzureSettings.AzureProfilePath
-        Set-AzureRmContext -SubscriptionName $lab.AzureSettings.DefaultSubscription
+        Set-AzureRmContext -Subscription $lab.AzureSettings.DefaultSubscription
     }
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
@@ -1243,8 +1237,6 @@ catch
         $jobs += Start-Job -Name "AzureRemotingActivation ($($m.Name))" -ScriptBlock {
             param
             (
-                $ProfilePath,
-                $Subscription,
                 $MachineName,
                 $ResourceGroup,
                 $Location,
@@ -1252,19 +1244,6 @@ catch
                 $StorageAccountName,
                 $StorageAccountKey
             )
-            
-            $i = 0
-            while (-not $azureContext -and $i -le $AzureRetryCount)
-            {
-                $azureContext = Import-AzureRmContext -Path $ProfilePath -ErrorVariable azureContextError
-                $i++
-                Start-Sleep -Seconds 5
-            }
-
-            if (-not $azureContext)
-            {
-                throw (New-Object System.Exception("Azure Context could not be created using the file '$ProfilePath'", $azureContextError.Exception))
-            }            
             
             $i = 0
             while (-not $vmExtension.IsSuccessStatusCode -and $i -le $AzureRetryCount)
@@ -1281,7 +1260,7 @@ catch
             {
                 throw "Setting up WinRm on $machineName failed!"
             }
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation), $azureRetryCount, $storageAccountName, $storageAccountKey
+        } -ArgumentList $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation), $azureRetryCount, $storageAccountName, $storageAccountKey
     }
 
     if ($Wait)
