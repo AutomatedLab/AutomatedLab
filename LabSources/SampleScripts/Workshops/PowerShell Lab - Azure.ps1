@@ -1,6 +1,5 @@
 $labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
-$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU DO NOT HAVE A PROFILE FILE, CALL Save-AzureRmContext
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #--------------------------------------------------------------------------------------------------------------------
@@ -12,7 +11,7 @@ $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
 
-Add-LabAzureSubscription -Path $azureResourceManagerProfile -DefaultLocationName $azureDefaultLocation
+Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24

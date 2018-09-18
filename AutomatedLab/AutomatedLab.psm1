@@ -551,26 +551,6 @@ function Import-Lab
             Write-ScreenInfo "No disks imported from file '$diskDefinitionFile': $($_.Exception.Message)" -Type Warning
         }
     
-        if($Script:data.AzureSettings.AzureProfilePath -and (Test-Path -Path $Script:data.AzureSettings.AzureProfilePath))
-        {
-            Add-LabAzureSubscription -Path $Script:data.AzureSettings.AzureProfilePath -DefaultLocationName $Script:data.AzureSettings.DefaultLocation.DisplayName `
-            -DefaultStorageAccountName $Script:data.AzureSettings.DefaultStorageAccount `
-            -SubscriptionName $Script:data.AzureSettings.DefaultSubscription `
-            -DefaultResourceGroupName $script:data.Name
-        }
-        elseif ($Script:data.AzureSettings.SubscriptionFileContent)
-        {
-            $tempFilePath = [System.IO.Path]::GetTempFileName()
-            $Script:data.AzureSettings.SubscriptionFileContent | Out-File -FilePath $tempFilePath -Encoding ascii
-        
-            Add-LabAzureSubscription -Path $tempFilePath -DefaultLocationName $Script:data.AzureSettings.DefaultLocation.DisplayName `
-            -DefaultStorageAccountName $Script:data.AzureSettings.DefaultStorageAccount `
-            -SubscriptionName $Script:data.AzureSettings.DefaultSubscription `
-            -DefaultResourceGroupName $script:data.Name
-        
-            Remove-Item -Path $tempFilePath -Force
-        }
-
         if ($Script:data.VMWareSettings.DataCenterName)
         {
             Add-LabVMWareSettings -DataCenterName $Script:data.VMWareSettings.DataCenterName `
