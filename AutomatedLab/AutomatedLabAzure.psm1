@@ -39,8 +39,6 @@ function Add-LabAzureSubscription
 {
     # .ExternalHelp AutomatedLab.Help.xml
     param (
-        [string]$Path,
-
         [string]$SubscriptionName,
         
         [string]$DefaultLocationName,
@@ -53,19 +51,6 @@ function Add-LabAzureSubscription
     )
     
     Write-LogFunctionEntry
-    
-    Update-LabAzureSettings    
-    
-    if (-not $Path)
-    {
-        $tempPath = (Get-ChildItem -Path (Get-LabSourcesLocationInternal -Local) -Filter '*.azurermsettings' -Recurse | Sort-Object -Property TimeWritten | Select-Object -Last 1).FullName
-
-        if ($tempPath)
-        {
-            $Path = $tempPath        
-            Write-ScreenInfo -Message "No ARM profile file specified. Auto-detected and using ARM profile file '$Path'" -Type Warning
-        }
-    }
     
     if (-not $script:lab)
     {
@@ -81,49 +66,20 @@ function Add-LabAzureSubscription
     
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
-    if (-not $Path)
-    {
         # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $context = Get-AzureRmContext
-        if (-not $context.Subscription)
+        $resources = Get-AzureRmResourceProvider -ErrorAction SilentlyContinue
+        if (-not $resources)
         {
             Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
             $null = Connect-AzureRmAccount -ErrorAction Stop
         }
-        
-        $tempFile = [System.IO.FileInfo][System.IO.Path]::GetTempFileName()
-        $tempFolder = New-Item -ItemType Directory -Path ($tempFile.FullName -replace $tempFile.Extension, '') -Force
-
-        $Path = Join-Path $tempFolder.FullName -ChildPath "$($Lab.Name).azurermprofile"
 
         # Select the proper subscription before saving the profile
         if ($SubscriptionName)
         {
-            [void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
-        }
-
-        Save-AzureRmContext -Path $Path
-    }
-    
-    try
-    {
-        if (-not (Test-Path $Path))
-        {
-            throw 'No Azure Resource Manager profile could be found'
-        }
-
-        $AzureRmProfile = Import-AzureRmContext -Path $Path -ErrorAction Stop
-
-        $context = Get-AzureRmContext -ErrorAction SilentlyContinue
-        if (-not $context)
-        {
-            throw 'Your Azure Resource Manager profile has expired. Please use Connect-AzureRmAccount to log in and optionally Save-AzureRmContext to persist your settings'
-        }
-    }
-    catch
-    {
-        throw "The Azure Resource Manager Profile $Path could not be loaded. $($_.Exception.Message)"
-    }
+            [void](Set-AzureRmContext -Subscription $SubscriptionName -ErrorAction Stop)
+        }    
+        $AzureRmProfile = Get-AzureRmContext
 
     Update-LabAzureSettings
     if (-not $script:lab.AzureSettings)
@@ -148,7 +104,7 @@ function Add-LabAzureSubscription
     #select default subscription subscription
     if (-not $SubscriptionName)
     {
-        $SubscriptionName = $AzureRmProfile.Context.Subscription.Name
+        $SubscriptionName = $AzureRmProfile.Subscription.Name
     }
 
     Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
@@ -156,7 +112,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Set-AzureRmContext -SubscriptionName $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzureRmContext -Subscription $SubscriptionName -ErrorAction Stop)
     }
     catch
     {
@@ -1272,7 +1228,7 @@ function Test-LabAzureSubscription
     }
     catch
     {
-        throw "No Azure Context found, Please run 'Connect-AzureRmAccount' or 'Import-AzureRmContext ' first"
+        throw "No Azure Context found, Please run 'Connect-AzureRmAccount' first"
     }
 }
 
@@ -1281,16 +1237,10 @@ function Get-LabAzureAvailableRoleSize
     param
     (
         [Parameter(Mandatory)]
-        [string]$Location,
-
-        [string]$Path
+        [string]$Location
     )
 
-    if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue) -and $Path)
-    {
-        [void] (Import-AzureRmContext -Path $Path)
-    }
-    elseif (-not (Get-AzureRmContext -ErrorAction SilentlyContinue))
+    if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue))
     {
         [void] (Connect-AzureRmAccount)
     }
