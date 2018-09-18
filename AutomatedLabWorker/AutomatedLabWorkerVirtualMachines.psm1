@@ -983,29 +983,38 @@ function Stop-LWHypervVM
 #endregion Stop-LWHypervVM
 
 #region Save-LWHypervVM
-workflow Save-LWHypervVM
+function Save-LWHypervVM
 {
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
     
-    sequence
-    {
+    $runspaceScript = {
+        param 
+        (
+            $Name
+        )
         Write-LogFunctionEntry
-        
-        foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
-        {
-            Save-VM -Name $Name
-        }
-        
+        Save-VM -Name $Name        
         Write-LogFunctionExit
     }
+
+    $pool = New-RunspacePool -ThrottleLimit 50
+
+    $jobs = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name
+    }
+
+    [void] ($jobs | Wait-RunspaceJob)
+
+    $pool | Remove-RunspacePool
 }
 #endregion Save-LWHypervVM
 
 #region Checkpoint-LWHypervVM
-workflow Checkpoint-LWHypervVM
+function Checkpoint-LWHypervVM
 {
     [Cmdletbinding()]
     Param (
@@ -1017,66 +1026,73 @@ workflow Checkpoint-LWHypervVM
     )
     
     Write-LogFunctionEntry
-    
-    sequence
-    {
-        Write-LogFunctionEntry
-        
-        #only if we create a checkpoint of more than two machines we save them first and start them after taking the checkpoints
-        #this is required for replicating applications to make sure the snapshots are taken very closely
-        
-        $WORKFLOW:runningMachines = @()
-        
-        Write-Verbose -Message 'Remembering all running machines'
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+
+    $step1 = {
+        param ($Name)
+        if ((Get-VM -Name $Name -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
-            {
-                Suspend-VM -Name $n -ErrorAction SilentlyContinue
-                Save-VM -Name $n -ErrorAction SilentlyContinue
+            Suspend-VM -Name $Name -ErrorAction SilentlyContinue
+            Save-VM -Name $Name -ErrorAction SilentlyContinue
                     
-                Write-Verbose -Message "    '$n' was running"
-                $WORKFLOW:runningMachines += $n
-            }
+            Write-Verbose -Message "'$Name' was running"
+            $Name
         }
-            
-        Start-Sleep -Seconds 5
-        
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
-            {
-                Checkpoint-VM -Name $n -SnapshotName $SnapshotName
-            }
-            else
-            {
-                Write-Error "A snapshot with the name '$SnapshotName' already exists for machine '$n'"
-            }
-        }
-        
-        Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        Start-Sleep -Seconds 5
-            
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            if ($n -in $WORKFLOW:runningMachines)
-            {
-                Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
-            }
-            else
-            {
-                Write-Verbose -Message "Machine '$n' was NOT running."
-            }
-        }
-        
-        Write-LogFunctionExit
     }
+    $step2 = {
+        param ($Name)
+        if (-not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
+        {
+            Checkpoint-VM -Name $Name -SnapshotName $SnapshotName
+        }
+        else
+        {
+            Write-Error "A snapshot with the name '$SnapshotName' already exists for machine '$Name'"
+        }
+    }
+    $step3 = {
+        param ($Name, $RunningMachines)
+        if ($Name -in $RunningMachines)
+        {
+            Write-Verbose -Message "Machine '$Name' was running, starting it."
+            Start-VM -Name $Name -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            Write-Verbose -Message "Machine '$Name' was NOT running."
+        }
+    }
+
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName)
+
+    $jobsStep1 = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name
+    }
+
+    $runningMachines = $jobsStep1 | Receive-RunspaceJob
+
+    $jobsStep2 = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name
+    }
+
+    [void] ($jobsStep2 | Wait-RunspaceJob)
+
+    $jobsStep3 = foreach ($Name in $ComputerName)
+    {        
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines
+    }
+
+    [void] ($jobsStep3 | Wait-RunspaceJob)
+
+    $pool | Remove-RunspacePool
+
+    Write-LogFunctionExit
 }
 #endregion Checkpoint-LWVM
 
 #region Remove-LWHypervVMSnapshot
-workflow Remove-LWHypervVMSnapshot
+function Remove-LWHypervVMSnapshot
 {
     [Cmdletbinding()]
     Param (
@@ -1092,36 +1108,44 @@ workflow Remove-LWHypervVMSnapshot
     )
     
     Write-LogFunctionEntry
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue)
     
-    foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+    $jobs = foreach ($n in $ComputerName)
     {
-        if ($SnapshotName)
-        {
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
-                $_.Name -eq $SnapshotName
+        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+            param ($n)
+            if ($SnapshotName)
+            {
+                $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
+                    $_.Name -eq $SnapshotName
+                }
+            }
+            else
+            {
+                $snapshot = Get-VMSnapshot -VMName $n
+            }
+        
+            if (-not $snapshot)
+            {
+                Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+            }
+            else
+            {
+                Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
             }
         }
-        else
-        {
-            $snapshot = Get-VMSnapshot -VMName $n
-        }
-        
-        if (-not $snapshot)
-        {
-            Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
-        }
-        else
-        {
-            Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
-        }
     }
+
+    $jobs | Receive-RunspaceJob
+
+    $pool | Remove-RunspacePool
     
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVMSnapshot
 
 #region Restore-LWHypervVMSnapshot
-workflow Restore-LWHypervVMSnapshot
+function Restore-LWHypervVMSnapshot
 {
     [Cmdletbinding()]
     Param (
@@ -1131,67 +1155,84 @@ workflow Restore-LWHypervVMSnapshot
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
-    
-    sequence
-    {
+
         Write-LogFunctionEntry
-        
-        $WORKFLOW:runningMachines = @()
-        
+
+        $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
+                
         Write-Verbose -Message 'Remembering all running machines'
-        foreach ($n in $ComputerName)
-        {
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+        $jobs = foreach ($n in $ComputerName)
             {
-                Write-Verbose -Message "    '$n' was running"
-                $WORKFLOW:runningMachines += $n
+                Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+                param ($n)
+
+                if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
+                {
+                    Write-Verbose -Message "    '$n' was running"
+                    $n
+                }
+            }
+        }
+
+        $runningMachines = $jobs | Receive-RunspaceJob
+        
+        $jobs = foreach ($n in $ComputerName)
+        {
+            Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+                param ($n)
+                Suspend-VM -Name $n -ErrorAction SilentlyContinue
+                Save-VM -Name $n -ErrorAction SilentlyContinue
+                Start-Sleep -Seconds 5
             }
         }
         
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+        [void] ($jobs | Wait-RunspaceJob)
+        
+        $jobs = foreach  ($n in $ComputerName)
         {
-            Suspend-VM -Name $n -ErrorAction SilentlyContinue
-            Save-VM -Name $n -ErrorAction SilentlyContinue
-        }
-        
-        Start-Sleep -Seconds 5
-        
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
-                $_.Name -eq $SnapshotName
-            }
-            
-            if (-not $snapshot)
-            {
-                Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
-            }
-            else
-            {
-                Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
-                Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
-            }
-        }
-        
-        Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        
-        Start-Sleep -Seconds 5
-            
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            if ($n -in $WORKFLOW:runningMachines)
-            {
-                Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
-            }
-            else
-            {
-                Write-Verbose -Message "Machine '$n' was NOT running."
+            Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+                param ($n)
+                $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
+                    $_.Name -eq $SnapshotName
+                }
+                
+                if (-not $snapshot)
+                {
+                    Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+                }
+                else
+                {
+                    Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
+                    Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
+                }
+
+                Start-Sleep -Seconds 5
             }
         }
         
+        [void] ($jobs | Wait-RunspaceJob)
+        Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($runningMachines.Count))"
+                    
+        $jobs = foreach ($n in $ComputerName)
+        {            
+            Start-RunspaceJob -RunspacePool $pool -Argument $n,$runningMachines -ScriptBlock {
+                param ($n, [string[]]$runningMachines)
+                if ($n -in $runningMachines)
+                {
+                    Write-Verbose -Message "Machine '$n' was running, starting it."
+                    Start-VM -Name $n -ErrorAction SilentlyContinue
+                }
+                else
+                {
+                    Write-Verbose -Message "Machine '$n' was NOT running."
+                }
+            }
+        }
+        
+        [void] ($jobs | Wait-RunspaceJob)
+
+        $pool | Remove-RunspacePool
         Write-LogFunctionExit
-    }
 }
 #endregion Restore-LWHypervVMSnapshot
 
