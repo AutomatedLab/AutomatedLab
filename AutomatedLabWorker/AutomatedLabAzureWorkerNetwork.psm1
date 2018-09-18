@@ -48,16 +48,11 @@ function New-LWAzureNetworkSwitch
         $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
             param
             (
-                $ProfilePath,
-                $Subscription,
                 $azureNetworkParameters,
                 [object[]]$Subnets,
                 $Network
             )
             
-            Import-AzureRmContext -Path $ProfilePath
-            Set-AzureRmContext -SubscriptionName $Subscription
-
             $azureSubnets = @()
 
             # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
@@ -81,7 +76,7 @@ function New-LWAzureNetworkSwitch
             }
             
             $azureNetwork = New-AzureRmVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue
-        } -ArgumentList $lab.AzureSettings.AzureProfilePath, $lab.AzureSettings.DefaultSubscription.Name, $azureNetworkParameters, $network.Subnets, $network
+        } -ArgumentList $azureNetworkParameters, $network.Subnets, $network
     }
     
     #Wait for network creation jobs and configure vnet peering    
@@ -163,7 +158,7 @@ function Remove-LWAzureNetworkSwitch
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
         
-        $cmd = [scriptblock]::Create("Import-Module -Name Azure*; Import-AzureRmContext -Path $($lab.AzureSettings.AzureProfilePath);Set-AzureRmContext -SubscriptionName $($lab.AzureSettings.DefaultSubscription.Name); Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
+        $cmd = [scriptblock]::Create("Remove-AzureRmVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
         Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
     }
     $jobs = Get-Job -Name RemoveAzureVNet*
