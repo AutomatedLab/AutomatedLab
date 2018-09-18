@@ -35,7 +35,7 @@ foreach ($lab in $labs.GetEnumerator())
 
     if($lab.OnAzure)
     {
-        Add-LabAzureSubscription -Path $azureRmContext -DefaultLocationName $lab.Location
+        Add-LabAzureSubscription -DefaultLocationName $lab.Location
     }
 
     #make the network definition

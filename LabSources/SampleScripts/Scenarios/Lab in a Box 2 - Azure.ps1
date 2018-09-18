@@ -19,14 +19,13 @@ on the virtualized host so AL copied some files to the virtual host. Finally, th
 "04 Single domain-joined server.ps1" on AL1 and deploys a lab in a lab.
 #>
 
-$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU DO NOT HAVE A PROFILE FILE, CALL Save-AzureRmContext
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 $labName = 'ALTestLab2'
 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
 
-Add-LabAzureSubscription -Path $azureResourceManagerProfile -DefaultLocationName $azureDefaultLocation
+Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.25.1/24
 

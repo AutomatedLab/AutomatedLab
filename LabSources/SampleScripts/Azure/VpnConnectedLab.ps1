@@ -31,7 +31,7 @@ foreach ($lab in $labs.GetEnumerator())
 {
     New-LabDefinition -Name $lab.LabName -DefaultVirtualizationEngine Azure
 
-    Add-LabAzureSubscription -Path $azureRmContext -DefaultLocationName $lab.Location
+    Add-LabAzureSubscription -DefaultLocationName $lab.Location
 
     #make the network definition
     Add-LabVirtualNetworkDefinition -Name $lab.LabName -AddressSpace $lab.AddressSpace
