@@ -87,8 +87,6 @@ function Add-LabAzureSubscription
         $script:lab.AzureSettings = New-Object AutomatedLab.AzureSettings
     }
 
-    $script:lab.AzureSettings.AzureProfilePath = $Path
-    $script:lab.AzureSettings.SubscriptionFileContent = Get-Content -Path $Path
     $script:lab.AzureSettings.DefaultRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
     
     # Select the subscription which is associated with this AzureRmProfile
