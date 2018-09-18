@@ -51,6 +51,7 @@ function Add-LabAzureSubscription
     )
     
     Write-LogFunctionEntry
+    Update-LabAzureSettings
     
     if (-not $script:lab)
     {
