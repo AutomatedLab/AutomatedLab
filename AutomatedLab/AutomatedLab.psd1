@@ -264,7 +264,7 @@
         DoNotUseGetHostEntryInNewLabPSSession  = $true
 
         #DSC
-        DscMofPath                             = '"$labSources\DscConfigurations"'
+        DscMofPath                             = '"$(Get-LabSourcesLocationInternal -Local)\DscConfigurations"'
 
         #General VM settings
         DisableWindowsDefender                 = $true
