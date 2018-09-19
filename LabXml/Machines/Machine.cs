@@ -394,7 +394,7 @@ namespace AutomatedLab
             if (dcRole == null)
             {
                 //machine is not a domain controller, creating a local username 
-                userName = OperatingSystemType == OperatingSystemType.Linux ? installationUser.UserName : string.Format(@"{0}\{1}", name, installationUser.UserName);
+                userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);
             }
             else
             {
