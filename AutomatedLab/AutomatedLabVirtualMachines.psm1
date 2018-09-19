@@ -197,7 +197,7 @@ function Start-LabVM
         
         if ($PSCmdlet.ParameterSetName -eq 'ByName' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabVM -ComputerName $ComputerName
+            $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'ByRole' -and -not $StartNextMachines -and -not $StartNextDomainControllers)
         {
@@ -225,22 +225,22 @@ function Start-LabVM
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and -not $StartNextMachines -and $StartNextDomainControllers)
         {
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'DC' }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'FirstChildDC' }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'DC' }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'CaRoot' -and (-not $_.DomainName) }
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextDomainControllers
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_.DomainName -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
@@ -250,25 +250,25 @@ function Start-LabVM
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and -not $RootDomainMachines -and $StartNextMachines -and -not $StartNextDomainControllers)
         {
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
-            $vms += Get-LabVM | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -like 'SqlServer*' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'WebServer' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'Orchestrator' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'VisualStudio2013' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'VisualStudio2015' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'Office2013' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { -not $_.Roles.Name -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'CaRoot' -and $_ -notin $vms }
+            $vms += Get-LabVM -IncludeLinux | Where-Object { $_.Roles.Name -eq 'CaSubordinate' -and $_ -notin $vms }
             $vms = $vms | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -ne 'Started' } | Select-Object -First $StartNextMachines
 
             if ($Domain)
             {
-                $vms = $vms | Where-Object { (Get-LabVM -ComputerName $_) -eq $Domain }
+                $vms = $vms | Where-Object { (Get-LabVM -IncludeLinux -ComputerName $_) -eq $Domain }
             }
         }
         elseif (-not ($PSCmdlet.ParameterSetName -eq 'ByRole') -and $RootDomainMachines -and -not $StartNextDomainControllers)
         {
-            $vms = Get-LabVM | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
+            $vms = Get-LabVM -IncludeLinux | Where-Object { $_.DomainName -in (Get-LabVM -Role RootDC).DomainName } | Where-Object { $_.Name -notin (Get-LabVM -Role RootDC).Name -and $_.Roles.Name -notlike '*DC' }
             $vms = $vms | Select-Object -First $StartNextMachines
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
@@ -502,11 +502,11 @@ function Stop-LabVM
     
     if ($ComputerName)
     {
-        $machines = Get-LabVM -ComputerName $ComputerName
+        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     elseif ($All)
     {
-        $machines = Get-LabVM
+        $machines = Get-LabVM -IncludeLinux
     }
 
     #filtering out all machines that are already stopped
@@ -1037,11 +1037,11 @@ function Get-LabVMStatus
     
     if ($ComputerName)
     {
-        $vms = Get-LabVM -ComputerName $ComputerName
+        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
     else
     {
-        $vms = Get-LabVM
+        $vms = Get-LabVM -IncludeLinux
     }
     
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'

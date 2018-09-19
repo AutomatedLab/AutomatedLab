@@ -852,16 +852,20 @@ function Stop-LWAzureVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { 
-            if ($IsLinux)
-            {
-                shutdown -P now
-            }
-            else
-            {
-                Stop-Computer -Force
-            }
+        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where({$_.OperatingSystemType -eq 'Linux'}, 'Split')
+
+        $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            
+            Stop-Computer -Force -ErrorAction Stop
         }
+        
+        $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {            
+            #Sleep as background process so that job does not fail.
+            [void] (Start-Job {
+                Start-Sleep -Seconds 5
+                shutdown -P now
+            }) 
+        }
+
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
         $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
         if ($failedJobs)
