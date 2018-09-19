@@ -977,7 +977,8 @@ function Stop-LWHypervVM
 
         if ($linuxFailures)
         {
-            Write-ScreenInfo -Message "Force-stopping Linux VMs:"
+            Write-ScreenInfo -Message "Force-stopping Linux VMs: $($linuxFailures -join ',')"
+            Stop-VM -Name $linuxFailures -Force
         }
     }
     else
