@@ -946,7 +946,16 @@ function Stop-LWHypervVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f; $LastExitCode }
+        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock {
+            if ($IsLinux)
+            {
+                shutdown -P now
+            }
+            else
+            {
+                Stop-Computer -Force -ErrorAction Stop
+            } 
+        }
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
         $failedJobs = $jobs | Where-Object { $_.State -eq 'Failed' }
         if ($failedJobs)
