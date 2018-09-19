@@ -852,7 +852,16 @@ function Stop-LWAzureVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f }
+        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { 
+            if ($IsLinux)
+            {
+                shutdown -P now
+            }
+            else
+            {
+                Stop-Computer -Force
+            }
+        }
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
         $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
         if ($failedJobs)
