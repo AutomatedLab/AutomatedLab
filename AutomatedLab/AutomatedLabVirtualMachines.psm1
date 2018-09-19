@@ -393,7 +393,7 @@ function Save-LabVM
     
     end
     {
-        $vms = Get-LabVM -ComputerName $vms
+        $vms = Get-LabVM -ComputerName $vms -IncludeLinux
         
         #if there are no VMs to start, just write a warning
         if (-not $vms)
