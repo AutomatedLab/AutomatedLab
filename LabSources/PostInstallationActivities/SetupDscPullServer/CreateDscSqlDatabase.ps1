@@ -319,6 +319,20 @@ BEGIN
 END -- End Function
 GO
 
+CREATE FUNCTION [dbo].[tvfGetRegistrationData] ()
+RETURNS TABLE
+    AS
+RETURN
+(
+    SELECT NodeName, AgentId,
+        (SELECT TOP (1) Item FROM dbo.Split(dbo.RegistrationData.IPAddress, ';') AS IpAddresses) AS IP,
+        (SELECT(SELECT [Value] + ',' AS [text()] FROM OPENJSON([ConfigurationNames]) FOR XML PATH (''))) AS ConfigurationName,
+        (SELECT COUNT(*) FROM (SELECT [Value] FROM OPENJSON([ConfigurationNames]))AS ConfigurationCount ) AS ConfigurationCount
+    FROM dbo.RegistrationData
+)
+GO
+
+
 CREATE FUNCTION [dbo].[tvfGetNodeStatus] ()
 RETURNS TABLE
     AS
