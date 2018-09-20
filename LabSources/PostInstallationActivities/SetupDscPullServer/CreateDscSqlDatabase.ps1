@@ -90,7 +90,7 @@ GO
 ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF 
 GO
 
-ALTER DATABASE [DSC] SET RECOVERY FULL 
+ALTER DATABASE [DSC] SET RECOVERY SIMPLE 
 GO
 
 ALTER DATABASE [DSC] SET  MULTI_USER 
@@ -177,6 +177,22 @@ CREATE TABLE [dbo].[StatusReport](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
+CREATE TABLE [dbo].[RegistrationMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AgentId] [nvarchar](255) NOT NULL,
+	[CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+
+GO
+
+CREATE TABLE [dbo].[StatusReportMetaData](
+       [Id] [int] IDENTITY(1,1) NOT NULL,
+       [JobId] [nvarchar](255) NOT NULL,
+       [CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+
+GO
+
 /*****
 CREATE TRIGGER [dbo].[DSCStatusReportOnUpdate]
    ON  [dbo].[StatusReport] 
@@ -202,10 +218,55 @@ BEGIN
     
 END
 GO
-
-ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [DSCStatusReportOnUpdate]
-GO
 *****/
+
+CREATE TRIGGER [dbo].[InsertCreationTimeRDMD] 
+ON [dbo].[RegistrationData]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @AgentId nvarchar(255)
+  SELECT @AgentId = AgentId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
+  VALUES(@AgentId,GETDATE()) 
+
+END
+GO
+
+CREATE TRIGGER [dbo].[InsertCreationTimeSRMD] 
+ON [dbo].[StatusReport]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @JobId nvarchar(255)
+  SELECT @JobId = JobId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
+  VALUES(@JobId,GETDATE()) 
+
+END
+GO
+
+--ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [DSCStatusReportOnUpdate]
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
+ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
+GO
+
 
 --Adding functions
 CREATE FUNCTION [dbo].[Split] (
@@ -258,36 +319,23 @@ BEGIN
 END -- End Function
 GO
 
-CREATE FUNCTION [dbo].[tvfGetRegistrationData] ()
-RETURNS TABLE
-    AS
-RETURN
-(
-    SELECT NodeName, AgentId,
-        (SELECT TOP (1) Item FROM dbo.Split(dbo.RegistrationData.IPAddress, ';') AS IpAddresses) AS IP,
-        (SELECT(SELECT [Value] + ',' AS [text()] FROM OPENJSON([ConfigurationNames]) FOR XML PATH (''))) AS ConfigurationName,
-        (SELECT COUNT(*) FROM (SELECT [Value] FROM OPENJSON([ConfigurationNames]))AS ConfigurationCount ) AS ConfigurationCount
-    FROM dbo.RegistrationData
-)
-GO
-
 CREATE FUNCTION [dbo].[tvfGetNodeStatus] ()
 RETURNS TABLE
     AS
 RETURN
 (
-    SELECT [dbo].[StatusReport].[NodeName]
-	,[dbo].[StatusReport].[Status]
-	,[dbo].[StatusReport].[Id] AS [AgentId]
-	,[dbo].[StatusReport].[EndTime] AS [Time]
-	,[dbo].[StatusReport].[RebootRequested]
-	,[dbo].[StatusReport].[OperationType]
+    SELECT [dbo].[vBaseNodeLocalStatus].[NodeName]
+	,[dbo].[vBaseNodeLocalStatus].[Status]
+	,[dbo].[vBaseNodeLocalStatus].[Id] AS [AgentId]
+	,[dbo].[StatusReportMetaData].[CreationTime] AS [Time]
+	,[dbo].[vBaseNodeLocalStatus].[RebootRequested]
+	,[dbo].[vBaseNodeLocalStatus].[OperationType]
 
 	,(
 	SELECT [HostName] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (HostName nvarchar(200) '$.HostName')) AS HostName
-
+	
 	,(
 	SELECT [ResourceId] + ',' AS [text()] 
 	FROM OPENJSON(
@@ -296,7 +344,7 @@ RETURN
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesInDesiredState
-
+	
 	,(
 	SELECT [ResourceId] + ',' AS [text()] 
 	FROM OPENJSON(
@@ -305,9 +353,9 @@ RETURN
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesNotInDesiredState
-
+	
 	,(
-	SELECT SUM(CAST(DurationInSeconds AS float)) AS Duration
+	SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float)) AS Duration
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
 	)
@@ -316,11 +364,12 @@ RETURN
 			InDesiredState bit '$.InDesiredState'
 		)
 	) AS Duration
+	
 	,(
 	SELECT [DurationInSeconds] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (DurationInSeconds nvarchar(200) '$.DurationInSeconds')) AS DurationWithOverhead
-
+	
 	,(
 	SELECT COUNT(*)
 	FROM OPENJSON(
@@ -339,7 +388,7 @@ RETURN
 	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
 	)
 	WITH (
-		ErrorMessage nvarchar(200) '$.ErrorMessage',
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
 		ErrorCode nvarchar(20) '$.ErrorCode',
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ErrorMessage
@@ -348,11 +397,15 @@ RETURN
 	SELECT [value] FROM OPENJSON([StatusData])
 	) AS RawStatusData
 
-	FROM dbo.StatusReport INNER JOIN
-	(SELECT MAX(EndTime) AS MaxEndTime, NodeName
-	FROM dbo.StatusReport AS StatusReport_1
-	WHERE EndTime > '1.1.2000'
-	GROUP BY [StatusReport_1].[NodeName]) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND [dbo].[StatusReport].[NodeName] = SubMax.NodeName
+	,(
+	SELECT [value] FROM OPENJSON([Errors])
+	) AS RawErrors
+
+	FROM dbo.vBaseNodeLocalStatus INNER JOIN StatusReportMetaData ON StatusReportMetaData.JobId = vBaseNodeLocalStatus.JobId
+	INNER JOIN
+	(SELECT MAX(SRMD.CreationTime) AS MaxEndTime, NodeName
+		FROM dbo.StatusReport AS StatusReport_1 INNER JOIN StatusReportMetaData AS SRMD ON SRMD.JobId = StatusReport_1.JobId
+		GROUP BY [StatusReport_1].[NodeName]) AS SubMax ON StatusReportMetaData.CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
 GO
 
@@ -385,6 +438,104 @@ FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
 GO
+
+CREATE VIEW [dbo].[vStatusReportDataNewest]
+AS
+SELECT TOP (1000) dbo.StatusReport.JobId, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReport.NodeName, dbo.StatusReportMetaData.CreationTime, 
+dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
+FROM dbo.StatusReport INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
+ORDER BY dbo.StatusReportMetaData.CreationTime
+GO
+
+CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
+AS
+WITH CTE(
+	NodeName,
+	EndTime,
+	ErrorMessage
+) AS (
+SELECT NodeName, EndTime, (
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+	)
+	SELECT TOP 5000 * FROM CTE WHERE 
+	ErrorMessage LIKE '%cannot find module%' 
+	OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+	OR ErrorMessage LIKE '%Checksum file not located for%'
+	ORDER BY EndTime DESC
+
+--Module does not exist					Cannot find module
+--Configuration does not exist			The assigned configuration <Name> is not found
+--Checksum does not exist				Checksum file not located for
+GO
+
+CREATE VIEW [dbo].[vBaseNodeLocalStatus]
+AS
+
+WITH CTE(
+	JobId,
+	Id,
+	OperationType,
+	RefreshMode,
+	[Status],
+	LCMVersion,
+	ReportFormatVersion,
+	ConfigurationVersion,
+	NodeName,
+	IPAddress,
+	StartTime,
+	EndTime,
+	Errors,
+	StatusData,
+	RebootRequested,
+	AdditionalData,
+	ErrorMessage
+) AS (
+SELECT 
+	JobId,
+	Id,
+	OperationType,
+	RefreshMode,
+	[Status],
+	LCMVersion,
+	ReportFormatVersion,
+	ConfigurationVersion,
+	NodeName,
+	IPAddress,
+	StartTime,
+	EndTime,
+	Errors,
+	StatusData,
+	RebootRequested,
+	AdditionalData,
+	(
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+	)
+	SELECT TOP 100000 * FROM CTE WHERE 
+	ErrorMessage NOT LIKE '%cannot find module%' 
+	AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
+	AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+	OR ErrorMessage IS NULL
+	AND EndTime > DATEADD(MINUTE, -30, GETDATE())
+
+	ORDER BY EndTime DESC
+GO
+
 '@
 
 $addPermissionsQuery = @'
