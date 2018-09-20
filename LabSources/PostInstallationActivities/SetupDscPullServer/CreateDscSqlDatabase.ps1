@@ -267,6 +267,96 @@ ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
 ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
 GO
 
+--Base views
+CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
+AS
+WITH CTE(
+	NodeName,
+	EndTime,
+	ErrorMessage
+) AS (
+SELECT NodeName, EndTime, (
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+	)
+	SELECT TOP 5000 * FROM CTE WHERE 
+	ErrorMessage LIKE '%cannot find module%' 
+	OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+	OR ErrorMessage LIKE '%Checksum file not located for%'
+	ORDER BY EndTime DESC
+
+--Module does not exist					Cannot find module
+--Configuration does not exist			The assigned configuration <Name> is not found
+--Checksum does not exist				Checksum file not located for
+GO
+
+CREATE VIEW [dbo].[vBaseNodeLocalStatus]
+AS
+
+WITH CTE(
+	JobId,
+	Id,
+	OperationType,
+	RefreshMode,
+	[Status],
+	LCMVersion,
+	ReportFormatVersion,
+	ConfigurationVersion,
+	NodeName,
+	IPAddress,
+	StartTime,
+	EndTime,
+	Errors,
+	StatusData,
+	RebootRequested,
+	AdditionalData,
+	ErrorMessage
+) AS (
+SELECT 
+	JobId,
+	Id,
+	OperationType,
+	RefreshMode,
+	[Status],
+	LCMVersion,
+	ReportFormatVersion,
+	ConfigurationVersion,
+	NodeName,
+	IPAddress,
+	StartTime,
+	EndTime,
+	Errors,
+	StatusData,
+	RebootRequested,
+	AdditionalData,
+	(
+	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+	)
+	SELECT TOP 100000 * FROM CTE WHERE 
+	ErrorMessage NOT LIKE '%cannot find module%' 
+	AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
+	AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+	OR ErrorMessage IS NULL
+	AND EndTime > DATEADD(MINUTE, -30, GETDATE())
+
+	ORDER BY EndTime DESC
+GO
+
 
 --Adding functions
 CREATE FUNCTION [dbo].[Split] (
@@ -423,7 +513,7 @@ RETURN
 )
 GO
 
--- Adding views
+--Remaining views
 CREATE VIEW [dbo].[vRegistrationData]
 AS
 SELECT GetRegistrationData.*
@@ -460,96 +550,6 @@ dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, d
 FROM dbo.StatusReport INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
 ORDER BY dbo.StatusReportMetaData.CreationTime
 GO
-
-CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
-AS
-WITH CTE(
-	NodeName,
-	EndTime,
-	ErrorMessage
-) AS (
-SELECT NodeName, EndTime, (
-	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
-	)
-	WITH (
-		ErrorMessage nvarchar(2000) '$.ErrorMessage',
-		ErrorCode nvarchar(20) '$.ErrorCode',
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
-	)
-	SELECT TOP 5000 * FROM CTE WHERE 
-	ErrorMessage LIKE '%cannot find module%' 
-	OR ErrorMessage LIKE '%The assigned configuration%is not found%'
-	OR ErrorMessage LIKE '%Checksum file not located for%'
-	ORDER BY EndTime DESC
-
---Module does not exist					Cannot find module
---Configuration does not exist			The assigned configuration <Name> is not found
---Checksum does not exist				Checksum file not located for
-GO
-
-CREATE VIEW [dbo].[vBaseNodeLocalStatus]
-AS
-
-WITH CTE(
-	JobId,
-	Id,
-	OperationType,
-	RefreshMode,
-	[Status],
-	LCMVersion,
-	ReportFormatVersion,
-	ConfigurationVersion,
-	NodeName,
-	IPAddress,
-	StartTime,
-	EndTime,
-	Errors,
-	StatusData,
-	RebootRequested,
-	AdditionalData,
-	ErrorMessage
-) AS (
-SELECT 
-	JobId,
-	Id,
-	OperationType,
-	RefreshMode,
-	[Status],
-	LCMVersion,
-	ReportFormatVersion,
-	ConfigurationVersion,
-	NodeName,
-	IPAddress,
-	StartTime,
-	EndTime,
-	Errors,
-	StatusData,
-	RebootRequested,
-	AdditionalData,
-	(
-	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
-	)
-	WITH (
-		ErrorMessage nvarchar(2000) '$.ErrorMessage',
-		ErrorCode nvarchar(20) '$.ErrorCode',
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
-	)
-	SELECT TOP 100000 * FROM CTE WHERE 
-	ErrorMessage NOT LIKE '%cannot find module%' 
-	AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
-	AND ErrorMessage NOT LIKE '%Checksum file not located for%'
-	OR ErrorMessage IS NULL
-	AND EndTime > DATEADD(MINUTE, -30, GETDATE())
-
-	ORDER BY EndTime DESC
-GO
-
 '@
 
 $addPermissionsQuery = @'
