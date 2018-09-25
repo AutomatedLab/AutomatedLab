@@ -519,9 +519,11 @@ GO
 
 CREATE VIEW [dbo].[vStatusReportDataNewest]
 AS
-SELECT TOP (1000) dbo.StatusReport.JobId, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReport.NodeName, dbo.StatusReportMetaData.CreationTime, 
+SELECT TOP (1000) dbo.StatusReport.JobId,dbo.StatusReport.Id, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.RegistrationData.NodeName, dbo.StatusReportMetaData.CreationTime, 
 dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
-FROM dbo.StatusReport INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
+FROM dbo.StatusReport
+INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
+INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
 ORDER BY dbo.StatusReportMetaData.CreationTime
 GO
 '@
