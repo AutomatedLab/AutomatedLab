@@ -193,33 +193,6 @@ CREATE TABLE [dbo].[StatusReportMetaData](
 
 GO
 
-/*****
-CREATE TRIGGER [dbo].[DSCStatusReportOnUpdate]
-   ON  [dbo].[StatusReport] 
-   AFTER UPDATE
-AS
-SET NOCOUNT ON
-BEGIN
-    DECLARE @JobId nvarchar(50) = (SELECT JobId FROM inserted);
-    DECLARE @StatusData nvarchar(MAX) = (SELECT StatusData FROM inserted);
-    IF @StatusData LIKE '\[%' ESCAPE '\'
-        SET @StatusData = REPLACE(SUBSTRING(@StatusData, 3, Len(@StatusData) - 4), '\', '')
-
-    DECLARE @Errors nvarchar(MAX) = (SELECT [Errors] FROM inserted);
-    IF @Errors IS NULL
-        SET @Errors = (SELECT Errors FROM StatusReport WHERE JobId = @JobId)
-    
-    IF @Errors LIKE '\[%' ESCAPE '\' AND Len(@Errors) > 4
-        SET @Errors = REPLACE(SUBSTRING(@Errors, 3, Len(@Errors) - 4), '\', '')
-
-    UPDATE StatusReport
-    SET StatusData = @StatusData, Errors = @Errors
-    WHERE JobId = @JobId
-    
-END
-GO
-*****/
-
 CREATE TRIGGER [dbo].[InsertCreationTimeRDMD] 
 ON [dbo].[RegistrationData]
 AFTER INSERT
@@ -262,7 +235,6 @@ BEGIN
 END
 GO
 
---ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [DSCStatusReportOnUpdate]
 ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
 ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
 GO
@@ -275,7 +247,7 @@ WITH CTE(
 	EndTime,
 	ErrorMessage
 ) AS (
-SELECT NodeName, EndTime, (
+SELECT RegistrationData.NodeName, EndTime,  (
 	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
 	FROM OPENJSON(
 	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
@@ -284,12 +256,13 @@ SELECT NodeName, EndTime, (
 		ErrorMessage nvarchar(2000) '$.ErrorMessage',
 		ErrorCode nvarchar(20) '$.ErrorCode',
 		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	)
 	SELECT TOP 5000 * FROM CTE WHERE 
 	ErrorMessage LIKE '%cannot find module%' 
 	OR ErrorMessage LIKE '%The assigned configuration%is not found%'
 	OR ErrorMessage LIKE '%Checksum file not located for%'
+	OR ErrorMessage LIKE '%Checksum for module%'
 	ORDER BY EndTime DESC
 
 --Module does not exist					Cannot find module
@@ -351,8 +324,9 @@ SELECT
 	ErrorMessage NOT LIKE '%cannot find module%' 
 	AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
 	AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+    AND ErrorMessage NOT LIKE '%Checksum for module%'
 	OR ErrorMessage IS NULL
-	AND EndTime > DATEADD(MINUTE, -30, GETDATE())
+	AND EndTime > DATEADD(MINUTE, -120, GETDATE())
 
 	ORDER BY EndTime DESC
 GO
