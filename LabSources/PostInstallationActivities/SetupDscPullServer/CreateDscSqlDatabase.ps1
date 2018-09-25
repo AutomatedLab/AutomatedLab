@@ -242,28 +242,35 @@ GO
 --Base views
 CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
 AS
-WITH CTE(
-	NodeName,
-	EndTime,
-	ErrorMessage
+WITH CTE(NodeName
+	,CreationTime
+	,StartTime
+	,EndTime
+	,ErrorMessage
 ) AS (
-SELECT RegistrationData.NodeName, EndTime,  (
-	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
-	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
-	)
-	WITH (
-		ErrorMessage nvarchar(2000) '$.ErrorMessage',
-		ErrorCode nvarchar(20) '$.ErrorCode',
-		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
-	)
-	SELECT TOP 5000 * FROM CTE WHERE 
-	ErrorMessage LIKE '%cannot find module%' 
-	OR ErrorMessage LIKE '%The assigned configuration%is not found%'
-	OR ErrorMessage LIKE '%Checksum file not located for%'
-	OR ErrorMessage LIKE '%Checksum for module%'
-	ORDER BY EndTime DESC
+SELECT RegistrationData.NodeName
+	,CreationTime
+	,StartTime
+	,EndTime
+	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+		FROM OPENJSON(
+			(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+		)
+		WITH (
+			ErrorMessage nvarchar(2000) '$.ErrorMessage',
+			ErrorCode nvarchar(20) '$.ErrorCode',
+			ResourceId nvarchar(200) '$.ResourceId'
+		) FOR XML PATH ('')) AS ErrorMessage
+	FROM StatusReport 
+	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
+	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
+)
+SELECT TOP 5000 * FROM CTE WHERE 
+ErrorMessage LIKE '%cannot find module%' 
+OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+OR ErrorMessage LIKE '%Checksum file not located for%'
+OR ErrorMessage LIKE '%Checksum for module%'
+ORDER BY EndTime DESC
 
 --Module does not exist					Cannot find module
 --Configuration does not exist			The assigned configuration <Name> is not found
@@ -273,64 +280,64 @@ GO
 CREATE VIEW [dbo].[vBaseNodeLocalStatus]
 AS
 
-WITH CTE(
-	JobId,
-	Id,
-	OperationType,
-	RefreshMode,
-	[Status],
-	LCMVersion,
-	ReportFormatVersion,
-	ConfigurationVersion,
-	NodeName,
-	IPAddress,
-	StartTime,
-	EndTime,
-	Errors,
-	StatusData,
-	RebootRequested,
-	AdditionalData,
-	ErrorMessage
+WITH CTE(JobId
+	,NodeName
+	,OperationType
+	,RefreshMode
+	,[Status]
+	,LCMVersion
+	,ReportFormatVersion
+	,ConfigurationVersion
+	,IPAddress
+	,CreationTime
+	,StartTime
+	,EndTime
+	,Errors
+	,StatusData
+	,RebootRequested
+	,AdditionalData
+	,ErrorMessage
 ) AS (
-SELECT 
-	JobId,
-	Id,
-	OperationType,
-	RefreshMode,
-	[Status],
-	LCMVersion,
-	ReportFormatVersion,
-	ConfigurationVersion,
-	NodeName,
-	IPAddress,
-	StartTime,
-	EndTime,
-	Errors,
-	StatusData,
-	RebootRequested,
-	AdditionalData,
-	(
-	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+SELECT StatusReport.JobId
+	,RegistrationData.NodeName
+	,OperationType
+	,RefreshMode
+	,[Status]
+	,StatusReport.LCMVersion
+	,ReportFormatVersion
+	,ConfigurationVersion
+	,StatusReport.IPAddress
+	,CreationTime
+	,StartTime
+	,EndTime
+	,Errors
+	,StatusData
+	,RebootRequested
+	,AdditionalData
+	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
 	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+		(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
 	)
 	WITH (
 		ErrorMessage nvarchar(2000) '$.ErrorMessage',
 		ErrorCode nvarchar(20) '$.ErrorCode',
 		ResourceId nvarchar(200) '$.ResourceId'
-	) FOR XML PATH ('')) AS ErrorMessage FROM StatusReport
+		) FOR XML PATH ('')
+	) AS ErrorMessage
+	FROM StatusReport
+	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
+	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 	)
 	SELECT TOP 100000 * FROM CTE WHERE 
-	ErrorMessage NOT LIKE '%cannot find module%' 
-	AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
-	AND ErrorMessage NOT LIKE '%Checksum file not located for%'
-    AND ErrorMessage NOT LIKE '%Checksum for module%'
-	OR ErrorMessage IS NULL
-	AND EndTime > DATEADD(MINUTE, -120, GETDATE())
+		ErrorMessage NOT LIKE '%cannot find module%' 
+		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
+		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+		AND ErrorMessage NOT LIKE '%Checksum for module%'
+		OR ErrorMessage IS NULL
+		AND EndTime > DATEADD(MINUTE, -30, GETDATE())
 
 	ORDER BY EndTime DESC
 GO
-
 
 --Adding functions
 CREATE FUNCTION [dbo].[Split] (
@@ -396,18 +403,16 @@ RETURN
 )
 GO
 
-
 CREATE FUNCTION [dbo].[tvfGetNodeStatus] ()
 RETURNS TABLE
     AS
 RETURN
 (
-    SELECT [dbo].[vBaseNodeLocalStatus].[NodeName]
-	,[dbo].[vBaseNodeLocalStatus].[Status]
-	,[dbo].[vBaseNodeLocalStatus].[Id] AS [AgentId]
-	,[dbo].[StatusReportMetaData].[CreationTime] AS [Time]
-	,[dbo].[vBaseNodeLocalStatus].[RebootRequested]
-	,[dbo].[vBaseNodeLocalStatus].[OperationType]
+    SELECT vBaseNodeLocalStatus.NodeName
+	,[Status]
+	,CreationTime AS [Time]
+	,RebootRequested
+	,OperationType
 
 	,(
 	SELECT [HostName] FROM OPENJSON(
@@ -459,11 +464,11 @@ RETURN
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
 	)) AS ResourceCountNotInDesiredState
-
+	
 	,(
 	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
 	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	(SELECT TOP 1 [value] FROM OPENJSON([Errors]))
 	)
 	WITH (
 		ErrorMessage nvarchar(2000) '$.ErrorMessage',
@@ -476,14 +481,17 @@ RETURN
 	) AS RawStatusData
 
 	,(
-	SELECT [value] FROM OPENJSON([Errors])
+	SELECT [value] FROM OPENJSON([Errors]) FOR JSON PATH
 	) AS RawErrors
 
-	FROM dbo.vBaseNodeLocalStatus INNER JOIN StatusReportMetaData ON StatusReportMetaData.JobId = vBaseNodeLocalStatus.JobId
-	INNER JOIN
-	(SELECT MAX(SRMD.CreationTime) AS MaxEndTime, NodeName
-		FROM dbo.StatusReport AS StatusReport_1 INNER JOIN StatusReportMetaData AS SRMD ON SRMD.JobId = StatusReport_1.JobId
-		GROUP BY [StatusReport_1].[NodeName]) AS SubMax ON StatusReportMetaData.CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
+	FROM dbo.vBaseNodeLocalStatus 
+	INNER JOIN (
+		SELECT NodeName
+		,MAX(CreationTime) AS MaxEndTime
+		FROM dbo.vBaseNodeLocalStatus
+		GROUP BY NodeName
+		
+	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
 GO
 
@@ -519,12 +527,12 @@ GO
 
 CREATE VIEW [dbo].[vStatusReportDataNewest]
 AS
-SELECT TOP (1000) dbo.StatusReport.JobId,dbo.StatusReport.Id, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.RegistrationData.NodeName, dbo.StatusReportMetaData.CreationTime, 
+SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime, 
 dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
 FROM dbo.StatusReport
 INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
 INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
-ORDER BY dbo.StatusReportMetaData.CreationTime
+ORDER BY dbo.StatusReportMetaData.CreationTime DESC
 GO
 '@
 
