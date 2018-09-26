@@ -328,13 +328,15 @@ SELECT StatusReport.JobId
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 	)
-	SELECT TOP 100000 * FROM CTE WHERE 
+	SELECT TOP 100000 * FROM CTE
+	WHERE 
 		ErrorMessage NOT LIKE '%cannot find module%' 
 		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
 		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
 		AND ErrorMessage NOT LIKE '%Checksum for module%'
+		AND EndTime > DATEADD(MINUTE, -120, GETDATE())
+		AND [Status] IS NOT NULL
 		OR ErrorMessage IS NULL
-		AND EndTime > DATEADD(MINUTE, -30, GETDATE())
 
 	ORDER BY EndTime DESC
 GO
@@ -513,7 +515,8 @@ GO
 
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
-SELECT GetNodeStatus.*
+SELECT GetNodeStatus.*,
+IIF([ResourceCountNotInDesiredState] > 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
 GO
 
