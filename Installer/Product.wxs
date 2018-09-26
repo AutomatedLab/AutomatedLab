@@ -1648,6 +1648,9 @@
       <Component Id="cmpB85FA2BD096943C488D20B6762C074F1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="864324e4-06a4-460e-a5f3-abe69bc20e2d">
         <File Id="fil1C8824BF1D24203C55144DD3D8E8F975" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\Devices.mdb" />
       </Component>
+      <Component Id="cmpE91A9AD0B68B48D89B64BB49F40DB43B" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="3f0395ac-cfd0-467c-817a-d47638e15ad3">
+        <File Id="filB7AB1132D54742EC919846FD520083BC" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServiceReportingServices.ps1" />
+      </Component>
       <Component Id="cmp3DB102DDB4E8933CB7CA8F10E690C53B" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="10eb84f3-9d21-4b1b-aed7-257c934dcb61">
         <File Id="filA64366873E8C3F31B46E5DE0AA1EB499" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\DSC Dashboard.pbix" />
       </Component>
