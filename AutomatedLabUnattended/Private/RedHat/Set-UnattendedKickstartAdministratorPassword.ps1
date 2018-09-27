@@ -6,5 +6,5 @@ function Set-UnattendedKickstartAdministratorPassword
     )
 		
 		$Script:un.Add("rootpw $Password")
-		$Script:un = [System.Collections.Generic.List[string]]($Script:un -replace '%PASSWORD%', $Password)
+		$Script:un = [System.Collections.Generic.List[string]]($Script:un.Replace('%PASSWORD%', $Password))
 }
