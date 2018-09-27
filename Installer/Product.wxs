@@ -101,6 +101,19 @@
                     </Component>
                   </Directory>
                 </Directory>
+                <Directory Id="InstallFolder_CommonPerfmon" Name="Perfmon">
+                  <Directory Id="InstallFolder_CommonPerfmonPublic" Name="Public">
+                    <Component Id="ALCommonComponent9" Guid="e19b6e09-74f3-4525-a43d-a2dab0f54773">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterID.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterLocalName.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\New-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1" />
+                    </Component>
+                  </Directory>
+                </Directory>
                 <Directory Id="InstallFolder_CommonPki" Name="PkiHelper">
                   <Directory Id="InstallFolder_CommonPkiPublic" Name="Public">
                     <Component Id="ALCommonComponent5" Guid="301a6732-f49c-4f95-9891-4f2f3fe345e5">
@@ -524,6 +537,7 @@
         <ComponentRef Id ='ALCommonComponent6' />
         <ComponentRef Id ='ALCommonComponent7' />
         <ComponentRef Id ='ALCommonComponent8' />
+        <ComponentRef Id ='ALCommonComponent9' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
         <ComponentRef Id='AutomatedLabComponent'/>
