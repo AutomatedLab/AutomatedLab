@@ -5,5 +5,5 @@ function Set-UnattendedKickstartAdministratorName
         $Name
     )
 
-    $script:un.Add("user --name=$Name --groups=wheel --password=%PASSWORD%")
+    $script:un.Add("user --name=$Name --groups=wheel --password='%PASSWORD%'")
 }
