@@ -13,7 +13,7 @@ function Install-LabTeamFoundationEnvironment
     {
         Dismount-LabIsoImage -ComputerName $machine -SupressOutput
 
-        $role = $machine.Roles | Where-Object Name -like Tfs*
+        $role = $machine.Roles | Where-Object Name -Match 'TFS\d{4}'
         $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path
 
         $retryCount = 3
@@ -433,7 +433,19 @@ function New-LabReleasePipeline
                 Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
             }
 
-            Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow            
+            try
+            {
+                $errorFile = [System.IO.Path]::GetTempFileName()
+                $addRemoteResult = Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                if ($addRemoteResult.ExitCode -ne 0)
+                {
+                    Write-Error "Could not add remote tfs to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
+                }
+            }
+            finally
+            {
+                Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue 
+            }
         }
         
         try
@@ -441,12 +453,12 @@ function New-LabReleasePipeline
             $retries = 3
             $errorFile = [System.IO.Path]::GetTempFileName()
             
-            $pushResult = Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+            $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
             while ($pushResult.ExitCode -ne 0 -and $retries -gt 0)
             {
                 Write-ScreenInfo "Could not push the repository in '$pwd' to TFS, retrying ($retries)..."
                 Start-Sleep -Seconds 5
-                $pushResult = Start-Process -FilePath $gitBinary @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
                 $retries--
             }
                 
