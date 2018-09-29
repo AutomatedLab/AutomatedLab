@@ -76,7 +76,7 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -Match 'TFS\d{4}').Name} -Descending
     [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
     
     # Assign unassigned build workers to our most current TFS machine
@@ -94,10 +94,10 @@ function Install-LabTeamFoundationServer
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
-        if ( Get-LabIssuingCA)
+        if (Get-LabIssuingCA)
         {
             $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
-            $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
+            $machine.InternalNotes.CertificateThumbprint = $cert.Thumbprint
             Export-Lab
         }
 
