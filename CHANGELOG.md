@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Fixed SQL Setup (2016+) by preinstalling C++ redist
+
 ## 5.0.4 - 2019-09-28
 
 ### Enhancements
