@@ -70,6 +70,7 @@ if ($installation.State -eq 'Failed')
     }
 }
 
+Restart-LabVm -ComputerName $ComputerName -Wait -NoDisplay
 Write-ScreenInfo -Message "Installation of Windows Admin Center done. You can access it here: https://$($labMachine.FQDN):$Port"
 
 # Add hosts through REST API
