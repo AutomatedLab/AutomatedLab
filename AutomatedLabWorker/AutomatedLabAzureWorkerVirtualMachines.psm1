@@ -1232,10 +1232,11 @@ catch
 }
 '@
     $customScriptContent | Out-File $tempFileName -Force -Encoding utf8
+    $rgName = Get-LabAzureDefaultResourceGroup
 
     $jobs = foreach ($m in $Machine)
     {
-        Invoke-AzureRmVMRunCommand -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -VMName $m.Name -ScriptPath $tempFileName -CommandId 'EnableLabRemoting' -ErrorAction Stop -AsJob
+        Invoke-AzureRmVMRunCommand -ResourceGroupName $rgName -VMName $m.Name -ScriptPath $tempFileName -CommandId 'EnableLabRemoting' -ErrorAction Stop -AsJob
     }
 
     if ($Wait)
