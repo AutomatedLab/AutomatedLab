@@ -115,9 +115,9 @@ function New-LWAzureVM
         }
 
         $sqlServerImages = $sqlServerImages |
-        Where-Object Offer -Match $pattern | 
-        Group-Object -Property Sku, Offer | 
-        ForEach-Object {
+            Where-Object Offer -Match $pattern | 
+            Group-Object -Property Sku, Offer | 
+            ForEach-Object {
             $_.Group | Sort-Object -Property PublishedDate -Descending | Select-Object -First 1
         }
 
@@ -136,7 +136,7 @@ function New-LWAzureVM
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
-        Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
+            Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
         $skusName = $vmImage | Select-Object -ExpandProperty Skus
@@ -160,7 +160,7 @@ function New-LWAzureVM
                 
         #get all SQL images machting the RegEx pattern and then get only the latest one
         $visualStudioImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -EQ VisualStudio
+            Where-Object Offer -EQ VisualStudio
 
         #add the version, SP Level and OS from the ImageFamily field to the image object
         foreach ($visualStudioImage in $visualStudioImages)
@@ -176,7 +176,7 @@ function New-LWAzureVM
         #get the image that matches the OS and SQL server version
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version.Major -eq $machineOs.Version.Major } |
-        Sort-Object -Property Update -Descending | Select-Object -First 1
+            Sort-Object -Property Update -Descending | Select-Object -First 1
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
         $skusName = $vmImage | Select-Object -ExpandProperty Skus
@@ -201,10 +201,10 @@ function New-LWAzureVM
         $sharePointRoleName -match '\w+(?<Version>\d{4})'
         
         $sharePointImages = $lab.AzureSettings.VmImages |
-        Where-Object Offer -Match 'MicrosoftSharePoint' |
-        Sort-Object -Property PublishedDate -Descending |
-        Where-Object Skus -eq $Matches.Version |
-        Select-Object -First 1
+            Where-Object Offer -Match 'MicrosoftSharePoint' |
+            Sort-Object -Property PublishedDate -Descending |
+            Where-Object Skus -eq $Matches.Version |
+            Select-Object -First 1
 
         # Add the SP version
         foreach ($sharePointImage in $sharePointImages)
@@ -218,7 +218,7 @@ function New-LWAzureVM
         
         #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
         $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-        Sort-Object -Property Update -Descending | Select-Object -First 1
+            Sort-Object -Property Update -Descending | Select-Object -First 1
 
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
@@ -244,8 +244,8 @@ function New-LWAzureVM
         }
 
         $vmImage = $lab.AzureSettings.VmImages |
-        Where-Object Skus -eq $vmImageName  |
-        Select-Object -First 1
+            Where-Object Skus -eq $vmImageName  |
+            Select-Object -First 1
 
         $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
@@ -258,16 +258,16 @@ function New-LWAzureVM
     if ($machine.AzureProperties.RoleSize)
     {
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
+            Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
         Write-Verbose -Message "Using specified role size of '$($roleSize.Name)'"
     }
     elseif ($machine.AzureProperties.UseAllRoleSizes)
     {
         $DefaultAzureRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
-        Sort-Object -Property MemoryInMB, NumberOfCores |
-        Select-Object -First 1
+            Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
+            Sort-Object -Property MemoryInMB, NumberOfCores |
+            Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
     }
@@ -284,10 +284,10 @@ function New-LWAzureVM
         }
         
         $roleSize = $lab.AzureSettings.RoleSizes |
-        Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
-        Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
-        Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
-        Select-Object -First 1
+            Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
+            Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
+            Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
+            Select-Object -First 1
 
         Write-Verbose -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
@@ -307,7 +307,7 @@ function New-LWAzureVM
 
     $Vnet = $Machine.NetworkAdapters[0].VirtualSwitch.Name
     $Location = $lab.AzureSettings.DefaultLocation.DisplayName
-    $DefaultIpAddress  = $Machine.NetworkAdapters[0].Ipv4Address.IpAddress
+    $DefaultIpAddress = $Machine.NetworkAdapters[0].Ipv4Address.IpAddress
 
     Write-Verbose '-------------------------------------------------------'
     Write-Verbose "Machine: $($Machine.name)"
@@ -329,8 +329,8 @@ function New-LWAzureVM
     Write-Verbose '-------------------------------------------------------'
     
     $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
-    Get-AzureRmVirtualNetworkSubnetConfig |
-    Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
+        Get-AzureRmVirtualNetworkSubnetConfig |
+        Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
         
     if (-not $subnet)
     {
@@ -421,7 +421,7 @@ function New-LWAzureVM
 
             $adapterStartAddress = Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix) | Select-Object -First 1
             $additionalSubnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
-            Get-AzureRmVirtualNetworkSubnetConfig
+                Get-AzureRmVirtualNetworkSubnetConfig
         
             Write-Verbose -Message "adapterStartAddress = '$adapterStartAddress'"
             $vNet = $LabVirtualNetworkDefinition | Where-Object { $_.AddressSpace.AddressAsString -eq $adapterStartAddress }
@@ -595,9 +595,9 @@ function Initialize-LWAzureVM
                 if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) GB')
                 {
                     $nextDriveLetter = [char[]](67..90) | 
-                    Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
-                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
-                    Select-Object -First 1
+                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+                                Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+                        Select-Object -First 1
 
                     $diskNumber = $Matches.DiskNumber
 
@@ -852,7 +852,7 @@ function Stop-LWAzureVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where({$_.OperatingSystemType -eq 'Linux'}, 'Split')
+        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where( {$_.OperatingSystemType -eq 'Linux'}, 'Split')
 
         $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            
             Stop-Computer -Force -ErrorAction Stop
@@ -861,9 +861,9 @@ function Stop-LWAzureVM
         $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {            
             #Sleep as background process so that job does not fail.
             [void] (Start-Job {
-                Start-Sleep -Seconds 5
-                shutdown -P now
-            }) 
+                    Start-Sleep -Seconds 5
+                    shutdown -P now
+                }) 
         }
 
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
@@ -889,7 +889,7 @@ function Stop-LWAzureVM
                         {
                             ($_.Name -split "_")[1]
                         }
-                }) -join ", "
+                    }) -join ", "
             
                 Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
             }
@@ -1059,7 +1059,7 @@ function Get-LWAzureVMConnectionInfo
     Write-LogFunctionEntry
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
-	$retryCount = 5
+    $retryCount = 5
 
     if (-not $lab)
     {
@@ -1159,7 +1159,7 @@ function Enable-LWAzureVMRemoting
         try
         {
             Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay `
-            -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
+                -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
         }
         catch
         {
@@ -1199,17 +1199,7 @@ function Enable-LWAzureWinRm
     $lab = Get-Lab
     $jobs = @()
 
-    $storageAccount = @(Get-AzureRmStorageAccount -ResourceGroupName AutomatedLabSources)[0]
-    $storageAccountName = $storageAccount.StorageAccountName
-    $storageAccountKey = ($storageAccount | Get-AzureRmStorageAccountKey)[0].Value
-
-    $container = Get-AzureStorageContainer -Name labsources -Context $storageAccount.Context -ErrorAction SilentlyContinue
-
-    if (-not $container)
-    {
-        $container = New-AzureStorageContainer -Name labsources -Permission Container -Context $storageAccount.Context
-    }
-    $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile
+    $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile.ps1
     $customScriptContent = @'
 New-Item -ItemType Directory -Path C:\ALAzure -ErrorAction SilentlyContinue
 'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log -Append
@@ -1242,43 +1232,24 @@ catch
 }
 '@
     $customScriptContent | Out-File $tempFileName -Force -Encoding utf8
-    $null = Set-AzureStorageBlobContent -File $tempFileName -Container labsources -Blob Enable-WinRm.ps1 -BlobType Block -Context $storageAccount.Context -Force
-    Remove-Item $tempFileName -Force -ErrorAction SilentlyContinue   
 
-    foreach ($m in $Machine)
+    $jobs = foreach ($m in $Machine)
     {
-        $jobs += Start-Job -Name "AzureRemotingActivation ($($m.Name))" -ScriptBlock {
-            param
-            (
-                $MachineName,
-                $ResourceGroup,
-                $Location,
-                $AzureRetryCount,
-                $StorageAccountName,
-                $StorageAccountKey
-            )
-            
-            $i = 0
-            while (-not $vmExtension.IsSuccessStatusCode -and $i -le $AzureRetryCount)
-            {
-                $vmExtension = Set-AzureRmVMCustomScriptExtension -VMName $MachineName -ContainerName 'labsources' `
-                -FileName 'Enable-WinRm.ps1' -StorageAccountName $StorageAccountName `
-                -StorageAccountKey $StorageAccountKey -Run Enable-WinRm.ps1 `
-                -ResourceGroupName $ResourceGroup -Name WinrmActivation -Location $Location -Verbose -ErrorAction SilentlyContinue
-                $i++
-                Start-Sleep -Seconds 1
-            }
-
-            if (-not $vmExtension -or -not $vmExtension.IsSuccessStatusCode)
-            {
-                throw "Setting up WinRm on $machineName failed!"
-            }
-        } -ArgumentList $m.Name, (Get-LabAzureDefaultResourceGroup), (Get-LabAzureDefaultLocation), $azureRetryCount, $storageAccountName, $storageAccountKey
+        Invoke-AzureRmVMRunCommand -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -VMName $m.Name -ScriptPath $tempFileName -CommandId 'EnableLabRemoting' -ErrorAction Stop -AsJob
     }
 
     if ($Wait)
     {
         Wait-LWLabJob -Job $jobs
+
+        $results = $jobs | Receive-Job -Keep -ErrorAction SilentlyContinue -ErrorVariable +AL_AzureWinrmActivationErrors
+        $failedJobs = $jobs | Where-Object -Property Status -eq 'Failed'
+
+        if ($failedJobs)
+        {
+            $machineNames = $($($failedJobs).Name -replace "'").ForEach( {$($_ -split '\s')[-1]})
+            Write-ScreenInfo -Type Error -Message ('Enabling CredSSP on the following lab machines failed: {0}. Check the output of "Get-Job -Id {1} | Receive-Job -Keep" as well as the variable $AL_AzureWinrmActivationErrors' -f $($machineNames -join ','), $($failedJobs.Id -join ','))
+        }
     }
 
     if ($PassThru)
@@ -1286,6 +1257,7 @@ catch
         $jobs
     }
 
+    Remove-Item $tempFileName -Force -ErrorAction SilentlyContinue 
     Write-LogFunctionExit
 }
 #endregion
