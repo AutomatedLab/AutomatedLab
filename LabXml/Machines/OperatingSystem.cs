@@ -319,13 +319,13 @@ namespace AutomatedLab
 
                     // Windows Server 2019 new names
                     case "Windows Server 2019 Standard (Desktop Experience)":
-                        return "MFY9F-XBN2F-TYFMP-CCV49-RMYVH";
+                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
                     case "Windows Server 2019 Datacenter (Desktop Experience)":
-                        return "6XBNX-4JQGW-QX6QG-74P76-72V67";
+                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
                     case "Windows Server 2019 Standard":
-                        return "MFY9F-XBN2F-TYFMP-CCV49-RMYVH";
+                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
                     case "Windows Server 2019 Datacenter":
-                        return "6XBNX-4JQGW-QX6QG-74P76-72V67";
+                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
 
                     default:
                         return string.Empty;
