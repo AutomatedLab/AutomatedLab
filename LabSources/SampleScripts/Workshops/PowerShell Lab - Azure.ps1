@@ -60,7 +60,7 @@ Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB - Using the BYOL licensing scheme
 #SQL server with demo databases
 $role = Get-LabMachineRoleDefinition -Role SQLServer2014 @{InstallSampleDatabase = 'true'}
-Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties = @{'UseByolImage' = 'True'}
+Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties @{'UseByolImage' = 'True'}
 #>
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
