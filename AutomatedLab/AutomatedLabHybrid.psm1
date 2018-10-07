@@ -278,7 +278,7 @@ function Restore-LabConnection
             [System.String]
             $azureDestination
         )
-	
+    
         $s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
         
         if ($s2sConnection.Destination -notcontains $azureDestination)
@@ -360,9 +360,9 @@ function Initialize-GatewayNetwork
     if (-not $gatewaySubnet)
     {
         $vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
-        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
+        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
     }    
-	
+    
     $vnet = (Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Where-Object -Property ID)[0]
     Write-LogFunctionExit
 
@@ -520,7 +520,7 @@ function Connect-OnPremisesWithAzure
         
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue
-		
+        
         $null = netsh.exe routing ip nat install
         $null = netsh.exe routing ip nat add interface $externalAdapter
         $null = netsh.exe routing ip nat set interface $externalAdapter mode=full

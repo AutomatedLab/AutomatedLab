@@ -328,7 +328,7 @@ function New-LWAzureVM
     Write-Verbose "Skus: $SkusName"
     Write-Verbose '-------------------------------------------------------'
     
-    $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName |
+    $subnet = Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue |
         Get-AzureRmVirtualNetworkSubnetConfig |
         Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
         
@@ -420,7 +420,7 @@ function New-LWAzureVM
             if ($adapter.Ipv4Address.ToString() -eq $defaultIPv4Address) {continue}
 
             $adapterStartAddress = Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix) | Select-Object -First 1
-            $additionalSubnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
+            $additionalSubnet = (Get-AzureRmVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
                 Get-AzureRmVirtualNetworkSubnetConfig
         
             Write-Verbose -Message "adapterStartAddress = '$adapterStartAddress'"
