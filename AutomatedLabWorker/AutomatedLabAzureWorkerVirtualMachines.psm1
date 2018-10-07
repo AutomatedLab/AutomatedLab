@@ -1236,7 +1236,7 @@ catch
 
     $jobs = foreach ($m in $Machine)
     {
-        Invoke-AzureRmVMRunCommand -ResourceGroupName $rgName -VMName $m.Name -ScriptPath $tempFileName -CommandId 'EnableLabRemoting' -ErrorAction Stop -AsJob
+        Invoke-AzureRmVMRunCommand -ResourceGroupName $rgName -VMName $m.Name -ScriptPath $tempFileName -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
     }
 
     if ($Wait)
