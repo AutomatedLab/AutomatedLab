@@ -487,7 +487,7 @@ function Get-LabInternetFile
                 $request = [System.Net.WebRequest]::Create($Uri)
                 $request.AllowAutoRedirect = $true
                 
-                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+                [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12 -bor [Net.ServicePointManager]::SecurityProtocol
         
                 if ($request)
                 {
