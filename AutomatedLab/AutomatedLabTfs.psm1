@@ -92,12 +92,12 @@ function Install-LabTeamFoundationServer
 
     $installationJobs = @()
     $count = 0
-    foreach ($machine in $tfsMachines)
+    foreach ( $machine in $tfsMachines)
     {
         if ( Get-LabIssuingCA)
         {
             $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
-            $machine.InternalNotes.CertificateThumbprint = $cert.Thumbprint
+            $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
         }
 
@@ -130,11 +130,11 @@ function Install-LabTeamFoundationServer
 
             if ($role.Properties.ContainsKey('Port'))
             {
-                $machine.Roles.Where( { $_.Name -like 'TFS????' }).ForEach( { $_.Properties['Port'] = $tfsPort })
+                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties['Port'] = $tfsPort})
             }
             else
             {
-                $machine.Roles.Where( { $_.Name -like 'TFS????' }).ForEach( { $_.Properties.Add('Port', $tfsPort) })
+                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties.Add('Port', $tfsPort)})
             }
 
             Export-Lab # Export lab again since we changed role properties
@@ -287,7 +287,7 @@ function Install-LabBuildWorker
 #region TFS-specific functionality
 function New-LabReleasePipeline
 {
-    [CmdletBinding(DefaultParameterSetName = 'FileCopy')]
+    [CmdletBinding(DefaultParameterSetName = 'CloneRepo')]
     param
     (
         [string]
@@ -303,7 +303,7 @@ function New-LabReleasePipeline
         $SourcePath,
         
         [ValidateSet('Git', 'FileCopy')]
-        [string]$CodeUploadMethod = 'FileCopy',
+        [string]$CodeUploadMethod = 'Git',
 
         [string]
         $ComputerName,
@@ -314,10 +314,15 @@ function New-LabReleasePipeline
         [hashtable[]]
         $ReleaseSteps
     )
-
+    
     if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
+    }
+    
+    if ($CodeUploadMethod -eq 'Git' -and -not $SourceRepository)
+    {
+        throw "Using the code upload method 'Git' requires a source repository to be defined."
     }
 
     $tfsVm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
