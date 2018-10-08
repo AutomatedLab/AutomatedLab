@@ -1315,7 +1315,7 @@ function Get-LabAvailableOperatingSystem
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
         $osList = New-Object $type
-        $skus = (Get-LabAzureAvailableSku -Location 'West Europe')
+        $skus = (Get-LabAzureAvailableSku -Location $Location)
 
         foreach ($sku in $skus)
         {

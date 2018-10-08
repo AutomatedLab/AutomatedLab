@@ -98,12 +98,12 @@ function New-LWAzureNetworkSwitch
         }
         else
         {
-            $sourceNetwork = Get-AzureRmVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+            $sourceNetwork = Get-AzureRmVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue
 
             foreach ($connectedNetwork in $network.ConnectToVnets)
             {
                 # Configure bidirectional access
-                $remoteNetwork = Get-AzureRmVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+                $remoteNetwork = Get-AzureRmVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue
 
                 Write-Verbose -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
                 
@@ -191,6 +191,7 @@ function Get-LWAzureNetworkSwitch
             Name              = $network.Name
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
             ErrorAction       = 'SilentlyContinue'
+            WarningAction     = 'SilentlyContinue'
         }
         
         Get-AzureRmVirtualNetwork @azureNetworkParameters
@@ -278,7 +279,7 @@ function Set-LWAzureDnsServer
 
         $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
         $network.DnsServers.AddressAsString | ForEach-Object { $azureVnet.DhcpOptions.DnsServers.Add($PSItem)}
-        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
+        $null = $azureVnet | Set-AzureRmVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
 
         if ($PassThru)
         {

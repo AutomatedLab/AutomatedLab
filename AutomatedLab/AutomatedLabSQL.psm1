@@ -112,6 +112,16 @@ GO
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
+            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ redist on machine '$($machinesBatch -join ', ')'" -Type Verbose
+            $cppRedist = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist64 -Path $labsources\SoftwarePackages -PassThru
+            $cppRedist32 = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist32 -Path $labsources\SoftwarePackages -PassThru
+            $cppJobs = @()
+            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist32.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+
+            Write-ScreenInfo -Message "Waiting for pre-requisite Visual C++ redistributable to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
+            Wait-LWLabJob -Job $cppJobs -Timeout 10 -NoNewLine -ProgressIndicator 5 -NoDisplay
+
             foreach ($machine in $machinesBatch)
             {
                 $role = $machine.Roles | Where-Object Name -like SQLServer*
