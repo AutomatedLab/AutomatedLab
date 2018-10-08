@@ -25,7 +25,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #The PostInstallationActivity is just creating some users

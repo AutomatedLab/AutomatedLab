@@ -13,7 +13,7 @@ Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ Swit
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:Memory' = 1GB
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Network' = 'Lab1'
 }
 
