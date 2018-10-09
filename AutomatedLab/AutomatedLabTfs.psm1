@@ -76,7 +76,7 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -Match 'TFS\d{4}').Name} -Descending
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
     [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
     
     # Assign unassigned build workers to our most current TFS machine
@@ -94,12 +94,15 @@ function Install-LabTeamFoundationServer
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
-        if (Get-LabIssuingCA)
-        {
-            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
-            $machine.InternalNotes.CertificateThumbprint = $cert.Thumbprint
-            Export-Lab
-        }
+		#TODO: SSL disabled because the worker complains:
+		#fatal: unable to access 'https://dsctfs01:8080/AutomatedLab/_git/DscWorkshop/': SSL certificate problem: unable to get local issuer certificate
+		#Git fetch failed with exit code: 128
+        #if (Get-LabIssuingCA)
+        #{
+        #    $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
+        #    $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
+        #    Export-Lab
+        #}
 
         $role = $machine.Roles | Where-Object Name -like Tfs????
         $initialCollection = 'AutomatedLab'
@@ -197,7 +200,7 @@ function Install-LabTeamFoundationServer
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -287,13 +290,23 @@ function Install-LabBuildWorker
 #region TFS-specific functionality
 function New-LabReleasePipeline
 {
+    [CmdletBinding(DefaultParameterSetName = 'CloneRepo')]
     param
     (
         [string]
         $ProjectName = 'ALSampleProject',
 
+        [Parameter(Mandatory, ParameterSetName = 'CloneRepo')]
+        [Parameter(ParameterSetName = 'LocalSource')]
         [string]
         $SourceRepository,
+
+        [Parameter(Mandatory, ParameterSetName = 'LocalSource')]
+        [string]
+        $SourcePath,
+        
+        [ValidateSet('Git', 'FileCopy')]
+        [string]$CodeUploadMethod = 'Git',
 
         [string]
         $ComputerName,
@@ -301,31 +314,35 @@ function New-LabReleasePipeline
         [hashtable[]]
         $BuildSteps,
 
-        [Parameter()]
         [hashtable[]]
         $ReleaseSteps
     )
-
+    
     if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
+    
+    if ($CodeUploadMethod -eq 'Git' -and -not $SourceRepository)
+    {
+        throw "Using the code upload method 'Git' requires a source repository to be defined."
+    }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
+    $tfsVm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
 
     if ($ComputerName)
     {
         $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
 
-    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    if (-not $tfsVm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
 
-    $locallabsources = Get-LabSourcesLocationInternal -Local
+    $localLabSources = Get-LabSourcesLocationInternal -Local
     
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
-    $tfsInstance = $tfsvm.FQDN
+    $tfsInstance = $tfsVm.FQDN
     
     if ($role.Properties.ContainsKey('Port'))
     {
@@ -334,7 +351,7 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
+        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue
 
         if (-not $tfsPort)
         {
@@ -342,7 +359,7 @@ function New-LabReleasePipeline
             return
         }
 
-        $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
+        $tfsInstance = $tfsVm.AzureConnectionInfo.DnsName
     }
 
     if ($role.Properties.ContainsKey('InitialCollection'))
@@ -353,40 +370,48 @@ function New-LabReleasePipeline
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
     
-    $gitBinary = if (Get-Command git) {(Get-Command git).Source}elseif (Test-Path $locallabsources\Tools\git.exe) {"$locallabsources\Tools\git.exe"}
-
+    $gitBinary = if (Get-Command git) { (Get-Command git).Source } elseif (Test-Path -Path $localLabSources\Tools\git.exe) { "$localLabSources\Tools\git.exe" }
     if (-not $gitBinary)
     {
-        Write-ScreenInfo -Message 'Git is not installed. We will not push any code to the remote repository'
+        Write-ScreenInfo -Message 'Git is not installed. We are not be able to push any code to the remote repository and cannot proceed. Please install Git'
+        return
     }
 
     $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
-
-    if ($gitBinary)
+    $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+    
+    if ($SourceRepository)
     {
-        $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
-        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')       
+        if (-not $gitBinary)
+        {
+            Write-Error "Git.exe could not be located, cannot clone repository from '$SourceRepository'"
+            return
+        }
+        
+        $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
         $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName.ToLower(), $credential.GetNetworkCredential().Password
-
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
 
-        $repoparent = Join-Path -Path (Join-Path -Path $locallabsources -ChildPath GitRepositories) -ChildPath (Get-Lab).Name
-
-        if (-not (Test-Path $repoparent))
+        if (-not $SourcePath)
         {
-            Write-ScreenInfo -Type Verbose -Message "Creating $repoparent to contain your cloned repos"
-            [void] (New-Item -ItemType Directory -Path $repoparent -Force)
+            $SourcePath = "$localLabSources\GitRepositories\$((Get-Lab).Name)"
         }
 
-        $repositoryPath = Join-Path -Path $repoparent -ChildPath (Split-Path -Path $SourceRepository -Leaf)
+        if (-not (Test-Path -Path $SourcePath))
+        {
+            Write-ScreenInfo -Type Verbose -Message "Creating $SourcePath to contain your cloned repos"
+            [void] (New-Item -ItemType Directory -Path $SourcePath -Force)
+        }
+
+        $repositoryPath = Join-Path -Path $SourcePath -ChildPath (Split-Path -Path $SourceRepository -Leaf)
         if (-not (Test-Path $repositoryPath))
         {
             Write-ScreenInfo -Type Verbose -Message "Creating $repositoryPath to contain your cloned repo"
             [void] (New-Item -ItemType Directory -Path $repositoryPath)
         }
 
-        Push-Location        
-        Set-Location $repositoryPath
+        Push-Location
+        Set-Location -Path $repositoryPath
 
         if (Join-Path -Path $repositoryPath -ChildPath '.git' -Resolve -ErrorAction SilentlyContinue)
         {
@@ -432,22 +457,29 @@ function New-LabReleasePipeline
             {
                 Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
             }
+        }
 
-            try
+        Pop-Location
+    }
+    
+    if ($CodeUploadMethod -eq 'Git')
+    {
+        Push-Location
+        Set-Location -Path $repositoryPath
+        
+        try
+        {
+            $errorFile = [System.IO.Path]::GetTempFileName()
+            $addRemoteResult = Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+            if ($addRemoteResult.ExitCode -ne 0)
             {
-                $errorFile = [System.IO.Path]::GetTempFileName()
-                $addRemoteResult = Start-Process -FilePath $gitBinary -ArgumentList @('remote', 'add', 'tfs', $repoUrl) -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
-                if ($addRemoteResult.ExitCode -ne 0)
-                {
-                    Write-Error "Could not add remote tfs to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
-                }
-            }
-            finally
-            {
-                Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue 
+                Write-Error "Could not add remote tfs to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
             }
         }
-        
+        finally
+        {
+            Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue 
+        }
         try
         {
             $retries = 3
@@ -472,9 +504,51 @@ function New-LabReleasePipeline
             Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
         }
         
-        Write-ScreenInfo -Type Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
-
         Pop-Location
+        
+        Write-ScreenInfo -Type Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
+    }
+    else
+    {
+        $remoteGitBinary = Invoke-LabCommand -ActivityName 'Test Git availibility' -ComputerName $tfsVm -ScriptBlock {
+            if (Get-Command git) { (Get-Command git).Source } elseif (Test-Path -Path $localLabSources\Tools\git.exe) { "$localLabSources\Tools\git.exe" }
+        } -PassThru
+        if (-not $remoteGitBinary)
+        {
+            Write-ScreenInfo -Message "Git is not installed on '$tfsVm'. We are not be able to push any code to the remote repository and cannot proceed. Please install Git on '$tfsVm'"
+            return
+        }
+        
+        Invoke-LabCommand -ActivityName 'Clone local repo' -ComputerName $tfsVm -ScriptBlock {
+            if (-not (Test-Path -Path C:\Git))
+            {
+                mkdir -Path C:\Git | Out-Null
+            }
+            Set-Location -Path C:\Git
+            git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
+        } -Variable (Get-Variable -Name repository, ProjectName)
+        
+        if ($repositoryPath)
+        {
+            Copy-LabFileItem -Path $repositoryPath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+        }
+        else
+        {
+            Copy-LabFileItem -Path $SourcePath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+        }
+        
+        Invoke-LabCommand -ActivityName 'Remove .git folder' -ComputerName $tfsVm -ScriptBlock {
+            Set-Location -Path C:\Git\$ProjectName
+            Copy-Item -Path "C:\$ProjectName.temp\*" -Destination . -Recurse -Exclude .git
+            
+            git checkout -b master 2>&1
+            git add . 2>&1
+            git commit -m 'Initial' 2>&1
+            git push 2>&1
+            
+            Set-Location -Path C:\
+            Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
+        } -Variable (Get-Variable -Name repository, ProjectName)
     }
 
     $parameters = @{
