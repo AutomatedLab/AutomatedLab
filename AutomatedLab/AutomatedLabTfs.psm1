@@ -94,12 +94,15 @@ function Install-LabTeamFoundationServer
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
-        if ( Get-LabIssuingCA)
-        {
-            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
-            $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
-            Export-Lab
-        }
+		#TODO: SSL disabled because the worker complains:
+		#fatal: unable to access 'https://dsctfs01:8080/AutomatedLab/_git/DscWorkshop/': SSL certificate problem: unable to get local issuer certificate
+		#Git fetch failed with exit code: 128
+        #if (Get-LabIssuingCA)
+        #{
+        #    $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
+        #    $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
+        #    Export-Lab
+        #}
 
         $role = $machine.Roles | Where-Object Name -like Tfs????
         $initialCollection = 'AutomatedLab'
@@ -197,7 +200,7 @@ function Install-LabTeamFoundationServer
             {
                 throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
             }
-        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
+        } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
