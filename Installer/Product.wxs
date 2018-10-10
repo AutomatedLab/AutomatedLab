@@ -73,6 +73,7 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\New-RunspacePool.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-RunspacePool.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Remove-RunspacePool.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Split-Array.ps1" />
                     </Component>
                   </Directory>
                   <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
