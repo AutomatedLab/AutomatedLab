@@ -26,11 +26,9 @@ $labs = @(
     }
 )
 
-$azureRmContext = 'YOUR PROFILE HERE' # Hint: Save-AzureRmContext
-
 foreach ($lab in $labs.GetEnumerator())
 {
-    $engine = if($lab.OnAzure){"Azure"}else{"HyperV"}
+    $engine = if ($lab.OnAzure) { "Azure" } else { "HyperV" }
     New-LabDefinition -Name $lab.LabName -DefaultVirtualizationEngine $engine
 
     if($lab.OnAzure)

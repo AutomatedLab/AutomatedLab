@@ -28,7 +28,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #the first machine is the root domain controller
@@ -60,18 +60,18 @@ Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.
 <# REMOVE THE COMMENT TO ADD THE SQL SERVER TO THE LAB - Using the BYOL licensing scheme
 #SQL server with demo databases
 $role = Get-LabMachineRoleDefinition -Role SQLServer2014 @{InstallSampleDatabase = 'true'}
-Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties = @{'UseByolImage' = 'True'}
+Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.168.30.52 -AzureProperties @{'UseByolImage' = 'True'}
 #>
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
 #Exchange 2013
-$roles = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
-Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -Roles $roles -IpAddress 192.168.30.53
+$r = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
+Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -IpAddress 192.168.30.53 -PostInstallationActivity $r
 #>
 
 <# REMOVE THE COMMENT TO ADD THE DEVELOPMENT CLIENT TO THE LAB
 #Development client in the child domain a with some extra tools
-Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -Role VisualStudio2013 -IpAddress 192.168.30.54
+Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -IpAddress 192.168.30.54
 #>
 
 Install-Lab

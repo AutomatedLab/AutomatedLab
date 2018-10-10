@@ -568,6 +568,19 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6
 		LabSources\CustomRoles\SCCM\README.md = LabSources\CustomRoles\SCCM\README.md
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Perfmon", "Perfmon", "{90FAE784-7B86-4CBA-A5A4-EB8CD275BF69}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{3CFA5148-30AC-4685-B80B-8E7D4FDD2AE6}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterID.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterID.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterLocalName.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterLocalName.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceDataCollectorSet.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\New-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\New-PerformanceDataCollectorSet.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1
+		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -672,6 +685,8 @@ Global
 		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{90FAE784-7B86-4CBA-A5A4-EB8CD275BF69} = {D1BDF6ED-8F1B-4254-9993-3A27BA640F4E}
+		{3CFA5148-30AC-4685-B80B-8E7D4FDD2AE6} = {90FAE784-7B86-4CBA-A5A4-EB8CD275BF69}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}

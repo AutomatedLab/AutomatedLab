@@ -23,7 +23,7 @@ Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Some
 Add-LabDomainDefinition -Name child.contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
-$installationCredential = New-Object PSCredential('install', ('Somepass1' | ConvertTo-SecureString -AsPlainText -Force))
+$installationCredential = New-Object PSCredential('Install', ('Somepass1' | ConvertTo-SecureString -AsPlainText -Force))
 
 #Backup disks
 Add-LabDiskDefinition -Name BackupRoot -DiskSizeInGb 40
@@ -36,7 +36,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Processors' = 2
     'Add-LabMachineDefinition:Memory' = 768MB
     'Add-LabMachineDefinition:InstallationUserCredential' = $installationCredential
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.41.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.41.11'
 }
