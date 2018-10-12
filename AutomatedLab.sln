@@ -581,6 +581,102 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{3CFA51
 		AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1 = AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{B0910874-C607-4643-96AD-AADDA639E365}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1 = AutomatedLabUnattended\Public\Add-UnattendedNetworkAdapter.ps1
+		AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Public\Add-UnattendedRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1 = AutomatedLabUnattended\Public\Add-UnattendedSynchronousCommand.ps1
+		AutomatedLabUnattended\Public\Export-UnattendedFile.ps1 = AutomatedLabUnattended\Public\Export-UnattendedFile.ps1
+		AutomatedLabUnattended\Public\Get-UnattendedContent.ps1 = AutomatedLabUnattended\Public\Get-UnattendedContent.ps1
+		AutomatedLabUnattended\Public\Import-UnattendedContent.ps1 = AutomatedLabUnattended\Public\Import-UnattendedContent.ps1
+		AutomatedLabUnattended\Public\Import-UnattendFile.ps1 = AutomatedLabUnattended\Public\Import-UnattendFile.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAdministratorName.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAdministratorPassword.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAntiMalware.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1 = AutomatedLabUnattended\Public\Set-UnattendedAutoLogon.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1 = AutomatedLabUnattended\Public\Set-UnattendedComputerName.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1 = AutomatedLabUnattended\Public\Set-UnattendedDomain.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1 = AutomatedLabUnattended\Public\Set-UnattendedFirewallState.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1 = AutomatedLabUnattended\Public\Set-UnattendedIpSettings.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1 = AutomatedLabUnattended\Public\Set-UnattendedLocalIntranetSites.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1 = AutomatedLabUnattended\Public\Set-UnattendedPackage.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1 = AutomatedLabUnattended\Public\Set-UnattendedProductKey.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1 = AutomatedLabUnattended\Public\Set-UnattendedTimeZone.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1 = AutomatedLabUnattended\Public\Set-UnattendedUserLocale.ps1
+		AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1 = AutomatedLabUnattended\Public\Set-UnattendedWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Private", "Private", "{E2684456-7364-48F8-8D36-CDCE738F3285}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Redhat", "Redhat", "{B3AF9CA0-46D4-447A-8D01-CCD7F7C7A31F}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1 = AutomatedLabUnattended\Private\RedHat\Add-UnattendedKickstartSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1 = AutomatedLabUnattended\Private\RedHat\Export-UnattendedKickstartFile.ps1
+		AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1 = AutomatedLabUnattended\Private\RedHat\Import-UnattendedKickstartContent.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorName.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAntiMalware.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartAutoLogon.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartComputerName.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartDomain.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartFirewallState.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartIpSettings.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartPackage.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartProductKey.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartTimeZone.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartUserLocale.ps1
+		AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1 = AutomatedLabUnattended\Private\RedHat\Set-UnattendedKickstartWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Suse", "Suse", "{8DD46CA3-D48D-4C7D-A5B0-4F58202B42E4}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1 = AutomatedLabUnattended\Private\Suse\Add-UnattendedYastSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1 = AutomatedLabUnattended\Private\Suse\Export-UnattendedYastFile.ps1
+		AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1 = AutomatedLabUnattended\Private\Suse\Import-UnattendedYastContent.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorName.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAntiMalware.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastAutoLogon.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastComputerName.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastDomain.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastFirewallState.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastIpSettings.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastPackage.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastProductKey.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastTimeZone.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastUserLocale.ps1
+		AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1 = AutomatedLabUnattended\Private\Suse\Set-UnattendedYastWorkgroup.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{3519A5CB-AE93-46DF-AC88-9B6B146BF5E7}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsNetworkAdapter.ps1
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsRenameNetworkAdapters.ps1
+		AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1 = AutomatedLabUnattended\Private\Win\Add-UnattendedWindowsSynchronousCommand.ps1
+		AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1 = AutomatedLabUnattended\Private\Win\Export-UnattendedWindowsFile.ps1
+		AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1 = AutomatedLabUnattended\Private\Win\Import-UnattendedWindowsContent.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattededWindowsDomain.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorName.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAdministratorPassword.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAntiMalware.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsAutoLogon.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsComputerName.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsFirewallState.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsIpSettings.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsLocalIntranetSites.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsPackage.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsProductKey.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsTimeZone.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsUserLocale.ps1
+		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -687,6 +783,11 @@ Global
 		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{90FAE784-7B86-4CBA-A5A4-EB8CD275BF69} = {D1BDF6ED-8F1B-4254-9993-3A27BA640F4E}
 		{3CFA5148-30AC-4685-B80B-8E7D4FDD2AE6} = {90FAE784-7B86-4CBA-A5A4-EB8CD275BF69}
+		{B0910874-C607-4643-96AD-AADDA639E365} = {631E3AA3-71BA-4BE2-BEEE-8B96AE7E60F6}
+		{E2684456-7364-48F8-8D36-CDCE738F3285} = {631E3AA3-71BA-4BE2-BEEE-8B96AE7E60F6}
+		{B3AF9CA0-46D4-447A-8D01-CCD7F7C7A31F} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{8DD46CA3-D48D-4C7D-A5B0-4F58202B42E4} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{3519A5CB-AE93-46DF-AC88-9B6B146BF5E7} = {E2684456-7364-48F8-8D36-CDCE738F3285}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
