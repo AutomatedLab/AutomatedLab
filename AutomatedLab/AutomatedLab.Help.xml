@@ -9774,9 +9774,10 @@ Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-Som
 	</command:details>
 	<maml:description>
 		<maml:para>Removes the following files and folders used to deploy the machines from all running lab machines:
-c:\unattend.xml
-c:\WSManRegKey.reg
-c:\DeployDebug</maml:para>
+C:\unattend.xml
+C:\WSManRegKey.reg
+C:\DeployDebug
+C:\AdditionalDisksOnline.ps1</maml:para>
 	</maml:description>
 	<command:syntax>
 		<command:syntaxItem>

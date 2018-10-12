@@ -116,6 +116,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>Bring all additional disks online</Description>
+            <Order>16</Order>
+            <Path>PowerShell -File C:\AdditionalDisksOnline.ps1</Path>
+        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -328,6 +333,11 @@ $unattendedXmlDefaultContent2008 = @'
             <Description>Enable Remote Desktop firewall rules</Description>
             <Order>17</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
+        </RunSynchronousCommand>
+        <RunSynchronousCommand wcm:action="add">
+            <Description>Bring all additional disks online</Description>
+            <Order>18</Order>
+            <Path>PowerShell -File C:\AdditionalDisksOnline.ps1</Path>
         </RunSynchronousCommand>
       </RunSynchronous>
     </component>
@@ -1109,23 +1119,23 @@ function Export-LabDefinition
         $labTargetPath = (Get-LabDefinition).Target.Path
         if ($labTargetPath)
         {
-			if (-not (Test-Path -Path $labTargetPath))
-			{
-				try
-				{
-					Write-Verbose "Creating new folder '$labTargetPath'"
-					New-Item -ItemType Directory -Path $labTargetPath -ErrorAction Stop | Out-Null
-				}
-				catch
-				{
-					Write-Error -Message "Could not create folder '$labTargetPath'. Please make sure that the folder is accessibe and you have permission to write."
-					return
-				}
-			}
+            if (-not (Test-Path -Path $labTargetPath))
+            {
+                try
+                {
+                    Write-Verbose "Creating new folder '$labTargetPath'"
+                    New-Item -ItemType Directory -Path $labTargetPath -ErrorAction Stop | Out-Null
+                }
+                catch
+                {
+                    Write-Error -Message "Could not create folder '$labTargetPath'. Please make sure that the folder is accessibe and you have permission to write."
+                    return
+                }
+            }
 
-			Write-Verbose "Calling 'Get-LabFreeDiskSpace' targeting path '$labTargetPath'"
+            Write-Verbose "Calling 'Get-LabFreeDiskSpace' targeting path '$labTargetPath'"
             $freeSpace = (Get-LabFreeDiskSpace -Path $labTargetPath).FreeBytesAvailable
-			Write-Verbose "Free disk space is '$([Math]::Round($freeSpace / 1GB, 2))GB'"
+            Write-Verbose "Free disk space is '$([Math]::Round($freeSpace / 1GB, 2))GB'"
             if ($freeSpace -lt $spaceNeeded)
             {
                 throw "VmPath parameter is specified for the lab and contains: '$labTargetPath'. However, estimated needed space be $([int]($spaceNeeded / 1GB))GB but drive has only $([System.Math]::Round($freeSpace / 1GB)) GB of free space"
