@@ -1,13 +1,11 @@
 ﻿param  
 (
-    [Parameter(Mandatory)]
     [string]$ComputerName,
 
-    [Parameter(Mandatory)]
     [string]$CertificateThumbPrint,
 
     [Parameter(Mandatory)]
-    [string] $RegistrationKey
+    [string]$RegistrationKey
 )
 
 Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
@@ -19,11 +17,11 @@ Configuration SetupDscPullServer
         [string[]]$NodeName = 'localhost', 
 
         [ValidateNotNullOrEmpty()] 
-        [string]$CertificateThumbPrint,
+        [string]$CertificateThumbPrint = 'AllowUnencryptedTraffic',
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
-        [string] $RegistrationKey
+        [string]$RegistrationKey
     ) 
 
     LocalConfigurationManager
@@ -51,7 +49,6 @@ Configuration SetupDscPullServer
             Port                    = 8080
             PhysicalPath            = "$env:SystemDrive\inetpub\PSDSCPullServer"
             CertificateThumbPrint   = $certificateThumbPrint
-            #CertificateThumbPrint   = 'AllowUnencryptedTraffic'
             ModulePath              = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Modules"
             ConfigurationPath       = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
             State                   = 'Started'
@@ -94,6 +91,16 @@ Configuration SetupDscPullServer
     }
 }
 
-SetupDscPullServer -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey -NodeName $ComputerName -OutputPath C:\Dsc | Out-Null
+$params = @{
+	RegistrationKey = $RegistrationKey
+	NodeName = $ComputerName
+	OutputPath = 'C:\Dsc'
+}
+if ($CertificateThumbPrint)
+{
+	$params.CertificateThumbPrint = $CertificateThumbPrint
+}
+
+SetupDscPullServer @params | Out-Null
 
 Start-DscConfiguration -Path C:\Dsc -Wait

@@ -257,6 +257,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SetupDscPullServer", "Setup
 		LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1
 		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1
+		LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1 = LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introduction", "{45F867E3-BF98-47D0-8B12-D6F75A4C8D1B}"
