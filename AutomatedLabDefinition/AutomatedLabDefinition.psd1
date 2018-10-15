@@ -39,7 +39,7 @@
         'Add-LabMachineDefinition'
         'Add-LabVirtualNetworkDefinition'
         'Export-LabDefinition'
-		'Get-LabAzureWebAppDefinition'
+        'Get-LabAzureWebAppDefinition'
         'Get-LabAzureAppServicePlanDefinition'
         'Get-DiskSpeed'
         'Get-LabAvailableAddresseSpace'
@@ -102,7 +102,7 @@
 
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
-                DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine'
+                DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine', 'SqlServer', 'DatabaseName'
             }
 
             MandatoryRoleProperties = @{

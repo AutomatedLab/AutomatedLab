@@ -7,10 +7,10 @@
     [Parameter(Mandatory)]
     [string]$RegistrationKey,
 
-	[Parameter(Mandatory)]
+    [Parameter(Mandatory)]
     [string]$SqlServer,
 
-	[Parameter(Mandatory)]
+    [Parameter(Mandatory)]
     [string]$DatabaseName
 )
 
@@ -27,11 +27,11 @@ Configuration SetupDscPullServer
         [Parameter(Mandatory)]
         [string]$RegistrationKey,
 
-		[Parameter(Mandatory)]
-		[string]$SqlServer,
+        [Parameter(Mandatory)]
+        [string]$SqlServer,
 
-		[Parameter(Mandatory)]
-		[string]$DatabaseName
+        [Parameter(Mandatory)]
+        [string]$DatabaseName
     )
 
     Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration, xWebAdministration
@@ -52,7 +52,7 @@ Configuration SetupDscPullServer
             Name   = 'DSC-Service'
         }
 
-		$sqlConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=$DatabaseName;Data Source=$SqlServer"
+        $sqlConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=$DatabaseName;Data Source=$SqlServer"
 
         xDscWebService PSDSCPullServer 
         { 
@@ -65,10 +65,10 @@ Configuration SetupDscPullServer
             ConfigurationPath            = "$env:PROGRAMFILES\WindowsPowerShell\DscService\Configuration"
             State                        = 'Started'
             UseSecurityBestPractices     = $true
-			AcceptSelfSignedCertificates = $true
-			RegistrationKeyPath          = 'C:\Program Files\WindowsPowerShell\DscService'
-			SqlProvider                  = $true
-			SqlConnectionString          = $sqlConnectionString
+            AcceptSelfSignedCertificates = $true
+            RegistrationKeyPath          = 'C:\Program Files\WindowsPowerShell\DscService'
+            SqlProvider                  = $true
+            SqlConnectionString          = $sqlConnectionString
             DependsOn                    = '[WindowsFeature]DSCServiceFeature'
         } 
 
@@ -93,14 +93,14 @@ Configuration SetupDscPullServer
 }
 
 $params = @{
-	RegistrationKey = $RegistrationKey
-	SqlServer = $SqlServer
-	SqlServerDatabaseName = $DatabaseName
-	OutputPath = 'C:\Dsc'
+    RegistrationKey = $RegistrationKey
+    SqlServer = $SqlServer
+    SqlServerDatabaseName = $DatabaseName
+    OutputPath = 'C:\Dsc'
 }
 if ($CertificateThumbPrint)
 {
-	$params.CertificateThumbPrint = $CertificateThumbPrint
+    $params.CertificateThumbPrint = $CertificateThumbPrint
 }
 if ($ComputerName)
 {
