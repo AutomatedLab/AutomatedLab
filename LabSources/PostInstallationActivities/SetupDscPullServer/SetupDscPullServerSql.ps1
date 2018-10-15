@@ -66,7 +66,6 @@ Configuration SetupDscPullServer
             State                        = 'Started'
             UseSecurityBestPractices     = $true
             AcceptSelfSignedCertificates = $true
-            RegistrationKeyPath          = 'C:\Program Files\WindowsPowerShell\DscService'
             SqlProvider                  = $true
             SqlConnectionString          = $sqlConnectionString
             DependsOn                    = '[WindowsFeature]DSCServiceFeature'
@@ -95,7 +94,7 @@ Configuration SetupDscPullServer
 $params = @{
     RegistrationKey = $RegistrationKey
     SqlServer = $SqlServer
-    SqlServerDatabaseName = $DatabaseName
+    DatabaseName = $DatabaseName
     OutputPath = 'C:\Dsc'
 }
 if ($CertificateThumbPrint)
