@@ -118,6 +118,8 @@
     <Compile Include="Validator\ActiveDirectory\DoaminHasNoRootOrFirstChildDC.cs" />
     <Compile Include="Validator\ActiveDirectory\MachineInAnUndefinedDomain.cs" />
     <Compile Include="Validator\ActiveDirectory\DomainWithTooLongName.cs" />
+    <Compile Include="Validator\DscPullServer\DscSqlServerPresent.cs" />
+    <Compile Include="Validator\DscPullServer\DscSqlServerKnown.cs" />
     <Compile Include="Validator\FailoverCluster\ClusterNoDomain.cs" />
     <Compile Include="Validator\FailoverCluster\DuplicateClusterIp.cs" />
     <Compile Include="Validator\FailoverCluster\TooFewNodesForCluster.cs" />

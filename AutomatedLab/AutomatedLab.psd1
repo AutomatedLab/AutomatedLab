@@ -265,6 +265,7 @@
 
         #DSC
         DscMofPath                             = '"$(Get-LabSourcesLocationInternal -Local)\DscConfigurations"'
+        DscPullServerRegistrationKey           = 'ec717ee9-b343-49ee-98a2-26e53939eecf' #used on all Dsc Pull servers and clients
 
         #General VM settings
         DisableWindowsDefender                 = $true

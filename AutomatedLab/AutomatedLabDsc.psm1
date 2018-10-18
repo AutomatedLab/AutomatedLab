@@ -138,6 +138,7 @@ function Install-LabDscPullServer
     
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1,
+    $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
 
     foreach ($machine in $machines)
@@ -170,20 +171,23 @@ function Install-LabDscPullServer
 
     foreach ($machine in $machines)
     {
-        #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
-        if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
-        {
-            Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
-        }
-        
         $role = $machine.Roles | Where-Object Name -eq $roleName
-        if ($role.Properties.DatabaseEngine -eq 'mdb')
+        $databaseEngine = if ($role.Properties.DatabaseEngine)
         {
-            $databaseEngine = 'mdb'
+            $role.Properties.DatabaseEngine
         }
         else
         {
-            $databaseEngine = 'edb'
+            'edb'
+        }
+        
+        if ($databaseEngine -eq 'mdb')
+        {
+            #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
+            if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
+            {
+                Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
+            }
         }
 
         if ($machine.DefaultVirtualizationEngine -eq 'Azure')
@@ -196,31 +200,28 @@ function Install-LabDscPullServer
 
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
         
-        $guid = (New-Guid).Guid
+        $setupParams = @{
+            ComputerName = $machine
+            CertificateThumbPrint = $cert.Thumbprint
+            RegistrationKey = (Get-Module AutomatedLab).PrivateData.DscPullServerRegistrationKey
+            DatabaseEngine  = $databaseEngine
+        }
+        if ($role.Properties.DatabaseName) { $setupParams.DatabaseName = $role.Properties.DatabaseName }
+        if ($role.Properties.SqlServer) { $setupParams.SqlServer = $role.Properties.SqlServer }
         
-        $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
-            param  
-            (
-                [Parameter(Mandatory)]
-                [string]$ComputerName,
-
-                [Parameter(Mandatory)]
-                [string]$CertificateThumbPrint,
-
-                [Parameter(Mandatory)]
-                [string] $RegistrationKey,
-
-                [string]$DatabaseEngine
-            )
-    
-            if ($DatabaseEngine -eq 'edb')
+        $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock {
+            if ($setupParams.DatabaseEngine -eq 'edb')
             {
-                C:\SetupDscPullServerEdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+                C:\SetupDscPullServerEdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
             }
-            elseif ($DatabaseEngine -eq 'mdb')
+            elseif ($setupParams.DatabaseEngine -eq 'mdb')
             {
-                C:\SetupDscPullServerMdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+                C:\SetupDscPullServerMdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
                 Copy-Item -Path C:\Windows\System32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PullServer\Devices.mdb -Destination 'C:\Program Files\WindowsPowerShell\DscService\Devices.mdb'
+            }
+            elseif ($setupParams.DatabaseEngine -eq 'sql')
+            {
+                C:\SetupDscPullServerSql.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey -SqlServer $setupParams.SqlServer -DatabaseName $setupParams.DatabaseName
             }
             else
             {
@@ -231,7 +232,7 @@ function Install-LabDscPullServer
             C:\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
     
-        } -ArgumentList $machine, $cert.Thumbprint, $guid, $databaseEngine -AsJob -PassThru
+        } -Variable (Get-Variable -Name setupParams) -AsJob -PassThru
     }
     
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
