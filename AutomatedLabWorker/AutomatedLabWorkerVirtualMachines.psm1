@@ -580,7 +580,36 @@ Windows Registry Editor Version 5.00
 '@
         #Using the .net class as the PowerShell provider usually does not recognize the new drive
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
-    
+
+        $additionalDisksOnline = @'
+$diskpartCmd = 'LIST DISK'
+$disks = $diskpartCmd | diskpart.exe
+
+foreach ($line in $disks)
+{
+    if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+    {
+        $nextDriveLetter = [char[]](67..90) | 
+            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+            Select-Object -First 1
+
+        $diskNumber = $Matches.DiskNumber
+
+        $diskpartCmd = "@
+            SELECT DISK $diskNumber
+            ATTRIBUTES DISK CLEAR READONLY
+            ONLINE DISK
+            CREATE PARTITION PRIMARY
+            ASSIGN LETTER=$nextDriveLetter
+            EXIT
+        @"
+        $diskpartCmd | diskpart.exe | Out-Null
+    }
+}
+'@
+        [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
+        
         Dismount-DiskImage -ImagePath $path
         Write-Verbose "`tdisk image dismounted"
     

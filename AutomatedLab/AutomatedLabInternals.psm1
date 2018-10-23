@@ -328,9 +328,10 @@ function Remove-DeploymentFiles
     # .ExternalHelp AutomatedLab.Help.xml
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
-        Remove-Item -Path c:\unattend.xml
-        Remove-Item -Path c:\WSManRegKey.reg
-        Remove-Item -Path c:\DeployDebug -Recurse
+        Remove-Item -Path C:\unattend.xml
+        Remove-Item -Path C:\WSManRegKey.reg
+        Remove-Item -Path C:\AdditionalDisksOnline.ps1
+        Remove-Item -Path C:\DeployDebug -Recurse
     }
 }
 #endregion Remove-DeploymentFiles
@@ -739,7 +740,7 @@ function Update-LabSysinternalsTools
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
     
-	try {
+    try {
         #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
         if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') {
             Write-Verbose -Message 'Adding support for TLS 1.2'
