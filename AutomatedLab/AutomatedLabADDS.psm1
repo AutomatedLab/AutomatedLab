@@ -5,7 +5,11 @@ $adInstallRootDcScriptPre2012 = {
         [string]$Password,
         [string]$ForestFunctionalLevel,
         [string]$DomainFunctionalLevel,
-        [string]$NetBiosDomainName
+        [string]$NetBiosDomainName,
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
@@ -22,11 +26,11 @@ $adInstallRootDcScriptPre2012 = {
       InstallDNS=Yes
       ConfirmGc=Yes
       CreateDNSDelegation=No
-      DatabasePath="C:\Windows\NTDS"
-      LogPath="C:\Windows\NTDS"
-      SYSVOLPath="C:\Windows\SYSVOL"
+      DatabasePath=$DatabasePath
+      LogPath=$LogPath
+      SYSVOLPath=$SysvolPath
       ; Set SafeModeAdminPassword to the correct value prior to using the unattend file
-      SafeModeAdminPassword=$Password
+      SafeModeAdminPassword=$DsrmPassword
       ; Run-time flags (optional)
       ;RebootOnCompletion=No
 "@
@@ -59,7 +63,11 @@ $adInstallRootDcScript2012 = {
         [string]$Password,
         [string]$ForestFunctionalLevel,
         [string]$DomainFunctionalLevel,
-        [string]$NetBiosDomainName
+        [string]$NetBiosDomainName,
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -81,15 +89,19 @@ $adInstallRootDcScript2012 = {
         Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
     }
     
+    $safeDsrmPassword = ConvertTo-SecureString -String $DsrmPassword -AsPlainText -Force
+    
     Write-Verbose -Message "Creating a new forest named '$DomainName' on the machine '$(HOSTNAME.EXE)'"
-    $safeModePassword = ConvertTo-SecureString -String $Password -AsPlainText -Force
     $result = Install-ADDSForest -DomainName $DomainName `
-    -SafeModeAdministratorPassword $safeModePassword `
+    -SafeModeAdministratorPassword $safeDsrmPassword `
     -InstallDNS `
     -DomainMode $DomainFunctionalLevel `
     -Force `
     -ForestMode $ForestFunctionalLevel `
-    -DomainNetbiosName $NetBiosDomainName
+    -DomainNetbiosName $NetBiosDomainName `
+    -SysvolPath $SysvolPath `
+    -DatabasePath $DatabasePath `
+    -LogPath $LogPath
 
     if ($result.Status -eq 'Error')
     {
@@ -114,7 +126,11 @@ $adInstallFirstChildDc2012 = {
         [int]$Retries,
         [int]$SecondsBetweenRetries,
         [string]$SiteName = 'Default-First-Site-Name',
-        [string]$NetBiosDomainName
+        [string]$NetBiosDomainName,
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -206,11 +222,14 @@ $adInstallFirstChildDc2012 = {
             -SiteName $SiteName `
             -InstallDNS `
             -CreateDnsDelegation:$createDNSDelegation `
-            -SafeModeAdministratorPassword $RootDomainCredential.Password `
+            -SafeModeAdministratorPassword $DsrmPassword `
             -Force `
             -Credential $RootDomainCredential `
             -DomainType $domainType `
-            -DomainMode $DomainMode
+            -DomainMode $DomainMode `
+            -SysvolPath $SysvolPath `
+            -DatabasePath $DatabasePath `
+            -LogPath $LogPath
         }
         catch
         {
@@ -245,7 +264,11 @@ $adInstallFirstChildDcPre2012 = {
         [int]$Retries,
         [int]$SecondsBetweenRetries,
         [string]$SiteName = 'Default-First-Site-Name',
-        [string]$NetBiosDomainName
+        [string]$NetBiosDomainName,
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
@@ -326,11 +349,11 @@ $adInstallFirstChildDcPre2012 = {
       UserDomain=$($RootDomainCredential.UserName.Split('\')[0])
       UserName=$($RootDomainCredential.UserName.Split('\')[1])
       Password=$($RootDomainCredential.GetNetworkCredential().Password)
-      DatabasePath="C:\Windows\NTDS"
-      LogPath="C:\Windows\NTDS"
-      SYSVOLPath="C:\Windows\SYSVOL"
+      DatabasePath=$DatabasePath
+      LogPath=$LogPath
+      SYSVOLPath=$SysvolPath
       ; Set SafeModeAdminPassword to the correct value prior to using the unattend file
-      SafeModeAdminPassword=$($RootDomainCredential.GetNetworkCredential().Password)
+      SafeModeAdminPassword=$DsrmPassword
       ; Run-time flags (optional)
       ; RebootOnCompletion=No
 "@
@@ -393,7 +416,11 @@ $adInstallDc2012 = {
         [bool]$IsReadOnly,
         [int]$Retries,
         [int]$SecondsBetweenRetries,
-        [string]$SiteName = 'Default-First-Site-Name'
+        [string]$SiteName = 'Default-First-Site-Name',
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -451,9 +478,12 @@ $adInstallDc2012 = {
     $param = @{
         DomainName = $DomainName
         SiteName = $SiteName
-        SafeModeAdministratorPassword = $RootDomainCredential.Password
+        SafeModeAdministratorPassword = $DsrmPassword
         Force = $true
         Credential = $RootDomainCredential
+        SysvolPath = $SysvolPath
+        DatabasePath = $DatabasePath
+        LogPath = $LogPath
     }
 
 
@@ -520,7 +550,11 @@ $adInstallDcPre2012 = {
         [bool]$IsReadOnly,
         [int]$Retries,
         [int]$SecondsBetweenRetries,
-        [string]$SiteName = 'Default-First-Site-Name'
+        [string]$SiteName = 'Default-First-Site-Name',
+        [string]$DatabasePath,
+        [string]$LogPath,
+        [string]$SysvolPath,
+        [string]$DsrmPassword
     )
 
     $VerbosePreference = $using:VerbosePreference
@@ -557,11 +591,11 @@ $adInstallDcPre2012 = {
       UserDomain=$($RootDomainCredential.UserName.Split('\')[0])
       UserName=$($RootDomainCredential.UserName.Split('\')[1])
       Password=$($RootDomainCredential.GetNetworkCredential().Password)
-      DatabasePath="C:\Windows\NTDS"
-      LogPath="C:\Windows\NTDS"
-      SYSVOLPath="C:\Windows\SYSVOL"
+      DatabasePath=$DatabasePath
+      LogPath=$LogPath
+      SYSVOLPath=$SysvolPath
       ; Set SafeModeAdminPassword to the correct value prior to using the unattend file
-      SafeModeAdminPassword=$($RootDomainCredential.GetNetworkCredential().Password)
+      SafeModeAdminPassword=$DsrmPassword
       ; RebootOnCompletion=No
 "@
     
@@ -742,14 +776,50 @@ function Install-LabRootDcs
                 $domainFunctionalLevel = $rootDcRole.Properties.DomainFunctionalLevel
             }
 
-            if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
+            $netBiosDomainName = if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
             {
-                $netBiosDomainName = $rootDcRole.Properties.NetBiosDomainName
+                $rootDcRole.Properties.NetBiosDomainName
             }
             else
             {
-                $netBiosDomainName = $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
+                $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
             }
+            
+            $databasePath = if ($rootDcRole.Properties.ContainsKey('DatabasePath'))
+            {
+                $rootDcRole.Properties.DatabasePath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $logPath = if ($rootDcRole.Properties.ContainsKey('LogPath'))
+            {
+                $rootDcRole.Properties.LogPath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $sysvolPath = if ($rootDcRole.Properties.ContainsKey('SysvolPath'))
+            {
+                $rootDcRole.Properties.SysvolPath
+            }
+            else
+            {
+                'C:\Windows\Sysvol'
+            }
+            
+            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            {
+                $rootDcRole.Properties.DsrmPassword
+            }
+            else
+            {
+                $machine.InstallationUser.Password
+            }            
 
             #only print out warnings if verbose logging is enabled
             $WarningPreference = $VerbosePreference
@@ -766,7 +836,11 @@ function Install-LabRootDcs
             $machine.InstallationUser.Password,
             $forestFunctionalLevel,
             $domainFunctionalLevel,
-            $netBiosDomainName
+            $netBiosDomainName,
+            $DatabasePath,
+            $LogPath,
+            $SysvolPath,
+            $DsrmPassword
         }
         
         
@@ -1033,6 +1107,42 @@ function Install-LabFirstChildDcs
                 New-LabADSite -ComputerName $machine -SiteName $siteName -SiteSubnet $dcRole.Properties.SiteSubnet
             }
 
+            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
+            {
+                $dcRole.Properties.DatabasePath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
+            {
+                $dcRole.Properties.LogPath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
+            {
+                $rootDcRole.Properties.SysvolPath
+            }
+            else
+            {
+                'C:\Windows\Sysvol'
+            }
+            
+            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            {
+                $dcRole.Properties.DsrmPassword
+            }
+            else
+            {
+                $machine.InstallationUser.Password
+            }
+
             #only print out warnings if verbose logging is enabled
             $WarningPreference = $VerbosePreference
 
@@ -1050,7 +1160,11 @@ function Install-LabFirstChildDcs
             7,
             120,
             $siteName,
-            $dcRole.Properties.NetBiosDomainName
+            $dcRole.Properties.NetBiosDomainName,
+            $DatabasePath,
+            $LogPath,
+            $SysvolPath,
+            $DsrmPassword
         }
         
         
@@ -1270,6 +1384,42 @@ function Install-LabDcs
                 New-LabADSite -ComputerName $machine -SiteName $siteName -SiteSubnet $dcRole.Properties.SiteSubnet
             }
             
+            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
+            {
+                $rootDcRole.Properties.DatabasePath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
+            {
+                $dcRole.Properties.LogPath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+            
+            $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
+            {
+                $dcRole.Properties.SysvolPath
+            }
+            else
+            {
+                'C:\Windows\Sysvol'
+            }
+            
+            $dsrmPassword = if ($dcRole.Properties.ContainsKey('DsrmPassword'))
+            {
+                $dcRole.Properties.DsrmPassword
+            }
+            else
+            {
+                $machine.InstallationUser.Password
+            }
+            
             #only print out warnings if verbose logging is enabled
             $WarningPreference = $VerbosePreference
 
@@ -1285,7 +1435,11 @@ function Install-LabDcs
             $isReadOnly,
             7,
             120,
-            $siteName
+            $siteName,
+            $DatabasePath,
+            $LogPath,
+            $SysvolPath,
+            $DsrmPassword
         }
         
         Write-ScreenInfo -Message 'Waiting for additional Domain Controllers to complete installation of Active Directory and restart' -NoNewLine
