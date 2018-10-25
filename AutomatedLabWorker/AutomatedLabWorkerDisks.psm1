@@ -200,6 +200,14 @@ function New-LWVHDX
         #Size of the reference VHD
         [Parameter(Mandatory = $true)]
         [int]$SizeInGB,
+        
+        [string]$Label,
+        
+        [switch]$UseLargeFRS,
+        
+        [char]$DriveLetter,
+        
+        [long]$AllocationUnitSize,
 
         [switch]$SkipInitialize
     )
@@ -218,9 +226,27 @@ function New-LWVHDX
 
     $mountedVhd = $VmDisk | Mount-VHD -PassThru
     
+    if ($DriveLetter)
+    {
+        $Label += "_AL_$DriveLetter"
+    }
+    
+    $formatParams = @{
+        FileSystem = 'NTFS'
+        NewFileSystemLabel = 'Data'
+        Force = $true
+        Confirm = $false
+        UseLargeFRS = $UseLargeFRS
+        AllocationUnitSize = $AllocationUnitSize
+    }
+    if ($Label)
+    {
+        $formatParams.NewFileSystemLabel = $Label
+    }
+    
     $mountedVhd | Initialize-Disk
     $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
-    Format-Volume -FileSystem NTFS -NewFileSystemLabel Data -Force -Confirm:$false |
+    Format-Volume @formatParams |
     Out-Null
     
     $VmDisk | Dismount-VHD

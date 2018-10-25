@@ -582,31 +582,45 @@ Windows Registry Editor Version 5.00
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
 
         $additionalDisksOnline = @'
+Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
 $diskpartCmd = 'LIST DISK'
 $disks = $diskpartCmd | diskpart.exe
 
 foreach ($line in $disks)
 {
-    if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
     {
-        $nextDriveLetter = [char[]](67..90) | 
-            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
-                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
-            Select-Object -First 1
-
         $diskNumber = $Matches.DiskNumber
 
-        $diskpartCmd = "@
-            SELECT DISK $diskNumber
-            ATTRIBUTES DISK CLEAR READONLY
-            ONLINE DISK
-            CREATE PARTITION PRIMARY
-            ASSIGN LETTER=$nextDriveLetter
-            EXIT
-        @"
-        $diskpartCmd | diskpart.exe | Out-Null
+        if ($Matches.State -eq 'Offline')
+        {
+            $diskpartCmd = "@
+                SELECT DISK $diskNumber
+                ATTRIBUTES DISK CLEAR READONLY
+                ONLINE DISK
+                EXIT
+            @"
+            $diskpartCmd | diskpart.exe | Out-Null
+        }
     }
 }
+
+foreach ($volume in (Get-WmiObject -Class Win32_Volume))
+{
+    if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    {
+        continue
+    }
+
+    if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
+    {            
+        $volume.DriveLetter = "$($Matches.DriveLetter):"
+    }
+
+    $volume.Label = $Matches.Label
+    $volume.Put()
+}
+Stop-Transcript
 '@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
         

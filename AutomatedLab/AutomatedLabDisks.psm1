@@ -212,7 +212,19 @@ function New-LabVHDX
         $diskPath = Join-Path -Path $disksPath -ChildPath ($disk.Name + '.vhdx')
         if (-not (Test-Path -Path $diskPath))
         {
-            New-LWVHDX -VhdxPath $diskPath -SizeInGB $disk.DiskSize -SkipInitialize:$disk.SkipInitialization
+            $params = @{
+                VhdxPath = $diskPath 
+                SizeInGB = $disk.DiskSize 
+                SkipInitialize = $disk.SkipInitialization
+                Label = $disk.Label
+                UseLargeFRS = $disk.UseLargeFRS
+                AllocationUnitSize = $disk.AllocationUnitSize
+            }
+            if ($disk.DriveLetter)
+            {
+                $params.DriveLetter = $disk.DriveLetter
+            }
+            New-LWVHDX @params
         }
         else
         {

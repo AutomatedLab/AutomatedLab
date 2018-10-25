@@ -116,11 +116,6 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
-        <RunSynchronousCommand wcm:action="add">
-            <Description>Bring all additional disks online</Description>
-            <Order>16</Order>
-            <Path>PowerShell -File C:\AdditionalDisksOnline.ps1</Path>
-        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -172,6 +167,11 @@ $unattendedXmlDefaultContent2012 = @'
             <CommandLine>winrm set winrm/config/service/auth @{CredSSP="true"}</CommandLine>
             <Description>Enable Windows Remoting CredSSP</Description>
             <Order>3</Order>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Bring all additional disks online</Description>
+            <Order>4</Order>
+            <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -334,11 +334,6 @@ $unattendedXmlDefaultContent2008 = @'
             <Order>17</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
-        <RunSynchronousCommand wcm:action="add">
-            <Description>Bring all additional disks online</Description>
-            <Order>18</Order>
-            <Path>PowerShell -File C:\AdditionalDisksOnline.ps1</Path>
-        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -400,6 +395,11 @@ $unattendedXmlDefaultContent2008 = @'
             <CommandLine>winrm set winrm/config/service/auth @{CredSSP="true"}</CommandLine>
             <Description>Enable Windows Remoting CredSSP</Description>
             <Order>5</Order>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Bring all additional disks online</Description>
+            <Order>6</Order>
+            <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -1721,6 +1721,14 @@ function Add-LabDiskDefinition
         [ValidateRange(20, 1024)]
         [ValidateNotNullOrEmpty()]
         [int]$DiskSizeInGb = 60,
+        
+        [string]$Label,
+
+        [char]$DriveLetter,
+        
+        [switch]$UseLargeFRS,
+        
+        [long]$AllocationUnitSize = 4KB,
 
         [switch]$SkipInitialize,
         
@@ -1752,8 +1760,18 @@ function Add-LabDiskDefinition
     $disk = New-Object -TypeName AutomatedLab.Disk
     $disk.Name = $Name
     $disk.DiskSize = $DiskSizeInGb	
-    $disk.SkipInitialization = [bool]$SkipInitialize
-    
+    $disk.SkipInitialization = [bool]$SkipInitialize    
+    $disk.AllocationUnitSize = $AllocationUnitSize
+    $disk.UseLargeFRS = $UseLargeFRS
+    $disk.DriveLetter = $DriveLetter
+    $disk.Label = if ($Label)
+    {
+        $Label
+    }
+    else
+    {
+        'ALData'
+    }
     
     $script:disks.Add($disk)
     
