@@ -545,6 +545,9 @@ function New-LabReleasePipeline
             git add . 2>&1
             git commit -m 'Initial' 2>&1
             git push 2>&1
+
+            git checkout -b dev 2>&1
+            git push --set-upstream origin dev 2>&1
             
             Set-Location -Path C:\
             Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
@@ -560,22 +563,21 @@ function New-LabReleasePipeline
         UseSsl         = $useSsl
     }
 
-    $buildParameters = $parameters.Clone()
-    $releaseParameters = $parameters.Clone()
-    $buildParameters.DefinitionName = 'ALBuild'
     if ($BuildSteps.Count -gt 0)
     {
+        $buildParameters = $parameters.Clone()
+        $buildParameters.DefinitionName = "$($ProjectName)Build"
         $buildParameters.BuildTasks = $BuildSteps
+        New-TfsBuildDefinition @buildParameters
     }
     
-    $releaseParameters.ReleaseName = $ProjectName
     if ($ReleaseSteps.Count -gt 0)
     {
+        $releaseParameters = $parameters.Clone()
+        $releaseParameters.ReleaseName = "$($ProjectName)Release"
         $releaseParameters.ReleaseTasks = $ReleaseSteps
+        New-TfsReleaseDefinition @releaseParameters
     }
-
-    New-TfsBuildDefinition @buildParameters
-    New-TfsReleaseDefinition @releaseParameters
 }
 
 function Get-LabBuildStep
