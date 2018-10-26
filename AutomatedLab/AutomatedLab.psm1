@@ -18,11 +18,11 @@ function Enable-LabHostRemoting
     $message = "AutomatedLab needs to enable / relax some PowerShell Remoting features.`nYou will be asked before each individual change. Are you OK to proceed?"
     if (-not $Force)
     {
-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
-    if ($choice -eq 0 -and -not $Force)
-    {
-        throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
-    }    
+        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+        if ($choice -eq 0 -and -not $Force)
+        {
+            throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+        }    
     }
     
     if ((Get-Service -Name WinRM).Status -ne 'Running')
@@ -40,11 +40,11 @@ function Enable-LabHostRemoting
         $message = "AutomatedLab needs to enable CredSsp on the host in order to delegate credentials to the lab VMs.`nAre you OK with enabling CredSsp?"
         if (-not $Force)
         {
-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
-        if ($choice -eq 0 -and -not $Force)
-        {
-            throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
-        }
+            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+            if ($choice -eq 0 -and -not $Force)
+            {
+                throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            }
         }
     
         Write-ScreenInfo "Enabling CredSSP on the host machine for role 'Client'. Delegated computers = '*'..." -NoNewLine
@@ -67,12 +67,12 @@ function Enable-LabHostRemoting
         
         if (-not $Force)
         {
-        $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
-        if ($choice -eq 0 -and -not $Force)
-        {
-            throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
-        }
+            $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
+            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
+            if ($choice -eq 0 -and -not $Force)
+            {
+                throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
+            }
         }
         
         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
@@ -696,6 +696,7 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$AzureServices,
         [switch]$TeamFoundation,
+        [switch]$Docker,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
@@ -878,7 +879,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
         
         #Install-DHCP
-		Write-Error 'The DHCP role is not implemented yet'
+        Write-Error 'The DHCP role is not implemented yet'
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1071,6 +1072,16 @@ function Install-Lab
         Start-LabVm -RoleName Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait     
         Install-LabTeamFoundationEnvironment
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
+    }
+
+    if (($Docker -or $performAll) -and (Get-LabVM -Role Docker))
+    {
+        Write-ScreenInfo -Message 'Installing Docker'
+        Write-ScreenInfo -Message "Machines to have Docker installed: '$((Get-LabVM -Role Docker).Name -join ', ')'"
+
+        Install-LabDocker
+
+        Write-ScreenInfo -Message 'Docker deployed'
     }
     
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
@@ -3758,8 +3769,8 @@ function Set-LabDefaultVirtualizationEngine
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	param
+    # .ExternalHelp AutomatedLab.Help.xml
+    param
     (
         [switch]$Local
     )
@@ -3921,14 +3932,14 @@ function New-LabSourcesFolder
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
-		try
-		{
-			Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-		}
+        try
+        {
+            Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+        }
         catch
-		{
-			Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
-		}
+        {
+            Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
+        }
         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))

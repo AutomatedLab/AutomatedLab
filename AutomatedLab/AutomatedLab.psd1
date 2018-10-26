@@ -44,7 +44,8 @@
         'AutomatedLabOffice.psm1',
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
-        'AutomatedLabTfs.psm1'
+        'AutomatedLabTfs.psm1',
+        'AutomatedLabDocker.psm1'
     )
 
     RequiredModules        = @(
@@ -64,6 +65,7 @@
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
+        'Add-LabDockerImage',
         'Add-LabVMUserRight',
         'Add-LabVMWareSettings',
         'Checkpoint-LabVM',
@@ -95,6 +97,8 @@
         'Get-LabAzureWebApp',
         'Get-LabAzureWebAppStatus',
         'Get-LabCertificate',
+        'Get-LabDockerContainer',
+        'Get-LabDockerImage',
         'Get-LabHyperVAvailableMemory',
         'Get-LabInternetFile',
         'Get-LabIssuingCA',
@@ -120,6 +124,7 @@
         'Install-LabAdfsProxy',
         'Install-LabAzureServices',
         'Install-LabDcs',
+        'Install-LabDocker',
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
         'Install-LabDscPullServer',
@@ -145,6 +150,7 @@
         'New-LabAzureWebApp',
         'New-LabAzureRmResourceGroup',
         'New-LabCATemplate',
+        'New-LabDockerImage'
         'New-LabPSSession',
         'New-LabVHDX',
         'New-LabVM',
@@ -152,6 +158,8 @@
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
         'Remove-LabAzureResourceGroup',
+        'Remove-LabDockerContainer',
+        'Remove-LabDockerImage',
         'Remove-LabDscLocalConfigurationManagerConfiguration',
         'Remove-LabPSSession',
         'Remove-LabVariable',
@@ -177,8 +185,10 @@
         'Set-LabVMUacStatus',
         'Show-LabDeploymentSummary',
         'Start-LabAzureWebApp',
+        'Start-LabDockerContainer',
         'Start-LabVM',
         'Stop-LabAzureWebApp',
+        'Stop-LabDockerContainer',
         'Stop-LabVM',
         'Sync-LabActiveDirectory',
         'Sync-LabAzureLabSources',
@@ -321,9 +331,10 @@
         #TFS Build Agent
         BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
 
-
         # OpenSSH
         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
+
+        DockerForWindowsDownloadUri            = 'https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe'
 
         AzureLocationsUrls                     = @{
             "West Europe"         = "speedtestwe"

@@ -103,6 +103,8 @@
                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
 
                 DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine', 'SqlServer', 'DatabaseName'
+
+                Docker = 'DataRoot'
             }
 
             MandatoryRoleProperties = @{

@@ -81,6 +81,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
 		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
+		AutomatedLab\AutomatedLabDocker.psm1 = AutomatedLab\AutomatedLabDocker.psm1
 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
 		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
