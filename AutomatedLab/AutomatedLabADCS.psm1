@@ -2227,8 +2227,8 @@ function Install-LabCAMachine
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
             
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$Using:DatabaseDirectoryDrive"""
-            } -PassThru
+                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+            } -Variable (Get-Variable -Name DatabaseDirectoryDrive) -PassThru
             
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
@@ -2249,9 +2249,9 @@ function Install-LabCAMachine
         if ($param.LogDirectory -ne '<auto>')
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
-            $disk = Invoke-LabCommand -Session $caSession -ScriptBlock {
-                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$Using:LogDirectoryDrive"""
-            } -PassThru
+            $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
+                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+            } -Variable (Get-Variable -Name LogDirectoryDrive) -PassThru
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
                 Write-Error -Message "Drive for Log Directory does not exist or is not a hard disk drive. Specified value is: $LogDirectory"
