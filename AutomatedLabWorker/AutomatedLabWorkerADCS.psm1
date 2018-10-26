@@ -264,7 +264,7 @@ function Install-LWLabCAServers
         
         Write-Verbose -Message 'Installing ADCS now'
         $installCommand = 'Install-AdcsCertificationAuthority '
-        $installCommand += "-CACommonName                $($param.CACommonName) "
+        $installCommand += "-CACommonName                ""$($param.CACommonName)"" "
         $installCommand += "-CAType                      $($param.CAType) "
         $installCommand += "-KeyLength                   $($param.KeyLength) "
         $installCommand += "-CryptoProviderName          ""$($param.CryptoProviderName)"" "
