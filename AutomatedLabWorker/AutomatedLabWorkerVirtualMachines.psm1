@@ -590,6 +590,11 @@ foreach ($line in $disks)
 {
     if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
     {
+        #$nextDriveLetter = [char[]](67..90) | 
+        #Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+        #Select-Object -First 1
+
         $diskNumber = $Matches.DiskNumber
 
         if ($Matches.State -eq 'Offline')
