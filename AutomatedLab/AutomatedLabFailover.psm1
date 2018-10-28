@@ -12,7 +12,7 @@ function Install-LabFailoverCluster
     $useDiskWitness = $false
 
     Install-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering -IncludeAllSubFeature
-    
+
     if (Get-LabVm -Role FailoverStorage)
     {
         Write-ScreenInfo -Message 'Waiting for failover storage server to complete installation'
@@ -20,7 +20,7 @@ function Install-LabFailoverCluster
         $useDiskWitness = $true
     }
 
-    Write-Screeninfo -Message 'Waiting for failover nodes to complete installation'    
+    Write-Screeninfo -Message 'Waiting for failover nodes to complete installation'
 
     foreach ($cluster in $clusters)
     {
@@ -52,7 +52,7 @@ function Install-LabFailoverCluster
                         $offlineDisk | Set-Disk -IsOffline $false
                         $offlineDisk | Set-Disk -IsReadOnly $false
                     }
-        
+
                     if (-not ($offlineDisk | Get-Partition | Get-Volume))
                     {
                         $offlineDisk | New-Volume -FriendlyName quorum -FileSystem NTFS
@@ -75,9 +75,9 @@ function Install-LabFailoverCluster
                 {
                     if ($line -match 'Disk (?<DiskNumber>\d) \s+(Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) GB')
                     {
-                        $nextDriveLetter = [char[]](67..90) | 
-                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
-                                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+                        $nextDriveLetter = [char[]](67..90) |
+                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
+                                    Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
                             Select-Object -First 1
 
                         $diskNumber = $Matches.DiskNumber
@@ -98,18 +98,18 @@ function Install-LabFailoverCluster
                     }
                 }
             }
-            
+
             Invoke-LabCommand -ComputerName $clusterNodeNames -ActivityName 'Preparing cluster storage' -ScriptBlock {
                 $diskpartCmd = 'LIST DISK'
-    
+
                 $disks = $diskpartCmd | diskpart.exe
-    
+
                 foreach ($line in $disks)
                 {
                     if ($line -match 'Disk (?<DiskNumber>\d) \s+(Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) GB')
-                    {    
+                    {
                         $diskNumber = $Matches.DiskNumber
-    
+
                         $diskpartCmd = "@
                             SELECT DISK $diskNumber
                             ATTRIBUTES DISK CLEAR READONLY
@@ -121,7 +121,7 @@ function Install-LabFailoverCluster
                 }
             }
         }
-    
+
 
         $clusterAccessPoint = if ($clusterDomains.Count -ne 1)
         {
@@ -129,9 +129,9 @@ function Install-LabFailoverCluster
         }
         else
         {
-            'ActiveDirectoryAndDns'    
+            'ActiveDirectoryAndDns'
         }
-        
+
         Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
             Import-Module FailoverClusters -ErrorAction Stop
 
@@ -154,7 +154,7 @@ function Install-LabFailoverCluster
             }
 
             Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
-            
+
             if ($useDiskWitness)
             {
                 $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk'
@@ -181,9 +181,9 @@ function Install-LabFailoverStorage
 
     $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
     $clusters = @{}
-    
+
     $failoverNodes | Foreach-Object {
-        
+
         $name = ($PSItem.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName']
         if (-not $name)
         {
@@ -238,8 +238,8 @@ function Install-LabFailoverStorage
         }
 
         $lunFolder = New-Item -ItemType Directory -Path (Join-Path -Path $driveInfo -ChildPath LUNs) -ErrorAction SilentlyContinue
-        $lunFolder = Get-Item -Path (Join-Path -Path $driveInfo -ChildPath LUNs) -ErrorAction Stop        
-        
+        $lunFolder = Get-Item -Path (Join-Path -Path $driveInfo -ChildPath LUNs) -ErrorAction Stop
+
         foreach ($clu in $clusters.GetEnumerator())
         {
             New-IscsiServerTarget -TargetName $clu.Key -InitiatorIds $clu.Value
@@ -247,7 +247,7 @@ function Install-LabFailoverStorage
             New-IscsiVirtualDisk -Path $diskTarget -Size 1GB
             Add-IscsiVirtualDiskTargetMapping -TargetName $clu.Key -Path $diskTarget
         }
-        
+
     } -Variable (Get-Variable -Name clusters, lunDrive) -ErrorAction Stop
 
     $targetAddress = $storageNode.IpV4Address
@@ -262,8 +262,8 @@ function Install-LabFailoverStorage
         else
         {
             New-IscsiTargetPortal -TargetPortalAddress $targetAddress
-            Get-IscsiTarget | Where-Object {-not $PSItem.IsConnected} | Connect-IscsiTarget -IsPersistent $true    
-        }        
+            Get-IscsiTarget | Where-Object {-not $PSItem.IsConnected} | Connect-IscsiTarget -IsPersistent $true
+        }
     } -Variable (Get-Variable targetAddress) -ErrorAction Stop
 }
 #endregion

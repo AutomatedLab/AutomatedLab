@@ -1,23 +1,23 @@
-<# 
+<#
         An AutomatedLab user could have a VMWare environment on premisis _and_ have Hyper-V enabled on his own device.
         When the user has both Hyper-V and VMWare modules loaded in one session, this can cause unwanted behaviour.
-    
+  
         This may need to be mitigated in AutomatedLab in some cases. There are two main approaches:
         1) Prepending conflicting CmdLets with the name of the intende module of origin, e.g.:
-        VMware.VimAutomatiion.Core\Get-VM 
+        VMware.VimAutomatiion.Core\Get-VM
 
         2) Theoretically, one should be able to load modules using the -Prefix parameter:
         Import-Module VMWare* -Prefix "VW"
         This _should_ result in all the VMWare CmdLets being imported with the prefix VW:
-        Get-VWVM 
+        Get-VWVM
         Unfortunately, this does not work in PowerCLI 6.0R2 - 6.5.0 , because of the way the underlying PSSnapin is loaded.
-        See here for more information: 
+        See here for more information:
         https://communities.vmware.com/thread/520601
         This will be solved in PowerCLI version 6.5.1 R1:
         https://blogs.vmware.com/PowerCLI/2016/11/saying-farewell-snapins.html
 
         For now, approach 1) is probably the way to go, or we should force users to require version 6.5.1R1 or greater for the VMware module.
-    
+  
         Get a list of CmdLets whith the same name in Hyper-V and VMWare:
         Compare-Object (get-command -Module vmware.vimautomation.core) (Get-Command -Module Hyper-v) -IncludeEqual -ExcludeDifferent
         Retrieved 30-5-2017, Vmware module version:6.3.0.0, Hyper-V module version 2.0.0.0
@@ -44,9 +44,9 @@ trap
             ($_.Exception.Message -like '*Get-VMSnapshot*') -or `
             ($_.Exception.Message -like '*Suspend-VM*') -or `
         ($_.Exception.Message -like '*CheckPoint-VM*')) -and `
-    (-not (Get-Module -ListAvailable Hyper-V))) 
+    (-not (Get-Module -ListAvailable Hyper-V)))
     {
-        # What is the exact purpose of this error trap? 
+        # What is the exact purpose of this error trap?
         # Errors concerning certain CmdLets are to be ignored, if Hyper-V is not an available module. Why?
     }
     else
@@ -100,13 +100,13 @@ function New-LWVMWareVM
             Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
 
     #>
-    
+  
     $folderName = "AutomatedLab_$($lab.Name)"
     if (-not (Get-Folder -Name $folderName -ErrorAction SilentlyContinue))
     {
         New-Folder -Name $folderName -Location VM | out-null
     }
-    
+  
 
     $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | select -last 1
 	
@@ -169,7 +169,7 @@ function New-LWVMWareVM
         -VM $ReferenceVM_int `
         -LinkedClone `
         -ReferenceSnapshot $referenceSnapshot `
-        
+      
         #TODO: logic to switch to full clone for AD recovery scenario's etc.
         <# Create full clone
                 $result = New-VM `
@@ -178,8 +178,8 @@ function New-LWVMWareVM
                 -Datastore $lab.VMWareSettings.DataStore `
                 -Location (Get-Folder -Name $parameters.FolderName) `
                 -OSCustomizationSpec $osSpecs `
-                -VM $ReferenceVM_int    
-        #>    
+                -VM $ReferenceVM_int  
+        #>  
     }
 
     if ($PassThru)
@@ -264,7 +264,7 @@ function Start-LWVMWareVM
     foreach ($name in $ComputerName)
     {
         $vm = $null
-        $vm = VMware.VimAutomation.Core\Get-VM -Name $name 
+        $vm = VMware.VimAutomation.Core\Get-VM -Name $name
         if ($vm)
         {
             VMware.VimAutomation.Core\Start-VM $vm -ErrorAction SilentlyContinue | out-null

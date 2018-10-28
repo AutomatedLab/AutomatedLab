@@ -91,7 +91,7 @@ function Test-SubnetInSubnet
 	
     $startIP = ($rangeStart.split('.')[0] * 256*256*256) + ($rangeStart.split('.')[1] * 256*256) + ($rangeStart.split('.')[2] * 256) + ($rangeStart.split('.')[3])
     $endIP   = ($rangeEnd.split('.')[0] * 256*256*256) + ($rangeEnd.split('.')[1] * 256*256) + ($rangeEnd.split('.')[2] * 256) + ($rangeEnd.split('.')[3])
-    
+  
 
     if (([ipaddress]$IpAddress).Address -ge ([ipaddress]$rangeStart).Address -and ([ipaddress]$IpAddress).Address -le ([ipaddress]$rangeEnd).Address)
     {
@@ -117,7 +117,7 @@ Function Test-IpInSameSameNetwork
     $ip2Decimal = $Ip2.SerializationNetworkAddress
     $ip1Total   = $Ip1.Total
     $ip2Total   = $Ip2.Total
-    
+  
     if (($ip1Decimal -ge $ip2Decimal) -and ($ip1Decimal -lt ([long]$ip2Decimal+[long]$ip2Total)))
     {
         return $true
@@ -127,7 +127,7 @@ Function Test-IpInSameSameNetwork
     {
         return $true
     }
-    
+  
     return $false
 }
 

@@ -16,9 +16,9 @@ function New-LWHypervNetworkSwitch
         {
             throw 'No name specified for virtual network to be created'
         }
-        
+      
         Write-ScreenInfo -Message "Creating Hyper-V virtual network '$($network.Name)'" -TaskStart
-        
+      
         if (Get-VMSwitch -Name $network.Name -ErrorAction SilentlyContinue)
         {
             Write-ScreenInfo -Message "The network switch '$($network.Name)' already exists" -Type Warning
@@ -39,7 +39,7 @@ function New-LWHypervNetworkSwitch
             {
                 throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
             }
-            
+          
             $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.Name -ErrorAction Stop
         }
         else
@@ -88,9 +88,9 @@ function New-LWHypervNetworkSwitch
                 throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
             }
         }
-	    
+	  
         Write-ScreenInfo -Message "Done" -TaskEnd
-        
+      
         if ($PassThru)
         {
             $switch
@@ -116,7 +116,7 @@ function Remove-LWNetworkSwitch
         Write-ScreenInfo 'The network switch does not exist' -Type Warning
         return
     }
-    
+  
     if ((Get-VM | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
     {
         try
@@ -128,7 +128,7 @@ function Remove-LWNetworkSwitch
             Start-Sleep -Seconds 2
             Remove-VMSwitch -Name $Name -Force
         }
-    
+  
         Write-Verbose "Network switch '$Name' removed"
     }
     else

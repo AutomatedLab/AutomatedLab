@@ -69,16 +69,16 @@ Add-Type -TypeDefinition $type -PassThru
 #region Get-HostFile
 function Get-HostFile
 {
-    [CmdletBinding()] 
+    [CmdletBinding()]
     param
     (
         [switch]$SuppressOutput,
 
         [string]$Section
     )
-    
+  
     Write-LogFunctionEntry
-    
+  
     $hostContent = New-Object -TypeName System.Collections.ArrayList
 	$hostEntries = New-Object -TypeName System.Collections.ArrayList
 	
@@ -95,7 +95,7 @@ function Get-HostFile
     {
         $startMark = ("#$Section - start").ToLower()
 	    $endMark   = ("#$Section - end").ToLower()
-    
+  
 	    if (($currentHostContent | Where-Object { $_ -eq $startMark }) -and ($currentHostContent | Where-Object { $_ -eq $endMark }))
         {
             $startPosition = $currentHostContent.IndexOf($startMark)+1
@@ -111,17 +111,17 @@ function Get-HostFile
     if ($currentHostContent)
 	{
 		$hostContent.AddRange($currentHostContent)
-    
+  
 	    foreach ($entry in $currentHostContent)
 	    {
 		    $hostfileIpAddress = [System.Text.RegularExpressions.Regex]::Matches($entry, '^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))')[0].Value
 		    $hostfileHostName = [System.Text.RegularExpressions.Regex]::Matches($entry, '[\w\.-]+$')[0].Value
-        
+      
 		    if ($entry -notmatch '^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))[\t| ]+[\w\.-]+')
 		    {
 			    continue
 		    }
-        
+      
 		    if (-not $hostfileIpAddress -or -not $hostfileHostName)
 		    {
 			    #could not get the IP address or hostname from current line
@@ -132,11 +132,11 @@ function Get-HostFile
 		    $null = $hostEntries.Add($newEntry)
         }
     }
-    
+  
     Write-Verbose "File loaded with $($hostContent.Count) lines"
 	
     $hostContent, $hostEntries
-    
+  
     Write-LogFunctionExit
 }
 #endregion Get-HostFile
@@ -156,9 +156,9 @@ function Get-HostEntry
 		[Parameter()]
 		[string]$Section
 	)
-    
+  
     Write-LogFunctionEntry
-    
+  
     if ($Section)
     {
         $hostContent, $hostEntries = Get-HostFile -Section $Section
@@ -167,11 +167,11 @@ function Get-HostEntry
     {
         $hostContent, $hostEntries = Get-HostFile
     }	
-    
+  
     if ($HostName)
 	{
 		$results = $hostEntries | Where-Object HostName -eq $HostName
-        
+      
 		$hostEntries | Where-Object HostName -eq $HostName
 	}
 	elseif ($IpAddress)
@@ -181,7 +181,7 @@ function Get-HostEntry
         {
             Write-ScreenInfo -Message "More than one entry found in hosts file with IP address '$IpAddress' (host names: $($results.Hostname -join ','). Returning the last entry" -Type Warning
         }
-        
+      
 		@($hostEntries | Where-Object IpAddress -contains $IpAddress)[-1]
 	}
     else
@@ -212,15 +212,15 @@ function Add-HostEntry
 	)
 	
 	Write-LogFunctionEntry
-    
+  
     if (-not $InputObject)
 	{
 		$InputObject = New-Object System.Net.HostRecord $IpAddress, $HostName.ToLower()
 	}
 	
     $hostContent, $hostEntries = Get-HostFile
-    
-    
+  
+  
 	if ($hostEntries.Contains($InputObject))
 	{
 		return $false
@@ -230,23 +230,23 @@ function Add-HostEntry
     {
         throw "Trying to add entry to hosts file with name '$HostName'. There is already another entry with this name pointing to another IP address."
     }
-    
+  
     $startMark = ("#$Section - start").ToLower()
 	$endMark   = ("#$Section - end").ToLower()
-    
+  
 	if (-not ($hostContent | Where-Object { $_ -eq $startMark }))
     {
 		$hostContent.Add($startMark) | Out-Null
 		$hostContent.Add($endMark) | Out-Null
     }
-    
+  
 	$hostContent.Insert($hostContent.IndexOf($endMark), $InputObject.ToString().ToLower())
 	$hostEntries.Add($InputObject.ToString().ToLower()) | Out-Null
-    
+  
 	$hostContent | Out-File -FilePath "$($env:SystemRoot)\System32\drivers\etc\hosts"
 
     Write-LogFunctionExit
-    
+  
 	return $true
 }
 #endregion Add-HostEntry
@@ -270,12 +270,12 @@ function Remove-HostEntry
 	)
 	
 	Write-LogFunctionEntry
-    
+  
     if (-not $InputObject -and -not $IpAddress -and -not $HostName)
     {
 		return
     }
-    
+  
 	if ($InputObject)
     {
         $entriesToRemove = $InputObject
@@ -287,14 +287,14 @@ function Remove-HostEntry
     		$entriesToRemove = Get-HostEntry @PSBoundParameters
         }
 	}
-    
+  
     if (-not $entriesToRemove)
     {
         Write-Error "Trying to remove entry '$HostName' from hosts file. However, there is no entry by that name in this file"
     }
 
 	$hostContent, $hostEntries = Get-HostFile -SuppressOutput
-    
+  
     $startMark = ("#$Section - start").ToLower()
     if (-not ($hostContent | Where-Object { $_ -eq $startMark }))
     {
@@ -306,15 +306,15 @@ function Remove-HostEntry
 		Write-Error "Trying to remove entry '$HostName' from hosts file. However, there are more than one entry with this name in the hosts file. Please remove this entry manually."
 		return
     }
-    
+  
 	if ($entriesToRemove)
 	{
 		$entryToRemove = ($hostContent -match "^($($entriesToRemove.IpAddress))[\t| ]+$($entriesToRemove.HostName)")[0]
 		$entryToRemoveIndex = $hostContent.IndexOf($entryToRemove)
-        
+      
 		$hostContent.RemoveAt($entryToRemoveIndex)
 		$hostEntries.Remove($entriesToRemove)
-        
+      
         $hostContent | Out-File -FilePath "$($env:SystemRoot)\System32\drivers\etc\hosts"
 	}
 
@@ -326,20 +326,20 @@ function Remove-HostEntry
 function Clear-HostFile
 {
 	[CmdletBinding()]
-    
+  
     param
     (
         [Parameter(Mandatory)]
         [string]$Section
     )
-    
+  
     Write-LogFunctionEntry
-    
+  
     $hostContent, $hostEntries = Get-HostFile
 	
     $startMark = ("#$Section - start").ToLower()
 	$endMark = ("#$Section - end").ToLower()
-    
+  
     $startPosition = $hostContent.IndexOf($startMark)
     $endPosition   = $hostContent.IndexOf($endMark)
 	if ($startPosition -eq -1 -and $endPosition -1)
