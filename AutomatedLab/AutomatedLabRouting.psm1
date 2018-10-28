@@ -9,27 +9,27 @@ function Install-LabRouting
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
     )
-  
+
     Write-LogFunctionEntry
 
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
-  
+
     $roleName = [AutomatedLab.Roles]::Routing
-  
+
     if (-not (Get-LabVM))
     {
         Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first' -Type Warning
         Write-LogFunctionExit
         return
     }
-  
+
     $machines = Get-LabVM -Role $roleName | Where-Object HostType -eq 'HyperV'
-  
+
     if (-not $machines)
     {
         return
     }
-  
+
     Write-ScreenInfo -Message 'Waiting for machines with Routing Role to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
 
@@ -64,10 +64,10 @@ function Install-LabRouting
         $parameters.Add('Scriptblock', {
                 $VerbosePreference = 'Continue'
                 Write-Verbose 'Setting up routing...'
-          
+
                 Set-Service -Name RemoteAccess -StartupType Automatic
                 Start-Service -Name RemoteAccess
-          
+
                 Write-Verbose '...done'
 
                 if (-not $args[0])
@@ -77,7 +77,7 @@ function Install-LabRouting
                 }
 
                 Write-Verbose 'Setting up NAT...'
-          
+
                 $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
                     Select-Object -ExpandProperty NetConnectionID
 
@@ -92,7 +92,7 @@ function Install-LabRouting
                 netsh.exe routing ip dnsproxy install
 
                 Restart-Service -Name RemoteAccess
-          
+
                 Write-Verbose '...done'
             }
         )
@@ -106,7 +106,7 @@ function Install-LabRouting
         Write-Verbose "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
         Set-LabADDNSServerForwarder
     }
-  
+
     Write-ScreenInfo -Message 'Waiting for configuration of routing to complete' -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay -NoNewLine
@@ -114,7 +114,7 @@ function Install-LabRouting
     #to make sure the routing service works, restart the routers
     Write-Verbose "Restarting machines '$($machines -join ', ')'"
     Restart-LabVM -ComputerName $machines -Wait -NoNewLine
-  
+
     Write-ProgressIndicatorEnd
     Write-LogFunctionExit
 }
@@ -140,9 +140,9 @@ function Set-LabADDNSServerForwarder
         $gateway = if ($dc -eq $router)
         {
             Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
-          
+
                 Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
-              
+
             } -PassThru -NoDisplay
         }
         else
@@ -152,7 +152,7 @@ function Set-LabADDNSServerForwarder
         }
 
         Write-Verbose "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
-  
+
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {
             dnscmd /resetforwarders $args[0]
         } -ArgumentList $gateway -AsJob -NoDisplay
