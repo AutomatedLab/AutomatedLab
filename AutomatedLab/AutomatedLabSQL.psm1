@@ -192,9 +192,13 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
-                Invoke-Ternary -Decider {$machine.roles.name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
-                if ( $role.Properties.ContainsKey('ConfigurationFile'))
+                if ($role.Properties.ContainsKey('UseOnlyConfigurationFile'))
+                {
+                    $global:setupArguments = ''
+                }
+                
+                if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
                     
@@ -208,6 +212,8 @@ GO
                         Write-Verbose -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
                     }                    
                 }
+                
+                Invoke-Ternary -Decider {$machine.Roles.Name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
                 
                 if ($role.Name -notin 'SQLServer2008R2', 'SQLServer2008')
                 {
@@ -573,6 +579,7 @@ function New-LabSqlAccount
     )
 
     $usersAndPasswords = @{}
+    $groups = @()
     if ($RoleProperties.ContainsKey('SQLSvcAccount') -and $RoleProperties.ContainsKey('SQLSvcPassword'))
     {
         $usersAndPasswords[$RoleProperties['SQLSvcAccount']] = $RoleProperties['SQLSvcPassword']
@@ -598,7 +605,68 @@ function New-LabSqlAccount
         $usersAndPasswords[$RoleProperties['IsSvcAccount']] = $RoleProperties['IsSvcPassword']
     }
 
-    foreach ( $kvp in $usersAndPasswords.GetEnumerator())
+    if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))
+    {
+        $groups += $RoleProperties['SqlSysAdminAccounts']
+    }
+
+    if ($RoleProperties.ContainsKey('ConfigurationFile'))
+    {
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+
+        if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq SQLSvcAccount).Value
+            $password = ($config | Where-Object Key -eq SQLSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+        
+        if (($config | Where-Object Key -eq AgtSvcAccount) -and ($config | Where-Object Key -eq AgtSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AgtSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AgtSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq RsSvcAccount) -and ($config | Where-Object Key -eq RsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq RsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq RsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq AsSvcAccount) -and ($config | Where-Object Key -eq AsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq IsSvcAccount) -and ($config | Where-Object Key -eq IsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq IsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq IsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq SqlSysAdminAccounts))
+        {
+            $group = ($config | Where-Object Key -eq SqlSysAdminAccounts).Value
+            $groups += $group.Substring(1, $group.Length - 2)
+        }
+    }
+
+    foreach ($kvp in $usersAndPasswords.GetEnumerator())
     {
         $user = $kvp.Key
 
@@ -630,10 +698,11 @@ function New-LabSqlAccount
                 Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain) -Type Warning
             }
 
-            Invoke-LabCommand -ComputerName $dc -ActivityName ('Creating {0} in {1}' -f $user,$domain) -ScriptBlock {
+            Invoke-LabCommand -ComputerName $dc -ActivityName ("Creating user '$user' in domain '$domain'") -ScriptBlock {
+                $existingUser = $null #required as the session is not removed
                 try
                 {
-                    $existingUser = Get-ADUser $user -ErrorAction SilentlyContinue
+                    $existingUser = Get-ADUser -Identity $user
                 }
                 catch { }
                 
@@ -641,7 +710,60 @@ function New-LabSqlAccount
                 {
                     New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
                 }
-            } -Variable (Get-Variable user,password)
+            } -Variable (Get-Variable -Name user, password)
+        }
+        else
+        {
+            Invoke-LabCommand -ComputerName $Machine -ActivityName ("Creating local user '$user'") -ScriptBlock {
+                if (-not (Get-LocalUser $user -ErrorAction SilentlyContinue))
+                {
+                    New-LocalUser -Name $user -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -Password ($password | ConvertTo-SecureString -AsPlainText -Force)
+                }
+            } -Variable (Get-Variable -Name user, password)
+        }
+    }
+    
+    foreach ($group in $groups)
+    {
+        if ($group.Contains("\"))
+        {
+            $domain = ($group -split "\\")[0]
+            $groupName = ($group -split "\\")[1]
+        }
+
+        if ($group.Contains("@"))
+        {
+            $domain = ($group -split "@")[1]
+            $groupName = ($group -split "@")[0]
+        }
+
+        if ($domain -match 'NT Authority|BUILTIN')
+        {
+            continue
+        }
+        
+        if ($domain)
+        {
+            $dc = Get-LabVM -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+
+            if (-not $dc)
+            {
+                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain) -Type Warning
+            }
+
+            Invoke-LabCommand -ComputerName $dc -ActivityName ("Creating group '$groupName' in domain '$domain'") -ScriptBlock {
+                $existingGroup = $null #required as the session is not removed
+                try
+                {
+                    $existingGroup = Get-ADGroup -Identity $groupName
+                }
+                catch { }
+                
+                if (-not ($existingGroup))
+                {
+                    New-ADGroup -Name $groupName -GroupScope Global
+                }
+            } -Variable (Get-Variable -Name groupName)
         }
         else
         {
@@ -650,7 +772,7 @@ function New-LabSqlAccount
                 {
                     New-LocalUser -Name $user -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -Password ($password | ConvertTo-SecureString -AsPlainText -Force)
                 }
-            } -Variable (Get-Variable user,password)
+            } -Variable (Get-Variable -Name user, password)
         }
     }
 }
