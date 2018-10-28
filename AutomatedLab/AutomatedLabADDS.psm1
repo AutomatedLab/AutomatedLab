@@ -216,13 +216,15 @@ $adInstallFirstChildDc2012 = {
 
             Start-Sleep -Seconds $SecondsBetweenRetries
             
+            $safeDsrmPassword = ConvertTo-SecureString -String $DsrmPassword -AsPlainText -Force
+            
             $result = Install-ADDSDomain -NewDomainName $NewDomainName `
             -NewDomainNetbiosName $NetBiosDomainName `
             -ParentDomainName $ParentDomainName `
             -SiteName $SiteName `
             -InstallDNS `
             -CreateDnsDelegation:$createDNSDelegation `
-            -SafeModeAdministratorPassword $DsrmPassword `
+            -SafeModeAdministratorPassword $safeDsrmPassword `
             -Force `
             -Credential $RootDomainCredential `
             -DomainType $domainType `
@@ -469,6 +471,8 @@ $adInstallDc2012 = {
     
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Install-Windowsfeature AD-Domain-Services, DNS -IncludeManagementTools
+
+    $safeDsrmPassword = ConvertTo-SecureString -String $DsrmPassword -AsPlainText -Force
     
     Write-Verbose -Message "Promoting machine '$(HOSTNAME.EXE)' to domain '$DomainName'"
     
@@ -478,7 +482,7 @@ $adInstallDc2012 = {
     $param = @{
         DomainName = $DomainName
         SiteName = $SiteName
-        SafeModeAdministratorPassword = $DsrmPassword
+        SafeModeAdministratorPassword = $safeDsrmPassword
         Force = $true
         Credential = $RootDomainCredential
         SysvolPath = $SysvolPath
