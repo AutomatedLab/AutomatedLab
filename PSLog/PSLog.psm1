@@ -14,21 +14,21 @@ function Start-Log
                 }
         )]
         [System.IO.DirectoryInfo]$LogPath,
-        
+
         [Parameter(Position = 1, Mandatory = $true, ParameterSetName = 'UserDefined')]
         [ValidateNotNullOrEmpty()]
         [string]$LogName,
-        
+
         [Parameter(Position = 2, Mandatory = $true, ParameterSetName = 'UserDefined')]
         [System.Diagnostics.SourceLevels]$Level,
-        
+
         [Parameter()]
         [switch]$Silent,
-        
+
         [Parameter(Mandatory = $true, ParameterSetName = 'UseDefaults')]
         [switch]$UseDefaults
     )
-    
+
     if ($UseDefaults)
     {
         $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
@@ -40,7 +40,7 @@ function Start-Log
         {
             $LogPath = $defaults.DefaultFolder
         }
-        
+
         if (-not $defaults.DefaultName)
         {
             $LogName = $Env:USERNAME
@@ -49,7 +49,7 @@ function Start-Log
         {
             $LogName = $defaults.DefaultName
         }
-        
+
         if (-not $defaults.Level)
         {
             $Level = 'All'
@@ -58,10 +58,10 @@ function Start-Log
         {
             $Level = $defaults.Level
         }
-        
+
         $Silent = $defaults.Silent
     }
-    
+
     Add-Type -AssemblyName Microsoft.VisualBasic
     $script:LogFile = $LogName
     $script:Log = New-Object -TypeName Microsoft.VisualBasic.Logging.Log
@@ -75,9 +75,9 @@ function Start-Log
     $script:Log.DefaultFileLogWriter.CustomLocation = $LogPath
     $script:Log.DefaultFileLogWriter.BaseFileName = $LogName
     $script:Log.TraceSource.Switch.Level = $Level
-    
+
     $script:PSLog_Silent = $Silent
-    
+
     if (!$UseDefaults)
     {
         Write-LogEntry -Message 'Starting log' -EntryType Information
@@ -102,26 +102,26 @@ function Write-LogEntry
         [Parameter(Position = 0, Mandatory = $true)]
         [AllowEmptyString()]
         [string]$Message,
-        
+
         [Parameter(Position = 1, Mandatory = $true)]
         [System.Diagnostics.TraceEventType] $EntryType,
-        
+
         [Parameter(Position = 2)]
         [ValidateNotNullOrEmpty()]
         [string] $Details,
-        
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [switch] $SupressConsole
     )
-    
-    
-    
+
+
+
     if (($EntryType -band $Log.TraceSource.Switch.Level) -ne $EntryType)
     {
         return
     }
-    
+
     $caller = (Get-PSCallStack)[1]
     if ($caller.Command -eq 'Write-Host' -or
         $caller.Command -eq 'Write-Warning' -or
@@ -133,7 +133,7 @@ function Write-LogEntry
     {
         $caller = (Get-PSCallStack)[2]
     }
-    
+
     $callerFunctionName = $caller.Command
     if ($caller.ScriptName)
     {
@@ -141,7 +141,7 @@ function Write-LogEntry
     }
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, $Details
     $Log.WriteEntry($Message, $EntryType)
-    
+
     if (-not $SupressConsole)
     {
         $Message = ($Message -split ';')[2..3]
@@ -149,7 +149,7 @@ function Write-LogEntry
         {
             $Message += ": $Details"
         }
-        
+
         if ($EntryType -eq 'Verbose')
         {
             Microsoft.PowerShell.Utility\Write-Verbose $Message
@@ -202,7 +202,7 @@ function Write-LogFunctionEntry
     param()
 
     $Global:LogFunctionEntryTime = Get-Date
-    
+
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if (!$Log)
@@ -218,25 +218,25 @@ function Write-LogFunctionEntry
             return
         }
     }
-    
+
     $Message = 'Entering...'
-    
+
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
-    
+
     try
     {
         $boundParameters = $caller.InvocationInfo.BoundParameters.GetEnumerator()
     }
     catch
     {
-        
+
     }
-    
+
     $Message += ' ('
     foreach ($parameter in $boundParameters)
     {
@@ -278,11 +278,11 @@ function Write-LogFunctionEntry
     }
     $Message = $Message.Substring(0, $Message.Length - 1)
     $Message += ')'
-    
+
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Verbose)
     $Message = ($Message -split ';')[2..3] -join ' '
-    
+
     Microsoft.PowerShell.Utility\Write-Verbose $Message
 }
 #endregion
@@ -305,9 +305,9 @@ function Write-LogFunctionExit
     {
         $ts = New-TimeSpan -Seconds 0
     }
-    
+
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if (!$Log)
     {
         if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
@@ -320,12 +320,12 @@ function Write-LogFunctionExit
             return
         }
     }
-    
+
     if (([System.Diagnostics.TraceEventType]::Verbose -band $Log.TraceSource.Switch.Level) -ne [System.Diagnostics.TraceEventType]::Verbose)
     {
         return
     }
-    
+
     if ($ReturnValue)
     {
         $Message = "...leaving - return value is '{0}'..." -f $ReturnValue
@@ -334,18 +334,18 @@ function Write-LogFunctionExit
     {
         $Message = '...leaving...'
     }
-    
+
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
-    
+
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, ("(Time elapsed: {0:hh}:{0:mm}:{0:ss}:{0:fff})" -f $ts)
     $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Verbose)
     $Message = -join ($Message -split ';')[2..4]
-    
+
     Microsoft.PowerShell.Utility\Write-Verbose $Message
 }
 #endregion
@@ -357,28 +357,28 @@ function Write-LogFunctionExitWithError
             ConfirmImpact = 'Low',
             DefaultParameterSetName = 'Message'
     )]
-    
+
     param
     (
         [Parameter(Position = 0, ParameterSetName = 'Message')]
         [ValidateNotNullOrEmpty()]
         [string]$Message,
-        
+
         [Parameter(Position = 0, ParameterSetName = 'ErrorRecord')]
         [ValidateNotNullOrEmpty()]
         [System.Management.Automation.ErrorRecord]$ErrorRecord,
-        
+
         [Parameter(Position = 0, ParameterSetName = 'Exception')]
         [ValidateNotNullOrEmpty()]
         [System.Exception]$Exception,
-        
+
         [Parameter(Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string]$Details
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if (!$Log)
     {
         if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
@@ -391,12 +391,12 @@ function Write-LogFunctionExitWithError
             return
         }
     }
-    
+
     if (([System.Diagnostics.TraceEventType]::Error -band $Log.TraceSource.Switch.Level) -ne [System.Diagnostics.TraceEventType]::Error)
     {
         return
     }
-    
+
     switch ($pscmdlet.ParameterSetName)
     {
         'Message'
@@ -412,16 +412,16 @@ function Write-LogFunctionExitWithError
             $Message = '...leaving: ' + $Exception.Message
         }
     }
-    
+
     $EntryType = 'Error'
-    
+
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
-    
+
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     if ($Details)
     {
@@ -429,7 +429,7 @@ function Write-LogFunctionExitWithError
     }
     $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Error)
     $Message = -join ($Message -split ';')[2..3]
-    
+
     if ($script:PSLog_Silent)
     {
         Microsoft.PowerShell.Utility\Write-Verbose -Message $Message
@@ -453,18 +453,18 @@ function Write-LogError
         [Parameter(Position = 0, Mandatory = $true, ParameterSetName = 'Message')]
         [ValidateNotNullOrEmpty()]
         [string]$Message,
-        
+
         [Parameter(Position = 1)]
         [ValidateNotNullOrEmpty()]
         [string]$Details,
-        
+
         [Parameter()]
         [ValidateNotNullOrEmpty()]
         [System.Exception]$Exception
     )
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-    
+
     if (!$Log)
     {
         if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
@@ -477,21 +477,21 @@ function Write-LogError
             return
         }
     }
-    
+
     if ($EntryType -band $Log.TraceSource.Switch.Level -ne $EntryType)
     {
         return
     }
-    
+
     $EntryType = 'Error'
-    
+
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
-    
+
     if ($Excpetion)
     {
         $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Excpetion.Message)
@@ -500,14 +500,14 @@ function Write-LogError
     {
         $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     }
-    
+
     if ($Details)
     {
         $Message += ';' + $Details
     }
     $Log.WriteEntry($Message, $EntryType)
     $Message = -join ($Message -split ';')[2..3]
-    
+
     if ($script:PSLog_Silent)
     {
         Microsoft.PowerShell.Utility\Write-Verbose $Message
@@ -527,19 +527,19 @@ function Write-Host
         [Parameter(Position = 0, ValueFromPipeline = $true, ValueFromRemainingArguments = $true)]
         [System.Object]
         ${Object},
-        
+
         [Switch]
         ${NoNewline},
-        
+
         [System.Object]
         ${Separator},
-        
+
         [System.ConsoleColor]
         ${ForegroundColor},
-        
+
         [System.ConsoleColor]
     ${BackgroundColor})
-    
+
     begin
     {
         try
@@ -562,7 +562,7 @@ function Write-Host
             throw
         }
     }
-    
+
     process
     {
         try
@@ -574,7 +574,7 @@ function Write-Host
             throw
         }
     }
-    
+
     end
     {
         try
@@ -605,7 +605,7 @@ function Write-Warning
         [AllowEmptyString()]
         [System.String]
     ${Message})
-    
+
     begin
     {
         try
@@ -629,7 +629,7 @@ function Write-Warning
             throw
         }
     }
-    
+
     process
     {
         try
@@ -641,7 +641,7 @@ function Write-Warning
             throw
         }
     }
-    
+
     end
     {
         try
@@ -672,7 +672,7 @@ function Write-Verbose
         [AllowEmptyString()]
         [System.String]
     ${Message})
-    
+
     begin
     {
         try
@@ -696,13 +696,13 @@ function Write-Verbose
             throw
         }
     }
-    
+
     process
     {
         try
         {
             if ($PSBoundParameters.ContainsKey('Verbose'))
-            {			
+            {
                 $steppablePipeline.Process($_)
             }
         }
@@ -711,7 +711,7 @@ function Write-Verbose
             throw
         }
     }
-    
+
     end
     {
         try
@@ -740,7 +740,7 @@ function Write-Error
         [Parameter(ParameterSetName = 'WithException', Mandatory = $true)]
         [System.Exception]
         ${Exception},
-        
+
         [Parameter(ParameterSetName = 'NoException', Mandatory = $true, Position = 0, ValueFromPipeline = $true)]
         [Parameter(ParameterSetName = 'WithException')]
         [Alias('Msg')]
@@ -748,45 +748,45 @@ function Write-Error
         [AllowEmptyString()]
         [System.String]
         ${Message},
-        
+
         [Parameter(ParameterSetName = 'ErrorRecord', Mandatory = $true)]
         [System.Management.Automation.ErrorRecord]
         ${ErrorRecord},
-        
+
         [Parameter(ParameterSetName = 'NoException')]
         [Parameter(ParameterSetName = 'WithException')]
         [System.Management.Automation.ErrorCategory]
         ${Category},
-        
+
         [Parameter(ParameterSetName = 'NoException')]
         [Parameter(ParameterSetName = 'WithException')]
         [System.String]
         ${ErrorId},
-        
+
         [Parameter(ParameterSetName = 'NoException')]
         [Parameter(ParameterSetName = 'WithException')]
         [System.Object]
         ${TargetObject},
-        
+
         [System.String]
         ${RecommendedAction},
-        
+
         [Alias('Activity')]
         [System.String]
         ${CategoryActivity},
-        
+
         [Alias('Reason')]
         [System.String]
         ${CategoryReason},
-        
+
         [Alias('TargetName')]
         [System.String]
         ${CategoryTargetName},
-        
+
         [Alias('TargetType')]
         [System.String]
     ${CategoryTargetType})
-    
+
     begin
     {
         try
@@ -798,7 +798,7 @@ function Write-Error
             {
                 $PSBoundParameters['OutBuffer'] = 1
             }
-            
+
             $wrappedCmd = $ExecutionContext.InvokeCommand.GetCommand('Write-Error', [System.Management.Automation.CommandTypes]::Cmdlet)
             $scriptCmd = {
                 & $wrappedCmd @PSBoundParameters
@@ -811,7 +811,7 @@ function Write-Error
             throw
         }
     }
-    
+
     process
     {
         try
@@ -823,7 +823,7 @@ function Write-Error
             throw
         }
     }
-    
+
     end
     {
         try
@@ -854,7 +854,7 @@ function Write-Debug
         [AllowEmptyString()]
         [string]
     ${Message})
-    
+
     begin
     {
         try
@@ -878,7 +878,7 @@ function Write-Debug
             throw
         }
     }
-    
+
     process
     {
         try
@@ -890,7 +890,7 @@ function Write-Debug
             throw
         }
     }
-    
+
     end
     {
         try
@@ -972,7 +972,7 @@ function Get-CallerPreference
     {
         $filterHash = @{}
     }
-    
+
     process
     {
         if ($null -ne $Name)
@@ -1028,7 +1028,7 @@ function Get-CallerPreference
             ($PSCmdlet.ParameterSetName -eq 'AllVariables' -or $filterHash.ContainsKey($entry.Name)))
             {
                 $variable = $Cmdlet.SessionState.PSVariable.Get($entry.Key)
-                
+
                 if ($null -ne $variable)
                 {
                     if ($SessionState -eq $ExecutionContext.SessionState)
@@ -1050,7 +1050,7 @@ function Get-CallerPreference
                 if (-not $vars.ContainsKey($varName))
                 {
                     $variable = $Cmdlet.SessionState.PSVariable.Get($varName)
-                
+
                     if ($null -ne $variable)
                     {
                         if ($SessionState -eq $ExecutionContext.SessionState)
@@ -1095,7 +1095,7 @@ function Write-ProgressIndicatorEnd
     {
         return
     }
-    
+
     Write-ScreenInfo -Message '.'
 }
 #endregion Write-ProgressIndicatorEnd
@@ -1108,32 +1108,32 @@ function Write-ScreenInfo
     (
         [Parameter(Position = 1)]
         [string[]]$Message,
-        
+
         [Parameter(Position = 2)]
         [timespan]$TimeDelta,
-        
+
         [Parameter(Position = 3)]
         [timespan]$TimeDelta2,
-        
+
         [ValidateSet('Error', 'Warning', 'Info', 'Verbose', 'Debug')]
         [string]$Type = 'Info',
-        
+
         [switch]$NoNewLine,
-        
+
         [switch]$TaskStart,
-        
+
         [switch]$TaskEnd,
 
         [switch]$OverrideNoDisplay
     )
-    
+
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
     if ((Get-PSCallStack)[1].InvocationInfo.BoundParameters['NoDisplay'].IsPresent -and -not $OverrideNoDisplay)
     {
         return
     }
-    
+
     if (-not $Global:AL_DeploymentStart)
     {
         $Global:AL_DeploymentStart = (Get-Date)
@@ -1150,13 +1150,13 @@ function Write-ScreenInfo
     elseif ($TaskEnd)
     {
         $TimeDelta2 = ((Get-Date) - $Global:taskStart[-1])
-        
+
         $newSize = ($Global:taskStart).Length-1
         if ($newSize -lt 0) { $newSize = 0 }
         $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length-1)
     }
-    
-    
+
+
     if (-not $TimeDelta -and $Global:AL_DeploymentStart)
     {
         $TimeDelta  = (Get-Date) - $Global:AL_DeploymentStart
@@ -1165,13 +1165,13 @@ function Write-ScreenInfo
     {
         $TimeDelta2 = (Get-Date) - $Global:taskStart[-1]
     }
-    
+
     $timeDeltaString = '{0:d2}:{1:d2}:{2:d2}' -f $TimeDelta.Hours, $TimeDelta.Minutes, $TimeDelta.Seconds
     $timeDeltaString2 = '{0:d2}:{1:d2}:{2:d2}.{3:d3}' -f $TimeDelta2.Hours, $TimeDelta2.Minutes, $TimeDelta2.Seconds, $TimeDelta2.Milliseconds
-    
+
     $date = Get-Date
     $timeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
-    
+
     if ($NoNewLine)
     {
         if ($Global:PSLog_NoNewLine)
@@ -1208,28 +1208,28 @@ function Write-ScreenInfo
             switch ($Type)
             {
                 Error   {
-                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red } 
+                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red }
                     $Global:PSLog_NoNewLine = $false
                 }
-                Warning { 
+                Warning {
                     $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
                     $Global:PSLog_NoNewLine = $false
                 }
                 Info    {
-                    $Message | ForEach-Object { Write-Host $_ } 
+                    $Message | ForEach-Object { Write-Host $_ }
                     $Global:PSLog_NoNewLine = $false
                 }
-                Verbose { 
-                    if ($VerbosePreference -eq 'Continue') 
+                Verbose {
+                    if ($VerbosePreference -eq 'Continue')
                     {
                         $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
-                    } 
+                    }
                 }
-                Debug { 
-                    if ($DebugPreference -eq 'Continue') 
+                Debug {
+                    if ($DebugPreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan } 
+                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
                     }
                 }
@@ -1260,7 +1260,7 @@ function Write-ScreenInfo
                 Verbose
                 {
                     if ($VerbosePreference -eq 'Continue')
-                    {                    
+                    {
                         $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
                     }
                 }
@@ -1272,12 +1272,12 @@ function Write-ScreenInfo
     {
         $Global:PSLog_Indent++
     }
-    
+
     if ($TaskEnd)
     {
         $Global:PSLog_Indent--
         if ($Global:PSLog_Indent -lt 0) { $Global:PSLog_Indent = 0 }
     }
-    
+
 }
 #endregion Write-ScreenInfo
