@@ -11,7 +11,7 @@ function Test-LabDeployment
 
         [Parameter(ParameterSetName = 'All')]
         [string]$SampleScriptsPath,
-        
+
         [Parameter(ParameterSetName = 'All')]
         [string]$Filter,
 
@@ -19,7 +19,7 @@ function Test-LabDeployment
         [switch]$All,
 
         [string]$LogDirectory = [System.Environment]::GetFolderPath('MyDocuments'),
-        
+
         [hashtable]$Replace = @{}
     )
 
@@ -72,7 +72,7 @@ function Invoke-LabScript
     param (
         [Parameter(Mandatory)]
         [string]$Path,
-        
+
         [hashtable]$Replace
     )
 
@@ -93,16 +93,16 @@ function Invoke-LabScript
     {
         Clear-Host
         $content = Get-Content -Path $Path -Raw
-        
+
         foreach ($element in $Replace.GetEnumerator())
         {
             $content = $content -replace $element.Key, $element.Value
         }
-        
+
         $content = [scriptblock]::Create($content)
-        
+
         Invoke-Command -ScriptBlock $content -ErrorVariable invokeError
-        $result.Errors = $invokeError        
+        $result.Errors = $invokeError
         $result.Completed = $true
     }
     catch
@@ -117,14 +117,14 @@ function Invoke-LabScript
         $result.Output = Get-ConsoleText
         $result.ErrorCount = $result.Errors.Count
         Clear-Host
-        
+
         if (Get-Lab -ErrorAction SilentlyContinue)
         {
             Remove-Lab -Confirm:$false -ErrorVariable removeErrors
         }
-        
+
         $result.RemoveErrors = $removeErrors
-        
+
         Write-Host '-------------------------------------------------------------'
         Write-Host "Finished invkoing script '$Path'"
 
@@ -174,7 +174,7 @@ function Import-LabTestResult
 
 <#
 #test a single script with string replacement needed for Azure
-$result = Test-LabDeployment -Path 'C:\Users\randr\Documents\AutomatedLab Sample Scripts\Workshop Labs\PowerShell Lab - Azure.ps1' -Replace @{ 
+$result = Test-LabDeployment -Path 'C:\Users\randr\Documents\AutomatedLab Sample Scripts\Workshop Labs\PowerShell Lab - Azure.ps1' -Replace @{
     '<SOME UNIQUE DATA>' = "raandree$(Get-Random)"
     '<PATH TO YOU AZURE PUBLISHING FILE>' = 'D:\LabSources\Per1-AL2-Aldi-Per2-AL1-AL3-11-14-2015-credentials.publishsettings'
     "(\`$azureDefaultLocation = ')(\w| )+(')" = '$1North Europe$3'

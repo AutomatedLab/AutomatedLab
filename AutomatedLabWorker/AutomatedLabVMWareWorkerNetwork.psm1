@@ -5,7 +5,7 @@ function Get-LWVMWareNetworkSwitch
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
     )
-	
+
     Write-LogFunctionEntry
 
     foreach ($network in $VirtualNetwork)
@@ -19,7 +19,7 @@ function Get-LWVMWareNetworkSwitch
 
         $network
     }
-	
+
     Write-LogFunctionExit
 }
 #endregion Get-LWVMWareNetworkSwitch

@@ -26,7 +26,7 @@ class Lab : SHiPSDirectory {
     [object[]] GetChildItem() {
         Import-Lab -Name $this.name -NoValidation
         $obj = @()
-      
+
         $obj += [LabMachine]::new('Machines')
         $obj += [LabDisk]::new('Disks')
         $obj += [LabNetwork]::new('Networks')
