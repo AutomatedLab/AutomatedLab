@@ -2235,15 +2235,6 @@ function Install-LabCAMachine
                 Write-Error -Message "Drive for Database Directory does not exist or is not a hard disk drive. Specified value is: $DatabaseDirectory"
                 return
             }
-            try
-            {
-                New-Item -ItemType Directory -path $param.DatabaseDirectory | Out-Null
-            }
-            catch
-            {
-                Write-Error -Message "Folder for DatabaseDirectory could not be created. Specified value is: $($param.DatabaseDirectory)"
-                return
-            }
         }
         
         if ($param.LogDirectory -ne '<auto>')
@@ -2255,15 +2246,6 @@ function Install-LabCAMachine
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
                 Write-Error -Message "Drive for Log Directory does not exist or is not a hard disk drive. Specified value is: $LogDirectory"
-                return
-            }
-            try
-            {
-                New-Item -ItemType Directory -path $param.LogDirectory | Out-Null
-            }
-            catch
-            {
-                Write-Error -Message "Folder for LogDirectory could not be created. Specified value is: $($param.LogDirectory)"
                 return
             }
         }
