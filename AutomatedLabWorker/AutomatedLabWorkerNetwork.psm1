@@ -34,7 +34,7 @@ function New-LWHypervNetworkSwitch
         if ($network.SwitchType -eq 'External')
         {
             $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
-            $adapterCountWithSameMac = (Get-NetAdapter | Where-Object MacAddress -eq $adapterMac | Group-Object -Property MacAddress).Count
+            $adapterCountWithSameMac = (Get-NetAdapter | Where-Object { $_.MacAddress -eq $adapterMac -and $_.DriverDescription -ne 'Microsoft Network Adapter Multiplexor Driver' } | Group-Object -Property MacAddress).Count
             if ($adapterCountWithSameMac -gt 1)
             {
                 throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
@@ -53,40 +53,40 @@ function New-LWHypervNetworkSwitch
                 Start-Sleep -Seconds 2
                 $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
             }
+        }
 
-            Start-Sleep -Seconds 1
+        Start-Sleep -Seconds 1
 
-            $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
-            if (-not $config)
-            {
-                throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
-            }
+        $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
+        if (-not $config)
+        {
+            throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
+        }
 
-            #if the network address was defined, get the first usable IP for the network adapter
-            $adapterIpAddress = if ($network.AddressSpace.IpAddress -eq $network.AddressSpace.Network)
-            {
-                $network.AddressSpace.FirstUsable
-            }
-            else
-            {
-                $network.AddressSpace.IpAddress
-            }
+        #if the network address was defined, get the first usable IP for the network adapter
+        $adapterIpAddress = if ($network.AddressSpace.IpAddress -eq $network.AddressSpace.Network)
+        {
+            $network.AddressSpace.FirstUsable
+        }
+        else
+        {
+            $network.AddressSpace.IpAddress
+        }
 
-            while ($adapterIpAddress -in (Get-LabMachineDefinition).IpAddress.IpAddress)
-            {
-                $adapterIpAddress = $adapterIpAddress.Increment()
-            }
+        while ($adapterIpAddress -in (Get-LabMachineDefinition).IpAddress.IpAddress)
+        {
+            $adapterIpAddress = $adapterIpAddress.Increment()
+        }
 
-            $arguments = @{
-                IPAddress = @($adapterIpAddress.AddressAsString)
-                SubnetMask = @($network.AddressSpace.Netmask.AddressAsString)
-            }
+        $arguments = @{
+            IPAddress = @($adapterIpAddress.AddressAsString)
+            SubnetMask = @($network.AddressSpace.Netmask.AddressAsString)
+        }
 
-            $result = $config | Invoke-CimMethod -MethodName EnableStatic -Arguments $arguments
-            if ($result.ReturnValue)
-            {
-                throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
-            }
+        $result = $config | Invoke-CimMethod -MethodName EnableStatic -Arguments $arguments
+        if ($result.ReturnValue)
+        {
+            throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
         }
 
         Write-ScreenInfo -Message "Done" -TaskEnd

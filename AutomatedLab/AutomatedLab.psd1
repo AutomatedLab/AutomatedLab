@@ -274,6 +274,9 @@
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
 
+        #Hyper-V Network settings
+        MacAddressPrefix                       = '0017FB'
+
         #Host Settings
         DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
 
@@ -293,6 +296,7 @@
         dotnet46DownloadLink                   = 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe'
         dotnet462DownloadLink                  = 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
         dotnet471DownloadLink                  = 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe'
+        dotnet472DownloadLink                  = 'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
 
         # C++ redist
         cppredist64                            = 'https://aka.ms/vs/15/release/vc_redist.x64.exe'
