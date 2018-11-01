@@ -1718,7 +1718,6 @@ function Add-LabDiskDefinition
         [string]$Name,
 
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
-        [ValidateRange(20, 1024)]
         [ValidateNotNullOrEmpty()]
         [int]$DiskSizeInGb = 60,
 
