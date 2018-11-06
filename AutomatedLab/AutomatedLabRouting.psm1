@@ -7,7 +7,7 @@ function Install-LabRouting
         [int]$InstallationTimeout = 15,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry

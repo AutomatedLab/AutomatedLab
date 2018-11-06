@@ -35,7 +35,7 @@ namespace AutomatedLab
             messageContainer = new ValidationMessageContainer();
 
             if (validationSettings == null)
-                validationSettings = (Hashtable)PowerShellHelper.InvokeCommand("(Get-Module -Name AutomatedLabDefinition -ListAvailable).PrivateData.ValidationSettings").FirstOrDefault().BaseObject;
+                validationSettings = (Hashtable)PowerShellHelper.InvokeCommand("Get-LabConfigurationItem -Name ValidationSettings").FirstOrDefault().BaseObject;
         }
 
         public ValidationMessageContainer RunValidation()

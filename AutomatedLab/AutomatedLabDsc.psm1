@@ -166,7 +166,7 @@ function Install-LabDscPullServer
     }
 
 
-    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labsources\SoftwarePackages -PassThru
+    $accessDbEngine = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name AccessDatabaseEngine2016x86) -Path $labsources\SoftwarePackages -PassThru
     $jobs = @()
 
     foreach ($machine in $machines)
@@ -370,7 +370,7 @@ function Invoke-LabDscConfiguration
 
     if ($PSCmdlet.ParameterSetName -eq 'New')
     {
-        $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
+        $outputPath = Invoke-Expression -Command $(Get-LabConfigurationItem -Name DscMofPath)
         if (-not (Test-Path -Path $outputPath))
         {
             mkdir -Path $outputPath -Force

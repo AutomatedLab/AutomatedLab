@@ -1,4 +1,4 @@
-$azureRetryCount = (Get-Module -ListAvailable -Name AutomatedLabWorker)[0].PrivateData.AzureRetryCount
+$azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
 #region New-LWAzureVM
 function New-LWAzureVM
@@ -263,7 +263,7 @@ function New-LWAzureVM
     }
     elseif ($machine.AzureProperties.UseAllRoleSizes)
     {
-        $DefaultAzureRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
+        $DefaultAzureRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
         $roleSize = $lab.AzureSettings.RoleSizes |
             Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
             Sort-Object -Property MemoryInMB, NumberOfCores |
@@ -828,7 +828,7 @@ function Stop-LWAzureVM
         $ComputerName,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [switch]
         $NoNewLine,

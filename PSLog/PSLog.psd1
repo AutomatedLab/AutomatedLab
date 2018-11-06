@@ -19,15 +19,5 @@
     
     ModuleList                = @('PSLog')
     
-    PrivateData               = @{
-        AutoStart           = $true
-        DefaultFolder       = $null
-        DefaultName         = 'PSLog'
-        Level               = 'All'
-        Silent              = $false
-        TruncateTypes       = @(
-            'System.Management.Automation.ScriptBlock'
-        )
-        TruncateLength      = 50
-    }
+    PrivateData               = @{ }
 }

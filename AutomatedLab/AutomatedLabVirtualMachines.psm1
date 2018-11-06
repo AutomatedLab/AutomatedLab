@@ -153,8 +153,8 @@ function Start-LabVM
         [switch]$NoNewline,
 
         [int]$DelayBetweenComputers = 0,
-
-        [int]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StartLabMachine_Online,
+        
+        [int]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StartLabMachine_Online),
 
         [int]$StartNextMachines,
 
@@ -165,7 +165,7 @@ function Start-LabVM
         [switch]$RootDomainMachines,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [int]$PreDelaySeconds = 0,
 
@@ -425,11 +425,11 @@ function Restart-LabVM
         [string[]]$ComputerName,
 
         [switch]$Wait,
-
-        [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_RestartLabMachine_Shutdown,
+        
+        [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown),
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [switch]$NoDisplay,
 
@@ -476,15 +476,15 @@ function Stop-LabVM
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StopLabMachine_Shutdown,
+        
+        [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown),
 
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
 
         [switch]$Wait,
 
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [switch]$NoNewLine,
 
@@ -561,8 +561,8 @@ function Stop-LabVM2
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-
-        [int]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StopLabMachine_Shutdown
+        
+        [int]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown)
     )
 
     $scriptBlock = {
@@ -603,14 +603,14 @@ function Wait-LabVM
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
@@ -802,12 +802,12 @@ function Wait-LabVMRestart
         [string[]]$ComputerName,
 
         [switch]$DoNotUseCredSsp,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
-
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
+        
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
 
         [switch]$NoNewLine,
@@ -874,12 +874,12 @@ function Wait-LabVMShutdown
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [switch]$NoNewLine
     )
 
@@ -973,7 +973,7 @@ function Remove-LabVM
 
     foreach ($machine in $machines)
     {
-        $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
+        $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
         if (-not $doNotUseGetHostEntry)
         {
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
@@ -1137,7 +1137,7 @@ function Connect-LabVM
 
                 if ([bool]$download)
                 {
-                    $downloadUri = (Get-Module AutomatedLab)[0].PrivateData['OpenSshUri']
+                    $downloadUri = Get-LabConfigurationItem -Name OpenSshUri
                     $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath

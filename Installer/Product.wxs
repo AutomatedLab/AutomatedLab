@@ -1,6 +1,5 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Wix
-  xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='AutomatedLab' Id='*' UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149' Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='AutomatedLab Team' >
     <?include Includes.wxi ?>
     <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer" Comments='AutomatedLab Modules Installer' Manufacturer='AutomatedLabTeam' InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
@@ -424,6 +423,13 @@
           </Directory>
         </Directory>
       </Directory>
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="AutomatedLabProgramata" Name="AutomatedLab">
+          <Component Id="ProgramDataComponent" Guid="13564003-6c96-464b-9e3a-3790e73efa21">
+            <File Source="$(var.SolutionDir)Assets\settings.json" />
+          </Component>
+        </Directory>
+      </Directory>
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
           <Directory Id="SAMPLESDIR" Name="Sample Scripts">
@@ -533,6 +539,7 @@
     <Feature Id='Complete' Title='AutomatedLab' Description='The complete package.' Display='expand' Level='1'>
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
+        <ComponentRef Id='ProgramDataComponent'/>
         <ComponentRef Id='PSLogComponent'/>
         <ComponentRef Id='ShipsComponent' />
         <ComponentRef Id ='CommonComponent' />

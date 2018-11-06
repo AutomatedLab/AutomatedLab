@@ -518,8 +518,8 @@ function Import-Lab
         {
             Write-Error -Message "No machines imported from file $machineDefinitionFile" -Exception $_.Exception -ErrorAction Stop
         }
-
-        $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
+    
+        $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
         if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name AzureRm -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
@@ -705,7 +705,7 @@ function Install-Lab
     Write-LogFunctionEntry
     $global:PSLog_Indent = 0
 
-    $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
+    $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
@@ -746,8 +746,8 @@ function Install-Lab
 
     Unblock-LabSources
 
-    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
-
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name NotificationProviders)
+    
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
@@ -1111,9 +1111,9 @@ function Install-Lab
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
         Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
-
-    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
-
+    
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name NotificationProviders)
+    
     Write-LogFunctionExit
 }
 #endregion Install-Lab
@@ -1303,8 +1303,8 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-
-    $doNotSkipNonNonEnglishIso = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DoNotSkipNonNonEnglishIso
+    
+    $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
 
     if ($Azure)
     {
@@ -1906,7 +1906,7 @@ function Install-VisualStudio2013
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_VisualStudio2013Installation
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2013Installation)
     )
 
     Write-LogFunctionEntry
@@ -2025,7 +2025,7 @@ function Install-VisualStudio2015
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_VisualStudio2015Installation
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2015Installation)
     )
 
     Write-LogFunctionEntry
@@ -2716,7 +2716,7 @@ function New-LabPSSession
             }
             elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
             {
-                $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
+                $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
@@ -2777,7 +2777,7 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $(Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
 
@@ -2945,7 +2945,7 @@ function Remove-LabPSSession
         }
         elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
         {
-            if ($doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession)
+            if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {
                 $param.Add('ComputerName', $m.Name)
             }
@@ -3079,8 +3079,8 @@ function Invoke-LabCommand
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
-        if (-not $Retries) { $Retries = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetries }
-        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetryIntervalInSeconds }
+        if (-not $Retries) { $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries }
+        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds }
     }
 
     if ($AsJob)
@@ -4056,6 +4056,41 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
     ForEach-Object {
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
+}
+
+function Get-LabConfigurationItem
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [string]
+        $Name
+    )
+
+    # Default JSON
+    $defaultContent = Get-Content -Path $(Join-Path -Path $env:PROGRAMDATA -ChildPath 'AutomatedLab\settings.json') -Raw | ConvertFrom-JsonNewtonsoft
+
+    # User JSON
+    $userContent = @{ }
+    if (Test-Path -Path $(Join-Path -Path $home -ChildPath 'AutomatedLab\settings.json'))
+    {
+        $userContent = Get-Content -Path $(Join-Path -Path $home -ChildPath 'AutomatedLab\settings.json') -Raw | ConvertFrom-JsonNewtonsoft
+    }
+
+    # Merge
+    foreach ($item in $userContent.GetEnumerator())
+    {
+        $defaultContent[$item.Key] = $item.Value
+    }
+
+    # Return
+    if ($Name)
+    {
+        return $defaultContent[$Name]
+    }
+
+    $defaultContent
 }
 
 #importing the module results in calling the following code multiple times due to module import recursion

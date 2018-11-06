@@ -23,7 +23,7 @@ $installedDotnetVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $proGetS
 if (-not ($installedDotnetVersion | Where-Object Version -GT 4.5))
 {
     Write-ScreenInfo "Installing .net Framework 4.5.2 on '$proGetServer'" -NoNewLine
-    $net452Link = (Get-Module AutomatedLab).PrivateData.dotnet452DownloadLink
+    $net452Link = Get-LabConfigurationItem -Name dotnet452DownloadLink
     $dotnet452Installer = Get-LabInternetFile -Uri $net452Link -Path $labSources\SoftwarePackages -PassThru
     Install-LabSoftwarePackage -Path $dotnet452Installer.FullName -CommandLine '/q /log c:\dotnet452.txt' -ComputerName $proGetServer -AsScheduledJob -UseShellExecute -AsJob -NoDisplay
     Wait-LabVMRestart -ComputerName $proGetServer -TimeoutInMinutes 30

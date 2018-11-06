@@ -701,14 +701,14 @@ function Install-LabRootDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -1003,14 +1003,14 @@ function Install-LabFirstChildDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -1287,14 +1287,14 @@ function Install-LabDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry

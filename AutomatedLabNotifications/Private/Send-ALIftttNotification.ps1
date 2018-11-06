@@ -13,8 +13,8 @@ function Send-ALIftttNotification
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
-    $key = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Ifttt.Key
-    $eventName = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Ifttt.EventName
+    $key = (Get-LabConfigurationItem -Name NotificationProviders).Ifttt.Key
+    $eventName = (Get-LabConfigurationItem -Name NotificationProviders).Ifttt.EventName
 
     $messageBody = @{
         value1 = $lab.Name + " on " + $lab.DefaultVirtualizationEngine

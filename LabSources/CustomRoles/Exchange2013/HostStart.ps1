@@ -272,7 +272,7 @@ function Start-ExchangeInstallation
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
 $exchangeDownloadLink = 'https://download.microsoft.com/download/3/9/B/39B25E37-2265-4FBC-AF87-7CA6CA089615/Exchange2013-x64-cu20.exe'
-$dotnetDownloadLink = (Get-Module -Name AutomatedLab -ListAvailable)[0].PrivateData.dotnet462DownloadLink
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet462DownloadLink
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

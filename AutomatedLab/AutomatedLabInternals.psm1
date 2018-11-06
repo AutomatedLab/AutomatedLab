@@ -773,10 +773,10 @@ function Update-LabSysinternalsTools
     if ((Get-Date) -gt $lastChecked)
     {
         Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
-
-        $sysInternalsUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsUrl
-        $sysInternalsDownloadUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsDownloadUrl
-
+        
+        $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
+        $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
+    
         try
         {
             Write-Verbose -Message 'Web page downloaded'
