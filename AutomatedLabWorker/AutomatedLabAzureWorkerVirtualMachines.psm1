@@ -1,5 +1,3 @@
-$azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-
 #region New-LWAzureVM
 function New-LWAzureVM
 {
@@ -11,6 +9,8 @@ function New-LWAzureVM
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     $lab = Get-Lab
 
     $resourceGroupName = $lab.Name
@@ -471,6 +471,8 @@ function Initialize-LWAzureVM
         [AutomatedLab.Machine[]]$Machine
     )
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+
     $initScript = {
         param(
             [Parameter(Mandatory = $true)]
@@ -708,6 +710,8 @@ function Remove-LWAzureVM
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+
     $Lab = Get-Lab
 
     if ($AsJob)
@@ -758,6 +762,8 @@ function Start-LWAzureVM
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
@@ -842,6 +848,8 @@ function Stop-LWAzureVM
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
 
     $lab = Get-Lab
@@ -929,6 +937,8 @@ function Wait-LWAzureRestartVM
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     $start = $MonitoringStartTime.ToUniversalTime()
 
     Write-Verbose -Message "Starting monitoring the servers at '$start'"
@@ -1011,6 +1021,8 @@ function Get-LWAzureVMStatus
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     $result = @{ }
     $azureVms = Get-AzureRmVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
     if (-not $azureVms)
@@ -1057,6 +1069,8 @@ function Get-LWAzureVMConnectionInfo
     )
 
     Write-LogFunctionEntry
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
     $retryCount = 5
@@ -1120,6 +1134,8 @@ function Enable-LWAzureVMRemoting
 
         [switch]$UseSSL
     )
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     if ($ComputerName)
     {
@@ -1195,6 +1211,8 @@ function Enable-LWAzureWinRm
     )
 
     Write-LogFunctionEntry
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $lab = Get-Lab
     $jobs = @()
@@ -1273,6 +1291,8 @@ function Connect-LWAzureLabSourcesDrive
 
     Write-LogFunctionEntry
 
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    
     if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'CredSsp' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
     {
         return
@@ -1336,6 +1356,8 @@ function Mount-LWAzureIsoImage
 
         [switch]$PassThru
     )
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
@@ -1365,6 +1387,8 @@ function Dismount-LWAzureIsoImage
         [string[]]
         $ComputerName
     )
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Dismounting ISO Images on Azure machines $($ComputerName -join ',')" -ScriptBlock {
 
