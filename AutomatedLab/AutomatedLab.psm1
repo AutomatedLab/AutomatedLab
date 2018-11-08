@@ -4069,7 +4069,12 @@ function Get-LabConfigurationItem
     )
 
     # Default JSON
-    $defaultContent = Get-Content -Path $(Join-Path -Path $env:PROGRAMDATA -ChildPath 'AutomatedLab\settings.json') -Raw | ConvertFrom-JsonNewtonsoft
+    $defaultContent = Get-Content -Path $(Join-Path -Path $(Get-Module AutomatedLab -List).ModuleBase -ChildPath settings.json) -Raw -ErrorAction SilentlyContinue | ConvertFrom-JsonNewtonsoft -ErrorAction SilentlyContinue
+    if (-not $defaultContent)
+    {
+        Write-Verbose -Message 'Default settings not available. Downloading...'
+        Get-LabInternetFile -Uri 'https://raw.githubusercontent.com/automatedlab/automatedlab/automatedlab/settings.json' -Path $(Join-Path -Path $(Get-Module AutomatedLab -List).ModuleBase -ChildPath settings.json) -NoDisplay -Force
+    }
 
     # User JSON
     $userContent = @{ }

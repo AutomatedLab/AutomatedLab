@@ -394,6 +394,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\settings.json" />
                   <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
                   <File Id="AppInsightsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\Microsoft.ApplicationInsights.dll" />
                   <File Id="AppInsightsDiagnosticsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\System.Diagnostics.DiagnosticSource.dll" />
@@ -421,13 +422,6 @@
             </Directory>
             <!--______________________________________________________________________________-->
           </Directory>
-        </Directory>
-      </Directory>
-      <Directory Id="CommonAppDataFolder">
-        <Directory Id="AutomatedLabProgramata" Name="AutomatedLab">
-          <Component Id="ProgramDataComponent" Guid="13564003-6c96-464b-9e3a-3790e73efa21">
-            <File Source="$(var.SolutionDir)Assets\settings.json" />
-          </Component>
         </Directory>
       </Directory>
       <Directory Id="LABSOURCESVOLUME">
@@ -539,7 +533,6 @@
     <Feature Id='Complete' Title='AutomatedLab' Description='The complete package.' Display='expand' Level='1'>
       <Feature Id='Modules' Title='Modules' Description='AutomatedLab PowerShell Modules' Level='1'>
         <ComponentRef Id='PSFileTransferComponent'/>
-        <ComponentRef Id='ProgramDataComponent'/>
         <ComponentRef Id='PSLogComponent'/>
         <ComponentRef Id='ShipsComponent' />
         <ComponentRef Id ='CommonComponent' />
