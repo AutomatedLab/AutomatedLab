@@ -16,7 +16,7 @@ namespace AutomatedLab
 
         public override IEnumerable<ValidationMessage> Validate()
         {
-            var mandatoryRoleProperties = new Hashtable(validationSettings["MandatoryRoleProperties"]);
+            var mandatoryRoleProperties = new Hashtable((System.Collections.Specialized.OrderedDictionary)validationSettings["MandatoryRoleProperties"]);
             var machinesWithRoles = machines.Where(machine => machine.Roles.Count > 0);
 
             foreach (var machine in machinesWithRoles)
