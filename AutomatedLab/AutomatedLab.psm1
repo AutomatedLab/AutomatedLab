@@ -4069,7 +4069,7 @@ function Get-LabConfigurationItem
     )
 
     # Default JSON
-    $defaultContent = Get-Content -Path $(Join-Path -Path $(Get-Module AutomatedLab -List).ModuleBase -ChildPath settings.json) -Raw -ErrorAction SilentlyContinue | ConvertFrom-JsonNewtonsoft -ErrorAction SilentlyContinue
+    $defaultContent = Get-Content -Path $(Join-Path -Path $(Get-Module AutomatedLab).ModuleBase -ChildPath settings.json) -Raw -ErrorAction SilentlyContinue | ConvertFrom-JsonNewtonsoft -ErrorAction SilentlyContinue
     if (-not $defaultContent)
     {
         Write-Verbose -Message 'Default settings not available. Downloading...'
