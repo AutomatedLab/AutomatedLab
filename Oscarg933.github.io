@@ -1,0 +1,9 @@
+Microsoft.github.io
+Gazebo
+Jenkins.io
+Cronjobs
+.coveralls
+Jira.attlasian
+Circle.ci
+complex.parallels
+template_container_blob.generators
