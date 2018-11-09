@@ -75,10 +75,14 @@
       "Mail": {
         "Port": 25,
         "SmtpServer": "Your SMTP server here",
-        "To": "Your recipient array here",
+        "To": [
+          "Your recipient array here"
+        ],
         "From": "Your sender here",
         "Priority": "Normal",
-        "CC": "Your CC array here"
+        "CC": [
+          "Your CC array here"
+        ]
       }
     },
     {
