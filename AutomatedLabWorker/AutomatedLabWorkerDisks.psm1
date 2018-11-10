@@ -36,6 +36,8 @@ function New-LWReferenceVHDX
 
     try
     {
+        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess).FDVDenyWriteAccess
+
         $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
         Write-Verbose "The Windows Image list contains $($imageList.Count) items"
 
@@ -72,6 +74,9 @@ function New-LWReferenceVHDX
         Initialize-Disk -Number $vhdDiskNumber -PartitionStyle $PartitionStyle | Out-Null
         if ($PartitionStyle -eq 'MBR')
         {
+            if ($FDVDenyWriteAccess) {
+                Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+            }
             $vhdWindowsDrive = New-Partition -DiskNumber $vhdDiskNumber -UseMaximumSize -IsActive -AssignDriveLetter |
             Format-Volume -FileSystem NTFS -NewFileSystemLabel 'System' -Confirm:$false
         }
@@ -103,6 +108,9 @@ exit
 
             $reservedPartition = New-Partition -DiskNumber $vhdDiskNumber -GptType '{e3c9e316-0b5c-4db8-817d-f92df00215ae}' -Size 128MB
 
+            if ($FDVDenyWriteAccess) {
+                Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+            }
             $vhdWindowsDrive = New-Partition -DiskNumber $vhdDiskNumber -UseMaximumSize -AssignDriveLetter |
             Format-Volume -FileSystem NTFS -NewFileSystemLabel 'System' -Confirm:$false
         }
@@ -172,6 +180,9 @@ exit
         Dismount-DiskImage -ImagePath $ReferenceVhdxPath
         Dismount-DiskImage -ImagePath $IsoOsPath
         Remove-Item -Path $ReferenceVhdxPath -Force #removing as the creation did not succeed
+        if ($FDVDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
+        }
 
         throw $_.Exception
     }
@@ -179,6 +190,9 @@ exit
     Write-Verbose 'Dismounting ISO and new disk'
     Dismount-DiskImage -ImagePath $ReferenceVhdxPath
     Dismount-DiskImage -ImagePath $IsoOsPath
+    if ($FDVDenyWriteAccess) {
+        Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
+    }
     Write-ScreenInfo -Message 'Finished creating base image' -TaskEnd
 
     $end = Get-Date
