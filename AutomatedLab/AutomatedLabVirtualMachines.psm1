@@ -44,6 +44,11 @@ function New-LabVM
 
     foreach ($machine in $machines)
     {
+        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess).FDVDenyWriteAccess
+        if ($FDVDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+        }
+        
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
 
         if ($machine.HostType -eq 'HyperV')
@@ -83,6 +88,9 @@ function New-LabVM
             $jobs += New-LWAzureVM -Machine $machine
 
             Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        if ($FDVDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
         }
     }
 
