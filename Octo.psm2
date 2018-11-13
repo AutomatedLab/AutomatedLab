@@ -1,0 +1,711 @@
+From 8fada664c507b3f034ccbd46f067d42edabb8570 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Raimund=20And=C3=A9e=20=5BMSFT=5D?= <r.andree@live.com>
+Date: Fri, 26 Oct 2018 14:37:36 +0200
+Subject: [PATCH] Adding initial support for Docker
+
+---
+ AutomatedLab.sln                              |   1 +
+ AutomatedLab/AutomatedLab.psd1                |  15 +-
+ AutomatedLab/AutomatedLab.psm1                |  63 +--
+ AutomatedLab/AutomatedLabDocker.psm1          | 433 ++++++++++++++++++
+ .../AutomatedLabDefinition.psd1               |   2 +
+ Installer/Product.wxs                         |   1 +
+ LabXml/Enums.cs                               |   3 +-
+ 7 files changed, 489 insertions(+), 29 deletions(-)
+ create mode 100644 AutomatedLab/AutomatedLabDocker.psm1
+
+diff --git a/AutomatedLab.sln b/AutomatedLab.sln
+index 3c5618e..47cfc71 100644
+--- a/AutomatedLab.sln
++++ b/AutomatedLab.sln
+@@ -81,6 +81,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
+ 		AutomatedLab\AutomatedLabAzure.psm1 = AutomatedLab\AutomatedLabAzure.psm1
+ 		AutomatedLab\AutomatedLabAzureServices.psm1 = AutomatedLab\AutomatedLabAzureServices.psm1
+ 		AutomatedLab\AutomatedLabDisks.psm1 = AutomatedLab\AutomatedLabDisks.psm1
++		AutomatedLab\AutomatedLabDocker.psm1 = AutomatedLab\AutomatedLabDocker.psm1
+ 		AutomatedLab\AutomatedLabDsc.psm1 = AutomatedLab\AutomatedLabDsc.psm1
+ 		AutomatedLab\AutomatedLabFailover.psm1 = AutomatedLab\AutomatedLabFailover.psm1
+ 		AutomatedLab\AutomatedLabHybrid.psm1 = AutomatedLab\AutomatedLabHybrid.psm1
+diff --git a/AutomatedLab/AutomatedLab.psd1 b/AutomatedLab/AutomatedLab.psd1
+index f6e29c9..f503b7a 100644
+--- a/AutomatedLab/AutomatedLab.psd1
++++ b/AutomatedLab/AutomatedLab.psd1
+@@ -44,7 +44,8 @@
+         'AutomatedLabOffice.psm1',
+         'AutomatedLabHybrid.psm1',
+         'AutomatedLabFailover.psm1',
+-        'AutomatedLabTfs.psm1'
++        'AutomatedLabTfs.psm1',
++        'AutomatedLabDocker.psm1'
+     )
+ 
+     RequiredModules        = @(
+@@ -64,6 +65,7 @@
+         'New-LabSourcesFolder',
+         'Add-LabAzureSubscription',
+         'Add-LabCertificate',
++        'Add-LabDockerImage',
+         'Add-LabVMUserRight',
+         'Add-LabVMWareSettings',
+         'Checkpoint-LabVM',
+@@ -95,6 +97,8 @@
+         'Get-LabAzureWebApp',
+         'Get-LabAzureWebAppStatus',
+         'Get-LabCertificate',
++        'Get-LabDockerContainer',
++        'Get-LabDockerImage',
+         'Get-LabHyperVAvailableMemory',
+         'Get-LabInternetFile',
+         'Get-LabIssuingCA',
+@@ -120,6 +124,7 @@
+         'Install-LabAdfsProxy',
+         'Install-LabAzureServices',
+         'Install-LabDcs',
++        'Install-LabDocker',
+         'Install-LabDnsForwarder',
+         'Install-LabDscClient',
+         'Install-LabDscPullServer',
+@@ -145,6 +150,7 @@
+         'New-LabAzureWebApp',
+         'New-LabAzureRmResourceGroup',
+         'New-LabCATemplate',
++        'New-LabDockerImage'
+         'New-LabPSSession',
+         'New-LabVHDX',
+         'New-LabVM',
+@@ -152,6 +158,8 @@
+         'Remove-Lab',
+         'Remove-LabAzureLabSourcesStorage',
+         'Remove-LabAzureResourceGroup',
++        'Remove-LabDockerContainer',
++        'Remove-LabDockerImage',
+         'Remove-LabDscLocalConfigurationManagerConfiguration',
+         'Remove-LabPSSession',
+         'Remove-LabVariable',
+@@ -177,8 +185,10 @@
+         'Set-LabVMUacStatus',
+         'Show-LabDeploymentSummary',
+         'Start-LabAzureWebApp',
++        'Start-LabDockerContainer',
+         'Start-LabVM',
+         'Stop-LabAzureWebApp',
++        'Stop-LabDockerContainer',
+         'Stop-LabVM',
+         'Sync-LabActiveDirectory',
+         'Sync-LabAzureLabSources',
+@@ -321,10 +331,11 @@
+         #TFS Build Agent
+         BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
+ 
+-
+         # OpenSSH
+         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
+ 
++        DockerForWindowsDownloadUri            = 'https://download.docker.com/win/stable/Docker%20for%20Windows%20Installer.exe'
++
+         AzureLocationsUrls                     = @{
+             "West Europe"         = "speedtestwe"
+             "Southeast Asia"      = "speedtestsea" 
+diff --git a/AutomatedLab/AutomatedLab.psm1 b/AutomatedLab/AutomatedLab.psm1
+index 0e3120c..b4bda32 100644
+--- a/AutomatedLab/AutomatedLab.psm1
++++ b/AutomatedLab/AutomatedLab.psm1
+@@ -18,11 +18,11 @@ function Enable-LabHostRemoting
+     $message = "AutomatedLab needs to enable / relax some PowerShell Remoting features.`nYou will be asked before each individual change. Are you OK to proceed?"
+     if (-not $Force)
+     {
+-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+-    if ($choice -eq 0 -and -not $Force)
+-    {
+-        throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+-    }    
++        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
++        if ($choice -eq 0 -and -not $Force)
++        {
++            throw "Changes to PowerShell remoting on the host machine are mandatory to use AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
++        }    
+     }
+     
+     if ((Get-Service -Name WinRM).Status -ne 'Running')
+@@ -40,11 +40,11 @@ function Enable-LabHostRemoting
+         $message = "AutomatedLab needs to enable CredSsp on the host in order to delegate credentials to the lab VMs.`nAre you OK with enabling CredSsp?"
+         if (-not $Force)
+         {
+-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
+-        if ($choice -eq 0 -and -not $Force)
+-        {
+-            throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
+-        }
++            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Enabling WinRM and CredSsp' -Message $message -Default 1
++            if ($choice -eq 0 -and -not $Force)
++            {
++                throw "CredSsp is required in order to deploy VMs with AutomatedLab. You can make the changes later by calling 'Enable-LabHostRemoting'"
++            }
+         }
+     
+         Write-ScreenInfo "Enabling CredSSP on the host machine for role 'Client'. Delegated computers = '*'..." -NoNewLine
+@@ -67,12 +67,12 @@ function Enable-LabHostRemoting
+         
+         if (-not $Force)
+         {
+-        $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
+-        $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
+-        if ($choice -eq 0 -and -not $Force)
+-        {
+-            throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
+-        }
++            $message = "AutomatedLab needs to connect to machines using NTLM which does not support mutual authentication. Hence all possible machine names must be put into trusted hosts.`n`nAre you ok with putting '*' into TrustedHosts to allow the host connect to any possible lab VM?"
++            $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption "Setting TrustedHosts to '*'" -Message $message -Default 1
++            if ($choice -eq 0 -and -not $Force)
++            {
++                throw "AutomatedLab requires the host to connect to any possible lab machine using NTLM. You can make the changes later by calling 'Enable-LabHostRemoting'"
++            }
+         }
+         
+         Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
+@@ -696,6 +696,7 @@ function Install-Lab
+         [switch]$Office2016,
+         [switch]$AzureServices,
+         [switch]$TeamFoundation,
++        [switch]$Docker,
+         [switch]$StartRemainingMachines,
+         [switch]$CreateCheckPoints,
+         [int]$DelayBetweenComputers,
+@@ -878,7 +879,7 @@ function Install-Lab
+         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
+         
+         #Install-DHCP
+-		Write-Error 'The DHCP role is not implemented yet'
++        Write-Error 'The DHCP role is not implemented yet'
+         
+         Write-ScreenInfo -Message 'Done' -TaskEnd
+     }
+@@ -1072,6 +1073,16 @@ function Install-Lab
+         Install-LabTeamFoundationEnvironment
+         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
+     }
++
++    if (($Docker -or $performAll) -and (Get-LabVM -Role Docker))
++    {
++        Write-ScreenInfo -Message 'Installing Docker'
++        Write-ScreenInfo -Message "Machines to have Docker installed: '$((Get-LabVM -Role Docker).Name -join ', ')'"
++
++        Install-LabDocker
++
++        Write-ScreenInfo -Message 'Docker deployed'
++    }
+     
+     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
+     {
+@@ -3758,8 +3769,8 @@ function Set-LabDefaultVirtualizationEngine
+ #region Get-LabSourcesLocation
+ function Get-LabSourcesLocation
+ {
+-	# .ExternalHelp AutomatedLab.Help.xml
+-	param
++    # .ExternalHelp AutomatedLab.Help.xml
++    param
+     (
+         [switch]$Local
+     )
+@@ -3921,14 +3932,14 @@ function New-LabSourcesFolder
+         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
+         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+ 
+-		try
+-		{
+-			Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+-		}
++        try
++        {
++            Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
++        }
+         catch
+-		{
+-			Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
+-		}
++        {
++            Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
++        }
+         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
+ 
+         if (-not (Test-Path -Path $Path))
+diff --git a/AutomatedLab/AutomatedLabDocker.psm1 b/AutomatedLab/AutomatedLabDocker.psm1
+new file mode 100644
+index 0000000..101487a
+--- /dev/null
++++ b/AutomatedLab/AutomatedLabDocker.psm1
+@@ -0,0 +1,433 @@
++﻿#region Install-LabDocker
++function Install-LabDocker
++{
++    # .ExternalHelp AutomatedLab.Help.xml
++    [cmdletBinding()]
++    param (
++        [int]$InstallationTimeout = 15
++    )
++    
++    Write-LogFunctionEntry
++
++    $roleName = [AutomatedLab.Roles]::Docker
++
++    if (-not (Get-LabVM))
++    {
++        Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
++        Write-LogFunctionExit
++        return
++    }
++
++    $machines = Get-LabVM -Role $roleName    
++    if (-not $machines)
++    {
++        Write-ScreenInfo -Message "No machines with the role '$roleName' defined in this lab, so there is nothing to do"
++        Write-LogFunctionExit
++        return
++    }
++
++    $windowsMachines = $machines | Where-Object OperatingSystemType -eq 'Windows'
++    $linuxMachines = $machines | Where-Object OperatingSystemType -eq 'Linux'
++
++    if ($windowsMachines)
++    {
++        Install-LabDockerForWindows -Machines $windowsMachines
++    }
++
++    if ($linuxMachines)
++    {
++        Write-Error -Exception (New-Object System.NotImplementedException)
++    }
++    
++    Write-LogFunctionExit
++}
++#endregion Install-LabDocker
++
++function Install-LabDockerForWindows
++{
++    # .ExternalHelp AutomatedLab.Help.xml
++    [cmdletBinding()]
++    param (
++        [Parameter(Mandatory)]
++        [AutomatedLab.Machine[]]$Machines,
++
++        [int]$InstallationTimeout = 15
++    )
++
++    Write-LogFunctionEntry
++
++    Write-ScreenInfo "Setting ExposeVirtualizationExtensions on machines '$($Machines.Name -join ', ')'" 
++    Get-VM -Name $Machines | Set-VMProcessor -ExposeVirtualizationExtensions $true
++
++    Write-ScreenInfo 'Starting Docker servers and waiting until they are ready' -NoNewLine
++    Start-LabVM -RoleName Docker -ProgressIndicator 15 -Wait
++
++    Write-ScreenInfo "Installing the features 'Hyper-V, Containers' on machines '$($Machines.Name -join ', ')'"
++    Install-LabWindowsFeature -ComputerName $Machines -FeatureName Hyper-V, Containers -IncludeAllSubFeature -IncludeManagementTools -NoDisplay
++    Restart-LabVM -ComputerName $Machines -Wait #A restart is required by the Hyper-V installer
++    #Start-Sleep -Seconds 5
++    #Wait-LabVMRestart -ComputerName $Machines -TimeoutInMinutes 2 #As the Hyper-V installation does another restart
++
++    $dockerForWindowsDownloadUri = (Get-Module AutomatedLab).PrivateData.DockerForWindowsDownloadUri
++
++    $dockerInstallFile = Get-LabInternetFile -Uri $dockerForWindowsDownloadUri -Path $global:labSources\SoftwarePackages -PassThru
++
++    Write-ScreenInfo "Installing Docker for Windows in $($Machines.Count) machines." -NoNewLine
++    $installJob = Install-LabSoftwarePackage -Path $dockerInstallFile.FullName -CommandLine 'install --quiet' -ComputerName $Machines -UseShellExecute -AsJob -PassThru -NoDisplay
++    Wait-LWLabJob -Job $installJob -ProgressIndicator 10 -Timeout $InstallationTimeout
++
++    Restart-LabVM -ComputerName $Machines -Wait
++
++    Invoke-LabCommand -ActivityName 'Switching Docker to use Windows Containers' -ComputerName $Machines -ScriptBlock {
++        
++        $result = docker info *>&1 | Out-String
++        while ($result -match 'docker : error during connect|Error response from daemon: An invalid argument was supplied')
++        {
++            $result = docker info *>&1 | Out-String
++        }
++
++        & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
++
++        if (-not (docker info | Where-Object { $_ -like '*OSType: windows*' }))
++        {
++            & $Env:ProgramFiles\Docker\Docker\DockerCli.exe -SwitchWindowsEngine
++        }
++
++        if (-not (docker info | Where-Object { $_ -like '*OSType: windows*' }))
++        {
++            Write-Error "Failed to switch docker to Windows Containers on on '$(HOSTNAME.EXE)'"
++        }
++    }
++
++    foreach ($machine in $Machines)
++    {
++        $role = $machine.Roles | Where-Object Name -eq 'Docker'
++        if ($role.Properties.DataRoot)
++        {
++            $dataRoot = $role.Properties.DataRoot
++            Invoke-LabCommand -ActivityName 'Setting docker data-root' -ComputerName $machine -ScriptBlock {
++                if (-not (Test-Path -Path $dataRoot))
++                {
++                    mkdir -Path $dataRoot
++                }
++            
++                $daemonConfig = Get-Content -Path C:\ProgramData\Docker\config\daemon.json | ConvertFrom-Json
++                if ($daemonConfig.'data-root')
++                {
++                    $daemonConfig.'data-root' = $dataRoot
++                }
++                else
++                {
++                    $daemonConfig | Add-Member -Name data-root -MemberType NoteProperty -Value $dataRoot
++                }
++                $daemonConfig | ConvertTo-Json | Out-File -FilePath C:\ProgramData\Docker\config\daemon.json
++            } -Variable (Get-Variable -Name dataRoot)
++        }
++    }
++
++    Restart-LabVM -ComputerName $Machines -Wait
++
++    Write-LogFunctionExit
++}
++
++function Add-LabDockerImage
++{
++    [cmdletBinding(DefaultParameterSetName = 'FromLocalFile')]
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory, ParameterSetName = 'FromLocalFile')]
++        [string]$Path,
++
++        [Parameter(Mandatory, ParameterSetName = 'FromInternet')]
++        [string]$ImageName,
++
++        [switch]$PassThru
++    )
++
++    Write-LogFunctionEntry
++
++    if ($PSCmdlet.ParameterSetName -eq 'FromLocalFile')
++    {
++        Copy-LabFileItem -Path $Path -ComputerName $ComputerName -DestinationFolderPath C:\
++        $Path = "C:\$(Split-Path -Path $Path -Leaf)"
++    }
++
++    $variables = Get-Variable -Name Path, ImageName
++
++    Invoke-LabCommand -ActivityName "Adding Docker image" -ComputerName $computerName -ScriptBlock {
++        $Name = $args[0]
++        $Path = $args[1]
++        Set-Location -Path C:\
++        if ($Path)
++        {
++            docker load -i $Path
++        }
++        else
++        {
++            docker pull $ImageName
++        }
++
++        docker images 
++
++        Remove-Item -Path $Path -Force
++
++    } -ArgumentList $Name, $Path -NoDisplay
++
++    if ($PassThru)
++    {
++        Get-LabDockerImage -ComputerName $ComputerName
++    }
++
++    Write-LogFunctionExit
++}
++
++function Get-LabDockerImage
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName
++    )
++
++    Write-LogFunctionEntry
++
++    Invoke-LabCommand -ActivityName "Get Docker image" -ComputerName $computerName -ScriptBlock {
++
++        docker images --format "table {{.Repository}}|{{.Tag}}|{{.ID}}|{{.CreatedAt}}|{{.Size}}" | ConvertFrom-Csv -Delimiter '|'
++
++    } -NoDisplay -PassThru
++
++    Write-LogFunctionExit
++}
++
++function Remove-LabDockerImage
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory)]
++        [string]$ImageName
++    )
++
++    Write-LogFunctionEntry
++
++    $image = Get-LabDockerImage -ComputerName $ComputerName | Where-Object Repository -eq $ImageName
++    if (-not $image)
++    {
++        Write-Error "The Docker image with the name '$ImageName' could not be found"
++        return
++    }
++
++    Invoke-LabCommand -ActivityName "Get Docker image" -ComputerName $computerName -ScriptBlock {
++        $id = $args[0]        
++        
++        docker rmi $id -f
++
++    } -ArgumentList $image.'IMAGE ID' -NoDisplay
++
++    Write-LogFunctionExit
++}
++
++function Get-LabDockerContainer
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName
++    )
++
++    Write-LogFunctionEntry
++
++    Invoke-LabCommand -ActivityName "Get Docker containers" -ComputerName $computerName -ScriptBlock {
++
++        docker ps --all --format "table {{.ID}}|{{.Image}}|{{.Command}}|{{.CreatedAt}}|{{.Status}}|{{.Ports}}" | ConvertFrom-Csv -Delimiter '|'
++
++    } -NoDisplay -PassThru
++
++    Write-LogFunctionExit
++}
++
++function Stop-LabDockerContainer
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByImageName')]
++        [string]$ImageName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByContainerId')]
++        [string]$ContainerId
++    )
++
++    Write-LogFunctionEntry
++
++    $containers = if ($ImageName)
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object Image -eq $ImageName
++    }
++    else
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object { $_.'Container Id' -eq $ContainerId }
++    }
++
++    if (-not $containers)
++    {
++        Write-Error "The Docker image with the name '$ImageName' could not be found"
++        return
++    }
++
++    Invoke-LabCommand -ActivityName "Stopping Docker Container" -ComputerName $computerName -ScriptBlock {
++        $containers = $args
++        
++        foreach ($container in $containers)
++        {
++            docker stop $container.'CONTAINER ID'
++        }
++
++    } -ArgumentList $containers -NoDisplay
++
++    Write-LogFunctionExit
++}
++
++function Start-LabDockerContainer
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByImageName')]
++        [string]$ImageName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByContainerId')]
++        [string]$ContainerId
++    )
++
++    Write-LogFunctionEntry
++
++    $containers = if ($ImageName)
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object Image -eq $ImageName
++    }
++    else
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object { $_.'Container Id' -eq $ContainerId }
++    }
++
++    if (-not $containers)
++    {
++        Write-Error "The Docker image with the name '$ImageName' could not be found"
++        return
++    }
++
++    Invoke-LabCommand -ActivityName "Starting Docker Container" -ComputerName $computerName -ScriptBlock {
++        $containers = $args
++        
++        foreach ($Container in $containers)
++        {
++            docker start $Container.'CONTAINER ID'
++        }
++
++    } -ArgumentList $containers -NoDisplay
++
++    Write-LogFunctionExit
++}
++
++function Remove-LabDockerContainer
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByImageName')]
++        [string]$ImageName,
++
++        [Parameter(Mandatory, ParameterSetName = 'ByContainerId')]
++        [string]$ContainerId
++    )
++
++    Write-LogFunctionEntry
++
++    $containers = if ($ImageName)
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object Image -eq $ImageName
++    }
++    else
++    {
++        Get-LabDockerContainer -ComputerName $ComputerName | Where-Object { $_.'Container Id' -eq $ContainerId }
++    }
++
++    if (-not $containers)
++    {
++        Write-Error "The Docker image with the name '$ImageName' could not be found"
++        return
++    }
++
++    Invoke-LabCommand -ActivityName "Removing Docker Container" -ComputerName $computerName -ScriptBlock {
++        $containers = $args
++        
++        foreach ($Container in $containers)
++        {
++            docker rm $Container.'CONTAINER ID'
++        }
++
++    } -ArgumentList $containers -NoDisplay
++
++    Write-LogFunctionExit
++}
++
++function New-LabDockerImage
++{
++    param(
++        [Parameter(Mandatory)]
++        [string]$ComputerName,
++
++        [Parameter(Mandatory, ValueFromPipeline, ValueFromPipelineByPropertyName)]
++        [string]$Path,
++
++        [Parameter(ValueFromPipelineByPropertyName)]
++        [string]$ImageName
++    )
++
++    begin
++    {
++        Write-LogFunctionEntry
++    }
++
++    process
++    {
++        if (-not (Test-Path -Path $Path -PathType Container))
++        {
++            Write-Error "The path '$Path' does not exist"
++            return
++        }
++        if (-not (Get-ChildItem -Path $Path -Filter dockerfile))
++        {
++            Write-Error "There is no dockerfile in the path '$Path'. This file is required."
++            return
++        }
++
++        Copy-LabFileItem -Path $Path -ComputerName $ComputerName -DestinationFolderPath C:\
++        $Path = "C:\$(Split-Path -Path $Path -Leaf)"
++        if (-not $ImageName)
++        {
++            $ImageName = Split-Path -Path $Path -Leaf
++        }
++
++        Invoke-LabCommand -ActivityName "Creating new Docker image" -ComputerName $computerName -ScriptBlock {
++            $path = $args[0]
++            $imageName = $args[1]
++            Set-Location -Path $path
++            docker build -t $imageName.ToLower() .
++
++            Remove-Item -Path $path -Recurse -Force
++        
++        } -ArgumentList $Path, $ImageName -NoDisplay
++    }
++
++    end
++    {
++        Write-LogFunctionExit
++    }
++}
+\ No newline at end of file
+diff --git a/AutomatedLabDefinition/AutomatedLabDefinition.psd1 b/AutomatedLabDefinition/AutomatedLabDefinition.psd1
+index 14657fa..24e30c9 100644
+--- a/AutomatedLabDefinition/AutomatedLabDefinition.psd1
++++ b/AutomatedLabDefinition/AutomatedLabDefinition.psd1
+@@ -103,6 +103,8 @@
+                 Orchestrator2012 = 'DatabaseServer', 'DatabaseName', 'ServiceAccount', 'ServiceAccountPassword'
+ 
+                 DSCPullServer = 'DoNotPushLocalModules', 'DatabaseEngine', 'SqlServer', 'DatabaseName'
++
++                Docker = 'DataRoot'
+             }
+ 
+             MandatoryRoleProperties = @{
+diff --git a/Installer/Product.wxs b/Installer/Product.wxs
+index a33057b..141f7dd 100644
+--- a/Installer/Product.wxs
++++ b/Installer/Product.wxs
+@@ -383,6 +383,7 @@
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADCS.psm1" />
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDisks.psm1" />
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDsc.psm1" />
++                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabDocker.psm1" />
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabInternals.psm1" />
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabOffice.psm1" />
+                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
+diff --git a/LabXml/Enums.cs b/LabXml/Enums.cs
+index 610de76..36b4301 100644
+--- a/LabXml/Enums.cs
++++ b/LabXml/Enums.cs
+@@ -66,7 +66,8 @@ public enum Roles : long
+         Tfs2017 = 2147483648,
+         TfsBuildWorker = 4294967296,
+         Tfs2018 = 8589934592,
+-        SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017
++        SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017,
++        Docker = 17179869184
+     }
+ 
+     public enum ActiveDirectoryFunctionalLevel
