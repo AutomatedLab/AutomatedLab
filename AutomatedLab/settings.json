@@ -188,7 +188,9 @@
       "Office2016": "SharedComputerLicensing",
       "DSCPullServer": [
         "DoNotPushLocalModules",
-        "DatabaseEngine"
+        "DatabaseEngine",
+        "SqlServer",
+        "DatabaseName"
       ],
       "FirstChildDC": [
         "ParentDomain",
