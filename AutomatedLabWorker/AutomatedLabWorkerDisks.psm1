@@ -36,7 +36,7 @@ function New-LWReferenceVHDX
 
     try
     {
-        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess).FDVDenyWriteAccess
+        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
 
         $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
         Write-Verbose "The Windows Image list contains $($imageList.Count) items"
