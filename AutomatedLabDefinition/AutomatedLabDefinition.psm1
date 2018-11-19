@@ -1577,11 +1577,11 @@ function Add-LabIsoImageDefinition
             if (-not $script:lab.DefaultVirtualizationEngine -eq 'Azure')
             {
                 Write-Verbose "The ISO '$($iso.Path)' with a size '$($iso.Size)' is not in the cache. Reading the operating systems from ISO."
-                Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO
+                [void] (Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO)
                 Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
                 $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
                 $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim") -or (Test-Path "$letter`:\.discinfo") -or (Test-Path "$letter`:\isolinux") -or (Test-Path "$letter`:\suse")
-                DisMount-DiskImage -ImagePath $isoFile.FullName
+                [void] (DisMount-DiskImage -ImagePath $isoFile.FullName)
             }
 
             if ($isOperatingSystem)

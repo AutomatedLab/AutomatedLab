@@ -355,7 +355,7 @@ function Update-LabIsoImage
 
             Write-Verbose "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
-            Dismount-DiskImage -ImagePath $SourceIsoImagePath
+            [void] (Dismount-DiskImage -ImagePath $SourceIsoImagePath)
             Write-Verbose 'Copy complete'
         }
         else
@@ -382,7 +382,7 @@ function Update-LabIsoImage
 
         $image = Mount-DiskImage $IsoImagePath -PassThru
         $image | Get-Volume | Select-Object -ExpandProperty FileSystemLabel
-        $image | Dismount-DiskImage
+        [void] ($image | Dismount-DiskImage)
     }
     #endregion Get-IsoImageName
 
