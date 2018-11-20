@@ -4068,34 +4068,45 @@ function Get-LabConfigurationItem
         $Name
     )
 
-    # Default JSON
-    $defaultContent = Get-Content -Path $(Join-Path -Path $(Get-Module AutomatedLab).ModuleBase -ChildPath settings.json) -Raw -ErrorAction SilentlyContinue | ConvertFrom-JsonNewtonsoft -ErrorAction SilentlyContinue
-    if (-not $defaultContent)
+    $globalPath = Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'Datum\settings.psd1' -Resolve
+    $userPath = Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1'
+
+    if (-not (Test-Path -Path $userPath))
     {
-        Write-Verbose -Message 'Default settings not available. Downloading...'
-        Get-LabInternetFile -Uri 'https://raw.githubusercontent.com/automatedlab/automatedlab/automatedlab/settings.json' -Path $(Join-Path -Path $(Get-Module AutomatedLab -List).ModuleBase -ChildPath settings.json) -NoDisplay -Force
+        [void] $(New-Item -Path $userPath -ItemType File -Value '@{ }' -Force)
     }
 
-    # User JSON
-    $userContent = @{ }
-    if (Test-Path -Path $(Join-Path -Path $home -ChildPath 'AutomatedLab\settings.json'))
-    {
-        $userContent = Get-Content -Path $(Join-Path -Path $home -ChildPath 'AutomatedLab\settings.json') -Raw | ConvertFrom-JsonNewtonsoft
-    }
+    $d = @"
+ResolutionPrecedence:
+  - User
+  - Global
+default_lookup_options: hash
+lookup_options:
+  Settings:
+    merge_hash: deep
 
-    # Merge
-    foreach ($item in $userContent.GetEnumerator())
-    {
-        $defaultContent[$item.Key] = $item.Value
-    }
+DatumStructure:
+  - StoreName: Global
+    StoreProvider: Datum::File
+    StoreOptions:
+      Path: $globalPath
+  - StoreName: User
+    StoreProvider: Datum::File
+    StoreOptions:
+      Path: $userPath
+"@ | ConvertFrom-Yaml
 
+    $datum = New-DatumStructure -DatumHierarchyDefinition $d
+
+    $settings = $(Resolve-NodeProperty -PropertyPath Settings -DatumTree $datum).Settings
+    
     # Return
     if ($Name)
     {
-        return $defaultContent[$Name]
+        return $settings[$Name]
     }
 
-    $defaultContent
+    $settings
 }
 
 #importing the module results in calling the following code multiple times due to module import recursion

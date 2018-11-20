@@ -55,7 +55,8 @@
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        'AutomatedLab.Common'
+        'AutomatedLab.Common',
+        'Datum'
     )
 
     CmdletsToExport        = @()
