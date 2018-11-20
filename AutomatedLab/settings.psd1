@@ -49,8 +49,8 @@
     "cppredist32"                            = "https://aka.ms/vs/15/release/vc_redist.x86.exe"
     "SQLServer2017"                          = "https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak"
     "DefaultAzureRoleSize"                   = "D"
-    "DoNotUseGetHostEntryInNewLabPSSession"  = true
-    "DoNotSkipNonNonEnglishIso"              = false
+    "DoNotUseGetHostEntryInNewLabPSSession"  = $true
+    "DoNotSkipNonNonEnglishIso"              = $false
     "Timeout_Sql2008Installation"            = 90
     "SetLocalIntranetSites"                  = "All"
     "Timeout_StartLabMachine_Online"         = 60
@@ -60,7 +60,7 @@
     "Timeout_InstallLabCAInstallation"       = 40
     "SQLServer2012"                          = "https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2012.bak"
     "SQLServer2016"                          = "https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak"
-    "DisableWindowsDefender"                 = true
+    "DisableWindowsDefender"                 = $true
     "SubscribedProviders"                    = @(
         "Toast"
     )
@@ -103,16 +103,16 @@
         "TruncateTypes"  = @(
             "System.Management.Automation.ScriptBlock"
         )
-        "DefaultFolder"  = null
+        "DefaultFolder"  = $null
         "DefaultName"    = "PSLog"
         "Level"          = "All"
-        "Silent"         = false
-        "AutoStart"      = true
+        "Silent"         = $false
+        "AutoStart"      = $true
     }
     "DefaultProgressIndicator"               = 10
     "dotnet471DownloadLink"                  = "https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe"
     "SQLServer2008R2"                        = "http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063"
-    "DscMofPath"                             = "$(Get-LabSourcesLocationInternal -Local)\DscConfigurations\"
+    "DscMofPath"                             = '"$(Get-LabSourcesLocationInternal -Local)\DscConfigurations\"'
     "Timeout_StopLabMachine_Shutdown"        = 30
     "Timeout_Sql2014Installation"            = 90
     "BuildAgentUri"                          = "http://go.microsoft.com/fwlink/?LinkID=829054"
@@ -120,7 +120,7 @@
     "Timeout_DcPromotionAdwsReady"           = 20
     "dotnet462DownloadLink"                  = "https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe"
     "OpenSshUri"                             = "https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip"
-    "SupportGen2VMs"                         = true
+    "SupportGen2VMs"                         = $true
     "AzureRetryCount"                        = 3
     "MemoryWeight_CARoot"                    = 1
     "MemoryWeight_FileServer"                = 2

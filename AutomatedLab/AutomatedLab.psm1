@@ -4068,7 +4068,7 @@ function Get-LabConfigurationItem
         $Name
     )
 
-    $globalPath = Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'Datum\settings.psd1' -Resolve
+    $globalPath = Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1' -Resolve
     $userPath = Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1'
 
     if (-not (Test-Path -Path $userPath))
