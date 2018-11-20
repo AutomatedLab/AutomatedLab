@@ -42,7 +42,7 @@ function New-LWReferenceVHDX
         Write-Verbose "The Windows Image list contains $($imageList.Count) items"
 
         Write-Verbose "Mounting ISO image '$IsoOsPath'"
-        Mount-DiskImage -ImagePath $IsoOsPath
+        [void] (Mount-DiskImage -ImagePath $IsoOsPath)
 
         Write-Verbose 'Getting disk image of the ISO'
         $isoImage = Get-DiskImage -ImagePath $IsoOsPath | Get-Volume
@@ -66,7 +66,7 @@ function New-LWReferenceVHDX
 
         Write-ScreenInfo -Message "Creating base image for operating system '$OsName'" -NoNewLine -TaskStart
 
-        Mount-DiskImage -ImagePath $ReferenceVhdxPath
+        [void] (Mount-DiskImage -ImagePath $ReferenceVhdxPath)
         $vhdDisk = Get-DiskImage -ImagePath $ReferenceVhdxPath | Get-Disk
         $vhdDiskNumber = [string]$vhdDisk.Number
         Write-Verbose "Reference image is on disk number '$vhdDiskNumber'"
@@ -177,8 +177,8 @@ exit
     catch
     {
         Write-Verbose 'Dismounting ISO and new disk'
-        Dismount-DiskImage -ImagePath $ReferenceVhdxPath
-        Dismount-DiskImage -ImagePath $IsoOsPath
+        [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
+        [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
         Remove-Item -Path $ReferenceVhdxPath -Force #removing as the creation did not succeed
         if ($FDVDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
@@ -188,8 +188,8 @@ exit
     }
 
     Write-Verbose 'Dismounting ISO and new disk'
-    Dismount-DiskImage -ImagePath $ReferenceVhdxPath
-    Dismount-DiskImage -ImagePath $IsoOsPath
+    [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
+    [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
     if ($FDVDenyWriteAccess) {
         Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
     }
