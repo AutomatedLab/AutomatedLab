@@ -50,7 +50,8 @@
         }
         "MachineFileName"                      = "Machines.xml"
         "DiskFileName"                         = "Disks.xml"
-        "LabFileName"                          = "Lab.xml"
+        "LabFileName"                          = "Lab.xml"        
+        DefaultAddressSpace                    = '192.168.10.0/24'
         "ValidationSettings"                   = @{
             "ValidRoleProperties"     = @{
                 "Orchestrator2012" = @(
@@ -295,5 +296,8 @@
             "West Central US"     = "speedtestwestcentralus"
             "France Central"      = "speedtestfrc"
         }
+
+        SupportGen2VMs                         = $true
+        AzureRetryCount                        = 3
     }
 }

@@ -207,7 +207,7 @@ function Write-LogFunctionEntry
 
     if (!$Log)
     {
-        if (Get-LabConfigurationItem -Name AutoStart)
+        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
         {
             Write-Verbose 'starting log'
             Start-Log -UseDefaults
@@ -310,7 +310,7 @@ function Write-LogFunctionExit
 
     if (!$Log)
     {
-        if (Get-LabConfigurationItem -Name AutoStart)
+        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
         {
             Start-Log -UseDefaults
         }
@@ -381,7 +381,7 @@ function Write-LogFunctionExitWithError
 
     if (!$Log)
     {
-        if (Get-LabConfigurationItem -Name AutoStart)
+        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
         {
             Start-Log -UseDefaults
         }
@@ -467,7 +467,7 @@ function Write-LogError
 
     if (!$Log)
     {
-        if (Get-LabConfigurationItem -Name AutoStart)
+        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
         {
             Start-Log -UseDefaults
         }
