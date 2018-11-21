@@ -1,11 +1,12 @@
 # Use settings.psd1 from build to check all settings
 $configurationPath = $(Resolve-Path -Path "$PSScriptRoot\..\..\AutomatedLab\settings.psd1" -ErrorAction Stop).Path
 
-if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser}
-if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser}
-if (-not (Get-Module -List Datum)) {Install-Module -Name Datum -Force -SkipPublisherCheck -AllowClobber -Scope CurrentUser}
+if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
+if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber}
+if (-not (Get-Module -List Datum)) {Install-Module -Name Datum -Force -SkipPublisherCheck -AllowClobber}
 
-Import-Module -Name Newtonsoft.Json,powershell-yaml,Datum,"$PSScriptRoot\..\..\AutomatedLab.Common\AutomatedLab.Common" -Force
+Import-Module -Name Newtonsoft.Json,powershell-yaml
+Import-Module -Name Datum,"$PSScriptRoot\..\..\AutomatedLab.Common\AutomatedLab.Common" -Force
 
 $reqdModules = @(
     'AutomatedLabUnattended'
