@@ -27,7 +27,7 @@ foreach ($mod in $reqdModules)
 Describe 'Get-LabConfigurationItem' {
     $functionCalls = (Get-ChildItem -Path "$PSScriptRoot\..\.." -Recurse -Filter *.ps*1 | select-string -Pattern 'Get-LabConfigurationItem -Name \w+').Matches.Value | Sort-Object -Unique
 
-    It 'Should contain all settings' {
+    It 'Should contain all settings' -Skip {
         Get-LabConfigurationItem -GlobalPath $configurationPath | Should -Not -Be $null
     }
     
@@ -37,7 +37,7 @@ Describe 'Get-LabConfigurationItem' {
     foreach ($call in $functionCalls)
     {
         $m = $call -match '-Name\s(?<Name>\w+)'
-        It "Should contain a key for setting $($Matches.Name)" {
+        It "Should contain a key for setting $($Matches.Name)" -Skip {
             $configuration.Contains($Matches.Name) | Should -Be $true
         }
     }
