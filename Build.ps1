@@ -48,7 +48,7 @@
 # Grab nuget bits, install modules, set build variables, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, powershell-yaml, newtonsoft.json, Datum
 
 $lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
 if (-not ($lastestVersion.Version -ge '1.1.7.0'))
