@@ -203,7 +203,7 @@ function Install-LabDscPullServer
         $setupParams = @{
             ComputerName = $machine
             CertificateThumbPrint = $cert.Thumbprint
-            RegistrationKey = (Get-Module AutomatedLab).PrivateData.DscPullServerRegistrationKey
+            RegistrationKey = Get-LabConfigurationItem -Name DscPullServerRegistrationKey
             DatabaseEngine  = $databaseEngine
         }
         if ($role.Properties.DatabaseName) { $setupParams.DatabaseName = $role.Properties.DatabaseName }
