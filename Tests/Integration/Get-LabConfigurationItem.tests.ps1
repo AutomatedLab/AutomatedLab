@@ -1,6 +1,7 @@
 # Use settings.psd1 from build to check all settings
 $rootpath = $PSScriptRoot
 $configurationPath = $(Resolve-Path -Path "$rootpath\..\..\AutomatedLab\settings.psd1" -ErrorAction Stop).Path
+Copy-Item -Path $configurationPath -Destination (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1') -ErrorAction SilentlyContinue -Force
 
 if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber}
