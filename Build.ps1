@@ -48,6 +48,10 @@
 # Grab nuget bits, install modules, set build variables, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
+# Resolve Module will fail since AL requests interactivity
+[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
+$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
+
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, powershell-yaml, newtonsoft.json, Datum
 
 $lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
