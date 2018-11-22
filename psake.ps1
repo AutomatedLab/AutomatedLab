@@ -37,7 +37,7 @@ Task Test -Depends Init {
     # Need to tell psake or it will proceed to the deployment. Danger!
     if ($TestResults.FailedCount -gt 0)
     {
-        Write-Error "Failed '$($TestResults.FailedCount)' tests, build failed"
+        throw "Failed '$($TestResults.FailedCount)' tests, build failed"
     }
     "`n"
 }
