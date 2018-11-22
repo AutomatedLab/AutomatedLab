@@ -39,7 +39,7 @@
             {
                 Write-Verbose -Message "$($moduleName) Missing, installing Module"
                 Install-Module -Name $moduleName -Force -AllowClobber
-                Import-Module -Name $moduleName -Force -RequiredVersion $version
+                Import-Module -Name $moduleName -Force
             }
         }
     }
