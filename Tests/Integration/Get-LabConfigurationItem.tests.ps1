@@ -7,6 +7,8 @@ if (-not (Get-Module -List Datum)) {Install-Module -Name Datum -Force -SkipPubli
 
 Import-Module -Name Newtonsoft.Json,powershell-yaml
 Import-Module -Name Datum,"$PSScriptRoot\..\..\AutomatedLab.Common\AutomatedLab.Common" -Force
+[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
+$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
 
 $reqdModules = @(
     'AutomatedLabUnattended'

@@ -3978,7 +3978,7 @@ We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
 If you want to opt out, please select Yes.
 "@
 
-if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT))
 {
     $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
 
