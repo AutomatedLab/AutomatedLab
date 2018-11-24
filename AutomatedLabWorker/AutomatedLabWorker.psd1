@@ -22,7 +22,11 @@
     RequiredModules = @(
         'AutomatedLabUnattended',
         'PSLog',
-        'PSFileTransfer'
+        'PSFileTransfer',
+        @{
+            ModuleName = "AutomatedLab.Common"; 
+            ModuleVersion = "1.1.87"; 
+        }
     )
     
     NestedModules = @(

@@ -3,7 +3,7 @@ function Import-UnattendedKickstartContent
     param
     (
         [Parameter(Mandatory = $true)]
-        [string[]]
+        [System.Collections.Generic.List[string]]
         $Content
     )
     $script:un = $Content

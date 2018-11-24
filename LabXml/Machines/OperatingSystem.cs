@@ -25,7 +25,7 @@ namespace AutomatedLab
             {"2012-R2-Datacenter", "Windows Server 2012 R2 Datacenter (Server with a GUI)" },
             {"2016-Datacenter", "Windows Server 2016 Datacenter (Desktop Experience)" },
             {"2016-Datacenter-Server-Core", "Windows Server 2016 Datacenter" },
-            {"Datacenter-Core-1709-smalldisk", "Windows Server Datacenter" },
+            {"Datacenter-Core-1803-with-Containers-smalldisk", "Windows Server Datacenter" },
             {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
             {"Windows-10-N-x64", "Windows 10 Enterprise" },
             {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" },
@@ -56,6 +56,8 @@ namespace AutomatedLab
                         case "2012":
                             return (IsR2 ? "6.3" : "6.2");
                         case "2016":
+                            return "10.0";
+                        case "2019":
                             return "10.0";
                         case "7":
                             return "6.1";
@@ -264,6 +266,8 @@ namespace AutomatedLab
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":
                         return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
+                    case "Windows 10 Enterprise for Virtual Desktops":
+                        return "CPWHC-NT2C7-VYW78-DHDB2-PG3GK";
 
                     //Windows Server 2016 new names
                     case "Windows Server 2016 Standard":
@@ -315,13 +319,13 @@ namespace AutomatedLab
 
                     // Windows Server 2019 new names
                     case "Windows Server 2019 Standard (Desktop Experience)":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
                     case "Windows Server 2019 Datacenter (Desktop Experience)":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
                     case "Windows Server 2019 Standard":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
                     case "Windows Server 2019 Datacenter":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
+                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
 
                     default:
                         return string.Empty;

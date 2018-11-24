@@ -83,6 +83,11 @@ namespace AutomatedLab
             set { issuedIpAddresses = value; }
         }
 
+        public VirtualNetwork()
+        {
+            SwitchType = SwitchType.Internal;
+        }
+
         public override string ToString()
         {
             return name;

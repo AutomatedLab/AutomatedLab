@@ -43,8 +43,9 @@ Invoke-LabCommand -ActivityName 'Uninstalling the WebDAV feature' -ScriptBlock {
     Uninstall-WindowsFeature -Name Web-DAV-Publishing
 } -ComputerName $proGetServer #https://github.com/NuGet/NuGetGallery/issues/514
 
-#removing default web page
-Get-Website -Name 'Default Web Site' | Remove-Website
+Invoke-LabCommand -ActivityName 'Removing Default Web Page' -ScriptBlock {
+    Get-Website -Name 'Default Web Site' | Remove-Website
+} -ComputerName $proGetServer
 
 #download ProGet
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
@@ -157,7 +158,7 @@ while (-not $isActivated -and $activationRetries -gt 0)
         iisreset.exe | Out-Null
 
         Start-Sleep -Seconds 30
-        Invoke-WebRequest -Uri http://localhost:8624
+        Invoke-WebRequest -Uri http://localhost:80
         Start-Sleep -Seconds 30
 
     } -NoDisplay

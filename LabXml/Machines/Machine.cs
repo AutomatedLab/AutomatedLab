@@ -112,6 +112,23 @@ namespace AutomatedLab
             }
         }
 
+        [XmlIgnore]
+        public string DomainAccountName
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(domainName))
+                {
+                    var domainShortName = domainName.Split('.')[0];
+                    return string.Format("{0}\\{1}", domainShortName, name);
+                }
+                else
+                {
+                    return name;
+                }
+            }
+        }
+
         public long Memory
         {
             get { return memory; }
@@ -377,7 +394,7 @@ namespace AutomatedLab
             if (dcRole == null)
             {
                 //machine is not a domain controller, creating a local username 
-                userName = OperatingSystemType == OperatingSystemType.Linux ? installationUser.UserName : string.Format(@"{0}\{1}", name, installationUser.UserName);
+                userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);
             }
             else
             {

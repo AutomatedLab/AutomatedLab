@@ -11,7 +11,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
@@ -26,7 +26,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 $PSDefaultParameterValues.Add('Add-LabMachineDefinition:Gateway', '192.168.30.50')
 
@@ -42,7 +42,7 @@ Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles DC -IpAddress 192.16
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer, Routing -NetworkAdapter $netAdapter
 
 #web server

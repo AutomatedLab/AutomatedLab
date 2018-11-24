@@ -6,9 +6,9 @@ function Install-LabDscPullServer
     param (
         [int]$InstallationTimeout = 15
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $online = $true
     $lab = Get-Lab
     $roleName = [AutomatedLab.Roles]::DSCPullServer
@@ -16,7 +16,7 @@ function Install-LabDscPullServer
 
     Write-ScreenInfo "Starting Pull Servers and waiting until they are ready" -NoNewLine
     Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -Wait
-    
+
     if (-not (Get-LabVM))
     {
         Write-ScreenInfo -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
@@ -24,14 +24,14 @@ function Install-LabDscPullServer
         return
     }
 
-    $machines = Get-LabVM -Role $roleName    
+    $machines = Get-LabVM -Role $roleName
     if (-not $machines)
     {
         Write-ScreenInfo -Message 'No DSC Pull Server defined in this lab, so there is nothing to do'
         Write-LogFunctionExit
         return
     }
-    
+
     if (-not (Get-LabVM -Role Routing) -and $lab.DefaultVirtualizationEngine -eq 'HyperV')
     {
         Write-ScreenInfo 'Routing Role not detected, installing DSC in offline mode.'
@@ -56,7 +56,7 @@ function Install-LabDscPullServer
         {
             $machinesOffline = (Compare-Object -ReferenceObject $machines.FQDN -DifferenceObject $machinesOnline).InputObject
         }
-    
+
         #if there are machines offline or all machines are offline
         if ($machinesOffline -or -not $machinesOnline)
         {
@@ -68,29 +68,29 @@ function Install-LabDscPullServer
             Write-ScreenInfo 'All DSC Pull Servers can reach the internet.'
         }
     }
-    
+
     $wrongPsVersion = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
         $PSVersionTable | Add-Member -Name ComputerName -MemberType NoteProperty -Value $env:COMPUTERNAME -PassThru -Force
     } -PassThru -NoDisplay |
     Where-Object { $_.PSVersion.Major -lt 5 } |
     Select-Object -ExpandProperty ComputerName
-    
+
     if ($wrongPsVersion)
     {
         Write-Error "The following machines have an unsupported PowerShell version. At least PowerShell 5.0 is required. $($wrongPsVersion -join ', ')"
         return
     }
-    
+
     Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 15
-    
+
     $ca = Get-LabIssuingCA
     if (-not $ca)
     {
         Write-Error 'This role requires a Certificate Authority but there is no one defined in the lab. Please make sure that one machine has the role CaRoot or CaSubordinate.'
         return
     }
-    
+
     if (-not (Test-LabCATemplate -TemplateName DscPullSsl -ComputerName $ca))
     {
         New-LabCATemplate -TemplateName DscPullSsl -DisplayName 'Dsc Pull Sever SSL' -SourceTemplateName WebServer -ApplicationPolicy 'Server Authentication' `
@@ -104,7 +104,7 @@ function Install-LabDscPullServer
     }
 
     if ($Online)
-    {        
+    {
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
@@ -120,24 +120,25 @@ function Install-LabDscPullServer
         else
         {
             Write-ScreenInfo "Downloading the modules '$($requiredModules -join ', ')' locally and copying them to the DSC Pull Servers."
-        
+
             Install-PackageProvider -Name NuGet -Force | Out-Null
             Install-Module -Name $requiredModules -Force
         }
 
         foreach ($module in $requiredModules)
         {
-            $moduleBase = Get-Module -Name $module -ListAvailable | 
-            Sort-Object -Property Version -Descending | 
+            $moduleBase = Get-Module -Name $module -ListAvailable |
+            Sort-Object -Property Version -Descending |
             Select-Object -First 1 -ExpandProperty ModuleBase
             $moduleDestination = Split-Path -Path $moduleBase -Parent
-            
+
             Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
         }
     }
-    
+
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerEdb.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1,
+    $labSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1,
     $labSources\PostInstallationActivities\SetupDscPullServer\DscTestConfig.ps1 -ComputerName $machines
 
     foreach ($machine in $machines)
@@ -152,14 +153,14 @@ function Install-LabDscPullServer
 
             foreach ($module in $moduleNames)
             {
-                $moduleBase = Get-Module -Name $module -ListAvailable | 
-                Sort-Object -Property Version -Descending | 
+                $moduleBase = Get-Module -Name $module -ListAvailable |
+                Sort-Object -Property Version -Descending |
                 Select-Object -First 1 -ExpandProperty ModuleBase
                 $moduleDestination = Split-Path -Path $moduleBase -Parent
-                
+
                 Copy-LabFileItem -Path $moduleBase -ComputerName $machines -DestinationFolderPath $moduleDestination -Recurse
             }
-            
+
             Write-ScreenInfo 'finished'
         }
     }
@@ -170,20 +171,23 @@ function Install-LabDscPullServer
 
     foreach ($machine in $machines)
     {
-        #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
-        if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
-        {
-            Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines 
-        }
-        
         $role = $machine.Roles | Where-Object Name -eq $roleName
-        if ($role.Properties.DatabaseEngine -eq 'mdb')
+        $databaseEngine = if ($role.Properties.DatabaseEngine)
         {
-            $databaseEngine = 'mdb'
+            $role.Properties.DatabaseEngine
         }
         else
         {
-            $databaseEngine = 'edb'
+            'edb'
+        }
+
+        if ($databaseEngine -eq 'mdb')
+        {
+            #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
+            if ((Get-LabVM -ComputerName $machine).OperatingSystem.Version -gt '6.3.0.0')
+            {
+                Install-LabSoftwarePackage -Path $accessDbEngine.FullName -CommandLine '/passive /quiet' -ComputerName $machines
+            }
         }
 
         if ($machine.DefaultVirtualizationEngine -eq 'Azure')
@@ -195,45 +199,42 @@ function Install-LabDscPullServer
         Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru | Out-Null
 
         $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
-        
-        $guid = (New-Guid).Guid
-        
-        $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock { 
-            param  
-            (
-                [Parameter(Mandatory)]
-                [string]$ComputerName,
 
-                [Parameter(Mandatory)]
-                [string]$CertificateThumbPrint,
+        $setupParams = @{
+            ComputerName = $machine
+            CertificateThumbPrint = $cert.Thumbprint
+            RegistrationKey = (Get-Module AutomatedLab).PrivateData.DscPullServerRegistrationKey
+            DatabaseEngine  = $databaseEngine
+        }
+        if ($role.Properties.DatabaseName) { $setupParams.DatabaseName = $role.Properties.DatabaseName }
+        if ($role.Properties.SqlServer) { $setupParams.SqlServer = $role.Properties.SqlServer }
 
-                [Parameter(Mandatory)]
-                [string] $RegistrationKey,
-
-                [string]$DatabaseEngine
-            )
-    
-            if ($DatabaseEngine -eq 'edb')
+        $jobs += Invoke-LabCommand -ActivityName "Setting up DSC Pull Server on '$machine'" -ComputerName $machine -ScriptBlock {
+            if ($setupParams.DatabaseEngine -eq 'edb')
             {
-                C:\SetupDscPullServerEdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+                C:\SetupDscPullServerEdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
             }
-            elseif ($DatabaseEngine -eq 'mdb')
+            elseif ($setupParams.DatabaseEngine -eq 'mdb')
             {
-                C:\SetupDscPullServerMdb.ps1 -ComputerName $ComputerName -CertificateThumbPrint $CertificateThumbPrint -RegistrationKey $RegistrationKey
+                C:\SetupDscPullServerMdb.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey
                 Copy-Item -Path C:\Windows\System32\WindowsPowerShell\v1.0\Modules\PSDesiredStateConfiguration\PullServer\Devices.mdb -Destination 'C:\Program Files\WindowsPowerShell\DscService\Devices.mdb'
+            }
+            elseif ($setupParams.DatabaseEngine -eq 'sql')
+            {
+                C:\SetupDscPullServerSql.ps1 -ComputerName $setupParams.ComputerName -CertificateThumbPrint $setupParams.CertificateThumbPrint -RegistrationKey $setupParams.RegistrationKey -SqlServer $setupParams.SqlServer -DatabaseName $setupParams.DatabaseName
             }
             else
             {
                 Write-Error "The database engine is unknown"
                 return
             }
-    
+
             C:\DscTestConfig.ps1
             Start-Job -ScriptBlock { Publish-DSCModuleAndMof -Source C:\DscTestConfig } | Wait-Job | Out-Null
-    
-        } -ArgumentList $machine, $cert.Thumbprint, $guid, $databaseEngine -AsJob -PassThru
+
+        } -Variable (Get-Variable -Name setupParams) -AsJob -PassThru
     }
-    
+
     Write-ScreenInfo -Message 'Waiting for configuration of DSC Pull Server to complete' -NoNewline
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay
 
@@ -245,18 +246,18 @@ function Install-LabDscPullServer
     $jobs = Install-LabWindowsFeature -ComputerName $machines -FeatureName Web-Mgmt-Tools -AsJob -NoDisplay
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete'
     Wait-LWLabJob -Job $jobs -ProgressIndicator 0 -Timeout $InstallationTimeout -NoDisplay
-    
+
     foreach ($machine in $machines)
     {
         $registrationKey = Invoke-LabCommand -ActivityName 'Get Registration Key created on the Pull Server' -ComputerName $machine -ScriptBlock {
             Get-Content 'C:\Program Files\WindowsPowerShell\DscService\RegistrationKeys.txt'
         } -PassThru -NoDisplay
-        
+
         $machine.InternalNotes.DscRegistrationKey = $registrationKey
     }
-    
+
     Export-Lab
-    
+
     Write-LogFunctionExit
 }
 #endregion Install-LabDscPullServer
@@ -269,13 +270,13 @@ function Install-LabDscClient
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$ComputerName,
-        
+
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
-        
+
         [string[]]$PullServer
     )
-    
+
     if ($All)
     {
         $machines = Get-LabVM | Where-Object { $_.Roles.Name -notin 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer' }
@@ -284,15 +285,15 @@ function Install-LabDscClient
     {
         $machines = Get-LabVM -ComputerName $ComputerName
     }
-    
+
     if (-not $machines)
     {
         Write-Error 'Machines to configure DSC Pull not defined or not found in the lab.'
         return
     }
-    
+
     Start-LabVM -ComputerName $machines -Wait
-    
+
     if ($PullServer)
     {
         if (-not (Get-LabVM -ComputerName $PullServer | Where-Object { $_.Roles.Name -contains 'DSCPullServer' }))
@@ -309,13 +310,13 @@ function Install-LabDscClient
     {
         $pullServerMachines = Get-LabVM -Role DSCPullServer
     }
-    
+
     Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscClients\SetupDscClients.ps1 -ComputerName $machines
-    
+
     foreach ($machine in $machines)
     {
         Invoke-LabCommand -ActivityName 'Setup DSC Pull Clients' -ComputerName $machine -ScriptBlock {
-            param  
+            param
             (
                 [Parameter(Mandatory)]
                 [string[]]$PullServer,
@@ -323,7 +324,7 @@ function Install-LabDscClient
                 [Parameter(Mandatory)]
                 [string[]]$RegistrationKey
             )
-    
+
             C:\SetupDscClients.ps1 -PullServer $PullServer -RegistrationKey $RegistrationKey
         } -ArgumentList $pullServerMachines.FQDN, $pullServerMachines.InternalNotes.DscRegistrationKey -PassThru
     }
@@ -346,27 +347,27 @@ function Invoke-LabDscConfiguration
 
         [Parameter(ParameterSetName = 'UseExisting')]
         [switch]$UseExisting,
-        
+
         [switch]$Wait
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
-    $machines = Get-LabVM -ComputerName $ComputerName    
+
+    $machines = Get-LabVM -ComputerName $ComputerName
     if ($machines.Count -ne $ComputerName.Count)
     {
         Write-Error -Message 'Not all machines specified could be found in the lab.'
         Write-LogFunctionExit
         return
     }
-    
+
     if ($PSCmdlet.ParameterSetName -eq 'New')
     {
         $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
@@ -383,10 +384,10 @@ function Invoke-LabDscConfiguration
                 return
             }
         }
-    
+
         $tempPath = [System.IO.Path]::GetTempFileName()
         Remove-Item -Path $tempPath
-        mkdir -Path $tempPath | Out-Null  
+        mkdir -Path $tempPath | Out-Null
 
         $dscModules = @()
 
@@ -413,12 +414,12 @@ function Invoke-LabDscConfiguration
             }
             $mof = $mof | Rename-Item -NewName "$($Configuration.Name)_$c.mof" -Force -PassThru
             $mof | Move-Item -Destination $outputPath -Force
-            
+
             Remove-Item -Path $tempPath -Force -Recurse
         }
 
         $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
-    
+
         foreach ($c in $ComputerName)
         {
             foreach ($mofFile in $mofFiles)
@@ -429,7 +430,7 @@ function Invoke-LabDscConfiguration
                 }
             }
         }
-    
+
         #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
         #to find out all the reuqired modules we need to upload in total
         $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name -ErrorAction Stop
@@ -437,31 +438,31 @@ function Invoke-LabDscConfiguration
         {
             Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
         }
-    
+
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
-    
+
             $path = "C:\AL Dsc\$($args[0])"
-        
+
             Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
-        
+
             $mofFiles = Get-ChildItem -Path $path -Filter *.mof
             if ($mofFiles.Count -gt 1)
             {
                 throw "There is more than one MOF file in the folder '$path'. Expected is only one file."
             }
-        
+
             $mofFiles | Rename-Item -NewName localhost.mof
-        
+
             Start-DscConfiguration -Path $path -Wait:$Wait
-    
+
         } -ArgumentList $Configuration.Name, $Wait
     }
     else
     {
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying existing DSC configuration' -ScriptBlock {
-            
+
             Start-DscConfiguration -UseExisting -Wait:$Wait
-    
+
         } -ArgumentList $Wait
     }
 
@@ -476,9 +477,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-    
+
     Write-LogFunctionEntry
-    
+
     function Remove-DscLocalConfigurationManagerConfiguration
     {
         param(
@@ -491,7 +492,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             param(
                 [string[]]$ComputerName = 'localhost'
             )
-    
+
             Node $ComputerName
             {
                 Settings
@@ -505,7 +506,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
         }
 
         $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
-    
+
         Remove-DscConfigurationDocument -Stage Current, Pending -Force
         LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
         Set-DscLocalConfigurationManager -Path $path.FullName -Force
@@ -522,24 +523,24 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             Write-Host 'DSC Local Configuration Manger was reset to default values'
         }
     }
-    
+
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
-    $machines = Get-LabVM -ComputerName $ComputerName    
+
+    $machines = Get-LabVM -ComputerName $ComputerName
     if ($machines.Count -ne $ComputerName.Count)
     {
         Write-Error -Message 'Not all machines specified could be found in the lab.'
         Write-LogFunctionExit
         return
     }
-    
+
     Invoke-LabCommand -ActivityName 'Removing DSC LCM configuration' -ComputerName $ComputerName -ScriptBlock (Get-Command -Name Remove-DscLocalConfigurationManagerConfiguration).ScriptBlock
-    
+
     Write-LogFunctionExit
 }
 #endregion Remove-LabDscLocalConfigurationManagerConfiguration
@@ -585,7 +586,7 @@ function Set-LabDscLocalConfigurationManagerConfiguration
 
         [hashtable[]]$PartialConfiguration
     )
-    
+
     Write-LogFunctionEntry
 
     function Set-DscLocalConfigurationManagerConfiguration
@@ -715,7 +716,7 @@ function Set-LabDscLocalConfigurationManagerConfiguration
         $sb.ToString() | Out-File -FilePath c:\AL_DscLcm_Debug.txt
 
         $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
-    
+
         LcmConfiguration -OutputPath $path.FullName | Out-Null
         Set-DscLocalConfigurationManager -Path $path.FullName
 
@@ -731,27 +732,27 @@ function Set-LabDscLocalConfigurationManagerConfiguration
             Write-Host 'DSC Local Configuration Manger was set to the new values'
         }
     }
-    
+
     $lab = Get-Lab
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
-    $machines = Get-LabVM -ComputerName $ComputerName    
+
+    $machines = Get-LabVM -ComputerName $ComputerName
     if ($machines.Count -ne $ComputerName.Count)
     {
         Write-Error -Message 'Not all machines specified could be found in the lab.'
         Write-LogFunctionExit
         return
     }
-    
+
     $params = ([hashtable]$PSBoundParameters).Clone()
     Invoke-LabCommand -ActivityName 'Setting DSC LCM configuration' -ComputerName $ComputerName -ScriptBlock {
         Set-DscLocalConfigurationManagerConfiguration @params
     } -Function (Get-Command -Name Set-DscLocalConfigurationManagerConfiguration) -Variable (Get-Variable -Name params)
-    
+
     Write-LogFunctionExit
 }
 #endregion Set-LabDscLocalConfigurationManagerConfiguration
@@ -783,14 +784,14 @@ function ValidateUpdate-ConfigurationData
 
     $nodeNames = New-Object -TypeName 'System.Collections.Generic.HashSet[string]' -ArgumentList ([System.StringComparer]::OrdinalIgnoreCase)
     foreach($Node in $ConfigurationData.AllNodes)
-    { 
+    {
         if($Node -isnot [hashtable] -or -not $Node.NodeName)
-        { 
+        {
             $errorMessage = "all elements of AllNodes need to be hashtable and has a property 'NodeName'."
             $exception = New-Object -TypeName System.InvalidOperationException -ArgumentList $errorMessage
             Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId ConfiguratonDataAllNodesNeedHashtable
             return $false
-        } 
+        }
 
         if($nodeNames.Contains($Node.NodeName))
         {
@@ -799,19 +800,19 @@ function ValidateUpdate-ConfigurationData
             Write-Error -Exception $exception -Message $errorMessage -Category InvalidOperation -ErrorId DuplicatedNodeInConfigurationData
             return $false
         }
-        
+
         if($Node.NodeName -eq '*')
         {
             $AllNodeSettings = $Node
         }
         [void] $nodeNames.Add($Node.NodeName)
     }
-    
+
     if($AllNodeSettings)
     {
         foreach($Node in $ConfigurationData.AllNodes)
         {
-            if($Node.NodeName -ne '*') 
+            if($Node.NodeName -ne '*')
             {
                 foreach($nodeKey in $AllNodeSettings.Keys)
                 {

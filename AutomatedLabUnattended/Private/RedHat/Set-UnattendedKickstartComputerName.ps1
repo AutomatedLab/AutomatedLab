@@ -5,5 +5,5 @@ function Set-UnattendedKickstartComputerName
         [string]$ComputerName
     )
 
-    $script:un +=  "network --hostname=$ComputerName"
+    $script:un.Add("network --hostname=$ComputerName")
 }

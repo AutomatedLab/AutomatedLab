@@ -54,30 +54,30 @@ function Connect-Lab
     {
         throw "Lab.xml is missing for $SourceLab"
     }
-    
+
     $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
         throw "Lab.xml is missing for $DestinationLab"
-    }    
+    }
 
     $sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
-    $sourceRoutedAddressSpaces = ([xml](Get-Content $sourceFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { 
+    $sourceRoutedAddressSpaces = ([xml](Get-Content $sourceFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object {
         if (-not [System.String]::IsNullOrWhiteSpace($_.IpAddress.AddressAsString))
         {
-            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" 
+            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)"
         }
     }
-    
+
     $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
-    $destinationRoutedAddressSpaces = ([xml](Get-Content $destinationFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object { 
+    $destinationRoutedAddressSpaces = ([xml](Get-Content $destinationFile)).Lab.VirtualNetworks.VirtualNetwork.AddressSpace | ForEach-Object {
         if (-not [System.String]::IsNullOrWhiteSpace($_.IpAddress.AddressAsString))
         {
-            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)" 
+            "$($_.IpAddress.AddressAsString)/$($_.SerializationCidr)"
         }
     }
-    
+
     Write-Verbose -Message ('Source Hypervisor: {0}, Destination Hypervisor: {1}' -f $sourceHypervisor, $destinationHypervisor)
 
     if (-not ($sourceHypervisor -eq 'Azure' -or $destinationHypervisor -eq 'Azure'))
@@ -86,7 +86,7 @@ function Connect-Lab
     }
 
     if ($sourceHypervisor -eq 'Azure')
-    {        
+    {
         $connectionParameters = @{
             SourceLab           = $SourceLab
             DestinationLab      = $DestinationLab
@@ -94,7 +94,7 @@ function Connect-Lab
             OnPremAddressSpaces = $destinationRoutedAddressSpaces
         }
     }
-    else 
+    else
     {
         $connectionParameters = @{
             SourceLab           = $DestinationLab
@@ -110,7 +110,7 @@ function Connect-Lab
         Connect-AzureLab -SourceLab $SourceLab -DestinationLab $DestinationLab
         return
     }
-    
+
     Write-Verbose -Message ('Connecting on-premises lab to Azure lab. Source: {0} <-> Destination {1}' -f $SourceLab, $DestinationLab)
     Connect-OnPremisesWithAzure @connectionParameters
 
@@ -142,11 +142,11 @@ function Disconnect-Lab
         }
 
         if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-        {            
+        {
             $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-         
+
             Write-Verbose -Message ('Removing VPN resources in Azure lab {0}, Resource group {1}' -f $lab.Name, $resourceGroupName)
-            
+
             $connection = Get-AzureRmVirtualNetworkGatewayConnection -Name s2sconnection -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
             $gw = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
             $localgw = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
@@ -166,14 +166,14 @@ function Disconnect-Lab
             {
                 $ip | Remove-AzureRmPublicIpAddress -Force
             }
-            
+
             if ($localgw)
             {
                 $localgw | Remove-AzureRmLocalNetworkGateway -Force
             }
         }
         else
-        {            
+        {
             $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
 
             if (-not $router)
@@ -224,13 +224,13 @@ function Restore-LabConnection
     {
         throw "Lab.xml is missing for $SourceLab"
     }
-    
+
     $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
         throw "Lab.xml is missing for $DestinationLab"
-    }  
+    }
 
     $sourceHypervisor = ([xml](Get-Content $sourceFile)).Lab.DefaultVirtualizationEngine
     $destinationHypervisor = ([xml](Get-Content $destinationFile)).Lab.DefaultVirtualizationEngine
@@ -278,9 +278,9 @@ function Restore-LabConnection
             [System.String]
             $azureDestination
         )
-	
+
         $s2sConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction Stop -Verbose
-        
+
         if ($s2sConnection.Destination -notcontains $azureDestination)
         {
             $s2sConnection.Destination += $azureDestination
@@ -297,7 +297,7 @@ function Initialize-GatewayNetwork
         [AutomatedLab.Lab]
         $Lab
     )
-    
+
     Write-LogFunctionEntry
     Write-Verbose -Message ('Creating gateway subnet for lab {0}' -f $Lab.Name)
 
@@ -306,26 +306,26 @@ function Initialize-GatewayNetwork
     $sourceMaskIp = $targetNetwork.AddressSpace.NetMask
     $superNetMask = $sourceMask - 1
     $superNetIp = $targetNetwork.AddressSpace.IpAddress.AddressAsString
-    
+
     $gatewayNetworkAddressFound = $false
     $incrementedIp = $targetNetwork.AddressSpace.IPAddress.Increment()
     $decrementedIp = $targetNetwork.AddressSpace.IPAddress.Decrement()
     $isDecrementing = $false
-    
+
     while (-not $gatewayNetworkAddressFound)
     {
         if (-not $isDecrementing)
         {
             $incrementedIp = $incrementedIp.Increment()
             $tempNetworkAdress = Get-NetworkAddress -IPAddress $incrementedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
-    
+
             if ($tempNetworkAdress -eq $targetNetwork.AddressSpace.Network.AddressAsString)
             {
                 continue
             }
-    
+
             $gatewayNetworkAddress = $tempNetworkAdress
-    
+
             if ($gatewayNetworkAddress -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
             {
                 $gatewayNetworkAddressFound = $true
@@ -335,34 +335,34 @@ function Initialize-GatewayNetwork
                 $isDecrementing = $true
             }
         }
-    
+
         $decrementedIp = $decrementedIp.Decrement()
         $tempNetworkAdress = Get-NetworkAddress -IPAddress $decrementedIp.AddressAsString -SubnetMask $sourceMaskIp.AddressAsString
-    
+
         if ($tempNetworkAdress -eq $targetNetwork.AddressSpace.Network.AddressAsString)
         {
             continue
         }
-    
+
         $gatewayNetworkAddress = $tempNetworkAdress
-    
+
         if (([AutomatedLab.IPAddress]$gatewayNetworkAddress).Increment().AddressAsString -in (Get-NetworkRange -IPAddress $targetnetwork.AddressSpace.Network.AddressAsString -SubnetMask $superNetMask))
         {
             $gatewayNetworkAddressFound = $true
         }
     }
-    
+
     Write-Verbose -Message ('Calculated supernet: {0}, extending Azure VNet and creating gateway subnet {1}' -f "$($superNetIp)/$($superNetMask)", "$($gatewayNetworkAddress)/$($sourceMask)")
     $vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
     $vnet.AddressSpace.AddressPrefixes[0] = "$($superNetIp)/$($superNetMask)"
     $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
-        
+
     if (-not $gatewaySubnet)
     {
         $vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
-        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop
-    }    
-	
+        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
+    }
+
     $vnet = (Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Where-Object -Property ID)[0]
     Write-LogFunctionExit
 
@@ -395,7 +395,7 @@ function Connect-OnPremisesWithAzure
     $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $vnet = Initialize-GatewayNetwork -Lab $lab
-    
+
     $labPublicIp = Get-PublicIpAddress
 
     if (-not $labPublicIp)
@@ -404,23 +404,23 @@ function Connect-OnPremisesWithAzure
     }
 
     Write-Verbose -Message "Found Hypervisor host public IP of $labPublicIp"
-    
+
     $genericParameters = @{
         ResourceGroupName = $sourceResourceGroupName
         Location          = $sourceLocation
     }
-    
+
     $publicIpParameters = $genericParameters.Clone()
     $publicIpParameters.Add('Name', 's2sip')
     $publicIpParameters.Add('AllocationMethod', 'Dynamic')
     $publicIpParameters.Add('IpAddressVersion', 'IPv4')
     $publicIpParameters.Add('DomainNameLabel', "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')".ToLower())
     $publicIpParameters.Add('Force', $true)
-    
+
     $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
-    $gatewayPublicIp = New-AzureRmPublicIpAddress @publicIpParameters -WarningAction SilentlyContinue 
+    $gatewayPublicIp = New-AzureRmPublicIpAddress @publicIpParameters -WarningAction SilentlyContinue
     $gatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id -WarningAction SilentlyContinue
-    
+
     $remoteGatewayParameters = $genericParameters.Clone()
     $remoteGatewayParameters.Add('Name', 's2sgw')
     $remoteGatewayParameters.Add('GatewayType', 'Vpn')
@@ -428,13 +428,13 @@ function Connect-OnPremisesWithAzure
     $remoteGatewayParameters.Add('GatewaySku', 'VpnGw1')
     $remoteGatewayParameters.Add('IpConfigurations', $gatewayIpConfiguration)
     $remoteGatewayParameters.Add('Force', $true)
-    
+
     $onPremGatewayParameters = $genericParameters.Clone()
     $onPremGatewayParameters.Add('Name', 'onpremgw')
     $onPremGatewayParameters.Add('GatewayIpAddress', $labPublicIp)
     $onPremGatewayParameters.Add('AddressPrefix', $onPremAddressSpaces)
     $onPremGatewayParameters.Add('Force', $true)
-        
+
     # Gateway creation
     $gw = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $gw)
@@ -443,13 +443,13 @@ function Connect-OnPremisesWithAzure
         $gw = New-AzureRmVirtualNetworkGateway @remoteGatewayParameters -WarningAction SilentlyContinue
         Write-ScreenInfo -TaskEnd -Message 'Virtual Network Gateway created.'
     }
-    
+
     $onPremisesGw = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $onPremisesGw -or $onPremisesGw.GatewayIpAddress -ne $labPublicIp)
     {
         $onPremisesGw = New-AzureRmLocalNetworkGateway @onPremGatewayParameters -WarningAction SilentlyContinue
     }
-    
+
     # Connection creation
     $connectionParameters = $genericParameters.Clone()
     $connectionParameters.Add('Name', 's2sconnection')
@@ -459,12 +459,12 @@ function Connect-OnPremisesWithAzure
     $connectionParameters.Add('Force', $true)
     $connectionParameters.Add('VirtualNetworkGateway1', $gw)
     $connectionParameters.Add('LocalNetworkGateway2', $onPremisesGw)
-        
+
     $conn = New-AzureRmVirtualNetworkGatewayConnection @connectionParameters -WarningAction SilentlyContinue
-    
-    # Step 3: Import the HyperV lab and install a Router if not already present    
-    Import-Lab $DestinationLab -NoValidation    
-    
+
+    # Step 3: Import the HyperV lab and install a Router if not already present
+    Import-Lab $DestinationLab -NoValidation
+
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
     $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
@@ -474,7 +474,7 @@ function Connect-OnPremisesWithAzure
     {
         throw 'Public IP has either not been created or is currently unassigned.'
     }
-    
+
     if (-not $router)
     {
         throw @'
@@ -482,20 +482,20 @@ function Connect-OnPremisesWithAzure
         Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
         $netAdapter = @()
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
+        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'
 '@
     }
-    
+
     # Step 4: Configure S2S VPN Connection on Router
     $externalAdapters = $router.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType -eq 'External' }
-        
+
     if ($externalAdapters.Count -ne 1)
     {
         throw "Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
     }
-    
+
     if ($externalAdapters)
     {
         $mac = $externalAdapters | Select-Object -ExpandProperty MacAddress
@@ -506,7 +506,7 @@ function Connect-OnPremisesWithAzure
             throw ('Get-LabVm returned an empty MAC address for {0}. Cannot continue' -f $router.Name)
         }
     }
-    
+
     $scriptBlock = {
         param
         (
@@ -514,13 +514,13 @@ function Connect-OnPremisesWithAzure
             $RemoteAddressSpaces,
             $MacAddress
         )
-        
+
         $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
             Select-Object -ExpandProperty NetConnectionID
-        
+
         Set-Service -Name RemoteAccess -StartupType Automatic
         Start-Service -Name RemoteAccess -ErrorAction SilentlyContinue
-		
+
         $null = netsh.exe routing ip nat install
         $null = netsh.exe routing ip nat add interface $externalAdapter
         $null = netsh.exe routing ip nat set interface $externalAdapter mode=full
@@ -533,9 +533,9 @@ function Connect-OnPremisesWithAzure
 
         if ($status.VpnS2SStatus -ne 'Installed' -or $status.RoutingStatus -ne 'Installed')
         {
-            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
+            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop
         }
-        
+
         try
         {
             # Try/Catch to catch exception while we have to wait for Install-RemoteAccess to finish up
@@ -549,8 +549,8 @@ function Connect-OnPremisesWithAzure
             Start-Service RemoteAccess -ErrorAction SilentlyContinue
             $azureConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
         }
-        
-    
+
+
         if (-not $azureConnection)
         {
             $parameters = @{
@@ -564,8 +564,8 @@ function Connect-OnPremisesWithAzure
                 PassThru             = $true
             }
             $azureConnection = Add-VpnS2SInterface @parameters
-        }        
-    
+        }
+
         $count = 1
 
         while ($count -le 3)
@@ -588,24 +588,24 @@ function Connect-OnPremisesWithAzure
         {
             throw "Error establishing connection to $AzureDnsEntry after 3 tries. Check your NAT settings, internet connectivity and Azure resource group"
         }
-        
-        $null = netsh.exe ras set conf confstate = enabled		
+
+        $null = netsh.exe ras set conf confstate = enabled
         $null = netsh.exe routing ip dnsproxy install
 
 
         $dialupInterfaceIndex = (Get-NetIPInterface -AddressFamily IPv4 | Where-Object -Property InterfaceAlias -eq 'AzureS2S').ifIndex
-    
+
         if (-not $dialupInterfaceIndex)
         {
             throw "Connection to $AzureDnsEntry has not been established. Cannot add routes to $($addressSpace -join ',')."
         }
-        
+
         foreach ($addressSpace in $RemoteAddressSpaces)
         {
             $null = New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -RouteMetric 1
         }
     }
-    
+
     Invoke-LabCommand -ActivityName 'Enabling S2S VPN functionality and configuring S2S VPN connection' `
         -ComputerName $router `
         -ScriptBlock $scriptBlock `
@@ -614,7 +614,7 @@ function Connect-OnPremisesWithAzure
 
     # Configure DNS forwarding
     Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
-        
+
     Write-LogFunctionExit
 }
 
@@ -637,11 +637,11 @@ function Connect-OnPremisesWithEndpoint
     )
 
     Write-LogFunctionEntry
-    Import-Lab $LabName -NoValidation    
-    
+    Import-Lab $LabName -NoValidation
+
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
-    
+
     if (-not $router)
     {
         throw @'
@@ -649,40 +649,40 @@ function Connect-OnPremisesWithEndpoint
         Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
         $netAdapter = @()
         $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp        
+        $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
         $machineName = "ALS2SVPN$((1..7 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
-        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'        
+        Add-LabMachineDefinition -Name $machineName -Roles Routing -NetworkAdapter $netAdapter -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)'
 '@
     }
-    
+
     $externalAdapters = $router.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType -eq 'External' }
-        
+
     if ($externalAdapters.Count -ne 1)
     {
         throw "Automatic configuration of VPN gateway can only be done if there is exactly 1 network adapter connected to an external network switch. The machine '$machine' knows about $($externalAdapters.Count) externally connected adapters"
     }
-    
+
     $externalAdapter = $externalAdapters[0]
     $mac = $externalAdapter.MacAddress
     $mac = ($mac | Get-StringSection -SectionSize 2) -join '-'
-    
+
     $scriptBlock = {
         param
         (
             $DestinationHost,
             $RemoteAddressSpaces
         )
-            
+
         $status = Get-RemoteAccess -ErrorAction SilentlyContinue
         if ($status.VpnS2SStatus -ne 'Installed' -or $status.RoutingStatus -ne 'Installed')
         {
-            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop        
+            Install-RemoteAccess -VpnType VPNS2S -ErrorAction Stop
         }
-        
+
         Restart-Service -Name RemoteAccess
-    
+
         $remoteConnection = Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue
-    
+
         if (-not $remoteConnection)
         {
             $parameters = @{
@@ -696,18 +696,18 @@ function Connect-OnPremisesWithEndpoint
                 PassThru             = $true
             }
             $remoteConnection = Add-VpnS2SInterface @parameters
-        }        
-    
+        }
+
         $remoteConnection | Connect-VpnS2SInterface -ErrorAction Stop
-    
+
         $dialupInterfaceIndex = (Get-NetIPInterface | Where-Object -Property InterfaceAlias -eq 'ALS2S').ifIndex
-    
+
         foreach ($addressSpace in $RemoteAddressSpaces)
         {
             New-NetRoute -DestinationPrefix $addressSpace -InterfaceIndex $dialupInterfaceIndex -AddressFamily IPv4 -NextHop 0.0.0.0 -RouteMetric 1
         }
     }
-    
+
     Invoke-LabCommand -ActivityName 'Enabling S2S VPN functionality and configuring S2S VPN connection' `
         -ComputerName $router `
         -ScriptBlock $scriptBlock `
@@ -735,13 +735,13 @@ function Connect-AzureLab
     $sourceResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $sourceLocation = Get-LabAzureDefaultLocation
     $sourceVnet = Initialize-GatewayNetwork -Lab $lab
-    
+
     Import-Lab $DestinationLab -NoValidation
     $lab = Get-Lab
     $destinationResourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $destinationLocation = Get-LabAzureDefaultLocation
     $destinationVnet = Initialize-GatewayNetwork -Lab $lab
-    
+
     $sourcePublicIpParameters = @{
         ResourceGroupName = $sourceResourceGroupName
         Location          = $sourceLocation
@@ -760,12 +760,12 @@ function Connect-AzureLab
         IpAddressVersion  = 'IPv4'
         DomainNameLabel   = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
         Force             = $true
-    }   
-    
+    }
+
     $sourceGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $sourceVnet -ErrorAction SilentlyContinue
-    $sourcePublicIp = New-AzureRmPublicIpAddress @sourcePublicIpParameters    
+    $sourcePublicIp = New-AzureRmPublicIpAddress @sourcePublicIpParameters
     $sourceGatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $sourceGatewaySubnet.Id -PublicIpAddressId $sourcePublicIp.Id
-    
+
     $sourceGatewayParameters = @{
         ResourceGroupName = $sourceResourceGroupName
         Location          = $sourceLocation
@@ -777,9 +777,9 @@ function Connect-AzureLab
     }
 
     $destinationGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $destinationVnet -ErrorAction SilentlyContinue
-    $destinationPublicIp = New-AzureRmPublicIpAddress @destinationPublicIpParameters    
+    $destinationPublicIp = New-AzureRmPublicIpAddress @destinationPublicIpParameters
     $destinationGatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $destinationGatewaySubnet.Id -PublicIpAddressId $destinationPublicIp.Id
-    
+
     $destinationGatewayParameters = @{
         ResourceGroupName = $destinationResourceGroupName
         Location          = $destinationLocation
@@ -789,8 +789,8 @@ function Connect-AzureLab
         GatewaySku        = 'VpnGw1'
         IpConfigurations  = $destinationGatewayIpConfiguration
     }
-        
-        
+
+
     # Gateway creation
     $sourceGateway = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $sourceGateway)
@@ -828,8 +828,8 @@ function Connect-AzureLab
         Force                  = $true
         VirtualNetworkGateway1 = $destinationGateway
         VirtualNetworkGateway2 = $sourceGateway
-    }    
-        
+    }
+
     [void] (New-AzureRmVirtualNetworkGatewayConnection @sourceConnection)
     [void] (New-AzureRmVirtualNetworkGatewayConnection @destinationConnection)
 
@@ -856,7 +856,7 @@ function Set-VpnDnsForwarders
     $lab = Get-Lab
     $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
-    Import-Lab $DestinationLab -NoValidation    
+    Import-Lab $DestinationLab -NoValidation
     $lab = Get-Lab
     $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
@@ -880,10 +880,10 @@ function Set-VpnDnsForwarders
             }
         }
 
-        $masterServers = @($sourceDcs) + @($destinationDcs) | Where-Object { 
+        $masterServers = @($sourceDcs) + @($destinationDcs) | Where-Object {
             ($_.Roles.Name -contains 'RootDC' -or $_.Roles.Name -contains 'FirstChildDC' -or $_.Roles.Name -contains 'DC') -and $_.DomainName -eq $forwarder.Destination
         }
-    
+
         $cmd = @"
             Write-Verbose "Creating a DNS forwarder on server '$env:COMPUTERNAME'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             dnscmd localhost /ZoneAdd $($forwarder.Destination) /Forwarder $($masterServers.IpV4Address)

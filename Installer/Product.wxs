@@ -67,6 +67,13 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Sync-Parameter.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-HashtableKeys.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Test-IsAdministrator.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Start-RunspaceJob.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Receive-RunspaceJob.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Wait-RunspaceJob.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\New-RunspacePool.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Get-RunspacePool.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Remove-RunspacePool.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Split-Array.ps1" />
                     </Component>
                   </Directory>
                   <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
@@ -98,6 +105,19 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-NetworkSummary.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Get-PublicIpAddress.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\NetworkHelper\Public\Test-Port.ps1" />
+                    </Component>
+                  </Directory>
+                </Directory>
+                <Directory Id="InstallFolder_CommonPerfmon" Name="Perfmon">
+                  <Directory Id="InstallFolder_CommonPerfmonPublic" Name="Public">
+                    <Component Id="ALCommonComponent9" Guid="e19b6e09-74f3-4525-a43d-a2dab0f54773">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterID.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceCounterLocalName.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Get-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\New-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Remove-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Start-PerformanceDataCollectorSet.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Perfmon\Public\Stop-PerformanceDataCollectorSet.ps1" />
                     </Component>
                   </Directory>
                 </Directory>
@@ -455,6 +475,7 @@
                 <File Id='Sample_DFSHCAzure' Name='DFSHC - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - Azure.ps1' />
                 <File Id='Sample_DFSHCHyperV' Name='DFSHC - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\DFSHC - HyperV.ps1' />
                 <File Id='Sample_Kerberos101LabHyperV' Name='Kerberos 101 Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\Kerberos 101 Lab - HyperV.ps1' />
+                <File Id='Sample_Kerberos101LabLinuxHyperV' Name='Kerberos 101 Lab with Linux - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\Kerberos 101 Lab with Linux - HyperV.ps1' />
                 <File Id='Sample_PowerShellLabAzure' Name='PowerShell Lab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - Azure.ps1' />
                 <File Id='Sample_PowerShellLabHyperVwithInternet' Name='PowerShell Lab - HyperV with Internet.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV with Internet.ps1' />
                 <File Id='Sample_PowerShellLabHyperV' Name='PowerShell Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1' />
@@ -523,6 +544,7 @@
         <ComponentRef Id ='ALCommonComponent6' />
         <ComponentRef Id ='ALCommonComponent7' />
         <ComponentRef Id ='ALCommonComponent8' />
+        <ComponentRef Id ='ALCommonComponent9' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
         <ComponentRef Id='AutomatedLabComponent'/>
@@ -1658,6 +1680,12 @@
       </Component>
       <Component Id="cmpB9F44D1BE872FB3C577FB59AA1C15BD1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="bd3b858a-8261-4151-991e-705a6cc05c6f">
         <File Id="fil19D047322B9B206322C414F06B9749C2" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
+      </Component>      
+      <Component Id="cmpB3EF7A92492F44029D4B8C1E55123D8D" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="a8b0ef18-d142-487b-91fd-d7e3cda088e0">
+        <File Id="filA66AB3CD20094F17811461E2914765DC" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1" />
+      </Component>
+      <Component Id="cmpDE17B245EA354D77BC40DB5B0F43CDDA" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="e38f28c3-3de3-42a2-81ff-afe83e6f85aa">
+        <File Id="fil1492CDCF9CBB34982996FAA477019FB10" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1" />
       </Component>
       <Component Id="cmp409218040CF648ED926382E690CB15C8" Directory="dirE842539784E045D999747314891FC4E7" Guid="82a26abf-2b33-415b-90fb-fdc06501a1db">
         <File Id="filF716E14FD1EA46BDA54D9A76E3EEA053" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html" />

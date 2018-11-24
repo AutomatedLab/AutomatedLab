@@ -60,6 +60,8 @@ Copy-LabFileItem -Path $global:labSources -ComputerName $ComputerName -Destinati
 
 Invoke-LabCommand -ComputerName $vm -ActivityName EnablePolaris -ScriptBlock {
     [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $TelemetryOptOut, 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $TelemetryOptOut
+    Enable-LabHostRemoting -Force -NoDisplay
     Expand-Archive -Path C:\Polaris.zip -DestinationPath C:\
     Rename-Item -Path C:\Polaris-master -NewName C:\Polaris
     Copy-Item -Recurse -Path C:\Polaris 'C:\Program Files\WindowsPowerShell\Modules'

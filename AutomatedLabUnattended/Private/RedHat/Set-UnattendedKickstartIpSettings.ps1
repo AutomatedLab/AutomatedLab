@@ -33,5 +33,5 @@ function Set-UnattendedKickstartIpSettings
         ' --nodns'
     }
 
-    $script:un += $configurationItem
+    $script:un.Add($configurationItem)
 }

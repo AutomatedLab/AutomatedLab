@@ -29,7 +29,7 @@ namespace AutomatedLab
                 {
                     yield return new ValidationMessage
                     {
-                        Message = string.Format("There is no ISO image for {0} defined", role.ToString()),
+                        Message = string.Format("There is no ISO image for '{0}' defined", role.ToString()),
                         Type = MessageType.Error,
                         TargetObject = role.ToString()
                     };

@@ -7,5 +7,5 @@ function Set-UnattendedKickstartWorkgroup
         $WorkgroupName
     )
     
-    $script:un += 'auth --smbworkgroup={0}' -f $WorkgroupName
+    $script:un.Add(('auth --smbworkgroup={0}' -f $WorkgroupName))
 }

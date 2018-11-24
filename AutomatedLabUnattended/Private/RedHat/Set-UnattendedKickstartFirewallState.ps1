@@ -5,13 +5,13 @@ function Set-UnattendedKickstartFirewallState
         [Parameter(Mandatory = $true)]
         [boolean]$State
     )
-		
-    $script:un += if ($State)
+
+    if ($State)
     {
-        'firewall --enabled'
+        $script:un.Add('firewall --enabled')
     }
     else
     {
-        'firewall --disabled'
+        $script:un.Add('firewall --disabled')
     }
 }

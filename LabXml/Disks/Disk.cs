@@ -2,34 +2,27 @@
 {
     public class Disk
     {
-        private string path;
-        private string name;
-        private int diskSize;
         public bool SkipInitialization { get; set; }
 
-        public string Path
-        {
-            get { return path; }
-            set { path = value; }
-        }
+        public string Path { get; set; }
 
-        public string Name
-        {
-            get { return name; }
-            set { name = value; }
-        }
+        public string Name { get; set; }
 
-        public int DiskSize
-        {
-            get { return diskSize; }
-            set { diskSize = value; }
-        }
+        public int DiskSize { get; set; }
+
+        public long AllocationUnitSize { get; set; }
+        
+        public bool UseLargeFRS { get; set; }
+
+        public string Label { get; set; }
+
+        public char DriveLetter { get; set; }
 
         public string FileName
         {
             get
             {
-                return System.IO.Path.GetFileName(path);
+                return System.IO.Path.GetFileName(Path);
             }
         }
 

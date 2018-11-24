@@ -36,5 +36,5 @@ function Add-UnattendedKickstartNetworkAdapter
         ' --nodns'
     }
 
-    $script:un += $configurationItem
+    $script:un.Add($configurationItem)
 }

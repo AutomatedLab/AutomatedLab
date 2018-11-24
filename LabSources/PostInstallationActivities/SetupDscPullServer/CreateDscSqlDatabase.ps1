@@ -1,6 +1,6 @@
 param (
     [Parameter(Mandatory)]
-    [string[]]$DomainAndComputerName
+    [string]$DomainAndComputerName
 )
 
 $creatreDbQuery = @'
@@ -90,7 +90,7 @@ GO
 ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF 
 GO
 
-ALTER DATABASE [DSC] SET RECOVERY FULL 
+ALTER DATABASE [DSC] SET RECOVERY SIMPLE 
 GO
 
 ALTER DATABASE [DSC] SET  MULTI_USER 
@@ -177,35 +177,169 @@ CREATE TABLE [dbo].[StatusReport](
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
-/*****
-CREATE TRIGGER [dbo].[DSCStatusReportOnUpdate]
-   ON  [dbo].[StatusReport] 
-   AFTER UPDATE
+CREATE TABLE [dbo].[RegistrationMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AgentId] [nvarchar](255) NOT NULL,
+	[CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+
+GO
+
+CREATE TABLE [dbo].[StatusReportMetaData](
+       [Id] [int] IDENTITY(1,1) NOT NULL,
+       [JobId] [nvarchar](255) NOT NULL,
+       [CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+
+GO
+
+CREATE TRIGGER [dbo].[InsertCreationTimeRDMD] 
+ON [dbo].[RegistrationData]
+AFTER INSERT
 AS
-SET NOCOUNT ON
 BEGIN
-    DECLARE @JobId nvarchar(50) = (SELECT JobId FROM inserted);
-    DECLARE @StatusData nvarchar(MAX) = (SELECT StatusData FROM inserted);
-    IF @StatusData LIKE '\[%' ESCAPE '\'
-        SET @StatusData = REPLACE(SUBSTRING(@StatusData, 3, Len(@StatusData) - 4), '\', '')
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
 
-    DECLARE @Errors nvarchar(MAX) = (SELECT [Errors] FROM inserted);
-    IF @Errors IS NULL
-        SET @Errors = (SELECT Errors FROM StatusReport WHERE JobId = @JobId)
-    
-    IF @Errors LIKE '\[%' ESCAPE '\' AND Len(@Errors) > 4
-        SET @Errors = REPLACE(SUBSTRING(@Errors, 3, Len(@Errors) - 4), '\', '')
+  -- get the last id value of the record inserted or updated
+  DECLARE @AgentId nvarchar(255)
+  SELECT @AgentId = AgentId
+  FROM INSERTED
 
-    UPDATE StatusReport
-    SET StatusData = @StatusData, Errors = @Errors
-    WHERE JobId = @JobId
-    
+  -- Insert statements for trigger here
+  INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
+  VALUES(@AgentId,GETDATE()) 
+
 END
 GO
 
-ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [DSCStatusReportOnUpdate]
+CREATE TRIGGER [dbo].[InsertCreationTimeSRMD] 
+ON [dbo].[StatusReport]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @JobId nvarchar(255)
+  SELECT @JobId = JobId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
+  VALUES(@JobId,GETDATE()) 
+
+END
 GO
-*****/
+
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
+ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
+GO
+
+--Base views
+CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
+AS
+WITH CTE(NodeName
+	,CreationTime
+	,StartTime
+	,EndTime
+	,ErrorMessage
+) AS (
+SELECT RegistrationData.NodeName
+	,CreationTime
+	,StartTime
+	,EndTime
+	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+		FROM OPENJSON(
+			(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+		)
+		WITH (
+			ErrorMessage nvarchar(2000) '$.ErrorMessage',
+			ErrorCode nvarchar(20) '$.ErrorCode',
+			ResourceId nvarchar(200) '$.ResourceId'
+		) FOR XML PATH ('')) AS ErrorMessage
+	FROM StatusReport 
+	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
+	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
+)
+SELECT TOP 5000 * FROM CTE WHERE 
+ErrorMessage LIKE '%cannot find module%' 
+OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+OR ErrorMessage LIKE '%Checksum file not located for%'
+OR ErrorMessage LIKE '%Checksum for module%'
+ORDER BY EndTime DESC
+
+--Module does not exist					Cannot find module
+--Configuration does not exist			The assigned configuration <Name> is not found
+--Checksum does not exist				Checksum file not located for
+GO
+
+CREATE VIEW [dbo].[vBaseNodeLocalStatus]
+AS
+
+WITH CTE(JobId
+	,NodeName
+	,OperationType
+	,RefreshMode
+	,[Status]
+	,LCMVersion
+	,ReportFormatVersion
+	,ConfigurationVersion
+	,IPAddress
+	,CreationTime
+	,StartTime
+	,EndTime
+	,Errors
+	,StatusData
+	,RebootRequested
+	,AdditionalData
+	,ErrorMessage
+) AS (
+SELECT StatusReport.JobId
+	,RegistrationData.NodeName
+	,OperationType
+	,RefreshMode
+	,[Status]
+	,StatusReport.LCMVersion
+	,ReportFormatVersion
+	,ConfigurationVersion
+	,StatusReport.IPAddress
+	,CreationTime
+	,StartTime
+	,EndTime
+	,Errors
+	,StatusData
+	,RebootRequested
+	,AdditionalData
+	,(SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
+	FROM OPENJSON(
+		(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	)
+	WITH (
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
+		ErrorCode nvarchar(20) '$.ErrorCode',
+		ResourceId nvarchar(200) '$.ResourceId'
+		) FOR XML PATH ('')
+	) AS ErrorMessage
+	FROM StatusReport
+	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
+	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
+	)
+	SELECT TOP 100000 * FROM CTE
+	WHERE 
+		ErrorMessage NOT LIKE '%cannot find module%' 
+		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
+		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
+		AND ErrorMessage NOT LIKE '%Checksum for module%'
+		AND EndTime > DATEADD(MINUTE, -120, GETDATE())
+		AND [Status] IS NOT NULL
+		OR ErrorMessage IS NULL
+
+	ORDER BY EndTime DESC
+GO
 
 --Adding functions
 CREATE FUNCTION [dbo].[Split] (
@@ -276,18 +410,17 @@ RETURNS TABLE
     AS
 RETURN
 (
-    SELECT [dbo].[StatusReport].[NodeName]
-	,[dbo].[StatusReport].[Status]
-	,[dbo].[StatusReport].[Id] AS [AgentId]
-	,[dbo].[StatusReport].[EndTime] AS [Time]
-	,[dbo].[StatusReport].[RebootRequested]
-	,[dbo].[StatusReport].[OperationType]
+    SELECT vBaseNodeLocalStatus.NodeName
+	,[Status]
+	,CreationTime AS [Time]
+	,RebootRequested
+	,OperationType
 
 	,(
 	SELECT [HostName] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (HostName nvarchar(200) '$.HostName')) AS HostName
-
+	
 	,(
 	SELECT [ResourceId] + ',' AS [text()] 
 	FROM OPENJSON(
@@ -296,7 +429,7 @@ RETURN
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesInDesiredState
-
+	
 	,(
 	SELECT [ResourceId] + ',' AS [text()] 
 	FROM OPENJSON(
@@ -305,9 +438,9 @@ RETURN
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesNotInDesiredState
-
+	
 	,(
-	SELECT SUM(CAST(DurationInSeconds AS float)) AS Duration
+	SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float)) AS Duration
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
 	)
@@ -316,11 +449,12 @@ RETURN
 			InDesiredState bit '$.InDesiredState'
 		)
 	) AS Duration
+	
 	,(
 	SELECT [DurationInSeconds] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (DurationInSeconds nvarchar(200) '$.DurationInSeconds')) AS DurationWithOverhead
-
+	
 	,(
 	SELECT COUNT(*)
 	FROM OPENJSON(
@@ -332,14 +466,14 @@ RETURN
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
 	)) AS ResourceCountNotInDesiredState
-
+	
 	,(
 	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
 	FROM OPENJSON(
-	(SELECT TOP 1  [value] FROM OPENJSON([Errors]))
+	(SELECT TOP 1 [value] FROM OPENJSON([Errors]))
 	)
 	WITH (
-		ErrorMessage nvarchar(200) '$.ErrorMessage',
+		ErrorMessage nvarchar(2000) '$.ErrorMessage',
 		ErrorCode nvarchar(20) '$.ErrorCode',
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ErrorMessage
@@ -348,15 +482,22 @@ RETURN
 	SELECT [value] FROM OPENJSON([StatusData])
 	) AS RawStatusData
 
-	FROM dbo.StatusReport INNER JOIN
-	(SELECT MAX(EndTime) AS MaxEndTime, NodeName
-	FROM dbo.StatusReport AS StatusReport_1
-	WHERE EndTime > '1.1.2000'
-	GROUP BY [StatusReport_1].[NodeName]) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND [dbo].[StatusReport].[NodeName] = SubMax.NodeName
+	,(
+	SELECT [value] FROM OPENJSON([Errors]) FOR JSON PATH
+	) AS RawErrors
+
+	FROM dbo.vBaseNodeLocalStatus 
+	INNER JOIN (
+		SELECT NodeName
+		,MAX(CreationTime) AS MaxEndTime
+		FROM dbo.vBaseNodeLocalStatus
+		GROUP BY NodeName
+		
+	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
 GO
 
--- Adding views
+--Remaining views
 CREATE VIEW [dbo].[vRegistrationData]
 AS
 SELECT GetRegistrationData.*
@@ -374,7 +515,8 @@ GO
 
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
-SELECT GetNodeStatus.*
+SELECT GetNodeStatus.*,
+IIF([ResourceCountNotInDesiredState] > 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
 GO
 
@@ -384,6 +526,16 @@ SELECT NodeName, COUNT(*) AS NodeStatusCount
 FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
+GO
+
+CREATE VIEW [dbo].[vStatusReportDataNewest]
+AS
+SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime, 
+dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
+FROM dbo.StatusReport
+INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
+INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
+ORDER BY dbo.StatusReportMetaData.CreationTime DESC
 GO
 '@
 
@@ -419,34 +571,31 @@ Invoke-Sqlcmd -Query $creatreDbQuery -ServerInstance localhost
 Write-Host 'finished.'
 Write-Host 'Database is stored on C:\DSCDB'
 
-$DomainAndComputerName | ForEach-Object {
+Write-Host "Adding permissions to DSC database for $DomainAndComputerName..." -NoNewline
 
-    Write-Host "Adding permissions to DSC database for $DomainAndComputerName..." -NoNewline
+$domain = ($DomainAndComputerName -split '\\')[0]
+$name = ($DomainAndComputerName -split '\\')[1]
 
-    $domain = ($_ -split '\\')[0]
-    $name = ($_ -split '\\')[1]
-
-    if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
-    {
-        $domain = 'NT AUTHORITY'
-        $name = 'SYSTEM'
-    }
-    $name = $name + '$'
-
-    $account = New-Object System.Security.Principal.NTAccount($domain, $name)
-    try
-    {
-        $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
-    }
-    catch
-    {
-        Write-Error "The account '$domain\$name' could not be found"
-        continue
-    }
-
-    $query = $addPermissionsQuery -f $domain, $name
-
-    Invoke-Sqlcmd -Query $query -ServerInstance localhost
-
-    Write-Host 'finished'
+if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
+{
+    $domain = 'NT AUTHORITY'
+    $name = 'SYSTEM'
 }
+$name = $name + '$'
+
+$account = New-Object System.Security.Principal.NTAccount($domain, $name)
+try
+{
+    $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
+}
+catch
+{
+    Write-Error "The account '$domain\$name' could not be found"
+    continue
+}
+
+$query = $addPermissionsQuery -f $domain, $name
+
+Invoke-Sqlcmd -Query $query -ServerInstance localhost
+
+Write-Host 'finished'

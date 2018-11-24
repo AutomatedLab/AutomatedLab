@@ -1,6 +1,39 @@
 # Changelog
 
-## 5.0.2 - 2018-05-24
+## Unreleased
+
+- Fixed SQL Setup (2016+) by preinstalling C++ redist
+
+## 5.0.4 - 2019-09-28
+
+### Enhancements
+
+- Get-DiskSpace includes UNC paths
+- Windows 10 Enterprise support for remote sessions
+- Workflows replaced with functions
+- Runspace cmdlets added to AutomatedLab.Common
+- Azure subscription handling updated
+
+### Fixes
+
+- PowerCLI fixes
+- Error handling in Get-LabIssuingCa
+- Issues with Azure domain joins fixed
+- Issues with Azure subscription usage fixed
+- Issues with stopping Linux VMs fixed
+
+## 5.0.4 - 2018-08-03
+### Enhancements
+- Better Azure cache handling
+- Update to AzureRM module 6.1
+- Added support or Windows Server 2019
+- Added support again for SQL Server 2008
+- Added support for Windows 10 Pro on Azure
+### Fixes
+- Fixing a serious issue in Get-LWAzureVMConnectionInfo
+- Fixed issues installing SQL Server on VMs with PowerShell 4.0
+- Minor fixes
+## 5.0.3 - 2018-05-24
 
 ### Enhancements
 - New cmdlet Uninstall-WindowsFeature

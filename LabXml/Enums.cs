@@ -80,9 +80,9 @@ namespace AutomatedLab
 
     public enum SwitchType
     {
-        Internal,
-        External,
-        Private
+        Internal = 1,
+        External = 2,
+        Private = 3
     }
 
     public enum NetBiosOptions
