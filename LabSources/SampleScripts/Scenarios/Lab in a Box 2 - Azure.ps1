@@ -37,10 +37,10 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName'= 'contoso.com'
 }
 
-Add-LabMachineDefinition -Name ALDC1 -Roles RootDC
-
 Add-LabDiskDefinition -Name AL1D -DiskSizeInGb 100
 Add-LabMachineDefinition -Name AL1 -Memory 32GB -OperatingSystem 'Windows Server Datacenter' -DiskName AL1D
+
+Add-LabMachineDefinition -Name ALDC1 -Roles RootDC
 
 #Add-LabDiskDefinition -Name AL2D -DiskSizeInGb 100
 #Add-LabMachineDefinition -Name AL2 -Memory 32GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -DiskName AL2D
@@ -66,6 +66,7 @@ Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources fold
     Install-PackageProvider -Name Nuget -ForceBootstrap -Force -ErrorAction Stop | Out-Null
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 
+    Enable-LabHostRemoting -Force
     Import-Module -Name AutomatedLab -ErrorAction Stop
 
     $dataVolume = Get-Volume -FileSystemLabel DataDisk* | Select-Object -First 1
