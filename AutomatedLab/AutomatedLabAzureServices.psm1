@@ -3,7 +3,7 @@ function Install-LabAzureServices
     # .ExternalHelp AutomatedLab.Help.xml
     [CmdletBinding()]
     param ()
-    
+
     Write-LogFunctionEntry
     $lab = Get-Lab
 
@@ -12,12 +12,12 @@ function Install-LabAzureServices
         Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
+
     Write-ScreenInfo -Message "Starting Azure Services Deplyment"
-    
+
     $services = Get-LabAzureWebApp
     $servicePlans = Get-LabAzureAppServicePlan
-    
+
     if (-not $services)
     {
         Write-ScreenInfo "No Azure service defined, exiting."
@@ -40,15 +40,15 @@ function Install-LabAzureServices
 function New-LabAzureAppServicePlan
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
-        
+
         [switch]$PassThru
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
@@ -65,12 +65,12 @@ function New-LabAzureAppServicePlan
         foreach ($planName in $Name)
         {
             $plan = Get-LabAzureAppServicePlan -Name $planName
-            
+
             if (-not (Get-LabAzureResourceGroup -ResourceGroupName $plan.ResourceGroup))
             {
                 New-LabAzureRmResourceGroup -ResourceGroupNames $plan.ResourceGroup -LocationName $plan.Location
             }
-            
+
             if ((Get-AzureRmAppServicePlan -Name $plan.Name -ResourceGroupName $plan.ResourceGroup -ErrorAction SilentlyContinue))
             {
                 Write-Error "The Azure Application Service Plan '$planName' does already exist in $($plan.ResourceGroup)"
@@ -92,7 +92,7 @@ function New-LabAzureAppServicePlan
             }
         }
     }
-    
+
     end
     {
         Export-Lab
@@ -105,7 +105,7 @@ function New-LabAzureAppServicePlan
 function Set-LabAzureWebAppContent
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -123,16 +123,16 @@ function Set-LabAzureWebAppContent
             Write-LogFunctionExitWithError -Message "The path '$LocalContentPath' does not exist"
             continue
         }
-        
+
         $script:lab = Get-Lab
     }
-    
+
     process
     {
         if (-not $Name) { return }
-        
+
         $webApp = $lab.AzureResources.Services | Where-Object Name -eq $Name
-        
+
         if (-not $webApp)
         {
             Write-Error "The Azure App Service '$Name' does not exist."
@@ -146,7 +146,7 @@ function Set-LabAzureWebAppContent
 
         Send-FtpFolder -Path $LocalContentPath -DestinationPath site/wwwroot/ -HostUrl $hostUrl -Credential $cred -Recure
     }
-    
+
     end
     {
         Write-LogFunctionExit
@@ -158,19 +158,19 @@ function Set-LabAzureWebAppContent
 function New-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
-        
+
         [switch]$PassThru
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
-        
+
         $script:lab = Get-Lab
         if (-not $lab)
         {
@@ -184,12 +184,12 @@ function New-LabAzureWebApp
         foreach ($serviceName in $Name)
         {
             $app = Get-LabAzureWebApp -Name $serviceName
-            
+
             if (-not (Get-LabAzureResourceGroup -ResourceGroupName $app.ResourceGroup))
             {
                 New-LabAzureRmResourceGroup -ResourceGroupNames $app.ResourceGroup -LocationName $app.Location
             }
-            
+
             if (-not (Get-LabAzureAppServicePlan -Name $app.ApplicationServicePlan))
             {
                 New-LabAzureAppServicePlan -Name $app.ApplicationServicePlan
@@ -211,7 +211,7 @@ function New-LabAzureWebApp
                 $existingWebApp.Merge($webApp)
 
 				$existingWebApp | Set-LabAzureWebAppContent -LocalContentPath "$(Get-LabSourcesLocationInternal -Local)\PostInstallationActivities\WebSiteDefaultContent"
-            
+
                 if ($PassThru)
                 {
                     $webApp
@@ -219,7 +219,7 @@ function New-LabAzureWebApp
             }
         }
     }
-    
+
     end
     {
         Export-Lab
@@ -232,14 +232,14 @@ function New-LabAzureWebApp
 function Get-LabAzureAppServicePlan
 {
     # .ExternalHelp AutomatedLab.Help.xml
-  
+
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
@@ -250,16 +250,16 @@ function Get-LabAzureAppServicePlan
             Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
             break
         }
-        
+
         $script:lab = & $MyInvocation.MyCommand.Module { $script:lab }
     }
-    
+
     process
     {
         if (-not $Name) { return }
-        
+
         $sp = $lab.AzureResources.ServicePlans | Where-Object Name -eq $Name
-        
+
         if (-not $sp)
         {
             Write-Error "The Azure App Service Plan '$Name' does not exist."
@@ -269,14 +269,14 @@ function Get-LabAzureAppServicePlan
             $sp
         }
     }
-    
+
     end
     {
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
             $lab.AzureResources.ServicePlans
         }
-        
+
         Write-LogFunctionExit
     }
 }
@@ -286,27 +286,27 @@ function Get-LabAzureAppServicePlan
 function Get-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
-        
+
         $script:lab = Get-Lab
     }
-    
+
     process
     {
         if (-not $Name) { return }
-        
+
         $sa = $lab.AzureResources.Services | Where-Object Name -eq $Name
-        
+
         if (-not $sa)
         {
             Write-Error "The Azure App Service '$Name' does not exist."
@@ -316,14 +316,14 @@ function Get-LabAzureWebApp
             $sa
         }
     }
-    
+
     end
     {
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
             $lab.AzureResources.Services
         }
-            
+
         Write-LogFunctionExit
     }
 }
@@ -340,18 +340,18 @@ function Remove-LabAzureWebApp
         [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroup
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
-        
+
         $script:lab = Get-Lab
     }
-    
+
     process
     {
         $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
-        
+
         if (-not $service)
         {
             Write-Error "The Azure App Service '$Name' does not exist in the lab."
@@ -368,7 +368,7 @@ function Remove-LabAzureWebApp
             $lab.AzureResources.Services.Remove($service)
         }
     }
-    
+
     end
     {
         Export-Lab
@@ -389,18 +389,18 @@ function Remove-LabAzureAppServicePlan
         [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroup
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
-        
+
         $script:lab = Get-Lab
     }
-    
+
     process
     {
         $servicePlan = $lab.AzureResources.ServicePlans | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
-        
+
         if (-not $servicePlan)
         {
             Write-Error "The Azure App Service Plan '$Name' does not exist."
@@ -416,7 +416,7 @@ function Remove-LabAzureAppServicePlan
             $lab.AzureResources.ServicePlans.Remove($servicePlan)
         }
     }
-    
+
     end
     {
         Export-Lab
@@ -429,7 +429,7 @@ function Remove-LabAzureAppServicePlan
 function Start-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -437,10 +437,10 @@ function Start-LabAzureWebApp
 
         [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroup,
-        
+
         [switch]$PassThru
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
@@ -455,9 +455,9 @@ function Start-LabAzureWebApp
     process
     {
         if (-not $Name) { return }
-        
+
         $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
-        
+
         if (-not $service)
         {
             Write-Error "The Azure App Service '$Name' does not exist."
@@ -493,7 +493,7 @@ function Start-LabAzureWebApp
 function Stop-LabAzureWebApp
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    
+
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -501,10 +501,10 @@ function Stop-LabAzureWebApp
 
         [Parameter(Mandatory, Position = 1, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroup,
-        
+
         [switch]$PassThru
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
@@ -519,9 +519,9 @@ function Stop-LabAzureWebApp
     process
     {
         if (-not $Name) { return }
-        
+
         $service = $lab.AzureResources.Services | Where-Object { $_.Name -eq $Name -and $_.ResourceGroup -eq $ResourceGroup }
-        
+
         if (-not $service)
         {
             Write-Error "The Azure App Service '$Name' does not exist in Resource Group '$ResourceGroup'."
@@ -568,10 +568,10 @@ function Get-LabAzureWebAppStatus
 
         [Parameter(ParameterSetName = 'All')]
         [switch]$All = $true,
-        
+
         [switch]$AsHashTable
     )
-    
+
     begin
     {
         Write-LogFunctionEntry
@@ -595,7 +595,7 @@ function Get-LabAzureWebAppStatus
         $services = foreach ($n in $name)
         {
             if (-not $n -and -not $PSCmdlet.ParameterSetName -eq 'All') { return }
-        
+
             $service = if ($ResourceGroup)
             {
                 $lab.AzureResources.Services | Where-Object { $_.Name -eq $n -and $_.ResourceGroup -eq $ResourceGroup }
@@ -628,7 +628,7 @@ function Get-LabAzureWebAppStatus
                 Write-Error "The Web App '$($service.Name)' does not exist in the Azure Resource Group $($service.ResourceGroup)."
             }
         }
-            
+
     }
 
     end
@@ -659,7 +659,7 @@ function Send-LabAzureWebAppContent
         [Parameter(Position = 1, ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
         [string]$ResourceGroup
     )
-    
+
     begin
     {
         Write-LogFunctionEntry

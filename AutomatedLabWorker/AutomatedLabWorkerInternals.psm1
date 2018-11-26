@@ -9,24 +9,24 @@ function Test-SubnetInSubnet
 		[Parameter(Mandatory)]
 		[String]$SubnetMask
 	)
-	
+
     If ($IPAddress.Contains('/'))
 	{
 		$temp = $IP.Split('/')
 		$IPAddress = $temp[0]
 		$SubnetMask = $temp[1]
 	}
-	
+
 	If (!$SubnetMask.Contains('.'))
 	{
 		$SubnetMask = ConvertTo-Mask $SubnetMask
 	}
-	
-	
+
+
 
     $decimalIP = ConvertTo-DecimalIP $IPAddress
 	$decimalMask = ConvertTo-DecimalIP $SubnetMask
-	
+
 	$network = $decimalIP -BAnd $decimalMask
 	$broadcast = $decimalIP -BOr
 	((-BNot $decimalMask) -BAnd [UInt32]::MaxValue)
@@ -35,10 +35,10 @@ function Test-SubnetInSubnet
 	$rangeEnd = ConvertTo-DottedDecimalIP ($broadcast - 1)
 	$broadcastAddress = ConvertTo-DottedDecimalIP $broadcast
 	$MaskLength = ConvertTo-MaskLength $SubnetMask
-	
+
 	$binaryIP = ConvertTo-BinaryIP $IPAddress
 	$private = $false
-	
+
 	switch -RegEx ($binaryIP)
 	{
 		'^1111'
@@ -76,7 +76,7 @@ function Test-SubnetInSubnet
 			}
 		}
 	}
-	
+
 	$netInfo = New-Object -TypeName Object
 	Add-Member -MemberType NoteProperty -Name 'Network' -InputObject $netInfo -Value $networkAddress
 	Add-Member -MemberType NoteProperty -Name 'Broadcast' -InputObject $netInfo -Value $broadcastAddress
@@ -88,10 +88,10 @@ function Test-SubnetInSubnet
 			   -Value $($broadcast - $network - 1)
 	Add-Member -MemberType NoteProperty -Name 'Class' -InputObject $netInfo -Value $class
 	Add-Member -MemberType NoteProperty -Name 'IsPrivate' -InputObject $netInfo -Value $private
-	
+
     $startIP = ($rangeStart.split('.')[0] * 256*256*256) + ($rangeStart.split('.')[1] * 256*256) + ($rangeStart.split('.')[2] * 256) + ($rangeStart.split('.')[3])
     $endIP   = ($rangeEnd.split('.')[0] * 256*256*256) + ($rangeEnd.split('.')[1] * 256*256) + ($rangeEnd.split('.')[2] * 256) + ($rangeEnd.split('.')[3])
-    
+
 
     if (([ipaddress]$IpAddress).Address -ge ([ipaddress]$rangeStart).Address -and ([ipaddress]$IpAddress).Address -le ([ipaddress]$rangeEnd).Address)
     {
@@ -112,12 +112,12 @@ Function Test-IpInSameSameNetwork
 		[AutomatedLab.IPNetwork]$Ip1,
 		[AutomatedLab.IPNetwork]$Ip2
 	)
-	
+
     $ip1Decimal = $Ip1.SerializationNetworkAddress
     $ip2Decimal = $Ip2.SerializationNetworkAddress
     $ip1Total   = $Ip1.Total
     $ip2Total   = $Ip2.Total
-    
+
     if (($ip1Decimal -ge $ip2Decimal) -and ($ip1Decimal -lt ([long]$ip2Decimal+[long]$ip2Total)))
     {
         return $true
@@ -127,7 +127,7 @@ Function Test-IpInSameSameNetwork
     {
         return $true
     }
-    
+
     return $false
 }
 
