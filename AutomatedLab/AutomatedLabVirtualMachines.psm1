@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object -IsNot SkipDeployment
 
     if (-not $machines)
     {
@@ -35,7 +35,7 @@ function New-LabVM
 
     $jobs = @()
 
-    if($lab.DefaultVirtualizationEngine -eq 'Azure')
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
         New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
