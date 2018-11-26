@@ -74,6 +74,8 @@ namespace AutomatedLab
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
 
+        public List<string> LinuxPackageGroup { get; set; }
+
         public OperatingSystemType OperatingSystemType
         {
             get
@@ -102,6 +104,23 @@ namespace AutomatedLab
                 if (!string.IsNullOrEmpty(domainName))
                 {
                     return string.Format("{0}.{1}", name, domainName);
+                }
+                else
+                {
+                    return name;
+                }
+            }
+        }
+
+        [XmlIgnore]
+        public string DomainAccountName
+        {
+            get
+            {
+                if (!string.IsNullOrEmpty(domainName))
+                {
+                    var domainShortName = domainName.Split('.')[0];
+                    return string.Format("{0}\\{1}", domainShortName, name);
                 }
                 else
                 {
@@ -347,6 +366,7 @@ namespace AutomatedLab
         public Machine()
         {
             roles = new List<Role>();
+            LinuxPackageGroup = new List<string>();
             postInstallationActivity = new List<PostInstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
             internalNotes = new SerializableDictionary<string, string>();
@@ -374,7 +394,7 @@ namespace AutomatedLab
             if (dcRole == null)
             {
                 //machine is not a domain controller, creating a local username 
-                userName = OperatingSystemType == OperatingSystemType.Linux ? installationUser.UserName : string.Format(@"{0}\{1}", name, installationUser.UserName);
+                userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);
             }
             else
             {

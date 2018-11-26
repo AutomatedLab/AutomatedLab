@@ -11,5 +11,5 @@ function Set-UnattendedKickstartDomain
 		[string]$Password
     )
 	
-	$script:un += 'realm join --one-time-password={0} {1}' -f $Password, $DomainName
+	$script:un.Add(("realm join --one-time-password='{0}' {1}" -f $Password, $DomainName))
 }

@@ -45,7 +45,7 @@
     $result = Dism /online /get-featureinfo /featurename:NetFx3
     if($result -contains 'State : Enabled')
     {
-        Write-Warning ".Net Framework 3.5 has been already installed and enabled."
+        Write-ScreenInfo ".Net Framework 3.5 has been already installed and enabled." -Type Warning
         return
     }
 

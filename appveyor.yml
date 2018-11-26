@@ -1,4 +1,4 @@
-version: 4.7.2.{build}
+version: 5.1.0.{build}
 image:
 - Visual Studio 2017
 
@@ -27,6 +27,7 @@ assembly_info:
   assembly_informational_version: "{version}"
 
 before_build:
+  - nuget restore
   - ps: |
         Write-Host "'before_build' block"
 

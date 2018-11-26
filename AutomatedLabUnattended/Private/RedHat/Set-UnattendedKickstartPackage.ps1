@@ -5,19 +5,31 @@ function Set-UnattendedKickstartPackage
         [string[]]$Package
     )
 
-    $script:un += '%packages --ignoremissing'
-    $script:un += '@core'    
+    if ($Package -like '*Gnome*')
+    {
+        $script:un.Add('xconfig --startxonboot --defaultdesktop=GNOME')
+    }
+    elseif ($Package -like '*KDE*')
+    {
+        Write-Warning -Message 'Adding KDE UI to RHEL/CentOS via kickstart file is not supported. Please configure your UI manually.'
+    }
+
+    $script:un.Add('%packages --ignoremissing')
+    $script:un.Add('@core')
 
     foreach ($p in $Package)
     {
         if ($p -eq 'core') { continue }
-        
-        $script:un += '@{0}' -f $p
+
+        $script:un.Add(('@{0}' -f $p))
+
+        if ($p -like '*gnome*') { $script:un.Add('@^graphical-server-environment')}
     }
 
-    $script:un += 'oddjob'
-    $script:un += 'oddjob-mkhomedir'
-    $script:un += 'sssd'
-    $script:un += 'adcli'
-    $script:un += '%end'
+    $script:un.Add('oddjob')
+    $script:un.Add('oddjob-mkhomedir')
+    $script:un.Add('sssd')
+    $script:un.Add('adcli')
+    $script:un.Add('krb5-workstation')
+    $script:un.Add('%end')
 }

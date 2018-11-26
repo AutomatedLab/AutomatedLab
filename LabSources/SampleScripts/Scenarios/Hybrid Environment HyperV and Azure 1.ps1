@@ -26,16 +26,14 @@ $labs = @(
     }
 )
 
-$azureRmContext = 'YOUR PROFILE HERE' # Hint: Save-AzureRmContext
-
 foreach ($lab in $labs.GetEnumerator())
 {
-    $engine = if($lab.OnAzure){"Azure"}else{"HyperV"}
+    $engine = if ($lab.OnAzure) { "Azure" } else { "HyperV" }
     New-LabDefinition -Name $lab.LabName -DefaultVirtualizationEngine $engine
 
     if($lab.OnAzure)
     {
-        Add-LabAzureSubscription -Path $azureRmContext -DefaultLocationName $lab.Location
+        Add-LabAzureSubscription -DefaultLocationName $lab.Location
     }
 
     #make the network definition
@@ -106,6 +104,6 @@ Invoke-LabCommand POSHDC1 -ScriptBlock {
     }
     else
     {
-        Write-Warning "Could not connect to $connectedLabMachine"
+        Write-ScreenInfo "Could not connect to $connectedLabMachine" -Type Warning
     }
 } -ArgumentList "POSHDC1.$($labs.Get(1).Domain)" -PassThru

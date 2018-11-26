@@ -34,8 +34,6 @@
         'AutomatedLabDisks.psm1',
         'AutomatedLabInternals.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabExchange2013.psm1',
-        'AutomatedLabExchange2016.psm1', 
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabNetwork.psm1',
@@ -64,7 +62,6 @@
     
     FunctionsToExport      = @(
         'New-LabSourcesFolder',
-        'Add-LabAzureProfile',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
         'Add-LabVMUserRight',
@@ -101,7 +98,7 @@
         'Get-LabHyperVAvailableMemory',
         'Get-LabInternetFile',
         'Get-LabIssuingCA',
-        'Get-LabMachineUacStatus',
+        'Get-LabVMUacStatus',
         'Get-LabPSSession',
         'Get-LabSoftwarePackage',
         'Get-LabSourcesLocation',
@@ -109,10 +106,12 @@
         'Get-LabVariable',
         'Get-LabVHDX',
         'Get-LabVM',
+        'Get-LabVMDotNetFrameworkVersion',
         'Get-LabVMRdpFile',
         'Get-LabVMStatus',
         'Get-LabVMUptime',
         'Get-LabWindowsFeature',
+        'Get-LabAvailableAzureSku',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
@@ -124,8 +123,6 @@
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
         'Install-LabDscPullServer',
-        'Install-LabExchange2013',
-        'Install-LabExchange2016',
         'Install-LabFailoverCluster',
         'Install-LabFirstChildDcs',
         'Install-LabOffice2013',
@@ -177,7 +174,7 @@
         'Set-LabDscLocalConfigurationManagerConfiguration',
         'Set-LabGlobalNamePrefix',
         'Set-LabInstallationCredential',
-        'Set-LabMachineUacStatus',
+        'Set-LabVMUacStatus',
         'Show-LabDeploymentSummary',
         'Start-LabAzureWebApp',
         'Start-LabVM',
@@ -193,15 +190,26 @@
         'Test-LabAzureLabSourcesStorage',
         'Test-LabCATemplate',
         'Test-LabMachineInternetConnectivity',
+        'Test-LabHostRemoting',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
         'Unblock-LabSources',
+        'Undo-LabHostRemoting',
+        'Uninstall-LabWindowsFeature'
         'Update-LabAzureSettings',
         'Update-LabIsoImage',
         'Update-LabBaseImage',
+        'Update-LabSysinternalsTools',
         'Wait-LabADReady',
         'Wait-LabVM',
         'Wait-LabVMRestart',
-        'Wait-LabVMShutdown'
+        'Wait-LabVMShutdown',
+        'Get-LabBuildStep',
+        'Get-LabReleaseStep',
+        'New-LabReleasePipeline',
+        'Get-LabAzureLoadBalancedPort',
+        'Open-LabTfsSite'
+        'Enable-LabTelemetry',
+        'Disable-LabTelemetry'
     )
     
     FileList               = @(
@@ -216,8 +224,6 @@
         'AutomatedLabAzureServices.psm1',
         'AutomatedLabDisks.psm1',
         'AutomatedLabDsc.psm1',
-        'AutomatedLabExchange2013.psm1',
-        'AutomatedLabExchange2016.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabHybrid.psm1',
         'AutomatedLabInternals.psm1',
@@ -249,6 +255,8 @@
         Timeout_VisualStudio2013Installation   = 90
         Timeout_VisualStudio2015Installation   = 90
 
+        DefaultProgressIndicator               = 10
+
         #PSSession settings
         InvokeLabCommandRetries                = 3
         InvokeLabCommandRetryIntervalInSeconds = 10
@@ -256,23 +264,25 @@
         DoNotUseGetHostEntryInNewLabPSSession  = $true
 
         #DSC
-        DscMofPath                             = '"$labSources\DscConfigurations"'
+        DscMofPath                             = '"$(Get-LabSourcesLocationInternal -Local)\DscConfigurations"'
+        DscPullServerRegistrationKey           = 'ec717ee9-b343-49ee-98a2-26e53939eecf' #used on all Dsc Pull servers and clients
 
         #General VM settings
         DisableWindowsDefender                 = $true
-        DoNotSkipNonNonEnglishIso              = $false
+        DoNotSkipNonNonEnglishIso              = $false #even if AL detects non en-us images, these are not supported and may not work
 
         #Hyper-V VM Settings
         SetLocalIntranetSites                  = 'All' #All, Forest, Domain, None
 
-        #Azure
-        MinimumAzureModuleVersion              = '4.0.0'
-        DefaultAzureRoleSize                   = 'D'
+        #Hyper-V Network settings
+        MacAddressPrefix                       = '0017FB'
 
-        #Exchange
-        ExchangeUcmaDownloadLink               = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-        Exchange2013DownloadLink               = 'https://download.microsoft.com/download/D/E/1/DE1C3D22-28A6-4A30-9811-0A0539385E51/Exchange2013-x64-cu17.exe'
-        #Exchange2016DownloadLink = 'https://download.microsoft.com/download/3/9/B/39B8DDA8-509C-4B9E-BCE9-4CD8CDC9A7DA/Exchange2016-x64.exe' the Exchange CUs are ISOs again
+        #Host Settings
+        DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
+
+        #Azure
+        MinimumAzureModuleVersion              = '6.1.0'
+        DefaultAzureRoleSize                   = 'D'
 
         #Office
         OfficeDeploymentTool                   = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_7614-3602.exe'
@@ -285,6 +295,12 @@
         dotnet452DownloadLink                  = 'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
         dotnet46DownloadLink                   = 'http://download.microsoft.com/download/6/F/9/6F9673B1-87D1-46C4-BF04-95F24C3EB9DA/enu_netfx/NDP46-KB3045557-x86-x64-AllOS-ENU_exe/NDP46-KB3045557-x86-x64-AllOS-ENU.exe'
         dotnet462DownloadLink                  = 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
+        dotnet471DownloadLink                  = 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe'
+        dotnet472DownloadLink                  = 'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
+
+        # C++ redist
+        cppredist64                            = 'https://aka.ms/vs/15/release/vc_redist.x64.exe'
+        cppredist32                            = 'https://aka.ms/vs/15/release/vc_redist.x86.exe'
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio                = 'https://go.microsoft.com/fwlink/?LinkID=840946'
@@ -312,5 +328,35 @@
 
         # OpenSSH
         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
+
+        AzureLocationsUrls                     = @{
+            "West Europe"         = "speedtestwe"
+            "Southeast Asia"      = "speedtestsea" 
+            "East Asia"           = "speedtestea"
+            "North Central US"    = "speedtestnsus"
+            "North Europe"        = "speedtestne"
+            "South Central US"    = "speedtestscus"
+            "West US"             = "speedtestwus"
+            "East US"             = "speedtesteus"
+            "Japan East"          = "speedtestjpe"
+            "Japan West"          = "speedtestjpw"
+            "Brazil South"        = "speedtestbs"
+            "Central US"          = "speedtestcus"
+            "East US 2"           = "speedtesteus2"
+            "Australia Southeast" = "mickmel"
+            "Australia East"      = "micksyd"
+            "West UK"             = "speedtestukw"
+            "South UK"            = "speedtestuks"
+            "Canada Central"      = "speedtestcac"
+            "Canada East"         = "speedtestcae"
+            "West US 2"           = "speedtestwestus2"
+            "West India"          = "speedtestwestindia"
+            "East India"          = "speedtesteastindia"
+            "Central India"       = "speedtestcentralindia"
+            "Korea Central"       = "speedtestkoreacentral"
+            "Korea South"         = "speedtestkoreasouth"
+            "West Central US"     = "speedtestwestcentralus"
+            "France Central"      = "speedtestfrc"
+        }
     }
 }

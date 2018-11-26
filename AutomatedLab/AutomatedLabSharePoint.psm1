@@ -5,57 +5,57 @@
     "http://download.microsoft.com/download/7/B/5/7B51D8D1-20FD-4BF0-87C7-4714F5A1C313/AppFabric1.1-RTM-KB2671763-x64-ENU.exe")
 
 $setupConfigFileContent = '<Configuration>
-	<Package Id="sts">
-		<Setting Id="LAUNCHEDFROMSETUPSTS" Value="Yes"/>
-	</Package>
+    <Package Id="sts">
+        <Setting Id="LAUNCHEDFROMSETUPSTS" Value="Yes"/>
+    </Package>
 
-	<Package Id="spswfe">
-		<Setting Id="SETUPCALLED" Value="1"/>
-	</Package>
+    <Package Id="spswfe">
+        <Setting Id="SETUPCALLED" Value="1"/>
+    </Package>
 
-	<Logging Type="verbose" Path="%temp%" Template="SharePoint Server Setup(*).log"/>
-	<PIDKEY Value="N3MDM-DXR3H-JD7QH-QKKCR-BY2Y7" />
-	<Display Level="none" CompletionNotice="no" />
-	<Setting Id="SERVERROLE" Value="APPLICATION"/>
-	<Setting Id="USINGUIINSTALLMODE" Value="0"/>
-	<Setting Id="SETUP_REBOOT" Value="Never" />
-	<Setting Id="SETUPTYPE" Value="CLEAN_INSTALL"/>
+    <Logging Type="verbose" Path="%temp%" Template="SharePoint Server Setup(*).log"/>
+    <PIDKEY Value="N3MDM-DXR3H-JD7QH-QKKCR-BY2Y7" />
+    <Display Level="none" CompletionNotice="no" />
+    <Setting Id="SERVERROLE" Value="APPLICATION"/>
+    <Setting Id="USINGUIINSTALLMODE" Value="0"/>
+    <Setting Id="SETUP_REBOOT" Value="Never" />
+    <Setting Id="SETUPTYPE" Value="CLEAN_INSTALL"/>
 </Configuration>'
 
 #region Install-LabSharePoint2013
 function Install-LabSharePoint2013
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	[cmdletBinding()]
-	param ([switch]$CreateCheckPoints)
-    	
-	$isoSharePoint2013sp1msdnHash = "9C29CF62E151D362FB02FBF07AEB0440C52DF555"
-	
+    # .ExternalHelp AutomatedLab.Help.xml
+    [cmdletBinding()]
+    param ([switch]$CreateCheckPoints)
+      
+    $isoSharePoint2013sp1msdnHash = "9C29CF62E151D362FB02FBF07AEB0440C52DF555"
+  
     Write-LogFunctionEntry
-	
-	$roleName = [AutomatedLab.Roles]::SharePoint2013
+  
+    $roleName = [AutomatedLab.Roles]::SharePoint2013
     $lab = Get-Lab
-	
-	if (-not (Get-LabMachine))
-	{
-		Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
-		return
-	}
-	
-	$machines = Get-LabMachine | Where-Object { $roleName -in $_.Roles.Name }
-	if (-not $machines)
-	{
-		Write-Warning -Message "There is no machine with the role '$roleName'"
-		Write-LogFunctionExit
-		return
-	}
+  
+    if (-not (Get-LabVM))
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+  
+    $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
+    if (-not $machines)
+    {
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
+        Write-LogFunctionExit
+        return
+    }
 
-	$hypervMachines = @($machines | Where-Object HostType -eq HyperV)
-	if ($hypervMachines)
+    $hypervMachines = @($machines | Where-Object HostType -eq HyperV)
+    if ($hypervMachines)
     {	
-    	Write-ScreenInfo -Message 'Waiting for machines with SharePoint 2013 role to start up' -NoNewline
-	    Start-LabVM -ComputerName $hypervMachines -Wait -ProgressIndicator 15
-        
+        Write-ScreenInfo -Message 'Waiting for machines with SharePoint 2013 role to start up' -NoNewline
+        Start-LabVM -ComputerName $hypervMachines -Wait -ProgressIndicator 15
+      
         # Mount OS ISO for Windows Feature Installation
         Mount-LabIsoImage -ComputerName $hypervMachines -IsoPath $hypervMachines.OperatingSystem.IsoPath -SupressOutput
 
@@ -69,20 +69,20 @@ function Install-LabSharePoint2013
         Dismount-LabIsoImage -ComputerName $hypervMachines
 
         # Mount SharePoint ISO
-	    $isoImageSharePoint2013 = $lab.Sources.ISOs | Where-Object { $_.Name -eq $roleName }
+        $isoImageSharePoint2013 = $lab.Sources.ISOs | Where-Object { $_.Name -eq $roleName }
         if (-not $isoImageSharePoint2013)
         {
-	        Write-LogFunctionExitWithError -Message "There is no ISO image available to install the role '$roleName'. Please add the required ISO to the lab and name it '$roleName'"
-	        return
+            Write-LogFunctionExitWithError -Message "There is no ISO image available to install the role '$roleName'. Please add the required ISO to the lab and name it '$roleName'"
+            return
         }
         Mount-LabIsoImage -ComputerName $hypervMachines -IsoPath $isoImageSharePoint2013.Path -SupressOutput
 
         Write-ScreenInfo -Message "Copying installation files for SharePoint 2013 to server"
         Invoke-LabCommand -ComputerName $hypervMachines -ActivityName "Copy SharePoint 2013 Installation Files" -ScriptBlock {
             Copy-Item -Path "D:\" -Destination "C:\SPInstall\" -Recurse
-        } 
-       
-      
+        }
+     
+    
 
         # Download and copy Prerequisite Files to server
         Write-ScreenInfo -Message "Downloading and copying prerequisite files for SharePoint 2013 to server"
@@ -94,26 +94,26 @@ function Install-LabSharePoint2013
             if ($prereqFile -like "*1CAA41C7-88B9-42D6-9E11-3C655656DAB1*")
             {
                 $prereqFileName = "WcfDataServices56.exe"
-    
+  
             }
-            
+          
             $client.DownloadFile($prereqUri, "$tempPrereqsFolderName\$prereqFileName")
             Copy-LabFileItem -Path "$tempPrereqsFolderName\$prereqFileName" -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles" -ComputerName $vm
         }
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for SharePoint 2013 on server"
-        Invoke-LabCommand -PassThru -ComputerName $hypervMachines -ActivityName "Install SharePoint 2013 Prerequisites" -ScriptBlock {    
+        Invoke-LabCommand -PassThru -ComputerName $hypervMachines -ActivityName "Install SharePoint 2013 Prerequisites" -ScriptBlock {  
             Start-Process -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "/unattended /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
                /IDFX:C:\SPInstall\PrerequisiteInstallerFiles\Windows6.1-KB974405-x64.msu  `
-               /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi ` 
+               /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
                /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
                /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
                /KB2671763:C:\SPInstall\PrerequisiteInstallerFiles\AppFabric1.1-RTM-KB2671763-x64-ENU.exe  `
                /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
                /WCFDataServices:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
                /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices56.exe"
-        } 
+        }
 
         Write-ScreenInfo -Message "Restaring server to complete prerequisites installation"
         Restart-LabVM $hypervMachines
@@ -130,9 +130,9 @@ function Install-LabSharePoint2013
         Copy-LabFileItem -Path $setupConfigFilePath -DestinationFolderPath "C:\SPInstall\files" -ComputerName $vm
 
         Invoke-LabCommand -ComputerName $hypervMachines -ActivityName "Install SharePoint 2013" -ScriptBlock {
-            Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"            
+            Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"          
         }
-	}
+    }
     Write-ScreenInfo -Message "Waiting for SharePoint 2013 role to complete installation" -NoNewLine
 }
 #endregion Install-LabSharePoint2013

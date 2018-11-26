@@ -18,9 +18,9 @@ function Add-UnattendedSynchronousCommand
         return
     }
 	
-    if ($IsKickstart) { Add-UnattendedKickstartCommand -Command $Command -Description $Description; return }
+    if ($IsKickstart) { Add-UnattendedKickstartSynchronousCommand -Command $Command -Description $Description; return }
     
-    if ($IsAutoYast) { Add-UnattendedYastCommand -Command $Command -Description $Description; return }
+    if ($IsAutoYast) { Add-UnattendedYastSynchronousCommand -Command $Command -Description $Description; return }
     
-    Add-UnattendedWindowsCommand -Command $Command -Description $Description
+    Add-UnattendedWindowsSynchronousCommand -Command $Command -Description $Description
 }

@@ -1,6 +1,5 @@
 ﻿$labName = 'ADRES<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
-$azureResourceManagerProfile = '<PATH TO YOUR AZURE RM PROFILE>' #IF YOU DO NOT HAVE A PROFILE FILE, CALL Save-AzureRmContext
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
 #setting addMemberServer to $true installes an additional server in the lab
@@ -14,7 +13,7 @@ $addMemberServer = $false
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
-Add-LabAzureSubscription -Path $azureResourceManagerProfile -DefaultLocationName $azureDefaultLocation
+Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.41.0/24
@@ -24,7 +23,7 @@ Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Some
 Add-LabDomainDefinition -Name child.contoso.com -AdminUser Install -AdminPassword Somepass1
 
 #these credentials are used for connecting to the machines. As this is a lab we use clear-text passwords
-$installationCredential = New-Object PSCredential('install', ('Somepass1' | ConvertTo-SecureString -AsPlainText -Force))
+$installationCredential = New-Object PSCredential('Install', ('Somepass1' | ConvertTo-SecureString -AsPlainText -Force))
 
 #Backup disks
 Add-LabDiskDefinition -Name BackupRoot -DiskSizeInGb 40
@@ -37,7 +36,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Processors' = 2
     'Add-LabMachineDefinition:Memory' = 768MB
     'Add-LabMachineDefinition:InstallationUserCredential' = $installationCredential
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.41.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.41.11'
 }
@@ -63,22 +62,22 @@ Add-LabMachineDefinition -Name ChildDC2 -DiskName BackupChild -IpAddress 192.168
 Install-Lab
 
 #Installs RSAT on ContosoMember1 if the optional machine is part of the lab
-if (Get-LabMachine -ComputerName ContosoMember1 -ErrorAction SilentlyContinue)
+if (Get-LabVM -ComputerName ContosoMember1 -ErrorAction SilentlyContinue)
 {
     Install-LabWindowsFeature -ComputerName ContosoMember1 -FeatureName RSAT
 }
 
 #Install the Windows-Server-Backup feature on all DCs
-Install-LabWindowsFeature -ComputerName (Get-LabMachine | Where-Object { $_.Disks }) -FeatureName Windows-Server-Backup
+Install-LabWindowsFeature -ComputerName (Get-LabVM | Where-Object { $_.Disks }) -FeatureName Windows-Server-Backup
 
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
-Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMachine -Role RootDC) -ScriptBlock {
+Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabVM -Role RootDC) -ScriptBlock {
     $rootDc = Get-ADDomainController -Discover
     $childDc = Get-ADDomainController -DomainName child.contoso.com -Discover
 
@@ -97,7 +96,7 @@ Invoke-LabCommand -ActivityName ADReplicationTopology -ComputerName (Get-LabMach
     Remove-ADReplicationSite -Identity 'Default-First-Site-Name' -Confirm:$false -Server $rootDc
 }
 
-Sync-LabActiveDirectory -ComputerName (Get-LabMachine -Role RootDC)
+Sync-LabActiveDirectory -ComputerName (Get-LabVM -Role RootDC)
 
 Stop-LabVM -All -Wait
 

@@ -25,7 +25,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
     'Add-LabMachineDefinition:DnsServer1' = '192.168.30.10'
     'Add-LabMachineDefinition:DnsServer2' = '192.168.30.11'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
 #The PostInstallationActivity is just creating some users
@@ -66,7 +66,7 @@ Install-Lab
 
 <# REMOVE THE COMMENT TO INSTALL CLASSIC SHELL, NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
@@ -83,14 +83,14 @@ $cmd = {
     ([ADSI]"WinNT://$(HOSTNAME.EXE)/Administrators,group").Add($trustee)
 }
 
-Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabMachine -ComputerName POSHFS1) -ScriptBlock $cmd
+Invoke-LabCommand -ActivityName AddDevAsAdmin -ComputerName (Get-LabVM -ComputerName POSHFS1) -ScriptBlock $cmd
 #endregion
 
-if (Get-LabMachine -ComputerName POSHClient1)
+if (Get-LabVM -ComputerName POSHClient1)
 {
-	Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
-	Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1
-	Restart-LabVM -ComputerName POSHClient1 -Wait
+    Install-LabSoftwarePackage -Path "$labSources\SoftwarePackages\RSAT Windows 10 x64.msu" -ComputerName POSHClient1
+    Invoke-LabCommand -ScriptBlock { Enable-WindowsOptionalFeature -FeatureName RSATClient -Online -NoRestart } -ComputerName POSHClient1
+    Restart-LabVM -ComputerName POSHClient1 -Wait
 }
 
 Show-LabDeploymentSummary -Detailed

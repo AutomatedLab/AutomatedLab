@@ -3,10 +3,20 @@ function Add-UnattendedKickstartSynchronousCommand
     param (
         [Parameter(Mandatory)]
         [string]$Command,
-		
+
         [Parameter(Mandatory)]
         [string]$Description
     )
 
-    Write-Verbose -Message 'No Synchronous Command (first user logon script) for RHEL/CentOS/Fedora'
+    Write-Verbose -Message "Adding command to %post section to $Description"
+
+    $idx = $script:un.IndexOf('%post')
+
+    if ($idx -eq -1)
+    {
+        $script:un.Add('%post')
+        $idx = $script:un.IndexOf('%post')
+    }
+
+    $script:un.Insert($idx + 1, $Command)
 }

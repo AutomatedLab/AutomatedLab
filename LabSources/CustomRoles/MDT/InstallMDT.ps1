@@ -1,10 +1,11 @@
 <#
-    Author: Glenn Corbett @glennjc (GitHub)
-    Version: 1.2, 12/01/2018
+    Author: Glenn Corbett @glennjc
+    Contributors: @randree
+    Version: 1.3, 15/04/2018
 #>
 
 param(
-    [string]$DeploymentFolderLocation = 'DC:\DeploymentShare',
+    [string]$DeploymentFolderLocation = 'C:\DeploymentShare',
 
     [string]$InstallUserID = 'MdtService',
     
@@ -27,7 +28,8 @@ function Install-MDTDhcp {
             1. Installs DHCP Service
             2. Adds the defined DHCP Server Scope
             3. Configured WDS to not listen on DHCP ports, and configure Option 60 in DHCP
-            4. Binds the default Ethernet IPv4 interface to allow DHCP to listen.
+            4. Binds the default Ethernet IPv4 interface to allow DHCP to listen
+            5. If the machine is a domain member, Authorise DHCP with Active Directory
 
             .EXAMPLE
             Install-MDTDhcp -ComputerName 'MDTServer' -DHCPScopeName 'Default Scope for DHCP' -DHCPscopeDescription 'Default Scope' -DHCPScopeStart 192.168.50.100 -DHCPScopeEnd 192.168.50.110 -DHCPScopeMask 255.255.255.0
@@ -42,7 +44,6 @@ function Install-MDTDhcp {
             Nil
             .NOTES
             Feature Enhancement: Function assumes DHCP and WDS are on the same server, does not take into account split roles.
-            Feature Enhancement: Deal with the requirement for DHCP servers to be authorised in AD environments
             Feature Enhancement: Validate DHCP Scope settings are valid for the AL networking configuration
             Feature Enhancement: Allow additonal DHCP scope options (such as DNS, Gateway etc)
             Feature Enhancement: Allow DHCP to bind to all / some available interfaces, currently assumes 'Ethernet'
@@ -82,7 +83,7 @@ function Install-MDTDhcp {
         param  
         (
             [string]$DhcpScopeName = 'Default Scope',
-            [string]$DhcpScopeDescription = 'Default Scope for WDS',
+            [string]$DhcpScopeDescription = 'Default Scope for DHCP',
 
             [Parameter(Mandatory)]
             [string]$DhcpScopeStart,
@@ -104,6 +105,11 @@ function Install-MDTDhcp {
         Start-Sleep -Seconds 10
         #Bind the Ethernet Adapter so that it can process DHCP Requests
         Set-DhcpServerv4Binding -BindingState $True -InterfaceAlias "Ethernet" | Out-Null
+
+        If ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain) {
+            #Machine is a domain member, needs to be authorised in AD
+            Add-DHCPServerinDC
+        }
                
     } -ArgumentList $DhcpScopeName, $DhcpScopeDescription, $DhcpScopeStart, $DhcpScopeEnd, $DhcpScopeMask -PassThru
 }
@@ -342,7 +348,7 @@ function Import-MDTApplications {
                 New-Item -path DS001:\Applications -enable True -Name $($App.AppPath) -Comments '' -ItemType 'folder' -ErrorAction SilentlyContinue | Out-Null
 
                 #Actually Import the application into MDT
-                Import-MDTApplication -path "DS001:\Applications\$($App.AppPath)" -enable True -Name $($App.Name) -ShortName $($App.ShortName) -Version $($App.Version) -Publisher $($App.Publisher) -Language $($App.Language) -CommandLine $($App.CommandLine) -WorkingDirectory $AppWorkingDirectory -ApplicationSourcePath $SourcePath -DestinationFolder $AppDestinationFolder | Out-Null
+                Import-MDTApplication -path "DS001:\Applications\$($App.AppPath)" -enable True -Name $($App.Name) -ShortName $($App.ShortName) -Version $($App.AppVersion) -Publisher $($App.Publisher) -Language $($App.Language) -CommandLine $($App.CommandLine) -WorkingDirectory $AppWorkingDirectory -ApplicationSourcePath $SourcePath -DestinationFolder $AppDestinationFolder | Out-Null
 
                 #Sleep between importing applications, otherwise apps dont get written to the Applications.XML file correctly
                 Start-Sleep -Seconds 10
@@ -577,7 +583,7 @@ function Import-MDTTaskSequences {
     }  -ArgumentList $DeploymentFolder, $AdminPassword -PassThru
 }
 
-Import-Lab -Name $data.Name
+Import-Lab -Name $data.Name -NoDisplay
 
 #Installs MDT and performs majority of configuration
 Install-MDT -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -DeploymentShare DeploymentShare$ -InstallUserID $InstallUserID -InstallPassword $InstallPassword

@@ -27,7 +27,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser install -AdminPassword Somepass1
@@ -47,13 +47,10 @@ $PSDefaultParameterValues = @{
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $postInstallActivity
 
-#the root domain gets a second domain controller
-Add-LabMachineDefinition -Name DDC2 -Roles DC
-
 #file server and router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name DRouter -Roles FileServer, Routing -NetworkAdapter $netAdapter
 
 #CA
@@ -75,7 +72,7 @@ Add-LabMachineDefinition -Name DServer3
 Install-Lab
 
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob

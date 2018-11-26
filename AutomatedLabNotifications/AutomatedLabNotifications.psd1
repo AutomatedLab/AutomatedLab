@@ -49,7 +49,13 @@
         }
 
         Toast = @{
-            Provider = 'AutomatedLab'
+            Image = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png'
+        }
+
+        Voice = @{
+            Culture = 'en-us' # While this can be set to any installed voice culture, the text will still be english.
+            Gender  = 'female'
+            Age     = 'Senior' # Any age from NotSet,Child,Teen,Adult,Senior
         }
 
     } # End of PrivateData hashtable

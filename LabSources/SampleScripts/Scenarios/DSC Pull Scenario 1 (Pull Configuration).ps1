@@ -24,7 +24,7 @@ New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
 #make the network definition
 Add-LabVirtualNetworkDefinition -Name $labName
-Add-LabVirtualNetworkDefinition -Name External -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
+Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Ethernet' }
 
 #and the domain definition with the domain admin account
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
@@ -46,7 +46,7 @@ Add-LabMachineDefinition -Name DDC1 -Roles RootDC -PostInstallationActivity $pos
 #router
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch External -UseDhcp
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name DRouter -Roles Routing -NetworkAdapter $netAdapter
 
 #CA
@@ -63,7 +63,7 @@ Add-LabMachineDefinition -Name DServer2
 Install-Lab
 
 #Install software to all lab machines
-$machines = Get-LabMachine
+$machines = Get-LabVM
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
