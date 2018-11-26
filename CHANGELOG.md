@@ -2,9 +2,25 @@
 
 ## Unreleased
 
+## 5.1.0 - 2018-11-26
+
+### Enhancements
+
+- Additional parameters for Add-LabDiskDefinition: AllocationUnitSize, DriveLetter, Label
+- Additional role parameters for AD: DatabasePath, LogPath, SysvolPath, DsmPassword
+- SQL setup: Accounts in SQL setup ini are now auto-created as well
+- BitLocker write protection check where new volumes would be read-only due to a possible policy/registry setting (Thanks @sk82jack !)
+- General code cleanup (Thanks @KevinMarquette !)
+- Configurable MAC address space
+
+### Bug fixes
+
+- Issue with whitespace in CACommonName fixed
+- Issue with improper retrieval of variables during CA deployment fixed
+- Issue with Windows 1809 and -DiskImage cmdlets producing unwanted output fixed
 - Fixed SQL Setup (2016+) by preinstalling C++ redist
 
-## 5.0.4 - 2019-09-28
+## 5.0.4 - 2018-09-28
 
 ### Enhancements
 
