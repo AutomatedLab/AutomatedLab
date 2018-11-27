@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object -IsNot SkipDeployment
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment } 
 
     if (-not $machines)
     {
@@ -211,7 +211,7 @@ function Start-LabVM
         {
             #get all machines that have a role assigned and the machine's role name is part of the parameter RoleName
             $vms = $lab.Machines | Where-Object { $_.Roles.Name } |
-            Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            Where-Object { ($_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) }) -and (-not $_.SkipDeployment) }
 
             if (-not $vms)
             {
@@ -281,7 +281,7 @@ function Start-LabVM
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
         {
-            $vms = $availableVMs
+            $vms = $availableVMs | Where-Object { -not $_.SkipDeployment }
         }
     }
 
@@ -514,7 +514,7 @@ function Stop-LabVM
     }
     elseif ($All)
     {
-        $machines = Get-LabVM -IncludeLinux
+        $machines = Get-LabVM -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
 
     #filtering out all machines that are already stopped
@@ -1045,7 +1045,7 @@ function Get-LabVMStatus
 
     if ($ComputerName)
     {
-        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
+        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
     else
     {
