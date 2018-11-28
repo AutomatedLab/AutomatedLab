@@ -3127,7 +3127,7 @@ function Invoke-LabCommand
     }
     else
     {
-        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object { -not $_.SkipDeployment }
+        $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
     }
 
     if (-not $machines)
