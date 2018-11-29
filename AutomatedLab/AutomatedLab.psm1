@@ -808,8 +808,7 @@ function Install-Lab
             }
             Write-ScreenInfo 'done'
 
-            Write-ScreenInfo -Message 'Creating VMs' -TaskStart
-
+            Write-ScreenInfo -Message 'Creating Additional Disks' -TaskStart
             if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
             {
                 New-Item -Path $labDiskDeploymentInProgressPath -ItemType File -Value ($Script:data).Name | Out-Null
@@ -819,7 +818,9 @@ function Install-Lab
             {
                 New-LabVHDX
             }
+            Write-ScreenInfo -Message 'Done' -TaskEnd
 
+            Write-ScreenInfo -Message 'Creating VMs' -TaskStart
             #add a hosts entry for each lab machine
             $hostFileAddedEntries = 0
             foreach ($machine in $Script:data.Machines)
