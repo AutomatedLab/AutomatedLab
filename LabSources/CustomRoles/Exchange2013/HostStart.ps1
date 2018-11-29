@@ -81,7 +81,7 @@ function Add-ExchangeAdRights
 function Install-ExchangeWindowsFeature
 {
     Write-ScreenInfo "Installing Windows Features 'Server-Media-Foundation' on '$vm'"  -TaskStart -NoNewLine
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation -UseLocalCredential -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
     Write-ScreenInfo 'finished' -TaskEnd
@@ -336,7 +336,7 @@ if ($InstallExchange -eq 'True') { $param.Add('InstallExchange', $true) }
 if ($AddAdRightsInRootDomain -eq 'True') { $param.Add('AddAdRightsInRootDomain', $true) }
 if (-not $PrepareSchema -and -not $PrepareAD -and -not $PrepareAllDomains -and -not $InstallExchange -and -not $AddAdRightsInRootDomain)
 {
-    $param.Add('All', 'True')
+    $param.Add('All', $True)
 }
 Start-ExchangeInstallation @param
 
