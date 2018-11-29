@@ -37,7 +37,14 @@ function New-LWHypervNetworkSwitch
             $adapterCountWithSameMac = (Get-NetAdapter | Where-Object MacAddress -eq $adapterMac | Group-Object -Property MacAddress).Count
             if ($adapterCountWithSameMac -gt 1)
             {
-                throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
+                if (Get-NetLbfoTeam -Name $network.AdapterName)
+                {
+                    Write-ScreenInfo -Message "Network Adapter ($($network.AdapterName)) is a teamed interface, ignoring duplicate MAC checking" -Type Warning
+                }
+                else
+                {
+                    throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
+                }
             }
             
             $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.Name -ErrorAction Stop
