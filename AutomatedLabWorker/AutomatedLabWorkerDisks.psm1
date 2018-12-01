@@ -228,7 +228,10 @@ function New-LWVHDX
 
     Write-LogFunctionEntry
 
+    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
+
     $VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
+    Write-ProgressIndicator
     Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
 
     if ($SkipInitialize)
@@ -239,6 +242,7 @@ function New-LWVHDX
     }
 
     $mountedVhd = $VmDisk | Mount-VHD -PassThru
+    Write-ProgressIndicator
 
     if ($DriveLetter)
     {
@@ -262,6 +266,8 @@ function New-LWVHDX
     $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
     Format-Volume @formatParams |
     Out-Null
+
+    Write-ProgressIndicator
 
     $VmDisk | Dismount-VHD
 

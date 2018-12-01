@@ -209,6 +209,7 @@ function New-LabVHDX
 
     foreach ($disk in $disks)
     {
+        Write-ScreenInfo -Message "Creating disk '$($disk.Name)'" -TaskStart -NoNewLine
         $diskPath = Join-Path -Path $disksPath -ChildPath ($disk.Name + '.vhdx')
         if (-not (Test-Path -Path $diskPath))
         {
@@ -225,6 +226,7 @@ function New-LabVHDX
                 $params.DriveLetter = $disk.DriveLetter
             }
             New-LWVHDX @params
+            Write-ScreenInfo -Message 'Done' -TaskEnd
         }
         else
         {
