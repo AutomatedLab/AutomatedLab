@@ -2491,8 +2491,8 @@ function Install-LabSoftwarePackage
     if (-not $AsJob)
     {
         Write-Verbose "Waiting on job ID '$($job.ID -join ', ')' with name '$($job.Name -join ', ')'"
-        $results = Wait-LWLabJob -Job $job -Timeout $Timeout -ProgressIndicator 15 -NoDisplay -PassThru
-        #$results = $results | Receive-Job
+        $results = Wait-LWLabJob -Job $job -Timeout $Timeout -ProgressIndicator 15 -NoDisplay -PassThru #-ErrorAction SilentlyContinue
+
         Write-Verbose "Job ID '$($job.ID -join ', ')' with name '$($job.Name -join ', ')' finished"
     }
 
