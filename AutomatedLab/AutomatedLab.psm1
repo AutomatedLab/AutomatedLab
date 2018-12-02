@@ -1515,7 +1515,7 @@ function Get-LabAvailableOperatingSystem
         }
 
         Write-Verbose 'Dismounting ISO'
-        Dismount-DiskImage -ImagePath $isoFile.FullName
+        [void] (Dismount-DiskImage -ImagePath $isoFile.FullName)
         Write-ProgressIndicator
     }
 
