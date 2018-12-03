@@ -209,6 +209,7 @@ function New-LabVHDX
 
     foreach ($disk in $disks)
     {
+        Write-ScreenInfo -Message "Creating disk '$($disk.Name)'" -TaskStart -NoNewLine
         $diskPath = Join-Path -Path $disksPath -ChildPath ($disk.Name + '.vhdx')
         if (-not (Test-Path -Path $diskPath))
         {
@@ -225,6 +226,7 @@ function New-LabVHDX
                 $params.DriveLetter = $disk.DriveLetter
             }
             New-LWVHDX @params
+            Write-ScreenInfo -Message 'Done' -TaskEnd
         }
         else
         {
@@ -355,7 +357,7 @@ function Update-LabIsoImage
 
             Write-Verbose "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
-            Dismount-DiskImage -ImagePath $SourceIsoImagePath
+            [void] (Dismount-DiskImage -ImagePath $SourceIsoImagePath)
             Write-Verbose 'Copy complete'
         }
         else
@@ -382,7 +384,7 @@ function Update-LabIsoImage
 
         $image = Mount-DiskImage $IsoImagePath -PassThru
         $image | Get-Volume | Select-Object -ExpandProperty FileSystemLabel
-        $image | Dismount-DiskImage
+        [void] ($image | Dismount-DiskImage)
     }
     #endregion Get-IsoImageName
 

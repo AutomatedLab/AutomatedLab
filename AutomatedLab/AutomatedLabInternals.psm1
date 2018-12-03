@@ -474,6 +474,16 @@ function Get-LabInternetFile
         }
         else
         {
+            if (-not (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            {
+                #machine does not have internet connectivity
+                if (-not $offlineNode)
+                {
+                    Write-Error "Machine is not connected to the internet and cannot download the file '$Uri'"
+                }
+                return
+            }
+
             if ((Test-Path -Path $Path) -and $Force)
             {
                 Remove-Item -Path $Path -Force
@@ -555,6 +565,9 @@ function Get-LabInternetFile
     }
 
     $start = Get-Date
+
+    #TODO: This needs to go into config
+    $offlineNode = $true
 
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
@@ -685,23 +698,18 @@ function Get-LabSourcesLocationInternal
         [switch]$Local
     )
 
-    $lab = Get-Lab -ErrorAction SilentlyContinue
-    $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
-
+    $lab = $global:AL_CurrentLab
+    
     $defaultEngine = 'HyperV'
-    if ($lab)
+    $defaultEngine = if ($lab)
     {
-        $defaultEngine = $lab.DefaultVirtualizationEngine
+        $lab.DefaultVirtualizationEngine
     }
-    elseif ($labDefinition)
-    {
-        $defaultEngine = $labDefinition.DefaultVirtualizationEngine
-    }
-
+    
     if ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
-
+        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -709,12 +717,12 @@ function Get-LabSourcesLocationInternal
                 "$drive\LabSources"
             }
         }
-
+        
         if ($folders.Count -gt 1)
         {
             Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
         }
-
+        
         $folders
     }
     elseif ($defaultEngine -eq 'Azure')

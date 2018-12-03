@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment } 
 
     if (-not $machines)
     {
@@ -35,7 +35,7 @@ function New-LabVM
 
     $jobs = @()
 
-    if($lab.DefaultVirtualizationEngine -eq 'Azure')
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
         New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
@@ -44,6 +44,11 @@ function New-LabVM
 
     foreach ($machine in $machines)
     {
+        $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
+        if ($fdvDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+        }
+        
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
 
         if ($machine.HostType -eq 'HyperV')
@@ -83,6 +88,9 @@ function New-LabVM
             $jobs += New-LWAzureVM -Machine $machine
 
             Write-ScreenInfo -Message 'Done' -TaskEnd
+        }
+        if ($fdvDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
     }
 
@@ -203,7 +211,7 @@ function Start-LabVM
         {
             #get all machines that have a role assigned and the machine's role name is part of the parameter RoleName
             $vms = $lab.Machines | Where-Object { $_.Roles.Name } |
-            Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            Where-Object { ($_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) }) -and (-not $_.SkipDeployment) }
 
             if (-not $vms)
             {
@@ -273,7 +281,7 @@ function Start-LabVM
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
         {
-            $vms = $availableVMs
+            $vms = $availableVMs | Where-Object { -not $_.SkipDeployment }
         }
     }
 
@@ -506,7 +514,7 @@ function Stop-LabVM
     }
     elseif ($All)
     {
-        $machines = Get-LabVM -IncludeLinux
+        $machines = Get-LabVM -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
 
     #filtering out all machines that are already stopped
@@ -1037,7 +1045,7 @@ function Get-LabVMStatus
 
     if ($ComputerName)
     {
-        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
+        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
     else
     {

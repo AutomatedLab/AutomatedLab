@@ -722,7 +722,7 @@ function Install-LabRootDcs
         return
     }
 
-    $machines = Get-LabVM -Role RootDC
+    $machines = Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -1024,7 +1024,7 @@ function Install-LabFirstChildDcs
         return
     }
 
-    $machines = $lab.Machines | Where-Object { $_.Roles.Name -contains 'FirstChildDC' }
+    $machines = Get-LabVM -Role FirstChildDC | Where-Object { -not $_.SkipDeployment }
     if (-not $machines)
     {
         Write-ScreenInfo -Message "There is no machine with the role 'FirstChildDC'" -Type Warning
@@ -1308,7 +1308,7 @@ function Install-LabDcs
         return
     }
 
-    $machines = Get-LabVM -Role DC
+    $machines = Get-LabVM -Role DC | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -1378,7 +1378,6 @@ function Install-LabDcs
             {
                 $scriptblock = $adInstallDc2012
             }
-
 
             $siteName = 'Default-First-Site-Name'
 
@@ -1967,6 +1966,7 @@ function New-LabADSite
 
     Write-LogFunctionEntry
 
+    $lab = Get-Lab
     $machine = Get-LabVM -ComputerName $ComputerName
     $dcRole = $machine.Roles | Where-Object Name -like '*DC'
 
@@ -1976,45 +1976,21 @@ function New-LabADSite
         return
     }
 
-    $forest = $dcRole.Properties.ParentDomain
-
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
-    if (-not $domainRootMachine)
+    $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    if (-not $rootDc)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
-        $domainRootMachine = Get-LabVM -role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
-    }
-
-    #if no domain tree
-    if (-not ($forest))
-    {
-        Write-Verbose -Message "Forest of Domain root machine '$domainRootMachine' not found"
-
-        $domain = $machine.DomainName
-        if ($domain.Split('.').Count -le 2)
+        $domain = $lab.Domains | Where-Object Name -eq $machine.DomainName
+        if (-not $lab.IsRootDomain($domain))
         {
-            $forest = $domain
-            Write-Verbose -Message "Forest set to '$forest' based on domain name of '$ComputerName' only has 2 names"
-        }
-        else
-        {
-            $forest = $domain.Split('.', 2)[-1]
-            Write-Verbose -Message "Forest set to '$forest' based on two last names of domain name '$domain' of '$ComputerName'"
+            $parentDomain = $lab.GetParentDomain($domain)
+            $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $parentDomain
         }
     }
 
-    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
-    if (-not $rootDcForMachine)
-    {
-        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
-        $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
-        $forest = $dcRole.Properties.ParentDomain
-    }
-
-
-    $result = Invoke-LabCommand -ComputerName $rootDcForMachine -NoDisplay -PassThru -ScriptBlock `
+    $result = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2037,19 +2013,22 @@ function New-LabADSite
             Write-Verbose -Message "SiteName '$SiteName' already exists"
         }
 
-
-        if (-not (Get-ADReplicationSubNet -Filter "Name -eq '$SiteSubnet'"))
+        $SiteSubnet = $SiteSubnet -split ',|;'
+        foreach ($sn in $SiteSubnet)
         {
-            Write-Verbose -Message "SiteSubnet does not exist. Attempting to create it now and associate it with site '$SiteName'"
-            New-ADReplicationSubnet -Name $SiteSubnet -Site $SiteName -Location $SiteName
-        }
-        else
-        {
-            Write-Verbose -Message "SiteSubnet '$SiteSubnet' already exists"
+            $sn = $sn.Trim()
+            if (-not (Get-ADReplicationSubNet -Filter "Name -eq '$sn'"))
+            {
+                Write-Verbose -Message "SiteSubnet does not exist. Attempting to create it now and associate it with site '$SiteName'"
+                New-ADReplicationSubnet -Name $sn -Site $SiteName -Location $SiteName
+            }
+            else
+            {
+                Write-Verbose -Message "SiteSubnet '$sn' already exists"
+            }
         }
 
-
-        $sites = (Get-AdReplicationSite -Filter 'Name -ne "Default-First-Name-Site"').Name
+        $sites = (Get-ADReplicationSite -Filter 'Name -ne "Default-First-Site-Name"').Name
         foreach ($site in $sites)
         {
             $otherSites = $sites | Where-Object { $_ -ne $site }
@@ -2069,7 +2048,6 @@ function New-LabADSite
             }
         }
     } -ArgumentList $ComputerName, $SiteName, $SiteSubnet
-
 
     Write-LogFunctionExit
 }

@@ -1397,7 +1397,7 @@ function Dismount-LWAzureIsoImage
         if ($originalImage)
         {
             Write-Verbose -Message "Dismounting $($originalImage.ImagePath -join ',')"
-            $originalImage | Dismount-DiskImage
+            [void] ($originalImage | Dismount-DiskImage)
 
             Write-Verbose -Message "Removing temporary file $($originalImage.ImagePath -join ',')"
             Remove-Item -Path $originalImage.ImagePath -Force

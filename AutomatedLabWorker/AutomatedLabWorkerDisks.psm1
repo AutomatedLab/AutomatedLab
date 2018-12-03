@@ -36,11 +36,13 @@ function New-LWReferenceVHDX
 
     try
     {
+        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
+
         $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
         Write-Verbose "The Windows Image list contains $($imageList.Count) items"
 
         Write-Verbose "Mounting ISO image '$IsoOsPath'"
-        Mount-DiskImage -ImagePath $IsoOsPath
+        [void] (Mount-DiskImage -ImagePath $IsoOsPath)
 
         Write-Verbose 'Getting disk image of the ISO'
         $isoImage = Get-DiskImage -ImagePath $IsoOsPath | Get-Volume
@@ -64,7 +66,7 @@ function New-LWReferenceVHDX
 
         Write-ScreenInfo -Message "Creating base image for operating system '$OsName'" -NoNewLine -TaskStart
 
-        Mount-DiskImage -ImagePath $ReferenceVhdxPath
+        [void] (Mount-DiskImage -ImagePath $ReferenceVhdxPath)
         $vhdDisk = Get-DiskImage -ImagePath $ReferenceVhdxPath | Get-Disk
         $vhdDiskNumber = [string]$vhdDisk.Number
         Write-Verbose "Reference image is on disk number '$vhdDiskNumber'"
@@ -72,6 +74,9 @@ function New-LWReferenceVHDX
         Initialize-Disk -Number $vhdDiskNumber -PartitionStyle $PartitionStyle | Out-Null
         if ($PartitionStyle -eq 'MBR')
         {
+            if ($FDVDenyWriteAccess) {
+                Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+            }
             $vhdWindowsDrive = New-Partition -DiskNumber $vhdDiskNumber -UseMaximumSize -IsActive -AssignDriveLetter |
             Format-Volume -FileSystem NTFS -NewFileSystemLabel 'System' -Confirm:$false
         }
@@ -103,6 +108,9 @@ exit
 
             $reservedPartition = New-Partition -DiskNumber $vhdDiskNumber -GptType '{e3c9e316-0b5c-4db8-817d-f92df00215ae}' -Size 128MB
 
+            if ($FDVDenyWriteAccess) {
+                Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
+            }
             $vhdWindowsDrive = New-Partition -DiskNumber $vhdDiskNumber -UseMaximumSize -AssignDriveLetter |
             Format-Volume -FileSystem NTFS -NewFileSystemLabel 'System' -Confirm:$false
         }
@@ -169,16 +177,22 @@ exit
     catch
     {
         Write-Verbose 'Dismounting ISO and new disk'
-        Dismount-DiskImage -ImagePath $ReferenceVhdxPath
-        Dismount-DiskImage -ImagePath $IsoOsPath
+        [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
+        [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
         Remove-Item -Path $ReferenceVhdxPath -Force #removing as the creation did not succeed
+        if ($FDVDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
+        }
 
         throw $_.Exception
     }
 
     Write-Verbose 'Dismounting ISO and new disk'
-    Dismount-DiskImage -ImagePath $ReferenceVhdxPath
-    Dismount-DiskImage -ImagePath $IsoOsPath
+    [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
+    [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
+    if ($FDVDenyWriteAccess) {
+        Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
+    }
     Write-ScreenInfo -Message 'Finished creating base image' -TaskEnd
 
     $end = Get-Date
@@ -214,7 +228,10 @@ function New-LWVHDX
 
     Write-LogFunctionEntry
 
+    $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
+
     $VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
+    Write-ProgressIndicator
     Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
 
     if ($SkipInitialize)
@@ -225,6 +242,7 @@ function New-LWVHDX
     }
 
     $mountedVhd = $VmDisk | Mount-VHD -PassThru
+    Write-ProgressIndicator
 
     if ($DriveLetter)
     {
@@ -248,6 +266,8 @@ function New-LWVHDX
     $mountedVhd | New-Partition -UseMaximumSize -AssignDriveLetter |
     Format-Volume @formatParams |
     Out-Null
+
+    Write-ProgressIndicator
 
     $VmDisk | Dismount-VHD
 

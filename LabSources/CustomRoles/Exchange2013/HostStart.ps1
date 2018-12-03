@@ -2,7 +2,22 @@ param(
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
-    [string]$OrganizationName
+    [string]$OrganizationName,
+
+    [ValidateSet('True', 'False')]
+    [string]$AddAdRightsInRootDomain,
+
+    [ValidateSet('True', 'False')]
+    [string]$PrepareSchema,
+
+    [ValidateSet('True', 'False')]
+    [string]$PrepareAD,
+
+    [ValidateSet('True', 'False')]
+    [string]$PrepareAllDomains,
+
+    [ValidateSet('True', 'False')]
+    [string]$InstallExchange
 )
 
 function Copy-ExchangeSources
@@ -65,10 +80,13 @@ function Add-ExchangeAdRights
 
 function Install-ExchangeWindowsFeature
 {
-    Write-ScreenInfo "Installing Windows Features Server-Media-Foundation, RSAT on '$vm'"  -TaskStart -NoNewLine
-    $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
-    Wait-LWLabJob -Job $jobs -NoDisplay
-    Restart-LabVM -ComputerName $vm -Wait
+    Write-ScreenInfo "Installing Windows Features 'Server-Media-Foundation' on '$vm'"  -TaskStart -NoNewLine
+    if ((Get-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools).Count -ne 2)
+    {
+        $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools -UseLocalCredential -AsJob -PassThru -NoDisplay
+        Wait-LWLabJob -Job $jobs -NoDisplay
+        Restart-LabVM -ComputerName $vm -Wait
+    }
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -83,7 +101,7 @@ function Install-ExchangeRequirements
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -lt '4.6.2')
+        if ($dotnetFrameworkVersion.Version -notcontains '4.6.2')
         {
             Write-ScreenInfo "Installing .net Framework 4.6.2 on '$machine'" -Type Verbose
             $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
@@ -279,11 +297,18 @@ $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet462DownloadLink
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 $vm = Get-LabVM -ComputerName $ComputerName
 $rootDc = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $vm.DomainName }
-$machines = (@($vm) + $rootDc)
+$machines = if ($rootDc.SkipDeployment)
+{
+    $vm
+}
+else
+{
+    (@($vm) + $rootDc)
+}
 
 Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
 Start-LabVM -ComputerName $machines -Wait
-    
+
 if (-not $OrganizationName)
 {
     $OrganizationName = $lab.Name + 'ExOrg'
@@ -301,9 +326,21 @@ if ($psVersion.PSVersion.Major -gt 4)
 Write-ScreenInfo "Intalling Exchange 2013 '$ComputerName'..." -TaskStart
 
 Copy-ExchangeSources
-Add-ExchangeAdRights
+
 Install-ExchangeWindowsFeature
 Install-ExchangeRequirements
-Start-ExchangeInstallation -All
+Restart-LabVM -ComputerName $vm -Wait
+
+$param = @{}
+if ($PrepareSchema -eq 'True') { $param.Add('PrepareSchema', $true) }
+if ($PrepareAD -eq 'True') { $param.Add('PrepareAD', $true) }
+if ($PrepareAllDomains -eq 'True') { $param.Add('PrepareAllDomains', $true) }
+if ($InstallExchange -eq 'True') { $param.Add('InstallExchange', $true) }
+if ($AddAdRightsInRootDomain -eq 'True') { $param.Add('AddAdRightsInRootDomain', $true) }
+if (-not $PrepareSchema -and -not $PrepareAD -and -not $PrepareAllDomains -and -not $InstallExchange -and -not $AddAdRightsInRootDomain)
+{
+    $param.Add('All', $True)
+}
+Start-ExchangeInstallation @param
 
 Write-ScreenInfo "Finished installing Exchange 2013 on '$ComputerName'" -TaskEnd

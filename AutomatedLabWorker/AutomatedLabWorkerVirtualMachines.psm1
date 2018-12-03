@@ -357,7 +357,7 @@ function New-LWHypervVM
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
 
             # Unmount ISO
-            Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
+            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
             # Copy additional packages
             $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
@@ -495,7 +495,7 @@ function New-LWHypervVM
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
-        Mount-DiskImage -ImagePath $path
+        [void] (Mount-DiskImage -ImagePath $path)
         $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
         $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
     
@@ -629,7 +629,7 @@ Stop-Transcript
 '@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
         
-        Dismount-DiskImage -ImagePath $path
+        [void] (Dismount-DiskImage -ImagePath $path)
         Write-Verbose "`tdisk image dismounted"
     
         Write-ProgressIndicator
