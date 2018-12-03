@@ -345,7 +345,7 @@ function New-LWAzureVM
     $machineAvailabilitySet = Get-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
     if (-not ($machineAvailabilitySet))
     {
-        $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop
+        $machineAvailabilitySet = New-AzureRmAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop -Sku aligned -PlatformUpdateDomainCount 2 -PlatformFaultDomainCount 2
     }
 
     $vm = New-AzureRmVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -WarningAction SilentlyContinue
@@ -385,13 +385,6 @@ function New-LWAzureVM
     Write-Verbose -Message 'Adding NIC to VM'
     $vm = Add-AzureRmVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
 
-
-    $DiskName = "$($machine.Name)_os"
-    $OSDiskUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DiskName.vhd"
-
-    Write-Verbose "Adding OS disk to VM with blob url $OSDiskUri"
-    $vm = Set-AzureRmVMOSDisk -VM $vm -Name $DiskName -VhdUri $OSDiskUri -CreateOption fromImage -ErrorAction Stop -WarningAction SilentlyContinue
-
     if ($Disks)
     {
         Write-Verbose "Adding $($Disks.Count) data disks"
@@ -404,7 +397,8 @@ function New-LWAzureVM
             $VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
 
             Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
-            $vm = $vm | Add-AzureRmVMDataDisk -Name $DataDiskName -VhdUri $VhdUri -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty
+            $dataDisk = New-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $DataDiskName
+            $vm = $vm | Add-AzureRmVMDataDisk -Name $DataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty
             $lun++
         }
     }
@@ -451,7 +445,7 @@ function New-LWAzureVM
         ResourceGroupName = $ResourceGroupName
         Location          = $Location
         VM                = $vm
-        Tag               = @{ AutomatedLab = $script:lab.Name; CreationTime = Get-Date }
+        Tag               = @{ AutomatedLab = $LabName; CreationTime = Get-Date }
         ErrorAction       = 'Stop'
         WarningAction     = 'SilentlyContinue'
         AsJob             = $true
@@ -1403,5 +1397,180 @@ function Dismount-LWAzureIsoImage
             Remove-Item -Path $originalImage.ImagePath -Force
         }
     }
+}
+#endregion
+
+#region Checkpoint-LWAzureVm
+function Checkpoint-LWAzureVm
+{
+    [Cmdletbinding()]
+    Param 
+    (
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory)]
+        [string]$SnapshotName
+    )
+
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    if ($runningMachines) { Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true}
+
+    $jobs = foreach ($machine in $ComputerName)
+    {
+        $vm = Get-AzureRmVm -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
+        $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
+        $existingSnapshot = Get-AzureRmSnapshot -ResourceGroupName $resourceGroupName -SnapshotName $vmSnapshotName -ErrorAction SilentlyContinue
+        if ($existingSnapshot)
+        {
+            Write-ScreenInfo -Message "Snapshot $SnapshotName for $machine already exists as $($existingSnapshot.Name). Not creating it again." -Type Warning
+            continue
+        }
+
+        if (-not $vm) 
+        {
+            Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
+            continue
+        }
+
+        $ossourcedisk = Get-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $vm.StorageProfile.OsDisk.Name
+        $snapshotconfig = New-AzureRmSnapshotConfig -SourceUri $ossourcedisk.Id -CreateOption Copy -Location $vm.Location
+        New-AzureRmSnapshot -Snapshot $snapshotconfig -SnapshotName $vmSnapshotName -ResourceGroupName $resourceGroupName -AsJob
+    }
+
+    if ($jobs.State -contains 'Failed')
+    {
+        Write-ScreenInfo -Type Error -Message "At least one snapshot creation failed: $($jobs.Name -join ',')."
+        $skipRemove = $true
+    }
+
+    if ($jobs) 
+    { 
+        $jobs | Wait-LWLabJob -NoDisplay
+        $jobs | Remove-Job
+    }
+
+    if ($runningMachines) { Start-LWAzureVM -ComputerName $runningMachines}
+
+    Write-LogFunctionExit
+}
+#endregion
+
+#region Restore-LWAzureVmSnapshot
+function Restore-LWAzureVmSnapshot
+{
+    [Cmdletbinding()]
+    Param
+    (
+        [Parameter(Mandatory)]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory)]
+        [string]$SnapshotName
+    )
+
+    Write-LogFunctionEntry
+    
+    $lab = Get-Lab
+    $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
+    if ($runningMachines) { Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true}
+    $disksToRemove = @()
+
+    $jobs = foreach ($machine in $ComputerName)
+    {
+        $vm = Get-AzureRmVm -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
+        $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
+        if (-not $vm) 
+        {
+            Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
+            continue
+        }
+
+        $snapshot = Get-AzureRmSnapshot -SnapshotName $vmSnapshotName -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+        if (-not $snapshot)
+        {
+            Write-ScreenInfo -Message "No snapshot named $vmSnapshotName found for $machine. Skipping restore." -Type Warning
+            continue
+        }
+        
+        $osDiskName = $vm.StorageProfile.OsDisk.name
+        $oldOsDisk = Get-AzureRmDisk -Name $osDiskName -ResourceGroupName $resourceGroupName
+        $disksToRemove += $oldOsDisk.Name
+        $storageType = $oldOsDisk.sku.name
+        $diskconf = New-AzureRmDiskConfig -AccountType $storagetype -Location $oldOsdisk.Location -SourceResourceId $snapshot.Id -CreateOption Copy
+        $newDisk = New-AzureRmDisk -Disk $diskconf -ResourceGroupName $resourceGroupName -DiskName "$($vm.Name)-$((New-Guid).ToString())"
+        
+        $null = Set-AzureRmVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
+        Update-AzureRmVM -ResourceGroupName $resourceGroupName -VM $vm -AsJob
+    }
+
+    if ($jobs) { $jobs | Wait-LWLabJob -NoDisplay}
+
+    if ($jobs.State -contains 'Failed')
+    {
+        Write-ScreenInfo -Type Error -Message "At least one snapshot restore failed. Skipping removal of the following old disks: $($disksToRemove -join ',')."
+        $skipRemove = $true
+    }
+
+    if (-not $skipRemove)
+    {
+        $removalJobs = foreach ($disk in $disksToRemove)
+        {
+            Remove-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force -AsJob
+        }
+    }
+
+    $failedRemovals = $removalJobs | Where-Object -Property State -eq 'Failed'
+    foreach ($job in $failedRemovals)
+    {
+        $result = $job | Receive-Job -Keep -ErrorAction SilentlyContinue
+        Write-ScreenInfo -Type Warning -Message "Failed to remove old OS disk $($result.Name). Please remove it manually if necessary."
+    }
+
+    if ($runningMachines) { Start-LWAzureVM -ComputerName $runningMachines}
+    if ($jobs) {$jobs | Remove-Job}
+    $removalJobs | Remove-Job
+
+    Write-LogFunctionExit
+}
+#endregion
+
+#region Remove-LWAzureVmSnapshot
+function Remove-LWAzureVmSnapshot
+{
+    [Cmdletbinding()]
+    Param 
+    (
+        [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
+        [Parameter(Mandatory, ParameterSetName = 'AllSnapshots')]
+        [string[]]$ComputerName,
+        
+        [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
+        [string]$SnapshotName,
+        
+        [Parameter(ParameterSetName = 'AllSnapshots')]
+        [switch]$All
+    )
+
+    Write-LogFunctionEntry
+
+    $lab = Get-Lab
+
+    $snapshots = Get-AzureRmSnapshot -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -ErrorAction SilentlyContinue
+
+    if ($PSCmdlet.ParameterSetName -eq 'BySnapshotName')
+    {
+        $snapshotsToRemove = $ComputerName.Foreach( {'{0}_{1}' -f $_, $SnapshotName})
+        $snapshots = $snapshots | Where-Object -Property Name -in $snapshotsToRemove
+    }
+
+    $null = $snapshots | Remove-AzureRmSnapshot -Force -Confirm:$false
+
+    Write-LogFunctionExit
 }
 #endregion
