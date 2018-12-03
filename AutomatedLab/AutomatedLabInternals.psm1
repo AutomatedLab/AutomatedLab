@@ -698,23 +698,18 @@ function Get-LabSourcesLocationInternal
         [switch]$Local
     )
 
-    $lab = Get-Lab -ErrorAction SilentlyContinue
-    $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
-
+    $lab = $global:AL_CurrentLab
+    
     $defaultEngine = 'HyperV'
-    if ($lab)
+    $defaultEngine = if ($lab)
     {
-        $defaultEngine = $lab.DefaultVirtualizationEngine
+        $lab.DefaultVirtualizationEngine
     }
-    elseif ($labDefinition)
-    {
-        $defaultEngine = $labDefinition.DefaultVirtualizationEngine
-    }
-
+    
     if ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
-
+        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -722,12 +717,12 @@ function Get-LabSourcesLocationInternal
                 "$drive\LabSources"
             }
         }
-
+        
         if ($folders.Count -gt 1)
         {
             Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
         }
-
+        
         $folders
     }
     elseif ($defaultEngine -eq 'Azure')
