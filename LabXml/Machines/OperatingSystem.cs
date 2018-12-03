@@ -183,6 +183,10 @@ namespace AutomatedLab
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
                     case "Windows Server 2008 R2 Standard (Server Core Installation)":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 Enterprise (Full Installation)":
+                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
+                    case "Windows Server 2008 R2 Enterprise (Server Core Installation)":
+                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
                     case "Windows Server 2008 R2 Datacenter (Full Installation)":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
                     case "Windows Server 2008 R2 Datacenter (Server Core Installation)":
@@ -193,6 +197,10 @@ namespace AutomatedLab
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
                     case "Windows Server 2008 R2 SERVERSTANDARDCORE":
                         return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
+                    case "Windows Server 2008 R2 SERVERENTERPRISE":
+                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
+                    case "Windows Server 2008 R2 SERVERENTERPRISECORE":
+                        return "489J6-VHDMP-X63PK-3K798-CPX3Y";
                     case "Windows Server 2008 R2 SERVERDATACENTER":
                         return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
                     case "Windows Server 2008 R2 SERVERDATACENTERCORE":
