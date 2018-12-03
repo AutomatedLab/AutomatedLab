@@ -895,6 +895,8 @@ function New-LabDefinition
         $script:lab
     }
 
+    $global:AL_CurrentLab = $script:lab
+
     Write-LogFunctionExit
 }
 #endregion New-LabDefinition

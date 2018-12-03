@@ -399,7 +399,7 @@ function Import-Lab
         }
         elseif (Test-Path -Path $Path -PathType Leaf)
         {
-            #file is there, no nothing
+            #file is there, do nothing
         }
         else
         {
@@ -572,6 +572,8 @@ function Import-Lab
     {
         $Script:data
     }
+
+    $global:AL_CurrentLab = $Script:data
 
     Write-ScreenInfo ("Lab '{0}' hosted on '{1}' imported with {2} machines" -f $Script:data.Name, $Script:data.DefaultVirtualizationEngine ,$Script:data.Machines.Count) -Type Info
 
@@ -880,7 +882,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Configuring DHCP servers' -TaskStart
 
         #Install-DHCP
-		Write-Error 'The DHCP role is not implemented yet'
+        Write-Error 'The DHCP role is not implemented yet'
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1282,7 +1284,7 @@ function Get-LabAvailableOperatingSystem
     param
     (
         [Parameter(ParameterSetName='Local')]
-        [string[]]$Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs",
+        [string[]]$Path,
 
         [switch]$UseOnlyCache,
 
@@ -1296,6 +1298,11 @@ function Get-LabAvailableOperatingSystem
     )
 
     Write-LogFunctionEntry
+
+    if (-not $Path)
+    {
+        $Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs"
+    }
 
     if (-not (Test-IsAdministrator))
     {
@@ -3756,8 +3763,8 @@ function Set-LabDefaultVirtualizationEngine
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
 {
-	# .ExternalHelp AutomatedLab.Help.xml
-	param
+    # .ExternalHelp AutomatedLab.Help.xml
+    param
     (
         [switch]$Local
     )
@@ -3919,14 +3926,14 @@ function New-LabSourcesFolder
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
         $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
 
-		try
-		{
-			Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
-		}
+        try
+        {
+            Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+        }
         catch
-		{
-			Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
-		}
+        {
+            Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
+        }
         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
@@ -3941,7 +3948,7 @@ function New-LabSourcesFolder
         $Path
     }
 }
-#endregion
+#endregion New-LabSourcesFolder
 
 #region Telemetry
 function Enable-LabTelemetry
@@ -3986,79 +3993,4 @@ if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
     # We cannot refresh the env drive, so we add the same variable here as well.
     $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice
 }
-#endregion
-
-$dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
-$executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
-
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
-    Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
-    Group-Object -Property OperatingSystemName |
-    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
-    Sort-Object -Property OperatingSystemName |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemName)'", "'$($_.OperatingSystemName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemName)")
-    }
-}
-
-Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
-    Get-ChildItem -Path $path -Directory |
-    ForEach-Object {
-        if ($_.Name -contains ' ')
-        {
-            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
-        }
-        else
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
-}
-
-$commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
-Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    Get-LabVM -All -IncludeLinux |
-    ForEach-Object {
-        if ($_.Roles)
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
-        }
-        else
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
-}
-
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    (Get-LabDefinition).Domains |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-    }
-}
-
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName Roles -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    [System.Enum]::GetNames([AutomatedLab.Roles]) |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-    }
-}
-
-#importing the module results in calling the following code multiple times due to module import recursion
-#the following line makes sure that the following code runs only once when called from an external source
-if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
-{
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay
-}
+#endregion New-LabSourcesFolder
