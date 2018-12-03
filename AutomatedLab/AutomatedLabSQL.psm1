@@ -4,12 +4,12 @@ function Install-LabSqlServers
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_Sql2012Installation,
-
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_Sql2012Installation),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -113,8 +113,8 @@ GO
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ redist on machine '$($machinesBatch -join ', ')'" -Type Verbose
-            $cppRedist = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist64 -Path $labsources\SoftwarePackages -PassThru
-            $cppRedist32 = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist32 -Path $labsources\SoftwarePackages -PassThru
+            $cppRedist = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist64) -Path $labsources\SoftwarePackages -PassThru
+            $cppRedist32 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist32) -Path $labsources\SoftwarePackages -PassThru
             $cppJobs = @()
             $cppJobs += Install-LabSoftwarePackage -Path $cppRedist32.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
             $cppJobs += Install-LabSoftwarePackage -Path $cppRedist.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
@@ -341,7 +341,7 @@ GO
             $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
         $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force |
         Add-Member -Name 'SsmsUri' -Value {
-            (Get-Module AutomatedLab -ListAvailable)[0].PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
+            Get-LabConfigurationItem -Name "Sql$($this.SQLVersion)ManagementStudio"
         } -MemberType ScriptProperty -PassThru -Force
 
         if ($servers)
@@ -421,7 +421,7 @@ function Install-LabSqlSampleDatabases
         'MSSQLSERVER'
     }
 
-    $sqlLink = (Get-Module AutomatedLab)[0].PrivateData[$roleName.ToString()]
+    $sqlLink = Get-LabConfigurationItem -Name $roleName.ToString()
     if (-not $sqlLink)
     {
         throw "No SQL link found to download $roleName sample database"

@@ -59,7 +59,7 @@ function Add-LabAzureSubscription
     }
 
     #This needs to be loaded manually to import the required DLLs
-    $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
+    $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
     if (-not (Get-Module -Name AzureRM -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
     {
         throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it: Install-Module AzureRM -Force"
@@ -88,8 +88,8 @@ function Add-LabAzureSubscription
         $script:lab.AzureSettings = New-Object AutomatedLab.AzureSettings
     }
 
-    $script:lab.AzureSettings.DefaultRoleSize = $MyInvocation.MyCommand.Module.PrivateData.DefaultAzureRoleSize
-
+    $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+    
     # Select the subscription which is associated with this AzureRmProfile
     $subscriptions = Get-AzureRmSubscription -WarningAction SilentlyContinue
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
@@ -406,8 +406,8 @@ function Get-LabAzureLocation
             return (Get-Lab).AzureSettings.DefaultLocation.Name
         }
 
-        $locationUrls = $MyInvocation.MyCommand.Module.PrivateData.AzureLocationsUrls
-
+        $locationUrls = Get-LabConfigurationItem -Name AzureLocationsUrls
+        
         foreach ($location in $azureLocations)
         {
             if ($locationUrls."$($location.DisplayName)")

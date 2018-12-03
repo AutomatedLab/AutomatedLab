@@ -518,8 +518,8 @@ function Import-Lab
         {
             Write-Error -Message "No machines imported from file $machineDefinitionFile" -Exception $_.Exception -ErrorAction Stop
         }
-
-        $minimumAzureModuleVersion = $MyInvocation.MyCommand.Module.PrivateData.MinimumAzureModuleVersion
+    
+        $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
         if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name AzureRm -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
@@ -708,7 +708,7 @@ function Install-Lab
     Write-LogFunctionEntry
     $global:PSLog_Indent = 0
 
-    $labDiskDeploymentInProgressPath = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DiskDeploymentInProgressPath
+    $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
 
     #perform full install if no role specific installation is requested
     $performAll = -not ($PSBoundParameters.Keys | Where-Object { $_ -notin ('NoValidation', 'DelayBetweenComputers' + [System.Management.Automation.Internal.CommonParameters].GetProperties().Name)}).Count
@@ -749,8 +749,8 @@ function Install-Lab
 
     Unblock-LabSources
 
-    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
-
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name SubscribedProviders)
+    
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
@@ -1111,9 +1111,9 @@ function Install-Lab
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
         Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
-
-    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.NotificationProviders
-
+    
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name SubscribedProviders)
+    
     Write-LogFunctionExit
 }
 #endregion Install-Lab
@@ -1250,9 +1250,9 @@ function Remove-Lab
         if ($Script:data.LabPath)
         {
             Write-ScreenInfo -Message 'Removing Lab XML files'
-            if (Test-Path "$($Script:data.LabPath)\Lab.xml") { Remove-Item -Path "$($Script:data.LabPath)\Lab.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\Disks.xml") { Remove-Item -Path "$($Script:data.LabPath)\Disks.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\Machines.xml") { Remove-Item -Path "$($Script:data.LabPath)\Machines.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name LabFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Lab.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Disks.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)\Unattended*.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)\ks.cfg" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)\autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)\autoinst.xml" -Force -Confirm:$false }
@@ -1308,8 +1308,8 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-
-    $doNotSkipNonNonEnglishIso = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DoNotSkipNonNonEnglishIso
+    
+    $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
 
     if ($Azure)
     {
@@ -1911,7 +1911,7 @@ function Install-VisualStudio2013
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_VisualStudio2013Installation
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2013Installation)
     )
 
     Write-LogFunctionEntry
@@ -2030,7 +2030,7 @@ function Install-VisualStudio2015
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_VisualStudio2015Installation
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2015Installation)
     )
 
     Write-LogFunctionEntry
@@ -2721,7 +2721,7 @@ function New-LabPSSession
             }
             elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
             {
-                $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
+                $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
@@ -2782,7 +2782,7 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip $MyInvocation.MyCommand.Module.PrivateData.MaxPSSessionsPerVM
+                    $sessionsToRemove = $internalSession | Select-Object -Skip $(Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
                     Write-Verbose "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
 
@@ -2950,7 +2950,7 @@ function Remove-LabPSSession
         }
         elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
         {
-            if ($doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession)
+            if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {
                 $param.Add('ComputerName', $m.Name)
             }
@@ -3084,8 +3084,8 @@ function Invoke-LabCommand
 
     if ($PSCmdlet.ParameterSetName -in 'Script', 'ScriptBlock', 'ScriptFileContentDependency', 'ScriptBlockFileContentDependency','ScriptFileNameContentDependency')
     {
-        if (-not $Retries) { $Retries = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetries }
-        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = $MyInvocation.MyCommand.Module.PrivateData.InvokeLabCommandRetryIntervalInSeconds }
+        if (-not $Retries) { $Retries = Get-LabConfigurationItem -Name InvokeLabCommandRetries }
+        if (-not $RetryIntervalInSeconds) { $RetryIntervalInSeconds = Get-LabConfigurationItem -Name InvokeLabCommandRetryIntervalInSeconds }
     }
 
     if ($AsJob)
@@ -3983,7 +3983,7 @@ We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
 If you want to opt out, please select Yes.
 "@
 
-if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT))
 {
     $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
 
@@ -3993,4 +3993,62 @@ if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
     # We cannot refresh the env drive, so we add the same variable here as well.
     $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice
 }
-#endregion New-LabSourcesFolder
+#endregion Telemetry
+
+#region Get-LabConfigurationItem
+function Get-LabConfigurationItem
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [string]
+        $Name,
+
+        [Parameter()]
+        [string]
+        $GlobalPath = (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1' -Resolve),
+
+        [Parameter()]
+        [string]
+        $UserPath = (Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1')
+    )
+
+    if (-not (Test-Path -Path $userPath))
+    {
+        [void] $(New-Item -Path $userPath -ItemType File -Value '@{ }' -Force)
+    }
+
+    $d = @"
+ResolutionPrecedence:
+  - User
+  - Global
+default_lookup_options: hash
+lookup_options:
+  Settings:
+    merge_hash: deep
+
+DatumStructure:
+  - StoreName: Global
+    StoreProvider: Datum::File
+    StoreOptions:
+      Path: $globalPath
+  - StoreName: User
+    StoreProvider: Datum::File
+    StoreOptions:
+      Path: $userPath
+"@ | ConvertFrom-Yaml
+
+    $datum = New-DatumStructure -DatumHierarchyDefinition $d
+
+    $settings = $(Resolve-NodeProperty -PropertyPath Settings -DatumTree $datum).Settings
+    
+    # Return
+    if ($Name)
+    {
+        return $settings[$Name]
+    }
+
+    $settings
+}
+#endregion Get-LabConfigurationItem

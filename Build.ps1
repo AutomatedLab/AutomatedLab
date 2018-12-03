@@ -39,7 +39,7 @@
             {
                 Write-Verbose -Message "$($moduleName) Missing, installing Module"
                 Install-Module -Name $moduleName -Force -AllowClobber
-                Import-Module -Name $moduleName -Force -RequiredVersion $version
+                Import-Module -Name $moduleName -Force
             }
         }
     }
@@ -48,7 +48,12 @@
 # Grab nuget bits, install modules, set build variables, start build.
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships
+# Resolve Module will fail since AL requests interactivity, importing module fails without LabSources folder
+[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
+$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
+$f = New-Item -ItemType Directory -Path C:\LabSources\CustomRoles -Force
+
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, powershell-yaml, newtonsoft.json, Datum
 
 $lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
 if (-not ($lastestVersion.Version -ge '1.1.7.0'))

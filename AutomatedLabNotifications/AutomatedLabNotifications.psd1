@@ -31,34 +31,7 @@
         "Public\Send-ALNotification.ps1"
     )
 
-    PrivateData            = @{
-
-        Ifttt = @{
-            
-            Key       = "Your IFTTT key here"
-            EventName = "The name of your IFTTT event"
-        }
-
-        Mail  = @{
-            To         = "Your recipient array here"
-            CC         = "Your CC array here"
-            SmtpServer = "Your SMTP server here"
-            From       = "Your sender here"
-            Priority   = "Normal"
-            Port       = 25
-        }
-
-        Toast = @{
-            Image = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png'
-        }
-
-        Voice = @{
-            Culture = 'en-us' # While this can be set to any installed voice culture, the text will still be english.
-            Gender  = 'female'
-            Age     = 'Senior' # Any age from NotSet,Child,Teen,Adult,Senior
-        }
-
-    } # End of PrivateData hashtable
+    PrivateData            = @{  }
 
     # HelpInfo URI of this module
     # HelpInfoURI = ''

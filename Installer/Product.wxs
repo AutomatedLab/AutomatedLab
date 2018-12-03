@@ -1,12 +1,32 @@
 <?xml version='1.0' encoding='utf-8'?>
-<Wix
-  xmlns='http://schemas.microsoft.com/wix/2006/wi'>
+<Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <Product Name='AutomatedLab' Id='*' UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149' Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='AutomatedLab Team' >
     <?include Includes.wxi ?>
     <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer" Comments='AutomatedLab Modules Installer' Manufacturer='AutomatedLabTeam' InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
     <Property Id='LABSOURCESDIR'>
       <RegistrySearch Id='LabSourcesDirRegSearch' Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Type='raw' />
     </Property>
+    <Property Id="POWERSHELLEXE">
+      <RegistrySearch Id="POWERSHELLEXE"
+                      Type="raw"
+                      Root="HKLM"
+                      Key="SOFTWARE\Microsoft\PowerShell\1\ShellIds\Microsoft.PowerShell"
+                      Name="Path" />
+    </Property>
+    <Condition Message="This application requires Windows PowerShell.">
+      <![CDATA[Installed OR POWERSHELLEXE]]>
+    </Condition>
+
+    <!-- Define the PowerShell command invocation -->
+    <SetProperty Id="RunPowerShellScript"
+             Before ="InstallFiles"
+             Sequence="execute"
+             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module Newtonsoft.Json,powershell-yaml,Datum -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
+    <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="deferred" Return="check" Impersonate="yes" />
+    <InstallExecuteSequence>
+            <Custom Action="RunPowerShellScript" Before="InstallFinalize"><![CDATA[NOT Installed]]></Custom>
+    </InstallExecuteSequence>
+    
     <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
     <Directory Id='TARGETDIR' Name='SourceDir'>
@@ -395,6 +415,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\settings.psd1" />
                   <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
                   <File Id="AppInsightsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\Microsoft.ApplicationInsights.dll" />
                   <File Id="AppInsightsDiagnosticsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\System.Diagnostics.DiagnosticSource.dll" />
@@ -1590,6 +1611,8 @@
       <Error Id="1935">An error occured during the installation of assembly component [2]. HRESULT: [3]. {{assembly interface: [4], function: [5], assembly name: [6]}}</Error>
     </UI>
   </Fragment>
+  <!-- Define custom action to run a PowerShell script-->
+
   <!--All references created using heat.exe-->
   <Fragment>
     <ComponentGroup Id="LabSourcesComponentGroup">
@@ -1680,7 +1703,7 @@
       </Component>
       <Component Id="cmpB9F44D1BE872FB3C577FB59AA1C15BD1" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="bd3b858a-8261-4151-991e-705a6cc05c6f">
         <File Id="fil19D047322B9B206322C414F06B9749C2" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerMdb.ps1" />
-      </Component>      
+      </Component>
       <Component Id="cmpB3EF7A92492F44029D4B8C1E55123D8D" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="a8b0ef18-d142-487b-91fd-d7e3cda088e0">
         <File Id="filA66AB3CD20094F17811461E2914765DC" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1" />
       </Component>

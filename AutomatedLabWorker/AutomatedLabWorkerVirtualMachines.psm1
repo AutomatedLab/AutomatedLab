@@ -59,7 +59,7 @@ function New-LWHypervVM
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
     
     #region network adapter settings
-    $macAddressPrefix = (Get-Module -Name AutomatedLab)[0].PrivateData.MacAddressPrefix
+    $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
@@ -198,13 +198,13 @@ function New-LWHypervVM
         Set-UnattendedAutoLogon -DomainName $Machine.Name -Username $Machine.InstallationUser.Username -Password $Machine.InstallationUser.Password
     }
 
-    $disableWindowsDefender = (Get-Module -Name AutomatedLab)[0].PrivateData.DisableWindowsDefender
+    $disableWindowsDefender = Get-LabConfigurationItem -Name DisableWindowsDefender
     if (-not $disableWindowsDefender)
     {
         Set-UnattendedAntiMalware -Enabled $false
     }
 
-    $setLocalIntranetSites = (Get-Module -Name AutomatedLab)[0].PrivateData.SetLocalIntranetSites
+    $setLocalIntranetSites = Get-LabConfigurationItem -Name SetLocalIntranetSites
     if ($setLocalIntranetSites -ne 'None' -or $setLocalIntranetSites -ne $null)
     {
         if ($setLocalIntranetSites -eq 'All')
@@ -278,7 +278,7 @@ function New-LWHypervVM
     #set the Generation for the VM depending on SupportGen2VMs, host OS version and VM OS version
     $hostOsVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
 
-    $generation = if ($PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.SupportGen2VMs)
+    $generation = if (Get-LabConfigurationItem -Name SupportGen2VMs)
     {
         if ($hostOsVersion -ge [System.Version]6.3 -and $Machine.Gen2VmSupported)
         {
