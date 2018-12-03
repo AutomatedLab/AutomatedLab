@@ -1882,9 +1882,11 @@ function Add-LabMachineDefinition
 
         [hashtable]$Notes,
 
-        [switch]$PassThru,
-
-        [string]$FriendlyName
+        [string]$FriendlyName,
+        
+        [switch]$SkipDeployment,
+        
+        [switch]$PassThru
     )
     DynamicParam
     {
@@ -2760,6 +2762,8 @@ function Add-LabMachineDefinition
                 $machine.Disks.Add($labDisk)
             }
         }
+
+        $machine.SkipDeployment = $SkipDeployment
     }
 
     end

@@ -474,6 +474,16 @@ function Get-LabInternetFile
         }
         else
         {
+            if (-not (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            {
+                #machine does not have internet connectivity
+                if (-not $offlineNode)
+                {
+                    Write-Error "Machine is not connected to the internet and cannot download the file '$Uri'"
+                }
+                return
+            }
+
             if ((Test-Path -Path $Path) -and $Force)
             {
                 Remove-Item -Path $Path -Force
@@ -555,6 +565,9 @@ function Get-LabInternetFile
     }
 
     $start = Get-Date
+
+    #TODO: This needs to go into config
+    $offlineNode = $true
 
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {

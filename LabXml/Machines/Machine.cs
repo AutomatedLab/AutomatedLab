@@ -44,6 +44,7 @@ namespace AutomatedLab
         private OperatingSystemType operatingSystemType;
         private bool gen2vmSupported;
         private LinuxType linuxType;
+        private bool skipDeployment;
 
         public LinuxType LinuxType
         {
@@ -361,6 +362,12 @@ namespace AutomatedLab
         {
             get { return internalNotes; }
             set { internalNotes = value; }
+        }
+
+        public bool SkipDeployment
+        {
+            get { return skipDeployment; }
+            set { skipDeployment = value; }
         }
 
         public Machine()

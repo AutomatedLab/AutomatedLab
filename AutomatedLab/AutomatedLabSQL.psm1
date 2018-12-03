@@ -761,7 +761,10 @@ function New-LabSqlAccount
 
                 if (-not ($existingGroup))
                 {
-                    New-ADGroup -Name $groupName -GroupScope Global
+                    $newGroup = New-ADGroup -Name $groupName -GroupScope Global -PassThru
+                    #adding the account the script is running under to the SQL admin group
+                    $newGroup | Add-ADGroupMember -Members ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
+
                 }
             } -Variable (Get-Variable -Name groupName)
         }
