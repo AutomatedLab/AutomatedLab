@@ -2077,47 +2077,29 @@ function Move-LabDomainController
         Write-Verbose "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
-
-    $forest = $dcRole.Properties.ParentDomain
+    
     $machine = Get-LabVM -ComputerName $ComputerName
+    $lab = Get-Lab
+
+    $forest = if ($lab.IsRootDomain($machine.DomainName))
+    {
+        $machine.DomainName
+    }
+    else
+    {
+        $lab.GetParentDomain($machine.DomainName)
+    }
 
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
     if (-not $domainRootMachine)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
         $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
-
-    #if no domain tree
-    if (-not $forest)
-    {
-        Write-Verbose -Message "Forest of Domain root machine '$domainRootMachine' not found"
-
-        $domain = $machine.DomainName
-        if ($domain.Split('.').Count -le 2)
-        {
-            $forest = $domain
-            Write-Verbose -Message "Forest set to '$forest' based on domain name of '$ComputerName' only has 2 names"
-        }
-        else
-        {
-            $forest = $domain.Split('.', 2)[-1]
-            Write-Verbose -Message "Forest set to '$forest' based on two last names of domain name '$domain' of '$ComputerName'"
-        }
-    }
-
-    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
-    if (-not $rootDcForMachine)
-    {
-        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
-        $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
-        $forest = $dcRole.Properties.ParentDomain
-    }
-
-
-    $result = Invoke-LabCommand -ComputerName $rootDcForMachine -NoDisplay -PassThru -ScriptBlock `
+    
+    $result = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
