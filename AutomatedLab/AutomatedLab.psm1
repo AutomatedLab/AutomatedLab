@@ -605,8 +605,7 @@ function Export-Lab
 
     $lab.Export($lab.LabFilePath)
 
-    $lab.Disks.AddFromFile($lab.DiskDefinitionFiles[0].Path)
-    $lab.Machines.AddFromFile($lab.MachineDefinitionFiles[0].Path)
+    Import-Lab -Name $lab.Name -NoValidation -NoDisplay
 
     Write-LogFunctionExit
 }
