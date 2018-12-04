@@ -1450,7 +1450,7 @@ function Checkpoint-LWAzureVm
 
     if ($jobs) 
     { 
-        $jobs | Wait-LWLabJob -NoDisplay
+        $null = $jobs | Wait-Job
         $jobs | Remove-Job
     }
 
@@ -1479,9 +1479,10 @@ function Restore-LWAzureVmSnapshot
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
     if ($runningMachines) { Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true}
-    $disksToRemove = @()
+    $machineStatus = @{}
+    $ComputerName.ForEach( {$machineStatus[$_] = @{Stage1 = $null; Stage2 = $null; Stage3 = $null}})
 
-    $jobs = foreach ($machine in $ComputerName)
+    foreach ($machine in $ComputerName)
     {
         $vm = Get-AzureRmVm -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
@@ -1503,38 +1504,62 @@ function Restore-LWAzureVmSnapshot
         $disksToRemove += $oldOsDisk.Name
         $storageType = $oldOsDisk.sku.name
         $diskconf = New-AzureRmDiskConfig -AccountType $storagetype -Location $oldOsdisk.Location -SourceResourceId $snapshot.Id -CreateOption Copy
-        $newDisk = New-AzureRmDisk -Disk $diskconf -ResourceGroupName $resourceGroupName -DiskName "$($vm.Name)-$((New-Guid).ToString())"
         
-        $null = Set-AzureRmVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
-        Update-AzureRmVM -ResourceGroupName $resourceGroupName -VM $vm -AsJob
-    }
-
-    if ($jobs) { $jobs | Wait-LWLabJob -NoDisplay}
-
-    if ($jobs.State -contains 'Failed')
-    {
-        Write-ScreenInfo -Type Error -Message "At least one snapshot restore failed. Skipping removal of the following old disks: $($disksToRemove -join ',')."
-        $skipRemove = $true
-    }
-
-    if (-not $skipRemove)
-    {
-        $removalJobs = foreach ($disk in $disksToRemove)
-        {
-            Remove-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force -AsJob
+        $machineStatus[$machine].Stage1 = @{
+            VM      = $vm
+            OldDisk = $oldOsDisk.Name
+            Job     = New-AzureRmDisk -Disk $diskconf -ResourceGroupName $resourceGroupName -DiskName "$($vm.Name)-$((New-Guid).ToString())" -AsJob
         }
     }
 
-    $failedRemovals = $removalJobs | Where-Object -Property State -eq 'Failed'
-    foreach ($job in $failedRemovals)
+    $null = $machineStatus.Values.Stage1.Job | Wait-Job
+
+    $failedStage1 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage1.Job.State -eq 'Failed'}).Name
+    if ($failedStage1) { Write-ScreenInfo -Type Error -Message "The following machines failed to create a new disk from the snapshot: $($failedStage1 -join ',')"}
+
+    $ComputerName = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage1.Job.State -eq 'Completed'}).Name
+
+    foreach ($machine in $ComputerName)
     {
-        $result = $job | Receive-Job -Keep -ErrorAction SilentlyContinue
-        Write-ScreenInfo -Type Warning -Message "Failed to remove old OS disk $($result.Name). Please remove it manually if necessary."
+        $newDisk = $machineStatus[$machine].Stage1.Job | Receive-Job -Keep
+        $null = Set-AzureRmVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
+        $machineStatus[$machine].Stage2 = @{
+            Job = Update-AzureRmVM -ResourceGroupName $resourceGroupName -VM $vm -AsJob
+        }        
+    }
+
+    $null = $machineStatus.Values.Stage2.Job | Wait-Job
+
+    $failedStage2 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage2.Job.State -eq 'Failed'}).Name
+    if ($failedStage2) { Write-ScreenInfo -Type Error -Message "The following machines failed to update with the new OS disk created from a snapshot: $($failedStage2 -join ',')"}
+
+    $ComputerName = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage2.Job.State -eq 'Completed'}).Name
+
+    foreach ($machine in $ComputerName)
+    {
+        $disk = $machineStatus[$machine].Stage1.OldDisk
+        $machineStatus[$machine].Stage3 = @{
+            Job = Remove-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force -AsJob
+        }
+    }
+
+    $null = $machineStatus.Values.Stage3.Job | Wait-Job
+
+    $failedStage3 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage3.Job.State -eq 'Failed'}).Name
+    if ($failedStage3)
+    {
+        $failedDisks = $failedStage3.ForEach( {$machineStatus[$_].Stage1.OldDisk})
+        Write-ScreenInfo -Type Warning -Message "The following machines failed to remove their old OS disk in a background job: $($failedStage3 -join ','). Trying to remove the disks again synchronously."
+
+        foreach ($machine in $failedStage3)
+        {
+            $disk = $machineStatus[$machine].Stage1.OldDisk
+            $null = Remove-AzureRmDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force
+        }
     }
 
     if ($runningMachines) { Start-LWAzureVM -ComputerName $runningMachines}
-    if ($jobs) {$jobs | Remove-Job}
-    $removalJobs | Remove-Job
+    $machineStatus.Values.Values.Job | Remove-Job
 
     Write-LogFunctionExit
 }
