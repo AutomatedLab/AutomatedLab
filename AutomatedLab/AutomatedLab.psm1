@@ -3522,7 +3522,7 @@ function Set-LabInstallationCredential
     Param (
         [Parameter(Mandatory, ParameterSetName = 'All')]
         [Parameter(Mandatory=$false, ParameterSetName = 'Prompt')]
-        [ValidatePattern("^([\'\""a-zA-Z0-9]){2,15}$")]
+        [ValidatePattern('^([\w\.-]){2,15}$')]
         [string]$Username,
 
         [Parameter(Mandatory, ParameterSetName = 'All')]
