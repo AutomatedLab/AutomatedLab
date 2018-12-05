@@ -3899,7 +3899,11 @@ function New-LabSourcesFolder
         $Force
     )
 
-    $Path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+    $path = Get-LabSourcesLocation
+    if (-not $path)
+    {
+        $path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+    }
 
     if ($DriveLetter)
     {
