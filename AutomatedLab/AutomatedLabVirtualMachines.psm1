@@ -2001,6 +2001,8 @@ function Checkpoint-LabVM
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2028,7 +2030,12 @@ function Checkpoint-LabVM
         }
     }
 
-    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVm -ComputerName $machines -SnapshotName $SnapshotName}
+        'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
+    }    
 
     Write-LogFunctionExit
 }
@@ -2059,6 +2066,8 @@ function Restore-LabVMSnapshot
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2086,7 +2095,12 @@ function Restore-LabVMSnapshot
         }
     }
 
-    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
+    }
 
     Write-LogFunctionExit
 }
@@ -2123,6 +2137,8 @@ function Remove-LabVMSnapshot
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2139,13 +2155,24 @@ function Remove-LabVMSnapshot
         return
     }
 
+    $parameters = @{
+        ComputerName = $machines
+    }
+    
     if ($SnapshotName)
     {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+        $parameters.SnapshotName = $SnapshotName
     }
     elseif ($AllSnapShots)
     {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -All
+        $parameters.All = $true
+    }
+
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Remove-LWHypervVMSnapshot @parameters}
+        'Azure'  { Remove-LWAzureVmSnapshot @parameters}
+        'VMWare' { Write-ScreenInfo -Type Warning -Message 'No VMWare snapshots possible, nothing will be removed'}
     }
 
     Write-LogFunctionExit
