@@ -228,34 +228,34 @@ namespace AutomatedLab
 
                     //Windows Server 2012 R2 new names
                     case "Windows Server 2012 R2 Standard (Server Core Installation)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
                     case "Windows Server 2012 R2 Standard Evaluation (Server Core Installation)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
 
                     case "Windows Server 2012 R2 Standard (Server with a GUI)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
                     case "Windows Server 2012 R2 Standard Evaluation (Server with a GUI)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
 
                     case "Windows Server 2012 R2 Datacenter (Server Core Installation)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
                     case "Windows Server 2012 R2 Datacenter Evaluation (Server Core Installation)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
 
                     case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
                     case "Windows Server 2012 R2 Datacenter Evaluation (Server with a GUI)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
 
                     //Windows Server 2012 R2 old names
                     case "Windows Server 2012 R2 SERVERSTANDARDCORE":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
                     case "Windows Server 2012 R2 SERVERSTANDARD":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
+                        return "D2N9P-3P6X9-2R39C-7RTCD-MDVJX";
                     case "Windows Server 2012 R2 SERVERDATACENTERCORE":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
                     case "Windows Server 2012 R2 SERVERDATACENTER":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
+                        return "W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9";
 
                     //Windows 10
                     case "Windows 10 Pro":
@@ -269,7 +269,7 @@ namespace AutomatedLab
                     case "Windows 10 Enterprise Insider Preview":
                         return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
                     case "Windows 10 Pro Insider Preview":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
+                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
                     case "Windows 10 Enterprise 2015 LTSB":
                         return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
                     case "Windows 10 Enterprise 2016 LTSB":
