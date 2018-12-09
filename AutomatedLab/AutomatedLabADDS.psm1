@@ -764,61 +764,61 @@ function Install-LabRootDcs
 
         foreach ($machine in $machines)
         {
-            $rootDcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
+            $dcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
 
             if ($machine.OperatingSystem.Version -le 6.1)
             {
                 #Pre 2012
                 $scriptblock = $adInstallRootDcScriptPre2012
-                $forestFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$rootDcRole.Properties.ForestFunctionalLevel
-                $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$rootDcRole.Properties.DomainFunctionalLevel
+                $forestFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$dcRole.Properties.ForestFunctionalLevel
+                $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$dcRole.Properties.DomainFunctionalLevel
             }
             else
             {
                 $scriptblock = $adInstallRootDcScript2012
-                $forestFunctionalLevel = $rootDcRole.Properties.ForestFunctionalLevel
-                $domainFunctionalLevel = $rootDcRole.Properties.DomainFunctionalLevel
+                $forestFunctionalLevel = $dcRole.Properties.ForestFunctionalLevel
+                $domainFunctionalLevel = $dcRole.Properties.DomainFunctionalLevel
             }
 
-            $netBiosDomainName = if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
+            $netBiosDomainName = if ($dcRole.Properties.ContainsKey('NetBiosDomainName'))
             {
-                $rootDcRole.Properties.NetBiosDomainName
+                $dcRole.Properties.NetBiosDomainName
             }
             else
             {
                 $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
             }
 
-            $databasePath = if ($rootDcRole.Properties.ContainsKey('DatabasePath'))
+            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
             {
-                $rootDcRole.Properties.DatabasePath
+                $dcRole.Properties.DatabasePath
             }
             else
             {
                 'C:\Windows\NTDS'
             }
 
-            $logPath = if ($rootDcRole.Properties.ContainsKey('LogPath'))
+            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
             {
-                $rootDcRole.Properties.LogPath
+                $dcRole.Properties.LogPath
             }
             else
             {
                 'C:\Windows\NTDS'
             }
 
-            $sysvolPath = if ($rootDcRole.Properties.ContainsKey('SysvolPath'))
+            $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
             {
-                $rootDcRole.Properties.SysvolPath
+                $dcRole.Properties.SysvolPath
             }
             else
             {
                 'C:\Windows\Sysvol'
             }
 
-            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            $dsrmPassword = if ($dcRole.Properties.ContainsKey('DsrmPassword'))
             {
-                $rootDcRole.Properties.DsrmPassword
+                $dcRole.Properties.DsrmPassword
             }
             else
             {
@@ -1131,14 +1131,14 @@ function Install-LabFirstChildDcs
 
             $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
             {
-                $rootDcRole.Properties.SysvolPath
+                $dcRole.Properties.SysvolPath
             }
             else
             {
                 'C:\Windows\Sysvol'
             }
 
-            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            $dsrmPassword = if ($dcRole.Properties.ContainsKey('DsrmPassword'))
             {
                 $dcRole.Properties.DsrmPassword
             }
@@ -1389,7 +1389,7 @@ function Install-LabDcs
 
             $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
             {
-                $rootDcRole.Properties.DatabasePath
+                $dcRole.Properties.DatabasePath
             }
             else
             {
