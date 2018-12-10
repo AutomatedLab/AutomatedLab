@@ -341,7 +341,7 @@ Write-ScreenInfo "Intalling Exchange 2013 '$ComputerName'..." -TaskStart
 
 Copy-ExchangeSources
 
-#Install-ExchangeWindowsFeature
+Install-ExchangeWindowsFeature
 Install-ExchangeRequirements
 Restart-LabVM -ComputerName $vm -Wait
 
