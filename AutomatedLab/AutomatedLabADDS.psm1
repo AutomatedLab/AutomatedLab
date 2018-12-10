@@ -36,6 +36,19 @@ $adInstallRootDcScriptPre2012 = {
 "@
 
     $VerbosePreference = $using:VerbosePreference
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -274,6 +287,19 @@ $adInstallFirstChildDcPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($ParentDomainName) | Out-Null
 
@@ -470,7 +496,15 @@ $adInstallDc2012 = {
     }
 
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
-    Install-Windowsfeature AD-Domain-Services, DNS -IncludeManagementTools
+    $result = Install-WindowsFeature AD-Domain-Services, DNS -IncludeManagementTools
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     $safeDsrmPassword = ConvertTo-SecureString -String $DsrmPassword -AsPlainText -Force
 
@@ -564,6 +598,19 @@ $adInstallDcPre2012 = {
     $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -766,7 +813,7 @@ function Install-LabRootDcs
         {
             $dcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
 
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 #Pre 2012
                 $scriptblock = $adInstallRootDcScriptPre2012
@@ -1092,7 +1139,7 @@ function Install-LabFirstChildDcs
             }
 
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptBlock = $adInstallFirstChildDcPre2012
                 $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$domainFunctionalLevel
@@ -1370,7 +1417,7 @@ function Install-LabDcs
             $parentCredential = $parentDc.GetCredential((Get-Lab))
 
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptblock = $adInstallDcPre2012
             }
