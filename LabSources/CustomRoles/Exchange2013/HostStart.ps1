@@ -33,26 +33,20 @@ function Copy-ExchangeSources
     Write-ScreenInfo 'finished' -TaskEnd
     
     #distribute the sources to all exchange servers and the RootDC
-    Write-ScreenInfo "Copying sources to Exchange Server '$vm'" -TaskStart
-    if ($vm.HostType -eq 'HyperV')
+    foreach ($vm in $vms)
     {
-        Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
-        Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
-        Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+        Write-ScreenInfo "Copying sources to VM '$vm'" -TaskStart
+        if ($vm.HostType -eq 'HyperV')
+        {
+            Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+            Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+            Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+        }
+        Write-ScreenInfo "Finished copying file to VM '$vm'" -TaskEnd
     }
-    Write-ScreenInfo 'finished copying file to Exchange Servers' -TaskEnd
-
-    #now distribute the sources to all Hyper-V Root DCs that
-    if ($rootDc.HostType -eq 'HyperV')
-    {
-        Write-ScreenInfo "Copying sources to Root DC '$rootDc'" -TaskStart
-        Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $rootDc
-        Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $rootDc
-        Write-ScreenInfo 'finished' -TaskEnd
-    }
-
+    
     Write-ScreenInfo 'Exctracting Exchange Installation files on all machines' -TaskStart -NoNewLine
-    $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $machines -AsJob -PassThru -NoDisplay
+    $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $vms -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoDisplay
     Write-ScreenInfo 'finished' -TaskEnd
 }
@@ -60,13 +54,13 @@ function Copy-ExchangeSources
 function Add-ExchangeAdRights
 {
     #if the exchange server is in a child domain the administrator of the child domain will be added to the group 'Organization Management' of the root domain
-    if ($vm.DomainName -ne $rootDc.DomainName)
+    if ($vm.DomainName -ne $schemaPrepVm.DomainName)
     {
         $dc = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $vm.DomainName
         $userName = ($lab.Domains | Where-Object Name -eq $vm.DomainName).Administrator.UserName
 
         Write-ScreenInfo "Adding '$userName' to  'Organization Management' group" -TaskStart
-        Invoke-LabCommand -ActivityName "Add '$userName' to Forest Management" -ComputerName $rootDc -ScriptBlock {
+        Invoke-LabCommand -ActivityName "Add '$userName' to Forest Management" -ComputerName $schemaPrepVm -ScriptBlock {
             param($userName, $Server)
 
             $user = Get-ADUser -Identity $userName -Server $Server
@@ -81,7 +75,7 @@ function Add-ExchangeAdRights
 function Install-ExchangeWindowsFeature
 {
     Write-ScreenInfo "Installing Windows Features 'Server-Media-Foundation' on '$vm'"  -TaskStart -NoNewLine
-    if ((Get-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools).Count -ne 2)
+    if ((Get-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools | Where-Object { $_.Installed }).Count -ne 2)
     {
         $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT-ADDS-Tools -UseLocalCredential -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay
@@ -94,11 +88,23 @@ function Install-ExchangeRequirements
 {
     Write-ScreenInfo "Installing Exchange Requirements '$vm'"  -TaskStart -NoNewLine
 
-    $jobs = @()
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
-    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+    $isUcmaInstalled = Invoke-LabCommand -ActivityName 'Test UCMA Installation' -ComputerName $vm -ScriptBlock {
+        Test-Path -Path 'C:\Program Files\Microsoft UCMA 4.0\Runtime\Uninstaller\Setup.exe'
+    } -PassThru
 
-    foreach ($machine in $machines)
+    $jobs = @()
+
+    if (-not $isUcmaInstalled)
+    {
+        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
+    }
+    else
+    {
+        Write-ScreenInfo "UCMA is already installed on '$vm'" -Type Verbose
+    }
+
+    foreach ($machine in $vms)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
         if ($dotnetFrameworkVersion.Version -notcontains '4.6.2')
@@ -116,9 +122,9 @@ function Install-ExchangeRequirements
     Write-ScreenInfo done
         
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-    Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 10 -NoDisplay
+    Restart-LabVM -ComputerName $vms -Wait -ProgressIndicator 10 -NoDisplay
 
-    Sync-LabActiveDirectory -ComputerName $rootDc
+    Sync-LabActiveDirectory -ComputerName $schemaPrepVm
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -226,9 +232,9 @@ function Start-ExchangeInstallation
         
         [switch]$CreateCheckPoints
     )
-    if ($vm.DomainName -ne $rootDc.DomainName)
+    if ($vm.DomainName -ne $schemaPrepVm.DomainName)
     {
-        $prepMachine = $rootDc
+        $prepMachine = $schemaPrepVm
     }
     else
     {
@@ -267,7 +273,7 @@ function Start-ExchangeInstallation
         }
     
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
-        Restart-LabVM -ComputerName $rootDc -Wait -ProgressIndicator 10 -NoNewLine
+        Restart-LabVM -ComputerName $schemaPrepVm -Wait -ProgressIndicator 10 -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 10 -NoNewLine
         Write-ProgressIndicatorEnd
     }
@@ -296,18 +302,26 @@ $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet462DownloadLink
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 $vm = Get-LabVM -ComputerName $ComputerName
-$rootDc = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $vm.DomainName }
-$machines = if ($rootDc.SkipDeployment)
+$schemaPrepVm = if ($lab.IsRootDomain($vm.DomainName))
 {
     $vm
 }
 else
 {
-    (@($vm) + $rootDc)
+    $rootDc = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $vm.DomainName }
+    if ($rootDc.SkipDeployment)
+    {
+        Write-Error "VM '$vm' is not in the root domain and the root domain controller '$rootDc' is not available on this host."
+        return
+    }
+    $rootDc
 }
 
-Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
-Start-LabVM -ComputerName $machines -Wait
+#if the schemaPrepVm is the same as the exchange server, Select-Object will filter it out
+$vms = (@($vm) + $schemaPrepVm) | Select-Object -Unique
+
+Write-ScreenInfo "Starting machines '$($vms -join ', ')'" -NoNewLine
+Start-LabVM -ComputerName $vms -Wait
 
 if (-not $OrganizationName)
 {
@@ -327,7 +341,7 @@ Write-ScreenInfo "Intalling Exchange 2013 '$ComputerName'..." -TaskStart
 
 Copy-ExchangeSources
 
-Install-ExchangeWindowsFeature
+#Install-ExchangeWindowsFeature
 Install-ExchangeRequirements
 Restart-LabVM -ComputerName $vm -Wait
 
