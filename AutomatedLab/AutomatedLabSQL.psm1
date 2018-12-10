@@ -691,7 +691,7 @@ function New-LabSqlAccount
 
         if ($domain)
         {
-            $dc = Get-LabVm -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+            $dc = Get-LabVm -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $domain -or ($_.DomainName -split "\.")[0] -eq $domain }
 
             if (-not $dc)
             {
@@ -702,13 +702,13 @@ function New-LabSqlAccount
                 $existingUser = $null #required as the session is not removed
                 try
                 {
-                    $existingUser = Get-ADUser -Identity $user
+                    $existingUser = Get-ADUser -Identity $user -Server localhost
                 }
                 catch { }
 
                 if (-not ($existingUser))
                 {
-                    New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
+                    New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true -Server localhost
                 }
             } -Variable (Get-Variable -Name user, password)
         }
@@ -744,24 +744,24 @@ function New-LabSqlAccount
 
         if ($domain)
         {
-            $dc = Get-LabVM -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+            $dc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $domain -or ($_.DomainName -split "\.")[0] -eq $domain }
 
             if (-not $dc)
             {
-                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain) -Type Warning
+                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user, $domain) -Type Warning
             }
 
             Invoke-LabCommand -ComputerName $dc -ActivityName ("Creating group '$groupName' in domain '$domain'") -ScriptBlock {
                 $existingGroup = $null #required as the session is not removed
                 try
                 {
-                    $existingGroup = Get-ADGroup -Identity $groupName
+                    $existingGroup = Get-ADGroup -Identity $groupName -Server localhost
                 }
                 catch { }
 
                 if (-not ($existingGroup))
                 {
-                    $newGroup = New-ADGroup -Name $groupName -GroupScope Global -PassThru
+                    $newGroup = New-ADGroup -Name $groupName -GroupScope Global -Server localhost -PassThru
                     #adding the account the script is running under to the SQL admin group
                     $newGroup | Add-ADGroupMember -Members ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
 
