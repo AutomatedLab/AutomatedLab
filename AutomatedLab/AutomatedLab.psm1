@@ -3297,10 +3297,15 @@ function Invoke-LabCommand
 
         $param.Add('Session', $session)
 
+        if ($FilePath)
+        {
+            $scriptContent = Get-Content -Path $FilePath -Raw
+            $ScriptBlock = [scriptblock]::Create($scriptContent)
+        }
+
         if ($ScriptBlock)            { $param.Add('ScriptBlock', $ScriptBlock) }
         if ($Retries)                { $param.Add('Retries', $Retries) }
-        if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
-        if ($FilePath)               { $param.Add('ScriptFilePath', $FilePath) }
+        if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }        
         if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
