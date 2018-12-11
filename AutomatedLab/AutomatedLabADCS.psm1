@@ -3312,5 +3312,20 @@ function Enable-LabCertificateAutoenrollment
 }
 #endregion Enable-LabCertificateAutoenrollment
 
-Add-Type -TypeDefinition $certStoreTypes
-Add-Type -TypeDefinition $pkiInternalsTypes
+try
+{
+    [Pki.Period]$temp = $null
+}
+catch
+{
+    Add-Type -TypeDefinition $pkiInternalsTypes
+}
+
+try
+{
+    [System.Security.Cryptography.X509Certificates.Win32]$temp = $null
+}
+catch
+{
+    Add-Type -TypeDefinition $certStoreTypes    
+}
