@@ -3152,7 +3152,7 @@ function Invoke-LabCommand
         return
     }
 
-    if ('Stopped' -in (Get-LabVMStatus -ComputerName $machines).Values)
+    if ('Stopped' -in (Get-LabVMStatus -ComputerName $machines -AsHashTable).Values)
     {
         Start-LabVM -ComputerName $machines -Wait
     }
@@ -3228,6 +3228,7 @@ function Invoke-LabCommand
                 {
                     if (Test-Path -Path $scriptFullName)
                     {
+                        $param.PassThru = $true
                         $results += Invoke-LWCommand @param
                     }
                 }
@@ -3238,6 +3239,8 @@ function Invoke-LabCommand
 
                 if ($item.IsCustomRole)
                 {
+                    Wait-LWLabJob -Job $results -ProgressIndicator 15 -NoDisplay
+
                     #if there is a HostEnd.ps1 script for the role
                     $hostEndPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostEnd.ps1'
                     if (Test-Path -Path $hostEndPath)
