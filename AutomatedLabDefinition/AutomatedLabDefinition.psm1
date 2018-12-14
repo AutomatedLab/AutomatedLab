@@ -3213,8 +3213,8 @@ function Set-LabLocalVirtualMachineDiskAuto
         return $false
     }
 
-    #if the current disk config is different from the is in the cache, wait until the running lab deploymet is done.
-    if (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter)
+    #if the current disk config is different from the is in the cache, wait until the running lab deployment is done.
+    if ($cachedDrives -and (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter))
     {
         $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
         if (Test-Path -Path $labDiskDeploymentInProgressPath)
