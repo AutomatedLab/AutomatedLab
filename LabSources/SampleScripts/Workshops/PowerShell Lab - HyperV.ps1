@@ -52,8 +52,8 @@ Add-LabMachineDefinition -Name POSHSql1 -Memory 1GB -Roles $role -IpAddress 192.
 
 <# REMOVE THE COMMENT TO ADD THE EXCHANGE SERVER TO THE LAB
 #Exchange 2013
-$roles = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
-Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -Roles $roles -IpAddress 192.168.30.53
+$roles = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
+Add-LabMachineDefinition -Name POSHEx1 -Memory 4GB -PostInstallationActivity $roles -IpAddress 192.168.30.53
 #>
 
 <# REMOVE THE COMMENT TO ADD THE DEVELOPMENT CLIENT TO THE LAB
