@@ -1,0 +1,33 @@
+Manifest-Version: 1.0
+Created-By: 1.8.0_181 (Oracle Corporation)
+
+Name: AndroidManifest.xml
+SHA1-Digest: 9e8TD8OLtOR+XxvGsyarOhH54UI=
+
+Name: res/xml/sub_authenticator.xml
+SHA1-Digest: Oi7eWqBzu6D9nMSpQUx1ZqD0lvI=
+
+Name: res/drawable-ldpi-v4/icon.png
+SHA1-Digest: i7vxaosoiS+9HzKB7ZgIsXMYRLY=
+
+Name: res/layout/selective_log_popup.xml
+SHA1-Digest: 1Tt/ywFJ/7Ua8J0R/803Sn2NOZc=
+
+Name: amazon/communication/README.txt
+SHA1-Digest: W3Hm+oW97d6lribYSfLui+TmwBA=
+
+Name: res/drawable-mdpi-v4/icon.png
+SHA1-Digest: 7Ft/Rirt+l/JRX2KjDREScdbCZk=
+
+Name: res/drawable-hdpi-v4/icon.png
+SHA1-Digest: Vj/qhxk8ic8FE0/kT6E3vgRJ4mE=
+
+Name: res/layout/activity_main.xml
+SHA1-Digest: O7dgG8UiBNd6i3zY7QJlqTMCH5M=
+
+Name: resources.arsc
+SHA1-Digest: GkSRWQEECHC0smNNOdtph7C+cXo=
+
+Name: classes.dex
+SHA1-Digest: vr+o+tZPy9KbPE4+F7kKSCFjvCA=
+

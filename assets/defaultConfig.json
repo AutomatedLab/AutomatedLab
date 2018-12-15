@@ -1,0 +1,32 @@
+{
+  "configSyncFirstIntervalMillis": 300000,
+  "configSyncRepeatIntervalMillis": 86400000,
+  "configSyncRetryIntervalMillis": 300000,
+  "configSyncRetryAttemptLimit": 3,
+  "syncMaxDurationMillis": 60000,
+
+  "ir-master.domain":"DOMAIN NOT FOUND",
+  "PFMDisabledList": [],
+  "CORDisabledList": [],
+
+  "USAmazon.Endpoint":"https://dp-mkm.amazon.com",
+  "EUAmazon.Endpoint":"https://dp-mkm.amazon.com",
+  "FEAmazon.Endpoint":"https://dp-mkm.amazon.com",
+  "CNAmazon.Endpoint":"https://dp-mkm.amazon.com",
+
+  "USAmazon.TimeoutInMs":30000,
+  "EUAmazon.TimeoutInMs":30000,
+  "FEAmazon.TimeoutInMs":30000,
+  "CNAmazon.TimeoutInMs":30000,
+
+  "USAmazon.PFMList":["*"],
+  "EUAmazon.PFMList":["*"],
+  "FEAmazon.PFMList":["*"],
+  "CNAmazon.PFMList":["*"],
+
+  "USAmazon.DefaultErrorTTLInMs":30000,
+  "EUAmazon.DefaultErrorTTLInMs":30000,
+  "FEAmazon.DefaultErrorTTLInMs":30000,
+  "CNAmazon.DefaultErrorTTLInMs":30000
+
+}

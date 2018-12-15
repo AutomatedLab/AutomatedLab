@@ -1,0 +1,35 @@
+Signature-Version: 1.0
+SHA1-Digest-Manifest-Main-Attributes: wx7wAKbM7DDeNhBgV2mNRTX9IN4=
+SHA1-Digest-Manifest: 1AQ8QvTsgmULFU4TlavjldKmzRc=
+Created-By: 1.8.0_181 (Oracle Corporation)
+
+Name: AndroidManifest.xml
+SHA1-Digest: pzzTkaVmP9fb0iKw/HHlHxCBFTE=
+
+Name: res/xml/sub_authenticator.xml
+SHA1-Digest: ife9dDFeu24cvJGaQ99VUO1+zHY=
+
+Name: res/drawable-ldpi-v4/icon.png
+SHA1-Digest: Xx2QR5Z9VBJFu/qil3TfXrfgLmk=
+
+Name: res/layout/selective_log_popup.xml
+SHA1-Digest: k605aT0pp7kmcOBLLgJyo3TOh/g=
+
+Name: amazon/communication/README.txt
+SHA1-Digest: i56pYHFIrmdeKkdPrMHG/o5C9Oo=
+
+Name: res/drawable-mdpi-v4/icon.png
+SHA1-Digest: PObcd7HLUYSo+aEseGp88/LBuU4=
+
+Name: res/drawable-hdpi-v4/icon.png
+SHA1-Digest: OerISb9YKMxB18xSPhKAIiwZiys=
+
+Name: res/layout/activity_main.xml
+SHA1-Digest: IjgJSegq0HUyRipUIuCIn7lOGTw=
+
+Name: resources.arsc
+SHA1-Digest: P51PPLUq7J8YBK7AdhayutW3ygQ=
+
+Name: classes.dex
+SHA1-Digest: /DxeRX0NCwegYRuCsVsDZbdR9OQ=
+
