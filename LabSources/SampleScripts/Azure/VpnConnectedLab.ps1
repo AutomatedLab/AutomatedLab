@@ -25,8 +25,6 @@ $labs = @(
     }
 )
 
-$azureRmContext = 'Path to your context' # Hint: Save-AzureRmContext
-
 foreach ($lab in $labs.GetEnumerator())
 {
     New-LabDefinition -Name $lab.LabName -DefaultVirtualizationEngine Azure

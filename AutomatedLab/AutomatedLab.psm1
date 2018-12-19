@@ -520,9 +520,9 @@ function Import-Lab
         }
     
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name AzureRm -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name Az.* -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
-            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name AzureRm -Force'"
+            throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name Az -Force'"
         }
 
         if (($Script:data.Machines | Where-Object HostType -eq VMWare) -and ((Get-PSSnapin -Name VMware.VimAutomation.*).Count -ne 1))
@@ -1320,7 +1320,7 @@ function Get-LabAvailableOperatingSystem
 
     if ($Azure)
     {
-        if (-not (Get-AzureRmContext -ErrorAction SilentlyContinue).Subscription)
+        if (-not (Get-AzContext -ErrorAction SilentlyContinue).Subscription)
         {
             throw 'Please login to Azure before trying to list Azure image SKUs'
         }

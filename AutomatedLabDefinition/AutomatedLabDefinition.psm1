@@ -1902,7 +1902,7 @@ function Add-LabMachineDefinition
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
         if ($defaultLocation)
         {
-            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
+            $vmSizes = Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
             $validateSetValues = $vmSizes | Select-Object -ExpandProperty Name
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
             $AttributeCollection.Add($ValidateSetAttribute)
@@ -2284,7 +2284,7 @@ function Add-LabMachineDefinition
                 Write-ScreenInfo -Message 'No virtual networks specified. Creating a network automatically' -Type Warning
                 if (-not ($Global:existingAzureNetworks))
                 {
-                    $Global:existingAzureNetworks = Get-AzureRmVirtualNetwork
+                    $Global:existingAzureNetworks = Get-AzVirtualNetwork
                 }
 
                 #Virtual network name will be same as lab name

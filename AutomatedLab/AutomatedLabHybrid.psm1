@@ -147,29 +147,29 @@ function Disconnect-Lab
 
             Write-Verbose -Message ('Removing VPN resources in Azure lab {0}, Resource group {1}' -f $lab.Name, $resourceGroupName)
 
-            $connection = Get-AzureRmVirtualNetworkGatewayConnection -Name s2sconnection -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
-            $gw = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
-            $localgw = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
-            $ip = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+            $connection = Get-AzVirtualNetworkGatewayConnection -Name s2sconnection -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+            $gw = Get-AzVirtualNetworkGateway -Name s2sgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+            $localgw = Get-AzLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+            $ip = Get-AzPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
             if ($connection)
             {
-                $connection | Remove-AzureRmVirtualNetworkGatewayConnection -Force
+                $connection | Remove-AzVirtualNetworkGatewayConnection -Force
             }
 
             if ($gw)
             {
-                $gw | Remove-AzureRmVirtualNetworkGateway -Force
+                $gw | Remove-AzVirtualNetworkGateway -Force
             }
 
             if ($ip)
             {
-                $ip | Remove-AzureRmPublicIpAddress -Force
+                $ip | Remove-AzPublicIpAddress -Force
             }
 
             if ($localgw)
             {
-                $localgw | Remove-AzureRmLocalNetworkGateway -Force
+                $localgw | Remove-AzLocalNetworkGateway -Force
             }
         }
         else
@@ -250,8 +250,8 @@ function Restore-LabConnection
     Import-Lab -Name $source -NoValidation
     $resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
-    $localGateway = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroup -ErrorAction Stop
-    $vpnGatewayIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroup -ErrorAction Stop
+    $localGateway = Get-AzLocalNetworkGateway -Name onpremgw -ResourceGroupName $resourceGroup -ErrorAction Stop
+    $vpnGatewayIp = Get-AzPublicIpAddress -Name s2sip -ResourceGroupName $resourceGroup -ErrorAction Stop
 
     try
     {
@@ -266,7 +266,7 @@ function Restore-LabConnection
     {
         Write-Verbose -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
         $localGateway.GatewayIpAddress = $labIp
-        [void] ($localGateway | Set-AzureRmLocalNetworkGateway)
+        [void] ($localGateway | Set-AzLocalNetworkGateway)
     }
 
     Import-Lab -Name $destination -NoValidation
@@ -355,12 +355,12 @@ function Initialize-GatewayNetwork
     Write-Verbose -Message ('Calculated supernet: {0}, extending Azure VNet and creating gateway subnet {1}' -f "$($superNetIp)/$($superNetMask)", "$($gatewayNetworkAddress)/$($sourceMask)")
     $vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
     $vnet.AddressSpace.AddressPrefixes[0] = "$($superNetIp)/$($superNetMask)"
-    $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
+    $gatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
 
     if (-not $gatewaySubnet)
     {
-        $vnet | Add-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
-        $vnet = $vnet | Set-AzureRmVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
+        $vnet | Add-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
+        $vnet = $vnet | Set-AzVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
     }
 
     $vnet = (Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Where-Object -Property ID)[0]
@@ -417,9 +417,9 @@ function Connect-OnPremisesWithAzure
     $publicIpParameters.Add('DomainNameLabel', "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')".ToLower())
     $publicIpParameters.Add('Force', $true)
 
-    $gatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
-    $gatewayPublicIp = New-AzureRmPublicIpAddress @publicIpParameters -WarningAction SilentlyContinue
-    $gatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id -WarningAction SilentlyContinue
+    $gatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
+    $gatewayPublicIp = New-AzPublicIpAddress @publicIpParameters -WarningAction SilentlyContinue
+    $gatewayIpConfiguration = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id -WarningAction SilentlyContinue
 
     $remoteGatewayParameters = $genericParameters.Clone()
     $remoteGatewayParameters.Add('Name', 's2sgw')
@@ -436,18 +436,18 @@ function Connect-OnPremisesWithAzure
     $onPremGatewayParameters.Add('Force', $true)
 
     # Gateway creation
-    $gw = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+    $gw = Get-AzVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $gw)
     {
         Write-ScreenInfo -TaskStart -Message 'Creating Azure Virtual Network Gateway - this will take some time.'
-        $gw = New-AzureRmVirtualNetworkGateway @remoteGatewayParameters -WarningAction SilentlyContinue
+        $gw = New-AzVirtualNetworkGateway @remoteGatewayParameters -WarningAction SilentlyContinue
         Write-ScreenInfo -TaskEnd -Message 'Virtual Network Gateway created.'
     }
 
-    $onPremisesGw = Get-AzureRmLocalNetworkGateway -Name onpremgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+    $onPremisesGw = Get-AzLocalNetworkGateway -Name onpremgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $onPremisesGw -or $onPremisesGw.GatewayIpAddress -ne $labPublicIp)
     {
-        $onPremisesGw = New-AzureRmLocalNetworkGateway @onPremGatewayParameters -WarningAction SilentlyContinue
+        $onPremisesGw = New-AzLocalNetworkGateway @onPremGatewayParameters -WarningAction SilentlyContinue
     }
 
     # Connection creation
@@ -460,7 +460,7 @@ function Connect-OnPremisesWithAzure
     $connectionParameters.Add('VirtualNetworkGateway1', $gw)
     $connectionParameters.Add('LocalNetworkGateway2', $onPremisesGw)
 
-    $conn = New-AzureRmVirtualNetworkGatewayConnection @connectionParameters -WarningAction SilentlyContinue
+    $conn = New-AzVirtualNetworkGatewayConnection @connectionParameters -WarningAction SilentlyContinue
 
     # Step 3: Import the HyperV lab and install a Router if not already present
     Import-Lab $DestinationLab -NoValidation
@@ -468,7 +468,7 @@ function Connect-OnPremisesWithAzure
     $lab = Get-Lab
     $router = Get-LabVm -Role Routing -ErrorAction SilentlyContinue
     $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
-    $gatewayPublicIp = Get-AzureRmPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+    $gatewayPublicIp = Get-AzPublicIpAddress -Name s2sip -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
 
     if (-not $gatewayPublicIp -or $gatewayPublicIp.IpAddress -notmatch '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}')
     {
@@ -762,9 +762,9 @@ function Connect-AzureLab
         Force             = $true
     }
 
-    $sourceGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $sourceVnet -ErrorAction SilentlyContinue
-    $sourcePublicIp = New-AzureRmPublicIpAddress @sourcePublicIpParameters
-    $sourceGatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $sourceGatewaySubnet.Id -PublicIpAddressId $sourcePublicIp.Id
+    $sourceGatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $sourceVnet -ErrorAction SilentlyContinue
+    $sourcePublicIp = New-AzPublicIpAddress @sourcePublicIpParameters
+    $sourceGatewayIpConfiguration = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $sourceGatewaySubnet.Id -PublicIpAddressId $sourcePublicIp.Id
 
     $sourceGatewayParameters = @{
         ResourceGroupName = $sourceResourceGroupName
@@ -776,9 +776,9 @@ function Connect-AzureLab
         IpConfigurations  = $sourceGatewayIpConfiguration
     }
 
-    $destinationGatewaySubnet = Get-AzureRmVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $destinationVnet -ErrorAction SilentlyContinue
-    $destinationPublicIp = New-AzureRmPublicIpAddress @destinationPublicIpParameters
-    $destinationGatewayIpConfiguration = New-AzureRmVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $destinationGatewaySubnet.Id -PublicIpAddressId $destinationPublicIp.Id
+    $destinationGatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $destinationVnet -ErrorAction SilentlyContinue
+    $destinationPublicIp = New-AzPublicIpAddress @destinationPublicIpParameters
+    $destinationGatewayIpConfiguration = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $destinationGatewaySubnet.Id -PublicIpAddressId $destinationPublicIp.Id
 
     $destinationGatewayParameters = @{
         ResourceGroupName = $destinationResourceGroupName
@@ -792,19 +792,19 @@ function Connect-AzureLab
 
 
     # Gateway creation
-    $sourceGateway = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
+    $sourceGateway = Get-AzVirtualNetworkGateway -Name s2sgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $sourceGateway)
     {
         Write-ScreenInfo -TaskStart -Message 'Creating Azure Virtual Network Gateway - this will take some time.'
-        $sourceGateway = New-AzureRmVirtualNetworkGateway @sourceGatewayParameters
+        $sourceGateway = New-AzVirtualNetworkGateway @sourceGatewayParameters
         Write-ScreenInfo -TaskEnd -Message 'Source gateway created'
     }
 
-    $destinationGateway = Get-AzureRmVirtualNetworkGateway -Name s2sgw -ResourceGroupName $destinationResourceGroupName -ErrorAction SilentlyContinue
+    $destinationGateway = Get-AzVirtualNetworkGateway -Name s2sgw -ResourceGroupName $destinationResourceGroupName -ErrorAction SilentlyContinue
     if (-not $destinationGateway)
     {
         Write-ScreenInfo -TaskStart -Message 'Creating Azure Virtual Network Gateway - this will take some time.'
-        $destinationGateway = New-AzureRmVirtualNetworkGateway @destinationGatewayParameters
+        $destinationGateway = New-AzVirtualNetworkGateway @destinationGatewayParameters
         Write-ScreenInfo -TaskEnd -Message 'Destination gateway created'
     }
 
@@ -830,8 +830,8 @@ function Connect-AzureLab
         VirtualNetworkGateway2 = $sourceGateway
     }
 
-    [void] (New-AzureRmVirtualNetworkGatewayConnection @sourceConnection)
-    [void] (New-AzureRmVirtualNetworkGatewayConnection @destinationConnection)
+    [void] (New-AzVirtualNetworkGatewayConnection @sourceConnection)
+    [void] (New-AzVirtualNetworkGatewayConnection @destinationConnection)
 
     Write-Verbose -Message 'Connection created - please allow some time for initial connection.'
 

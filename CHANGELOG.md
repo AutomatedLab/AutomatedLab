@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Update to Az module 1.0
+
 ## 5.1.0 - 2018-11-26
 
 ### Enhancements
