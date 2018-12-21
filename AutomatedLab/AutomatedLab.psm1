@@ -3239,7 +3239,7 @@ function Invoke-LabCommand
 
                 if ($item.IsCustomRole)
                 {
-                    Wait-LWLabJob -Job $results -ProgressIndicator 15 -NoDisplay
+                    Wait-LWLabJob -Job ($results | Where-Object { $_ -is [System.Management.Automation.Job]} )-ProgressIndicator 15 -NoDisplay
 
                     #if there is a HostEnd.ps1 script for the role
                     $hostEndPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostEnd.ps1'
