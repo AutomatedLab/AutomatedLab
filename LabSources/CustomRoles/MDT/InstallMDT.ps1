@@ -1,7 +1,7 @@
 <#
     Author: Glenn Corbett @glennjc
     Contributors: @randree
-    Version: 1.3, 15/04/2018
+    Updated: 23/12/2018
 #>
 
 param(
@@ -103,11 +103,9 @@ function Install-MDTDhcp {
         Start-Process -FilePath "C:\Windows\System32\WDSUtil.exe" -ArgumentList "/Set-Server /UseDHcpPorts:No" -Wait
         Start-Process -FilePath "C:\Windows\System32\WDSUtil.exe" -ArgumentList "/Set-Server /DHCPOption60:Yes" -Wait
         Start-Sleep -Seconds 10
-        #Bind the Ethernet Adapter so that it can process DHCP Requests
         Set-DhcpServerv4Binding -BindingState $True -InterfaceAlias "Ethernet" | Out-Null
 
         If ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain) {
-            #Machine is a domain member, needs to be authorised in AD
             Add-DHCPServerinDC
         }
                
@@ -143,11 +141,9 @@ function Import-MDTOperatingSystem {
             1. Function Supports either an ISO Path, or AutomatedLab.OperatingSystem Object using Parameter Sets
             2. OS' are imported whereby the on-disk file structure under the MDT Deployment Share\Operating Systems is the same as it appears in deployment workbench.
             3. Where an install.wim file contains mutiple operating systems (for example server .ISO's), ALL available images will be created in MDT. This means for a server import, you may end up with 4 or more available Operating Systems
-            4. Feature Ehancement: Currently routine requires a single [AutomatedLab.OperatingSystem] object to be passed, enhane routine to either import multiple OS's or only import the first one
     #>
 
     param(
-        #Name of the computer to run this on
         [Parameter(Mandatory)]
         [string]$ComputerName,
 
@@ -155,50 +151,34 @@ function Import-MDTOperatingSystem {
         [Parameter(ParameterSetName="OperatingSystem")]
         [AutomatedLab.OperatingSystem]$OperatingSystem,
 
-        #ISO Path of the Operating System ISO to be loaded into MDT
         [Parameter(ParameterSetName="ISO")]
         [string]$IsoPath,          
 
-        #Friendly Name for the OS Folder as it will appear in MDT Deployment Workbench Heirachy
         [Parameter(Mandatory, ParameterSetName = "ISO")]
         [string]$IsoFriendlyName,
 
-        #Friendly Name for the OS Folder as it will appear in MDT Deployment Workbench Heirachy
         [Parameter(ParameterSetName = "OperatingSystem")]
         [string]$AlOsFriendlyName,
 
-        #Directory Path where the MDT Deployment Folder is located
         [Parameter(Mandatory)]
         [string]$DeploymentFolder
     )
 
-    #Ensure that no other ISO images are mounted
     Dismount-LabIsoImage -ComputerName $ComputerName
 
-    #If we were passed an ISO path, use that
     if ($IsoPath) {
-        #Mount the ISO into the VM
-        #Fix provied by @randree to use passed back mount object which contains the drive letter
         $MountedOSImage = Mount-LabIsoImage -IsoPath $IsoPath -ComputerName $ComputerName -PassThru
-    
     } else {
-        #Mount the ISO Referenced by the ISOPath property of the AutomatedLab.OperatingSystem Type
-        #Fix provied by @randree to use passed back mount object which contains the drive letter
         $MountedOSImage = Mount-LabIsoImage -IsoPath $OperatingSystem.ISOPath -ComputerName $ComputerName -PassThru
     }
 
-    #Work out what the friendly name for the OS should be
     if ($IsoFriendlyName) {
-        #We were passed a friendly name when an ISO was specified, use that
         $OsFriendlyName = $IsoFriendlyName
     } else {
-        #We were passed an AutomatedLab.OperatingSystem object
         if ($AlOsFriendlyName) {
-            #If a FriendlyName was also passed, use that
             $OsFriendlyName = $AlOsFriendlyName
         }
         else {
-            #Otherwise, grab the one from within the AutomatedLab.OperatingSystem object
             $OsFriendlyName = $OperatingSystem.OperatingSystemName
         }
     }
@@ -206,15 +186,12 @@ function Import-MDTOperatingSystem {
     Invoke-LabCommand -ActivityName "Import Operating System - $OsFriendlyName" -ComputerName $ComputerName -ScriptBlock {
         param  
         (
-            #Source Hard drive in the form D:, must be local to the VM
             [Parameter(Mandatory)]
             [string]$OsSourceDrive,
 
-            #Location of the MDT Deployment Share
             [Parameter(Mandatory)]
             [string]$DeploymentFolder,
 
-            #Friendly Name for the OS as it will appear in deployment workbench and the file system
             [Parameter(Mandatory)]
             [string]$OsFriendlyName
         )
@@ -225,14 +202,10 @@ function Import-MDTOperatingSystem {
             New-PSDrive -Name "DS001" -PSProvider MDTProvider -Root $DeploymentFolder | Out-Null          
         }
 
-        #Create a folder in the deployment share to hold our OS files
         New-Item -path 'DS001:\Operating Systems' -enable 'True' -Name $OsFriendlyName -Comments '' -ItemType 'folder' | Out-Null
         
-        #Import the operating system.
         Import-MDTOperatingSystem -path "DS001:\Operating Systems\$OsFriendlyName" -SourcePath "$OsSourceDrive\" -DestinationFolder $OsFriendlyName | Out-Null
 
-        #TEST: See if this resolves the timing issue calling this function in rapid succession
-        #SYMPTOM: Only the last set of operating systems are listed in deployment workbench, even though all OS source files are present
         Start-Sleep -Seconds 30
     
     } -ArgumentList $MountedOSImage.DriveLetter, $DeploymentFolder, $OsFriendlyName -PassThru
@@ -268,8 +241,6 @@ function Import-MDTApplications {
             1. A Start-Sleep has been added to pause after each application import.  A race condition was being experienced that meant applications were not being registered correctly
             2. Applications are imported whereby the on-disk file structure under the MDT Deployment Share\Applications is the same as it appears in deployment workbench. This has required a parameter setting under the 
             -DownloadFolder for Import-MDTApplication that includes a subfolder.  This does function correctly, however the Deployment Workbench user interface will NOT allow this (bug in the DW GUI validation)
-            2. Feature Enhancement: If an .ISO file is defined on the download path, assume this file should be mounted using Mount-LabIsoImage and files copied from there (good example, Office 2016)
-            3. Feature Enhancement: Overloaded verison of this function that can import a single application
     #>
 
     param(
@@ -285,10 +256,8 @@ function Import-MDTApplications {
 
     [XML]$MDTApps = Get-Content $XMLFilePath
     
-    #Download the files referenced in the XML File, copy and install
     foreach ($App in $MDTApps.Applications.Application)
     {
-        #Check if the App Should be Installed to the MDT Server
         if ($App.ImportApp -eq "True") {
             #Set the base path for downloaded apps to be in the SoftwarePackages Folder
             $downloadTargetFolder = Join-Path -Path $labSources -ChildPath SoftwarePackages
@@ -297,7 +266,6 @@ function Import-MDTApplications {
 
             if (-not ([string]::IsNullOrEmpty($App.DownloadPath)))
             {
-                #Assume the file needs to be downloaded from the internet 
                 New-Item -Path $downloadTargetFolder -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
                 try {
                     Get-LabInternetFile -Uri $App.DownloadPath -Path $downloadTargetFolder -ErrorAction Stop
@@ -307,15 +275,12 @@ function Import-MDTApplications {
                 }
             }
             else {
-                #No Download Path Specified, check to make sure the root folder exists
                 if (-not (Test-Path -Path $downloadTargetFolder)){
-                    #Error, couldnt locate the source directory, throw error
                     Write-LogFunctionExitWithError -Message "Application '$($App.Name)' not located at $downloadTargetFolder, exiting"
                     return
                 }
             }
 
-            #Copy the newly downloaded file into the VM, retaining the same directory structure
             $destinationFolderName = Join-Path -Path 'C:\Install' -ChildPath $App.AppPath
             Copy-LabFileItem -Path $downloadTargetFolder -DestinationFolderPath $destinationFolderName -ComputerName $ComputerName -Recurse
 
@@ -329,25 +294,20 @@ function Import-MDTApplications {
                     $Folder
                 )
        
-                #Which folder contains the source content
                 $SourcePath = Join-Path -Path C:\Install -ChildPath $App.AppPath
                 $SourcePath = Join-Path -Path $SourcePath -ChildPath $App.Name
             
                 Import-Module "C:\Program Files\Microsoft Deployment Toolkit\bin\MicrosoftDeploymentToolkit.psd1"
             
-                #Establish a connection to the Deployment Folder
                 if (-not (Get-PSDrive DS001 -ErrorAction SilentlyContinue)) {
                     New-PSDrive -Name DS001 -PSProvider MDTProvider -Root $Folder | Out-Null
                 }
             
-                #Set up the App Working Directory and Destination
                 $AppWorkingDirectory = ".\Applications\$($App.AppPath)\$($App.Name)"
                 $AppDestinationFolder = "$($App.AppPath)\$($App.Name)"
  
-                #Create a folder in the deployment share to hold the Application group
                 New-Item -path DS001:\Applications -enable True -Name $($App.AppPath) -Comments '' -ItemType 'folder' -ErrorAction SilentlyContinue | Out-Null
 
-                #Actually Import the application into MDT
                 Import-MDTApplication -path "DS001:\Applications\$($App.AppPath)" -enable True -Name $($App.Name) -ShortName $($App.ShortName) -Version $($App.AppVersion) -Publisher $($App.Publisher) -Language $($App.Language) -CommandLine $($App.CommandLine) -WorkingDirectory $AppWorkingDirectory -ApplicationSourcePath $SourcePath -DestinationFolder $AppDestinationFolder | Out-Null
 
                 #Sleep between importing applications, otherwise apps dont get written to the Applications.XML file correctly
@@ -356,7 +316,6 @@ function Import-MDTApplications {
             } -ArgumentList $App, $DeploymentFolder -PassThru   
 
         } else {
-            #Asked to not import the application, write a message to the screen
             Write-ScreenInfo "Application '$($App.Name)' not being imported"
         }
 
@@ -395,12 +354,8 @@ function Install-MDT {
             .OUTPUTS
             Nil Output
             .NOTES
-            1. ADK must be downloaded manually, and placed in a subfolder called ADK within $labsources\SoftwarePackages. The function checks for the existence of the folder
-            and errors out if it is not found. Due to ADK requiring a bootstrap download and then seperate packages download, the AL Get-LabInternetFile is not directly usable for this task (unless I'm mistaken)
-            2. MDT Install files are downloaded from the referenced $MDTDownloadLocation URL, if new version of MDT is released, this URL will need to be changed (Tested with version 8450 released 22/12/17, URL didnt change from v8443)
-            3. As at AL 4.5.0 - Install-LabWindowsFeature does not support a -IncludeManagementTools switch, hence .NET is installed using the AL cmdlet as it mounts the ISO to access
-            the correct files. WDS is installed using a standard Invoke-LabCommand to allow the -IncludeManagementTools switch to be passed
-            4. Start-Sleep commands are in the code to prevent some race conditions that occured during development.  Later fix to find the specific wait condition (ie service startup) and build more smarts into routine
+            1. MDT Install files are downloaded from the referenced $MDTDownloadLocation URL, if new version of MDT is released, this URL will need to be changed (Tested with version 8450 released 22/12/17, URL didnt change from v8443)
+            2. Start-Sleep commands are in the code to prevent some race conditions that occured during development. 
     #>
     param(
         [Parameter(Mandatory)]
@@ -423,8 +378,6 @@ function Install-MDT {
    
     $mdtDownloadLocation = 'https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi'
    
-    #Bring all available disks online (this is to cater for the situation a secondary drive has been specified in the machine configuration)
-    #For some reason, cant make the disk online and RW in the one command, need to perform two seperate actions
     Invoke-LabCommand -ActivityName 'Bring Disks Online' -ComputerName $ComputerName -ScriptBlock {
         $dataVolume = Get-Disk | Where-Object -Property OperationalStatus -eq Offline
         $dataVolume | Set-Disk -IsOffline $false
@@ -433,9 +386,13 @@ function Install-MDT {
    
     $downloadTargetFolder = Join-Path -Path $labSources -ChildPath SoftwarePackages
    
-    #Check for existance of ADK Installation Files
     if (-not (Test-Path -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADK'))) {
         Write-LogFunctionExitWithError -Message "ADK Installation files not located at '$(Join-Path -Path $downloadTargetFolder -ChildPath 'ADK')'"
+        return
+    }
+
+    if (-not (Test-Path -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADKWinPEAddons'))) {
+        Write-LogFunctionExitWithError -Message "ADK Windows PE Addons Installation files not located at '$(Join-Path -Path $downloadTargetFolder -ChildPath 'ADKWinPEAddons')'"
         return
     }
        
@@ -445,19 +402,25 @@ function Install-MDT {
     $mdtDownloadURL = New-Object System.Uri($mdtDownloadLocation)
     $mdtInstallFileName = $mdtDownloadURL.Segments[$mdtDownloadURL.Segments.Count-1]
    
-    Write-ScreenInfo "Copying MDT Install Files to server $ComputerName..."
+    Write-ScreenInfo "Copying MDT Install Files to server '$ComputerName'..."
     Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $mdtInstallFileName) -DestinationFolderPath C:\Install -ComputerName $ComputerName
    
-    Write-ScreenInfo "Copying ADK Install Files to server $ComputerName..."
+    Write-ScreenInfo "Copying ADK Install Files to server '$ComputerName'..."
     Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADK') -DestinationFolderPath C:\Install -ComputerName $ComputerName -Recurse
+
+    Write-ScreenInfo "Copying ADK Windows PE Addons Install Files to server '$ComputerName'..."
+    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADKWinPEAddons') -DestinationFolderPath C:\Install -ComputerName $ComputerName -Recurse
    
-    Write-ScreenInfo "Installing ADK on server '$ComputerName'..."
-    Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ADK\adksetup.exe -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner'
+    Write-ScreenInfo "Installing ADK and on server '$ComputerName'..."
+    Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ADK\adksetup.exe -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner'
+
+    Write-ScreenInfo "Installing ADK Windows PE Addons on server '$ComputerName'..."
+    Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ADKWinPEAddons\adkwinpesetup.exe -CommandLine '/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment'
    
     Install-LabWindowsFeature -ComputerName $ComputerName -FeatureName NET-Framework-Core
     Install-LabWindowsFeature -ComputerName $ComputerName -FeatureName WDS
    
-    Write-ScreenInfo "Installing 'MDT' on server $ComputerName..."
+    Write-ScreenInfo "Installing 'MDT' on server '$ComputerName'..."
     Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "C:\Install\$mdtInstallFileName" -CommandLine '/qb'
    
     Invoke-LabCommand -ActivityName 'Configure MDT' -ComputerName $ComputerName -ScriptBlock {
@@ -478,17 +441,14 @@ function Install-MDT {
         )
 
         if (-not (Get-LocalUser -Name $InstallUserID -ErrorAction SilentlyContinue)) {
-            #Account doesnt exist on the machine, create it.    
             New-LocalUser -Name $InstallUserID -Password ($InstallPassword | ConvertTo-SecureString -AsPlainText -Force) -Description 'Deployment Account' -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword
             Add-LocalGroupMember -Group 'Users' -Member $InstallUserID
         }   
    
-        #Create Folder for Deployment Share
         if (-not (Get-Item -Path $DeploymentFolder -ErrorAction SilentlyContinue)) {
             New-Item -Path $DeploymentFolder -Type Directory | Out-Null
         }
 
-        #Create MDT Deployment Share
         if (-not (Get-SmbShare -Name $Share -ErrorAction SilentlyContinue)) {
             New-SmbShare -Name $Share -Path $DeploymentFolder -ChangeAccess EVERYONE | Out-Null
         }
@@ -508,7 +468,7 @@ function Install-MDT {
    
         #Set up the BOOTSTRAP.INI file so we dont get prompted for passwords to connect to the share and the like.
         #Note: Need to do this before we generate the images, as the bootstrap.INI file ends up in the Boot Image.
-        #Discussion of avialble bootstrap.ini settings is located in the MDT toolkit reference at:
+        #Discussion of available bootstrap.ini settings is located in the MDT toolkit reference at:
         # https://technet.microsoft.com/en-us/library/dn781091.aspx
         $file = Get-Content -Path "$DeploymentFolder\Control\BootStrap.ini"
         $file += "DeployRoot=\\$ENV:COMPUTERNAME\$Share"
@@ -543,7 +503,6 @@ function Import-MDTTaskSequences {
         [Parameter(Mandatory)]
         [string]$ComputerName,
 
-        #Directory Path where the MDT Deployment Folder is located
         [Parameter(Mandatory)]
         [string]$DeploymentFolder,
 
@@ -585,7 +544,6 @@ function Import-MDTTaskSequences {
 
 Import-Lab -Name $data.Name -NoDisplay
 
-#Installs MDT and performs majority of configuration
 Install-MDT -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -DeploymentShare DeploymentShare$ -InstallUserID $InstallUserID -InstallPassword $InstallPassword
 #At this stage, MDT and WDS are installed and configured, however there are NO Operating Systems or applications available, plus DHCP still needs to be installed and configured
 
@@ -610,7 +568,6 @@ foreach ($operatingSystem in $OperatingSystems)
 
 Import-MDTTaskSequences -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -AdminPassword $InstallPassword
 
-#Install and activate DHCP and bind to the Ethernet adapter. This has been split out as it needs a bit more work if a lab is deployed with a domain controller with DHCP already available, and DHCP servers for domains require authorisation.
 #This version of the routine assumes that DHCP needs to be installed and configured on the MDT server, along with fixing up WDS to listen correctly on a machine with DHCP.
 #Note: No checking currently if the supplied DHCP scope ranges fall correctly within the AL network definition.
 Install-MDTDhcp -ComputerName $ComputerName
