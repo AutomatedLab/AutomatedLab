@@ -224,7 +224,7 @@
         DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
 
         #Azure
-        MinimumAzureModuleVersion              = '6.1.0'
+        MinimumAzureModuleVersion              = '1.0'
         DefaultAzureRoleSize                   = 'D'
 
         #Office

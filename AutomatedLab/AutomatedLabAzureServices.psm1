@@ -71,13 +71,13 @@ function New-LabAzureAppServicePlan
                 New-LabAzureRmResourceGroup -ResourceGroupNames $plan.ResourceGroup -LocationName $plan.Location
             }
 
-            if ((Get-AzureRmAppServicePlan -Name $plan.Name -ResourceGroupName $plan.ResourceGroup -ErrorAction SilentlyContinue))
+            if ((Get-AzAppServicePlan -Name $plan.Name -ResourceGroupName $plan.ResourceGroup -ErrorAction SilentlyContinue))
             {
                 Write-Error "The Azure Application Service Plan '$planName' does already exist in $($plan.ResourceGroup)"
                 return
             }
 
-            $plan = New-AzureRmAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
+            $plan = New-AzAppServicePlan -Name $plan.Name -Location $plan.Location -ResourceGroupName $plan.ResourceGroup -Tier $plan.Tier -NumberofWorkers $plan.NumberofWorkers -WorkerSize $plan.WorkerSize
 
             if ($plan)
             {
@@ -195,14 +195,14 @@ function New-LabAzureWebApp
                 New-LabAzureAppServicePlan -Name $app.ApplicationServicePlan
             }
 
-            $webApp = New-AzureRmWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.ApplicationServicePlan -ResourceGroupName $app.ResourceGroup
+            $webApp = New-AzWebApp -Name $app.Name -Location $app.Location -AppServicePlan $app.ApplicationServicePlan -ResourceGroupName $app.ResourceGroup
 
             if ($webApp)
             {
                 $webApp = [AutomatedLab.Azure.AzureRmService]::Create($webApp)
 
                 #Get app-level deployment credentials
-                $xml = [xml](Get-AzureRmWebAppPublishingProfile -Name $webApp.Name -ResourceGroupName $webApp.ResourceGroup -OutputFile null)
+                $xml = [xml](Get-AzWebAppPublishingProfile -Name $webApp.Name -ResourceGroupName $webApp.ResourceGroup -OutputFile null)
 
                 $publishProfile = [AutomatedLab.Azure.PublishProfile]::Create($xml.publishData.publishProfile)
                 $webApp.PublishProfiles = $publishProfile
@@ -358,11 +358,11 @@ function Remove-LabAzureWebApp
         }
         else
         {
-            $s = Get-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction SilentlyContinue
+            $s = Get-AzWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction SilentlyContinue
 
             if ($s)
             {
-                $s | Remove-AzureRmWebApp -Force
+                $s | Remove-AzWebApp -Force
             }
 
             $lab.AzureResources.Services.Remove($service)
@@ -407,11 +407,11 @@ function Remove-LabAzureAppServicePlan
         }
         else
         {
-            $sp = Get-AzureRmAppServicePlan -Name $servicePlan.Name -ResourceGroupName $servicePlan.ResourceGroup -ErrorAction SilentlyContinue
+            $sp = Get-AzAppServicePlan -Name $servicePlan.Name -ResourceGroupName $servicePlan.ResourceGroup -ErrorAction SilentlyContinue
 
             if ($sp)
             {
-                $sp | Remove-AzureRmAppServicePlan -Force
+                $sp | Remove-AzAppServicePlan -Force
             }
             $lab.AzureResources.ServicePlans.Remove($servicePlan)
         }
@@ -466,7 +466,7 @@ function Start-LabAzureWebApp
         {
             try
             {
-                $s = Start-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
+                $s = Start-AzWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
                 $service.Merge($s, 'PublishProfiles')
 
                 if ($PassThru)
@@ -530,7 +530,7 @@ function Stop-LabAzureWebApp
         {
             try
             {
-                $s = Stop-AzureRmWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
+                $s = Stop-AzWebApp -Name $service.Name -ResourceGroupName $service.ResourceGroup -ErrorAction Stop
                 $service.Merge($s, 'PublishProfiles')
 
                 if ($PassThru)
@@ -581,7 +581,7 @@ function Get-LabAzureWebAppStatus
             Write-Error 'No definitions imported, so there is nothing to do. Please use Import-Lab first'
             return
         }
-        $allAzureWebApps = Get-AzureRmWebApp
+        $allAzureWebApps = Get-AzWebApp
         if ($PSCmdlet.ParameterSetName -eq 'All')
         {
             $Name = $lab.AzureResources.Services.Name
