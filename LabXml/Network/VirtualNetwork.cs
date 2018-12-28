@@ -18,6 +18,8 @@ namespace AutomatedLab
         private List<string> connectToVnets = new List<string>();
         private List<IPAddress> dnsServers = new List<IPAddress>();
         private List<IPAddress> issuedIpAddresses = new List<IPAddress>();
+        private AutomatedLab.NetworkAdapter managementAdapter = new AutomatedLab.NetworkAdapter();
+        private bool enableManagementAdapter;
 
         public List<AzureSubnet> Subnets
         {
@@ -83,9 +85,23 @@ namespace AutomatedLab
             set { issuedIpAddresses = value; }
         }
 
+        public AutomatedLab.NetworkAdapter ManagementAdapter
+        {
+            get { return managementAdapter; }
+            set { managementAdapter = value; }
+        }
+
+        [XmlAttribute]
+        public bool EnableManagementAdapter
+        {
+            get { return enableManagementAdapter; }
+            set { enableManagementAdapter = value; }
+        }
+
         public VirtualNetwork()
         {
             SwitchType = SwitchType.Internal;
+            enableManagementAdapter = true;
         }
 
         public override string ToString()
