@@ -23,6 +23,7 @@ namespace AutomatedLab
         private bool enableLMHostsLookup;
         private NetBiosOptions netBIOSOptions;
         private bool useDhcp;
+        private int accessVLANID;
 
         public VirtualNetwork VirtualSwitch
         {
@@ -123,6 +124,12 @@ namespace AutomatedLab
         {
             get { return useDhcp; }
             set { useDhcp = value; }
+        }
+
+        public int AccessVLANID
+        {
+            get { return accessVLANID; }
+            set { accessVLANID = value; }
         }
 
         public NetworkAdapter()
