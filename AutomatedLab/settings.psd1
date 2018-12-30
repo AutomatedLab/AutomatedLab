@@ -185,6 +185,7 @@
         Timeout_StartLabMachine_Online         = 60
         Timeout_RestartLabMachine_Shutdown     = 30
         Timeout_StopLabMachine_Shutdown        = 30
+        Timeout_TestPortInSeconds              = 2
         
         Timeout_InstallLabCAInstallation       = 40
         

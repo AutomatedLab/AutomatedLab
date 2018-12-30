@@ -2656,6 +2656,7 @@ function New-LabPSSession
 
         #Due to a problem in Windows 10 not being able to reach VMs from the host
         netsh.exe interface ip delete arpcache | Out-Null
+        $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
     }
 
     process
@@ -2803,7 +2804,7 @@ function New-LabPSSession
                 netsh.exe interface ip delete arpcache | Out-Null
 
                 Write-Verbose "Testing port $($param.Port) on computer '$($param.ComputerName)'"
-                $portTest = Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCP
+                $portTest = Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCP -TcpTimeout $testPortTimeout
                 if ($portTest.Open)
                 {
                     Write-Verbose 'Port was open, trying to create the session'

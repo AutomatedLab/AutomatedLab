@@ -237,8 +237,4 @@
         'AutomatedLabVirtualMachines.psm1',
         'AutomatedLabVMWare.psm1'
     )
-    
-    PrivateData            = @{
-        
-    }
 }
