@@ -243,8 +243,8 @@
         dotnet472DownloadLink                  = 'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
 
         # C++ redist
-        cppredist64                            = 'https://aka.ms/vs/15/release/vc_redist.x64.exe'
-        cppredist32                            = 'https://aka.ms/vs/15/release/vc_redist.x86.exe'
+        cppredist64_2017                            = 'https://aka.ms/vs/15/release/vc_redist.x64.exe'
+        cppredist32_2017                            = 'https://aka.ms/vs/15/release/vc_redist.x86.exe'
 
         #SQL Server 2016 Management Studio
         Sql2016ManagementStudio                = 'https://go.microsoft.com/fwlink/?LinkID=840946'
