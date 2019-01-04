@@ -93,6 +93,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLa
 		AutomatedLab\AutomatedLabTfs.psm1 = AutomatedLab\AutomatedLabTfs.psm1
 		AutomatedLab\AutomatedLabVirtualMachines.psm1 = AutomatedLab\AutomatedLabVirtualMachines.psm1
 		AutomatedLab\AutomatedLabVMWare.psm1 = AutomatedLab\AutomatedLabVMWare.psm1
+		AutomatedLab\settings.psd1 = AutomatedLab\settings.psd1
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ISOs", "ISOs", "{02DDCCD0-7EAA-450B-AE8A-67D54E8EF30C}"

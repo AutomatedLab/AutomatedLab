@@ -63,6 +63,4 @@
         'Set-LabLocalVirtualMachineDiskAuto'
         'Test-LabDefinition'
     )
-
-    PrivateData = @{ }
 }
