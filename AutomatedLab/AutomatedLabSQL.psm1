@@ -113,11 +113,11 @@ GO
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ redist on machine '$($machinesBatch -join ', ')'" -Type Verbose
-            $cppRedist64_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist64_2017) -Path $labsources\SoftwarePackages -PassThru
-            $cppredist32_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist32_2017) -Path $labsources\SoftwarePackages -PassThru
+            $cppRedist64_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist64_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x64_2017.exe -PassThru
+            $cppredist32_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist32_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x86_2017.exe -PassThru
             $cppJobs = @()
-            $cppJobs += Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
-            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppJobs += Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
 
             Write-ScreenInfo -Message "Waiting for pre-requisite Visual C++ redistributable to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $cppJobs -Timeout 10 -NoNewLine -ProgressIndicator 5 -NoDisplay
