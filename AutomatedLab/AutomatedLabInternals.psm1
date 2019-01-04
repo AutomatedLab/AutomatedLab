@@ -600,7 +600,7 @@ function Get-LabInternetFile
             Uri = $Uri
             Path = $Path
             FileName = $FileName
-            FullName = Join-Path -Path $Path -ChildPath $uri2.Segments[$uri2.Segments.Count-1]
+            FullName = Join-Path -Path $Path -ChildPath $FileName
             Length = $result.ContentLength
         }
     }
