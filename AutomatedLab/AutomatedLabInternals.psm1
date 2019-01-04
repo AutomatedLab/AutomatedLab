@@ -439,6 +439,8 @@ function Get-LabInternetFile
         [Parameter(Mandatory = $true)]
         [string]$Path,
 
+        [string]$FileName,
+
         [switch]$Force,
 
         [switch]$NoDisplay,
@@ -454,6 +456,8 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
+            
+            [string]$FileName,
 
             [switch]$NoDisplay,
 
@@ -461,11 +465,14 @@ function Get-LabInternetFile
         )
 
         $internalUri = New-Object System.Uri($Uri)
-        $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        if (-not $FileName)
+        {
+            $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        }
 
         if (Test-Path -Path $Path -PathType Container)
         {
-            $Path = Join-Path -Path $Path -ChildPath $fileName
+            $Path = Join-Path -Path $Path -ChildPath $FileName
         }
 
         if ((Test-Path -Path $Path) -and -not $Force)
