@@ -464,12 +464,6 @@ function Get-LabInternetFile
             [switch]$Force
         )
 
-        $internalUri = New-Object System.Uri($Uri)
-        if (-not $FileName)
-        {
-            $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-        }
-
         if (Test-Path -Path $Path -PathType Container)
         {
             $Path = Join-Path -Path $Path -ChildPath $FileName
@@ -575,6 +569,13 @@ function Get-LabInternetFile
 
     #TODO: This needs to go into config
     $offlineNode = $true
+    
+    if (-not $FileName)
+    {
+        $internalUri = New-Object System.Uri($Uri)
+        $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        $PSBoundParameters.FileName = $FileName
+    }
 
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
