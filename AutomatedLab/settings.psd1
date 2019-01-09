@@ -229,7 +229,7 @@
         DefaultAzureRoleSize                   = 'D'
 
         #Office
-        OfficeDeploymentTool                   = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_7614-3602.exe'
+        OfficeDeploymentTool                   = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_11107-33602.exe'
 
         #SysInternals
         SysInternalsUrl                        = 'https://technet.microsoft.com/en-us/sysinternals/bb842062'
