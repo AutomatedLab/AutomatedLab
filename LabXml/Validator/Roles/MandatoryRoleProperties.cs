@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Management.Automation;
 
 namespace AutomatedLab
 {
@@ -24,12 +25,14 @@ namespace AutomatedLab
                 foreach (var role in machine.Roles.Where(r => mandatoryRoleProperties.ContainsKey(r.Name.ToString())))
                 {
                     var mandatoryKeys = new List<string>();
-                    var keysFromModule = mandatoryRoleProperties[role.Name.ToString()];
+                    //var keysFromModule = mandatoryRoleProperties[role.Name.ToString()];
+                    var keysFromModule = ((object[])((PSObject)mandatoryRoleProperties[role.Name.ToString()]).BaseObject).Cast<string>().ToArray();
+
 
                     if (keysFromModule.GetType().IsArray)
-                        mandatoryKeys.AddRange(((object[])keysFromModule).Cast<string>());
+                        mandatoryKeys.AddRange(keysFromModule);
                     else
-                        mandatoryKeys.Add((string)keysFromModule);
+                        mandatoryKeys.Add(keysFromModule.FirstOrDefault());
 
 
                     foreach (string mandatoryRoleProperty in mandatoryKeys)
