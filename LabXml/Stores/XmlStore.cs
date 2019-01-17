@@ -7,28 +7,49 @@ namespace AutomatedLab
     [Serializable]
     public class XmlStore<T> : ICloneable where T : class
     {
-        public static T Import(byte[] data)
+        public void ExportToRegistry(string keyName, string valueName)
         {
-            var serializer = new XmlSerializer(typeof(T));
-            var stream = new MemoryStream(data);
+            var serializer = new XmlSerializer(typeof(XmlStore<T>));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
 
-            var items = (T)serializer.Deserialize(stream);
+            var sw = new StringWriter();
 
-            stream.Close();
+            //makes sure the key exists and does nothing if does already exist
+            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
+            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
 
-            return items;
+            serializer.Serialize(sw, this, xmlNamespace);
+
+            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
+            key.Close();
         }
 
         public byte[] Export()
         {
             var serializer = new XmlSerializer(typeof(T));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
             var stream = new MemoryStream();
 
-            serializer.Serialize(stream, this);
+            serializer.Serialize(stream, this, xmlNamespace);
 
             stream.Close();
 
             return stream.ToArray();
+        }
+
+        public void Export(string path)
+        {
+            var serializer = new XmlSerializer(typeof(T));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
+
+            serializer.Serialize(fileStream, this, xmlNamespace);
+
+            fileStream.Close();
         }
 
         public static T Import(string path)
@@ -45,14 +66,16 @@ namespace AutomatedLab
             return item;
         }
 
-        public void Export(string path)
+        public static T Import(byte[] data)
         {
             var serializer = new XmlSerializer(typeof(T));
-            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
+            var stream = new MemoryStream(data);
 
-            serializer.Serialize(fileStream, this);
+            var items = (T)serializer.Deserialize(stream);
 
-            fileStream.Close();
+            stream.Close();
+
+            return items;
         }
 
         public static XmlStore<T> ImportFromRegistry(string keyName, string valueName)
@@ -79,22 +102,6 @@ namespace AutomatedLab
             sr.Close();
 
             return item;
-        }
-
-        public void ExportToRegistry(string keyName, string valueName)
-        {
-            var serializer = new XmlSerializer(typeof(XmlStore<T>));
-            var sw = new StringWriter();
-
-            //makes sure the key exists and does nothing if does already exist
-            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
-            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
-
-            serializer.Serialize(sw, this);
-
-            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
-            key.Close();
         }
 
         public object Clone()
