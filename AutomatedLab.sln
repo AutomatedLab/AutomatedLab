@@ -464,6 +464,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assets", "Assets", "{17D0AC
 		Assets\Automated-Lab_icon256.png = Assets\Automated-Lab_icon256.png
 		Assets\Automated-Lab_icon512.png = Assets\Automated-Lab_icon512.png
 		Assets\Automated-Lab_icon64.png = Assets\Automated-Lab_icon64.png
+		Assets\ProductKeys.xml = Assets\ProductKeys.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSiteDefaultContent", "WebSiteDefaultContent", "{F8AE4BA3-E199-4E0A-A236-75EF8AB9F3CE}"
