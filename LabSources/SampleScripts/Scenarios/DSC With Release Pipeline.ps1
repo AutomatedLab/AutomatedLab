@@ -9,7 +9,7 @@ $labName = 'DscReleasePipeline'
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
 
-Add-LabIsoImageDefinition -Name Tfs2018 -Path $labSources\ISOs\mu_team_foundation_server_2018_update_2_x64_dvd_12199703.iso
+Add-LabIsoImageDefinition -Name Tfs2018 -Path $labSources\ISOs\tfsserver2018.3.iso #https://visualstudio.microsoft.com/downloads/
 Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labSources\ISOs\en_sql_server_2016_standard_with_service_pack_1_x64_dvd_9540929.iso
 
 #make the network definition

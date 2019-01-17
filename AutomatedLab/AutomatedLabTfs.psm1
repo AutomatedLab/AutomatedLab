@@ -94,9 +94,9 @@ function Install-LabTeamFoundationServer
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
-		#TODO: SSL disabled because the worker complains:
-		#fatal: unable to access 'https://dsctfs01:8080/AutomatedLab/_git/DscWorkshop/': SSL certificate problem: unable to get local issuer certificate
-		#Git fetch failed with exit code: 128
+        #TODO: SSL disabled because the worker complains:
+        #fatal: unable to access 'https://dsctfs01:8080/AutomatedLab/_git/DscWorkshop/': SSL certificate problem: unable to get local issuer certificate
+        #Git fetch failed with exit code: 128
         #if (Get-LabIssuingCA)
         #{
         #    $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
