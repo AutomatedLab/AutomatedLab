@@ -1,4 +1,4 @@
-﻿New-LabDefinition -Name 'MDTLab2' -DefaultVirtualizationEngine HyperV
+﻿New-LabDefinition -Name MDTLab2 -DefaultVirtualizationEngine HyperV
 
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:ToolsPath' = "$labSources\Tools"
