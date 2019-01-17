@@ -1,185 +1,185 @@
 @{
     Settings = @{
-        "SubscribedProviders"                  = @(
-            "Toast"
+        SubscribedProviders                    = @(
+            'Toast'
         )
-        "NotificationProviders"                = @(
+        NotificationProviders                  = @(
             @{
-                "Ifttt" = @{
-                    "Key"       = "Your IFTTT key here"
-                    "EventName" = "The name of your IFTTT event"
+                Ifttt = @{
+                    Key       = 'Your IFTTT key here'
+                    EventName = 'The name of your IFTTT event'
                 }
             }
             @{
-                "Mail" = @{
-                    "Port"       = 25
-                    "SmtpServer" = "Your SMTP server here"
-                    "To"         = @(
-                        "Your recipient array here"
+                Mail = @{
+                    Port       = 25
+                    SmtpServer = 'Your SMTP server here'
+                    To         = @(
+                        'Your recipient array here'
                     )
-                    "From"       = "Your sender here"
-                    "Priority"   = "Normal"
-                    "CC"         = @(
-                        "Your CC array here"
+                    From       = 'Your sender here'
+                    Priority   = 'Normal'
+                    CC         = @(
+                        'Your CC array here'
                     )
                 }
             }
             @{
-                "Toast" = @{
-                    "Image" = "https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png"
+                Toast = @{
+                    Image = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/Automated-Lab_icon512.png'
                 }
             }
             @{
-                "Voice" = @{
-                    "Culture" = "en-us"
-                    "Age"     = "Senior"
-                    "Gender"  = "female"
+                Voice = @{
+                    Culture = 'en-us'
+                    Age     = 'Senior'
+                    Gender  = 'female'
                 }
             }
         )
-        "Logging"                              = @{
-            "TruncateLength" = 50
-            "TruncateTypes"  = @(
-                "System.Management.Automation.ScriptBlock"
+        Logging                                = @{
+            TruncateLength = 50
+            TruncateTypes  = @(
+                'System.Management.Automation.ScriptBlock'
             )
-            "DefaultFolder"  = $null
-            "DefaultName"    = "PSLog"
-            "Level"          = "All"
-            "Silent"         = $false
-            "AutoStart"      = $true
+            DefaultFolder  = $null
+            DefaultName    = 'PSLog'
+            Level          = 'All'
+            Silent         = $false
+            AutoStart      = $true
         }
-        "MachineFileName"                      = "Machines.xml"
-        "DiskFileName"                         = "Disks.xml"
-        "LabFileName"                          = "Lab.xml"        
+        MachineFileName                        = 'Machines.xml'
+        DiskFileName                           = 'Disks.xml'
+        LabFileName                            = 'Lab.xml'
         DefaultAddressSpace                    = '192.168.10.0/24'
         ProductKeyFileName                     = 'ProductKeys.xml'
         ProductKeyCustomFileName               = 'ProductKeysCustom.xml'
         ProductKeyFileLink                     = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
-        "ValidationSettings"                   = @{
-            "ValidRoleProperties"     = @{
-                "Orchestrator2012" = @(
-                    "DatabaseServer"
-                    "DatabaseName"
-                    "ServiceAccount"
-                    "ServiceAccountPassword"
+        ValidationSettings                     = @{
+            ValidRoleProperties     = @{
+                Orchestrator2012 = @(
+                    'DatabaseServer'
+                    'DatabaseName'
+                    'ServiceAccount'
+                    'ServiceAccountPassword'
                 )
-                "DC"               = @(
-                    "IsReadOnly"
-                    "SiteName"
-                    "SiteSubnet"
+                DC               = @(
+                    'IsReadOnly'
+                    'SiteName'
+                    'SiteSubnet'
                 )
-                "CaSubordinate"    = @(
-                    "ParentCA"
-                    "ParentCALogicalName"
-                    "CACommonName"
-                    "CAType"
-                    "KeyLength"
-                    "CryptoProviderName"
-                    "HashAlgorithmName"
-                    "DatabaseDirectory"
-                    "LogDirectory"
-                    "ValidityPeriod"
-                    "ValidityPeriodUnits"
-                    "CertsValidityPeriod"
-                    "CertsValidityPeriodUnits"
-                    "CRLPeriod"
-                    "CRLPeriodUnits"
-                    "CRLOverlapPeriod"
-                    "CRLOverlapUnits"
-                    "CRLDeltaPeriod"
-                    "CRLDeltaPeriodUnits"
-                    "UseLDAPAIA"
-                    "UseHTTPAIA"
-                    "AIAHTTPURL01"
-                    "AIAHTTPURL02"
-                    "AIAHTTPURL01UploadLocation"
-                    "AIAHTTPURL02UploadLocation"
-                    "UseLDAPCRL"
-                    "UseHTTPCRL"
-                    "CDPHTTPURL01"
-                    "CDPHTTPURL02"
-                    "CDPHTTPURL01UploadLocation"
-                    "CDPHTTPURL02UploadLocation"
-                    "InstallWebEnrollment"
-                    "InstallWebRole"
-                    "CPSURL"
-                    "CPSText"
-                    "InstallOCSP"
-                    "OCSPHTTPURL01"
-                    "OCSPHTTPURL02"
-                    "DoNotLoadDefaultTemplates"
+                CaSubordinate    = @(
+                    'ParentCA'
+                    'ParentCALogicalName'
+                    'CACommonName'
+                    'CAType'
+                    'KeyLength'
+                    'CryptoProviderName'
+                    'HashAlgorithmName'
+                    'DatabaseDirectory'
+                    'LogDirectory'
+                    'ValidityPeriod'
+                    'ValidityPeriodUnits'
+                    'CertsValidityPeriod'
+                    'CertsValidityPeriodUnits'
+                    'CRLPeriod'
+                    'CRLPeriodUnits'
+                    'CRLOverlapPeriod'
+                    'CRLOverlapUnits'
+                    'CRLDeltaPeriod'
+                    'CRLDeltaPeriodUnits'
+                    'UseLDAPAIA'
+                    'UseHTTPAIA'
+                    'AIAHTTPURL01'
+                    'AIAHTTPURL02'
+                    'AIAHTTPURL01UploadLocation'
+                    'AIAHTTPURL02UploadLocation'
+                    'UseLDAPCRL'
+                    'UseHTTPCRL'
+                    'CDPHTTPURL01'
+                    'CDPHTTPURL02'
+                    'CDPHTTPURL01UploadLocation'
+                    'CDPHTTPURL02UploadLocation'
+                    'InstallWebEnrollment'
+                    'InstallWebRole'
+                    'CPSURL'
+                    'CPSText'
+                    'InstallOCSP'
+                    'OCSPHTTPURL01'
+                    'OCSPHTTPURL02'
+                    'DoNotLoadDefaultTemplates'
                 )
-                "Office2016"       = "SharedComputerLicensing"
-                "DSCPullServer"    = @(
-                    "DoNotPushLocalModules"
-                    "DatabaseEngine"
-                    "SqlServer"
-                    "DatabaseName"
+                Office2016       = 'SharedComputerLicensing'
+                DSCPullServer    = @(
+                    'DoNotPushLocalModules'
+                    'DatabaseEngine'
+                    'SqlServer'
+                    'DatabaseName'
                 )
-                "FirstChildDC"     = @(
-                    "ParentDomain"
-                    "NewDomain"
-                    "DomainFunctionalLevel"
-                    "SiteName"
-                    "SiteSubnet"
-                    "NetBIOSDomainName"
+                FirstChildDC     = @(
+                    'ParentDomain'
+                    'NewDomain'
+                    'DomainFunctionalLevel'
+                    'SiteName'
+                    'SiteSubnet'
+                    'NetBIOSDomainName'
                 )
-                "ADFS"             = @(
-                    "DisplayName"
-                    "ServiceName"
-                    "ServicePassword"
+                ADFS             = @(
+                    'DisplayName'
+                    'ServiceName'
+                    'ServicePassword'
                 )
-                "RootDC"           = @(
-                    "DomainFunctionalLevel"
-                    "ForestFunctionalLevel"
-                    "SiteName"
-                    "SiteSubnet"
-                    "NetBiosDomainName"
+                RootDC           = @(
+                    'DomainFunctionalLevel'
+                    'ForestFunctionalLevel'
+                    'SiteName'
+                    'SiteSubnet'
+                    'NetBiosDomainName'
                 )
-                "CaRoot"           = @(
-                    "CACommonName"
-                    "CAType"
-                    "KeyLength"
-                    "CryptoProviderName"
-                    "HashAlgorithmName"
-                    "DatabaseDirectory"
-                    "LogDirectory"
-                    "ValidityPeriod"
-                    "ValidityPeriodUnits"
-                    "CertsValidityPeriod"
-                    "CertsValidityPeriodUnits"
-                    "CRLPeriod"
-                    "CRLPeriodUnits"
-                    "CRLOverlapPeriod"
-                    "CRLOverlapUnits"
-                    "CRLDeltaPeriod"
-                    "CRLDeltaPeriodUnits"
-                    "UseLDAPAIA"
-                    "UseHTTPAIA"
-                    "AIAHTTPURL01"
-                    "AIAHTTPURL02"
-                    "AIAHTTPURL01UploadLocation"
-                    "AIAHTTPURL02UploadLocation"
-                    "UseLDAPCRL"
-                    "UseHTTPCRL"
-                    "CDPHTTPURL01"
-                    "CDPHTTPURL02"
-                    "CDPHTTPURL01UploadLocation"
-                    "CDPHTTPURL02UploadLocation"
-                    "InstallWebEnrollment"
-                    "InstallWebRole"
-                    "CPSURL"
-                    "CPSText"
-                    "InstallOCSP"
-                    "OCSPHTTPURL01"
-                    "OCSPHTTPURL02"
-                    "DoNotLoadDefaultTemplates"
+                CaRoot           = @(
+                    'CACommonName'
+                    'CAType'
+                    'KeyLength'
+                    'CryptoProviderName'
+                    'HashAlgorithmName'
+                    'DatabaseDirectory'
+                    'LogDirectory'
+                    'ValidityPeriod'
+                    'ValidityPeriodUnits'
+                    'CertsValidityPeriod'
+                    'CertsValidityPeriodUnits'
+                    'CRLPeriod'
+                    'CRLPeriodUnits'
+                    'CRLOverlapPeriod'
+                    'CRLOverlapUnits'
+                    'CRLDeltaPeriod'
+                    'CRLDeltaPeriodUnits'
+                    'UseLDAPAIA'
+                    'UseHTTPAIA'
+                    'AIAHTTPURL01'
+                    'AIAHTTPURL02'
+                    'AIAHTTPURL01UploadLocation'
+                    'AIAHTTPURL02UploadLocation'
+                    'UseLDAPCRL'
+                    'UseHTTPCRL'
+                    'CDPHTTPURL01'
+                    'CDPHTTPURL02'
+                    'CDPHTTPURL01UploadLocation'
+                    'CDPHTTPURL02UploadLocation'
+                    'InstallWebEnrollment'
+                    'InstallWebRole'
+                    'CPSURL'
+                    'CPSText'
+                    'InstallOCSP'
+                    'OCSPHTTPURL01'
+                    'OCSPHTTPURL02'
+                    'DoNotLoadDefaultTemplates'
                 )
             }
-            "MandatoryRoleProperties" = @{
-                "ADFSProxy" = @(
-                    "AdfsFullName"
-                    "AdfsDomainName"
+            MandatoryRoleProperties = @{
+                ADFSProxy = @(
+                    'AdfsFullName'
+                    'AdfsDomainName'
                 )
             }
         }
@@ -225,7 +225,7 @@
         MacAddressPrefix                       = '0017FB'
 
         #Host Settings
-        DiskDeploymentInProgressPath           = "C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt"
+        DiskDeploymentInProgressPath           = 'C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt'
 
         #Azure
         MinimumAzureModuleVersion              = '1.0'
@@ -274,33 +274,33 @@
         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
 
         AzureLocationsUrls                     = @{
-            "West Europe"         = "speedtestwe"
-            "Southeast Asia"      = "speedtestsea" 
-            "East Asia"           = "speedtestea"
-            "North Central US"    = "speedtestnsus"
-            "North Europe"        = "speedtestne"
-            "South Central US"    = "speedtestscus"
-            "West US"             = "speedtestwus"
-            "East US"             = "speedtesteus"
-            "Japan East"          = "speedtestjpe"
-            "Japan West"          = "speedtestjpw"
-            "Brazil South"        = "speedtestbs"
-            "Central US"          = "speedtestcus"
-            "East US 2"           = "speedtesteus2"
-            "Australia Southeast" = "mickmel"
-            "Australia East"      = "micksyd"
-            "West UK"             = "speedtestukw"
-            "South UK"            = "speedtestuks"
-            "Canada Central"      = "speedtestcac"
-            "Canada East"         = "speedtestcae"
-            "West US 2"           = "speedtestwestus2"
-            "West India"          = "speedtestwestindia"
-            "East India"          = "speedtesteastindia"
-            "Central India"       = "speedtestcentralindia"
-            "Korea Central"       = "speedtestkoreacentral"
-            "Korea South"         = "speedtestkoreasouth"
-            "West Central US"     = "speedtestwestcentralus"
-            "France Central"      = "speedtestfrc"
+            'West Europe'         = 'speedtestwe'
+            'Southeast Asia'      = 'speedtestsea'
+            'East Asia'           = 'speedtestea'
+            'North Central US'    = 'speedtestnsus'
+            'North Europe'        = 'speedtestne'
+            'South Central US'    = 'speedtestscus'
+            'West US'             = 'speedtestwus'
+            'East US'             = 'speedtesteus'
+            'Japan East'          = 'speedtestjpe'
+            'Japan West'          = 'speedtestjpw'
+            'Brazil South'        = 'speedtestbs'
+            'Central US'          = 'speedtestcus'
+            'East US 2'           = 'speedtesteus2'
+            'Australia Southeast' = 'mickmel'
+            'Australia East'      = 'micksyd'
+            'West UK'             = 'speedtestukw'
+            'South UK'            = 'speedtestuks'
+            'Canada Central'      = 'speedtestcac'
+            'Canada East'         = 'speedtestcae'
+            'West US 2'           = 'speedtestwestus2'
+            'West India'          = 'speedtestwestindia'
+            'East India'          = 'speedtesteastindia'
+            'Central India'       = 'speedtestcentralindia'
+            'Korea Central'       = 'speedtestkoreacentral'
+            'Korea South'         = 'speedtestkoreasouth'
+            'West Central US'     = 'speedtestwestcentralus'
+            'France Central'      = 'speedtestfrc'
         }
 
         SupportGen2VMs                         = $true
