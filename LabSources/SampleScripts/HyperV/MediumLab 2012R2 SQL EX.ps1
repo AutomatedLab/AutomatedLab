@@ -21,8 +21,8 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:IsDomainJoined'= $true
-	'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
-	'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
+    'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
+    'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
     'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
     'Add-LabMachineDefinition:DomainName'= 'child1.test2.net'
 }

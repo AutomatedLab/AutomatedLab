@@ -1,7 +1,7 @@
 #The is almost the same like '05 SQL Server and client, domain joined.ps1' but installs a Certificate Authority instead
 #of a SQL Server. The CA is installed with standard settings. Customizing the CA installation will be shown later.
 
-New-LabDefinition -Name 'Lab1' -DefaultVirtualizationEngine HyperV
+New-LabDefinition -Name Lab1CA1 -DefaultVirtualizationEngine HyperV
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{

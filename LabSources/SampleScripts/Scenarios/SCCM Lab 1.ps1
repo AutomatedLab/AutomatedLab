@@ -1,6 +1,6 @@
 #This lab installs the SCCM role (1702). All required resources except the SQL Server ISO are downloaded during the deployment.
 
-New-LabDefinition -Name 'SccmLab1' -DefaultVirtualizationEngine HyperV
+New-LabDefinition -Name SccmLab1 -DefaultVirtualizationEngine HyperV
 
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:ToolsPath' = "$labSources\Tools"
