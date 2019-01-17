@@ -5,7 +5,7 @@
 # Refer to the introduction script '11 ISO Offline Patching.ps1' for creating a new ISO that contains patches or install
 # it it with Install-LabSoftwarePackage like below.
 
-New-LabDefinition -Name 'LabEx2016' -DefaultVirtualizationEngine HyperV
+New-LabDefinition -Name LabEx2016 -DefaultVirtualizationEngine HyperV
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
