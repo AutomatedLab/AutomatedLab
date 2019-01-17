@@ -454,7 +454,9 @@ function Copy-LabFileItem
 
         [bool]$FallbackToPSSession = $true,
 
-        [bool]$UseAzureLabSourcesOnAzureVm = $true
+        [bool]$UseAzureLabSourcesOnAzureVm = $true,
+        
+        [switch]$PassThru
     )
 
     Write-LogFunctionEntry
@@ -504,9 +506,10 @@ function Copy-LabFileItem
                     continue
                 }
 
+                $session = New-LabPSSession -ComputerName $machine
                 foreach ($p in $Path)
                 {
-                    $session = New-LabPSSession -ComputerName $machine
+                    
                     $destination = if (-not $DestinationFolderPath)
                     {
                         'C:\'
@@ -515,7 +518,18 @@ function Copy-LabFileItem
                     {
                         $DestinationFolderPath
                     }
-                    Send-Directory -SourceFolderPath $p -Session $session -DestinationFolderPath $destination
+                    try
+                    {
+                        Send-Directory -SourceFolderPath $p -Session $session -DestinationFolderPath $destination
+                        if ($PassThru)
+                        {
+                            $destination
+                        }
+                    }
+                    catch
+                    {
+                        Write-Error -ErrorRecord $_
+                    }
                 }
             }
         }
@@ -548,25 +562,39 @@ function Copy-LabFileItem
     foreach ($machine in $connectedMachines.GetEnumerator())
     {
         Write-Debug -Message "Starting copy job for machine '$($machine.Name)'..."
-
+        
         if ($DestinationFolderPath)
         {
             $drive = "$($machine.Value):"
-            $DestinationFolderPath = Split-Path -Path $DestinationFolderPath -NoQualifier
-            $DestinationFolderPath = Join-Path -Path $drive -ChildPath $DestinationFolderPath
+            $newDestinationFolderPath = Split-Path -Path $DestinationFolderPath -NoQualifier
+            $newDestinationFolderPath = Join-Path -Path $drive -ChildPath $newDestinationFolderPath
 
-            if (-not (Test-Path -Path $DestinationFolderPath))
+            if (-not (Test-Path -Path $newDestinationFolderPath))
             {
-                mkdir -Path $DestinationFolderPath | Out-Null
+                mkdir -Path $newDestinationFolderPath | Out-Null
             }
         }
         else
         {
-            $DestinationFolderPath = "$($machine.Value):\"
+            $newDestinationFolderPath = "$($machine.Value):\"
         }
 
-        Copy-Item -Path $Path -Destination $DestinationFolderPath -Recurse -Force
-        Write-Debug -Message '...finished'
+        foreach ($p in $Path)
+        {
+            try
+            {
+                Copy-Item -Path $p -Destination $newDestinationFolderPath -Recurse -Force -ErrorAction Stop
+                Write-Debug -Message '...finished'
+                if ($PassThru)
+                {
+                    Join-Path -Path $DestinationFolderPath -ChildPath (Split-Path -Path $p -Leaf)
+                }
+            }
+            catch
+            {
+                Write-Error -ErrorRecord $_
+            }
+        }
 
         $machine.Value | Remove-PSDrive
         Write-Debug -Message "Drive '$($drive.Name)' removed"
