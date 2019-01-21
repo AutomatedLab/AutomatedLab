@@ -17,38 +17,76 @@ param(
     [string]$PrepareAllDomains,
 
     [ValidateSet('True', 'False')]
-    [string]$InstallExchange
+    [string]$InstallExchange,
+
+    [AllowNull()]
+    [string]$isoPath,
+
+    [AllowNull()]
+    [string]$MailboxDBPath,
+
+    [AllowNull()]
+    [string]$MailboxLogPath
 )
 
 function Copy-ExchangeSources
 {
     Write-ScreenInfo -Message 'Download Exchange 2013 requirements' -TaskStart
     $downloadTargetFolder = "$labSources\SoftwarePackages"
-    Write-ScreenInfo -Message "Downloading Exchange 2013 from '$exchangeDownloadLink'"
-    $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
-    Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
+
+    if ($script:useISO) {
+        Write-ScreenInfo -Message "Using Exchange ISO from '$($isoPath)'"
+    }
+    else
+    {
+        Write-ScreenInfo -Message "Downloading Exchange 2013 from '$exchangeDownloadLink'" -TaskStart
+        $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+        Write-ScreenInfo 'Done' -TaskEnd
+    }
+    
+    Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'" -TaskStart
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
-    Write-ScreenInfo -Message "Downloading .net Framework 4.6.2 from '$dotnetDownloadLink'"
+    Write-ScreenInfo -Message 'Done' -TaskEnd
+   
+    Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'" -TaskStart
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
-    Write-ScreenInfo 'finished' -TaskEnd
+    Write-ScreenInfo 'Done' -TaskEnd
+
+    Write-ScreenInfo -Message "Downloading Visual C++ Redistributables from '$vcRedistDownloadLink'" -TaskStart
+    if (-not (Test-Path -LiteralPath "$downloadTargetFolder\VC2013Redist"))
+    {
+        New-Item -Path "$downloadTargetFolder\VC2013Redist" -ItemType Directory
+    }
+    $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path "$downloadTargetFolder\VC2013Redist" -PassThru -ErrorAction Stop
+    Write-ScreenInfo 'Done' -TaskEnd
     
     #distribute the sources to all exchange servers and the RootDC
     foreach ($vm in $vms)
     {
-        Write-ScreenInfo "Copying sources to VM '$vm'" -TaskStart
+        Write-ScreenInfo "Copying sources to VM '$vm'" -TaskStart    
         if ($vm.HostType -eq 'HyperV')
         {
-            Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
-            Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
-            Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $ComputerName
+            if (-not $script:useISO)
+            {
+                Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
+            }
+
+            Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
+            Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
+            Copy-LabFileItem -Path $vcredistInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm        
         }
-        Write-ScreenInfo "Finished copying file to VM '$vm'" -TaskEnd
+        Write-ScreenInfo 'Done' -TaskEnd
     }
     
-    Write-ScreenInfo 'Exctracting Exchange Installation files on all machines' -TaskStart -NoNewLine
-    $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $vms -AsJob -PassThru -NoDisplay
-    Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoDisplay
-    Write-ScreenInfo 'finished' -TaskEnd
+    if (-not $script:useISO)
+    {
+        Write-ScreenInfo 'Extracting Exchange Installation files on all machines' -TaskStart -NoNewLine
+        $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $vms -AsJob -PassThru -NoDisplay
+        Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoNewLine
+        Write-ScreenInfo 'Done' -TaskEnd
+    }
+
+    Write-ScreenInfo 'All Requirement downloads finished' -TaskEnd
 }
 
 function Add-ExchangeAdRights
@@ -68,7 +106,7 @@ function Add-ExchangeAdRights
             Add-ADGroupMember -Identity 'Schema Admins' -Members $user
             Add-ADGroupMember -Identity 'Enterprise Admins' -Members $user
         } -ArgumentList $userName, $dc.FQDN -NoDisplay
-        Write-ScreenInfo 'finished' -TaskEnd
+        Write-ScreenInfo 'Done' -TaskEnd
     }
 }
 
@@ -81,22 +119,29 @@ function Install-ExchangeWindowsFeature
         Wait-LWLabJob -Job $jobs -NoDisplay
         Restart-LabVM -ComputerName $vm -Wait
     }
-    Write-ScreenInfo 'finished' -TaskEnd
+    Write-ScreenInfo 'Done' -TaskEnd
 }
 
 function Install-ExchangeRequirements
 {
+    #Create the DeployDebug directory to contain log files (the Domain Controller will already have this directory)
+    Invoke-LabCommand -ActivityName 'Create Logging Directory' -ComputerName $vm -ScriptBlock {
+        if (-not (Test-Path -LiteralPath 'C:\DeployDebug')) {
+            New-Item -Path 'C:\DeployDebug' -ItemType Directory
+        }
+    } -NoDisplay
+
     Write-ScreenInfo "Installing Exchange Requirements '$vm'"  -TaskStart -NoNewLine
 
     $isUcmaInstalled = Invoke-LabCommand -ActivityName 'Test UCMA Installation' -ComputerName $vm -ScriptBlock {
         Test-Path -Path 'C:\Program Files\Microsoft UCMA 4.0\Runtime\Uninstaller\Setup.exe'
-    } -PassThru
+    } -PassThru -NoDisplay
 
     $jobs = @()
 
     if (-not $isUcmaInstalled)
     {
-        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
+        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "C:\Install\$($script:ucmaInstallFile.FileName)" -CommandLine '/Quiet /Log c:\DeployDebug\ucma.txt' -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     }
     else
@@ -107,24 +152,37 @@ function Install-ExchangeRequirements
     foreach ($machine in $vms)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -notcontains '4.6.2')
-        {
-            Write-ScreenInfo "Installing .net Framework 4.6.2 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+        if ($dotnetFrameworkVersion.Version -notcontains '4.7.1')
+        { 
+            Write-ScreenInfo "Installing .net Framework 4.7.1 on '$machine'" -Type Verbose
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet471.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
-            Write-ScreenInfo ".net Framework 4.6.2 is already installed on '$machine'" -Type Verbose
+            Write-ScreenInfo ".net Framework 4.7.1 or later is already installed on '$machine'" -Type Verbose
+        }
+
+        $InstalledApps = Invoke-LabCommand -ActivityName 'Get Installed Applications' -ComputerName $machine -ScriptBlock {
+            Get-ItemProperty HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\* | Select-Object DisplayName, DisplayVersion, Publisher, InstallDate
+        } -PassThru -NoDisplay
+
+        if (-not ($InstalledApps | Where-Object {$_.DisplayName -match [regex]::Escape("Microsoft Visual C++ 2013 Redistributable (x64)")}))
+        {
+            Write-ScreenInfo -Message "Installing Visual C++ 2013 Redistributables on machine '$machine'" -Type Verbose
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:vcredistInstallFile.FileName)" -CommandLine '/Q' -AsJob -NoDisplay -AsScheduledJob -PassThru    
+        } 
+        else 
+        {
+            Write-ScreenInfo "Microsoft Visual C++ 2013 Redistributable (x64) is already installed on '$machine'" -Type Verbose
         }
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
-    Write-ScreenInfo done
+    Write-ScreenInfo "Done"
         
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
     Restart-LabVM -ComputerName $vms -Wait -ProgressIndicator 10 -NoDisplay
 
-    Sync-LabActiveDirectory -ComputerName $schemaPrepVm
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -147,7 +205,17 @@ function Start-ExchangeInstallSequence
 
     try
     {
-        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine `
+        if ($script:useISO)
+        {
+            $MountedOSImage = Mount-LabIsoImage -IsoPath $IsoPath -ComputerName $ComputerName -SupressOutput -PassThru
+            $ExchangeInstallCommand = $MountedOSImage.DriveLetter + '\SETUP.EXE'
+        }
+        else
+        {
+            $ExchangeInstallCommand = 'C:\Install\ExchangeInstall\SETUP.EXE'
+        }
+
+        $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath $ExchangeInstallCommand -CommandLine $CommandLine `
         -ExpectedReturnCodes 1 -AsJob -NoDisplay -PassThru -ErrorVariable exchangeError
         $result = Wait-LWLabJob -Job $job -NoDisplay -ProgressIndicator 15 -PassThru -ErrorVariable jobError
         if ($jobError)
@@ -171,7 +239,7 @@ function Start-ExchangeInstallSequence
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
-                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine `
+                $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath $ExchangeInstallCommand -CommandLine $CommandLine `
                 -ExpectedReturnCodes 1 -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                 $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorVariable jobError
                 if ($jobError)
@@ -188,7 +256,7 @@ function Start-ExchangeInstallSequence
                 Write-ScreenInfo "Activity '$Activity' did not succeed, but did not ask for a reboot, retrying the last time" -Type Warning -NoNewLine
                 if ($_ -notmatch '(.+reboot.+pending.+)|(.+pending.+reboot.+)')
                 {
-                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ExchangeInstall\setup.exe -CommandLine $CommandLine `
+                    $job = Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath $ExchangeInstallCommand -CommandLine $CommandLine `
                     -ExpectedReturnCodes 1 -AsJob -NoDisplay -PassThru -ErrorAction Stop -ErrorVariable exchangeError
                     $result = Wait-LWLabJob -Job $job -NoDisplay -NoNewLine -ProgressIndicator 15 -PassThru -ErrorVariable jobError
                     if ($jobError)
@@ -208,6 +276,10 @@ function Start-ExchangeInstallSequence
             $resultVariable.Value = $exchangeError
             Write-Error "Exchange task '$Activity' failed on '$ComputerName'. See content of $($resultVariable.Name) for details."
         }
+    }
+
+    if ($script:useISO) {
+        Dismount-LabIsoImage -ComputerName $ComputerName -SupressOutput
     }
 
     Write-ProgressIndicatorEnd
@@ -241,7 +313,7 @@ function Start-ExchangeInstallation
         $prepMachine = $vm
     }
 
-    #prepare Excahnge AD Schema
+    #prepare Exchange AD Schema
     if ($PrepareSchema -or $All)
     {
         $commandLine = '/PrepareSchema /IAcceptExchangeServerLicenseTerms'
@@ -282,8 +354,18 @@ function Start-ExchangeInstallation
     {
         Write-ScreenInfo -Message "Installing Exchange Server 2013 on machine '$vm'" -TaskStart
         
-        #Actual Exchange Installaton
+        #Actual Exchange Installation
         $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
+
+        if ($MailboxDBPath)
+        {
+            $commandLine = $commandLine + ' /DbFilePath:"{0}"' -f $MailboxDBPath
+
+            if ($MailboxLogPath) {
+                $commandLine = $commandLine + ' /LogFolderPath:"{0}"' -f $MailboxLogPath
+            }
+        }
+
         $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global 
         
@@ -291,12 +373,60 @@ function Start-ExchangeInstallation
     
         Write-ScreenInfo -Message "Restarting machines '$vm'" -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 15
+        Write-ScreenInfo -Message 'Done'
     }
 }
 
+Function Test-MailboxPath {
+
+    param (
+        [Parameter(Mandatory)]
+        [string]$Path,
+
+        [Parameter(Mandatory)]
+        [ValidateSet('Mailbox','Log')]$Type
+    )
+    
+<#
+    Check that the mailbox path is valid (supports both log file paths and mailbox database paths).
+    
+    Requirements:
+        Database must be local to machine, no UNC paths - Both types
+        File path must be fully qualified (include drive letter) - Mailbox only
+        File path must point to the full file name (not just target directory) - Mailbox Only
+        File path must end in .EDB (Standard Exchange database format) - Mailbox Only
+        File path must point to a valid drive relative to the target machine - Both Types
+#>
+
+    if ($Path.Substring(0,2) -eq '\\')
+    {
+        throw "Path '$Path' is invalid. UNC Paths are not supported for Exchange Databases or Log Directories"
+    }
+
+    if (-not [System.IO.Path]::HasExtension($Path) -and $Type -eq 'Mailbox')
+    {
+        throw "Path '$Path' is invalid. Mailbox Path must refer to a fully formed file name, eg 'D:\Exchange Server\Mailbox.edb'"
+    }
+
+    if ([System.IO.Path]::GetExtension($Path.ToUpper()) -ne '.EDB' -and $Type -eq 'Mailbox')
+    {
+        throw "Path '$Path' is invalid. Mailbox database file extension must be '.edb'"
+    }
+
+    $AvailableVolumes = Invoke-LabCommand -ActivityName 'Get Existing Volumes' -ComputerName $vm -ScriptBlock {
+        Get-Volume
+    } -PassThru -NoDisplay
+
+    if (-not ($AvailableVolumes | Where-Object {$_.DriveLetter -eq $Path[0]})) {
+        throw "Invalid target drive specified in '$Path'"
+    }
+
+}
+
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/3/9/B/39B25E37-2265-4FBC-AF87-7CA6CA089615/Exchange2013-x64-cu20.exe'
-$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet462DownloadLink
+$exchangeDownloadLink = 'https://download.microsoft.com/download/9/4/1/94166586-5D17-414A-97DA-CCD069BC11A2/Exchange2013-x64-cu21.exe'
+$vcRedistDownloadLink = 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe'
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet471DownloadLink
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -328,16 +458,36 @@ if (-not $OrganizationName)
     $OrganizationName = $lab.Name + 'ExOrg'
 }
 
-$psVersion = Invoke-LabCommand -ActivityName 'Get PowerShell Version' -ComputerName $vm -ScriptBlock {
-    $PSVersionTable
-} -NoDisplay -PassThru
-if ($psVersion.PSVersion.Major -gt 4)
+#If the machine specification includes additional drives, bring them online
+if ($vm.Disks.Count -gt 0)
 {
-    Write-Error "Exchange 2013 does not support PowerShell 5+. The installation on '$vm' cannot succeed."
-    return
+    Invoke-LabCommand -ActivityName 'Bringing Additional Disks Online' -ComputerName $vm -ScriptBlock {
+        $dataVolume = Get-Disk | Where-Object -Property OperationalStatus -eq Offline
+        $dataVolume | Set-Disk -IsOffline $false
+        $dataVolume | Set-Disk -IsReadOnly $false
+    }
 }
 
-Write-ScreenInfo "Intalling Exchange 2013 '$ComputerName'..." -TaskStart
+#If an ISO was specified, confirm it exists, otherwise will revert to downloading the files
+$useISO = if (Test-Path -LiteralPath $isoPath)
+{
+    $true
+}
+else
+{
+    Write-ScreenInfo -Message ("Unable to locate ISO at '{0}', defaulting to downloading Exchange source files" -f $isoPath) -Type Warning
+    $false
+}
+
+if ($MailboxDBPath) {
+    Test-MailboxPath -Path $MailboxDBPath -Type Mailbox
+}
+
+if ($MailboxLogPath) {
+    Test-MailboxPath -Path $MailboxLogPath -Type Log
+}
+
+Write-ScreenInfo "Installing Exchange 2013 '$ComputerName'..." -TaskStart
 
 Copy-ExchangeSources
 

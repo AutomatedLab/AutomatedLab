@@ -1,0 +1,104 @@
+<?xml version="1.0"?>
+<ListXmlStoreOfProductKey>
+
+  <ProductKey OperatingSystemName="Windows 7 Professional" Key="FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows 7 Enterprise" Key="33PXH-7Y6KF-2VJC9-XBBR8-HVTHH" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows 8 Pro" Key="NG4HW-VH26C-733KW-K6F98-J8CK4" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows 8 Enterprise" Key="32JNW-9KQ84-P47T8-D8GGY-CWCK7" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows 8.1 Pro" Key="GCRJD-8NW9H-F2CDX-CCM8D-9D6T9" Version="6.3.9600.16408" />
+  <ProductKey OperatingSystemName="Windows 8.1 Enterprise" Key="MHF9N-XY6XB-WVXMC-BTDCT-MKKG7" Version="6.3.9600.16408" />
+
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Standard (Full Installation)" Key="YC6KT-GKW9T-YTKYR-T4X34-R7VHC" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Standard (Server Core Installation)" Key="YC6KT-GKW9T-YTKYR-T4X34-R7VHC" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Enterprise (Full Installation)" Key="489J6-VHDMP-X63PK-3K798-CPX3Y" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Enterprise (Server Core Installation)" Key="489J6-VHDMP-X63PK-3K798-CPX3Y" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Datacenter (Full Installation)" Key="74YFP-3QFB3-KQT8W-PMXWJ-7M648" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 Datacenter (Server Core Installation)" Key="74YFP-3QFB3-KQT8W-PMXWJ-7M648" Version="6.1.7601.17514" />
+
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERSTANDARD" Key="YC6KT-GKW9T-YTKYR-T4X34-R7VHC" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERSTANDARDCORE" Key="YC6KT-GKW9T-YTKYR-T4X34-R7VHC" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERENTERPRISE" Key="489J6-VHDMP-X63PK-3K798-CPX3Y" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERENTERPRISECORE" Key="489J6-VHDMP-X63PK-3K798-CPX3Y" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERDATACENTER" Key="74YFP-3QFB3-KQT8W-PMXWJ-7M648" Version="6.1.7601.17514" />
+  <ProductKey OperatingSystemName="Windows Server 2008 R2 SERVERDATACENTERCORE" Key="74YFP-3QFB3-KQT8W-PMXWJ-7M648" Version="6.1.7601.17514" />
+
+  <ProductKey OperatingSystemName="Windows Server 2012 Standard (Server Core Installation)" Key="XC9B7-NBPP2-83J2H-RHMBY-92BT4" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 Standard (Server with a GUI)" Key="XC9B7-NBPP2-83J2H-RHMBY-92BT4" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 Datacenter (Server Core Installation)" Key="48HP8-DN98B-MYWDG-T2DCC-8W83P" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 Datacenter (Server with a GUI)" Key="48HP8-DN98B-MYWDG-T2DCC-8W83P" Version="6.2.9200.16384" />
+
+  <ProductKey OperatingSystemName="Windows Server 2012 SERVERSTANDARD" Key="XC9B7-NBPP2-83J2H-RHMBY-92BT4" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 SERVERSTANDARDCORE" Key="XC9B7-NBPP2-83J2H-RHMBY-92BT4" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 SERVERDATACENTER" Key="48HP8-DN98B-MYWDG-T2DCC-8W83P" Version="6.2.9200.16384" />
+  <ProductKey OperatingSystemName="Windows Server 2012 SERVERDATACENTERCORE" Key="48HP8-DN98B-MYWDG-T2DCC-8W83P" Version="6.2.9200.16384" />
+
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Standard Evaluation (Server with a GUI)" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Standard (Server with a GUI)" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Standard (Server Core Installation)" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Standard Evaluation (Server Core Installation)" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Datacenter Evaluation (Server with a GUI)" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Datacenter (Server with a GUI)" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Datacenter Evaluation (Server Core Installation)" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 Datacenter (Server Core Installation)" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 SERVERSTANDARDCORE" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 SERVERSTANDARD" Key="D2N9P-3P6X9-2R39C-7RTCD-MDVJX" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 SERVERDATACENTERCORE" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+  <ProductKey OperatingSystemName="Windows Server 2012 R2 SERVERDATACENTER" Key="W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9" Version="6.3.9600.17031" />
+
+  <ProductKey OperatingSystemName="Windows 10 Pro" Key="W269N-WFGWX-YVC9B-4J6C9-T83GX" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 10 Pro for Workstations" Key="NRG8B-VKK3Q-CXVCJ-9G2XF-6Q84J" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise Insider Preview" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise Evaluation" Key="NPPR9-FWDCX-D2C8J-H872K-2YT43" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise for Virtual Desktops" Key="CPWHC-NT2C7-VYW78-DHDB2-PG3GK" Version="10.0.17134.1" />
+
+  <ProductKey OperatingSystemName="Windows 10 Enterprise 2015 LTSB" Key="WNMTR-4C88C-JK8YV-HQ7T2-76DF9" Version="1.0.0.0" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise 2016 LTSB" Key="DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ" Version="1.0.0.0" />
+  <ProductKey OperatingSystemName="Windows 10 Enterprise LTSC" Key="M7XTQ-FN8P6-TTKYV-9D4CC-J462D" Version="1.0.0.0" />
+
+  <ProductKey OperatingSystemName="Windows Server 2016 Standard" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0"/>
+  <ProductKey OperatingSystemName="Windows Server 2016 Standard (Desktop Experience)" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Standard Evaluation" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Standard Evaluation (Desktop Experience)" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Datacenter" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Datacenter (Desktop Experience)" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Datacenter Evaluation" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 Datacenter Evaluation (Desktop Experience)" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERSTANDARD" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERSTANDARDCORE" Key="WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERDATACENTER" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERDATACENTERCORE" Key="CB7KF-BWN84-R7R2Y-793K2-8XDDG" Version="10.0.14393.0" />
+
+  <ProductKey OperatingSystemName="Windows Server 2019 Standard" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 Standard (Desktop Experience)" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 Datacenter" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 Datacenter (Desktop Experience)" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
+
+  <ProductKey OperatingSystemName="Windows Server 2019 SERVERSTANDARDCORE" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 SERVERSTANDARD" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 SERVERDATACENTER" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server 2019 SERVERDATACENTERCORE" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
+
+  <!--1709-->
+  <ProductKey OperatingSystemName="Windows Server Standard" Key="DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4" Version="10.0.16299.15" /> 
+  <ProductKey OperatingSystemName="Windows Server Datacenter" Key="6Y6KB-N82V8-D8CQV-23MJW-BWTG6" Version="10.0.16299.15" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERSTANDARDACORE" Key="DPCNP-XQFKJ-BJF7R-FRC8D-GF6G4" Version="10.0.16299.15" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERDATACENTERACORE" Key="6Y6KB-N82V8-D8CQV-23MJW-BWTG6" Version="10.0.16299.15" />
+  
+  <!--1803-->
+  <ProductKey OperatingSystemName="Windows Server Standard" Key="PTXN8-JFHJM-4WC78-MPCBR-9W4KR" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows Server Datacenter" Key="2HXDN-KRXHB-GPYC7-YCKFJ-7FVDG" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERSTANDARDACORE" Key="PTXN8-JFHJM-4WC78-MPCBR-9W4KR" Version="10.0.17134.1" />
+  <ProductKey OperatingSystemName="Windows Server 2016 SERVERDATACENTERACORE" Key="2HXDN-KRXHB-GPYC7-YCKFJ-7FVDG" Version="10.0.17134.1" />
+
+  <!--1809-->
+  <ProductKey OperatingSystemName="Windows Server Standard" Key="N2KJX-J94YW-TQVFB-DG9YT-724CC" Version="10.0.17763.107" /> 
+  <ProductKey OperatingSystemName="Windows Server Datacenter" Key="6NMRW-2C8FM-D24W7-TQWMY-CWH2D" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server SERVERSTANDARDACORE" Key="N2KJX-J94YW-TQVFB-DG9YT-724CC" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Windows Server SERVERDATACENTERACORE" Key="6NMRW-2C8FM-D24W7-TQWMY-CWH2D" Version="10.0.17763.107" />
+
+
+</ListXmlStoreOfProductKey>

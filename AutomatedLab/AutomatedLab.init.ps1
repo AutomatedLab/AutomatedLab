@@ -88,3 +88,31 @@ if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
 {
     Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
 }
+
+#download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
+#but when installing AL using the PowerShell Gallery, this file is missing.
+$productKeyFileLink = Get-LabConfigurationItem -Name ProductKeyFileLink
+$productKeyFileName = Get-LabConfigurationItem -Name ProductKeyFileName
+$productKeyFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyFileName
+
+if (-not (Test-Path -Path 'C:\ProgramData\AutomatedLab\Assets'))
+{
+    New-Item -Path C:\ProgramData\AutomatedLab\Assets -ItemType Directory | Out-Null
+}
+
+if (-not (Test-Path -Path $productKeyFilePath))
+{
+    Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
+}
+
+$productKeyCustomFileName = Get-LabConfigurationItem -Name ProductKeyCustomFileName
+$productKeyCustomFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyCustomFileName
+
+if (-not (Test-Path -Path $productKeyCustomFilePath))
+{
+    $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
+    
+    $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
+    $store.Add($dummyProductKey)
+    $store.Export($productKeyCustomFilePath)
+}

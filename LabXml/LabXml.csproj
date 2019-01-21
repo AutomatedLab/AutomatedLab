@@ -86,6 +86,7 @@
     <Compile Include="Machines\NetworkAdapter.cs" />
     <Compile Include="Machines\OperatingSystem.cs" />
     <Compile Include="Machines\PostInstallationActivity.cs" />
+    <Compile Include="Machines\ProductKey.cs" />
     <Compile Include="Machines\Role.cs" />
     <Compile Include="Machines\SoftwarePackage.cs" />
     <Compile Include="Machines\User.cs" />

@@ -1,4 +1,4 @@
-﻿New-LabDefinition -Name 'MDTLab1' -DefaultVirtualizationEngine HyperV
+﻿New-LabDefinition -Name MDTLab1 -DefaultVirtualizationEngine HyperV
 
 $mdtRole = Get-LabPostInstallationActivity -CustomRole MDT -Properties @{
     DeploymentFolderLocation = 'C:\DeploymentShare'

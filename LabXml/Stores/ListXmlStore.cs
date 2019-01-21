@@ -11,14 +11,62 @@ namespace AutomatedLab
         public byte[] Export()
         {
             var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
 
             var stream = new MemoryStream();
 
-            serializer.Serialize(stream, this);
+            serializer.Serialize(stream, this, xmlNamespace);
 
             stream.Close();
 
             return stream.ToArray();
+        }
+
+        public void Export(string path)
+        {
+            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
+            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+
+            serializer.Serialize(fileStream, this, xmlNamespace);
+
+            fileStream.Close();
+        }
+
+        public void ExportToRegistry(string keyName, string valueName)
+        {
+            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
+            var sw = new StringWriter();
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+
+            //makes sure the key exists and does nothing if does already exist
+            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
+            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
+
+            serializer.Serialize(sw, this, xmlNamespace);
+
+            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
+            key.Close();
+        }
+
+        public string ExportToString()
+        {
+            var serializer = new XmlSerializer(GetType());
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+
+            var sb = new StringBuilder();
+            var sw = new StringWriter();
+
+            serializer.Serialize(sw, this, xmlNamespace);
+
+            sw.Close();
+
+            return sb.ToString();
         }
 
         public static ListXmlStore<T> Import(byte[] data)
@@ -55,16 +103,6 @@ namespace AutomatedLab
             return items;
         }
 
-        public void Export(string path)
-        {
-            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
-            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
-
-            serializer.Serialize(fileStream, this);
-
-            fileStream.Close();
-        }
-
         public static ListXmlStore<T> ImportFromRegistry(string keyName, string valueName)
         {
             var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
@@ -73,7 +111,7 @@ namespace AutomatedLab
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
             var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath);
-            
+
             if (key == null)
                 throw new FileNotFoundException(string.Format("The registry key '{0}' does not exist", registryPath));
 
@@ -89,34 +127,6 @@ namespace AutomatedLab
             sr.Close();
 
             return items;
-        }
-
-        public void ExportToRegistry(string keyName, string valueName)
-        {
-            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
-            var sw = new StringWriter();
-
-            //makes sure the key exists and does nothing if does already exist
-            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
-            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
-
-            serializer.Serialize(sw, this);
-
-            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
-            key.Close();
-        }
-        public string ExportToString()
-        {
-            var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
-            var sb = new StringBuilder();
-            var sw = new StringWriter();
-
-            serializer.Serialize(sw, this);
-
-            sw.Close();
-
-            return sb.ToString();
         }
 
         public static ListXmlStore<T> ImportFromString(string s)
