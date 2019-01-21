@@ -8,7 +8,7 @@ CREATE DATABASE [DSC]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
- LOG ON 
+ LOG ON
 ( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
 GO
 
@@ -265,11 +265,12 @@ SELECT RegistrationData.NodeName
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 )
-SELECT TOP 5000 * FROM CTE WHERE 
-ErrorMessage LIKE '%cannot find module%' 
-OR ErrorMessage LIKE '%The assigned configuration%is not found%'
-OR ErrorMessage LIKE '%Checksum file not located for%'
-OR ErrorMessage LIKE '%Checksum for module%'
+SELECT TOP 5000 * FROM CTE WHERE
+ErrorMessage IS NOT NULL
+--ErrorMessage LIKE '%cannot find module%' 
+--OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+--OR ErrorMessage LIKE '%Checksum file not located for%'
+--OR ErrorMessage LIKE '%Checksum for module%'
 ORDER BY EndTime DESC
 
 --Module does not exist					Cannot find module
@@ -328,13 +329,12 @@ SELECT StatusReport.JobId
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 	)
-	SELECT TOP 100000 * FROM CTE
+	SELECT * FROM CTE
 	WHERE 
 		ErrorMessage NOT LIKE '%cannot find module%' 
 		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
 		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
 		AND ErrorMessage NOT LIKE '%Checksum for module%'
-		AND EndTime > DATEADD(MINUTE, -120, GETDATE())
 		AND [Status] IS NOT NULL
 		OR ErrorMessage IS NULL
 
@@ -415,6 +415,7 @@ RETURN
 	,CreationTime AS [Time]
 	,RebootRequested
 	,OperationType
+	,JobId
 
 	,(
 	SELECT [HostName] FROM OPENJSON(
