@@ -8,7 +8,7 @@ CREATE DATABASE [DSC]
  CONTAINMENT = NONE
  ON  PRIMARY 
 ( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
- LOG ON
+ LOG ON 
 ( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
 GO
 
@@ -507,20 +507,27 @@ GO
 
 CREATE VIEW [dbo].[vNodeStatusSimple]
 AS
-SELECT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
+SELECT rd.NodeName, IIF(nss.NodeName IS NULL,'Failure',nss.Status) as Status, nss.Time
+FROM (
+SELECT DISTINCT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
 FROM dbo.StatusReport INNER JOIN
     (SELECT MAX(EndTime) AS MaxEndTime, NodeName
     FROM dbo.StatusReport AS StatusReport_1
     GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
+       WHERE dbo.StatusReport.Status IS NOT NULL
+) as nss
+RIGHT OUTER JOIN dbo.RegistrationData AS rd 
+ON nss.NodeName = rd.NodeName
+
 GO
+
 
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
 SELECT GetNodeStatus.*,
-IIF([ResourceCountNotInDesiredState] > 0, 'FALSE', 'TRUE') AS [InDesiredState]
+IIF([ResourceCountNotInDesiredState] > 0 OR [ResourceCountInDesiredState] = 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
 GO
-
 CREATE VIEW [dbo].[vNodeStatusCount]
 AS
 SELECT NodeName, COUNT(*) AS NodeStatusCount
