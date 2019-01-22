@@ -267,8 +267,7 @@
         AccessDatabaseEngine2016x86            = 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe'
 
         #TFS Build Agent
-        BuildAgentUri                          = 'http://go.microsoft.com/fwlink/?LinkID=829054'
-
+        BuildAgentUri                          = 'https://vstsagentpackage.azureedge.net/agent/2.136.1/vsts-agent-win-x64-2.136.1.zip'
 
         # OpenSSH
         OpenSshUri                             = 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip'
