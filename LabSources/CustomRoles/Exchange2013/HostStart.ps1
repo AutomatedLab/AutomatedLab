@@ -81,7 +81,7 @@ function Copy-ExchangeSources
     if (-not $script:useISO)
     {
         Write-ScreenInfo 'Extracting Exchange Installation files on all machines' -TaskStart -NoNewLine
-        $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/X:C:\Install\ExchangeInstall /Q' -ComputerName $vms -AsJob -PassThru -NoDisplay
+        $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '-dC:\Install\ExchangeInstall -s' -ComputerName $vms -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoNewLine
         Write-ScreenInfo 'Done' -TaskEnd
     }
@@ -387,16 +387,16 @@ Function Test-MailboxPath {
         [ValidateSet('Mailbox','Log')]$Type
     )
     
-<#
-    Check that the mailbox path is valid (supports both log file paths and mailbox database paths).
+    <#
+            Check that the mailbox path is valid (supports both log file paths and mailbox database paths).
     
-    Requirements:
-        Database must be local to machine, no UNC paths - Both types
-        File path must be fully qualified (include drive letter) - Mailbox only
-        File path must point to the full file name (not just target directory) - Mailbox Only
-        File path must end in .EDB (Standard Exchange database format) - Mailbox Only
-        File path must point to a valid drive relative to the target machine - Both Types
-#>
+            Requirements:
+            Database must be local to machine, no UNC paths - Both types
+            File path must be fully qualified (include drive letter) - Mailbox only
+            File path must point to the full file name (not just target directory) - Mailbox Only
+            File path must end in .EDB (Standard Exchange database format) - Mailbox Only
+            File path must point to a valid drive relative to the target machine - Both Types
+    #>
 
     if ($Path.Substring(0,2) -eq '\\')
     {
@@ -458,6 +458,15 @@ if (-not $OrganizationName)
     $OrganizationName = $lab.Name + 'ExOrg'
 }
 
+$psVersion = Invoke-LabCommand -ActivityName 'Get PowerShell Version' -ComputerName $vm -ScriptBlock {
+    $PSVersionTable
+} -NoDisplay -PassThru
+if ($psVersion.PSVersion.Major -gt 4)
+{
+    Write-Error "Exchange 2013 does not support PowerShell 5+. The installation on '$vm' cannot succeed."
+    return
+}
+
 #If the machine specification includes additional drives, bring them online
 if ($vm.Disks.Count -gt 0)
 {
@@ -469,14 +478,21 @@ if ($vm.Disks.Count -gt 0)
 }
 
 #If an ISO was specified, confirm it exists, otherwise will revert to downloading the files
-$useISO = if (Test-Path -LiteralPath $isoPath)
+$useISO = if (-not $isoPath)
 {
-    $true
+     $false
 }
 else
 {
-    Write-ScreenInfo -Message ("Unable to locate ISO at '{0}', defaulting to downloading Exchange source files" -f $isoPath) -Type Warning
-    $false
+    if (Test-Path -LiteralPath $isoPath)
+    {
+        $true
+    }
+    else
+    {
+        Write-ScreenInfo -Message ("Unable to locate ISO at '{0}', defaulting to downloading Exchange source files" -f $isoPath) -Type Warning
+        $false
+    }
 }
 
 if ($MailboxDBPath) {
