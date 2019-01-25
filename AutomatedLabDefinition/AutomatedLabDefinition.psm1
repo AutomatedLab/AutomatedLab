@@ -814,7 +814,7 @@ function New-LabDefinition
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
-    $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
+    $script:defaults = Get-LabConfigurationItem
 
     $script:lab = New-Object AutomatedLab.Lab
 
@@ -894,6 +894,8 @@ function New-LabDefinition
     {
         $script:lab
     }
+
+    $global:AL_CurrentLab = $script:lab
 
     Write-LogFunctionExit
 }
@@ -1254,7 +1256,7 @@ function Test-LabDefinition
 
     Write-LogFunctionEntry
 
-    $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
+    $script:defaults = Get-LabConfigurationItem
 
     $lab = Get-LabDefinition
     if (-not $lab)
@@ -1884,7 +1886,9 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-        [string]$FriendlyName
+        [string]$FriendlyName,
+
+        [switch]$SkipDeployment
     )
     DynamicParam
     {
@@ -2657,9 +2661,9 @@ function Add-LabMachineDefinition
             $machine.Memory = 1
             foreach ($role in $Roles)
             {
-                if ($PSCmdlet.MyInvocation.MyCommand.Module.PrivateData."MemoryWeight_$($role.Name)" -gt $machine.Memory)
+                if ((Get-LabConfigurationItem -Name "MemoryWeight_$($role.Name)") -gt $machine.Memory)
                 {
-                    $machine.Memory = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData."MemoryWeight_$($role.Name)"
+                    $machine.Memory = Get-LabConfigurationItem -Name "MemoryWeight_$($role.Name)"
                 }
             }
         }
@@ -2776,6 +2780,8 @@ function Add-LabMachineDefinition
                 $machine.Disks.Add($labDisk)
             }
         }
+
+        $machine.SkipDeployment = $SkipDeployment
     }
 
     end
@@ -3223,10 +3229,10 @@ function Set-LabLocalVirtualMachineDiskAuto
         return $false
     }
 
-    #if the current disk config is different from the is in the cache, wait until the running lab deploymet is done.
-    if (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter)
+    #if the current disk config is different from the is in the cache, wait until the running lab deployment is done.
+    if ($cachedDrives -and (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter))
     {
-        $labDiskDeploymentInProgressPath = (Get-Module -Name AutomatedLab)[0].PrivateData.DiskDeploymentInProgressPath
+        $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
         if (Test-Path -Path $labDiskDeploymentInProgressPath)
         {
             Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
@@ -3362,7 +3368,7 @@ function Get-LabVirtualNetwork
 function Get-LabAvailableAddresseSpace
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    $defaultAddressSpace = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultAddressSpace
+    $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
 
     if (-not $defaultAddressSpace)
     {
