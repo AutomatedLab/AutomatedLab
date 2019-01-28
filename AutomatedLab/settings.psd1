@@ -67,6 +67,10 @@
                     'IsReadOnly'
                     'SiteName'
                     'SiteSubnet'
+                    'DatabasePath'
+                    'LogPath'
+                    'SysvolPath'
+                    'DsrmPassword'
                 )
                 CaSubordinate    = @(
                     'ParentCA'
@@ -123,6 +127,10 @@
                     'SiteName'
                     'SiteSubnet'
                     'NetBIOSDomainName'
+                    'DatabasePath'
+                    'LogPath'
+                    'SysvolPath'
+                    'DsrmPassword'
                 )
                 ADFS             = @(
                     'DisplayName'
@@ -135,6 +143,10 @@
                     'SiteName'
                     'SiteSubnet'
                     'NetBiosDomainName'
+                    'DatabasePath'
+                    'LogPath'
+                    'SysvolPath'
+                    'DsrmPassword'
                 )
                 CaRoot           = @(
                     'CACommonName'
