@@ -827,6 +827,33 @@ function Install-LabRootDcs
                 $domainFunctionalLevel = $dcRole.Properties.DomainFunctionalLevel
             }
 
+            $netBiosDomainName = if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
+            {
+                $rootDcRole.Properties.NetBiosDomainName
+            }
+            else
+            {
+                $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
+            }
+
+            $databasePath = if ($rootDcRole.Properties.ContainsKey('DatabasePath'))
+            {
+                $rootDcRole.Properties.DatabasePath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+
+            $logPath = if ($rootDcRole.Properties.ContainsKey('LogPath'))
+            {
+                $rootDcRole.Properties.LogPath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+
             $netBiosDomainName = if ($dcRole.Properties.ContainsKey('NetBiosDomainName'))
             {
                 $dcRole.Properties.NetBiosDomainName

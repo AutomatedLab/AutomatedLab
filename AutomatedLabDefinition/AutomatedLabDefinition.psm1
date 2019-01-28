@@ -813,9 +813,9 @@ function New-LabDefinition
         $script:labpath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
-    
+
     $script:defaults = Get-LabConfigurationItem
-    
+
     $script:lab = New-Object AutomatedLab.Lab
 
     $script:lab.Name = $Name
@@ -1884,11 +1884,11 @@ function Add-LabMachineDefinition
 
         [hashtable]$Notes,
 
+        [switch]$PassThru,
+
         [string]$FriendlyName,
-        
-        [switch]$SkipDeployment,
-        
-        [switch]$PassThru
+
+        [switch]$SkipDeployment
     )
     DynamicParam
     {
@@ -2416,7 +2416,7 @@ function Add-LabMachineDefinition
 
                 foreach ($networkDefinition in $networkDefinitions)
                 {
-                    #check for an virtuel switch having already the name of the new network switch
+                    #check for an virtual switch having already the name of the new network switch
                     $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
 
                     #does the current network definition has an address space assigned
@@ -2427,12 +2427,28 @@ function Add-LabMachineDefinition
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)
                         {
-                            if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                            if ($existingNetwork.SwitchType -eq 'External')
                             {
-                                throw "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name. Cannot continue."
+                                #Different address spaces for different labs reusing an existing External virtual switch is permitted, however this requires knowledge and support
+                                # for switching / routing fabrics external to AL and the host. Note to the screen this is an advanced configuration.
+                                if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                                {
+                                    Write-ScreenInfo "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name." -Type Warning
+                                    Write-ScreenInfo "This is an advanced configuration, ensure external switching and routing is configured correctly" -Type Warning
+                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with different address space. This is an allowed advanced configuration'
+                                }
+                                else
+                                {
+                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
+                                }
                             }
-
-                            Write-Verbose -Message 'Existing Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
+                            else 
+                            {
+                                if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                                {
+                                    throw "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name. Cannot continue."
+                                }
+                            }
                         }
                         else
                         {
@@ -3353,7 +3369,7 @@ function Get-LabAvailableAddresseSpace
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
     $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
-    
+
     if (-not $defaultAddressSpace)
     {
         Write-Error 'Could not get the PrivateData value DefaultAddressSpace. Cannot find an available address space.'

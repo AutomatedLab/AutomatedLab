@@ -562,7 +562,7 @@ function Copy-LabFileItem
     foreach ($machine in $connectedMachines.GetEnumerator())
     {
         Write-Debug -Message "Starting copy job for machine '$($machine.Name)'..."
-        
+
         if ($DestinationFolderPath)
         {
             $drive = "$($machine.Value):"
