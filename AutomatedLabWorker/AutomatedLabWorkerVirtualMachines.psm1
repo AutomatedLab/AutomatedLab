@@ -59,7 +59,7 @@ function New-LWHypervVM
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
     
     #region network adapter settings
-    $macAddressPrefix = '0017FA'
+    $macAddressPrefix = (Get-Module -Name AutomatedLab)[0].PrivateData.MacAddressPrefix
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
     $macAddressesInUse += (Get-LabVm -IncludeLinux).NetworkAdapters.MacAddress
 
@@ -345,7 +345,7 @@ function New-LWHypervVM
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
 
             # Unmount ISO
-            Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath
+            [void] (Dismount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath)
 
             # Copy additional packages
             $additionalPackagePath = (Join-Path -Path $global:Labsources -ChildPath "$($machine.OperatingSystem.OperatingSystemName)\$($machine.OperatingSystem.Version.ToString(2))\*.*")
@@ -468,7 +468,7 @@ function New-LWHypervVM
     
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
-        Mount-DiskImage -ImagePath $path
+        [void] (Mount-DiskImage -ImagePath $path)
         $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
         $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
     

@@ -4,33 +4,33 @@ function New-LWHypervNetworkSwitch
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork,
-		
+
         [switch]$PassThru
     )
-	
+
     Write-LogFunctionEntry
 
     foreach ($network in $VirtualNetwork)
-    {	
+    {
         if (-not $network.Name)
         {
             throw 'No name specified for virtual network to be created'
         }
-        
+
         Write-ScreenInfo -Message "Creating Hyper-V virtual network '$($network.Name)'" -TaskStart
-        
+
         if (Get-VMSwitch -Name $network.Name -ErrorAction SilentlyContinue)
         {
             Write-ScreenInfo -Message "The network switch '$($network.Name)' already exists, no changes will be made to configuration" -Type Warning
             continue
         }
-	
+
         if ((Get-NetIPAddress -AddressFamily IPv4) -contains $network.AddressSpace.FirstUsable)
         {
             Write-ScreenInfo -Message "The IP '$($network.AddressSpace.FirstUsable)' Address for network switch '$($network.Name)' is already in use" -Type Error
             return
         }
-	
+
         if ($network.SwitchType -eq 'External')
         {
             $adapterMac = (Get-NetAdapter -Name $network.AdapterName).MacAddress
@@ -60,6 +60,7 @@ function New-LWHypervNetworkSwitch
                 Start-Sleep -Seconds 2
                 $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
             }
+        }
 
             Start-Sleep -Seconds 1
         }
@@ -146,13 +147,13 @@ function New-LWHypervNetworkSwitch
             }
         }	    
         Write-ScreenInfo -Message "Done" -TaskEnd
-        
+
         if ($PassThru)
         {
             $switch
         }
     }
-	
+
     Write-LogFunctionExit
 }
 #endregion New-LWNetworkSwitch
@@ -164,15 +165,15 @@ function Remove-LWNetworkSwitch
         [Parameter(Mandatory)]
         [string]$Name
     )
-	
+
     Write-LogFunctionEntry
-	
+
     if (-not (Get-VMSwitch -Name $Name -ErrorAction SilentlyContinue))
     {
         Write-ScreenInfo 'The network switch does not exist' -Type Warning
         return
     }
-    
+
     if ((Get-VM | Get-VMNetworkAdapter | Where-Object {$_.SwitchName -eq $Name} | Measure-Object).Count -eq 0)
     {
         try
@@ -184,7 +185,7 @@ function Remove-LWNetworkSwitch
             Start-Sleep -Seconds 2
             Remove-VMSwitch -Name $Name -Force
         }
-    
+
         Write-Verbose "Network switch '$Name' removed"
     }
     else

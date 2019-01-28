@@ -200,6 +200,11 @@ GO
 
                 if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
+                    $global:setupArguments = ''
+                }
+
+                if ($role.Properties.ContainsKey('ConfigurationFile'))
+                {
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
 
                     try
@@ -603,6 +608,67 @@ function New-LabSqlAccount
     if ($RoleProperties.ContainsKey('IsSvcAccount') -and $RoleProperties.ContainsKey('IsSvcPassword'))
     {
         $usersAndPasswords[$RoleProperties['IsSvcAccount']] = $RoleProperties['IsSvcPassword']
+    }
+
+    if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))
+    {
+        $groups += $RoleProperties['SqlSysAdminAccounts']
+    }
+
+    if ($RoleProperties.ContainsKey('ConfigurationFile'))
+    {
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+
+        if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq SQLSvcAccount).Value
+            $password = ($config | Where-Object Key -eq SQLSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq AgtSvcAccount) -and ($config | Where-Object Key -eq AgtSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AgtSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AgtSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq RsSvcAccount) -and ($config | Where-Object Key -eq RsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq RsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq RsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq AsSvcAccount) -and ($config | Where-Object Key -eq AsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq IsSvcAccount) -and ($config | Where-Object Key -eq IsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq IsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq IsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq SqlSysAdminAccounts))
+        {
+            $group = ($config | Where-Object Key -eq SqlSysAdminAccounts).Value
+            $groups += $group.Substring(1, $group.Length - 2)
+        }
     }
 
     if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))

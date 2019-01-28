@@ -3,14 +3,14 @@
 function Add-LabVirtualNetworkDefinition
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
+
     [CmdletBinding()]
     param (
         [string]$Name = (Get-LabDefinition).Name,
-        
+
         [AllowNull()]
         [AutomatedLab.IPNetwork]$AddressSpace,
-        
+
         [AutomatedLab.VirtualizationHost]$VirtualizationEngine,
 
         [hashtable[]]$HyperVProperties,
@@ -21,7 +21,7 @@ function Add-LabVirtualNetworkDefinition
         
         [switch]$PassThru
     )
-    
+
     Write-LogFunctionEntry
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure' -and -not ((Get-LabDefinition).AzureSettings))
@@ -37,7 +37,7 @@ function Add-LabVirtualNetworkDefinition
         throw 'No lab defined. Please call New-LabDefinition first before calling Add-LabVirtualNetworkDefinition.'
     }
     $script:lab = Get-LabDefinition
-    
+
     if (-not $VirtualizationEngine)
     {
         if ((Get-LabDefinition).DefaultVirtualizationEngine)
@@ -49,7 +49,7 @@ function Add-LabVirtualNetworkDefinition
             Throw "Virtualization engine MUST be specified. This can be done:`n - Using parameter 'DefaultVirtualizationEngine' when calling New-LabDefinition`n - Using Set-LabDefaultVirtualizationEngine -Engine <engine>`n - Using parameter 'VirtualizationEngine' when calling Add-LabVirtualNetworkDefinition`n `nRemember to specify VirtualizationEngine parameter when adding machines if no default virtualization engine has been specified`n `n "
         }
     }
-    
+
     if ($VirtualizationEngine -eq 'HyperV' -and (-not (Get-Module -ListAvailable -Name Hyper-V)))
     {
         throw 'The Hyper-V tools are not installed. Please install them first to use AutomatedLab with Hyper-V. Alternatively, you can use AutomatedLab with Microsoft Azure.'
@@ -109,7 +109,7 @@ function Add-LabVirtualNetworkDefinition
             $HyperVProperties.Add('SwitchType', 'Internal')
         }
     }
-    
+
     if ($script:lab.VirtualNetworks | Where-Object Name -eq $Name)
     {
         $errorMessage = "A network with the name '$Name' is already defined"
@@ -117,7 +117,7 @@ function Add-LabVirtualNetworkDefinition
         Write-LogFunctionExitWithError -Message $errorMessage
         return
     }
-    
+
     $network = New-Object -TypeName AutomatedLab.VirtualNetwork
     $network.AddressSpace = $AddressSpace
     $network.Name = $Name
@@ -164,10 +164,10 @@ function Add-LabVirtualNetworkDefinition
     {
         $network.LocationName = $script:lab.AzureSettings.DefaultLocation
     }
-    
+
     $script:lab.VirtualNetworks.Add($network)
     Write-Verbose "Network '$Name' added. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
-    
+
     if ($PassThru)
     {
         $network
@@ -180,20 +180,20 @@ function Add-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
+
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
 
     param(
         [Parameter(ParameterSetName = 'ByName')]
         [string]$Name,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'ByAddressSpace')]
         [string]$AddressSpace
     )
 
     Write-LogFunctionEntry
-    
+
     if ($PSCmdlet.ParameterSetName -eq 'ByAddressSpace')
     {
         return $script:lab.VirtualNetworks | Where-Object AddressSpace -eq $AddressSpace
@@ -209,7 +209,7 @@ function Get-LabVirtualNetworkDefinition
             return $script:lab.VirtualNetworks
         }
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Get-LabVirtualNetworkDefinition
@@ -218,19 +218,19 @@ function Get-LabVirtualNetworkDefinition
 function Remove-LabVirtualNetworkDefinition
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [string[]]$Name
     )
-    
+
     Write-LogFunctionEntry
-    
+
     foreach ($n in $Name)
     {
         $network = $script:lab.VirtualNetworks | Where-Object Name -eq $n
-    
+
         if (-not $network)
         {
             Write-ScreenInfo "There is no network defined with the name '$n'" -Type Warning
@@ -241,7 +241,7 @@ function Remove-LabVirtualNetworkDefinition
             Write-Verbose "Network '$n' removed. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
         }
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Remove-LabVirtualNetworkDefinition
@@ -251,7 +251,7 @@ function Remove-LabVirtualNetworkDefinition
 function New-LabNetworkAdapterDefinition
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    
+
     [CmdletBinding(DefaultParameterSetName = 'manual')]
     param (
         [Parameter(Mandatory)]
@@ -265,7 +265,7 @@ function New-LabNetworkAdapterDefinition
         [Parameter(ParameterSetName = 'manual')]
         [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))/([3][0-2]|[1-2][0-9]|[2-9])$')]
         [AutomatedLab.IPNetwork[]]$Ipv4Address,
-        
+
         [Parameter(ParameterSetName = 'manual')]
         [ValidatePattern('^(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9])[.]){3}(([2]([0-4][0-9]|[5][0-5])|[0-1]?[0-9]?[0-9]))$')]
         [AutomatedLab.IPAddress]$Ipv4Gateway,
@@ -275,16 +275,16 @@ function New-LabNetworkAdapterDefinition
 
         [Parameter(ParameterSetName = 'manual')]
         [AutomatedLab.IPNetwork[]]$IPv6Address,
-        
+
         [Parameter(ParameterSetName = 'manual')]
         [ValidateRange(1, 128)]
         [int]$IPv6AddressPrefix,
-        
+
         [Parameter(ParameterSetName = 'manual')]
         [string]$IPv6Gateway,
 
         [string[]]$IPv6DNSServers,
-        
+
         [string]$ConnectionSpecificDNSSuffix,
 
         [boolean]$AppendParentSuffixes,
@@ -303,14 +303,14 @@ function New-LabNetworkAdapterDefinition
 
         [boolean]$ManagementAdapter = $false
     )
-    
+
     Write-LogFunctionEntry
-    
+
     if (-not (Get-LabDefinition))
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
-    }	
-    
+    }
+
     $adapter = New-Object -TypeName AutomatedLab.NetworkAdapter
 
     #If the defined interface is flagged as being a Management interface, ignore the virtual switch check as it will not exist yet
@@ -338,12 +338,12 @@ function New-LabNetworkAdapterDefinition
     }  
    
     $adapter.InterfaceName = $InterfaceName
-    
+
     foreach ($item in $Ipv4Address)
     {
         $adapter.Ipv4Address.Add($item)
     }
-    
+
     foreach ($item in $Ipv4DnsServers)
     {
         $adapter.Ipv4DnsServers.Add($item)
@@ -353,12 +353,12 @@ function New-LabNetworkAdapterDefinition
     {
         $adapter.Ipv6Address.Add($item)
     }
-    
+
     foreach ($item in $Ipv6DnsServers)
     {
         $adapter.Ipv6DnsServers.Add($item)
     }
-    
+
     if ($Ipv4Gateway) { $adapter.Ipv4Gateway = $Ipv4Gateway }
     if ($Ipv6Gateway) { $adapter.Ipv6Gateway = $Ipv6Gateway }
     $adapter.ConnectionSpecificDNSSuffix = $ConnectionSpecificDNSSuffix
@@ -371,7 +371,7 @@ function New-LabNetworkAdapterDefinition
     $adapter.AccessVLANID = $AccessVLANID
     
     $adapter
-    
+
     Write-LogFunctionExit
 }
 #endregion New-LabNetworkAdapterDefinition
