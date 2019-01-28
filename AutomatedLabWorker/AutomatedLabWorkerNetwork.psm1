@@ -62,9 +62,8 @@ function New-LWHypervNetworkSwitch
             }
         }
 
-            Start-Sleep -Seconds 1
-        }
-
+        Start-Sleep -Seconds 1
+        
         if ($network.EnableManagementAdapter) {
 
             $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
