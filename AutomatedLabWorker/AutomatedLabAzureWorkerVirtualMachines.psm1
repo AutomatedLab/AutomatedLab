@@ -392,13 +392,13 @@ function New-LWAzureVM
 
         foreach ($Disk in $Disks.GetEnumerator())
         {
-            $DataDiskName = $Disk.Key.ToLower()
-            $DiskSize = $Disk.Value
-            $VhdUri = "$($StorageContext.BlobEndpoint)automatedlabdisks/$DataDiskName.vhd"
+            $dataDiskName = $Disk.Key.ToLower()
+            $diskSize = $Disk.Value
 
-            Write-Verbose -Message "Calling 'Add-AzureRmVMDataDisk' for $DataDiskName with $DiskSize GB on LUN $lun (resulting in uri $VhdUri)"
-            $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $DataDiskName
-            $vm = $vm | Add-AzVMDataDisk -Name $DataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $DiskSize -Lun $lun -CreateOption Empty
+            Write-Verbose -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
+            $diskConfig = New-AzDiskConfig -SkuName Standard_LRS -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
+            $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $dataDiskName -Disk $diskConfig
+            $vm = $vm | Add-AzVMDataDisk -Name $dataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $diskSize -Lun $lun -CreateOption Attach
             $lun++
         }
     }
