@@ -260,7 +260,17 @@ function New-LWHypervVM
                 $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'             
             }
             
-            Set-UnattendedDomain @parameters            
+            Set-UnattendedDomain @parameters
+            
+            if ($Machine.OperatingSystemType -eq 'Linux')	
+            {	
+                $sudoParam = @{	
+                    Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"	
+                    Description = 'Enable domain admin as sudoer without password'	
+                }	
+
+                 Add-UnattendedSynchronousCommand @sudoParam	
+            }
         }
     }
 
@@ -324,9 +334,9 @@ function New-LWHypervVM
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
-        if ( $machine.InternalNotes.LinuxPackage )
+        if ( $machine.LinuxPackageGroup )
         {
-            Set-UnattendedPackage -Package $machine.InternalNotes.LinuxPackage
+            Set-UnattendedPackage -Package $machine.LinuxPackageGroup
         }
 
         # Copy Unattend-Stuff here
@@ -413,15 +423,38 @@ function New-LWHypervVM
         InitState = [AutomatedLab.LabVMInitState]::Uninitialized
     }
 
-    $isUefi = try
-    {
-        Get-SecureBootUEFI -Name SetupMode
-    }
-    catch { }
+    #Removing this check as this 'Get-SecureBootUEFI' is not supported on Azure VMs for nested virtualization
+    #$isUefi = try
+    #{
+    #    Get-SecureBootUEFI -Name SetupMode
+    #}
+    #catch { }
     
-    if ($isUefi -and $vm.Generation -ge 2)
-    {
-        $vm | Set-VMFirmware -EnableSecureBoot Off -SecureBootTemplate MicrosoftUEFICertificateAuthority
+    if ($vm.Generation -ge 2)
+    {        	        
+        $secureBootTemplate = if ($Machine.HypervProperties.SecureBootTemplate)	
+        {	
+            $Machine.HypervProperties.SecureBootTemplate	
+        }	
+        else	
+        {	
+            if ($Machine.LinuxType -eq 'unknown')	
+            {	
+                'MicrosoftWindows'	
+            }	
+            else	
+            {	
+                'MicrosoftUEFICertificateAuthority'	
+            }	
+        }	
+        if ($Machine.HypervProperties.EnableSecureBoot)	
+        {	
+            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate	
+        }	
+        else	
+        {	
+            $vm | Set-VMFirmware -EnableSecureBoot Off	
+        }        	
     }
     
     #remove the unconnected default network adapter
@@ -554,7 +587,49 @@ Windows Registry Editor Version 5.00
         #Using the .net class as the PowerShell provider usually does not recognize the new drive
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
     
-        Dismount-DiskImage -ImagePath $path
+        $additionalDisksOnline = @'
+Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log	
+$diskpartCmd = 'LIST DISK'	
+$disks = $diskpartCmd | diskpart.exe	
+ foreach ($line in $disks)	
+{	
+    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')	
+    {	
+        #$nextDriveLetter = [char[]](67..90) | 	
+        #Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 	
+        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 	
+        #Select-Object -First 1	
+         $diskNumber = $Matches.DiskNumber	
+         if ($Matches.State -eq 'Offline')	
+        {	
+            $diskpartCmd = "@	
+                SELECT DISK $diskNumber	
+                ATTRIBUTES DISK CLEAR READONLY	
+                ONLINE DISK	
+                EXIT	
+            @"	
+            $diskpartCmd | diskpart.exe | Out-Null	
+        }	
+    }	
+}	
+ foreach ($volume in (Get-WmiObject -Class Win32_Volume))	
+{	
+    if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')	
+    {	
+        continue	
+    }	
+     if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")	
+    {            	
+        $volume.DriveLetter = "$($Matches.DriveLetter):"	
+    }	
+     $volume.Label = $Matches.Label	
+    $volume.Put()	
+}	
+Stop-Transcript	
+'@	
+        [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)	
+
+        [void] (Dismount-DiskImage -ImagePath $path)
         Write-Verbose "`tdisk image dismounted"
     
         Write-ProgressIndicator
@@ -919,12 +994,39 @@ function Stop-LWHypervVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $jobs = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -AsJob -PassThru -ScriptBlock { shutdown.exe -s -t 0 -f; $LastExitCode }
+        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where({$_.OperatingSystemType -eq 'Linux'}, 'Split')
+
+         $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            	
+            Stop-Computer -Force -ErrorAction Stop	
+        }	
+
+         $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {                  	
+            #Sleep as background process so that job does not fail.	
+            [void] (Start-Job {	
+                    Start-Sleep -Seconds 5	
+                    shutdown -P now	
+            }) 	
+        }
+
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
         $failedJobs = $jobs | Where-Object { $_.State -eq 'Failed' }
         if ($failedJobs)
         {
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
+        }
+
+        $linuxFailures = foreach ($failedJob in $failedJobs)	
+        {	
+            if (Get-LabVm -ComputerName $failedJob.Location)	
+            {	
+                $failedJob.Location	
+            }	
+        }	
+
+         if ($linuxFailures)	
+        {	
+            Write-ScreenInfo -Message "Force-stopping Linux VMs: $($linuxFailures -join ',')"	
+            Stop-VM -Name $linuxFailures -Force	
         }
     }
     else
@@ -956,29 +1058,38 @@ function Stop-LWHypervVM
 #endregion Stop-LWHypervVM
 
 #region Save-LWHypervVM
-workflow Save-LWHypervVM
+function Save-LWHypervVM
 {
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
     
-    sequence
-    {
+    $runspaceScript = {
+        param 
+        (
+            $Name
+        )
         Write-LogFunctionEntry
-        
-        foreach -parallel -throttlelimit 50 ($Name in $ComputerName)
-        {
-            Save-VM -Name $Name
-        }
-        
+        Save-VM -Name $Name        
         Write-LogFunctionExit
     }
+
+    $pool = New-RunspacePool -ThrottleLimit 50
+
+    $jobs = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $runspaceScript -Argument $Name
+    }
+
+    [void] ($jobs | Wait-RunspaceJob)
+
+    $pool | Remove-RunspacePool
 }
 #endregion Save-LWHypervVM
 
 #region Checkpoint-LWHypervVM
-workflow Checkpoint-LWHypervVM
+function Checkpoint-LWHypervVM
 {
     [Cmdletbinding()]
     Param (
@@ -990,66 +1101,73 @@ workflow Checkpoint-LWHypervVM
     )
     
     Write-LogFunctionEntry
-    
-    sequence
-    {
-        Write-LogFunctionEntry
-        
-        #only if we create a checkpoint of more than two machines we save them first and start them after taking the checkpoints
-        #this is required for replicating applications to make sure the snapshots are taken very closely
-        
-        $WORKFLOW:runningMachines = @()
-        
-        Write-Verbose -Message 'Remembering all running machines'
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+
+    $step1 = {
+        param ($Name)
+        if ((Get-VM -Name $Name -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
         {
-            if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running' -and -not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
-            {
-                Suspend-VM -Name $n -ErrorAction SilentlyContinue
-                Save-VM -Name $n -ErrorAction SilentlyContinue
+            Suspend-VM -Name $Name -ErrorAction SilentlyContinue
+            Save-VM -Name $Name -ErrorAction SilentlyContinue
                     
-                Write-Verbose -Message "    '$n' was running"
-                $WORKFLOW:runningMachines += $n
-            }
+            Write-Verbose -Message "'$Name' was running"
+            $Name
         }
-            
-        Start-Sleep -Seconds 5
-        
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            if (-not (Get-VMSnapshot -VMName $n -Name $SnapshotName -ErrorAction SilentlyContinue))
-            {
-                Checkpoint-VM -Name $n -SnapshotName $SnapshotName
-            }
-            else
-            {
-                Write-Error "A snapshot with the name '$SnapshotName' already exists for machine '$n'"
-            }
-        }
-        
-        Write-Verbose -Message "Checkpoint finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        Start-Sleep -Seconds 5
-            
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            if ($n -in $WORKFLOW:runningMachines)
-            {
-                Write-Verbose -Message "Machine '$n' was running, starting it."
-                Start-VM -Name $n -ErrorAction SilentlyContinue
-            }
-            else
-            {
-                Write-Verbose -Message "Machine '$n' was NOT running."
-            }
-        }
-        
-        Write-LogFunctionExit
     }
+    $step2 = {
+        param ($Name)
+        if (-not (Get-VMSnapshot -VMName $Name -Name $SnapshotName -ErrorAction SilentlyContinue))
+        {
+            Checkpoint-VM -Name $Name -SnapshotName $SnapshotName
+        }
+        else
+        {
+            Write-Error "A snapshot with the name '$SnapshotName' already exists for machine '$Name'"
+        }
+    }
+    $step3 = {
+        param ($Name, $RunningMachines)
+        if ($Name -in $RunningMachines)
+        {
+            Write-Verbose -Message "Machine '$Name' was running, starting it."
+            Start-VM -Name $Name -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            Write-Verbose -Message "Machine '$Name' was NOT running."
+        }
+    }
+
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName)
+
+    $jobsStep1 = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step1 -Argument $Name
+    }
+
+    $runningMachines = $jobsStep1 | Receive-RunspaceJob
+
+    $jobsStep2 = foreach ($Name in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step2 -Argument $Name
+    }
+
+    [void] ($jobsStep2 | Wait-RunspaceJob)
+
+    $jobsStep3 = foreach ($Name in $ComputerName)
+    {        
+        Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines
+    }
+
+    [void] ($jobsStep3 | Wait-RunspaceJob)
+
+    $pool | Remove-RunspacePool
+
+    Write-LogFunctionExit
 }
 #endregion Checkpoint-LWVM
 
 #region Remove-LWHypervVMSnapshot
-workflow Remove-LWHypervVMSnapshot
+function Remove-LWHypervVMSnapshot
 {
     [Cmdletbinding()]
     Param (
@@ -1065,36 +1183,44 @@ workflow Remove-LWHypervVMSnapshot
     )
     
     Write-LogFunctionEntry
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue)
     
-    foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+    $jobs = foreach ($n in $ComputerName)
     {
-        if ($SnapshotName)
-        {
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
-                $_.Name -eq $SnapshotName
+        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+            param ($n)
+            if ($SnapshotName)
+            {
+                $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
+                    $_.Name -eq $SnapshotName
+                }
+            }
+            else
+            {
+                $snapshot = Get-VMSnapshot -VMName $n
+            }
+        
+            if (-not $snapshot)
+            {
+                Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
+            }
+            else
+            {
+                Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
             }
         }
-        else
-        {
-            $snapshot = Get-VMSnapshot -VMName $n
-        }
-        
-        if (-not $snapshot)
-        {
-            Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
-        }
-        else
-        {
-            Remove-VMSnapshot -VMName $n -Name $snapshot.Name -IncludeAllChildSnapshots -ErrorAction SilentlyContinue
-        }
     }
+
+    $jobs | Receive-RunspaceJob
+
+    $pool | Remove-RunspacePool
     
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVMSnapshot
 
 #region Restore-LWHypervVMSnapshot
-workflow Restore-LWHypervVMSnapshot
+function Restore-LWHypervVMSnapshot
 {
     [Cmdletbinding()]
     Param (
@@ -1104,37 +1230,48 @@ workflow Restore-LWHypervVMSnapshot
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
-    
-    sequence
+
+    Write-LogFunctionEntry
+
+    $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
+                
+    Write-Verbose -Message 'Remembering all running machines'
+    $jobs = foreach ($n in $ComputerName)
     {
-        Write-LogFunctionEntry
-        
-        $WORKFLOW:runningMachines = @()
-        
-        Write-Verbose -Message 'Remembering all running machines'
-        foreach ($n in $ComputerName)
-        {
+        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+            param ($n)
+
             if ((Get-VM -Name $n -ErrorAction SilentlyContinue).State -eq 'Running')
             {
                 Write-Verbose -Message "    '$n' was running"
-                $WORKFLOW:runningMachines += $n
+                $n
             }
         }
+    }
+
+    $runningMachines = $jobs | Receive-RunspaceJob
         
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
+    $jobs = foreach ($n in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+            param ($n)
             Suspend-VM -Name $n -ErrorAction SilentlyContinue
             Save-VM -Name $n -ErrorAction SilentlyContinue
+            Start-Sleep -Seconds 5
         }
+    }
         
-        Start-Sleep -Seconds 5
+    $jobs | Wait-RunspaceJob
         
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
-        {
-            $snapshot = Get-VMSnapshot -VMName $n | Where-Object -FilterScript {
-                $_.Name -eq $SnapshotName
-            }
-            
+    $jobs = foreach  ($n in $ComputerName)
+    {
+        Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
+            param (
+                [string]$n
+            )
+
+            $snapshot = Get-VMSnapshot -VMName $n | Where-Object Name -eq $SnapshotName
+                
             if (-not $snapshot)
             {
                 Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
@@ -1143,16 +1280,28 @@ workflow Restore-LWHypervVMSnapshot
             {
                 Restore-VMSnapshot -VMName $n -Name $SnapshotName -Confirm:$false
                 Set-VM -Name $n -Notes (Get-VMSnapshot -VMName $n -Name $SnapshotName).Notes
+
+                Start-Sleep -Seconds 5
             }
         }
+    }
         
-        Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($WORKFLOW:runningMachines.Count))"
-        
-        Start-Sleep -Seconds 5
-            
-        foreach -parallel -ThrottleLimit 20 ($n in $ComputerName)
+    $result = $jobs | Wait-RunspaceJob -PassThru
+    if ($result.Shell.HadErrors)
+    {
+        foreach ($exception in $result.Shell.Streams.Error.Exception)
         {
-            if ($n -in $WORKFLOW:runningMachines)
+            Write-Error -Exception $exception
+        }
+    }
+
+    Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($runningMachines.Count))"
+                    
+    $jobs = foreach ($n in $ComputerName)
+    {            
+        Start-RunspaceJob -RunspacePool $pool -Argument $n,$runningMachines -ScriptBlock {
+            param ($n, [string[]]$runningMachines)
+            if ($n -in $runningMachines)
             {
                 Write-Verbose -Message "Machine '$n' was running, starting it."
                 Start-VM -Name $n -ErrorAction SilentlyContinue
@@ -1162,9 +1311,12 @@ workflow Restore-LWHypervVMSnapshot
                 Write-Verbose -Message "Machine '$n' was NOT running."
             }
         }
-        
-        Write-LogFunctionExit
     }
+        
+    [void] ($jobs | Wait-RunspaceJob)
+
+    $pool | Remove-RunspacePool
+    Write-LogFunctionExit
 }
 #endregion Restore-LWHypervVMSnapshot
 
