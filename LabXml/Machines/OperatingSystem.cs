@@ -265,9 +265,7 @@ namespace AutomatedLab
                     existingKey.First().Key = key.Key;
                 }
                 else
-                {
-
-                }
+                { }
             }
         }
 
