@@ -360,7 +360,7 @@ function New-LWAzureVM
     Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
 
     Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
-    $LoadBalancer = Get-AzLoadBalancer -Name "$($ResourceGroupName)$($machine.Network)loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop
+    $LoadBalancer = Get-AzLoadBalancer -Name "$($ResourceGroupName)$($machine.Network[0])loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop
 
     $inboundNatRules = @(Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
     $inboundNatRules += Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
@@ -382,8 +382,8 @@ function New-LWAzureVM
     Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
     $networkInterface = New-AzNetworkInterface @nicProperties
 
-    Write-Verbose -Message 'Adding NIC to VM'
-    $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
+    Write-Verbose -Message 'Adding primary NIC to VM'
+    $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue -Primary
 
     if ($Disks)
     {
@@ -406,37 +406,26 @@ function New-LWAzureVM
     Write-ProgressIndicator
 
     #Add any additional NICs to the VM configuration
-    if ($Machine.NetworkAdapters.Count -gt 1)
+    $niccount = 1
+    foreach ($adapter in ($Machine.NetworkAdapters | Where-Object {$_.Ipv4Address.IPAddress.ToString() -ne $defaultIPv4Address}))
     {
-        Write-Verbose -Message "Adding $($Machine.NetworkAdapters.Count) additional NICs to the VM config"
-        foreach ($adapter in ($Machine.NetworkAdapters | Where-Object Ipv4Address -ne $defaultIPv4Address))
-        {
-            if ($adapter.Ipv4Address.ToString() -eq $defaultIPv4Address) {continue}
+        $vNet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
+            Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapter.IPv4Address[0].ToString()) } | Select-Object -First 1
+        $subnet = $vnet | Get-AzVirtualNetworkSubnetConfig
 
-            $adapterStartAddress = Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix) | Select-Object -First 1
-            $additionalSubnet = (Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapterStartAddress) })[0] |
-                Get-AzVirtualNetworkSubnetConfig
-
-            Write-Verbose -Message "adapterStartAddress = '$adapterStartAddress'"
-            $vNet = $LabVirtualNetworkDefinition | Where-Object { $_.AddressSpace.AddressAsString -eq $adapterStartAddress }
-            if (-not $vNet)
-            {
-                Write-Error -Message "Vnet could not be determined for network adapter with IP address of '$(Get-NetworkRange -IPAddress ($adapter.Ipv4Address.AddressAsString) -SubnetMask ($adapter.Ipv4Address.Ipv4Prefix)))'"
-            }
-
-            Write-Verbose -Message "Adding additional network adapter with Vnet '$($vNet.Name)' in subnet '$adapterStartAddress' with IP address '$($adapter.Ipv4Address.AddressAsString)'"
-            $additionalNicParameters = @{
-                Name              = ($adapter.Ipv4Address.AddressAsString)
-                ResourceGroupName = $ResourceGroupName
-                Location          = $Location
-                Subnet            = $additionalSubnet
-                PrivateIpAddress  = ($adapter.Ipv4Address.AddressAsString)
-                Force             = $true
-            }
-
-            $networkInterface = New-AzNetworkInterface @additionalNicParameters
-            $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
+        Write-Verbose -Message "Adding additional network adapter to $Machine in subnet '$($additionalSubnet.Name)', network $($vNet.Name)"
+        $additionalNicParameters = @{
+            Name              = "$($Machine.Name.ToLower())nic$niccount"
+            ResourceGroupName = $ResourceGroupName
+            Location          = $Location
+            Subnet            = $subnet
+            PrivateIpAddress  = ($adapter.Ipv4Address.IpAddress.AddressAsString)
+            Force             = $true
         }
+
+        $networkInterface = New-AzNetworkInterface @additionalNicParameters
+        $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
+        $niccount++
     }
 
     Write-Verbose -Message 'Calling New-AzureRMVm'
