@@ -23,15 +23,13 @@ function New-LWAzureNetworkSwitch
     $jobs = @()
 
     Write-ScreenInfo -Message "Creating Azure virtual networks '$($VirtualNetwork.Name -join ',')'" -TaskStart
-    foreach ($network in $VirtualNetwork)
+    $jobs = foreach ($network in $VirtualNetwork)
     {
-
         if (Get-LWAzureNetworkSwitch -VirtualNetwork $network)
         {
             Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
             continue
         }
-
 
         $azureNetworkParameters = @{
             Name              = $network.Name
@@ -44,21 +42,13 @@ function New-LWAzureNetworkSwitch
                 CreationTime = Get-Date
             }
         }
-
-        $jobs += Start-Job -Name "NewAzureVnet ($($network.Name))" -ScriptBlock {
-            param
-            (
-                $azureNetworkParameters,
-                [object[]]$Subnets,
-                $Network
-            )
-
+         
             $azureSubnets = @()
 
             # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
             if ($Subnets)
             {
-                foreach ($subnet in $Subnets)
+                foreach ($subnet in $network.Subnets)
                 {
                     $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
                 }
@@ -75,8 +65,7 @@ function New-LWAzureNetworkSwitch
                 $azureNetworkParameters.Add('Subnet', $azureSubnets)
             }
 
-            $azureNetwork = New-AzVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue
-        } -ArgumentList $azureNetworkParameters, $network.Subnets, $network
+            New-AzVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue -AsJob
     }
 
     #Wait for network creation jobs and configure vnet peering
@@ -151,19 +140,19 @@ function Remove-LWAzureNetworkSwitch
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+    $resourceGroupName = Get-LabAzureDefaultResourceGroup
 
-    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning
+    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning    
 
-    foreach ($network in $VirtualNetwork)
+    
+    $jobs = foreach ($network in $VirtualNetwork)
     {
         Write-Verbose "Start removal of virtual network '$($network.name)'"
-
-        $cmd = [scriptblock]::Create("Remove-AzVirtualNetwork -Name $($network.name) -ResourceGroupName $(Get-LabAzureDefaultResourceGroup) -Force")
-        Start-Job -Name "RemoveAzureVNet ($($network.name))" -ScriptBlock $cmd | Out-Null
+        Remove-AzVirtualNetwork -Name $network.Name -ResourceGroupName $resourceGroupName -AsJob -Force
     }
-    $jobs = Get-Job -Name RemoveAzureVNet*
+    
     Write-Verbose "Waiting on the removal of $($jobs.Count)"
-    $jobs | Wait-Job | Out-Null
+    Wait-LWLabJob -Job $jobs
 
     Write-Verbose "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
 
@@ -213,7 +202,7 @@ function New-LWAzureLoadBalancer
     $resourceGroup = $lab.Name
     $location = $lab.AzureSettings.DefaultLocation.DisplayName
 
-    foreach ($vNet in $lab.VirtualNetworks)
+    $jobs = foreach ($vNet in $lab.VirtualNetworks)
     {
         $publicIp = Get-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
         if (-not $publicIp)
@@ -234,7 +223,32 @@ function New-LWAzureLoadBalancer
             $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
         }
 
-        $loadBalancer = New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -WarningAction SilentlyContinue
+        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -WarningAction SilentlyContinue -AsJob
+    }
+
+    # If Wait is not used, return either nothing or the jobs
+    if (-not $Wait.IsPresent)
+    {
+        if ($PassThru.IsPresent)
+        {
+            return $jobs
+        }
+
+        return
+    }
+
+    # Wait for jobs
+    Wait-LWLabJob -Job $jobs
+    $failedJobs = $jobs | Where-Object -Property State -eq Failed
+
+    if ($failedJobs)
+    {
+        throw "One or more load balancers could not be created. Lab deployment cannot continue. Check the output of the following cmdlet for details: Get-Job -Id $($failedJobs.Id) | Receive-Job -Keep"
+    }
+
+    if ($PassThru)
+    {
+        $jobs | Receive-Job -Keep
     }
 }
 #endregion
