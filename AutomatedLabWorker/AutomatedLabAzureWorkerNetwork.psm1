@@ -43,29 +43,22 @@ function New-LWAzureNetworkSwitch
             }
         }
          
-            $azureSubnets = @()
+        $azureSubnets = @()
+        
+        foreach ($subnet in $network.Subnets)
+        {
+            $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
+        }
 
-            # Do the subnets inside the job. Azure cmdlets don't work with deserialized PSSubnets...
-            if ($Subnets)
-            {
-                foreach ($subnet in $network.Subnets)
-                {
-                    $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
-                }
-            }
+        if (-not $azureSubnets)
+        {
+            # Add default subnet for machine
+            $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name 'default' -AddressPrefix $Network.AddressSpace
+        }
 
-            if (-not $azureSubnets)
-            {
-                # Add default subnet for machine
-                $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name 'default' -AddressPrefix $Network.AddressSpace
-            }
+        $azureNetworkParameters.Add('Subnet', $azureSubnets)
 
-            if ($azureSubnets)
-            {
-                $azureNetworkParameters.Add('Subnet', $azureSubnets)
-            }
-
-            New-AzVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue -AsJob
+        New-AzVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue -AsJob
     }
 
     #Wait for network creation jobs and configure vnet peering
