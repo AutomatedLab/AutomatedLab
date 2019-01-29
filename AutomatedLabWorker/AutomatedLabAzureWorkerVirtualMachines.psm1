@@ -1078,7 +1078,7 @@ function Get-LWAzureVMConnectionInfo
         if (-not $azureVM)
         { return }
 
-        $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($name.Network)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+        $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($name.Network[0])lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
         $result = New-Object PSObject -Property @{
             ComputerName      = $name.Name
