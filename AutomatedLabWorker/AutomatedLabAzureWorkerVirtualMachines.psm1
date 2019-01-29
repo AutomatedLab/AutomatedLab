@@ -328,18 +328,18 @@ function New-LWAzureVM
     Write-Verbose "Skus: $SkusName"
     Write-Verbose '-------------------------------------------------------'
 
-    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue |
-        Get-AzVirtualNetworkSubnetConfig |
-        Where-Object { $_.AddressPrefix -eq $Machine.IpAddress[0].ToString()}
+    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
+            Get-AzVirtualNetworkSubnetConfig | 
+            Where-Object -FilterScript {
+                (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $machine.IpAddress[0].IpAddress.ToString()
+            }
 
     if (-not $subnet)
     {
         throw 'No subnet configuration found to fit machine in! Review the IP address of your machine and your lab virtual network.'
     }
+
     Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
-
-    Write-Verbose -Message "Calling 'New-AzureVMConfig'"
-
     $cred = New-Object -TypeName pscredential -ArgumentList $adminUserName, ($adminPassword | ConvertTo-SecureString -AsPlainText -Force)
 
     $machineAvailabilitySet = Get-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
@@ -385,6 +385,8 @@ function New-LWAzureVM
     Write-Verbose -Message 'Adding primary NIC to VM'
     $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue -Primary
 
+    Write-ProgressIndicator
+
     if ($Disks)
     {
         Write-Verbose "Adding $($Disks.Count) data disks"
@@ -409,11 +411,13 @@ function New-LWAzureVM
     $niccount = 1
     foreach ($adapter in ($Machine.NetworkAdapters | Where-Object {$_.Ipv4Address.IPAddress.ToString() -ne $defaultIPv4Address}))
     {
-        $vNet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
-            Where-Object { $_.AddressSpace.AddressPrefixes.Contains($adapter.IPv4Address[0].ToString()) } | Select-Object -First 1
-        $subnet = $vnet | Get-AzVirtualNetworkSubnetConfig
+        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
+            Get-AzVirtualNetworkSubnetConfig | 
+            Where-Object -FilterScript {
+                (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $adapter.Ipv4Address[0].IpAddress.ToString()
+            }
 
-        Write-Verbose -Message "Adding additional network adapter to $Machine in subnet '$($additionalSubnet.Name)', network $($vNet.Name)"
+        Write-Verbose -Message "Adding additional network adapter to $Machine"
         $additionalNicParameters = @{
             Name              = "$($Machine.Name.ToLower())nic$niccount"
             ResourceGroupName = $ResourceGroupName
