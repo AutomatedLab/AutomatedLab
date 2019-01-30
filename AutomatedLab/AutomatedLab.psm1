@@ -4027,7 +4027,10 @@ function Get-LabConfigurationItem
 
         [Parameter()]
         [string]
-        $UserPath = (Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1')
+        $UserPath = (Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1'),
+
+        [Parameter()]
+        $Default
     )
 
     if (-not (Test-Path -Path $userPath))
@@ -4062,6 +4065,11 @@ DatumStructure:
     # Return
     if ($Name)
     {
+        if ($null -eq $settings[$Name] -and $null -ne $Default)
+        {
+            return $Default
+        }
+
         return $settings[$Name]
     }
 
