@@ -258,13 +258,13 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 "@
         $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
 
-        if ($choice -eq 'Yes')
+        if ($choice -eq 0)
         {
             Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
             $timestamps.LabSourcesSynced = Get-Date
             $timestamps.ExportToRegistry('Cache', 'Timestamps')
         }
-        elseif ($choice -eq 'No, never')
+        elseif ($choice -eq 1)
         {
             $timestamps.LabSourcesSynced = [datetime]::MaxValue
             $timestamps.ExportToRegistry('Cache', 'Timestamps')
