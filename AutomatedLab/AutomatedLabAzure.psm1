@@ -242,6 +242,42 @@ function Add-LabAzureSubscription
         }
     }
 
+    # Check last LabSources sync timestamp
+    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    $lastchecked = $timestamps.LabSourcesSynced
+    $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
+    if ($null -eq $lastchecked)
+    {
+        $syncText = @"
+Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to your Azure file share $($global:labsources)?
+
+By default, all files smaller than $syncMaxSize MB will be synced. Should you require more control,
+execute Sync-LabAzureLabSources manually. The maximum file size for the automatic sync can also
+be set in your settings.psd1 with the setting LabSourcesMaxFileSizeMb.
+Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
+"@
+        $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
+
+        if ($choice -eq 'Yes')
+        {
+            Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
+            $timestamps.LabSourcesSynced = Get-Date
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        }
+        elseif ($choice -eq 'No, never')
+        {
+            $timestamps.LabSourcesSynced = [datetime]::MaxValue
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        }
+    }
+    elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
+    {
+        Write-Verbose -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
+        Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
+        $timestamps.LabSourcesSynced = Get-Date
+        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+    }
+
     $script:lab.AzureSettings.VNetConfig = (Get-AzVirtualNetwork) | ConvertTo-Json
     Write-Verbose 'Added virtual network configuration'
 
