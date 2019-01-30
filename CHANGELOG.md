@@ -2,9 +2,54 @@
 
 ## Unreleased
 
+## 5.5.* - 2019-01-30
+
+### Enhancements
+
+- Update to Az module 1.0
+- Machines can now be skipped during deployment
+- Teamed switch interfaces are now supported (Thanks @GlennJC !)
+- Settings moved from module manifest to global and user-defined PSD1 files [See here](https://github.com/AutomatedLab/AutomatedLab/wiki/Customizing-deployment-settings)
+  - New cmdlet: Get-LabConfigurationItem to retrieve a setting
+- Snapshots of Azure VMs implemented
+- New product keys added, product keys can now be defined in XML files
+- VLANs are now  (Thanks @GlennJC !)
+- Exchange 2016 updated to CU11 (Thanks @dmi3mis !)
+- Exchange 2013 updated to support CU21, several other additions  (Thanks @GlennJC !)
+- MDT custom role updated to support ADK 1809 (Thanks @GlennJC !)
+- Get-LabInternetFile now allows specifying a file name
+- Timeout for Wait-LWLabJob increased (Thanks @dmi3mis !)
+- Copy-LabFileItem now supports -PassThru
+- Auto-sync of lab sources to Azure implemented, users will get asked once to use this feature
+
+### Bug fixes
+
+- Azure: Multiple NICs and multiple disks now work again
+- Install user now part of SQL admin groups
+- Fixed issue with Exchange parameters
+- Send-ALNotification does not throw any more when sending a Toast
+- Broken ODT link fixed (Thanks @dmi3mis !)
+- Validators MandatoryRoleProperties' and 'UnknownRoleProperties' fixed
+
+## 5.1.0 - 2018-11-26
+
+### Enhancements
+
+- Additional parameters for Add-LabDiskDefinition: AllocationUnitSize, DriveLetter, Label
+- Additional role parameters for AD: DatabasePath, LogPath, SysvolPath, DsmPassword
+- SQL setup: Accounts in SQL setup ini are now auto-created as well
+- BitLocker write protection check where new volumes would be read-only due to a possible policy/registry setting (Thanks @sk82jack !)
+- General code cleanup (Thanks @KevinMarquette !)
+- Configurable MAC address space
+
+### Bug fixes
+
+- Issue with whitespace in CACommonName fixed
+- Issue with improper retrieval of variables during CA deployment fixed
+- Issue with Windows 1809 and -DiskImage cmdlets producing unwanted output fixed
 - Fixed SQL Setup (2016+) by preinstalling C++ redist
 
-## 5.0.4 - 2019-09-28
+## 5.0.4 - 2018-09-28
 
 ### Enhancements
 

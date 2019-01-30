@@ -820,7 +820,7 @@ function Wait-LWLabJob
         [string[]]$Name,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [int]$Timeout = 120,
 

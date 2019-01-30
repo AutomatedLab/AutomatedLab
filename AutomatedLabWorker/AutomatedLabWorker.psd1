@@ -51,10 +51,7 @@
         'AutomatedLabVMWareWorkerVirtualMachines.psm1',
     'AutomatedLabVMWareWorkerNetwork.psm1')
 
-    PrivateData = @{
-        SupportGen2VMs = $true
-        AzureRetryCount = 3
-    }
+    PrivateData = @{ }
 }
 
 

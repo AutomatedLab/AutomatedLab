@@ -265,11 +265,12 @@ SELECT RegistrationData.NodeName
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 )
-SELECT TOP 5000 * FROM CTE WHERE 
-ErrorMessage LIKE '%cannot find module%' 
-OR ErrorMessage LIKE '%The assigned configuration%is not found%'
-OR ErrorMessage LIKE '%Checksum file not located for%'
-OR ErrorMessage LIKE '%Checksum for module%'
+SELECT TOP 5000 * FROM CTE WHERE
+ErrorMessage IS NOT NULL
+--ErrorMessage LIKE '%cannot find module%' 
+--OR ErrorMessage LIKE '%The assigned configuration%is not found%'
+--OR ErrorMessage LIKE '%Checksum file not located for%'
+--OR ErrorMessage LIKE '%Checksum for module%'
 ORDER BY EndTime DESC
 
 --Module does not exist					Cannot find module
@@ -328,13 +329,12 @@ SELECT StatusReport.JobId
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 	)
-	SELECT TOP 100000 * FROM CTE
+	SELECT * FROM CTE
 	WHERE 
 		ErrorMessage NOT LIKE '%cannot find module%' 
 		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
 		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
 		AND ErrorMessage NOT LIKE '%Checksum for module%'
-		AND EndTime > DATEADD(MINUTE, -120, GETDATE())
 		AND [Status] IS NOT NULL
 		OR ErrorMessage IS NULL
 
@@ -415,6 +415,7 @@ RETURN
 	,CreationTime AS [Time]
 	,RebootRequested
 	,OperationType
+	,JobId
 
 	,(
 	SELECT [HostName] FROM OPENJSON(
@@ -506,20 +507,27 @@ GO
 
 CREATE VIEW [dbo].[vNodeStatusSimple]
 AS
-SELECT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
+SELECT rd.NodeName, IIF(nss.NodeName IS NULL,'Failure',nss.Status) as Status, nss.Time
+FROM (
+SELECT DISTINCT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
 FROM dbo.StatusReport INNER JOIN
     (SELECT MAX(EndTime) AS MaxEndTime, NodeName
     FROM dbo.StatusReport AS StatusReport_1
     GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
+       WHERE dbo.StatusReport.Status IS NOT NULL
+) as nss
+RIGHT OUTER JOIN dbo.RegistrationData AS rd 
+ON nss.NodeName = rd.NodeName
+
 GO
+
 
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
 SELECT GetNodeStatus.*,
-IIF([ResourceCountNotInDesiredState] > 0, 'FALSE', 'TRUE') AS [InDesiredState]
+IIF([ResourceCountNotInDesiredState] > 0 OR [ResourceCountInDesiredState] = 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
 GO
-
 CREATE VIEW [dbo].[vNodeStatusCount]
 AS
 SELECT NodeName, COUNT(*) AS NodeStatusCount

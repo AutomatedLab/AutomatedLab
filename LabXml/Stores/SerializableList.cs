@@ -5,7 +5,7 @@ using System.Linq;
 
 namespace AutomatedLab
 {
-    [XmlRoot("list")]
+    [XmlRoot("List", Namespace = "")]
     public class SerializableList<T>
         : List<T>, IXmlSerializable
     {
@@ -36,7 +36,7 @@ namespace AutomatedLab
         {
             XmlSerializer itemSerializer = new XmlSerializer(typeof(T));
 
-            var propertyInfos = this.GetType().GetProperties().Where(pi => !builtinProperties.Contains(pi.Name));
+            var propertyInfos = GetType().GetProperties().Where(pi => !builtinProperties.Contains(pi.Name));
 
             bool wasEmpty = reader.IsEmptyElement;
             reader.Read();
@@ -59,7 +59,7 @@ namespace AutomatedLab
                 else
                 {
                     T item = (T)itemSerializer.Deserialize(reader);
-                    this.Add(item);
+                    Add(item);
 
                     if (reader.NodeType == System.Xml.XmlNodeType.EndElement)
                         reader.ReadEndElement();
@@ -72,20 +72,22 @@ namespace AutomatedLab
         public void WriteXml(System.Xml.XmlWriter writer)
         {
             XmlSerializer itemSerializer = new XmlSerializer(typeof(T));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
 
-            var propertyInfos = this.GetType().GetProperties()
+            var propertyInfos = GetType().GetProperties()
                 .Where(pi => pi.CanWrite && !builtinProperties.Contains(pi.Name)).ToList();
             foreach (var propertyInfo in propertyInfos)
             {
                 var serializer = new XmlSerializer(propertyInfo.PropertyType);
                 writer.WriteStartElement(propertyInfo.Name);
-                serializer.Serialize(writer, propertyInfo.GetValue(this));
+                serializer.Serialize(writer, propertyInfo.GetValue(this), xmlNamespace);
                 writer.WriteEndElement();
             }
 
             foreach (T item in this)
             {
-                itemSerializer.Serialize(writer, item);
+                itemSerializer.Serialize(writer, item, xmlNamespace);
             }
         }
         #endregion

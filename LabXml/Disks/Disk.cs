@@ -28,7 +28,7 @@
 
         public override string ToString()
         {
-            return FileName;
+            return Name;
         }
     }
 }

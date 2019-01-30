@@ -439,6 +439,8 @@ function Get-LabInternetFile
         [Parameter(Mandatory = $true)]
         [string]$Path,
 
+        [string]$FileName,
+
         [switch]$Force,
 
         [switch]$NoDisplay,
@@ -454,18 +456,17 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
+            
+            [string]$FileName,
 
             [switch]$NoDisplay,
 
             [switch]$Force
         )
 
-        $internalUri = New-Object System.Uri($Uri)
-        $fileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-
         if (Test-Path -Path $Path -PathType Container)
         {
-            $Path = Join-Path -Path $Path -ChildPath $fileName
+            $Path = Join-Path -Path $Path -ChildPath $FileName
         }
 
         if ((Test-Path -Path $Path) -and -not $Force)
@@ -474,6 +475,16 @@ function Get-LabInternetFile
         }
         else
         {
+            if (-not (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            {
+                #machine does not have internet connectivity
+                if (-not $offlineNode)
+                {
+                    Write-Error "Machine is not connected to the internet and cannot download the file '$Uri'"
+                }
+                return
+            }
+
             if ((Test-Path -Path $Path) -and $Force)
             {
                 Remove-Item -Path $Path -Force
@@ -556,6 +567,16 @@ function Get-LabInternetFile
 
     $start = Get-Date
 
+    #TODO: This needs to go into config
+    $offlineNode = $true
+    
+    if (-not $FileName)
+    {
+        $internalUri = New-Object System.Uri($Uri)
+        $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        $PSBoundParameters.FileName = $FileName
+    }
+
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
         $machine = Get-LabVM -IsRunning | Select-Object -First 1
@@ -579,8 +600,8 @@ function Get-LabInternetFile
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            FileName = $uri2.Segments[$uri2.Segments.Count-1]
-            FullName = Join-Path -Path $Path -ChildPath $uri2.Segments[$uri2.Segments.Count-1]
+            FileName = $FileName
+            FullName = Join-Path -Path $Path -ChildPath $FileName
             Length = $result.ContentLength
         }
     }
@@ -685,23 +706,18 @@ function Get-LabSourcesLocationInternal
         [switch]$Local
     )
 
-    $lab = Get-Lab -ErrorAction SilentlyContinue
-    $labDefinition = Get-LabDefinition -ErrorAction SilentlyContinue
-
+    $lab = $global:AL_CurrentLab
+    
     $defaultEngine = 'HyperV'
-    if ($lab)
+    $defaultEngine = if ($lab)
     {
-        $defaultEngine = $lab.DefaultVirtualizationEngine
+        $lab.DefaultVirtualizationEngine
     }
-    elseif ($labDefinition)
-    {
-        $defaultEngine = $labDefinition.DefaultVirtualizationEngine
-    }
-
+    
     if ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object {$_.DriveType -eq 3}).DeviceID | Sort-Object -Descending
-
+        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -773,10 +789,10 @@ function Update-LabSysinternalsTools
     if ((Get-Date) -gt $lastChecked)
     {
         Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
-
-        $sysInternalsUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsUrl
-        $sysInternalsDownloadUrl = (Get-Module -Name AutomatedLab)[0].PrivateData.SysInternalsDownloadUrl
-
+        
+        $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
+        $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
+    
         try
         {
             Write-Verbose -Message 'Web page downloaded'

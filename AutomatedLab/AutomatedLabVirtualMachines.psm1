@@ -24,7 +24,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment } 
 
     if (-not $machines)
     {
@@ -35,7 +35,7 @@ function New-LabVM
 
     $jobs = @()
 
-    if($lab.DefaultVirtualizationEngine -eq 'Azure')
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
         New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
@@ -44,8 +44,8 @@ function New-LabVM
 
     foreach ($machine in $machines)
     {
-        $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
-        if ($FDVDenyWriteAccess) {
+        $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
+        if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
         }
         
@@ -89,8 +89,8 @@ function New-LabVM
 
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
-        if ($FDVDenyWriteAccess) {
-            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $FDVDenyWriteAccess
+        if ($fdvDenyWriteAccess) {
+            Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
     }
 
@@ -161,8 +161,8 @@ function Start-LabVM
         [switch]$NoNewline,
 
         [int]$DelayBetweenComputers = 0,
-
-        [int]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StartLabMachine_Online,
+        
+        [int]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StartLabMachine_Online),
 
         [int]$StartNextMachines,
 
@@ -173,7 +173,7 @@ function Start-LabVM
         [switch]$RootDomainMachines,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [int]$PreDelaySeconds = 0,
 
@@ -211,7 +211,7 @@ function Start-LabVM
         {
             #get all machines that have a role assigned and the machine's role name is part of the parameter RoleName
             $vms = $lab.Machines | Where-Object { $_.Roles.Name } |
-            Where-Object { $_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) } }
+            Where-Object { ($_.Roles | Where-Object { $RoleName.HasFlag([AutomatedLab.Roles]$_.Name) }) -and (-not $_.SkipDeployment) }
 
             if (-not $vms)
             {
@@ -281,7 +281,7 @@ function Start-LabVM
         }
         elseif ($PSCmdlet.ParameterSetName -eq 'All')
         {
-            $vms = $availableVMs
+            $vms = $availableVMs | Where-Object { -not $_.SkipDeployment }
         }
     }
 
@@ -433,11 +433,11 @@ function Restart-LabVM
         [string[]]$ComputerName,
 
         [switch]$Wait,
-
-        [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_RestartLabMachine_Shutdown,
+        
+        [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown),
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [switch]$NoDisplay,
 
@@ -484,15 +484,15 @@ function Stop-LabVM
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StopLabMachine_Shutdown,
+        
+        [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown),
 
         [Parameter(ParameterSetName = 'All')]
         [switch]$All,
 
         [switch]$Wait,
 
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
 
         [switch]$NoNewLine,
 
@@ -514,7 +514,7 @@ function Stop-LabVM
     }
     elseif ($All)
     {
-        $machines = Get-LabVM -IncludeLinux
+        $machines = Get-LabVM -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
 
     #filtering out all machines that are already stopped
@@ -569,8 +569,8 @@ function Stop-LabVM2
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-
-        [int]$ShutdownTimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_StopLabMachine_Shutdown
+        
+        [int]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown)
     )
 
     $scriptBlock = {
@@ -611,14 +611,14 @@ function Wait-LabVM
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
@@ -810,12 +810,12 @@ function Wait-LabVMRestart
         [string[]]$ComputerName,
 
         [switch]$DoNotUseCredSsp,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
-
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
+        
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
 
         [switch]$NoNewLine,
@@ -882,12 +882,12 @@ function Wait-LabVMShutdown
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-
-        [double]$TimeoutInMinutes = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_WaitLabMachine_Online,
+        
+        [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator,
-
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
+        
         [switch]$NoNewLine
     )
 
@@ -981,7 +981,7 @@ function Remove-LabVM
 
     foreach ($machine in $machines)
     {
-        $doNotUseGetHostEntry = $MyInvocation.MyCommand.Module.PrivateData.DoNotUseGetHostEntryInNewLabPSSession
+        $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
         if (-not $doNotUseGetHostEntry)
         {
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
@@ -1045,7 +1045,7 @@ function Get-LabVMStatus
 
     if ($ComputerName)
     {
-        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux
+        $vms = Get-LabVM -ComputerName $ComputerName -IncludeLinux | Where-Object { -not $_.SkipDeployment }
     }
     else
     {
@@ -1145,7 +1145,7 @@ function Connect-LabVM
 
                 if ([bool]$download)
                 {
-                    $downloadUri = (Get-Module AutomatedLab)[0].PrivateData['OpenSshUri']
+                    $downloadUri = Get-LabConfigurationItem -Name OpenSshUri
                     $downloadPath = Join-Path ([System.IO.Path]::GetTempPath()) -ChildPath openssh.zip
                     $targetPath = "$labsources\Tools\OpenSSH"
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
@@ -2001,6 +2001,8 @@ function Checkpoint-LabVM
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2028,7 +2030,12 @@ function Checkpoint-LabVM
         }
     }
 
-    Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVm -ComputerName $machines -SnapshotName $SnapshotName}
+        'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
+    }    
 
     Write-LogFunctionExit
 }
@@ -2059,6 +2066,8 @@ function Restore-LabVMSnapshot
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2086,7 +2095,12 @@ function Restore-LabVMSnapshot
         }
     }
 
-    Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
+    }
 
     Write-LogFunctionExit
 }
@@ -2123,6 +2137,8 @@ function Remove-LabVMSnapshot
         return
     }
 
+    $lab = Get-Lab
+
     if ($ComputerName)
     {
         $machines = Get-LabVM -IncludeLinux | Where-Object { $_.Name -in $ComputerName }
@@ -2139,13 +2155,24 @@ function Remove-LabVMSnapshot
         return
     }
 
+    $parameters = @{
+        ComputerName = $machines
+    }
+    
     if ($SnapshotName)
     {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName
+        $parameters.SnapshotName = $SnapshotName
     }
     elseif ($AllSnapShots)
     {
-        Remove-LWHypervVMSnapshot -ComputerName $machines -All
+        $parameters.All = $true
+    }
+
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'HyperV' { Remove-LWHypervVMSnapshot @parameters}
+        'Azure'  { Remove-LWAzureVmSnapshot @parameters}
+        'VMWare' { Write-ScreenInfo -Type Warning -Message 'No VMWare snapshots possible, nothing will be removed'}
     }
 
     Write-LogFunctionExit

@@ -35,7 +35,7 @@ Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC, Routing -Network
 
 #web server
 $role = Get-LabPostInstallationActivity -CustomRole ProGet5 -Properties @{
-    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.0.13.exe'
+    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.1.17.exe'
     SqlServer = 'PGSql1'
 }
 Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 192.168.110.51 -PostInstallationActivity $role

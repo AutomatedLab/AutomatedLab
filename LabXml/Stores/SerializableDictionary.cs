@@ -25,7 +25,7 @@ namespace AutomatedLab
         public SerializableDictionary(IDictionary<TKey, TValue> dictionary)
             : base(dictionary)
         {
-        } 
+        }
 
         #region IXmlSerializable Members
         public System.Xml.Schema.XmlSchema GetSchema()
@@ -83,6 +83,8 @@ namespace AutomatedLab
         {
             XmlSerializer keySerializer = new XmlSerializer(typeof(TKey));
             XmlSerializer valueSerializer = new XmlSerializer(typeof(TValue));
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
 
             var propertyInfos = GetType().GetProperties()
                 .Where(pi => pi.CanWrite && !builtinProperties.Contains(pi.Name)).ToList();
@@ -90,7 +92,7 @@ namespace AutomatedLab
             {
                 var serializer = new XmlSerializer(propertyInfo.PropertyType);
                 writer.WriteStartElement(propertyInfo.Name);
-                serializer.Serialize(writer, propertyInfo.GetValue(this));
+                serializer.Serialize(writer, propertyInfo.GetValue(this), xmlNamespace);
                 writer.WriteEndElement();
             }
 
@@ -99,12 +101,12 @@ namespace AutomatedLab
                 writer.WriteStartElement("item");
 
                 writer.WriteStartElement("key");
-                keySerializer.Serialize(writer, key);
+                keySerializer.Serialize(writer, key, xmlNamespace);
                 writer.WriteEndElement();
 
                 writer.WriteStartElement("value");
                 TValue value = this[key];
-                valueSerializer.Serialize(writer, value);
+                valueSerializer.Serialize(writer, value, xmlNamespace);
                 writer.WriteEndElement();
 
                 writer.WriteEndElement();
@@ -130,7 +132,7 @@ namespace AutomatedLab
             }
 
             return serializableDictionary;
-        }        
+        }
 
         public static implicit operator Hashtable(SerializableDictionary<TKey, TValue> serializableDictionary)
         {

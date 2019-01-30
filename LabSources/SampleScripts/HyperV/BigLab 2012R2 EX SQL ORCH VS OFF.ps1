@@ -71,8 +71,8 @@ Add-LabMachineDefinition -Name T3AORCH1 -Memory 1GB -IpAddress 192.168.50.55 -Do
 
 Add-LabDiskDefinition -Name ExDataDisk -DiskSizeInGb 50
 #Exchange Server in the child domain 'a'
-$roles = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
-Add-LabMachineDefinition -Name T3AEX1 -Memory 4GB -IpAddress 192.168.50.52 -DomainName a.vm.net -Roles $roles -DiskName ExDataDisk
+$roles = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'TestOrg' }
+Add-LabMachineDefinition -Name T3AEX1 -Memory 4GB -IpAddress 192.168.50.52 -DomainName a.vm.net -PostInstallationActivity $roles -DiskName ExDataDisk
 
 #Development client in the child domain a with some extra tools
 $roles = Get-LabMachineRoleDefinition -Role VisualStudio2015, Office2013
@@ -82,33 +82,8 @@ Add-LabMachineDefinition -Name T3Client1 -Memory 2GB -IpAddress 192.168.50.85 -O
 $roles = Get-LabMachineRoleDefinition -Role Office2013
 Add-LabMachineDefinition -Name T3Client2 -Memory 2GB -IpAddress 192.168.50.86 -OperatingSystem 'Windows 10 Pro' -DomainName a.vm.net -Roles $roles
 
-#Now the actual work begins. First the virtual network adapter is created and then the base images per OS
-#All VMs are diffs from the base.
-Install-Lab -NetworkSwitches -BaseImages -VMs
-
-#This sets up all domains / domain controllers
-Install-Lab -Domains
-
-#This installs SQL Server 2012 to all machines with the respective role
-Install-Lab -SQLServers
-
-#This installs Exchange 2013 to all machines with the respective role
-Install-Lab -Exchange2013
-
-#This installs System Center Orchestrator 2012 to all machines with the respective role
-Install-Lab -Orchestrator
-
-#Install Visual Studio on the machines of the role VisualStudio2013
-Install-Lab -VisualStudio
-
-#Install Office 2013 to the machines with the Office2013 roles
-Install-Lab -Office2013
-
-#Start all machines what have not yet started
-Install-Lab -StartRemainingMachines
-
-#Finally the PostInstallActivities are invoked to do any kind of customization
-Install-Lab -PostInstallations
+#Now the actual work begins.
+Install-Lab
 
 #Install software to all lab machines
 $machines = Get-LabVM

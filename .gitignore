@@ -243,3 +243,6 @@ ModelManifest.xml
 
 # FAKE - F# Make
 .fake/
+
+#AL DLLs
+AutomatedLab/*.dll

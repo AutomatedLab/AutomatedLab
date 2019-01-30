@@ -30,7 +30,7 @@ function Send-ALToastNotification
     
     # Hardcoded toaster from PowerShell - no custom Toast providers after 1709
     $toastProvider = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
-    $imageLocation = (Get-Module AutomatedLabNotifications)[0].PrivateData.Toast.Image
+    $imageLocation = (Get-LabConfigurationItem -Name NotificationProviders).Toast.Image
     $imagePath = 'C:\ProgramData\AutomatedLab\Assets'
     $imageFilePath = Join-Path $imagePath -ChildPath (Split-Path $imageLocation -Leaf)
 
@@ -49,13 +49,19 @@ function Send-ALToastNotification
     $template = "<?xml version=`"1.0`" encoding=`"utf-8`"?><toast><visual><binding template=`"ToastGeneric`"><text>{2}</text><text>Deployment of {0} on {1}, current status '{2}'. Message {3}.</text><image src=`"{4}`" placement=`"appLogoOverride`" hint-crop=`"circle`" /></binding></visual></toast>" -f `
         $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message, $imageFilePath
 
+    try
+    {
+        [void]([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
+        [void]([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
+        [void]([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
+        $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
 
-    [void]([Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime])
-    [void]([Windows.Data.Xml.Dom.XmlDocument, Windows.Data.Xml.Dom.XmlDocument, ContentType = WindowsRuntime])
-    [void]([Windows.UI.Notifications.ToastNotification, Windows.UI.Notifications, ContentType = WindowsRuntime])
-    $xml = New-Object Windows.Data.Xml.Dom.XmlDocument
-
-    $xml.LoadXml($template)
-    $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
-    [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastProvider).Show($toast)
+        $xml.LoadXml($template)
+        $toast = New-Object Windows.UI.Notifications.ToastNotification $xml
+        [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier($toastProvider).Show($toast)
+    }
+    catch
+    {
+        Write-Verbose "Error sending toast notification: $($_.Exception.Message)"
+    }
 }

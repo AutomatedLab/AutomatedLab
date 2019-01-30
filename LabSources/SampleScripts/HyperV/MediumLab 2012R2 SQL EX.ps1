@@ -21,8 +21,8 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:IsDomainJoined'= $true
-	'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
-	'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
+    'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
+    'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
     'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
     'Add-LabMachineDefinition:DomainName'= 'child1.test2.net'
 }
@@ -41,8 +41,8 @@ $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLa
 Add-LabMachineDefinition -Name T2DC2 -Memory 512MB -IpAddress 192.168.71.11 -Roles $role
 
 #This machine will serve all Exchange roles
-$role = Get-LabMachineRoleDefinition -Role Exchange2013 -Properties @{ OrganizationName = 'ExOrg' }
-Add-LabMachineDefinition -Name T2Ex1 -Memory 4GB -Processors 2 -IpAddress 192.168.71.50 -Roles $role
+$role = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'ExOrg' }
+Add-LabMachineDefinition -Name T2Ex1 -Memory 4GB -Processors 2 -IpAddress 192.168.71.50 -PostInstallationActivity $role
 
 #This will be the SQL server with the usual demo databases
 $role = Get-LabMachineRoleDefinition -Role SQLServer2014 -Properties @{InstallSampleDatabase = 'true'}

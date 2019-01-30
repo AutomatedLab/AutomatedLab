@@ -161,60 +161,63 @@ function Install-LWLabCAServers
         }
         #endregion
 
-
-        #region - Create CAPolicy file
+        #region - Create CAPolicy file        
         $caPolicyFileName = "$Env:Windir\CAPolicy.inf"
-        Set-Content $caPolicyFileName -Force -Value ';CAPolicy for CA'
-        Add-Content $caPolicyFileName -Value '; Please replace sample CPS OID with your own OID'
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[Version]'
-        Add-Content $caPolicyFileName -Value "Signature=`"`$Windows NT`$`" "
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[PolicyStatementExtension]'
-        Add-Content $caPolicyFileName -Value 'Policies=LegalPolicy'
-        Add-Content $caPolicyFileName -Value 'Critical=0'
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[LegalPolicy]'
-        Add-Content $caPolicyFileName -Value 'OID=1.3.6.1.4.1.11.21.43'
-        Add-Content $caPolicyFileName -Value "Notice=$($param.CpsText)"
-        Add-Content $caPolicyFileName -Value "URL=$($param.CpsUrl)"
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[Certsrv_Server]'
-        Add-Content $caPolicyFileName -Value 'ForceUTF8=true'
-        Add-Content $caPolicyFileName -Value "RenewalKeyLength=$($param.KeyLength)"
-        Add-Content $caPolicyFileName -Value "RenewalValidityPeriod=$($param.ValidityPeriod)"
-        Add-Content $caPolicyFileName -Value "RenewalValidityPeriodUnits=$($param.ValidityPeriodUnits)"
-        Add-Content $caPolicyFileName -Value "CRLPeriod=$($param.CRLPeriod)"
-        Add-Content $caPolicyFileName -Value "CRLPeriodUnits=$($param.CRLPeriodUnits)"
-        Add-Content $caPolicyFileName -Value "CRLDeltaPeriod=$($param.CRLDeltaPeriod)"
-        Add-Content $caPolicyFileName -Value "CRLDeltaPeriodUnits=$($param.CRLDeltaPeriodUnits)"
-        Add-Content $caPolicyFileName -Value 'EnableKeyCounting=0'
-        Add-Content $caPolicyFileName -Value 'AlternateSignatureAlgorithm=0'
-        if ($param.DoNotLoadDefaultTemplates) { Add-Content $caPolicyFileName -Value 'LoadDefaultTemplates=0' }
-        if ($param.CAType -like '*root*')
+        if (-not (Test-Path -Path $caPolicyFileName))
         {
+            Write-Verbose -Message 'Create CAPolicy.inf file'
+            Set-Content $caPolicyFileName -Force -Value ';CAPolicy for CA'
+            Add-Content $caPolicyFileName -Value '; Please replace sample CPS OID with your own OID'
             Add-Content $caPolicyFileName -Value ''
-            Add-Content $caPolicyFileName -Value '[Extensions]'
-            Add-Content $caPolicyFileName -Value ';Remove CA Version Index'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.1='
-            Add-Content $caPolicyFileName -Value ';Remove CA Hash of previous CA Certificates'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.2='
-            Add-Content $caPolicyFileName -Value ';Remove V1 Certificate Template Information'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.20.2='
-            Add-Content $caPolicyFileName -Value ';Remove CA of V2 Certificate Template Information'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.7='
-            Add-Content $caPolicyFileName -Value ';Key Usage Attribute set to critical'
-            Add-Content $caPolicyFileName -Value '2.5.29.15=AwIBBg=='
-            Add-Content $caPolicyFileName -Value 'Critical=2.5.29.15'
-        }
-
-        if ($param.DebugPref -eq 'Continue')
-        {
-            $file = get-content -Path "$Env:Windir\CAPolicy.inf"
-            Write-Debug -Message 'CApolicy.inf contents:'
-            foreach ($line in $file)
+            Add-Content $caPolicyFileName -Value '[Version]'
+            Add-Content $caPolicyFileName -Value "Signature=`"`$Windows NT`$`" "
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[PolicyStatementExtension]'
+            Add-Content $caPolicyFileName -Value 'Policies=LegalPolicy'
+            Add-Content $caPolicyFileName -Value 'Critical=0'
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[LegalPolicy]'
+            Add-Content $caPolicyFileName -Value 'OID=1.3.6.1.4.1.11.21.43'
+            Add-Content $caPolicyFileName -Value "Notice=$($param.CpsText)"
+            Add-Content $caPolicyFileName -Value "URL=$($param.CpsUrl)"
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[Certsrv_Server]'
+            Add-Content $caPolicyFileName -Value 'ForceUTF8=true'
+            Add-Content $caPolicyFileName -Value "RenewalKeyLength=$($param.KeyLength)"
+            Add-Content $caPolicyFileName -Value "RenewalValidityPeriod=$($param.ValidityPeriod)"
+            Add-Content $caPolicyFileName -Value "RenewalValidityPeriodUnits=$($param.ValidityPeriodUnits)"
+            Add-Content $caPolicyFileName -Value "CRLPeriod=$($param.CRLPeriod)"
+            Add-Content $caPolicyFileName -Value "CRLPeriodUnits=$($param.CRLPeriodUnits)"
+            Add-Content $caPolicyFileName -Value "CRLDeltaPeriod=$($param.CRLDeltaPeriod)"
+            Add-Content $caPolicyFileName -Value "CRLDeltaPeriodUnits=$($param.CRLDeltaPeriodUnits)"
+            Add-Content $caPolicyFileName -Value 'EnableKeyCounting=0'
+            Add-Content $caPolicyFileName -Value 'AlternateSignatureAlgorithm=0'
+            if ($param.DoNotLoadDefaultTemplates) { Add-Content $caPolicyFileName -Value 'LoadDefaultTemplates=0' }
+            if ($param.CAType -like '*root*')
             {
-                Write-Debug -Message $line
+                Add-Content $caPolicyFileName -Value ''
+                Add-Content $caPolicyFileName -Value '[Extensions]'
+                Add-Content $caPolicyFileName -Value ';Remove CA Version Index'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.1='
+                Add-Content $caPolicyFileName -Value ';Remove CA Hash of previous CA Certificates'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.2='
+                Add-Content $caPolicyFileName -Value ';Remove V1 Certificate Template Information'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.20.2='
+                Add-Content $caPolicyFileName -Value ';Remove CA of V2 Certificate Template Information'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.7='
+                Add-Content $caPolicyFileName -Value ';Key Usage Attribute set to critical'
+                Add-Content $caPolicyFileName -Value '2.5.29.15=AwIBBg=='
+                Add-Content $caPolicyFileName -Value 'Critical=2.5.29.15'
+            }
+
+            if ($param.DebugPref -eq 'Continue')
+            {
+                $file = get-content -Path "$Env:Windir\CAPolicy.inf"
+                Write-Debug -Message 'CApolicy.inf contents:'
+                foreach ($line in $file)
+                {
+                    Write-Debug -Message $line
+                }
             }
         }
         #endregion - Create CAPolicy file
@@ -639,61 +642,63 @@ function Install-LWLabCAServers2008
         }
         #endregion
 
-
-        Write-Verbose -Message 'Create CAPolicy.inf file'
         #region - Create CAPolicy file
         $caPolicyFileName = "$Env:Windir\CAPolicy.inf"
-        Set-Content $caPolicyFileName -Force -Value ';CAPolicy for CA'
-        Add-Content $caPolicyFileName -Value '; Please replace sample CPS OID with your own OID'
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[Version]'
-        Add-Content $caPolicyFileName -Value "Signature=`"`$Windows NT`$`" "
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[PolicyStatementExtension]'
-        Add-Content $caPolicyFileName -Value 'Policies=LegalPolicy'
-        Add-Content $caPolicyFileName -Value 'Critical=0'
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[LegalPolicy]'
-        Add-Content $caPolicyFileName -Value 'OID=1.3.6.1.4.1.11.21.43'
-        Add-Content $caPolicyFileName -Value "Notice=$($param.CpsText)"
-        Add-Content $caPolicyFileName -Value "URL=$($param.CpsUrl)"
-        Add-Content $caPolicyFileName -Value ''
-        Add-Content $caPolicyFileName -Value '[Certsrv_Server]'
-        Add-Content $caPolicyFileName -Value 'ForceUTF8=true'
-        Add-Content $caPolicyFileName -Value "RenewalKeyLength=$($param.KeyLength)"
-        Add-Content $caPolicyFileName -Value "RenewalValidityPeriod=$($param.ValidityPeriod)"
-        Add-Content $caPolicyFileName -Value "RenewalValidityPeriodUnits=$($param.ValidityPeriodUnits)"
-        Add-Content $caPolicyFileName -Value "CRLPeriod=$($param.CRLPeriod)"
-        Add-Content $caPolicyFileName -Value "CRLPeriodUnits=$($param.CRLPeriodUnits)"
-        Add-Content $caPolicyFileName -Value "CRLDeltaPeriod=$($param.CRLDeltaPeriod)"
-        Add-Content $caPolicyFileName -Value "CRLDeltaPeriodUnits=$($param.CRLDeltaPeriodUnits)"
-        Add-Content $caPolicyFileName -Value 'EnableKeyCounting=0'
-        Add-Content $caPolicyFileName -Value 'AlternateSignatureAlgorithm=0'
-        if ($param.DoNotLoadDefaultTemplates -eq 'True') { Add-Content $caPolicyFileName -Value 'LoadDefaultTemplates=0' }
-        if ($param.CAType -like '*root*')
+        if (-not (Test-Path -Path $caPolicyFileName))
         {
+            Write-Verbose -Message 'Create CAPolicy.inf file'
+            Set-Content $caPolicyFileName -Force -Value ';CAPolicy for CA'
+            Add-Content $caPolicyFileName -Value '; Please replace sample CPS OID with your own OID'
             Add-Content $caPolicyFileName -Value ''
-            Add-Content $caPolicyFileName -Value '[Extensions]'
-            Add-Content $caPolicyFileName -Value ';Remove CA Version Index'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.1='
-            Add-Content $caPolicyFileName -Value ';Remove CA Hash of previous CA Certificates'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.2='
-            Add-Content $caPolicyFileName -Value ';Remove V1 Certificate Template Information'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.20.2='
-            Add-Content $caPolicyFileName -Value ';Remove CA of V2 Certificate Template Information'
-            Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.7='
-            Add-Content $caPolicyFileName -Value ';Key Usage Attribute set to critical'
-            Add-Content $caPolicyFileName -Value '2.5.29.15=AwIBBg=='
-            Add-Content $caPolicyFileName -Value 'Critical=2.5.29.15'
-        }
-
-        if ($param.DebugPref -eq 'Continue')
-        {
-            $file = get-content -Path "$Env:Windir\CAPolicy.inf"
-            Write-Debug -Message 'CApolicy.inf contents:'
-            foreach ($line in $file)
+            Add-Content $caPolicyFileName -Value '[Version]'
+            Add-Content $caPolicyFileName -Value "Signature=`"`$Windows NT`$`" "
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[PolicyStatementExtension]'
+            Add-Content $caPolicyFileName -Value 'Policies=LegalPolicy'
+            Add-Content $caPolicyFileName -Value 'Critical=0'
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[LegalPolicy]'
+            Add-Content $caPolicyFileName -Value 'OID=1.3.6.1.4.1.11.21.43'
+            Add-Content $caPolicyFileName -Value "Notice=$($param.CpsText)"
+            Add-Content $caPolicyFileName -Value "URL=$($param.CpsUrl)"
+            Add-Content $caPolicyFileName -Value ''
+            Add-Content $caPolicyFileName -Value '[Certsrv_Server]'
+            Add-Content $caPolicyFileName -Value 'ForceUTF8=true'
+            Add-Content $caPolicyFileName -Value "RenewalKeyLength=$($param.KeyLength)"
+            Add-Content $caPolicyFileName -Value "RenewalValidityPeriod=$($param.ValidityPeriod)"
+            Add-Content $caPolicyFileName -Value "RenewalValidityPeriodUnits=$($param.ValidityPeriodUnits)"
+            Add-Content $caPolicyFileName -Value "CRLPeriod=$($param.CRLPeriod)"
+            Add-Content $caPolicyFileName -Value "CRLPeriodUnits=$($param.CRLPeriodUnits)"
+            Add-Content $caPolicyFileName -Value "CRLDeltaPeriod=$($param.CRLDeltaPeriod)"
+            Add-Content $caPolicyFileName -Value "CRLDeltaPeriodUnits=$($param.CRLDeltaPeriodUnits)"
+            Add-Content $caPolicyFileName -Value 'EnableKeyCounting=0'
+            Add-Content $caPolicyFileName -Value 'AlternateSignatureAlgorithm=0'
+            if ($param.DoNotLoadDefaultTemplates -eq 'True') { Add-Content $caPolicyFileName -Value 'LoadDefaultTemplates=0' }
+            if ($param.CAType -like '*root*')
             {
-                Write-Debug -Message $line
+                Add-Content $caPolicyFileName -Value ''
+                Add-Content $caPolicyFileName -Value '[Extensions]'
+                Add-Content $caPolicyFileName -Value ';Remove CA Version Index'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.1='
+                Add-Content $caPolicyFileName -Value ';Remove CA Hash of previous CA Certificates'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.2='
+                Add-Content $caPolicyFileName -Value ';Remove V1 Certificate Template Information'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.20.2='
+                Add-Content $caPolicyFileName -Value ';Remove CA of V2 Certificate Template Information'
+                Add-Content $caPolicyFileName -Value '1.3.6.1.4.1.311.21.7='
+                Add-Content $caPolicyFileName -Value ';Key Usage Attribute set to critical'
+                Add-Content $caPolicyFileName -Value '2.5.29.15=AwIBBg=='
+                Add-Content $caPolicyFileName -Value 'Critical=2.5.29.15'
+            }
+
+            if ($param.DebugPref -eq 'Continue')
+            {
+                $file = get-content -Path "$Env:Windir\CAPolicy.inf"
+                Write-Debug -Message 'CApolicy.inf contents:'
+                foreach ($line in $file)
+                {
+                    Write-Debug -Message $line
+                }
             }
         }
         #endregion - Create CAPolicy file
@@ -758,19 +763,19 @@ function Install-LWLabCAServers2008
         $CATypesByVal = @{}
         $CATypesByName.keys | ForEach-Object {$CATypesByVal.Add($CATypesByName[$_],$_)}
         $CAPRopertyByName = @{"CAType"=0
-                              "CAKeyInfo"=1
-                              "Interactive"=2
-                              "ValidityPeriodUnits"=5
-                              "ValidityPeriod"=6
-                              "ExpirationDate"=7
-                              "PreserveDataBase"=8
-                              "DBDirectory"=9
-                              "Logdirectory"=10
-                              "ParentCAMachine"=12
-                              "ParentCAName"=13
-                              "RequestFile"=14
-                              "WebCAMachine"=15
-                              "WebCAName"=16}
+            "CAKeyInfo"=1
+            "Interactive"=2
+            "ValidityPeriodUnits"=5
+            "ValidityPeriod"=6
+            "ExpirationDate"=7
+            "PreserveDataBase"=8
+            "DBDirectory"=9
+            "Logdirectory"=10
+            "ParentCAMachine"=12
+            "ParentCAName"=13
+            "RequestFile"=14
+            "WebCAMachine"=15
+        "WebCAName"=16}
         $CAPRopertyByVal = @{}
         $CAPRopertyByName.keys | ForEach-Object `
         {

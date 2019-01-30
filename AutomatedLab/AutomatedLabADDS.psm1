@@ -36,6 +36,19 @@ $adInstallRootDcScriptPre2012 = {
 "@
 
     $VerbosePreference = $using:VerbosePreference
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -274,6 +287,19 @@ $adInstallFirstChildDcPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($ParentDomainName) | Out-Null
 
@@ -470,7 +496,15 @@ $adInstallDc2012 = {
     }
 
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
-    Install-Windowsfeature AD-Domain-Services, DNS -IncludeManagementTools
+    $result = Install-WindowsFeature AD-Domain-Services, DNS -IncludeManagementTools
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     $safeDsrmPassword = ConvertTo-SecureString -String $DsrmPassword -AsPlainText -Force
 
@@ -564,6 +598,19 @@ $adInstallDcPre2012 = {
     $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
+    
+    Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
+    Import-Module -Name ServerManager
+    Add-WindowsFeature -Name DNS
+    $result = Add-WindowsFeature -Name AD-Domain-Services
+    if (-not $result.Success)
+    {
+        throw 'Could not install AD-Domain-Services windows feature'
+    }
+    else
+    {
+        Write-Verbose -Message 'AD-Domain-Services windows feature installed successfully'
+    }
 
     ([WMIClass]'Win32_NetworkAdapterConfiguration').SetDNSSuffixSearchOrder($DomainName) | Out-Null
 
@@ -701,14 +748,14 @@ function Install-LabRootDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -722,7 +769,7 @@ function Install-LabRootDcs
         return
     }
 
-    $machines = Get-LabVM -Role RootDC
+    $machines = Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -764,61 +811,88 @@ function Install-LabRootDcs
 
         foreach ($machine in $machines)
         {
-            $rootDcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
+            $dcRole = $machine.Roles | Where-Object Name -eq 'RootDC'
 
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 #Pre 2012
                 $scriptblock = $adInstallRootDcScriptPre2012
-                $forestFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$rootDcRole.Properties.ForestFunctionalLevel
-                $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$rootDcRole.Properties.DomainFunctionalLevel
+                $forestFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$dcRole.Properties.ForestFunctionalLevel
+                $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$dcRole.Properties.DomainFunctionalLevel
             }
             else
             {
                 $scriptblock = $adInstallRootDcScript2012
-                $forestFunctionalLevel = $rootDcRole.Properties.ForestFunctionalLevel
-                $domainFunctionalLevel = $rootDcRole.Properties.DomainFunctionalLevel
+                $forestFunctionalLevel = $dcRole.Properties.ForestFunctionalLevel
+                $domainFunctionalLevel = $dcRole.Properties.DomainFunctionalLevel
             }
 
-            $netBiosDomainName = if ($rootDcRole.Properties.ContainsKey('NetBiosDomainName'))
+            $netBiosDomainName = if ($dcRole.Properties.ContainsKey('NetBiosDomainName'))
             {
-                $rootDcRole.Properties.NetBiosDomainName
+                $dcRole.Properties.NetBiosDomainName
             }
             else
             {
                 $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
             }
 
-            $databasePath = if ($rootDcRole.Properties.ContainsKey('DatabasePath'))
+            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
             {
-                $rootDcRole.Properties.DatabasePath
+                $dcRole.Properties.DatabasePath
             }
             else
             {
                 'C:\Windows\NTDS'
             }
 
-            $logPath = if ($rootDcRole.Properties.ContainsKey('LogPath'))
+            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
             {
-                $rootDcRole.Properties.LogPath
+                $dcRole.Properties.LogPath
             }
             else
             {
                 'C:\Windows\NTDS'
             }
 
-            $sysvolPath = if ($rootDcRole.Properties.ContainsKey('SysvolPath'))
+            $netBiosDomainName = if ($dcRole.Properties.ContainsKey('NetBiosDomainName'))
             {
-                $rootDcRole.Properties.SysvolPath
+                $dcRole.Properties.NetBiosDomainName
+            }
+            else
+            {
+                $machine.DomainName.Substring(0, $machine.DomainName.IndexOf('.'))
+            }
+
+            $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
+            {
+                $dcRole.Properties.DatabasePath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+
+            $logPath = if ($dcRole.Properties.ContainsKey('LogPath'))
+            {
+                $dcRole.Properties.LogPath
+            }
+            else
+            {
+                'C:\Windows\NTDS'
+            }
+
+            $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
+            {
+                $dcRole.Properties.SysvolPath
             }
             else
             {
                 'C:\Windows\Sysvol'
             }
 
-            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            $dsrmPassword = if ($dcRole.Properties.ContainsKey('DsrmPassword'))
             {
-                $rootDcRole.Properties.DsrmPassword
+                $dcRole.Properties.DsrmPassword
             }
             else
             {
@@ -1003,14 +1077,14 @@ function Install-LabFirstChildDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -1024,7 +1098,7 @@ function Install-LabFirstChildDcs
         return
     }
 
-    $machines = $lab.Machines | Where-Object { $_.Roles.Name -contains 'FirstChildDC' }
+    $machines = Get-LabVM -Role FirstChildDC | Where-Object { -not $_.SkipDeployment }
     if (-not $machines)
     {
         Write-ScreenInfo -Message "There is no machine with the role 'FirstChildDC'" -Type Warning
@@ -1092,7 +1166,7 @@ function Install-LabFirstChildDcs
             }
 
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptBlock = $adInstallFirstChildDcPre2012
                 $domainFunctionalLevel = [int][AutomatedLab.ActiveDirectoryFunctionalLevel]$domainFunctionalLevel
@@ -1131,14 +1205,14 @@ function Install-LabFirstChildDcs
 
             $sysvolPath = if ($dcRole.Properties.ContainsKey('SysvolPath'))
             {
-                $rootDcRole.Properties.SysvolPath
+                $dcRole.Properties.SysvolPath
             }
             else
             {
                 'C:\Windows\Sysvol'
             }
 
-            $dsrmPassword = if ($rootDcRole.Properties.ContainsKey('DsrmPassword'))
+            $dsrmPassword = if ($dcRole.Properties.ContainsKey('DsrmPassword'))
             {
                 $dcRole.Properties.DsrmPassword
             }
@@ -1287,14 +1361,14 @@ function Install-LabDcs
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$DcPromotionRestartTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionRestartAfterDcpromo,
-
-        [int]$AdwsReadyTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_DcPromotionAdwsReady,
-
+        [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
+        
+        [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -1308,7 +1382,7 @@ function Install-LabDcs
         return
     }
 
-    $machines = Get-LabVM -Role DC
+    $machines = Get-LabVM -Role DC | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -1370,7 +1444,7 @@ function Install-LabDcs
             $parentCredential = $parentDc.GetCredential((Get-Lab))
 
             Write-Verbose -Message 'Invoking script block for DC installation and promotion'
-            if ($machine.OperatingSystem.Version -le 6.1)
+            if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptblock = $adInstallDcPre2012
             }
@@ -1378,7 +1452,6 @@ function Install-LabDcs
             {
                 $scriptblock = $adInstallDc2012
             }
-
 
             $siteName = 'Default-First-Site-Name'
 
@@ -1390,7 +1463,7 @@ function Install-LabDcs
 
             $databasePath = if ($dcRole.Properties.ContainsKey('DatabasePath'))
             {
-                $rootDcRole.Properties.DatabasePath
+                $dcRole.Properties.DatabasePath
             }
             else
             {
@@ -1967,6 +2040,7 @@ function New-LabADSite
 
     Write-LogFunctionEntry
 
+    $lab = Get-Lab
     $machine = Get-LabVM -ComputerName $ComputerName
     $dcRole = $machine.Roles | Where-Object Name -like '*DC'
 
@@ -1976,45 +2050,21 @@ function New-LabADSite
         return
     }
 
-    $forest = $dcRole.Properties.ParentDomain
-
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
-    if (-not $domainRootMachine)
+    $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    if (-not $rootDc)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
-        $domainRootMachine = Get-LabVM -role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
-    }
-
-    #if no domain tree
-    if (-not ($forest))
-    {
-        Write-Verbose -Message "Forest of Domain root machine '$domainRootMachine' not found"
-
-        $domain = $machine.DomainName
-        if ($domain.Split('.').Count -le 2)
+        $domain = $lab.Domains | Where-Object Name -eq $machine.DomainName
+        if (-not $lab.IsRootDomain($domain))
         {
-            $forest = $domain
-            Write-Verbose -Message "Forest set to '$forest' based on domain name of '$ComputerName' only has 2 names"
-        }
-        else
-        {
-            $forest = $domain.Split('.', 2)[-1]
-            Write-Verbose -Message "Forest set to '$forest' based on two last names of domain name '$domain' of '$ComputerName'"
+            $parentDomain = $lab.GetParentDomain($domain)
+            $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $parentDomain
         }
     }
 
-    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
-    if (-not $rootDcForMachine)
-    {
-        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
-        $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
-        $forest = $dcRole.Properties.ParentDomain
-    }
-
-
-    $result = Invoke-LabCommand -ComputerName $rootDcForMachine -NoDisplay -PassThru -ScriptBlock `
+    $result = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2037,19 +2087,22 @@ function New-LabADSite
             Write-Verbose -Message "SiteName '$SiteName' already exists"
         }
 
-
-        if (-not (Get-ADReplicationSubNet -Filter "Name -eq '$SiteSubnet'"))
+        $SiteSubnet = $SiteSubnet -split ',|;'
+        foreach ($sn in $SiteSubnet)
         {
-            Write-Verbose -Message "SiteSubnet does not exist. Attempting to create it now and associate it with site '$SiteName'"
-            New-ADReplicationSubnet -Name $SiteSubnet -Site $SiteName -Location $SiteName
-        }
-        else
-        {
-            Write-Verbose -Message "SiteSubnet '$SiteSubnet' already exists"
+            $sn = $sn.Trim()
+            if (-not (Get-ADReplicationSubNet -Filter "Name -eq '$sn'"))
+            {
+                Write-Verbose -Message "SiteSubnet does not exist. Attempting to create it now and associate it with site '$SiteName'"
+                New-ADReplicationSubnet -Name $sn -Site $SiteName -Location $SiteName
+            }
+            else
+            {
+                Write-Verbose -Message "SiteSubnet '$sn' already exists"
+            }
         }
 
-
-        $sites = (Get-AdReplicationSite -Filter 'Name -ne "Default-First-Name-Site"').Name
+        $sites = (Get-ADReplicationSite -Filter 'Name -ne "Default-First-Site-Name"').Name
         foreach ($site in $sites)
         {
             $otherSites = $sites | Where-Object { $_ -ne $site }
@@ -2069,7 +2122,6 @@ function New-LabADSite
             }
         }
     } -ArgumentList $ComputerName, $SiteName, $SiteSubnet
-
 
     Write-LogFunctionExit
 }
@@ -2099,47 +2151,29 @@ function Move-LabDomainController
         Write-Verbose "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
-
-    $forest = $dcRole.Properties.ParentDomain
+    
     $machine = Get-LabVM -ComputerName $ComputerName
+    $lab = Get-Lab
+
+    $forest = if ($lab.IsRootDomain($machine.DomainName))
+    {
+        $machine.DomainName
+    }
+    else
+    {
+        $lab.GetParentDomain($machine.DomainName)
+    }
 
     Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
-    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
+    $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
     if (-not $domainRootMachine)
     {
         Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
         $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
-
-    #if no domain tree
-    if (-not $forest)
-    {
-        Write-Verbose -Message "Forest of Domain root machine '$domainRootMachine' not found"
-
-        $domain = $machine.DomainName
-        if ($domain.Split('.').Count -le 2)
-        {
-            $forest = $domain
-            Write-Verbose -Message "Forest set to '$forest' based on domain name of '$ComputerName' only has 2 names"
-        }
-        else
-        {
-            $forest = $domain.Split('.', 2)[-1]
-            Write-Verbose -Message "Forest set to '$forest' based on two last names of domain name '$domain' of '$ComputerName'"
-        }
-    }
-
-    $rootDcForMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
-    if (-not $rootDcForMachine)
-    {
-        $rootDcForMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $forest
-        $dcRole = $rootDcForMachine.Roles | Where-Object Name -eq 'FirstChild'
-        $forest = $dcRole.Properties.ParentDomain
-    }
-
-
-    $result = Invoke-LabCommand -ComputerName $rootDcForMachine -NoDisplay -PassThru -ScriptBlock `
+    
+    $result = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (

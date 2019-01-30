@@ -20,6 +20,52 @@ namespace AutomatedLab
             }
         }
 
+        public void Export(string path)
+        {
+            var serializer = new XmlSerializer(GetType());
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+            FileStream fileStream = new FileStream(path, FileMode.OpenOrCreate);
+
+            serializer.Serialize(fileStream, this, xmlNamespace);
+
+            fileStream.Close();
+        }
+
+        public string ExportToString()
+        {
+            var serializer = new XmlSerializer(GetType());
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+
+            var sb = new StringBuilder();
+            var sw = new StringWriter(sb);
+
+            serializer.Serialize(sw, this, xmlNamespace);
+
+            sw.Close();
+
+            return sb.ToString();
+        }
+
+        public void ExportToRegistry(string keyName, string valueName)
+        {
+            var serializer = new XmlSerializer(GetType());
+            var xmlNamespace = new XmlSerializerNamespaces();
+            xmlNamespace.Add(string.Empty, string.Empty);
+            StringWriter sw = new StringWriter();
+
+            //makes sure the key exists and does nothing if does already exist
+            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
+            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
+            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
+
+            serializer.Serialize(sw, this, xmlNamespace);
+
+            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
+            key.Close();
+        }
+
         public void AddFromFile(string path)
         {
             var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
@@ -41,29 +87,6 @@ namespace AutomatedLab
             fileStream.Close();
 
             return items;
-        }
-
-        public void Export(string path)
-        {
-            var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
-            FileStream fileStream = new FileStream(path, FileMode.OpenOrCreate);
-
-            serializer.Serialize(fileStream, this);
-
-            fileStream.Close();
-        }
-
-        public string ExportToString()
-        {
-            var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
-            var sb = new StringBuilder();
-            var sw = new StringWriter(sb);
-
-            serializer.Serialize(sw, this);
-
-            sw.Close();
-
-            return sb.ToString();
         }
 
         public static DictionaryXmlStore<TKey, TValue> ImportFromString(string s)
@@ -102,22 +125,6 @@ namespace AutomatedLab
             sr.Close();
 
             return items;
-        }
-
-        public void ExportToRegistry(string keyName, string valueName)
-        {
-            var serializer = new XmlSerializer(typeof(DictionaryXmlStore<TKey, TValue>));
-            StringWriter sw = new StringWriter();
-
-            //makes sure the key exists and does nothing if does already exist
-            var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
-            var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
-            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
-
-            serializer.Serialize(sw, this);
-
-            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
-            key.Close();
         }
     }
 }

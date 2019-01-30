@@ -39,6 +39,76 @@
     </View>
 
     <View>
+      <Name>AutomatedLab.Lab</Name>
+      <ViewSelectedBy>
+        <TypeName>AutomatedLab.Lab</TypeName>
+      </ViewSelectedBy>
+      <CustomControl>
+        <CustomEntries>
+          <CustomEntry>
+            <CustomItem>
+
+              <Frame>
+                <LeftIndent>4</LeftIndent>
+                <CustomItem>
+
+                  <Text>Lab Name: </Text>
+                  <ExpressionBinding>
+                    <PropertyName>Name</PropertyName>
+                  </ExpressionBinding>
+                  <ExpressionBinding>
+                    <ScriptBlock>" ($($_.DefaultVirtualizationEngine))"</ScriptBlock>
+                  </ExpressionBinding>
+
+                  <NewLine />
+                  <NewLine />
+                </CustomItem>
+              </Frame>
+
+              <Frame>
+                <LeftIndent>8</LeftIndent>
+                <CustomItem>
+                  <Text>LabFilePath: </Text>
+                  <ExpressionBinding>
+                    <PropertyName>LabFilePath</PropertyName>
+                  </ExpressionBinding>
+                  <NewLine />
+
+                  <Text>VM Path: </Text>
+                  <ExpressionBinding>
+                    <ScriptBlock>$_.Target.Path</ScriptBlock>
+                  </ExpressionBinding>
+                  <NewLine />
+                  <NewLine />
+
+                  <Text>Machines: </Text>
+                  <ExpressionBinding>
+                    <ScriptBlock>$_.Machines.Count</ScriptBlock>
+                  </ExpressionBinding>
+                  <NewLine />
+
+                  <Text>Domains:  </Text>
+                  <ExpressionBinding>
+                    <ScriptBlock>$_.Domains.Count</ScriptBlock>
+                  </ExpressionBinding>
+                  <NewLine />
+
+                  <Text>Networks: </Text>
+                  <ExpressionBinding>
+                    <ScriptBlock>$_.VirtualNetworks.Count</ScriptBlock>
+                  </ExpressionBinding>
+                  <NewLine />
+
+                </CustomItem>
+              </Frame>
+
+            </CustomItem>
+          </CustomEntry>
+        </CustomEntries>
+      </CustomControl>
+    </View>
+
+    <View>
       <Name>AutomatedLab.Machine</Name>
       <ViewSelectedBy>
         <TypeName>AutomatedLab.Machine</TypeName>
@@ -56,6 +126,15 @@
             <Label>Ip Address</Label>
           </TableColumnHeader>
           <TableColumnHeader>
+            <Label>Roles</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>PostInstall</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
+            <Label>Disks</Label>
+          </TableColumnHeader>
+          <TableColumnHeader>
             <Label>OS</Label>
           </TableColumnHeader>
         </TableHeaders>
@@ -70,6 +149,15 @@
               </TableColumnItem>
               <TableColumnItem>
                 <PropertyName>IpV4Address</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Roles</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>PostInstallationActivity</PropertyName>
+              </TableColumnItem>
+              <TableColumnItem>
+                <PropertyName>Disks</PropertyName>
               </TableColumnItem>
               <TableColumnItem>
                 <ScriptBlock>

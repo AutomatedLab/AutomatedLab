@@ -13,10 +13,12 @@ function Add-LabVirtualNetworkDefinition
 
         [AutomatedLab.VirtualizationHost]$VirtualizationEngine,
 
-        [hashtable]$HyperVProperties,
+        [hashtable[]]$HyperVProperties,
 
-        [hashtable]$AzureProperties,
+        [hashtable[]]$AzureProperties,
 
+        [AutomatedLab.NetworkAdapter]$ManagementAdapter,
+        
         [switch]$PassThru
     )
 
@@ -28,8 +30,8 @@ function Add-LabVirtualNetworkDefinition
     }
 
     $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets'
-    $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName'
-
+    $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName', 'ManagementAdapter'
+    
     if (-not (Get-LabDefinition))
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Add-LabVirtualNetworkDefinition.'
@@ -92,6 +94,16 @@ function Add-LabVirtualNetworkDefinition
             return
         }
 
+        if ($HyperVProperties.ManagementAdapter -eq $false -and $HyperVProperties.SwitchType -ne 'External')
+        {
+            throw 'Disabling the Management Adapter for private or internal VM Switch is not supported, as this will result in being unable to build labs'
+        }
+
+        if ($HyperVProperties.ManagementAdapter -eq $false -and $ManagementAdapter)
+        {
+            throw "A Management Adapter has been specified, however the Management Adapter for '$($Name)' has been disabled. Either re-enable the Management Adapter, or remove the -ManagementAdapter parameter"
+        }
+
         if (-not $HyperVProperties.SwitchType)
         {
             $HyperVProperties.Add('SwitchType', 'Internal')
@@ -111,6 +123,15 @@ function Add-LabVirtualNetworkDefinition
     $network.Name = $Name
     if ($HyperVProperties.SwitchType) { $network.SwitchType = $HyperVProperties.SwitchType }
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }
+    if ($HyperVProperties.ManagementAdapter -eq $false) {$network.EnableManagementAdapter = $false }
+    if ($ManagementAdapter) {$network.ManagementAdapter = $ManagementAdapter}
+
+    #VLAN's are not supported on non-external interfaces
+    if ($network.SwitchType -ne 'External' -and $network.ManagementAdapter.AccessVLANID -ne 0)
+    {
+        throw "A Management Adapter for Internal switch '$($network.Name)' has been specified with the -AccessVlanID parameter. This configuration is unsupported."
+    }
+
     $network.HostType = $VirtualizationEngine
 
 	if($AzureProperties.LocationName)
@@ -275,7 +296,12 @@ function New-LabNetworkAdapterDefinition
         [boolean]$DnsSuffixInDnsRegistration,
 
         [ValidateSet('Default', 'Enabled', 'Disabled')]
-        [string]$NetBIOSOptions = 'Default'
+        [string]$NetBIOSOptions = 'Default',
+
+        [ValidateRange(0,4096)]
+        [int]$AccessVLANID = 0,
+
+        [boolean]$ManagementAdapter = $false
     )
 
     Write-LogFunctionEntry
@@ -287,20 +313,30 @@ function New-LabNetworkAdapterDefinition
 
     $adapter = New-Object -TypeName AutomatedLab.NetworkAdapter
 
-    if ($VirtualSwitch)
+    #If the defined interface is flagged as being a Management interface, ignore the virtual switch check as it will not exist yet
+    if (-not $ManagementAdapter)
     {
-        $adapter.VirtualSwitch = Get-LabVirtualNetworkDefinition | Where-Object Name -eq $VirtualSwitch
-    }
-    else
-    {
-        $adapter.VirtualSwitch = Get-LabVirtualNetworkDefinition | Select-Object -First 1
-    }
+        if ($VirtualSwitch)
+        {
+            $adapter.VirtualSwitch = Get-LabVirtualNetworkDefinition | Where-Object Name -eq $VirtualSwitch
+        }
+        else
+        {
+            $adapter.VirtualSwitch = Get-LabVirtualNetworkDefinition | Select-Object -First 1
+        }
+    
+        if (-not $adapter.VirtualSwitch)
+        {
+            throw "Could not find the virtual switch '$VirtualSwitch' nor create one automatically"
+        }
 
-    if (-not $adapter.VirtualSwitch)
-    {
-        throw "Could not find the virtual switch '$VirtualSwitch' nor create one automatically"
-    }
-
+        #VLAN Tagging is only currently supported on External switch interfaces. If a VLAN has been provied for an internal switch, throw an error
+        if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and $AccessVLANID -ne 0)
+        {
+            throw "VLAN tagging of interface '$InterfaceName' on non-external virtual switch '$VirtualSwitch' is not supported, either remove the AccessVlanID setting, or assign the interface to an external switch"
+        }
+    }  
+   
     $adapter.InterfaceName = $InterfaceName
 
     foreach ($item in $Ipv4Address)
@@ -332,7 +368,8 @@ function New-LabNetworkAdapterDefinition
     $adapter.DnsSuffixInDnsRegistration  = $DnsSuffixInDnsRegistration
     $adapter.NetBIOSOptions              = $NetBIOSOptions
     $adapter.UseDhcp = $UseDhcp
-
+    $adapter.AccessVLANID = $AccessVLANID
+    
     $adapter
 
     Write-LogFunctionExit

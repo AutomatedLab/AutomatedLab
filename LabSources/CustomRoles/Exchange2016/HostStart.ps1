@@ -19,6 +19,10 @@ function Download-ExchangeSources
 
     Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'"
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+    
+    Write-ScreenInfo -Message "Downloading C++ 2013 Runtime from '$cppredist642013DownloadLink'"
+    $script:cppredist642013InstallFile = Get-LabInternetFile -Uri $cppredist642013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
+    $script:cppredist322013InstallFile = Get-LabInternetFile -Uri $cppredist322013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x86_2013.exe -PassThru -ErrorAction Stop
 
     Write-ScreenInfo 'finished' -TaskEnd
 }
@@ -59,9 +63,14 @@ function Install-ExchangeRequirements
 
     Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
     Start-LabVM -ComputerName $machines -Wait
+    
+    $cppJobs = @()
+    $cppJobs += Install-LabSoftwarePackage -Path $cppredist642013InstallFile.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2013.log' -ComputerName $vm -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+    $cppJobs += Install-LabSoftwarePackage -Path $cppredist322013InstallFile.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2013.log' -ComputerName $vm -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+    Wait-LWLabJob -Job $cppJobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     $jobs = @()
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabSoftwarePackage -ComputerName $vm -Path $ucmaInstallFile.FullName -CommandLine '/Quiet /Log C:\DeployDebug\ucma.log' -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
 
     foreach ($machine in $machines)
@@ -271,8 +280,10 @@ function Start-ExchangeInstallation
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/5/8/C/58CA2823-6764-4355-B9DE-EB196E43BC81/ExchangeServer2016-x64-cu9.iso'
-$dotnetDownloadLink = (Get-Module -Name AutomatedLab -ListAvailable)[0].PrivateData.dotnet471DownloadLink
+$exchangeDownloadLink = 'https://download.microsoft.com/download/6/6/F/66F70200-E2E8-4E73-88F9-A1F6E3E04650/ExchangeServer2016-x64-cu11.iso'
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet471DownloadLink
+$cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
+$cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

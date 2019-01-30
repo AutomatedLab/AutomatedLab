@@ -35,14 +35,17 @@ namespace AutomatedLab
             messageContainer = new ValidationMessageContainer();
 
             if (validationSettings == null)
-                validationSettings = (Hashtable)PowerShellHelper.InvokeCommand("(Get-Module -Name AutomatedLabDefinition -ListAvailable).PrivateData.ValidationSettings").FirstOrDefault().BaseObject;
+            {
+                PowerShellHelper.InvokeCommand("Import-Module -Name AutomatedLab");
+                validationSettings = (Hashtable)PowerShellHelper.InvokeCommand("[hashtable](Get-LabConfigurationItem -Name ValidationSettings)").FirstOrDefault().BaseObject;
+            }
         }
 
         public ValidationMessageContainer RunValidation()
         {
             var start = DateTime.Now;
             System.Threading.Thread.Sleep(10);
-            
+
             var container = new ValidationMessageContainer();
             container.Messages = Validate().ToList();
             container.ValidatorName = new System.Diagnostics.StackTrace().GetFrame(1).GetMethod().DeclaringType.Name;

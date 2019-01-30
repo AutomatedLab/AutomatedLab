@@ -814,7 +814,7 @@ function New-LabDefinition
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
-    $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
+    $script:defaults = Get-LabConfigurationItem
 
     $script:lab = New-Object AutomatedLab.Lab
 
@@ -894,6 +894,8 @@ function New-LabDefinition
     {
         $script:lab
     }
+
+    $global:AL_CurrentLab = $script:lab
 
     Write-LogFunctionExit
 }
@@ -1254,7 +1256,7 @@ function Test-LabDefinition
 
     Write-LogFunctionEntry
 
-    $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
+    $script:defaults = Get-LabConfigurationItem
 
     $lab = Get-LabDefinition
     if (-not $lab)
@@ -1884,7 +1886,9 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-        [string]$FriendlyName
+        [string]$FriendlyName,
+
+        [switch]$SkipDeployment
     )
     DynamicParam
     {
@@ -1898,7 +1902,7 @@ function Add-LabMachineDefinition
         $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
         if ($defaultLocation)
         {
-            $vmSizes = Get-AzureRMVmSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
+            $vmSizes = Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
             $validateSetValues = $vmSizes | Select-Object -ExpandProperty Name
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
             $AttributeCollection.Add($ValidateSetAttribute)
@@ -2280,7 +2284,7 @@ function Add-LabMachineDefinition
                 Write-ScreenInfo -Message 'No virtual networks specified. Creating a network automatically' -Type Warning
                 if (-not ($Global:existingAzureNetworks))
                 {
-                    $Global:existingAzureNetworks = Get-AzureRmVirtualNetwork
+                    $Global:existingAzureNetworks = Get-AzVirtualNetwork
                 }
 
                 #Virtual network name will be same as lab name
@@ -2412,7 +2416,7 @@ function Add-LabMachineDefinition
 
                 foreach ($networkDefinition in $networkDefinitions)
                 {
-                    #check for an virtuel switch having already the name of the new network switch
+                    #check for an virtual switch having already the name of the new network switch
                     $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
 
                     #does the current network definition has an address space assigned
@@ -2423,12 +2427,28 @@ function Add-LabMachineDefinition
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)
                         {
-                            if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                            if ($existingNetwork.SwitchType -eq 'External')
                             {
-                                throw "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name. Cannot continue."
+                                #Different address spaces for different labs reusing an existing External virtual switch is permitted, however this requires knowledge and support
+                                # for switching / routing fabrics external to AL and the host. Note to the screen this is an advanced configuration.
+                                if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                                {
+                                    Write-ScreenInfo "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name." -Type Warning
+                                    Write-ScreenInfo "This is an advanced configuration, ensure external switching and routing is configured correctly" -Type Warning
+                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with different address space. This is an allowed advanced configuration'
+                                }
+                                else
+                                {
+                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
+                                }
                             }
-
-                            Write-Verbose -Message 'Existing Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
+                            else 
+                            {
+                                if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
+                                {
+                                    throw "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name. Cannot continue."
+                                }
+                            }
                         }
                         else
                         {
@@ -2641,9 +2661,9 @@ function Add-LabMachineDefinition
             $machine.Memory = 1
             foreach ($role in $Roles)
             {
-                if ($PSCmdlet.MyInvocation.MyCommand.Module.PrivateData."MemoryWeight_$($role.Name)" -gt $machine.Memory)
+                if ((Get-LabConfigurationItem -Name "MemoryWeight_$($role.Name)") -gt $machine.Memory)
                 {
-                    $machine.Memory = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData."MemoryWeight_$($role.Name)"
+                    $machine.Memory = Get-LabConfigurationItem -Name "MemoryWeight_$($role.Name)"
                 }
             }
         }
@@ -2760,6 +2780,8 @@ function Add-LabMachineDefinition
                 $machine.Disks.Add($labDisk)
             }
         }
+
+        $machine.SkipDeployment = $SkipDeployment
     }
 
     end
@@ -3207,10 +3229,10 @@ function Set-LabLocalVirtualMachineDiskAuto
         return $false
     }
 
-    #if the current disk config is different from the is in the cache, wait until the running lab deploymet is done.
-    if (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter)
+    #if the current disk config is different from the is in the cache, wait until the running lab deployment is done.
+    if ($cachedDrives -and (Compare-Object -ReferenceObject $drives.DriveLetter -DifferenceObject $cachedDrives.DriveLetter))
     {
-        $labDiskDeploymentInProgressPath = (Get-Module -Name AutomatedLab)[0].PrivateData.DiskDeploymentInProgressPath
+        $labDiskDeploymentInProgressPath = Get-LabConfigurationItem -Name DiskDeploymentInProgressPath
         if (Test-Path -Path $labDiskDeploymentInProgressPath)
         {
             Write-ScreenInfo "Another lab disk deployment seems to be in progress. If this is not correct, please delete the file '$labDiskDeploymentInProgressPath'." -Type Warning
@@ -3346,7 +3368,7 @@ function Get-LabVirtualNetwork
 function Get-LabAvailableAddresseSpace
 {
     # .ExternalHelp AutomatedLabDefinition.Help.xml
-    $defaultAddressSpace = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultAddressSpace
+    $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
 
     if (-not $defaultAddressSpace)
     {

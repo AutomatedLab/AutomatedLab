@@ -11,7 +11,10 @@ param(
     [Parameter(Mandatory)]
     [string[]]$OperatingSystems,
 
-    [string]$AdkDownloadPath = "$labSources\SoftwarePackages\ADK"
+    [string]$AdkDownloadPath = "$labSources\SoftwarePackages\ADK",
+    
+    [string]$AdkWinPEDownloadPath = "$labSources\SoftwarePackages\ADKWinPEAddons"
+
 )
 
 Import-Lab -Name $data.Name

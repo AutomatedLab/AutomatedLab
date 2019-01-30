@@ -166,7 +166,7 @@ function Install-LabDscPullServer
     }
 
 
-    $accessDbEngine = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.AccessDatabaseEngine2016x86 -Path $labsources\SoftwarePackages -PassThru
+    $accessDbEngine = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name AccessDatabaseEngine2016x86) -Path $labsources\SoftwarePackages -PassThru
     $jobs = @()
 
     foreach ($machine in $machines)
@@ -203,7 +203,7 @@ function Install-LabDscPullServer
         $setupParams = @{
             ComputerName = $machine
             CertificateThumbPrint = $cert.Thumbprint
-            RegistrationKey = (Get-Module AutomatedLab).PrivateData.DscPullServerRegistrationKey
+            RegistrationKey = Get-LabConfigurationItem -Name DscPullServerRegistrationKey
             DatabaseEngine  = $databaseEngine
         }
         if ($role.Properties.DatabaseName) { $setupParams.DatabaseName = $role.Properties.DatabaseName }
@@ -370,11 +370,13 @@ function Invoke-LabDscConfiguration
 
     if ($PSCmdlet.ParameterSetName -eq 'New')
     {
-        $outputPath = Invoke-Expression -Command (Get-Module AutomatedLab).PrivateData.DscMofPath
-        if (-not (Test-Path -Path $outputPath))
+        $outputPath = "$($global:labSources)\$(Get-LabConfigurationItem -Name DscMofPath)\$(New-Guid)"
+
+        if (Test-Path -Path $outputPath)
         {
-            mkdir -Path $outputPath -Force
+            Remove-Item -Path $outputPath -Recurse -Force
         }
+        mkdir -Path $outputPath -Force | Out-Null
 
         if ($ConfigurationData)
         {
@@ -401,11 +403,11 @@ function Invoke-LabDscConfiguration
             Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
             if ($Configuration.Parameters.ContainsKey('ComputerName'))
             {
-                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -ComputerName $c -WarningAction SilentlyContinue
             }
             else
             {
-                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig
+                $mof = & $Configuration.Name -OutputPath $tempPath -ConfigurationData $adaptedConfig -WarningAction SilentlyContinue
             }
 
             if ($mof.Count -gt 1)
@@ -418,7 +420,7 @@ function Invoke-LabDscConfiguration
             Remove-Item -Path $tempPath -Force -Recurse
         }
 
-        $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>\w+)\.mof'
+        $mofFiles = Get-ChildItem -Path $outputPath -Filter *.mof | Where-Object Name -Match '(?<ConfigurationName>\w+)_(?<ComputerName>[\w-_]+)\.mof'
 
         foreach ($c in $ComputerName)
         {
@@ -465,6 +467,8 @@ function Invoke-LabDscConfiguration
 
         } -ArgumentList $Wait
     }
+    
+    Remove-Item -Path $outputPath -Recurse -Force
 
     Write-LogFunctionExit
 }

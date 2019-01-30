@@ -156,27 +156,27 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Mozilla Firefox">
-        <DownloadPath>https://ftp.mozilla.org/pub/firefox/releases/57.0/win64/en-US/Firefox%20Setup%2057.0.exe</DownloadPath>
+        <DownloadPath>https://download-installer.cdn.mozilla.net/pub/firefox/releases/64.0/win64/en-US/Firefox%20Setup%2064.0.exe</DownloadPath>
         <AppPath>Applications</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Mozilla Firefox</ShortName>
-        <AppVersion>57.0</AppVersion>
+        <AppVersion>64.0</AppVersion>
         <Publisher>Mozilla</Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>Firefox%20Setup%2057.0.exe -ms</CommandLine>
+        <CommandLine>Firefox%20Setup%2064.0.exe -ms</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Notepad Plus Plus">
-        <DownloadPath>https://notepad-plus-plus.org/repository/7.x/7.5.3/npp.7.5.3.Installer.exe</DownloadPath>
+        <DownloadPath>https://notepad-plus-plus.org/repository/7.x/7.6.1/npp.7.6.1.Installer.x64.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Notepad Plus Plus</ShortName>
-        <AppVersion>7.5.3</AppVersion>
+        <AppVersion>7.6.1</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>npp.7.5.3.Installer.exe /S</CommandLine>
+        <CommandLine>npp.7.6.1.Installer.x64.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="WinPcap">
@@ -192,27 +192,27 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Wireshark x64">
-        <DownloadPath>https://1.eu.dl.wireshark.org/win64/Wireshark-win64-2.4.5.exe</DownloadPath>
+        <DownloadPath>https://1.as.dl.wireshark.org/win64/Wireshark-win64-2.6.5.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>WireShark x64</ShortName>
-        <AppVersion>2.4.3</AppVersion>
+        <AppVersion>2.6.5</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>Wireshark-win64-2.4.3.exe /S</CommandLine>
+        <CommandLine>Wireshark-win64-2.6.5.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Wireshark x86">
-        <DownloadPath>https://1.eu.dl.wireshark.org/win32/Wireshark-win32-2.4.5.exe</DownloadPath>
+        <DownloadPath>https://1.as.dl.wireshark.org/win32/Wireshark-win32-2.6.5.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>WireShark x86</ShortName>
-        <AppVersion>2.4.3</AppVersion>
+        <AppVersion>2.6.5</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>Wireshark-win32-2.4.3.exe /S</CommandLine>
+        <CommandLine>Wireshark-win32-2.6.5.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Nmap">
@@ -228,15 +228,15 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Palemoon x64">
-        <DownloadPath>http://rm-us.palemoon.org/release/palemoon-27.6.2.win64.installer.exe</DownloadPath>
+        <DownloadPath>http://rm-eu.palemoon.org/release/palemoon-28.2.2.win64.installer.exe</DownloadPath>
         <AppPath>Applications</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Palemoon x64</ShortName>
-        <AppVersion>27.6.2</AppVersion>
+        <AppVersion>28.2.2</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>palemoon-27.6.2.win64.installer.exe /S</CommandLine>
+        <CommandLine>palemoon-28.2.2.win64.installer.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application> 
     <Application Name="Waterfox x64">
@@ -264,15 +264,15 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Advanced IP Scanner">
-        <DownloadPath>http://download1.famatech.com/download/files/ipscan25.exe</DownloadPath>
+        <DownloadPath>https://www.advanced-ip-scanner.com/download/Advanced_IP_Scanner_2.5.3646.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Advanced IP Scanner</ShortName>
-        <AppVersion>2.5</AppVersion>
+        <AppVersion>2.5.3646</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>ipscan25.exe /S</CommandLine>
+        <CommandLine>Advanced_IP_Scanner_2.5.3646.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application> 
 </Applications>

@@ -4,12 +4,12 @@ function Install-LabSqlServers
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletBinding()]
     param (
-        [int]$InstallationTimeout = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.Timeout_Sql2012Installation,
-
+        [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_Sql2012Installation),
+        
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
-        [int]$ProgressIndicator = $PSCmdlet.MyInvocation.MyCommand.Module.PrivateData.DefaultProgressIndicator
+        [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator)
     )
 
     Write-LogFunctionEntry
@@ -113,11 +113,11 @@ GO
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ redist on machine '$($machinesBatch -join ', ')'" -Type Verbose
-            $cppRedist = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist64 -Path $labsources\SoftwarePackages -PassThru
-            $cppRedist32 = Get-LabInternetFile -Uri (Get-Module -Name AutomatedLab).PrivateData.cppredist32 -Path $labsources\SoftwarePackages -PassThru
+            $cppRedist64_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist64_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x64_2017.exe -PassThru
+            $cppredist32_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist32_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x86_2017.exe -PassThru
             $cppJobs = @()
-            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist32.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
-            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppJobs += Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
 
             Write-ScreenInfo -Message "Waiting for pre-requisite Visual C++ redistributable to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $cppJobs -Timeout 10 -NoNewLine -ProgressIndicator 5 -NoDisplay
@@ -194,6 +194,11 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
 
                 if ($role.Properties.ContainsKey('UseOnlyConfigurationFile'))
+                {
+                    $global:setupArguments = ''
+                }
+
+                if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
                     $global:setupArguments = ''
                 }
@@ -341,7 +346,7 @@ GO
             $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
         $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force |
         Add-Member -Name 'SsmsUri' -Value {
-            (Get-Module AutomatedLab -ListAvailable)[0].PrivateData["Sql$($this.SQLVersion)ManagementStudio"]
+            Get-LabConfigurationItem -Name "Sql$($this.SQLVersion)ManagementStudio"
         } -MemberType ScriptProperty -PassThru -Force
 
         if ($servers)
@@ -421,7 +426,7 @@ function Install-LabSqlSampleDatabases
         'MSSQLSERVER'
     }
 
-    $sqlLink = (Get-Module AutomatedLab)[0].PrivateData[$roleName.ToString()]
+    $sqlLink = Get-LabConfigurationItem -Name $roleName.ToString()
     if (-not $sqlLink)
     {
         throw "No SQL link found to download $roleName sample database"
@@ -666,6 +671,67 @@ function New-LabSqlAccount
         }
     }
 
+    if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))
+    {
+        $groups += $RoleProperties['SqlSysAdminAccounts']
+    }
+
+    if ($RoleProperties.ContainsKey('ConfigurationFile'))
+    {
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+
+        if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq SQLSvcAccount).Value
+            $password = ($config | Where-Object Key -eq SQLSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq AgtSvcAccount) -and ($config | Where-Object Key -eq AgtSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AgtSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AgtSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq RsSvcAccount) -and ($config | Where-Object Key -eq RsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq RsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq RsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq AsSvcAccount) -and ($config | Where-Object Key -eq AsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq AsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq AsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq IsSvcAccount) -and ($config | Where-Object Key -eq IsSvcPassword))
+        {
+            $user = ($config | Where-Object Key -eq IsSvcAccount).Value
+            $password = ($config | Where-Object Key -eq IsSvcPassword).Value
+            $user = $user.Substring(1, $user.Length - 2)
+            $password = $password.Substring(1, $password.Length - 2)
+            $usersAndPasswords[$user] = $password
+        }
+
+        if (($config | Where-Object Key -eq SqlSysAdminAccounts))
+        {
+            $group = ($config | Where-Object Key -eq SqlSysAdminAccounts).Value
+            $groups += $group.Substring(1, $group.Length - 2)
+        }
+    }
+
     foreach ($kvp in $usersAndPasswords.GetEnumerator())
     {
         $user = $kvp.Key
@@ -691,7 +757,7 @@ function New-LabSqlAccount
 
         if ($domain)
         {
-            $dc = Get-LabVm -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+            $dc = Get-LabVm -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $domain -or ($_.DomainName -split "\.")[0] -eq $domain }
 
             if (-not $dc)
             {
@@ -702,13 +768,13 @@ function New-LabSqlAccount
                 $existingUser = $null #required as the session is not removed
                 try
                 {
-                    $existingUser = Get-ADUser -Identity $user
+                    $existingUser = Get-ADUser -Identity $user -Server localhost
                 }
                 catch { }
 
                 if (-not ($existingUser))
                 {
-                    New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true
+                    New-ADUser -SamAccountName $user -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force) -Name $user -PasswordNeverExpires $true -CannotChangePassword $true -Enabled $true -Server localhost
                 }
             } -Variable (Get-Variable -Name user, password)
         }
@@ -744,24 +810,27 @@ function New-LabSqlAccount
 
         if ($domain)
         {
-            $dc = Get-LabVM -Role RootDC,DC,FirstChildDC | Where-Object { $PSItem.DomainName -eq $domain -or ($PSItem.DomainName -split "\.")[0] -eq $domain }
+            $dc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $domain -or ($_.DomainName -split "\.")[0] -eq $domain }
 
             if (-not $dc)
             {
-                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user,$domain) -Type Warning
+                Write-ScreenInfo -Message ('User {0} will not be created. No domain controller found for {1}' -f $user, $domain) -Type Warning
             }
 
             Invoke-LabCommand -ComputerName $dc -ActivityName ("Creating group '$groupName' in domain '$domain'") -ScriptBlock {
                 $existingGroup = $null #required as the session is not removed
                 try
                 {
-                    $existingGroup = Get-ADGroup -Identity $groupName
+                    $existingGroup = Get-ADGroup -Identity $groupName -Server localhost
                 }
                 catch { }
 
                 if (-not ($existingGroup))
                 {
-                    New-ADGroup -Name $groupName -GroupScope Global
+                    $newGroup = New-ADGroup -Name $groupName -GroupScope Global -Server localhost -PassThru
+                    #adding the account the script is running under to the SQL admin group
+                    $newGroup | Add-ADGroupMember -Members ([System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value)
+
                 }
             } -Variable (Get-Variable -Name groupName)
         }

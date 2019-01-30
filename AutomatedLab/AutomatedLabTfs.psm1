@@ -94,15 +94,12 @@ function Install-LabTeamFoundationServer
     $count = 0
     foreach ( $machine in $tfsMachines)
     {
-		#TODO: SSL disabled because the worker complains:
-		#fatal: unable to access 'https://dsctfs01:8080/AutomatedLab/_git/DscWorkshop/': SSL certificate problem: unable to get local issuer certificate
-		#Git fetch failed with exit code: 128
-        #if (Get-LabIssuingCA)
-        #{
-        #    $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
-        #    $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
-        #    Export-Lab
-        #}
+        if (Get-LabIssuingCA)
+        {
+            $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName -ComputerName $machine -PassThru -ErrorAction Stop
+            $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
+            Export-Lab
+        }
 
         $role = $machine.Roles | Where-Object Name -like Tfs????
         $initialCollection = 'AutomatedLab'
@@ -213,7 +210,7 @@ function Install-LabBuildWorker
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
 
-    $buildWorkerUri = (Get-Module AutomatedLab -ListAvailable)[0].PrivateData["BuildAgentUri"]
+    $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
     $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
     Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path
@@ -267,7 +264,8 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice' -f $machineName, $tfsPort, $env:COMPUTERNAME
+				#sslskipcertvalidation is used as git.exe could not test the certificate chain
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
             else
             {

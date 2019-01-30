@@ -33,6 +33,15 @@ namespace AutomatedLab
             };
         private Dictionary<string, string> isoNameToAzureSku;
 
+        private static ListXmlStore<ProductKey> productKeys = null;
+        private static ListXmlStore<ProductKey> productKeysCustom = null;
+        private static string productKeysXmlFilePath = string.Format(@"{0}\{1}",
+                        System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                        @"AutomatedLab\Assets\ProductKeys.xml");
+        private static string productKeysCusomXmlFilePath = string.Format(@"{0}\{1}",
+                System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                @"AutomatedLab\Assets\ProductKeysCustom.xml");
+
         public string OperatingSystemName
         {
             get { return operatingSystemName; }
@@ -158,177 +167,19 @@ namespace AutomatedLab
         {
             get
             {
-                switch (operatingSystemName)
+                var keys = productKeys.Where(pk => pk.OperatingSystemName == operatingSystemImageName).OrderByDescending(pk => (Version)pk.Version);
+                if (keys.Count() == 0)
                 {
-                    //Windows 7
-                    case "Windows 7 Professional":
-                        return "FJ82H-XT6CR-J8D7P-XQJJ2-GPDD4";
-                    case "Windows 7 Enterprise":
-                        return "33PXH-7Y6KF-2VJC9-XBBR8-HVTHH";
-
-                    //Windows 8
-                    case "Windows 8 Pro":
-                        return "NG4HW-VH26C-733KW-K6F98-J8CK4";
-                    case "Windows 8 Enterprise":
-                        return "32JNW-9KQ84-P47T8-D8GGY-CWCK7";
-
-                    //Windows 8.1
-                    case "Windows 8.1 Pro":
-                        return "GCRJD-8NW9H-F2CDX-CCM8D-9D6T9";
-                    case "Windows 8.1 Enterprise":
-                        return "MHF9N-XY6XB-WVXMC-BTDCT-MKKG7";
-
-                    //Windows 2008 new names
-                    case "Windows Server 2008 R2 Standard (Full Installation)":
-                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 Standard (Server Core Installation)":
-                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 Datacenter (Full Installation)":
-                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-                    case "Windows Server 2008 R2 Datacenter (Server Core Installation)":
-                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-
-                    //Windows 2008 old names
-                    case "Windows Server 2008 R2 SERVERSTANDARD":
-                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 SERVERSTANDARDCORE":
-                        return "YC6KT-GKW9T-YTKYR-T4X34-R7VHC";
-                    case "Windows Server 2008 R2 SERVERDATACENTER":
-                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-                    case "Windows Server 2008 R2 SERVERDATACENTERCORE":
-                        return "74YFP-3QFB3-KQT8W-PMXWJ-7M648";
-
-                    //Windows Server 2012 new names
-                    case "Windows Server 2012 Standard (Server Core Installation)":
-                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 Standard (Server with a GUI)":
-                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 Datacenter (Server Core Installation)":
-                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
-                    case "Windows Server 2012 Datacenter (Server with a GUI)":
-                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
-
-                    //Windows Server 2012 new names
-                    case "Windows Server 2012 SERVERSTANDARDCORE":
-                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 SERVERSTANDARD":
-                        return "XC9B7-NBPP2-83J2H-RHMBY-92BT4";
-                    case "Windows Server 2012 SERVERDATACENTERCORE":
-                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
-                    case "Windows Server 2012 SERVERDATACENTER":
-                        return "48HP8-DN98B-MYWDG-T2DCC-8W83P";
-
-                    //Windows Server 2012 R2 new names
-                    case "Windows Server 2012 R2 Standard (Server Core Installation)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 Standard Evaluation (Server Core Installation)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-
-                    case "Windows Server 2012 R2 Standard (Server with a GUI)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 Standard Evaluation (Server with a GUI)":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-
-                    case "Windows Server 2012 R2 Datacenter (Server Core Installation)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-                    case "Windows Server 2012 R2 Datacenter Evaluation (Server Core Installation)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-
-                    case "Windows Server 2012 R2 Datacenter (Server with a GUI)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-                    case "Windows Server 2012 R2 Datacenter Evaluation (Server with a GUI)":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-
-                    //Windows Server 2012 R2 old names
-                    case "Windows Server 2012 R2 SERVERSTANDARDCORE":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 SERVERSTANDARD":
-                        return "DBGBW-NPF86-BJVTX-K3WKJ-MTB6V";
-                    case "Windows Server 2012 R2 SERVERDATACENTERCORE":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-                    case "Windows Server 2012 R2 SERVERDATACENTER":
-                        return "Y4TGP-NPTV9-HTC2H-7MGQ3-DV4TW";
-
-                    //Windows 10
-                    case "Windows 10 Pro":
-                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
-                    case "Windows 10 Pro for Workstations":
-                        return "W269N-WFGWX-YVC9B-4J6C9-T83GX";
-                    case "Windows 10 Enterprise":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Enterprise Evaluation":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Enterprise Insider Preview":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Pro Insider Preview":
-                        return "NPPR9-FWDCX-D2C8J-H872K-2YT43";
-                    case "Windows 10 Enterprise 2015 LTSB":
-                        return "WNMTR-4C88C-JK8YV-HQ7T2-76DF9";
-                    case "Windows 10 Enterprise 2016 LTSB":
-                        return "DCPHK-NFMTC-H88MJ-PFHPY-QJ4BJ";
-                    case "Windows 10 Enterprise for Virtual Desktops":
-                        return "CPWHC-NT2C7-VYW78-DHDB2-PG3GK";
-
-                    //Windows Server 2016 new names
-                    case "Windows Server 2016 Standard":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 Standard (Desktop Experience)":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-
-                    case "Windows Server 2016 Datacenter":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-                    case "Windows Server 2016 Datacenter (Desktop Experience)":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    case "Windows Server 2016 Standard Evaluation":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 Standard Evaluation (Desktop Experience)":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-
-                    case "Windows Server 2016 Datacenter Evaluation":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-                    case "Windows Server 2016 Datacenter Evaluation (Desktop Experience)":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    //Windows Server 2016 old names
-                    case "Windows Server 2016 SERVERSTANDARDCORE":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERSTANDARD":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERDATACENTERCORE":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-                    case "Windows Server 2016 SERVERDATACENTER":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    // Windows Server 1709+ new names
-                    case "Windows Server Standard":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server Standard (Desktop Experience)":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-
-                    case "Windows Server Datacenter":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-                    case "Windows Server Datacenter (Desktop Experience)":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    // Windows Server 1709+ old names
-                    case "Windows Server 2016 SERVERSTANDARDACORE":
-                        return "WC2BQ-8NRM3-FDDYY-2BFGV-KHKQY";
-                    case "Windows Server 2016 SERVERDATACENTERACORE":
-                        return "CB7KF-BWN84-R7R2Y-793K2-8XDDG";
-
-                    // Windows Server 2019 new names
-                    case "Windows Server 2019 Standard (Desktop Experience)":
-                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
-                    case "Windows Server 2019 Datacenter (Desktop Experience)":
-                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
-                    case "Windows Server 2019 Standard":
-                        return "N69G4-B89J2-4G8F4-WWYCC-J464C";
-                    case "Windows Server 2019 Datacenter":
-                        return "WMDGN-G9PQG-XVVXX-R3X43-63DFG";
-
-                    default:
-                        return string.Empty;
+                    return "";
+                }
+                else if (keys.Count() == 1)
+                {
+                    return keys.FirstOrDefault().Key;
+                }
+                else
+                {
+                    keys = keys.Where(pk => pk.Version >= version).OrderByDescending(pk => (Version)pk.Version);
+                    return keys.Last().Key;
                 }
             }
         }
@@ -373,6 +224,48 @@ namespace AutomatedLab
             catch (KeyNotFoundException)
             {
                 // OS not in dictionary - can happen
+            }
+        }
+
+        static OperatingSystem()
+        {
+            try
+            {
+                productKeys = ListXmlStore<ProductKey>.Import(productKeysXmlFilePath);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(string.Format("Could not read 'ProductKeys.xml' file. Make sure the file exist in path '{0}': {1}", productKeysXmlFilePath, ex.Message));
+            }
+
+            try
+            {
+                productKeysCustom = ListXmlStore<ProductKey>.Import(productKeysCusomXmlFilePath);
+            }
+            catch (Exception)
+            {
+                //don't throw, the file is not mandatory
+            }
+
+            //merge keys from custom file
+            foreach (var key in productKeysCustom)
+            {
+                var existingKey = productKeys.Where(pk => pk.OperatingSystemName == key.OperatingSystemName && pk.Version == key.Version);
+                if (existingKey.Count() == 0)
+                {
+                    productKeys.Add(new ProductKey()
+                    {
+                        OperatingSystemName = key.OperatingSystemName,
+                        Version = key.Version,
+                        Key = key.Key
+                    });
+                }
+                else if (existingKey.Count() == 1)
+                {
+                    existingKey.First().Key = key.Key;
+                }
+                else
+                { }
             }
         }
 
@@ -438,7 +331,7 @@ namespace AutomatedLab
         {
             get
             {
-                return ((bool)(OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+                return OperatingSystemName.Contains("Windows") ? OperatingSystemType.Windows : OperatingSystemType.Linux;
             }
         }
         public string OperatingSystemImageName

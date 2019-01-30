@@ -98,5 +98,10 @@ namespace AutomatedLab
         {
             properties = new SerializableDictionary<string, List<object>>();
         }
+
+        public override string ToString()
+        {
+            return RoleName;
+        }
     }
 }
