@@ -242,6 +242,7 @@
         #Azure
         MinimumAzureModuleVersion              = '1.0'
         DefaultAzureRoleSize                   = 'D'
+        LabSourcesMaxFileSizeMb                = 50
 
         #Office
         OfficeDeploymentTool                   = 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_11107-33602.exe'
