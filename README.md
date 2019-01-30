@@ -26,7 +26,7 @@ Apart from the module itself your system needs to meet the following requirement
 - A decent amount of RAM
 - An SSD for your machines is highly recommended as many issues arise from slow HDDs
 
-### Download AutomatedLab (latest version 5.0.4 released on August 3 2018)
+### Download AutomatedLab (latest version 5.5.268 released on January 30 2019)
 
 There are two options installing AutomatedLab:
 - You can use the [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) published on GitHub.
@@ -49,7 +49,7 @@ This solution supports setting up virtual machines with the following products
 - Visual Studio 2012, 2013, 2015
 - Exchange 2013, Exchange 2016
 - System Center Orchestrator 2012
-- System Center Configuration Manager 1703
+- System Center Configuration Manager 1809
 - MDT
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016
