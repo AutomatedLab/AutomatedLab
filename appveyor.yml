@@ -8,7 +8,37 @@ environment:
   NuGetApiKey:
     secure: tAdUQmRiZ270LOPN8SwbjISLfu6ldDTw6LWvdtsk+pQR7r5bJnGrG8Ntyt87edJ/
 
+branches:
+  except:
+    - /(?i).*release.*/
+
 skip_tags: true
+
+init:
+  - ps: |
+        Write-Host "Init task - Set version number if necessary"
+        $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
+        $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0,0)
+        if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
+        {          
+          $properVersion = $compareVersion.ToString(3)
+          Add-AppVeyorMessage -Category Warning "Resetting version from $env:APPVEYOR_BUILD_VERSION to $properVersion"
+          $deleteBuild = $env:APPVEYOR_BUILD_VERSION
+          [environment]::setenvironmentvariable('APPVEYOR_BUILD_VERSION',$properVersion )
+          Update-AppveyorBuild -Version $properVersion
+
+          Add-AppVeyorMessage "Calling API to reset build to 1 for next commit"
+          $appveyorUrl = "https://ci.appveyor.com/api/projects/automatedlab/automatedlab/settings/build-number"
+
+          $headers = @{
+              "Authorization" = "Bearer $env:AppVeyorApi"
+              "Content-type" = "application/json"
+          }
+          
+          $body = @{ nextBuildNumber=1 }
+          $body = $body | ConvertTo-Json
+          Invoke-RestMethod -Uri $appveyorUrl -Headers $headers -Body $body -Method Put
+        }
 
 install:
   - git submodule -q update --init --recursive
@@ -103,18 +133,6 @@ after_deploy:
                 Publish-Module @publishParams
             } -ArgumentList $publishParams | Receive-Job -AutoRemoveJob -Wait
         }
-
-        Add-AppVeyorMessage "Calling API to reset build to 0 after new release"
-        $appveyorUrl = "https://ci.appveyor.com/api/projects/automatedlab/automatedlab/settings/build-number"
-
-        $headers = @{
-            "Authorization" = "Bearer $env:AppVeyorApi"
-            "Content-type" = "application/json"
-        }
-        
-        $body = @{ nextBuildNumber=0 }
-        $body = $body | ConvertTo-Json
-        Invoke-RestMethod -Uri $appveyorUrl -Headers $headers -Body $body -Method Put
 
 on_finish:
   - ps: |
