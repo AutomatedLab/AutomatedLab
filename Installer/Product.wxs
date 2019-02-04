@@ -1,7 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
-  <Product Name='AutomatedLab' Id='*' UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149' Language='1033' Codepage='1252' Version='!(bind.FileVersion.AutomatedLabDll)' Manufacturer='AutomatedLab Team' >
-    <?include Includes.wxi ?>
+  <?include Includes.wxi ?>
+  <Product
+    Name='AutomatedLab'
+    Id='*'
+    UpgradeCode='6a52c22c-74f0-4cc3-b723-b73a21db9149'
+    Language='1033'
+    Codepage='1252'
+    Version="$(var.AutomatedLabProductVersion)"
+    Manufacturer='AutomatedLab Team'>
     <Package Id='*' Keywords='Installer' Description="AutomatedLab Installer" Comments='AutomatedLab Modules Installer' Manufacturer='AutomatedLabTeam' InstallerVersion='200' Languages='1033' Compressed='yes' SummaryCodepage='1252' InstallScope='perMachine' />
     <Property Id='LABSOURCESDIR'>
       <RegistrySearch Id='LabSourcesDirRegSearch' Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Type='raw' />
@@ -36,7 +43,7 @@
             <!--______________________________________________________________________________-->
             <!--Module Components-->
             <Directory Id="InstallFolder_PSFileTransfer" Name="PSFileTransfer">
-              <Directory Id="InstallFolder_PSFileTransferVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_PSFileTransferVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="PSFileTransferComponent" Guid="d7f9e425-2cb5-4c6e-ac47-12e820650e92">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSFileTransferComponent"/>
                   <File Source="$(var.SolutionDir)PSFileTransfer\PSFileTransfer.psm1" />
@@ -47,7 +54,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_PSLog" Name="PSLog">
-              <Directory Id="InstallFolder_PSLogVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_PSLogVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="PSLogComponent" Guid="1c759c12-ecfd-4a09-b82c-5c8c4ab4266b">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSLogComponent" />
                   <File Source="$(var.SolutionDir)PSLog\PSLog.psm1" />
@@ -57,7 +64,7 @@
               </Directory>
             </Directory>
             <Directory Id="InstallFolder_Ships" Name="AutomatedLab.Ships">
-              <Directory Id="InstallFolder_ShipsVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_ShipsVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="ShipsComponent" Guid="cdf71f71-f452-4eb4-82c1-243d8923f363">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="ShipsComponent" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Ships\AutomatedLab.Ships.psm1" />
@@ -201,7 +208,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_HostsFile" Name="HostsFile">
-              <Directory Id="InstallFolder_HostsFileVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_HostsFileVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="HostsFileComponent" Guid="0d760600-ad78-43c0-8b19-4eb2cc9b11b4">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="HostsFileComponent"/>
                   <File Source="$(var.SolutionDir)HostsFile\HostsFile.psm1" />
@@ -212,7 +219,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabWorker" Name="AutomatedLabWorker">
-              <Directory Id="InstallFolder_AutomatedLabWorkerVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabWorkerVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabWorkerComponent" Guid="1111e993-5d1a-4c08-b7a0-f888687c129e">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabWorkerComponent"/>
                   <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabWorker.psd1" />
@@ -232,7 +239,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabUnattended" Name="AutomatedLabUnattended">
-              <Directory Id="InstallFolder_AutomatedLabUnattendedVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabUnattendedVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabUnattendedComponent" Guid="6e6be339-e857-4d44-8e05-82753b2121b7">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabUnattendedComponent"/>
                   <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psm1" />
@@ -339,7 +346,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabTest" Name="AutomatedLabTest">
-              <Directory Id="InstallFolder_AutomatedLabTestVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabTestVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabTestComponent" Guid="15227a83-5f7c-4eb4-b2d1-73c380fa6660">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabTestComponent"/>
                   <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.psm1" />
@@ -351,7 +358,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabNotifications" Name="AutomatedLabNotifications">
-              <Directory Id="InstallFolder_AutomatedLabNotificationsVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabNotificationsVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabNotificationsComponent" Guid="f0c9426f-ac1a-45ad-ae53-8a9cb768c8bd">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabNotifications"/>
                   <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psm1" />
@@ -374,7 +381,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLabDefinition" Name="AutomatedLabDefinition">
-              <Directory Id="InstallFolder_AutomatedLabDefinitionVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabDefinitionVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabDefinitionComponent"/>
                   <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
@@ -389,7 +396,7 @@
             </Directory>
             <!--______________________________________________________________________________-->
             <Directory Id="InstallFolder_AutomatedLab" Name="AutomatedLab">
-              <Directory Id="InstallFolder_AutomatedLabVersion" Name="!(bind.FileVersion.AutomatedLabDll)">
+              <Directory Id="InstallFolder_AutomatedLabVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabComponent" Guid="a5d9490b-1c1b-4d5d-bb00-6ded6afa0bd4">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabComponent"/>
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psm1" />
