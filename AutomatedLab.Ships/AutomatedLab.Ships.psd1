@@ -1,6 +1,6 @@
 ﻿@{
     RootModule             = 'AutomatedLab.Ships.psm1'
-    ModuleVersion          = '1.0'
+    ModuleVersion          = '1.0.0'
     GUID                   = 'fc08e0e1-d274-41a3-afdd-09247e497c08'
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'    
     CompanyName            = 'AutomatedLab Team'

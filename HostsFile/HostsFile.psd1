@@ -1,7 +1,7 @@
 @{
 	RootModule                = 'HostsFile.psm1'
 	
-	ModuleVersion             = '4.5.7.0'
+	ModuleVersion             = '1.0.0'
 	
 	GUID                      = '8dc3dd5c-5ae8-4198-a8f2-2157ab6b725c'
 	
