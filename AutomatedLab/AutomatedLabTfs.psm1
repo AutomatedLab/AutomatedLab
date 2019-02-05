@@ -212,7 +212,7 @@ function Install-LabBuildWorker
 
     $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
-    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
+    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru -Force
     Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path
 
     $installationJobs = @()
