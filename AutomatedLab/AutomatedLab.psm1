@@ -3021,9 +3021,6 @@ function Invoke-LabCommand
     param (
         [string]$ActivityName = '<unnamed>',
 
-        [Parameter(ParameterSetName = 'PostInstallationActivity')]
-        [switch]$PostInstallationActivity,
-
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency', Position = 0)]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileNameContentDependency', Position = 0)]
@@ -3047,6 +3044,12 @@ function Invoke-LabCommand
         [Parameter(Mandatory, ParameterSetName = 'ScriptBlockFileContentDependency')]
         [Parameter(Mandatory, ParameterSetName = 'ScriptFileContentDependency')]
         [string]$DependencyFolderPath,
+
+        [Parameter(ParameterSetName = 'PostInstallationActivity')]
+        [switch]$PostInstallationActivity,
+
+        [Parameter(ParameterSetName = 'PostInstallationActivity')]
+        [string[]]$CustomRoleName,
 
         [object[]]$ArgumentList,
 
@@ -3164,6 +3167,12 @@ function Invoke-LabCommand
         {
             foreach ($item in $machine.PostInstallationActivity)
             {
+                if ($item.RoleName -notin $CustomRoleName -and $CustomRoleName.Count -gt 0)
+                {
+                    Write-Verbose "Skipping installing custom role $($item.RoleName) as it is not part of the parameter `$CustomRoleName"
+                    continue
+                }
+
                 if ($item.IsCustomRole)
                 {
                     Write-ScreenInfo "Installing Custom Role '$(Split-Path -Path $item.DependencyFolder -Leaf)' on machine '$machine'" -TaskStart -OverrideNoDisplay

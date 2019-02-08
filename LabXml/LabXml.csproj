@@ -164,14 +164,13 @@
     <Compile Include="Validator\Xml\PathValidator.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include=".Build\PostBuild.ps1" />
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy $(TargetPath) $(SolutionDir)AutomatedLab\AutomatedLab.dll /Y
-copy $(TargetDir)Microsoft.ApplicationInsights.dll $(SolutionDir)AutomatedLab\Microsoft.ApplicationInsights.dll /Y
-copy $(TargetDir)System.Diagnostics.DiagnosticSource.dll $(SolutionDir)AutomatedLab\System.Diagnostics.DiagnosticSource.dll /Y</PostBuildEvent>
+    <PostBuildEvent>PowerShell -NoProfile -ExecutionPolicy Unrestricted -File $(ProjectDir)\.Build\PostBuild.ps1 $(SolutionDir) $(TargetPath) $(TargetDir)</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

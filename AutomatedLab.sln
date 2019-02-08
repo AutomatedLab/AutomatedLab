@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
+	ProjectSection(ProjectDependencies) = postProject
+		{A27BCDC6-9D37-46D2-805F-930A509EFC9D} = {A27BCDC6-9D37-46D2-805F-930A509EFC9D}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestClient", "TestClient\TestClient.csproj", "{3662119A-C291-4BEC-8C6C-EBE802042E7B}"
 EndProject

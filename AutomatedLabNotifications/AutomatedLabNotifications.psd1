@@ -1,5 +1,5 @@
 ﻿@{    
-    ModuleVersion          = '4.5.7.0'
+    ModuleVersion          = '1.0.0'
     
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
