@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 5.6.0 - 2019-02-08
+
+### Bug fixes
+
+- MSI installer produced three-digit modules in four digit directories
+
+### Enhancements
+
+- AppVeyor build process updated to make versioning prettier
+- TFS build worker setup updated to use SChannel
+
 ## 5.5.* - 2019-01-30
 
 ### Enhancements
