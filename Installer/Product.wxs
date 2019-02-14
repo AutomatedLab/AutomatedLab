@@ -72,15 +72,15 @@
                 </Component>
               </Directory>
             </Directory>
-            <Directory Id="InstallFolder_Recipes" Name="AutomatedLab.Recipes">
-              <Directory Id="InstallFolder_RecipesVersion" Name="$(var.AutomatedLabProductVersion)">
-                <Component Id="RecipesComponent" Guid="ab0edca6-dd77-4bdc-8d65-2aa678911694">
-                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="RecipesComponent" />
+            <Directory Id="InstallFolder_Recipe" Name="AutomatedLab.Recipe">
+              <Directory Id="InstallFolder_RecipeVersion" Name="$(var.AutomatedLabProductVersion)">
+                <Component Id="RecipeComponent" Guid="ab0edca6-dd77-4bdc-8d65-2aa678911694">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="RecipeComponent" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psm1" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psd1" />
                 </Component>
-                <Directory Id="RecipesPublic" Name="Public">
-                  <Component Id="RecipesPublic" Guid="fb0edca6-dd77-4bdc-8d65-2aa678911694">
+                <Directory Id="RecipePublic" Name="Public">
+                  <Component Id="RecipePublic" Guid="fb0edca6-dd77-4bdc-8d65-2aa678911694">
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Get-LabRecipe.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1" />
@@ -593,8 +593,8 @@
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
         <ComponentRef Id='ShipsComponent' />
-        <ComponentRef Id='RecipesComponent'/>
-        <ComponentRef Id='RecipesPublic'/>
+        <ComponentRef Id='RecipeComponent'/>
+        <ComponentRef Id='RecipePublic'/>
         <ComponentRef Id ='CommonComponent' />
         <ComponentRef Id ='ALCommonComponent1' />
         <ComponentRef Id ='ALCommonComponent2' />
