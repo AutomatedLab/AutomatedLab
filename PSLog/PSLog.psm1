@@ -31,7 +31,7 @@ function Start-Log
 
     if ($UseDefaults)
     {
-        $script:defaults = Get-LabConfigurationItem -Name Logging
+        $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
         if (-not $defaults.DefaultFolder)
         {
             $LogPath = [Environment]::GetFolderPath('MyDocuments')
@@ -207,7 +207,7 @@ function Write-LogFunctionEntry
 
     if (!$Log)
     {
-        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
+        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
         {
             Write-Verbose 'starting log'
             Start-Log -UseDefaults
@@ -310,7 +310,7 @@ function Write-LogFunctionExit
 
     if (!$Log)
     {
-        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
+        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
         {
             Start-Log -UseDefaults
         }
@@ -381,7 +381,7 @@ function Write-LogFunctionExitWithError
 
     if (!$Log)
     {
-        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
+        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
         {
             Start-Log -UseDefaults
         }
@@ -467,7 +467,7 @@ function Write-LogError
 
     if (!$Log)
     {
-        if ($(Get-LabConfigurationItem -Name Logging).AutoStart)
+        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
         {
             Start-Log -UseDefaults
         }

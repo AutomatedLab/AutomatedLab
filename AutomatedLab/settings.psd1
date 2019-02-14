@@ -37,17 +37,6 @@
                 }
             }
         )
-        Logging                                = @{
-            TruncateLength = 50
-            TruncateTypes  = @(
-                'System.Management.Automation.ScriptBlock'
-            )
-            DefaultFolder  = $null
-            DefaultName    = 'PSLog'
-            Level          = 'All'
-            Silent         = $false
-            AutoStart      = $true
-        }
         MachineFileName                        = 'Machines.xml'
         DiskFileName                           = 'Disks.xml'
         LabFileName                            = 'Lab.xml'
