@@ -565,6 +565,20 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Ships", "Autom
 		AutomatedLab.Ships\AutomatedLab.Ships.psm1 = AutomatedLab.Ships\AutomatedLab.Ships.psm1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Recipe", "AutomatedLab.Recipe", "{40429016-010A-47B7-AF3B-2851A5BB19BF}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Recipe\AutomatedLab.Recipe.psd1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psd1
+		AutomatedLab.Recipe\AutomatedLab.Recipe.psm1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psm1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{572648CE-ED10-4649-A612-76B0D6877884}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab.Recipe\Public\Get-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Get-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\New-LabRecipe.ps1 = AutomatedLab.Recipe\Public\New-LabRecipe.ps1
+		AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1 = AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1
+	EndProjectSection
+EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SCCM", "SCCM", "{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\CustomRoles\SCCM\DownloadAdk.ps1 = LabSources\CustomRoles\SCCM\DownloadAdk.ps1
@@ -786,6 +800,7 @@ Global
 		{2BBF31B2-6129-40EC-9F92-A983D0CEE3DF} = {9973283D-AB99-434B-B67F-7E32C4F36370}
 		{38C82807-0968-4EBC-B5C8-693B969CF13F} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{BC3F2FEF-7A8C-40AE-A4AA-47937417D9B0} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{572648CE-ED10-4649-A612-76B0D6877884} = {40429016-010A-47B7-AF3B-2851A5BB19BF}
 		{6C3621FE-6083-4F1A-8371-8CCF4DB53FDD} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{90FAE784-7B86-4CBA-A5A4-EB8CD275BF69} = {D1BDF6ED-8F1B-4254-9993-3A27BA640F4E}
 		{3CFA5148-30AC-4685-B80B-8E7D4FDD2AE6} = {90FAE784-7B86-4CBA-A5A4-EB8CD275BF69}
