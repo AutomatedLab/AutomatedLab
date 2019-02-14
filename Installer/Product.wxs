@@ -85,6 +85,7 @@
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1" />
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\New-LabRecipe.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Save-LabRecipe.ps1" />
                   </Component>
                 </Directory>
               </Directory>
