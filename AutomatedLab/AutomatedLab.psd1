@@ -206,6 +206,7 @@
         'Wait-LabVMShutdown',
         'Get-LabBuildStep',
         'Get-LabReleaseStep',
+        'Get-LabCache',
         'New-LabReleasePipeline',
         'Get-LabAzureLoadBalancedPort',
         'Open-LabTfsSite'
