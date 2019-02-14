@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- New module "AutomatedLab.Recipe" to make AL available to less technically-inclined audience
+
 ## 5.6.0 - 2019-02-08
 
 ### Bug fixes
