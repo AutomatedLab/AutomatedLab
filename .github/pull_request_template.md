@@ -16,15 +16,16 @@
 
 Please describe your changes in detail, unless the title is already descriptive enough.
 
-[  ] - I have tested my changes.  
-[  ] - The PR has a meaningful title.  
-[  ] - I updated my fork/branch and have integrated all changes from AutomatedLab/develop before creating the PR.
+- [ ] - I have tested my changes.  
+- [ ] - The PR has a meaningful title.  
+- [ ] - I updated my fork/branch and have integrated all changes from AutomatedLab/develop before creating the PR.
 
 ## Type of change
 <!--- Check all that apply. -->
-[  ] Bug fix  
-[  ] New functionality  
-[  ] Breaking change
+
+- [ ] Bug fix  
+- [ ] New functionality  
+- [ ] Breaking change
 
 ## How was the change tested?
 <!--
