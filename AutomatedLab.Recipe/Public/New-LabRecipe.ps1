@@ -58,7 +58,7 @@ function New-LabRecipe
         Name                        = $Name
         Description                 = $Description
         RequiredProductIsos         = @()
-        DeployedRoles               = $DeployRole
+        DeployRole                  = $DeployRole
         DefaultVirtualizationEngine = if ($DefaultVirtualizationEngine) {$DefaultVirtualizationEngine} else {'HyperV'}
         DefaultDomainName           = if ($DefaultDomainName) {$DefaultDomainName} else {'contoso.com'}
         DefaultAddressSpace         = if ($DefaultAddressSpace) {$DefaultAddressSpace.ToString()} else {'192.168.99.99/24'}
@@ -74,7 +74,7 @@ function New-LabRecipe
     if ($shouldAlsoDeploySql -and $DeployRole -notcontains 'SQL') {$roles += 'SQL'}
     if ($shouldAlsoDeployDomain -and $DeployRole -notcontains 'Domain') {$roles += 'Domain'}
     if ($shouldAlsoDeployPki -and $DeployRole -notcontains 'PKI') {$roles += 'PKI'}
-    $labContent.DeployedRoles = $roles
+    $labContent.DeployRole = $roles
     
     foreach ($role in $roles)
     {

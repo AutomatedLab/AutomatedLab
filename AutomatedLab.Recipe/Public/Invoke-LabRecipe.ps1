@@ -8,7 +8,7 @@ function Invoke-LabRecipe
         $Name,
 
         [Parameter(Mandatory, ValueFromPipeline, ParameterSetName = 'ByRecipe')]
-        [System.Management.Automation.PSCustomObject]
+        [object]
         $Recipe,
 
         [Parameter()]
@@ -89,35 +89,35 @@ function Invoke-LabRecipe
 
         $null = $scriptContent.AppendLine("Set-LabInstallationCredential -UserName $($Credential.UserName) -Password $($Credential.GetNetworkCredential().Password)")
         
-        if ($Recipe.DeployedRoles -contains 'Domain' -or $Recipe.DeployedRoles -contains 'Exchange')
+        if ($Recipe.DeployRole -contains 'Domain' -or $Recipe.DeployRole -contains 'Exchange')
         {
             $null = $scriptContent.AppendLine("Add-LabDomainDefinition -Name $($Recipe.DefaultDomainName) -AdminUser $($Credential.UserName) -AdminPassword $($Credential.GetNetworkCredential().Password)")
             $null = $scriptContent.AppendLine("`$PSDefaultParameterValues.Add('Add-LabMachineDefinition:DomainName', '$($Recipe.DefaultDomainName)')")
             $null = $scriptContent.AppendLine("Add-LabMachineDefinition -Name $($Recipe.VmPrefix)DC1 -Roles RootDC")
         }
 
-        if ($Recipe.DeployedRoles -contains 'PKI')
+        if ($Recipe.DeployRole -contains 'PKI')
         {
             $null = $scriptContent.AppendLine("Add-LabMachineDefinition -Name $($Recipe.VmPrefix)CA1 -Roles CARoot")
         }
 
-        if ($Recipe.DeployedRoles -contains 'Exchange')
+        if ($Recipe.DeployRole -contains 'Exchange')
         {
             $null = $scriptContent.AppendLine('$role = Get-LabPostInstallationActivity -CustomRole Exchange2016')
             $null = $scriptContent.AppendLine("Add-LabMachineDefinition -Name $($Recipe.VmPrefix)EX1 -PostInstallationActivity `$role")
         }
 
-        if ($Recipe.DeployedRoles -contains 'SQL' -or $Recipe.DeployedRoles -contains 'CI/CD')
+        if ($Recipe.DeployRole -contains 'SQL' -or $Recipe.DeployRole -contains 'CI/CD')
         {
             $null = $scriptContent.AppendLine("Add-LabMachineDefinition -Name $($Recipe.VmPrefix)SQL1 -Roles SQLServer2017")
         }
 
-        if ($Recipe.DeployedRoles -contains 'CI/CD')
+        if ($Recipe.DeployRole -contains 'CI/CD')
         {
             $null = $scriptContent.AppendLine("Add-LabMachineDefinition -Name $($Recipe.VmPrefix)CICD1 -Roles Tfs2017")
         }
 
-        if ($Recipe.DeployedRoles -contains 'DSCPull')
+        if ($Recipe.DeployRole -contains 'DSCPull')
         {
             $engine = if ($Recipe.DefaultOperatingSystem -like '*2019*') {'sql'} else {'mdb'}
             $null = $scriptContent.AppendLine("`$role = Get-LabMachineRoleDefinition -Role DSCPullServer -Properties @{DoNotPushLocalModules = 'true'; DatabaseEngine = '$engine'; SqlServer = '$($Recipe.VmPrefix)SQL1'; DatabaseName = 'DSC' }")
