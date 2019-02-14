@@ -569,6 +569,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Recipe", "Auto
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLab.Recipe\AutomatedLab.Recipe.psd1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psd1
 		AutomatedLab.Recipe\AutomatedLab.Recipe.psm1 = AutomatedLab.Recipe\AutomatedLab.Recipe.psm1
+		AutomatedLab.Recipe\README.md = AutomatedLab.Recipe\README.md
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Public", "Public", "{572648CE-ED10-4649-A612-76B0D6877884}"

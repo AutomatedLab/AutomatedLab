@@ -27,19 +27,19 @@ All recipes are stored in ```$HOME\automatedlab\recipes``` in separate JSON file
 ```powershell
 # Just calling LabRecipe returns the recipe
 LabRecipe DomainAndExchange {
-    DeployedRoles = 'Domain','Exchange'
+    DeployRole = 'Domain','Exchange'
     VmPrefix = 'DE'
 }
 
 # Either pipe the result to Save-LabRecipe
 LabRecipe DomainAndExchange {
-    DeployedRoles = 'Domain','Exchange'
+    DeployRole = 'Domain','Exchange'
     VmPrefix = 'DE'
 } | Save-LabRecipe
 
 # Or directly invoke it with Invoke-LabRecipe
 LabRecipe DomainAndExchange {
-    DeployedRoles = 'Domain','Exchange'
+    DeployRole = 'Domain','Exchange'
     VmPrefix = 'DE'
 } | Invoke-LabRecipe
 ```
@@ -54,7 +54,7 @@ Get-LabRecipe -Name DscWithSqlReporting | Invoke-LabRecipe
 
 # Or inline
 LabRecipe DomainAndExchange {
-    DeployedRoles = 'Domain','Exchange'
+    DeployRole = 'Domain','Exchange'
     VmPrefix = 'DE'
 } | Invoke-LabRecipe
 
