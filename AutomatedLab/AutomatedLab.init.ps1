@@ -91,8 +91,8 @@ if (((Get-PSCallStack)[1].Location -notlike 'AutomatedLab*.psm1*'))
 
 #download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
 #but when installing AL using the PowerShell Gallery, this file is missing.
-$productKeyFileLink = Get-LabConfigurationItem -Name ProductKeyFileLink
-$productKeyFileName = Get-LabConfigurationItem -Name ProductKeyFileName
+$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
+$productKeyFileName = 'ProductKeys.xml'
 $productKeyFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyFileName
 
 if (-not (Test-Path -Path 'C:\ProgramData\AutomatedLab\Assets'))
@@ -105,7 +105,7 @@ if (-not (Test-Path -Path $productKeyFilePath))
     Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
 }
 
-$productKeyCustomFileName = Get-LabConfigurationItem -Name ProductKeyCustomFileName
+$productKeyCustomFileName = 'ProductKeysCustom.xml'
 $productKeyCustomFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyCustomFileName
 
 if (-not (Test-Path -Path $productKeyCustomFilePath))

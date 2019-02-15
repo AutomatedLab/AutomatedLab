@@ -52,9 +52,6 @@
         DiskFileName                           = 'Disks.xml'
         LabFileName                            = 'Lab.xml'
         DefaultAddressSpace                    = '192.168.10.0/24'
-        ProductKeyFileName                     = 'ProductKeys.xml'
-        ProductKeyCustomFileName               = 'ProductKeysCustom.xml'
-        ProductKeyFileLink                     = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
         ValidationSettings                     = @{
             ValidRoleProperties     = @{
                 Orchestrator2012 = @(
