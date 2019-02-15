@@ -3837,16 +3837,20 @@ function Get-LabCache
     ( )
 
     $regKey = [Microsoft.Win32.RegistryKey]::OpenBaseKey('CurrentUser', 'Default')
-    $key = $regKey.OpenSubKey('Software\AutomatedLab\Cache')
-    foreach ($value in $key.GetValueNames())
+    try
     {
-        $content = [xml]$key.GetValue($value)
-        $timestamp = $content.SelectSingleNode('//Timestamp')
-        [pscustomobject]@{
-            Store = $value
-            Timestamp = $timestamp.datetime -as [datetime]
+        $key = $regKey.OpenSubKey('Software\AutomatedLab\Cache')
+        foreach ($value in $key.GetValueNames())
+        {
+            $content = [xml]$key.GetValue($value)
+            $timestamp = $content.SelectSingleNode('//Timestamp')
+            [pscustomobject]@{
+                Store = $value
+                Timestamp = $timestamp.datetime -as [datetime]
+            }
         }
     }
+    catch { Write-Verbose -Message "Cache not yet created" }
 }
 #endregion
 
