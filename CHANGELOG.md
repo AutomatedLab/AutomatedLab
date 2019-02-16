@@ -2,7 +2,13 @@
 
 ## Unreleased
 
+## 5.7.0 - 2019-02-16
+
+### Enhancements
+
 - New module "AutomatedLab.Recipe" to make AL available to less technically-inclined audience
+- New function Get-LabCache
+- Support for custom DNS label on Azure
 
 ## 5.6.0 - 2019-02-08
 
