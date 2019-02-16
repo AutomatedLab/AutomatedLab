@@ -29,7 +29,7 @@ function Add-LabVirtualNetworkDefinition
         Add-LabAzureSubscription
     }
 
-    $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets'
+    $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets', 'DnsLabel'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName', 'ManagementAdapter'
     
     if (-not (Get-LabDefinition))
@@ -158,7 +158,12 @@ function Add-LabVirtualNetworkDefinition
 			$temp.AddressSpace = $subnet.Value
 			$network.Subnets.Add($temp)
 		}
-	}
+    }
+    
+    if ($AzureProperties.DnsLabel)
+    {
+        $network.AzureDnsLabel = $AzureProperties.DnsLabel
+    }
 
     if (-not $network.LocationName)
     {

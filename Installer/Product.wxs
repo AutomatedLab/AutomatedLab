@@ -72,6 +72,24 @@
                 </Component>
               </Directory>
             </Directory>
+            <Directory Id="InstallFolder_Recipe" Name="AutomatedLab.Recipe">
+              <Directory Id="InstallFolder_RecipeVersion" Name="$(var.AutomatedLabProductVersion)">
+                <Component Id="RecipeComponent" Guid="ab0edca6-dd77-4bdc-8d65-2aa678911694">
+                  <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="RecipeComponent" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psm1" />
+                  <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psd1" />
+                </Component>
+                <Directory Id="RecipePublic" Name="Public">
+                  <Component Id="RecipePublic" Guid="fb0edca6-dd77-4bdc-8d65-2aa678911694">
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Get-LabRecipe.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Invoke-LabRecipe.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Remove-LabRecipe.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\New-LabRecipe.ps1" />
+                    <File Source="$(var.SolutionDir)AutomatedLab.Recipe\Public\Save-LabRecipe.ps1" />
+                  </Component>
+                </Directory>
+              </Directory>
+            </Directory>
             <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
               <Directory Id="InstallFolder_CommonVersion" Name="$(var.AutomatedLabCommonVersion)">
                 <Directory Id="InstallFolder_CommonCommon" Name="Common">
@@ -174,22 +192,22 @@
                 <Directory Id="InstallFolder_CommonTfs" Name="TeamFoundation">
                   <Directory Id="InstallFolder_CommonTfsPublic" Name="Public">
                     <Component Id="ALCommonComponent7" Guid="3a0b340c-534b-44c2-bc45-ff40c08dfe2b">
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinition.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildDefinitionTemplate.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\Get-TfsBuildStep.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Build\New-TfsBuildDefinition.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Generic\Get-TfsAccessTokenString.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Pools\Get-TfsAgentPool.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProcessTemplate.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Get-TfsProject.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\New-TfsProject.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Projects\Set-TfsProject.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\Get-TfsAgentQueue.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Queue\New-TfsAgentQueue.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseDefinition.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\Get-TfsReleaseStep.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Release\New-TfsReleaseDefinition.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Repository\Get-TfsGitRepository.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsBuildDefinition.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsBuildDefinitionTemplate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsBuildStep.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\New-TfsBuildDefinition.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsAccessTokenString.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsAgentPool.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsProcessTemplate.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsProject.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\New-TfsProject.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Set-TfsProject.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsAgentQueue.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\New-TfsAgentQueue.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsReleaseDefinition.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsReleaseStep.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\New-TfsReleaseDefinition.ps1" />
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsGitRepository.ps1" />
                     </Component>
                   </Directory>
                   <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
@@ -575,6 +593,8 @@
         <ComponentRef Id='PSFileTransferComponent'/>
         <ComponentRef Id='PSLogComponent'/>
         <ComponentRef Id='ShipsComponent' />
+        <ComponentRef Id='RecipeComponent'/>
+        <ComponentRef Id='RecipePublic'/>
         <ComponentRef Id ='CommonComponent' />
         <ComponentRef Id ='ALCommonComponent1' />
         <ComponentRef Id ='ALCommonComponent2' />

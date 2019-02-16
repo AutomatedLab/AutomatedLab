@@ -198,11 +198,19 @@ function New-LWAzureLoadBalancer
     $jobs = foreach ($vNet in $lab.VirtualNetworks)
     {
         $publicIp = Get-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
+
+        $dnsLabel = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+
+        if ($vNet.AzureDnsLabel)
+        {
+            $dnsLabel = $vNet.AzureDnsLabel
+        }
+
         if (-not $publicIp)
         {
             $publicIp = New-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
                 -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
-                -DomainNameLabel "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')" -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                -DomainNameLabel $dnsLabel -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
         }
 
         $frontendConfig = New-AzLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp

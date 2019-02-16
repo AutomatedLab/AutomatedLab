@@ -21,6 +21,9 @@ namespace AutomatedLab
         private AutomatedLab.NetworkAdapter managementAdapter = new AutomatedLab.NetworkAdapter();
         private bool enableManagementAdapter;
 
+        [XmlAttribute]
+        public string AzureDnsLabel {get; set;}
+
         public List<AzureSubnet> Subnets
         {
             get { return subnets; }
