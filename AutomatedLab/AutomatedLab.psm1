@@ -4194,5 +4194,3 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
 
 #Import available operating systms from cache (if available)
 #Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
-
-Write-Host "$(Get-Date) AutomatedLab"

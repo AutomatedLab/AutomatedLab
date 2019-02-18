@@ -918,5 +918,3 @@ function Register-LabArgumentCompleters
         }
     }
 }
-
-Write-Host "$(Get-Date) AutomatedLabInternals"

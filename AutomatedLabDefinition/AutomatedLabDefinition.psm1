@@ -3475,5 +3475,3 @@ function Set-LinuxPackage
     }
 }
 #endregion Internal
-
-Write-Host "$(Get-Date) AutomatedLabDefinition"
