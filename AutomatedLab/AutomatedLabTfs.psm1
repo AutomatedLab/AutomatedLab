@@ -20,7 +20,7 @@ function Install-LabTeamFoundationEnvironment
         $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
         while (-not $autoLogon -and $retryCount -gt 0)
         {
-            Set-LabAutoLogon -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
             Restart-LabVm -ComputerName $machine -Wait
 
             $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]

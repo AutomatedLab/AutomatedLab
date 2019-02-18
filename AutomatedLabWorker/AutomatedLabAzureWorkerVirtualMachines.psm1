@@ -805,7 +805,7 @@ function Start-LWAzureVM
         Write-Verbose -Message 'Start joining the machines to the respective domains'
         Join-LabVMDomain -Machine $machinesToJoin
 
-        Set-LabAutoLogon -ComputerName $machinesToJoin
+        Enable-LabAutoLogon -ComputerName $machinesToJoin
     }
 
     Write-LogFunctionExit

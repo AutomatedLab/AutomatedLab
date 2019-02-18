@@ -1836,12 +1836,14 @@ function Get-LabVM
 }
 #endregion Get-LabVM
 
-#region Set-LabAutoLogon
-function Set-LabAutoLogon
+#region Enable-LabAutoLogon
+function Enable-LabAutoLogon
 {
+    [CmdletBinding()]
+    [Alias('Set-LabAutoLogon')]
     param
     (
-        [Parameter(Mandatory)]
+        [Parameter()]
         [string[]]
         $ComputerName
     )
@@ -1875,13 +1877,37 @@ function Set-LabAutoLogon
         } -Variable (Get-Variable InvokeParameters) -NoDisplay
     }
 }
-#endregion Set-LabAutoLogon
+#endregion
+
+#region Disable-LabAutoLogon
+function Disable-LabAutoLogon
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter()]
+        [string[]]
+        $ComputerName
+    )
+
+    Write-Verbose -Message "Disabling autologon on $($ComputerName.Count) machines"
+
+    $Machines = Get-LabVm @PSBoundParameters
+
+    Invoke-LabCommand -ActivityName "Disabling AutoLogon on $($ComputerName.Count) machines" -ComputerName $Machines -ScriptBlock {
+        Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 0 -Type String -Force
+        Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Force -ErrorAction SilentlyContinue
+    } -NoDisplay
+}
+#endregion
 
 #region Test-LabAutoLogon
 function Test-LabAutoLogon
 {
+    [CmdletBinding()]
     param
     (
+        [Parameter()]
         [string[]]
         $ComputerName
     )
