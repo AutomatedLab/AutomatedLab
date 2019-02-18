@@ -896,6 +896,8 @@ function New-LabDefinition
     }
 
     $global:AL_CurrentLab = $script:lab
+    
+    Register-LabArgumentCompleters
 
     Write-LogFunctionExit
 }
@@ -3473,3 +3475,5 @@ function Set-LinuxPackage
     }
 }
 #endregion Internal
+
+Write-Host "$(Get-Date) AutomatedLabDefinition"

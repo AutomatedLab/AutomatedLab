@@ -213,7 +213,8 @@
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry',
-        'Get-LabConfigurationItem'
+        'Get-LabConfigurationItem',
+        'Register-LabArgumentCompleters'
     )
     
     FileList               = @(

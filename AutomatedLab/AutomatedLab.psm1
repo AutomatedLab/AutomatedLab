@@ -577,6 +577,8 @@ function Import-Lab
 
     Write-ScreenInfo ("Lab '{0}' hosted on '{1}' imported with {2} machines" -f $Script:data.Name, $Script:data.DefaultVirtualizationEngine ,$Script:data.Machines.Count) -Type Info
 
+    Register-LabArgumentCompleters
+
     Write-LogFunctionExit -ReturnValue $true
 }
 #endregion Import-Lab
@@ -1369,6 +1371,7 @@ function Get-LabAvailableOperatingSystem
             {
                 Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
                 Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+                $global:AL_OperatingSystems = $null
             }
         }
     }
@@ -4057,11 +4060,11 @@ function Get-LabConfigurationItem
 
         [Parameter()]
         [string]
-        $GlobalPath = (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1' -Resolve),
+        $GlobalPath = (Join-Path -Path $PSScriptRoot -ChildPath 'settings.psd1' -Resolve),
 
         [Parameter()]
         [string]
-        $UserPath = (Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1'),
+        $UserPath = (Join-Path -Path $HOME -ChildPath 'AutomatedLab\settings.psd1'),
 
         [Parameter()]
         $Default
@@ -4117,9 +4120,6 @@ DatumStructure:
 $dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
 $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 
-#Import available operating systms from cache (if available)
-Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
-
 #download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
 #but when installing AL using the PowerShell Gallery, this file is missing.
 $productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
@@ -4148,24 +4148,21 @@ if (-not (Test-Path -Path $productKeyCustomFilePath))
     $store.Export($productKeyCustomFilePath)
 }
 
-
-$callingCallFrame = (Get-PSCallStack)[1]
-if ($callingCallFrame.ScriptName -like '*AutomatedLab.init.ps1*' -or
-$callingCallFrame.ScriptName -like '*AutomatedLab.psm1*')
-{
-    return
-}
-
 Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-    Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
-    Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
-    Group-Object -Property OperatingSystemName |
-    ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
-    Sort-Object -Property OperatingSystemName |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new("'$($_.OperatingSystemName)'", "'$($_.OperatingSystemName)'", 'ParameterValue', "$($_.Version) $($_.OperatingSystemName)")
+    if (-not $global:AL_OperatingSystems)
+    {
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+        Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
+        Group-Object -Property OperatingSystemName |
+        ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+        Sort-Object -Property OperatingSystemName
+    }
+
+    foreach ($os in $global:AL_OperatingSystems )
+    {
+        [System.Management.Automation.CompletionResult]::new("'$($os.OperatingSystemName)'", "'$($os.OperatingSystemName)'", 'ParameterValue', "$($os.Version) $($os.OperatingSystemName)")
     }
 }
 
@@ -4186,32 +4183,6 @@ Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Na
     }
 }
 
-$commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
-Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    Get-LabVM -All -IncludeLinux |
-    ForEach-Object {
-        if ($_.Roles)
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
-        }
-        else
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
-}
-
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    (Get-LabDefinition).Domains |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-    }
-}
-
 Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName Roles -ScriptBlock {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
@@ -4220,3 +4191,8 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
 }
+
+#Import available operating systms from cache (if available)
+#Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
+
+Write-Host "$(Get-Date) AutomatedLab"
