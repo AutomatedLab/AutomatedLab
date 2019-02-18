@@ -133,7 +133,7 @@ GO
                 $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                 while (-not $autoLogon -and $retryCount -gt 0)
                 {
-                    Set-LabAutoLogon -ComputerName $machine
+                    Enable-LabAutoLogon -ComputerName $machine
                     Restart-LabVM -ComputerName $machine -Wait -NoDisplay -NoNewLine
 
                     $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
