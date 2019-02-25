@@ -56,6 +56,7 @@
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
         'AutomatedLab.Common',
+        'powershell-yaml',
         'Datum'
     )
 
