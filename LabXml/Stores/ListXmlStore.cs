@@ -25,8 +25,10 @@ namespace AutomatedLab
 
         public void Export(string path)
         {
+            File.Delete(path);
+
             var serializer = new XmlSerializer(typeof(ListXmlStore<T>));
-            var fileStream = new FileStream(path, FileMode.OpenOrCreate);
+            var fileStream = new FileStream(path, FileMode.CreateNew);
             var xmlNamespace = new XmlSerializerNamespaces();
             xmlNamespace.Add(string.Empty, string.Empty);
 
