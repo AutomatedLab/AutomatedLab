@@ -1320,6 +1320,25 @@ function Restore-LWHypervVMSnapshot
 }
 #endregion Restore-LWHypervVMSnapshot
 
+#region Get-LWHypervVMSnapshot
+function Get-LWHypervVMSnapshot
+{
+    [Cmdletbinding()]
+    Param
+    (
+        [string[]]$VMName,
+        
+        [string]$Name
+    )
+    
+    Write-LogFunctionEntry
+
+    Hyper-V\Get-VMSnapshot @PSBoundParameters
+
+    Write-LogFunctionExit
+}
+#endregion
+
 #region Get-LWHypervVMStatus
 function Get-LWHypervVMStatus
 {

@@ -1592,3 +1592,40 @@ function Remove-LWAzureVmSnapshot
     Write-LogFunctionExit
 }
 #endregion
+
+#region Get-LWAzureVmSnapshot
+function Get-LWAzureVmSnapshot
+{
+    param
+    (
+        [Parameter()]
+        [Alias('VMName')]
+        [string[]]
+        $ComputerName,
+
+        [Parameter()]
+        [Alias('Name')]
+        [string]
+        $SnapshotName
+    )
+
+    $parameters = @{
+        ResourceGroupName = (Get-LabAzureDefaultResourceGroup).Name
+        ErrorAction       = 'SilentlyContinue'
+    }
+
+    if ($SnapshotName)
+    {
+        $parameters.SnapshotName = $SnapshotName
+    }
+
+    $snapshots = Get-AzSnapshot @parameters
+
+    if ($ComputerName)
+    {
+        $snapshots = $snapshots | Where-Object {($_.Name -split '_')[0] -in $ComputerName}
+    }
+
+    $snapshots
+}
+#endregion
