@@ -1393,8 +1393,8 @@ function Dismount-LWAzureIsoImage
 }
 #endregion
 
-#region Checkpoint-LWAzureVm
-function Checkpoint-LWAzureVm
+#region Checkpoint-LWAzureVM
+function Checkpoint-LWAzureVM
 {
     [Cmdletbinding()]
     Param 
@@ -1411,11 +1411,21 @@ function Checkpoint-LWAzureVm
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
-    if ($runningMachines) { Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true}
+    if ($runningMachines)
+    {
+        Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
+        Wait-LabVMShutdown -ComputerName $runningMachines
+    }
 
     $jobs = foreach ($machine in $ComputerName)
     {
         $vm = Get-AzVM -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
+        if (-not $vm) 
+        {
+            Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
+            continue
+        }
+
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
         $existingSnapshot = Get-AzSnapshot -ResourceGroupName $resourceGroupName -SnapshotName $vmSnapshotName -ErrorAction SilentlyContinue
         if ($existingSnapshot)
@@ -1424,15 +1434,9 @@ function Checkpoint-LWAzureVm
             continue
         }
 
-        if (-not $vm) 
-        {
-            Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
-            continue
-        }
-
-        $ossourcedisk = Get-AzDisk -ResourceGroupName $resourceGroupName -DiskName $vm.StorageProfile.OsDisk.Name
-        $snapshotconfig = New-AzSnapshotConfig -SourceUri $ossourcedisk.Id -CreateOption Copy -Location $vm.Location
-        New-AzSnapshot -Snapshot $snapshotconfig -SnapshotName $vmSnapshotName -ResourceGroupName $resourceGroupName -AsJob
+        $osSourceDisk = Get-AzDisk -ResourceGroupName $resourceGroupName -DiskName $vm.StorageProfile.OsDisk.Name
+        $snapshotConfig = New-AzSnapshotConfig -SourceUri $osSourceDisk.Id -CreateOption Copy -Location $vm.Location
+        New-AzSnapshot -Snapshot $snapshotConfig -SnapshotName $vmSnapshotName -ResourceGroupName $resourceGroupName -AsJob
     }
 
     if ($jobs.State -contains 'Failed')
@@ -1447,7 +1451,11 @@ function Checkpoint-LWAzureVm
         $jobs | Remove-Job
     }
 
-    if ($runningMachines) { Start-LWAzureVM -ComputerName $runningMachines}
+    if ($runningMachines)
+    {
+        Start-LWAzureVM -ComputerName $runningMachines
+        Wait-LabVM -ComputerName $runningMachines
+    }
 
     Write-LogFunctionExit
 }
@@ -1471,9 +1479,13 @@ function Restore-LWAzureVmSnapshot
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
-    if ($runningMachines) { Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true}
+    if ($runningMachines)
+    {
+        Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
+        Wait-LabVMShutdown -ComputerName $runningMachines
+    }
     $machineStatus = @{}
-    $ComputerName.ForEach( {$machineStatus[$_] = @{Stage1 = $null; Stage2 = $null; Stage3 = $null}})
+    $ComputerName.ForEach( {$machineStatus[$_] = @{ Stage1 = $null; Stage2 = $null; Stage3 = $null } })
 
     foreach ($machine in $ComputerName)
     {
@@ -1551,7 +1563,11 @@ function Restore-LWAzureVmSnapshot
         }
     }
 
-    if ($runningMachines) { Start-LWAzureVM -ComputerName $runningMachines}
+    if ($runningMachines)
+    {
+        Start-LWAzureVM -ComputerName $runningMachines
+        Wait-LabVM -ComputerName $runningMachines
+    }
     $machineStatus.Values.Values.Job | Remove-Job
 
     Write-LogFunctionExit
