@@ -1609,17 +1609,12 @@ function Get-LWAzureVmSnapshot
         $SnapshotName
     )
 
-    $parameters = @{
-        ResourceGroupName = (Get-LabAzureDefaultResourceGroup).Name
-        ErrorAction       = 'SilentlyContinue'
-    }
+    $snapshots = Get-AzSnapshot -ResourceGroupName (Get-LabAzureDefaultResourceGroup).Name -ErrorAction SilentlyContinue
 
     if ($SnapshotName)
     {
-        $parameters.SnapshotName = $SnapshotName
+        $snapshots = $snapshots | Where-Object {($_.Name -split '_')[1] -eq $SnapshotName}
     }
-
-    $snapshots = Get-AzSnapshot @parameters
 
     if ($ComputerName)
     {
