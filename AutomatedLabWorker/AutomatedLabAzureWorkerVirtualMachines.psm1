@@ -1656,6 +1656,8 @@ function Get-LWAzureVmSnapshot
         $snapshots = $snapshots | Where-Object {($_.Name -split '_')[0] -in $ComputerName}
     }
 
-    $snapshots
+    $snapshots.ForEach({
+		[AutomatedLab.Snapshot]::new(($_.Name -split '_')[1], ($_.Name -split '_')[0], $_.TimeCreated)
+	})
 }
 #endregion
