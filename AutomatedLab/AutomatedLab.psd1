@@ -216,7 +216,8 @@
         'Disable-LabTelemetry',
         'Get-LabConfigurationItem',
         'Register-LabArgumentCompleters',
-        'Get-LabVmSnapshot'
+        'Get-LabVmSnapshot',
+        'Test-LabHostConnected'
     )
     
     FileList               = @(
