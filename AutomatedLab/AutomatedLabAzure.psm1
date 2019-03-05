@@ -823,11 +823,11 @@ function Remove-LabAzureResourceGroup
 
         [switch]$Force
     )
-    
-    Test-LabHostConnected -Throw -Quiet
 
     begin
     {
+        Test-LabHostConnected -Throw -Quiet
+
         Write-LogFunctionEntry
 
         Update-LabAzureSettings
