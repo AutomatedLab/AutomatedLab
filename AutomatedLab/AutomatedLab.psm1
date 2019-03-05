@@ -4121,7 +4121,10 @@ function Test-LabHostConnected
     param
     (
         [switch]
-        $Throw
+        $Throw,
+
+        [switch]
+        $Quiet
     )
 
     [bool]$connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
@@ -4131,12 +4134,18 @@ function Test-LabHostConnected
 
     if ($null -eq $connected)
     {
+        # If Get-NetConnectionProfile is missing, try pinging Google's public DNS
         $connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue
     }
 
-    if ($Throw.IsPresent)
+    if ($Throw.IsPresent -and -not $connected)
     {
         throw "$env:COMPUTERNAME does not seem to be connected to the internet. All internet-related tasks will fail."
+    }
+
+    if ($Quiet.IsPresent)
+    {
+        return
     }
 
     $connected
