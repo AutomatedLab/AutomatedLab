@@ -62,7 +62,6 @@
     <Compile Include="Azure\AzureAvailabilitySet.cs" />
     <Compile Include="Azure\AzureLocation.cs" />
     <Compile Include="Azure\AzureOSImage.cs" />
-    <Compile Include="Azure\AzureResourceGroup.cs" />
     <Compile Include="Azure\AzureRm.cs" />
     <Compile Include="Azure\AzureRmSkuDescription.cs" />
     <Compile Include="Azure\AzureRmHostNameSslState.cs" />
