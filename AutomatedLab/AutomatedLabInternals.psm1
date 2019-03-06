@@ -892,7 +892,7 @@ function Update-LabSysinternalsTools
 
 function Register-LabArgumentCompleters
 {
-    $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters.ContainsKey('ComputerName') }
+    $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters -and $_.Parameters.ContainsKey('ComputerName') }
     Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
         param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 

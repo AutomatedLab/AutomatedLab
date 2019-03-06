@@ -2,10 +2,13 @@
 function New-LWAzureVM
 {
     [Cmdletbinding()]
-    Param (
+    param
+    (
         [Parameter(Mandatory)]
         [AutomatedLab.Machine]$Machine
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -458,6 +461,8 @@ function Initialize-LWAzureVM
         [AutomatedLab.Machine[]]$Machine
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $initScript = {
@@ -695,6 +700,8 @@ function Remove-LWAzureVM
         [switch]$PassThru
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
@@ -746,6 +753,8 @@ function Start-LWAzureVM
 
         [switch]$NoNewLine
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -833,6 +842,8 @@ function Stop-LWAzureVM
         $StayProvisioned = $false
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
@@ -919,6 +930,8 @@ function Wait-LWAzureRestartVM
         $MonitoringStartTime
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     #required to suporess verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -1003,6 +1016,8 @@ function Get-LWAzureVMStatus
         [string[]]$ComputerName
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     #required to suporess verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
@@ -1054,6 +1069,8 @@ function Get-LWAzureVMConnectionInfo
         [Parameter(Mandatory)]
         [AutomatedLab.Machine[]]$ComputerName
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -1121,6 +1138,8 @@ function Enable-LWAzureVMRemoting
 
         [switch]$UseSSL
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
@@ -1196,6 +1215,8 @@ function Enable-LWAzureWinRm
         [switch]
         $Wait
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -1276,6 +1297,8 @@ function Connect-LWAzureLabSourcesDrive
         [System.Management.Automation.Runspaces.PSSession]$Session
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
@@ -1344,6 +1367,8 @@ function Mount-LWAzureIsoImage
         [switch]$PassThru
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     # ISO file should already exist on Azure storage share, as it was initially retrieved from there as well.
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
@@ -1375,6 +1400,8 @@ function Dismount-LWAzureIsoImage
         $ComputerName
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     Invoke-LabCommand -ComputerName $ComputerName -ActivityName "Dismounting ISO Images on Azure machines $($ComputerName -join ',')" -ScriptBlock {
@@ -1405,6 +1432,8 @@ function Checkpoint-LWAzureVm
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
     
@@ -1465,6 +1494,8 @@ function Restore-LWAzureVmSnapshot
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
     
@@ -1575,6 +1606,8 @@ function Remove-LWAzureVmSnapshot
         [switch]$All
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $lab = Get-Lab
@@ -1590,5 +1623,41 @@ function Remove-LWAzureVmSnapshot
     $null = $snapshots | Remove-AzSnapshot -Force -Confirm:$false
 
     Write-LogFunctionExit
+}
+#endregion
+
+#region Get-LWAzureVmSnapshot
+function Get-LWAzureVmSnapshot
+{
+    param
+    (
+        [Parameter()]
+        [Alias('VMName')]
+        [string[]]
+        $ComputerName,
+
+        [Parameter()]
+        [Alias('Name')]
+        [string]
+        $SnapshotName
+    )
+
+    Test-LabHostConnected -Throw -Quiet
+
+    $snapshots = Get-AzSnapshot -ResourceGroupName (Get-LabAzureDefaultResourceGroup).Name -ErrorAction SilentlyContinue
+
+    if ($SnapshotName)
+    {
+        $snapshots = $snapshots | Where-Object {($_.Name -split '_')[1] -eq $SnapshotName}
+    }
+
+    if ($ComputerName)
+    {
+        $snapshots = $snapshots | Where-Object {($_.Name -split '_')[0] -in $ComputerName}
+    }
+
+    $snapshots.ForEach({
+		[AutomatedLab.Snapshot]::new(($_.Name -split '_')[1], ($_.Name -split '_')[0], $_.TimeCreated)
+	})
 }
 #endregion

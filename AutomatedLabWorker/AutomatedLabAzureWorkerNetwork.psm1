@@ -17,6 +17,8 @@ function New-LWAzureNetworkSwitch
         $PassThru
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $lab = Get-Lab
@@ -130,6 +132,8 @@ function Remove-LWAzureNetworkSwitch
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     $lab = Get-Lab
@@ -162,6 +166,9 @@ function Get-LWAzureNetworkSwitch
         [AutomatedLab.VirtualNetwork[]]
         $virtualNetwork
     )
+
+    Test-LabHostConnected -Throw -Quiet
+
     $lab = Get-Lab
     $jobs = @()
 
@@ -190,6 +197,8 @@ function New-LWAzureLoadBalancer
         [switch]$PassThru,
         [switch]$Wait
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     $lab = Get-Lab
     $resourceGroup = $lab.Name
@@ -274,6 +283,8 @@ function Set-LWAzureDnsServer
         $PassThru
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     Write-LogFunctionEntry
 
     foreach ($network in $VirtualNetwork)
@@ -319,6 +330,8 @@ function Add-LWAzureLoadBalancedPort
         [string]
         $ComputerName
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     if (Get-LabAzureLoadBalancedPort @PSBoundParameters)
     {
@@ -379,6 +392,8 @@ function Get-LWAzureLoadBalancedPort
         $ComputerName
     )
 
+    Test-LabHostConnected -Throw -Quiet
+
     $lab = Get-Lab
     $resourceGroup = $lab.Name
 
@@ -418,6 +433,8 @@ function Get-LabAzureLoadBalancedPort
         [string]
         $ComputerName
     )
+
+    Test-LabHostConnected -Throw -Quiet
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
 

@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Implemented new cmdlet Get-LabVmSnapshot (fixes #611)
+
 ## 5.7.0 - 2019-02-16
 
 ### Enhancements

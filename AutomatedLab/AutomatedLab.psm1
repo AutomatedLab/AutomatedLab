@@ -4114,6 +4114,44 @@ DatumStructure:
 }
 #endregion Get-LabConfigurationItem
 
+#region Test-LabHostConnected
+function Test-LabHostConnected
+{
+    [CmdletBinding()]
+    param
+    (
+        [switch]
+        $Throw,
+
+        [switch]
+        $Quiet
+    )
+
+    [bool]$connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+    {
+        (Get-NetConnectionProfile | Where {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
+    }
+
+    if ($null -eq $connected)
+    {
+        # If Get-NetConnectionProfile is missing, try pinging Google's public DNS
+        $connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue
+    }
+
+    if ($Throw.IsPresent -and -not $connected)
+    {
+        throw "$env:COMPUTERNAME does not seem to be connected to the internet. All internet-related tasks will fail."
+    }
+
+    if ($Quiet.IsPresent)
+    {
+        return
+    }
+
+    $connected
+}
+#endregion
+
 #Initialization code
 
 #Register the $LabSources variable

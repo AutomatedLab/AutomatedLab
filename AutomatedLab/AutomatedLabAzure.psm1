@@ -49,6 +49,8 @@ function Add-LabAzureSubscription
 
         [switch]$PassThru
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
     Update-LabAzureSettings
@@ -419,6 +421,8 @@ function Get-LabAzureLocation
 
         [switch]$List
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -597,6 +601,8 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -664,6 +670,8 @@ function Import-LabAzureCertificate
     # .ExternalHelp AutomatedLab.Help.xml
     [cmdletbinding()]
     param ()
+    
+    Test-LabHostConnected -Throw -Quiet
 
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
@@ -765,6 +773,8 @@ function New-LabAzureRmResourceGroup
 
         [switch]$PassThru
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -816,6 +826,8 @@ function Remove-LabAzureResourceGroup
 
     begin
     {
+        Test-LabHostConnected -Throw -Quiet
+
         Write-LogFunctionEntry
 
         Update-LabAzureSettings
@@ -860,6 +872,8 @@ function Get-LabAzureResourceGroup
         [Parameter(Position = 0, ParameterSetName = 'ByLab')]
         [switch]$CurrentLab
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -896,6 +910,8 @@ function New-LabAzureLabSourcesStorage
 
         [switch]$NoDisplay
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -954,6 +970,8 @@ function Get-LabAzureLabSourcesStorage
     [CmdletBinding()]
     param
     ()
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
 
@@ -979,6 +997,11 @@ function Get-LabAzureLabSourcesStorage
 
 function Test-LabAzureLabSourcesStorage
 {
+    [CmdletBinding()]
+    param ( )
+    
+    Test-LabHostConnected -Throw -Quiet
+
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
     if (-not $azureLabSources)
@@ -1000,6 +1023,8 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [Parameter(Mandatory)]
         [string]$Path
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     try
     {
@@ -1022,6 +1047,8 @@ function Remove-LabAzureLabSourcesStorage
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
     Test-LabAzureSubscription
@@ -1058,6 +1085,8 @@ function Sync-LabAzureLabSources
         [string]
         $Filter
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
     Test-LabAzureSubscription
@@ -1197,6 +1226,8 @@ function Get-LabAzureLabSourcesContent
         [switch]
         $Directory
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     $azureShare = Get-AzStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
 
@@ -1231,6 +1262,8 @@ function Get-LabAzureLabSourcesContentRecursive
     (
         $StorageContext
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     $content = @()
 
@@ -1257,6 +1290,11 @@ function Get-LabAzureLabSourcesContentRecursive
 
 function Test-LabAzureSubscription
 {
+    [CmdletBinding()]
+    param ( )
+    
+    Test-LabHostConnected -Throw -Quiet
+
     try
     {
         $ctx = Get-AzContext
@@ -1274,6 +1312,8 @@ function Get-LabAzureAvailableRoleSize
         [Parameter(Mandatory)]
         [string]$Location
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
     {
@@ -1298,6 +1338,8 @@ function Get-LabAzureAvailableSku
         [string]
         $Location
     )
+    
+    Test-LabHostConnected -Throw -Quiet
 
     # Server
     Get-AzVMImagePublisher -Location $Location |
