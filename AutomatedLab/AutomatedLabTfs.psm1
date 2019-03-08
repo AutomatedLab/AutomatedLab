@@ -264,7 +264,7 @@ function Install-LabBuildWorker
 
             $commandLine = if ($useSsl)
             {
-				#sslskipcertvalidation is used as git.exe could not test the certificate chain
+                #sslskipcertvalidation is used as git.exe could not test the certificate chain
                 '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort, $env:COMPUTERNAME
             }
             else
@@ -480,21 +480,33 @@ function New-LabReleasePipeline
         }
         try
         {
-            $retries = 3
-            $errorFile = [System.IO.Path]::GetTempFileName()
+            $pattern = '(?>remotes\/origin\/)(?<BranchName>[\w\/]+)'
+            $branches = git branch -a | Where-Object { $_ -cnotlike '*HEAD*' -and $_ -like '  remotes/origin*' }
+
+            foreach ($branch in $branches)
+            {
+                $branch -match $pattern | Out-Null
+
+                git checkout $Matches.BranchName 2>&1
+                if ($LASTEXITCODE -eq 0)
+                {
+                    $retries = 3
+                    $errorFile = [System.IO.Path]::GetTempFileName()
           
-            $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
-            while ($pushResult.ExitCode -ne 0 -and $retries -gt 0)
-            {
-                Write-ScreenInfo "Could not push the repository in '$pwd' to TFS, retrying ($retries)..."
-                Start-Sleep -Seconds 5
-                $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
-                $retries--
-            }
+                    $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                    while ($pushResult.ExitCode -ne 0 -and $retries -gt 0)
+                    {
+                        Write-ScreenInfo "Could not push the repository in '$pwd' to TFS, retrying ($retries)..."
+                        Start-Sleep -Seconds 5
+                        $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
+                        $retries--
+                    }
               
-            if ($pushResult.ExitCode -ne 0)
-            {
-                Write-Error "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
+                    if ($pushResult.ExitCode -ne 0)
+                    {
+                        Write-Error "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
+                    }
+                }
             }
         }
         finally
@@ -509,22 +521,16 @@ function New-LabReleasePipeline
     else
     {
         $remoteGitBinary = Invoke-LabCommand -ActivityName 'Test Git availibility' -ComputerName $tfsVm -ScriptBlock {
+        
             if (Get-Command git) { (Get-Command git).Source } elseif (Test-Path -Path $localLabSources\Tools\git.exe) { "$localLabSources\Tools\git.exe" }
+            
         } -PassThru
+        
         if (-not $remoteGitBinary)
         {
             Write-ScreenInfo -Message "Git is not installed on '$tfsVm'. We are not be able to push any code to the remote repository and cannot proceed. Please install Git on '$tfsVm'"
             return
         }
-      
-        Invoke-LabCommand -ActivityName 'Clone local repo' -ComputerName $tfsVm -ScriptBlock {
-            if (-not (Test-Path -Path C:\Git))
-            {
-                mkdir -Path C:\Git | Out-Null
-            }
-            Set-Location -Path C:\Git
-            git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
-        } -Variable (Get-Variable -Name repository, ProjectName)
       
         if ($repositoryPath)
         {
@@ -536,21 +542,43 @@ function New-LabReleasePipeline
         }
       
         Invoke-LabCommand -ActivityName 'Remove .git folder' -ComputerName $tfsVm -ScriptBlock {
-            Set-Location -Path C:\Git\$ProjectName
-            Copy-Item -Path "C:\$ProjectName.temp\*" -Destination . -Recurse -Exclude .git
-          
-            git checkout -b master 2>&1
-            git add . 2>&1
-            git commit -m 'Initial' 2>&1
-            git push 2>&1
 
-            git checkout -b dev 2>&1
-            git push --set-upstream origin dev 2>&1
+            Set-Location -Path "C:\$ProjectName.temp"
           
+            git remote add tfs $repository.remoteUrl
+ 
+            $pattern = '(?>remotes\/origin\/)(?<BranchName>[\w\/]+)'
+            $branches = git branch -a | Where-Object { $_ -cnotlike '*HEAD*' -and -not $_.StartsWith('*') }
+ 
+            foreach ($branch in $branches)
+            {
+                if ($branch -match $pattern)
+                {
+                    git checkout $Matches.BranchName 2>&1
+                    if ($LASTEXITCODE -eq 0)
+                    {
+                        git add . 2>&1
+                        git commit -m 'Initial' 2>&1
+                        git push --set-upstream tfs $Matches.BranchName 2>&1
+                    }
+                }
+            }
+ 
             Set-Location -Path C:\
             Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
         } -Variable (Get-Variable -Name repository, ProjectName)
     }
+    
+    Invoke-LabCommand -ActivityName 'Clone local repo from TFS' -ComputerName $tfsVm -ScriptBlock {
+        
+        if (-not (Test-Path -Path C:\Git))
+        {
+            mkdir -Path C:\Git | Out-Null
+        }
+        Set-Location -Path C:\Git
+        git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
+            
+    } -Variable (Get-Variable -Name repository, ProjectName)
 
     $parameters = @{
         InstanceName   = $tfsInstance
