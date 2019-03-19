@@ -2,6 +2,8 @@
     RootModule             = 'AutomatedLabDefinition.psm1'
     
      ModuleVersion          = '1.0.0'
+	 
+	 ScriptsToProcess = 'AutomatedLabDefinition.init.ps1'
     
     GUID                   = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
