@@ -4127,9 +4127,9 @@ function Test-LabHostConnected
         $Quiet
     )
 
-    [bool]$connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+    $connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
     {
-        (Get-NetConnectionProfile | Where {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
+        (Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
     }
 
     if ($null -eq $connected)
