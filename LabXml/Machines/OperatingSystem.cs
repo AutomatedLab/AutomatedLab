@@ -26,7 +26,7 @@ namespace AutomatedLab
             {"2016-Datacenter", "Windows Server 2016 Datacenter (Desktop Experience)" },
             {"2016-Datacenter-Server-Core", "Windows Server 2016 Datacenter" },
             {"2019-Datacenter", "Windows Server 2019 Datacenter (Desktop Experience)" },
-            {"2019-Datacenter-Server-Core", "Windows Server 2019 Datacenter" },
+            {"2019-Datacenter-Core", "Windows Server 2019 Datacenter" },
             {"Datacenter-Core-1803-with-Containers-smalldisk", "Windows Server Datacenter" },
             {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
             {"Windows-10-N-x64", "Windows 10 Enterprise" },
