@@ -954,6 +954,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
+    {
+        Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
+
+        Install-LabHyperV
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode,FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart

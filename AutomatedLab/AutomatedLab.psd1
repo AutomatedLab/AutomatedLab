@@ -44,7 +44,8 @@
         'AutomatedLabOffice.psm1',
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
-        'AutomatedLabTfs.psm1'
+        'AutomatedLabTfs.psm1',
+        'AutomatedLabHyperV.psm1'
     )
 
     RequiredModules        = @(
@@ -137,6 +138,7 @@
         'Install-LabSqlServers',
         'Install-LabWindowsFeature',
         'Install-LabTeamFoundationEnvironment',
+        'Install-LabHyperV',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
