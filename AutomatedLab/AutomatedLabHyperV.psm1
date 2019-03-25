@@ -10,9 +10,9 @@ function Install-LabHyperV
 
     Write-ScreenInfo -Message 'Exposing virtualization extensions...' -NoNewLine
     $hyperVVms = $vms | Where-Object -Property HostType -eq HyperV
-    $hyperVVms | Stop-LabVm -Wait
+    Stop-LabVm -Wait -ComputerName $hyperVVms
     $hyperVVms | Set-VMProcessor -ExposeVirtualizationExtensions $true
-    $vms | Start-LabVm -Wait # Start all, regardless of Hypervisor
+    Start-LabVm -Wait -ComputerName $vms # Start all, regardless of Hypervisor
     Write-ScreenInfo -Message 'Done'
 
     # Enable Feature
