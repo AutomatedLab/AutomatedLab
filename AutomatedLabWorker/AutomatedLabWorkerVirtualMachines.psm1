@@ -1334,7 +1334,7 @@ function Get-LWHypervVMSnapshot
     Write-LogFunctionEntry
 
     (Hyper-V\Get-VMSnapshot @PSBoundParameters).ForEach({
-		[AutomatedLab.Snapshot]::new($_.Name, $_.VMName $_.CreationTime)
+		[AutomatedLab.Snapshot]::new($_.Name, $_.VMName, $_.CreationTime)
 	})
 
     Write-LogFunctionExit
