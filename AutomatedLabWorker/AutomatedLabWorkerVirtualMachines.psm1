@@ -1320,6 +1320,27 @@ function Restore-LWHypervVMSnapshot
 }
 #endregion Restore-LWHypervVMSnapshot
 
+#region Get-LWHypervVMSnapshot
+function Get-LWHypervVMSnapshot
+{
+    [Cmdletbinding()]
+    Param
+    (
+        [string[]]$VMName,
+        
+        [string]$Name
+    )
+    
+    Write-LogFunctionEntry
+
+    (Hyper-V\Get-VMSnapshot @PSBoundParameters).ForEach({
+		[AutomatedLab.Snapshot]::new($_.Name, $_.VMName, $_.CreationTime)
+	})
+
+    Write-LogFunctionExit
+}
+#endregion
+
 #region Get-LWHypervVMStatus
 function Get-LWHypervVMStatus
 {

@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## 5.8.0 - 2019-03-25
+
+### Enhancements
+
+- Implemented new cmdlet Get-LabVmSnapshot (fixes #611)
+- Added Enable and Disable-LabAutoLogon
+- AGPM Sample Script updated to ensure compatibility with Azure
+- Added cmdlet Test-LabHostConnected to test internet connectivity before trying things on Azure
+- Server 2019 added to list of Azure images
+
+### Bug fixes
+
+- Performance issues lessened
+- Sample scripts corrected (Thank you @waiholiu !)
+- Random Lab XML corruptions fixed
+
 ## 5.7.0 - 2019-02-16
 
 ### Enhancements

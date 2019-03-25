@@ -56,6 +56,7 @@
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
         'AutomatedLab.Common',
+        'powershell-yaml',
         'Datum'
     )
 
@@ -166,7 +167,8 @@
         'Restore-LabVMSnapshot',
         'Save-Hashes',
         'Save-LabVM',
-        'Set-LabAutoLogon',
+        'Enable-LabAutoLogon',
+        'Disable-LabAutoLogon',
         'Set-LabAzureDefaultLocation',
         'Set-LabAzureDefaultStorageAccount',
         'Set-LabAzureWebAppContent',
@@ -212,7 +214,10 @@
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry',
-        'Get-LabConfigurationItem'
+        'Get-LabConfigurationItem',
+        'Register-LabArgumentCompleters',
+        'Get-LabVmSnapshot',
+        'Test-LabHostConnected'
     )
     
     FileList               = @(

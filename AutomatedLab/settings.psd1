@@ -37,24 +37,10 @@
                 }
             }
         )
-        Logging                                = @{
-            TruncateLength = 50
-            TruncateTypes  = @(
-                'System.Management.Automation.ScriptBlock'
-            )
-            DefaultFolder  = $null
-            DefaultName    = 'PSLog'
-            Level          = 'All'
-            Silent         = $false
-            AutoStart      = $true
-        }
         MachineFileName                        = 'Machines.xml'
         DiskFileName                           = 'Disks.xml'
         LabFileName                            = 'Lab.xml'
         DefaultAddressSpace                    = '192.168.10.0/24'
-        ProductKeyFileName                     = 'ProductKeys.xml'
-        ProductKeyCustomFileName               = 'ProductKeysCustom.xml'
-        ProductKeyFileLink                     = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
         ValidationSettings                     = @{
             ValidRoleProperties     = @{
                 Orchestrator2012 = @(

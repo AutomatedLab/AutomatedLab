@@ -896,6 +896,8 @@ function New-LabDefinition
     }
 
     $global:AL_CurrentLab = $script:lab
+    
+    Register-LabArgumentCompleters
 
     Write-LogFunctionExit
 }

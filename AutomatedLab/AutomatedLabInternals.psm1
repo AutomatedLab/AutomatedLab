@@ -889,3 +889,32 @@ function Update-LabSysinternalsTools
     }
 }
 #endregion Update-LabSysinternalsTools
+
+function Register-LabArgumentCompleters
+{
+    $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters -and $_.Parameters.ContainsKey('ComputerName') }
+    Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+        Get-LabVM -All -IncludeLinux |
+        ForEach-Object {
+            if ($_.Roles)
+            {
+                [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
+            }
+            else
+            {
+                [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+            }
+        }
+    }
+
+    Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
+        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+        (Get-LabDefinition).Domains |
+        ForEach-Object {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}

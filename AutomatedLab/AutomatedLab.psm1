@@ -577,6 +577,8 @@ function Import-Lab
 
     Write-ScreenInfo ("Lab '{0}' hosted on '{1}' imported with {2} machines" -f $Script:data.Name, $Script:data.DefaultVirtualizationEngine ,$Script:data.Machines.Count) -Type Info
 
+    Register-LabArgumentCompleters
+
     Write-LogFunctionExit -ReturnValue $true
 }
 #endregion Import-Lab
@@ -1369,6 +1371,7 @@ function Get-LabAvailableOperatingSystem
             {
                 Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
                 Write-Verbose ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
+                $global:AL_OperatingSystems = $null
             }
         }
     }
@@ -4057,11 +4060,11 @@ function Get-LabConfigurationItem
 
         [Parameter()]
         [string]
-        $GlobalPath = (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1' -Resolve),
+        $GlobalPath = (Join-Path -Path $PSScriptRoot -ChildPath 'settings.psd1' -Resolve),
 
         [Parameter()]
         [string]
-        $UserPath = (Join-Path -Path $home -ChildPath 'AutomatedLab\settings.psd1'),
+        $UserPath = (Join-Path -Path $HOME -ChildPath 'AutomatedLab\settings.psd1'),
 
         [Parameter()]
         $Default
@@ -4110,3 +4113,122 @@ DatumStructure:
     $settings
 }
 #endregion Get-LabConfigurationItem
+
+#region Test-LabHostConnected
+function Test-LabHostConnected
+{
+    [CmdletBinding()]
+    param
+    (
+        [switch]
+        $Throw,
+
+        [switch]
+        $Quiet
+    )
+
+    [bool]$connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+    {
+        (Get-NetConnectionProfile | Where {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
+    }
+
+    if ($null -eq $connected)
+    {
+        # If Get-NetConnectionProfile is missing, try pinging Google's public DNS
+        $connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue
+    }
+
+    if ($Throw.IsPresent -and -not $connected)
+    {
+        throw "$env:COMPUTERNAME does not seem to be connected to the internet. All internet-related tasks will fail."
+    }
+
+    if ($Quiet.IsPresent)
+    {
+        return
+    }
+
+    $connected
+}
+#endregion
+
+#Initialization code
+
+#Register the $LabSources variable
+$dynamicLabSources = New-Object AutomatedLab.DynamicVariable 'global:labSources', { Get-LabSourcesLocationInternal }, { $null }
+$executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
+
+#download the ProductKeys.xml file if it does not exist. The installer puts the file into 'C:\ProgramData\AutomatedLab\Assets'
+#but when installing AL using the PowerShell Gallery, this file is missing.
+$productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
+$productKeyFileName = 'ProductKeys.xml'
+$productKeyFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyFileName
+
+if (-not (Test-Path -Path 'C:\ProgramData\AutomatedLab\Assets'))
+{
+    New-Item -Path C:\ProgramData\AutomatedLab\Assets -ItemType Directory | Out-Null
+}
+
+if (-not (Test-Path -Path $productKeyFilePath))
+{
+    Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
+}
+
+$productKeyCustomFileName = 'ProductKeysCustom.xml'
+$productKeyCustomFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyCustomFileName
+
+if (-not (Test-Path -Path $productKeyCustomFilePath))
+{
+    $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
+    
+    $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
+    $store.Add($dummyProductKey)
+    $store.Export($productKeyCustomFilePath)
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    if (-not $global:AL_OperatingSystems)
+    {
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
+        Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
+        Group-Object -Property OperatingSystemName |
+        ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
+        Sort-Object -Property OperatingSystemName
+    }
+
+    foreach ($os in $global:AL_OperatingSystems )
+    {
+        [System.Management.Automation.CompletionResult]::new("'$($os.OperatingSystemName)'", "'$($os.OperatingSystemName)'", 'ParameterValue', "$($os.Version) $($os.OperatingSystemName)")
+    }
+}
+
+Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    Get-ChildItem -Path $path -Directory |
+    ForEach-Object {
+        if ($_.Name -contains ' ')
+        {
+            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
+        }
+        else
+        {
+            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
+        }
+    }
+}
+
+Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName Roles -ScriptBlock {
+    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
+
+    [System.Enum]::GetNames([AutomatedLab.Roles]) |
+    ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+    }
+}
+
+#Import available operating systms from cache (if available)
+#Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
