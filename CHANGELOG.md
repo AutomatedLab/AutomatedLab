@@ -2,7 +2,7 @@
 
 ## Unreleased
 
-## 5.8.0 - 2019-03-25
+## 5.9.0 - 2019-03-25
 
 ### Enhancements
 
@@ -11,6 +11,8 @@
 - AGPM Sample Script updated to ensure compatibility with Azure
 - Added cmdlet Test-LabHostConnected to test internet connectivity before trying things on Azure
 - Server 2019 added to list of Azure images
+- New-LabReleasePipeline now publishes all branches to lab TFS
+- Improved handling for Checkpoint-/Restore-LabVm
 
 ### Bug fixes
 

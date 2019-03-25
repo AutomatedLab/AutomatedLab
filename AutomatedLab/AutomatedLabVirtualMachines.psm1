@@ -2059,7 +2059,7 @@ function Checkpoint-LabVM
     switch ($lab.DefaultVirtualizationEngine)
     {
         'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Checkpoint-LWAzureVm -ComputerName $machines -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
     }    
 
