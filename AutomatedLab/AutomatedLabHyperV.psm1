@@ -63,7 +63,7 @@ function Install-LabHyperV
         if ($roleParameters.Count -eq 0) { continue }
 
         $parameters = Sync-Parameter -Command (Get-Command Set-VMHost) -Parameters $roleParameters
-        foreach ($parameter in $parameters.GetEnumerator())
+        foreach ($parameter in $parameters.Clone().GetEnumerator())
         {
             $type = $parametersAndTypes[$parameter.Key]
     
