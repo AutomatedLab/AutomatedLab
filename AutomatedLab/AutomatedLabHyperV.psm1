@@ -29,21 +29,7 @@ function Install-LabHyperV
 
     #Configure
     $settingsTable = @{ }
-
-    foreach ($vm in $vms)
-    {
-        [hashtable]$roleParameters = ($vm.Roles | Where-Object Name -eq HyperV).Properties
-        if ($roleParameters.Count -eq 0) { continue }
-
-        $parameters = Sync-Parameter -Command (Get-Command Set-VMHost) -Parameters $roleParameters
-        $settingsTable.Add($vm.Name, $parameters)
-    }
-
-    if ($settingsTable.Keys.Count -eq 0)
-    {
-        return
-    }
-
+    
     # Correct data types for individual settings
     $parametersAndTypes = @{
         MaximumStorageMigrations                  = [uint32]
@@ -56,18 +42,32 @@ function Install-LabHyperV
         EnableEnhancedSessionMode                 = [bool]
     }
 
-    foreach ($parameter in $parameters.GetEnumerator())
+    foreach ($vm in $vms)
     {
-        $type = $parametersAndTypes[$parameter.Key]
+        [hashtable]$roleParameters = ($vm.Roles | Where-Object Name -eq HyperV).Properties
+        if ($roleParameters.Count -eq 0) { continue }
 
-        if ($type -eq [bool])
+        $parameters = Sync-Parameter -Command (Get-Command Set-VMHost) -Parameters $roleParameters
+        foreach ($parameter in $parameters.GetEnumerator())
         {
-            $parameter.Value = [Convert]::ToBoolean($parameter.Value)
+            $type = $parametersAndTypes[$parameter.Key]
+    
+            if ($type -eq [bool])
+            {
+                $parameter.Value = [Convert]::ToBoolean($parameter.Value)
+            }
+            else
+            {
+                $parameter.Value = $parameter.Value -as $type
+            }
         }
-        else
-        {
-            $parameter.Value = $parameter.Value -as $type
-        }
+        
+        $settingsTable.Add($vm.Name, $parameters)
+    }
+
+    if ($settingsTable.Keys.Count -eq 0)
+    {
+        return
     }
     
     Invoke-LabCommand -ActivityName 'Configuring VM Host settings' -ComputerName $settingsTable.Keys -Variable (Get-Variable -Name settingsTable) -ScriptBlock {
