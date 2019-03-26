@@ -311,6 +311,7 @@ function New-LWAzureVM
     $Vnet = $Machine.NetworkAdapters[0].VirtualSwitch.Name
     $Location = $lab.AzureSettings.DefaultLocation.DisplayName
     $DefaultIpAddress = $Machine.NetworkAdapters[0].Ipv4Address.IpAddress
+    $LabName = $lab.Name
 
     Write-Verbose '-------------------------------------------------------'
     Write-Verbose "Machine: $($Machine.name)"

@@ -129,6 +129,7 @@
     <Compile Include="Validator\FailoverCluster\TooFewNodesForCluster.cs" />
     <Compile Include="Validator\FailoverCluster\ClusterOperatingSystem.cs" />
     <Compile Include="Validator\HyperV\HyperVWrongOs.cs" />
+    <Compile Include="Validator\HyperV\HyperVWrongRoleSize.cs" />
     <Compile Include="Validator\LabInformation\LabNameContainsIllegalCharacters.cs" />
     <Compile Include="Validator\Machines\Azure\AzureSpecifiedRoleSizeNotFound.cs" />
     <Compile Include="Validator\Machines\Azure\AzureDoesSupportMax8NetworkAdapters.cs" />
