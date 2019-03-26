@@ -21,7 +21,22 @@ function Install-LabHyperV
 
     # Enable Feature
     Write-ScreenInfo -Message "Enabling Hyper-V feature and waiting for restart of $($vms.Count) VMs..." -NoNewLine
-    Install-LabWindowsFeature -ComputerName $vms -FeatureName Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoDisplay
+
+    $clients, $servers = $vms.Where({$_.OperatingSystem.Installation -eq 'Client'}, 'Split')
+
+    $jobs = @()
+
+    if ($clients)
+    {
+        $jobs += Install-LabWindowsFeature -ComputerName $clients -FeatureName Microsoft-Hyper-V-All -NoDisplay -AsJob
+    }
+    
+    if ($servers)
+    {
+        $jobs += Install-LabWindowsFeature -ComputerName $servers -FeatureName Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoDisplay -AsJob
+    }
+
+    Wait-LWLabJob -Job $jobs
 
     # Restart
     Restart-LabVm -ComputerName $vms -Wait -NoDisplay
