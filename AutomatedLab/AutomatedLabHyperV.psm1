@@ -15,7 +15,7 @@ function Install-LabHyperV
         Stop-LabVm -Wait -ComputerName $hyperVVms
         $hyperVVms | Set-VMProcessor -ExposeVirtualizationExtensions $true
     }
-    
+
     Start-LabVm -Wait -ComputerName $vms # Start all, regardless of Hypervisor
     Write-ScreenInfo -Message 'Done'
 
@@ -42,6 +42,32 @@ function Install-LabHyperV
     if ($settingsTable.Keys.Count -eq 0)
     {
         return
+    }
+
+    # Correct data types for individual settings
+    $parametersAndTypes = @{
+        MaximumStorageMigrations                  = [uint32]
+        MaximumVirtualMachineMigrations           = [uint32]
+        VirtualMachineMigrationAuthenticationType = [Microsoft.HyperV.PowerShell.MigrationAuthenticationType]
+        UseAnyNetworkForMigration                 = [bool]
+        VirtualMachineMigrationPerformanceOption  = [Microsoft.HyperV.PowerShell.VMMigrationPerformance]
+        ResourceMeteringSaveInterval              = [timespan]
+        NumaSpanningEnabled                       = [bool]
+        EnableEnhancedSessionMode                 = [bool]
+    }
+
+    foreach ($parameter in $parameters.GetEnumerator())
+    {
+        $type = $parametersAndTypes[$parameter.Key]
+
+        if ($type -eq [bool])
+        {
+            $parameter.Value = [Convert]::ToBoolean($parameter.Value)
+        }
+        else
+        {
+            $parameter.Value = $parameter.Value -as $type
+        }
     }
     
     Invoke-LabCommand -ActivityName 'Configuring VM Host settings' -ComputerName $settingsTable.Keys -Variable (Get-Variable -Name settingsTable) -ScriptBlock {
