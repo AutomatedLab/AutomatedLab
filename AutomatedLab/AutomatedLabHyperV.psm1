@@ -54,11 +54,11 @@ function Install-LabHyperV
     
             if ($type -eq [bool])
             {
-                $parameter.Value = [Convert]::ToBoolean($parameter.Value)
+                $parameters[$parameter.Key] = [Convert]::ToBoolean($parameter.Value)
             }
             else
             {
-                $parameter.Value = $parameter.Value -as $type
+                $parameters[$parameter.Key] = $parameter.Value -as $type
             }
         }
         
