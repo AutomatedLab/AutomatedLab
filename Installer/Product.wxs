@@ -433,6 +433,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabNetwork.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSharePoint.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabSQL.psm1" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHyperV.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVirtualMachines.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabVMWare.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabRouting.psm1" />
