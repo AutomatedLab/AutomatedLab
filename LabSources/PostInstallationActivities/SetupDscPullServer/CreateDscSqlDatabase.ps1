@@ -338,7 +338,6 @@ SELECT StatusReport.JobId
 		AND [Status] IS NOT NULL
 		OR ErrorMessage IS NULL
 
-	ORDER BY EndTime DESC
 GO
 
 --Adding functions
