@@ -120,12 +120,13 @@ function Install-LabTeamFoundationServer
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            if (-not (Get-LabAzureLoadBalancedPort -ComputerName $machine))
+            if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $machine))
             {
-                Add-LWAzureLoadBalancedPort -ComputerName $machine
+                (Get-Lab).AzureSettings.LoadBalancerPortCounter++
+                $remotePort = (Get-Lab).AzureSettings.LoadBalancerPortCounter
+                Add-LWAzureLoadBalancedPort -ComputerName $machine -DestinationPort $tfsPort -Port $remotePort
             }
 
-            $tfsPort = Get-LabAzureLoadBalancedPort -ComputerName $machine
             $machineName = $machine.AzureConnectionInfo.DnsName
 
             if ($role.Properties.ContainsKey('Port'))
@@ -243,7 +244,7 @@ function Install-LabBuildWorker
 
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
-            $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue
+            $tfsPort = Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue
 
             if (-not $tfsPort)
             {
@@ -265,11 +266,11 @@ function Install-LabBuildWorker
             $commandLine = if ($useSsl)
             {
                 #sslskipcertvalidation is used as git.exe could not test the certificate chain
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.Value, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.Value, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
@@ -349,7 +350,7 @@ function New-LabReleasePipeline
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $tfsPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue
+        $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
         if (-not $tfsPort)
         {
@@ -641,7 +642,7 @@ function Get-LabBuildStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue
+        $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
         if (-not $loadbalancedPort)
         {
@@ -698,7 +699,7 @@ function Get-LabReleaseStep
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
+        $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
         if (-not $loadbalancedPort)
         {
@@ -756,7 +757,7 @@ function Open-LabTfsSite
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $loadbalancedPort = Get-LabAzureLoadBalancedPort -Port $tfsPort -ComputerName $tfsvm -ErrorAction SilentlyContinue
+        $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
         if (-not $loadbalancedPort)
         {
