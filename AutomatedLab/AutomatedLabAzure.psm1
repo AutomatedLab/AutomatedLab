@@ -888,7 +888,14 @@ function Get-LabAzureResourceGroup
     }
     elseif ($CurrentLab)
     {
-        $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
+        $result = $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
+
+        if ($null -eq $result)
+        {
+            $result = $script:lab.AzureSettings.DefaultResourceGroup
+        }
+        
+        $result
     }
     else
     {
