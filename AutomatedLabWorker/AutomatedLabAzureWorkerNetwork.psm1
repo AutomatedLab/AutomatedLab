@@ -464,7 +464,7 @@ function Get-LabAzureLoadBalancedPort
         return
     }
 
-    if ($DestinationPort -and $Port)
+    $ports = if ($DestinationPort -and $Port)
     {
         $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -eq "AdditionalPort-$Port-$DestinationPort"
     }
@@ -479,5 +479,13 @@ function Get-LabAzureLoadBalancedPort
     else
     {
         $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like 'AdditionalPort*'
+    }
+
+    $ports | Foreach-Object {
+        [pscustomobject]@{
+            Port = ($_.Key -split '-')[1]
+            DestinationPort = ($_.Key -split '-')[2]
+            ComputerName = $machine.Name
+        }
     }
 }

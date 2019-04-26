@@ -266,11 +266,11 @@ function Install-LabBuildWorker
             $commandLine = if ($useSsl)
             {
                 #sslskipcertvalidation is used as git.exe could not test the certificate chain
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.Value, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.DestinationPort, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.Value, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.DestinationPort, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
