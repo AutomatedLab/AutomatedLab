@@ -535,11 +535,11 @@ function New-LabReleasePipeline
       
         if ($repositoryPath)
         {
-            Copy-LabFileItem -Path $repositoryPath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
         else
         {
-            Copy-LabFileItem -Path $SourcePath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
       
         Invoke-LabCommand -ActivityName 'Remove .git folder' -ComputerName $tfsVm -ScriptBlock {
