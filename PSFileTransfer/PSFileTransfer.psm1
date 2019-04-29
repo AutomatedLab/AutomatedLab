@@ -198,7 +198,7 @@ function Receive-Directory
     $remoteDir = Invoke-Command -Session $Session -ScriptBlock {
         param ($Source)
 
-        Get-Item $Source
+        Get-Item $Source -Force
     } -ArgumentList $SourceFolderPath -ErrorAction Stop
 
     if (-not $remoteDir.PSIsContainer)
@@ -218,7 +218,7 @@ function Receive-Directory
     $remoteItems = Invoke-Command -Session $Session -ScriptBlock {
         param ($remoteDir)
 
-        Get-ChildItem $remoteDir
+        Get-ChildItem $remoteDir -Force
     } -ArgumentList $remoteDir -ErrorAction Stop
     $position = 0
 
@@ -269,7 +269,7 @@ function Send-Directory
 
     Write-Verbose -Message "Send-Directory $($env:COMPUTERNAME): local source $SourceFolderPath, remote destination $DestinationFolderPath, session $($Session.ComputerName)"
 
-    $localDir = Get-Item $SourceFolderPath -ErrorAction Stop
+    $localDir = Get-Item $SourceFolderPath -ErrorAction Stop -Force
     if (-not $localDir.PSIsContainer)
     {
         Send-File -SourceFilePath $SourceFolderPath -DestinationFolderPath $DestinationFolderPath -Session $Session -Force
@@ -289,7 +289,7 @@ function Send-Directory
         }
     } -ArgumentList $DestinationFolderPath -ErrorAction Stop
 
-    $localItems = Get-ChildItem -Path $localDir -ErrorAction Stop
+    $localItems = Get-ChildItem -Path $localDir -ErrorAction Stop -Force
     $position = 0
 
     foreach ($localItem in $localItems)
@@ -434,7 +434,7 @@ function Get-FileLength
         throw $_
     }
 
-    (Get-Item -Path $FilePath).Length
+    (Get-Item -Path $FilePath -Force).Length
 }
 #endregion Get-FileLength
 

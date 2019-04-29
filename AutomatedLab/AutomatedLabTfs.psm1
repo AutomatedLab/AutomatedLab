@@ -340,7 +340,7 @@ function New-LabReleasePipeline
   
     $role = $tfsVm.Roles | Where-Object Name -like Tfs????
     $initialCollection = 'AutomatedLab'
-    $tfsPort = 8080
+    $tfsPort = $originalPort = 8080
     $tfsInstance = $tfsVm.FQDN
   
     if ($role.Properties.ContainsKey('Port'))
@@ -378,6 +378,7 @@ function New-LabReleasePipeline
 
     $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
     $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+    $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $tfsPort
   
     if ($SourceRepository)
     {
@@ -535,16 +536,16 @@ function New-LabReleasePipeline
       
         if ($repositoryPath)
         {
-            Copy-LabFileItem -Path $repositoryPath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
         else
         {
-            Copy-LabFileItem -Path $SourcePath\* -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp"
+            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
       
-        Invoke-LabCommand -ActivityName 'Remove .git folder' -ComputerName $tfsVm -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Push code to TFS/AZDevOps' -ComputerName $tfsVm -ScriptBlock {
 
-            Set-Location -Path "C:\$ProjectName.temp"
+            Set-Location -Path "C:\$ProjectName.temp\$ProjectName"
           
             git remote add tfs $repository.remoteUrl
  
