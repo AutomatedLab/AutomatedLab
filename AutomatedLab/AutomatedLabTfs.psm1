@@ -542,9 +542,9 @@ function New-LabReleasePipeline
             Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
       
-        Invoke-LabCommand -ActivityName 'Remove .git folder' -ComputerName $tfsVm -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Push code to TFS/AZDevOps' -ComputerName $tfsVm -ScriptBlock {
 
-            Set-Location -Path "C:\$ProjectName.temp"
+            Set-Location -Path "C:\$ProjectName.temp\$ProjectName"
           
             git remote add tfs $repository.remoteUrl
  
