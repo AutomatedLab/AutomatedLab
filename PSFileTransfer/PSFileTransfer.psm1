@@ -218,7 +218,7 @@ function Receive-Directory
     $remoteItems = Invoke-Command -Session $Session -ScriptBlock {
         param ($remoteDir)
 
-        Get-ChildItem $remoteDir
+        Get-ChildItem $remoteDir -Force
     } -ArgumentList $remoteDir -ErrorAction Stop
     $position = 0
 
@@ -289,7 +289,7 @@ function Send-Directory
         }
     } -ArgumentList $DestinationFolderPath -ErrorAction Stop
 
-    $localItems = Get-ChildItem -Path $localDir -ErrorAction Stop
+    $localItems = Get-ChildItem -Path $localDir -ErrorAction Stop -Force
     $position = 0
 
     foreach ($localItem in $localItems)
