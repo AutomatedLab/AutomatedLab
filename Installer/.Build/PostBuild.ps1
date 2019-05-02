@@ -13,4 +13,8 @@ Microsoft.PowerShell.Utility\Write-Host 'Restoring Includes.wxi'
 Remove-Item -Path $SolutionDir\Installer\Includes.wxi
 Rename-Item -Path $SolutionDir\Installer\Includes.wxi.original -NewName Includes.wxi
 
+Microsoft.PowerShell.Utility\Write-Host 'Restoring Product.wxs'
+Remove-Item -Path $SolutionDir\Installer\Product.wxs
+Rename-Item -Path $SolutionDir\Installer\Product.wxs.original -NewName Product.wxs
+
 Pop-Location

@@ -3,17 +3,24 @@
     [string]$SolutionDir,
 
     [Parameter(Mandatory)]
-    [string]$TargetPath,
-
-    [Parameter(Mandatory)]
     [string]$TargetDir
 )
 
-Microsoft.PowerShell.Utility\Write-Host "Copy-Item -Path $TargetPath -Destination $SolutionDir\AutomatedLab\AutomatedLab.dll"
-Copy-Item -Path $TargetPath -Destination $SolutionDir\AutomatedLab\AutomatedLab.dll
+Microsoft.PowerShell.Utility\Write-Host "Copy-Item -Path $TargetDir -Destination $SolutionDir\AutomatedLab\*.dll"
+$tDir = (Resolve-Path -Path $TargetDir\..).Path
 
-Microsoft.PowerShell.Utility\Write-Host "Copy-Item -Path $TargetPath -Destination $SolutionDir\AutomatedLab\AutomatedLab.dll"
-Copy-Item -Path $TargetDir\Microsoft.ApplicationInsights.dll -Destination $SolutionDir\AutomatedLab\Microsoft.ApplicationInsights.dll
+if (-not (Microsoft.PowerShell.Management\Test-Path -Path $SolutionDir\AutomatedLab\lib\core))
+{
+	$null = New-Item -Path $SolutionDir\AutomatedLab\lib\core -Force -ItemType Directory
+}
 
-Microsoft.PowerShell.Utility\Write-Host "Copy-Item -Path $TargetPath -Destination $SolutionDir\AutomatedLab\AutomatedLab.dll"
-Copy-Item -Path $TargetDir\System.Diagnostics.DiagnosticSource.dll -Destination $SolutionDir\AutomatedLab\System.Diagnostics.DiagnosticSource.dll
+if (-not (Microsoft.PowerShell.Management\Test-Path -Path $SolutionDir\AutomatedLab\lib\full))
+{
+	$null = New-Item -Path $SolutionDir\AutomatedLab\lib\full -Force -ItemType Directory
+}
+
+$coreClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where {$_.FullName -match 'coreapp' }
+$fullClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where {$_.FullName -notmatch 'coreapp|standard' }
+
+$coreClr | Copy-Item -Destination $SolutionDir\AutomatedLab\lib\core
+$fullClr | Copy-Item -Destination $SolutionDir\AutomatedLab\lib\full

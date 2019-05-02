@@ -18,7 +18,7 @@ Copy-Item -Path $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLa
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file Includes.wxi'
 Copy-Item -Path $SolutionDir\Installer\Includes.wxi -Destination $SolutionDir\Installer\Includes.wxi.original
 
-$dllPath = Join-Path -Path $SolutionDir -ChildPath LabXml\bin\Debug
+$dllPath = Join-Path -Path $SolutionDir -ChildPath AutomatedLab\lib\full
 $automatedLabdll = Get-Item -Path "$dllPath\AutomatedLab.dll"
 Microsoft.PowerShell.Utility\Write-Host "AutomatedLab Dll path is '$($automatedLabdll.FullName)'"
 $alDllVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($automatedLabdll)
@@ -45,3 +45,10 @@ $newContentCore = Get-ChildItem -File -Filter *.dll -Path $commonDllCorePath | F
 Microsoft.PowerShell.Utility\Write-Host "Creating backup of file product.wxs"
 Copy-Item -Path $SolutionDir\Installer\product.wxs -Destination $SolutionDir\Installer\product.wxs.original
 (Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8
+
+$dllCorePath = Join-Path -Path (Resolve-Path -Path $dllPath\..).Path -ChildPath 'core'
+
+Microsoft.PowerShell.Utility\Write-Host "Locating libraries in $dllPath and $dllCorePath"
+$newContentFull = Get-ChildItem -File -Filter *.dll -Path $dllPath | ForEach-Object { '<File Source="$(var.SolutionDir)\AutomatedLab\lib\full\{0}" Id="{1}" />' -f $_.Name,"$($_.BaseName)full" }
+$newContentCore = Get-ChildItem -File -Filter *.dll -Path $dllCorePath | ForEach-Object { '<File Source="$(var.SolutionDir)\AutomatedLab\lib\core\{0}" Id="{1}" />' -f $_.Name,"$($_.BaseName)core" }
+(Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8

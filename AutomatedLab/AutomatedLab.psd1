@@ -2,6 +2,8 @@
     RootModule             = 'AutomatedLab.psm1'
     
     ModuleVersion          = '1.0.0'
+	
+	CompatiblePSEditions = 'Core', 'Desktop'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
