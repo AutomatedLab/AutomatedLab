@@ -1,1 +1,1 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="1.0.0" ?></Include>
+﻿<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="1.1.113" ?><?define AutomatedLabProductVersion="6.0.0.0" ?></Include>

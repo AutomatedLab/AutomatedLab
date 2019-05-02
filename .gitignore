@@ -6,6 +6,7 @@
 *.user
 *.userosscache
 *.sln.docstates
+AutomatedLab/lib/
 
 # Ignore help
 *-help.xml

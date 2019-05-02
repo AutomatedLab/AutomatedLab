@@ -1,4 +1,11 @@
-Add-Type -Path $PSScriptRoot\AutomatedLab.dll
+if ($PSEdition -eq 'Core')
+{
+	Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
+}
+else
+{
+	Add-Type -Path $PSScriptRoot\lib\full\AutomatedLab.dll
+}
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
 {

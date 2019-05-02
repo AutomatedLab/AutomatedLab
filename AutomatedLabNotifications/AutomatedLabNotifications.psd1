@@ -4,6 +4,8 @@
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
     
     CompanyName            = 'AutomatedLab Team'
+	
+	CompatiblePSEditions = 'Core', 'Desktop'
     
     Copyright              = '2018'
     
