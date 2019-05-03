@@ -446,8 +446,6 @@ function Get-LabAzureLoadBalancedPort
         $ComputerName
     )
 
-    Test-LabHostConnected -Throw -Quiet
-
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
     if (-not $lab)
