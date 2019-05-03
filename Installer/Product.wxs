@@ -455,7 +455,7 @@
                     </Component>
                   </Directory>
                 </Directory>
-                <Directory Id="InstallFolder_Libraries" Name="libs">
+                <Directory Id="InstallFolder_Libraries" Name="lib">
                   <Directory Id="InstallFolder_LibrariesCore" Name="core">
                     <Component Id="InstallFolder_LibrariesCoreComponent" Guid="cbe3d047-005e-426d-99ee-a4706e56df09">
                       <!-- %%%FILEPLACEHOLDERCORE%%% -->
