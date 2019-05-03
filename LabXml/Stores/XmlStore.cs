@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Xml.Serialization;
+using Microsoft.Win32;
 
 namespace AutomatedLab
 {
@@ -18,11 +19,11 @@ namespace AutomatedLab
             //makes sure the key exists and does nothing if does already exist
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
-            var key = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(registryPath);
+            var key = Registry.CurrentUser.CreateSubKey(registryPath);
 
             serializer.Serialize(sw, this, xmlNamespace);
 
-            key.SetValue(valueName, sw.ToString(), Microsoft.Win32.RegistryValueKind.String);
+            key.SetValue(valueName, sw.ToString(), RegistryValueKind.String);
             key.Close();
         }
 
@@ -87,7 +88,7 @@ namespace AutomatedLab
             //makes sure the key exists and does nothing if does already exist
             var assemblyName = System.Reflection.Assembly.GetExecutingAssembly().GetName().Name;
             var registryPath = string.Format(@"SOFTWARE\{0}\{1}", assemblyName, keyName);
-            var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(registryPath);
+            var key = Registry.CurrentUser.OpenSubKey(registryPath);
 
             if (key == null)
                 throw new FileNotFoundException(string.Format("The registry key '{0}' does not exist", registryPath));

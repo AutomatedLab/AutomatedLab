@@ -11,9 +11,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include=".Build\PostBuild.ps1" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.9.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.2.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.1" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
   </ItemGroup>
   <Target Name="GetTargetPath" Returns="@(_FakeOutputPath)">
