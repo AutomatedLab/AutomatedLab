@@ -1031,7 +1031,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [string]$Path
     )
     
-    if (-not (Test-LabHostConnected -Quiet)) { return $false }
+    if (-not (Test-LabHostConnected)) { return $false }
 
     try
     {
