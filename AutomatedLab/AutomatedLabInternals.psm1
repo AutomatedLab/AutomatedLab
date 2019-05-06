@@ -459,9 +459,9 @@ function Get-LabInternetFile
             
             [string]$FileName,
 
-            [switch]$NoDisplay,
+            [bool]$NoDisplay,
 
-            [switch]$Force
+            [bool]$Force
         )
 
         if (Test-Path -Path $Path -PathType Container)
@@ -587,7 +587,12 @@ function Get-LabInternetFile
         $machine = Get-LabVM -IsRunning | Select-Object -First 1
         Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path, $FileName -PassThru
+        $argumentList = $Uri, $Path, $FileName
+
+        $argumentList += if ($NoDisplay) {$true} else {$false}
+        $argumentList += if ($Force) {$true} else {$false}
+        
+        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
     }
     else
     {
