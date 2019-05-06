@@ -251,6 +251,7 @@ function Install-LabBuildWorker
                 Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue installing build worker.'
                 return
             }
+
             $machineName = $tfsServer.AzureConnectionInfo.DnsName
         }
 
@@ -266,18 +267,18 @@ function Install-LabBuildWorker
             $commandLine = if ($useSsl)
             {
                 #sslskipcertvalidation is used as git.exe could not test the certificate chain
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.DestinationPort, $env:COMPUTERNAME
+                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.Port, $env:COMPUTERNAME
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.DestinationPort, $env:COMPUTERNAME
+                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.Port, $env:COMPUTERNAME
             }
 
             $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
 
-            if ($configurationProcess.ExitCode -ne 0)
+            if ($configurationProcess.ExitCode -notin 0, 3010)
             {
-                Write-ScreenInfo -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)" -Type Warning
+                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
             }
         } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
