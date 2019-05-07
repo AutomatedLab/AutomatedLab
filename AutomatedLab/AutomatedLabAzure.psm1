@@ -1277,12 +1277,12 @@ function Get-LabAzureLabSourcesContentRecursive
     $temporaryContent = $StorageContext | Get-AzStorageFile
     foreach ($item in $temporaryContent)
     {
-        if ($item.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFileDirectory')
+        if ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory')
         {
             $content += $item
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFile')
+        elseif ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile')
         {
             $content += $item
         }
