@@ -25,7 +25,7 @@ Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 $role = Get-LabPostInstallationActivity -CustomRole WindowsAdminCenter -Properties @{
     WacDownloadLink = 'http://aka.ms/WACDownload'
     <# Remove the comment to enable developer mode
-    EnableDevMode   = 1
+    EnableDevMode   = 'True'
     #>
 }
 Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles WebServer -PostInstallationActivity $role

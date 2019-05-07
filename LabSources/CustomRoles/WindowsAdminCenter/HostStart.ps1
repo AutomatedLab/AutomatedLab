@@ -12,7 +12,7 @@ param
     [uint16]
     $Port = 443,
 
-    [ValidateSet('True', 'False', 0, 1)]
+    [ValidateSet('True', 'False')]
     [string]$EnableDevMode
 )
 
