@@ -10,7 +10,10 @@ param
 
     [Parameter()]
     [uint16]
-    $Port = 443
+    $Port = 443,
+
+    [bool]
+    $EnableDevMode = $false
 )
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -34,6 +37,12 @@ $arguments = @(
     '/L*v C:\wacLoc.txt'
     "SME_PORT=$Port"
 )
+
+if ($EnableDevMode)
+{
+    $arguments += 'DEV_MODE=1'
+}
+
 if ($cert.Thumbprint)
 {
     $arguments += "SME_THUMBPRINT=$($cert.Thumbprint)"
@@ -42,6 +51,12 @@ if ($cert.Thumbprint)
 else
 {
     $arguments += "SSL_CERTIFICATE_OPTION=generate"
+}
+
+if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') 
+{
+    Write-Verbose -Message 'Adding support for TLS 1.2'
+    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
 }
 
 Write-ScreenInfo -Type Verbose -Message "Starting installation of Windows Admin Center on $labMachine"
