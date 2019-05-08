@@ -5,7 +5,33 @@ function Install-LabTeamFoundationEnvironment
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object -Property SkipDeployment -eq $false
+    $azDevOpsService = Get-LabVm -Role AzDevOps | Where-Object SkipDeployment
+
+    foreach ($svcConnection in $azDevOpsService)
+    {
+        $role = $svcConnection.Roles | Where-Object Name -Match 'AzDevOps'
+
+        # Override port or add if empty
+        $role.Properties.Port = 443
+        $svcConnection.InternalNotes.CertificateThumbprint = 'use SSL'
+        if (-not $role.Properties.ContainsKey('PAT'))
+        {
+            Write-ScreenInfo -Type Error -Message "No Personal Access Token available for Azure DevOps connection to $svcConnection.
+            You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
+            Consider adding the key PAT to your role properties hashtable."
+        }
+
+        if (-not $role.Properties.ContainsKey('Organisation'))
+        {
+            Write-ScreenInfo -Type Error -Message "No Organisation name available for Azure DevOps connection to $svcConnection.
+            You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
+            Consider adding the key Organisation to your role properties hashtable where Organisation = dev.azure.com/<Organisation>"
+        }
+    }
+
+    if ($azDevOpsService) { Export-Lab }
+
     $lab = Get-Lab
     $jobs = @()
 
@@ -13,7 +39,7 @@ function Install-LabTeamFoundationEnvironment
     {
         Dismount-LabIsoImage -ComputerName $machine -SupressOutput
 
-        $role = $machine.Roles | Where-Object Name -Match 'TFS\d{4}'
+        $role = $machine.Roles | Where-Object Name -Match 'Tfs\d{4}|AzDevOps'
         $isoPath = ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path
 
         $retryCount = 3
@@ -61,11 +87,12 @@ function Install-LabTeamFoundationEnvironment
         } -AsJob -PassThru -NoDisplay
     }
 
-    Wait-LWLabJob -Job $jobs
-
-    Restart-LabVm -ComputerName $tfsMachines -Wait
-
-    Install-LabTeamFoundationServer
+    if ($tfsMachines)
+    {        
+        Wait-LWLabJob -Job $jobs
+        Restart-LabVm -ComputerName $tfsMachines -Wait
+        Install-LabTeamFoundationServer
+    }
 
     Install-LabBuildWorker
 }
@@ -76,7 +103,8 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Sort-Object {($_.Roles | Where-Object Name -like Tfs????).Name} -Descending
+    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object SkipDeployment -eq $false | Sort-Object { ($_.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps').Name } -Descending
+    if (-not $tfsMachines) { return }
     [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
   
     # Assign unassigned build workers to our most current TFS machine
@@ -101,7 +129,7 @@ function Install-LabTeamFoundationServer
             Export-Lab
         }
 
-        $role = $machine.Roles | Where-Object Name -like Tfs????
+        $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
         $initialCollection = 'AutomatedLab'
         $tfsPort = 8080
         $databaseLabel = "TFS$count" # Increment database label in case we deploy multiple TFS
@@ -131,11 +159,11 @@ function Install-LabTeamFoundationServer
 
             if ($role.Properties.ContainsKey('Port'))
             {
-                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties['Port'] = $tfsPort})
+                $machine.Roles.Where( { $_.Name -match 'Tfs\d{4}|AzDevOps' }).ForEach( { $_.Properties['Port'] = $tfsPort })
             }
             else
             {
-                $machine.Roles.Where( {$_.Name -like 'TFS????'}).ForEach( {$_.Properties.Add('Port', $tfsPort)})
+                $machine.Roles.Where( { $_.Name -match 'Tfs\d{4}|AzDevOps' }).ForEach( { $_.Properties.Add('Port', $tfsPort) })
             }
 
             Export-Lab # Export lab again since we changed role properties
@@ -155,7 +183,7 @@ function Install-LabTeamFoundationServer
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
-            if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.'}
+            if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.' }
 
             if (-not (Test-Path C:\DeployDebug))
             {
@@ -203,6 +231,7 @@ function Install-LabTeamFoundationServer
 
     Wait-LWLabJob -Job $installationJobs
 }
+
 function Install-LabBuildWorker
 {
     [CmdletBinding()]
@@ -210,6 +239,10 @@ function Install-LabBuildWorker
     ( )
 
     $buildWorkers = Get-LabVm -Role TfsBuildWorker
+    if (-not $buildWorkers)
+    {
+        return
+    }
 
     $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
@@ -220,8 +253,9 @@ function Install-LabBuildWorker
     foreach ( $machine in $buildWorkers)
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
+        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
+        $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
         $tfsPort = 8080
-        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
 
         if ($role.Properties.ContainsKey('TfsServer'))
         {
@@ -229,58 +263,70 @@ function Install-LabBuildWorker
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
-                $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
+                $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
             }
+        }
 
-            $tfsRole = $tfsServer.Roles | Where-Object Name -like 'Tfs????'
-            if ($tfsRole.Properties.ContainsKey('Port'))
-            {
-                $tfsPort = $tfsRole.Properties['Port']
-            }
+        $tfsRole = $tfsServer.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
+        if ($tfsRole.Properties.ContainsKey('Port'))
+        {
+            $tfsPort = $tfsRole.Properties['Port']
         }
 
         [string]$machineName = $tfsServer
 
-        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment))
         {
-            $tfsPort = Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue
-
+            $tfsPort = (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue).Port
+            $machineName = $tfsServer.AzureConnectionInfo.DnsName
+            
             if (-not $tfsPort)
             {
                 Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue installing build worker.'
                 return
             }
-
-            $machineName = $tfsServer.AzureConnectionInfo.DnsName
         }
 
-        $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint')
+        $pat = if ($tfsRole.Properties.ContainsKey('PAT'))
+        {
+            $tfsRole.Properties['PAT']
+        }
+        else
+        {
+            [string]::Empty
+        }        
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
-            if (-not (Test-Path C:\TfsBuildWorker.zip)) {throw 'Build worker installation files not available'}
+            if (-not (Test-Path C:\TfsBuildWorker.zip)) { throw 'Build worker installation files not available' }
 
             Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
             $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
-            $commandLine = if ($useSsl)
+            $null = if ($useSsl -and [string]::IsNullOrEmpty($pat))
             {
                 #sslskipcertvalidation is used as git.exe could not test the certificate chain
-                '--unattended --url https://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --sslskipcertvalidation --gituseschannel' -f $machineName, $tfsPort.Port, $env:COMPUTERNAME
+                & $configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel
+            }
+            elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
+            {
+                & $configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel
+            }
+            elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
+            {
+                & $configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel
             }
             else
             {
-                '--unattended --url http://{0}:{1} --auth Integrated --pool default --agent {2} --runasservice --gituseschannel' -f $machineName, $tfsPort.Port, $env:COMPUTERNAME
+                & $configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel
             }
 
-            $configurationProcess = Start-Process -FilePath $configurationTool -ArgumentList $commandLine -Wait -NoNewWindow -PassThru
-
-            if ($configurationProcess.ExitCode -notin 0, 3010)
+            if ($LASTEXITCODE -notin 0, 3010)
             {
                 Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
             }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -328,18 +374,18 @@ function New-LabReleasePipeline
         throw "Using the code upload method 'Git' requires a source repository to be defined."
     }
 
-    $tfsVm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
+    $tfsVm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
     if ($ComputerName)
     {
         $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
 
-    if (-not $tfsVm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    if (-not $tfsVm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
 
     $localLabSources = Get-LabSourcesLocationInternal -Local
   
-    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = $originalPort = 8080
     $tfsInstance = $tfsVm.FQDN
@@ -349,7 +395,7 @@ function New-LabReleasePipeline
         $tfsPort = $role.Properties['Port']
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
@@ -367,6 +413,13 @@ function New-LabReleasePipeline
         $initialCollection = $role.Properties['InitialCollection']
     }
 
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+        $accessToken = $role.Properties['PAT']
+    }
+
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
   
@@ -377,8 +430,38 @@ function New-LabReleasePipeline
         return
     }
 
-    $project = New-TfsProject -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
-    $repository = Get-TfsGitRepository -InstanceName $tfsInstance -Port $tfsPort -CollectionName $initialCollection -ProjectName $ProjectName -Credential $credential -UseSsl:$useSsl
+    $defaultParam = @{
+        InstanceName   = $tfsInstance
+        Port           = $tfsPort
+        CollectionName = $initialCollection
+        ProjectName    = $ProjectName
+        UseSsl         = $useSsl
+    }
+
+    $defaultParam.ApiVersion = switch ($role.Name)
+    {
+        'Tfs2015' { '2.0'; break }
+        'Tfs2017' { '3.0'; break }
+        { $_ -match '2018|AzDevOps' } { '4.0'; break }
+        default { '2.0' }
+    }
+
+    if ($accessToken)
+    {
+        $defaultParam.PersonalAccessToken = $accessToken
+    }
+    elseif ($credential)
+    {
+        $defaultParam.Credential = $credential
+    }
+    else
+    {
+        Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
+        return
+    }
+
+    $project = New-TfsProject @defaultParam -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
+    $repository = Get-TfsGitRepository @defaultParam
     $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $tfsPort
   
     if ($SourceRepository)
@@ -572,29 +655,23 @@ function New-LabReleasePipeline
         } -Variable (Get-Variable -Name repository, ProjectName)
     }
     
-    Invoke-LabCommand -ActivityName 'Clone local repo from TFS' -ComputerName $tfsVm -ScriptBlock {
+    if (-not ($role.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
+    {
+        Invoke-LabCommand -ActivityName 'Clone local repo from TFS' -ComputerName $tfsVm -ScriptBlock {
         
-        if (-not (Test-Path -Path C:\Git))
-        {
-            mkdir -Path C:\Git | Out-Null
-        }
-        Set-Location -Path C:\Git
-        git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
+            if (-not (Test-Path -Path C:\Git))
+            {
+                mkdir -Path C:\Git | Out-Null
+            }
+            Set-Location -Path C:\Git
+            git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
             
-    } -Variable (Get-Variable -Name repository, ProjectName)
-
-    $parameters = @{
-        InstanceName   = $tfsInstance
-        Port           = $tfsPort
-        CollectionName = $initialCollection
-        ProjectName    = $ProjectName
-        Credential     = $credential
-        UseSsl         = $useSsl
+        } -Variable (Get-Variable -Name repository, ProjectName)
     }
 
     if ($BuildSteps.Count -gt 0)
     {
-        $buildParameters = $parameters.Clone()
+        $buildParameters = $defaultParam.Clone()
         $buildParameters.DefinitionName = "$($ProjectName)Build"
         $buildParameters.BuildTasks = $BuildSteps
         New-TfsBuildDefinition @buildParameters
@@ -602,7 +679,7 @@ function New-LabReleasePipeline
   
     if ($ReleaseSteps.Count -gt 0)
     {
-        $releaseParameters = $parameters.Clone()
+        $releaseParameters = $defaultParam.Clone()
         $releaseParameters.ReleaseName = "$($ProjectName)Release"
         $releaseParameters.ReleaseTasks = $ReleaseSteps
         New-TfsReleaseDefinition @releaseParameters
@@ -622,7 +699,7 @@ function Get-LabBuildStep
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
     if ($ComputerName)
@@ -630,9 +707,9 @@ function Get-LabBuildStep
         $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
 
-    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
   
-    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
@@ -642,7 +719,7 @@ function Get-LabBuildStep
         $tfsPort = $role.Properties['Port']
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
@@ -661,9 +738,45 @@ function Get-LabBuildStep
         $initialCollection = $role.Properties['InitialCollection']
     }
 
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+        $accessToken = $role.Properties['PAT']
+    }
+
     $credential = $tfsVm.GetCredential((Get-Lab))
+    $defaultParam = @{
+        InstanceName   = $tfsInstance
+        Port           = $tfsPort
+        CollectionName = $initialCollection
+        ProjectName    = $ProjectName
+        UseSsl         = $useSsl
+    }
+
+    $defaultParam.ApiVersion = switch ($role.Name)
+    {
+        'Tfs2015' { '2.0'; break }
+        'Tfs2017' { '3.0'; break }
+        { $_ -match '2018|AzDevOps' } { '4.0'; break }
+        default { '2.0' }
+    }
+
+    if ($accessToken)
+    {
+        $defaultParam.PersonalAccessToken = $accessToken
+    }
+    elseif ($credential)
+    {
+        $defaultParam.Credential = $credential
+    }
+    else
+    {
+        Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
+        return
+    }
   
-    return (Get-TfsBuildStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsBuildStep @defaultParam)
 }
 
 function Get-LabReleaseStep
@@ -679,7 +792,7 @@ function Get-LabReleaseStep
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
 
     if ($ComputerName)
@@ -687,9 +800,9 @@ function Get-LabReleaseStep
         $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
 
-    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
   
-    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
@@ -699,7 +812,7 @@ function Get-LabReleaseStep
         $tfsPort = $role.Properties['Port']
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
@@ -718,9 +831,46 @@ function Get-LabReleaseStep
         $initialCollection = $role.Properties['InitialCollection']
     }
 
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+        $accessToken = $role.Properties['PAT']
+    }
+
     $credential = $tfsVm.GetCredential((Get-Lab))
+
+    $defaultParam = @{
+        InstanceName   = $tfsInstance
+        Port           = $tfsPort
+        CollectionName = $initialCollection
+        ProjectName    = $ProjectName
+        UseSsl         = $useSsl
+    }
+
+    $defaultParam.ApiVersion = switch ($role.Name)
+    {
+        'Tfs2015' { '2.0'; break }
+        'Tfs2017' { '3.0'; break }
+        { $_ -match '2018|AzDevOps' } { '4.0'; break }
+        default { '2.0' }
+    }
+
+    if ($accessToken)
+    {
+        $defaultParam.PersonalAccessToken = $accessToken
+    }
+    elseif ($credential)
+    {
+        $defaultParam.Credential = $credential
+    }
+    else
+    {
+        Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
+        return
+    }
   
-    return (Get-TfsReleaseStep -InstanceName $tfsInstance -CollectionName $initialCollection -Credential $credential -UseSsl:$useSsl -Port $tfsPort)
+    return (Get-TfsReleaseStep @defaultParam)
 }
 
 function Open-LabTfsSite
@@ -736,17 +886,18 @@ function Open-LabTfsSite
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018 | Select-Object -First 1
-    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
     if ($ComputerName)
     {
         $tfsVm = Get-LabVm -ComputerName $ComputerName
     }
 
-    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName)}
+    if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
+
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
   
-    $role = $tfsVm.Roles | Where-Object Name -like Tfs????
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
@@ -757,7 +908,7 @@ function Open-LabTfsSite
         $tfsPort = $role.Properties['Port']
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         $loadbalancedPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
 
@@ -771,13 +922,23 @@ function Open-LabTfsSite
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
 
-    $requestUrl = if ($UseSsl)
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
     {
-        'https://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+    }
+
+    $requestUrl = if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        'https://{0}/{1}' -f $tfsInstance, $initialCollection
+    }
+    elseif ($UseSsl)
+    {
+        'https://{0}:{1}@{2}:{3}/{4}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort, $initialCollection
     }
     else
     {
-        'http://{0}:{1}@{2}:{3}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort
+        'http://{0}:{1}@{2}:{3}/{4}' -f $credential.GetNetworkCredential().UserName, $credential.GetNetworkCredential().Password, $tfsInstance, $tfsPort, $initialCollection
     }
   
     Start-Process -FilePath $requestUrl
