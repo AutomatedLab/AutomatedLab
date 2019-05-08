@@ -182,7 +182,7 @@ function Install-LabTeamFoundationServer
         }
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            $tfsConfigPath = (Get-ChildItem -Path "$env:ProgramFiles\*Team Foundation*" -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
+            $tfsConfigPath = (Get-ChildItem -Path $env:ProgramFiles -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName
             if (-not $tfsConfigPath) { throw 'tfsconfig.exe could not be found.' }
 
             if (-not (Test-Path C:\DeployDebug))
