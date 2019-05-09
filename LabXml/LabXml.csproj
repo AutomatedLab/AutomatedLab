@@ -161,7 +161,7 @@
     <Compile Include="Validator\Routing\RoutingRoleNotSupportedOnAzure.cs" />
     <Compile Include="Validator\Routing\RoutingMachineHasAtLeastTwoNetworkCards.cs" />
     <Compile Include="Validator\Sql\SqlIsosExist.cs" />
-    <Compile Include="Validator\Tfs\CorrectSqlVersion.cs" />
+    <Compile Include="Validator\Tfs\TfsSqlIsosExist.cs" />
     <Compile Include="Validator\Tfs\HighlanderRole.cs" />
     <Compile Include="Validator\Tfs\TfsIsosExist.cs" />
     <Compile Include="Validator\ValidationMessage.cs" />
