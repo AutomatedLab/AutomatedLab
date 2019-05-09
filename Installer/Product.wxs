@@ -120,15 +120,7 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Remove-RunspacePool.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Split-Array.ps1" />
                     </Component>
-                  </Directory>
-                  <Directory Id="InstallFolder_CommonCommonTypes" Name="Types">
-                    <Component Id="ALCommonComponent2" Guid="1493e46b-7913-408a-9549-5ae1da7cef34">
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Gpo.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\LsaWrapper.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Types\Mesh.ps1" />
-                    </Component>
-                  </Directory>
-                </Directory>
+                  </Directory></Directory>
                 <Directory Id="InstallFolder_CommonDsc" Name="DscHelper">
                   <Directory Id="InstallFolder_CommonDscPublic" Name="Public">
                     <Component Id="ALCommonComponent3" Guid="c9813b6e-f4da-450e-8d22-6dd2547aa7b7">
@@ -180,12 +172,6 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Publish-CaTemplate.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Request-Certificate.ps1" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Public\Test-CaTemplate.ps1" />
-                    </Component>
-                  </Directory>
-                  <Directory Id="InstallFolder_CommonPkiTypes" Name="Types">
-                    <Component Id="ALCommonComponent6" Guid="633ce5e1-186b-4a5f-a38d-78946c0a1c0f">
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\CertStore.ps1" />
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\PkiHelper\Types\PkiInternals.ps1" />
                     </Component>
                   </Directory>
                 </Directory>
@@ -598,11 +584,9 @@
         <ComponentRef Id='RecipePublic'/>
         <ComponentRef Id ='CommonComponent' />
         <ComponentRef Id ='ALCommonComponent1' />
-        <ComponentRef Id ='ALCommonComponent2' />
         <ComponentRef Id ='ALCommonComponent3' />
         <ComponentRef Id ='ALCommonComponent4' />
         <ComponentRef Id ='ALCommonComponent5' />
-        <ComponentRef Id ='ALCommonComponent6' />
         <ComponentRef Id ='ALCommonComponent7' />
         <ComponentRef Id ='ALCommonComponent8' />
         <ComponentRef Id ='ALCommonComponent9' />
