@@ -1189,7 +1189,7 @@ function Remove-Lab
         $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
         Write-Verbose '...done'
 
-        if ((Get-LabVM | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
             #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute

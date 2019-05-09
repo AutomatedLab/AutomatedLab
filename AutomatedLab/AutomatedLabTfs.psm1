@@ -105,7 +105,7 @@ function Install-LabTeamFoundationServer
 
     $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object SkipDeployment -eq $false | Sort-Object { ($_.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps').Name } -Descending
     if (-not $tfsMachines) { return }
-    [string]$sqlServer = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+    
   
     # Assign unassigned build workers to our most current TFS machine
     Get-LabVm -Role TfsBuildWorker | Where-Object {
@@ -124,12 +124,21 @@ function Install-LabTeamFoundationServer
     {
         if (Get-LabIssuingCA)
         {
+            Write-ScreenInfo -Type Verbose -Message "Found CA in lab, requesting certificate"
             $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName, $machine.FQDN, $machine.Name -ComputerName $machine -PassThru -ErrorAction Stop
             $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
         }
 
         $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
+        [string]$sqlServer = switch -Regex ($role.Name)
+        {
+            'Tfs2015' { Get-LabVm -Role SQLServer2014 | Select-Object -First 1 }
+            'Tfs2017' { Get-LabVm -Role SQLServer2014, SQLServer2016 | Select-Object -First 1 }
+            'Tfs2018|AzDevOps' { Get-LabVm -Role SQLServer2017 | Select-Object -First 1 }
+            default { throw 'No fitting SQL Server found in lab!' }
+        }
+
         $initialCollection = 'AutomatedLab'
         $tfsPort = 8080
         $databaseLabel = "TFS$count" # Increment database label in case we deploy multiple TFS
@@ -220,16 +229,30 @@ function Install-LabTeamFoundationServer
             [System.IO.File]::WriteAllText($config, $content)
 
             $command = "unattend /unattendfile:`"$config`" /continue"
+            "$tfsConfigPath $command" | Set-Content C:\DeployDebug\SetupTfsServer.cmd
             $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
+
+            # Locate log files and cat them
+            $log = Get-ChildItem -Path "$env:LOCALAPPDATA\Temp" -Filter dd_*_server_??????????????.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+            $log | Get-Content
 
             if ($configurationProcess.ExitCode -ne 0)
             {
-                throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually.' -f $config, $tfsConfigPath, $command )
+                throw ('Something went wrong while applying the unattended configuration {0}. Try {1} {2} manually. Read the log at {3}.' -f $config, $tfsConfigPath, $command, $log.FullName )
             }
         } -Variable (Get-Variable sqlServer, machineName, InitialCollection, tfsPort, databaseLabel, cert -ErrorAction SilentlyContinue) -AsJob -ActivityName "Setting up TFS server $machine" -PassThru -NoDisplay
     }
 
+    Write-ScreenInfo -Type Verbose -Message "Waiting for the installation of TFS on $tfsMachines to finish."
+    
     Wait-LWLabJob -Job $installationJobs
+
+    foreach ($job in $installationJobs)
+    {        
+        $resultVariable = New-Variable -Name ("AL_TFSServer_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
+        Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
+        $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
+    }
 }
 
 function Install-LabBuildWorker
@@ -304,32 +327,51 @@ function Install-LabBuildWorker
             Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
             $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
 
-            $null = if ($useSsl -and [string]::IsNullOrEmpty($pat))
+            $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
             {
-                #sslskipcertvalidation is used as git.exe could not test the certificate chain
-                & $configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel
+                "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel"
+                
             }
             elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
             {
-                & $configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel
+                "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel"
             }
             elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
             {
-                & $configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel
+                "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
             }
             else
             {
-                & $configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel
+                "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+            }
+
+            Set-Content C:\DeployDebug\SetupBuildWorker.cmd -Value $content
+
+            
+            $configresult = & C:\DeployDebug\SetupBuildWorker.cmd
+
+            $log = Get-ChildItem -Path "C:\BuildWorkerSetupFiles\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+
+            [pscustomobject]@{
+                ConfigResult = $configresult
+                LogContent   = $log | Get-Content 
             }
 
             if ($LASTEXITCODE -notin 0, 3010)
             {
-                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($configurationProcess.ExitCode)"
+                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
             }
         } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
+
+    foreach ($job in $installationJobs)
+    {        
+        $resultVariable = New-Variable -Name ("AL_TFSBuildWorker_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
+        Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
+        $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
+    }
 }
 #endregion
 
