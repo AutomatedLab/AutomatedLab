@@ -32,7 +32,7 @@ function New-LWAzureVM
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
 
-    if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue -WarningAction SilentlyContinue)
+    if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
     {
         Write-Verbose -Message "Target machine $($Machine.Name) already exists. Skipping..."
         return
@@ -42,7 +42,7 @@ function New-LWAzureVM
 
     if (-not $global:cacheVMs)
     {
-        $global:cacheVMs = Get-AzVM -WarningAction SilentlyContinue
+        $global:cacheVMs = Get-AzVM
     }
 
     if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
@@ -332,7 +332,7 @@ function New-LWAzureVM
     Write-Verbose "Skus: $SkusName"
     Write-Verbose '-------------------------------------------------------'
 
-    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
+    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
             Get-AzVirtualNetworkSubnetConfig | 
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $machine.IpAddress[0].IpAddress.ToString()
@@ -352,11 +352,11 @@ function New-LWAzureVM
         $machineAvailabilitySet = New-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop -Sku aligned -PlatformUpdateDomainCount 2 -PlatformFaultDomainCount 2
     }
 
-    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -WarningAction SilentlyContinue
+    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop
     $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
 
     Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
-    $vm = Set-AzVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop -WarningAction SilentlyContinue
+    $vm = Set-AzVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
 
     Write-Verbose -Message "Setting private IP address."
     $defaultIPv4Address = $DefaultIpAddress
@@ -387,7 +387,7 @@ function New-LWAzureVM
     $networkInterface = New-AzNetworkInterface @nicProperties
 
     Write-Verbose -Message 'Adding primary NIC to VM'
-    $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue -Primary
+    $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -Primary
 
     Write-ProgressIndicator
 
@@ -415,7 +415,7 @@ function New-LWAzureVM
     $niccount = 1
     foreach ($adapter in ($Machine.NetworkAdapters | Where-Object {$_.Ipv4Address.IPAddress.ToString() -ne $defaultIPv4Address}))
     {
-        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName -WarningAction SilentlyContinue | 
+        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
             Get-AzVirtualNetworkSubnetConfig | 
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $adapter.Ipv4Address[0].IpAddress.ToString()
@@ -432,7 +432,7 @@ function New-LWAzureVM
         }
 
         $networkInterface = New-AzNetworkInterface @additionalNicParameters
-        $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -WarningAction SilentlyContinue
+        $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop
         $niccount++
     }
 
@@ -620,7 +620,7 @@ function Initialize-LWAzureVM
     $lab = Get-Lab
 
     Write-ScreenInfo -Message 'Waiting for all machines to be visible in Azure'
-    while ((Get-AzVM -ResourceGroupName $lab.Name -WarningAction SilentlyContinue | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
+    while ((Get-AzVM -ResourceGroupName $lab.Name | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
     {
         Start-Sleep -Seconds 10
         Write-Verbose 'Still waiting for all machines to be visible in Azure'
@@ -719,7 +719,7 @@ function Remove-LWAzureVM
 
             $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
 
-            $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName -WarningAction SilentlyContinue
+            $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
 
             $vm | Remove-AzVM -Force
         } -ArgumentList $ComputerName
@@ -732,7 +732,7 @@ function Remove-LWAzureVM
     else
     {
         $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
-        $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName -WarningAction SilentlyContinue
+        $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
 
         $result = $vm | Remove-AzVM -Force
     }
@@ -761,11 +761,11 @@ function Start-LWAzureVM
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     
-    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
         Start-Sleep -Seconds 2
-        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
         if (-not $azureVms)
         {
             throw 'Get-AzVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
@@ -852,7 +852,7 @@ function Stop-LWAzureVM
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
 
     $lab = Get-Lab
-    $azureVms = Get-AzVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue
+    $azureVms = Get-AzVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName }
 
@@ -1027,11 +1027,11 @@ function Get-LWAzureVMStatus
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
     
     $result = @{ }
-    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
         Start-Sleep -Seconds 2
-        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -WarningAction SilentlyContinue -ErrorAction SilentlyContinue
+        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
         if (-not $azureVms)
         {
             throw 'Get-AzVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
@@ -1091,7 +1091,7 @@ function Get-LWAzureVMConnectionInfo
     }
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-    $azureVMs = Get-AzVM -WarningAction SilentlyContinue | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
+    $azureVMs = Get-AzVM | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
 
     foreach ($name in $ComputerName)
     {
@@ -1674,7 +1674,7 @@ function Get-LWAzureVmSnapshot
     }
 
     $snapshots.ForEach({
-		[AutomatedLab.Snapshot]::new(($_.Name -split '_')[1], ($_.Name -split '_')[0], $_.TimeCreated)
-	})
+        [AutomatedLab.Snapshot]::new(($_.Name -split '_')[1], ($_.Name -split '_')[0], $_.TimeCreated)
+    })
 }
 #endregion

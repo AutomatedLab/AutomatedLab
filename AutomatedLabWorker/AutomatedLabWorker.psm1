@@ -326,7 +326,7 @@ function Get-LWHypervWindowsFeature
             }
             else
             {
-                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ')  -WarningAction SilentlyContinue")
+                $cmd = [scriptblock]::Create("Get-WindowsFeature $($FeatureName -join ', ') -WarningAction SilentlyContinue")
                 $result += Invoke-LabCommand -ComputerName $m -ActivityName $activityName -NoDisplay -ScriptBlock $cmd -UseLocalCredential:$UseLocalCredential -AsJob:$AsJob -PassThru
             }
         }
