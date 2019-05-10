@@ -219,6 +219,14 @@ function Install-LabTeamFoundationServer
                 $content = $content -replace 'SiteBindings=.+', ('SiteBindings=http:*:{0}:' -f $tfsPort)
                 $content = $content -replace 'PublicUrl=.+', ('PublicUrl=http://{0}:{1}' -f $machineName, $tfsPort)
             }
+
+            if ($cert.ThumbPrint -and $tfsConfigPath -match '14\.0')
+            {
+                Get-WebBinding -Name 'Team Foundation Server' | Remove-WebBinding
+                New-WebBinding -Protocol https -Port $tfsPort -IPAddress * -Name 'Team Foundation Server'
+                $binding = Get-Website -Name 'Team Foundation Server' | Get-WebBinding
+                $binding.AddSslCertificate($cert.Thumbprint, "my")
+            }
           
             $content = $content -replace 'webSiteVDirName=.+', 'webSiteVDirName='
             $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
@@ -229,7 +237,7 @@ function Install-LabTeamFoundationServer
             [System.IO.File]::WriteAllText($config, $content)
 
             $command = "unattend /unattendfile:`"$config`" /continue"
-            "$tfsConfigPath $command" | Set-Content C:\DeployDebug\SetupTfsServer.cmd
+            "`"$tfsConfigPath`" $command" | Set-Content C:\DeployDebug\SetupTfsServer.cmd
             $configurationProcess = Start-Process -FilePath $tfsConfigPath -ArgumentList $command -PassThru -NoNewWindow -Wait
 
             # Locate log files and cat them
