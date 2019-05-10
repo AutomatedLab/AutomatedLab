@@ -196,11 +196,6 @@
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Public\Get-TfsGitRepository.ps1" />
                     </Component>
                   </Directory>
-                  <Directory Id="InstallFolder_CommonTfsTypes" Name="Types">
-                    <Component Id="ALCommonComponent8" Guid="cc6ae11e-ab7f-4c4e-b501-ce0f6c53da43">
-                      <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\TeamFoundation\Types\CertificateCallBack.ps1" />
-                    </Component>
-                  </Directory>
                 </Directory>
                 <Component Id="CommonComponent" Guid="398682a6-fe4c-4d53-a6cf-47d173252a15">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="PSCommonComponent" />
@@ -588,7 +583,6 @@
         <ComponentRef Id ='ALCommonComponent4' />
         <ComponentRef Id ='ALCommonComponent5' />
         <ComponentRef Id ='ALCommonComponent7' />
-        <ComponentRef Id ='ALCommonComponent8' />
         <ComponentRef Id ='ALCommonComponent9' />
         <ComponentRef Id='HostsFileComponent'/>
         <ComponentRef Id='AutomatedLabWorkerComponent'/>
