@@ -322,6 +322,7 @@ function Install-LabBuildWorker
         $pat = if ($tfsRole.Properties.ContainsKey('PAT'))
         {
             $tfsRole.Properties['PAT']
+            $machineName = "dev.azure.com/$($tfsRole['Organisation'])"
         }
         else
         {
