@@ -14,7 +14,7 @@ param
 
     [ValidateSet('True', 'False')]
     [string]
-    $EnableDevMode
+    $EnableDevMode = 'False'
 )
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -30,12 +30,16 @@ $wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\Soft
 
 if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.DomainName -ErrorAction SilentlyContinue) )
 {
-    $cert = Request-LabCertificate -Subject "CN=$($machine.FQDN)" -SAN $labMachine.Name -TemplateName WebServer -ComputerName $labMachine -PassThru -ErrorAction Stop
+    $san = @(
+        $labMachine.Name
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure') { $labMachine.AzureConnectionInfo.DnsName}
+    )
+    $cert = Request-LabCertificate -Subject "CN=$($labMachine.FQDN)" -SAN $san -TemplateName WebServer -ComputerName $labMachine -PassThru -ErrorAction Stop
 }
 
 if ($lab.DefaultVirtualizationEngine -eq 'Azure')
 {
-    if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $labMachine))
+    if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $Port -ComputerName $labMachine))
     {
         $lab.AzureSettings.LoadBalancerPortCounter++
         $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
@@ -98,11 +102,13 @@ if ($installation.State -eq 'Failed')
 }
 
 Restart-LabVm -ComputerName $ComputerName -Wait -NoDisplay
-Write-ScreenInfo -Message "Installation of Windows Admin Center done. You can access it here: https://$($labMachine.FQDN):$Port"
+
+$wachostname = if ($lab.DefaultVirtualizationEngine -eq 'Azure') { $labMachine.AzureConnectionInfo.DnsName } else { $labMachine.FQDN }
+Write-ScreenInfo -Message "Installation of Windows Admin Center done. You can access it here: https://$($wachostname):$Port"
 
 # Add hosts through REST API
 Write-ScreenInfo -Message "Adding $((Get-LabVm | Where-Object -Property Name -ne $ComputerName).Count) hosts to the admin center for user $($labMachine.GetCredential($lab).UserName)"
-$apiEndpoint = "https://$($labmachine.FQDN):$Port/api/connections"
+$apiEndpoint = "https://$($wachostname):$Port/api/connections"
 
 $bodyHash = foreach ($machine in (Get-LabVm | Where-Object -Property Name -ne $ComputerName))
 {
