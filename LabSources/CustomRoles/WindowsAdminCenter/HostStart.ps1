@@ -4,16 +4,17 @@ param
     [string]
     $ComputerName,
 
-    [Parameter(Mandatory)]
+    [Parameter()]
     [string]
-    $WacDownloadLink,
+    $WacDownloadLink = 'http://aka.ms/WACDownload',
 
     [Parameter()]
     [uint16]
     $Port = 443,
 
     [ValidateSet('True', 'False')]
-    [string]$EnableDevMode
+    [string]
+    $EnableDevMode
 )
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -25,11 +26,22 @@ if (-not $lab)
 }
 
 $labMachine = Get-LabVm -ComputerName $ComputerName
-$wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$(Get-LabSourcesLocationInternal -Local)\SoftwarePackages\WAC.msi" -PassThru -NoDisplay
+$wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\SoftwarePackages\WAC.msi" -PassThru -NoDisplay
 
 if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.DomainName -ErrorAction SilentlyContinue) )
 {
     $cert = Request-LabCertificate -Subject "CN=$($machine.FQDN)" -SAN $labMachine.Name -TemplateName WebServer -ComputerName $labMachine -PassThru -ErrorAction Stop
+}
+
+if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+{
+    if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $labMachine))
+    {
+        $lab.AzureSettings.LoadBalancerPortCounter++
+        $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+        Add-LWAzureLoadBalancedPort -ComputerName $labMachine -DestinationPort $Port -Port $remotePort
+        $Port = $remotePort
+    }
 }
 
 $arguments = @(

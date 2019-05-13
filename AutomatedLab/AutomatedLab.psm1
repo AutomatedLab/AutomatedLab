@@ -2785,8 +2785,8 @@ function New-LabPSSession
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
-                    #remove the existing session if connecting to Azure LabSoruce did not work in case the session connects to an Azure VM.
-                    Write-ScreenInfo "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false" -Type Warning
+                    #remove the existing session if connecting to Azure LabSource did not work in case the session connects to an Azure VM.
+                    Write-ScreenInfo "Removing session to '$($internalSession.LabMachineName)' as ALLabSourcesMapped was false" -Type Warning
                     Remove-LabPSSession -ComputerName $internalSession.LabMachineName
                     $internalSession = $null
                 }
