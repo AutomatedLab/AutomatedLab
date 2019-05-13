@@ -203,6 +203,18 @@
                   <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" />
                 </Component>
+                <Directory Id="InstallFolder_CommonLib" Name ="lib">
+                  <Directory Id="ALCommonCoreLib" Name="core">
+                    <Component Id="ALCommonCoreLibComponent" Guid="44b61d03-baf7-472b-ad58-9ae57ed42504">
+                      <!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->
+                    </Component>
+                  </Directory>
+                  <Directory Id="ALCommonFullLib" Name="full">
+                    <Component Id="ALCommonFullLibComponent" Guid="a2bda129-81f6-4014-b07c-2e98c8df2399">
+                      <!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->
+                    </Component>
+                  </Directory>
+                </Directory>
               </Directory>
             </Directory>
             <!--______________________________________________________________________________-->
@@ -578,6 +590,8 @@
         <ComponentRef Id='RecipeComponent'/>
         <ComponentRef Id='RecipePublic'/>
         <ComponentRef Id ='CommonComponent' />
+        <ComponentRef Id='ALCommonCoreLibComponent'/>
+        <ComponentRef Id='ALCommonFullLibComponent'/>
         <ComponentRef Id ='ALCommonComponent1' />
         <ComponentRef Id ='ALCommonComponent3' />
         <ComponentRef Id ='ALCommonComponent4' />
