@@ -354,6 +354,7 @@ function Install-LabBuildWorker
                 "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
             }
 
+            $null = New-Item -ItemType Directory -Path D:\DeployDebug -ErrorAction SilentlyContinue
             Set-Content C:\DeployDebug\SetupBuildWorker.cmd -Value $content -Force
             
             $configresult = & C:\DeployDebug\SetupBuildWorker.cmd
