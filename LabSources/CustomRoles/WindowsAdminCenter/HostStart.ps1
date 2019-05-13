@@ -37,17 +37,6 @@ if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.Do
     $cert = Request-LabCertificate -Subject "CN=$($labMachine.FQDN)" -SAN $san -TemplateName WebServer -ComputerName $labMachine -PassThru -ErrorAction Stop
 }
 
-if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-{
-    if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $Port -ComputerName $labMachine))
-    {
-        $lab.AzureSettings.LoadBalancerPortCounter++
-        $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
-        Add-LWAzureLoadBalancedPort -ComputerName $labMachine -DestinationPort $Port -Port $remotePort
-        $Port = $remotePort
-    }
-}
-
 $arguments = @(
     '/qn'
     '/L*v C:\wacLoc.txt'
@@ -67,6 +56,17 @@ if ($cert.Thumbprint)
 else
 {
     $arguments += "SSL_CERTIFICATE_OPTION=generate"
+}
+
+if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+{
+    if (-not (Get-LabAzureLoadBalancedPort -DestinationPort $Port -ComputerName $labMachine))
+    {
+        $lab.AzureSettings.LoadBalancerPortCounter++
+        $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+        Add-LWAzureLoadBalancedPort -ComputerName $labMachine -DestinationPort $Port -Port $remotePort
+        $Port = $remotePort
+    }
 }
 
 if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') 
