@@ -122,33 +122,35 @@ Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsage
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string
 
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West Europe' -Value 'speedtestwe' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Southeast Asia' -Value 'speedtestsea' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.East Asia' -Value 'speedtestea' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.North Central US' -Value 'speedtestnsus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.North Europe' -Value 'speedtestne' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.South Central US' -Value 'speedtestscus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West US' -Value 'speedtestwus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.East US' -Value 'speedtesteus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Japan East' -Value 'speedtestjpe' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Japan West' -Value 'speedtestjpw' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Brazil South' -Value 'speedtestbs' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Central US' -Value 'speedtestcus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.East US 2' -Value 'speedtesteus2' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Australia Southeast' -Value 'mickmel' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Australia East' -Value 'micksyd' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West UK' -Value 'speedtestukw' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.South UK' -Value 'speedtestuks' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Canada Central' -Value 'speedtestcac' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Canada East' -Value 'speedtestcae' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West US 2' -Value 'speedtestwestus2' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West India' -Value 'speedtestwestindia' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.East India' -Value 'speedtesteastindia' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Central India' -Value 'speedtestcentralindia' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Korea Central' -Value 'speedtestkoreacentral' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.Korea South' -Value 'speedtestkoreasouth' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.West Central US' -Value 'speedtestwestcentralus' -Initialize -Validation string
-Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls.France Central' -Value 'speedtestfrc' -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls' -Value @{
+    'West Europe'         = 'speedtestwe'
+    'Southeast Asia'      = 'speedtestsea'
+    'East Asia'           = 'speedtestea'
+    'North Central US'    = 'speedtestnsus'
+    'North Europe'        = 'speedtestne'
+    'South Central US'    = 'speedtestscus'
+    'West US'             = 'speedtestwus'
+    'East US'             = 'speedtesteus'
+    'Japan East'          = 'speedtestjpe'
+    'Japan West'          = 'speedtestjpw'
+    'Brazil South'        = 'speedtestbs'
+    'Central US'          = 'speedtestcus'
+    'East US 2'           = 'speedtesteus2'
+    'Australia Southeast' = 'mickmel'
+    'Australia East'      = 'micksyd'
+    'West UK'             = 'speedtestukw'
+    'South UK'            = 'speedtestuks'
+    'Canada Central'      = 'speedtestcac'
+    'Canada East'         = 'speedtestcae'
+    'West US 2'           = 'speedtestwestus2'
+    'West India'          = 'speedtestwestindia'
+    'East India'          = 'speedtesteastindia'
+    'Central India'       = 'speedtestcentralindia'
+    'Korea Central'       = 'speedtestkoreacentral'
+    'Korea South'         = 'speedtestkoreasouth'
+    'West Central US'     = 'speedtestwestcentralus'
+    'France Central'      = 'speedtestfrc'
+} -Initialize
 
 Set-PSFConfig -Module 'AutomatedLab' -Name SupportGen2VMs -Value $true -Initialize -Validation bool
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureRetryCount -Value 3 -Initialize -Validation integer
