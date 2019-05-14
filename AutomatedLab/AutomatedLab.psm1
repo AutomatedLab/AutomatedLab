@@ -750,7 +750,7 @@ function Install-Lab
 
     Unblock-LabSources
 
-    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name SubscribedProviders)
+    Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
     
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
@@ -1123,7 +1123,7 @@ function Install-Lab
         Write-Verbose -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
     
-    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name SubscribedProviders)
+    Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
     
     Write-LogFunctionExit
 }
