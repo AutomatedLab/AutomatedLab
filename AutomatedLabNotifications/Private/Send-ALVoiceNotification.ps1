@@ -12,7 +12,7 @@ function Send-ALVoiceNotification
     )
 
     $lab = Get-Lab
-    $voiceInfo = (Get-LabConfigurationItem -Name NotificationProviders).Voice
+    $voiceInfo = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Voice
 
     try
     {

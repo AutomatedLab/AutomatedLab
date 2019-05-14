@@ -255,7 +255,7 @@ Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to y
 
 By default, all files smaller than $syncMaxSize MB will be synced. Should you require more control,
 execute Sync-LabAzureLabSources manually. The maximum file size for the automatic sync can also
-be set in your settings.psd1 with the setting LabSourcesMaxFileSizeMb.
+be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
 "@
         $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0

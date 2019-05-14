@@ -22,12 +22,12 @@ function Send-ALMailNotification
 "@
 
     $mailParameters = @{
-        SmtpServer =  (Get-LabConfigurationItem -Name NotificationProviders).Mail.SmtpServer
-        From = (Get-LabConfigurationItem -Name NotificationProviders).Mail.From
-        CC = (Get-LabConfigurationItem -Name NotificationProviders).Mail.CC
-        To = (Get-LabConfigurationItem -Name NotificationProviders).Mail.To
-        Priority = (Get-LabConfigurationItem -Name NotificationProviders).Mail.Priority
-        Port = (Get-LabConfigurationItem -Name NotificationProviders).Mail.Port
+        SmtpServer =  Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.SmtpServer
+        From = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.From
+        CC = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.CC
+        To = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.To
+        Priority = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.Priority
+        Port = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Mail.Port
         Body = $body
         Subject = "AutomatedLab notification: $($lab.Name) $Activity"
     }
