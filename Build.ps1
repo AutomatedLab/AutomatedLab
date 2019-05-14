@@ -53,7 +53,7 @@ Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
 $f = New-Item -ItemType Directory -Path C:\LabSources\CustomRoles -Force
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, powershell-yaml, newtonsoft.json, Datum
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, newtonsoft.json
 
 $lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
 if (-not ($lastestVersion.Version -ge '1.1.7.0'))

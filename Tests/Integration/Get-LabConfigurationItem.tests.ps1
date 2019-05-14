@@ -5,16 +5,16 @@ $rootpath = $PSScriptRoot
 $configurationPath = $(Resolve-Path -Path "$rootpath\..\..\AutomatedLab\settings.psd1" -ErrorAction Stop).Path
 Copy-Item -Path $configurationPath -Destination (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1') -ErrorAction SilentlyContinue -Force
 
+if (-not (Get-Module -List PSFramework)) {Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber}
-if (-not (Get-Module -List Datum)) {Install-Module -Name Datum -Force -SkipPublisherCheck -AllowClobber}
 
-Import-Module -Name Newtonsoft.Json,powershell-yaml
-Import-Module -Name Datum,"$rootpath\..\..\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" -Force -Verbose
+Import-Module -Name Newtonsoft.Json, PSFramework
+Import-Module -Name "$rootpath\..\..\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" -Force -Verbose
 [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
 $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
 
-$reqdModules = @(
+$reqdModules = @(    
     'AutomatedLabUnattended'
     'PSLog',
     'PSFileTransfer',
