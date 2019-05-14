@@ -115,7 +115,6 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.
 
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string
- -Initialize -Validation string
 #TFS Build Agent
 Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsagentpackage.azureedge.net/agent/2.136.1/vsts-agent-win-x64-2.136.1.zip' -Initialize -Validation string
 

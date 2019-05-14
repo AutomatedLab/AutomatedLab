@@ -43,6 +43,15 @@ init:
 install:
   - git submodule -q update --init --recursive
 
+dotnet_csproj:
+  patch: true
+  file: '**\LabXml.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
 assembly_info:
   patch: true
   file: AssemblyInfo.*
