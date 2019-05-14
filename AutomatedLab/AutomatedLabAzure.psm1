@@ -1247,12 +1247,12 @@ function Get-LabAzureLabSourcesContent
 
     if ($File)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFile'}
+        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile'}
     }
 
     if ($Directory)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFileDirectory'}
+        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory'}
     }
 
     $content = $content |
