@@ -3,7 +3,7 @@
     
     ModuleVersion          = '1.0.0'
 	
-	CompatiblePSEditions = 'Core', 'Desktop'
+	CompatiblePSEditions   = 'Core', 'Desktop'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -29,7 +29,6 @@
     
     NestedModules          = @(
         'AutomatedLabAzureServices.psm1',
-        'AutomatedLab.dll',
         'AutomatedLabADDS.psm1',
         'AutomatedLabADCS.psm1',
         'AutomatedLabADFS.psm1',
