@@ -535,7 +535,11 @@ function New-LWHypervVM
         Copy-Item -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
         foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
         {
-            $file.Decrypt()
+            # Why???
+            if ($PSEdition -eq 'Desktop')
+            {
+                $file.Decrypt()
+            }
         }
         Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 

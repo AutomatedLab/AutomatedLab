@@ -123,8 +123,8 @@ function Write-LogFunctionExit
 function Write-LogFunctionExitWithError
 {
     [CmdletBinding(
-            ConfirmImpact = 'Low',
-            DefaultParameterSetName = 'Message'
+        ConfirmImpact = 'Low',
+        DefaultParameterSetName = 'Message'
     )]
 
     param
@@ -196,8 +196,8 @@ function Write-LogFunctionExitWithError
 function Write-LogError
 {
     [CmdletBinding(
-            ConfirmImpact = 'Low',
-            DefaultParameterSetName = 'Name'
+        ConfirmImpact = 'Low',
+        DefaultParameterSetName = 'Name'
     )]
     param
     (
@@ -297,7 +297,7 @@ function Get-CallerPreference
     [CmdletBinding(DefaultParameterSetName = 'AllVariables')]
     param (
         [Parameter(Mandatory = $true)]
-        [ValidateScript({ $_.GetType().FullName -eq 'System.Management.Automation.PSScriptCmdlet' })]
+        [ValidateScript( { $_.GetType().FullName -eq 'System.Management.Automation.PSScriptCmdlet' })]
         $Cmdlet,
 
         [Parameter(Mandatory = $true)]
@@ -311,7 +311,7 @@ function Get-CallerPreference
 
     begin
     {
-        $filterHash = @{}
+        $filterHash = @{ }
     }
 
     process
@@ -330,43 +330,43 @@ function Get-CallerPreference
         # List of preference variables taken from the about_Preference_Variables help file in PowerShell version 4.0
 
         $vars = @{
-            'ErrorView' = $null
-            'FormatEnumerationLimit' = $null
-            'LogCommandHealthEvent' = $null
-            'LogCommandLifecycleEvent' = $null
-            'LogEngineHealthEvent' = $null
-            'LogEngineLifecycleEvent' = $null
-            'LogProviderHealthEvent' = $null
-            'LogProviderLifecycleEvent' = $null
-            'MaximumAliasCount' = $null
-            'MaximumDriveCount' = $null
-            'MaximumErrorCount' = $null
-            'MaximumFunctionCount' = $null
-            'MaximumHistoryCount' = $null
-            'MaximumVariableCount' = $null
-            'OFS' = $null
-            'OutputEncoding' = $null
-            'ProgressPreference' = $null
-            'PSDefaultParameterValues' = $null
-            'PSEmailServer' = $null
+            'ErrorView'                     = $null
+            'FormatEnumerationLimit'        = $null
+            'LogCommandHealthEvent'         = $null
+            'LogCommandLifecycleEvent'      = $null
+            'LogEngineHealthEvent'          = $null
+            'LogEngineLifecycleEvent'       = $null
+            'LogProviderHealthEvent'        = $null
+            'LogProviderLifecycleEvent'     = $null
+            'MaximumAliasCount'             = $null
+            'MaximumDriveCount'             = $null
+            'MaximumErrorCount'             = $null
+            'MaximumFunctionCount'          = $null
+            'MaximumHistoryCount'           = $null
+            'MaximumVariableCount'          = $null
+            'OFS'                           = $null
+            'OutputEncoding'                = $null
+            'ProgressPreference'            = $null
+            'PSDefaultParameterValues'      = $null
+            'PSEmailServer'                 = $null
             'PSModuleAutoLoadingPreference' = $null
-            'PSSessionApplicationName' = $null
-            'PSSessionConfigurationName' = $null
-            'PSSessionOption' = $null
+            'PSSessionApplicationName'      = $null
+            'PSSessionConfigurationName'    = $null
+            'PSSessionOption'               = $null
 
-            'ErrorActionPreference' = 'ErrorAction'
-            'DebugPreference' = 'Debug'
-            'ConfirmPreference' = 'Confirm'
-            'WhatIfPreference' = 'WhatIf'
-            'VerbosePreference' = 'Verbose'
-            'WarningPreference' = 'WarningAction'
+            'ErrorActionPreference'         = 'ErrorAction'
+            'DebugPreference'               = 'Debug'
+            'ConfirmPreference'             = 'Confirm'
+            'WhatIfPreference'              = 'WhatIf'
+            'VerbosePreference'             = 'Verbose'
+            'WarningPreference'             = 'WarningAction'
         }
 
 
         foreach ($entry in $vars.GetEnumerator())
         {
             if (([string]::IsNullOrEmpty($entry.Value) -or -not $Cmdlet.MyInvocation.BoundParameters.ContainsKey($entry.Value)) -and
-            ($PSCmdlet.ParameterSetName -eq 'AllVariables' -or $filterHash.ContainsKey($entry.Name)))
+                ($PSCmdlet.ParameterSetName -eq 'AllVariables' -or $filterHash.ContainsKey($entry.Name)))
             {
                 $variable = $Cmdlet.SessionState.PSVariable.Get($entry.Key)
 
@@ -492,15 +492,15 @@ function Write-ScreenInfo
     {
         $TimeDelta2 = ((Get-Date) - $Global:taskStart[-1])
 
-        $newSize = ($Global:taskStart).Length-1
+        $newSize = ($Global:taskStart).Length - 1
         if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length-1)
+        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length - 1)
     }
 
 
     if (-not $TimeDelta -and $Global:AL_DeploymentStart)
     {
-        $TimeDelta  = (Get-Date) - $Global:AL_DeploymentStart
+        $TimeDelta = (Get-Date) - $Global:AL_DeploymentStart
     }
     if (-not $TimeDelta2 -and $Global:taskStart[-1])
     {
@@ -519,12 +519,14 @@ function Write-ScreenInfo
         {
             switch ($Type)
             {
-                Error   { Write-Host $Message -NoNewline -ForegroundColor Red}
-                Warning { Write-Host $Message -NoNewline -ForegroundColor DarkYellow }
-                Info    { Write-Host $Message -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host $Message -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host $Message -NoNewline -ForegroundColor Cyan } }
+                Error { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Red }
+                Warning { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor DarkYellow }
+                Info { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
+                Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
+                Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
             }
+            
+            $Message | Foreach-Object { Write-PSFMessage -Level Verbose $_ }
         }
         else
         {
@@ -532,13 +534,14 @@ function Write-ScreenInfo
 
             switch ($Type)
             {
-                Error   { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Red }
-                Warning { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Yellow }
-                Info    { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline }
-                Debug   { if ($DebugPreference -eq 'Continue') { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
-                Verbose { if ($VerbosePreference -eq 'Continue') { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
+                Error { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Red }
+                Warning { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Yellow }
+                Info { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline }
+                Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
+                Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $Message" -NoNewline -ForegroundColor Cyan } }
             }
 
+            $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
         }
         $Global:PSLog_NoNewLine = $true
     }
@@ -546,31 +549,37 @@ function Write-ScreenInfo
     {
         if ($Global:PSLog_NoNewLine)
         {
+            $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message $_ }
             switch ($Type)
             {
-                Error   {
-                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Red }
+                Error
+                {
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Red }
                     $Global:PSLog_NoNewLine = $false
                 }
-                Warning {
-                    $Message | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
+                Warning
+                {
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Yellow }
                     $Global:PSLog_NoNewLine = $false
                 }
-                Info    {
-                    $Message | ForEach-Object { Write-Host $_ }
+                Info
+                {
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ }
                     $Global:PSLog_NoNewLine = $false
                 }
-                Verbose {
+                Verbose
+                {
                     if ($VerbosePreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_  -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
                     }
                 }
-                Debug {
+                Debug
+                {
                     if ($DebugPreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Write-Host $_  -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_  -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
                     }
                 }
@@ -578,31 +587,34 @@ function Write-ScreenInfo
         }
         else
         {
-            if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent-1)) + '- ' + $Message }
+            if ($Global:PSLog_Indent -gt 0) { $Message = ('  ' * ($Global:PSLog_Indent - 1)) + '- ' + $Message }
+            $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
             switch ($Type)
             {
                 Error
                 {
-                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Red }
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Red }
                 }
-                Warning {
-                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Yellow }
+                Warning
+                {
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Yellow }
                 }
-                Info {
-                    $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
+                Info
+                {
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
                 }
                 Debug
                 {
                     if ($DebugPreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
                     }
                 }
                 Verbose
                 {
                     if ($VerbosePreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" -ForegroundColor Cyan }
                     }
                 }
             }
