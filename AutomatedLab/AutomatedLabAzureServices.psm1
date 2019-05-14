@@ -715,7 +715,7 @@ function Send-FtpFolder
         [switch]$Recure
     )
 
-    Add-Type -Path 'C:\Program Files\WindowsPowerShell\Modules\AutomatedLab\Tools\FluentFTP.dll'
+    Add-Type -Path (Join-Path -Path (Get-Module AutomatedLab).ModuleBase -ChildPath 'Tools\FluentFTP.dll')
     $fileCount = 0
 
     if (-not (Test-Path -Path $Path -PathType Container))

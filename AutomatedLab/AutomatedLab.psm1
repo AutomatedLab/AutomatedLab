@@ -4087,58 +4087,21 @@ function Get-LabConfigurationItem
         $Name,
 
         [Parameter()]
-        [string]
-        $GlobalPath = (Join-Path -Path $PSScriptRoot -ChildPath 'settings.psd1' -Resolve),
-
-        [Parameter()]
-        [string]
-        $UserPath = (Join-Path -Path $HOME -ChildPath 'AutomatedLab\settings.psd1'),
-
-        [Parameter()]
         $Default
     )
 
-    if (-not (Test-Path -Path $userPath))
-    {
-        [void] $(New-Item -Path $userPath -ItemType File -Value '@{ }' -Force)
-    }
-
-    $d = @"
-ResolutionPrecedence:
-  - User
-  - Global
-default_lookup_options: hash
-lookup_options:
-  Settings:
-    merge_hash: deep
-
-DatumStructure:
-  - StoreName: Global
-    StoreProvider: Datum::File
-    StoreOptions:
-      Path: $globalPath
-  - StoreName: User
-    StoreProvider: Datum::File
-    StoreOptions:
-      Path: $userPath
-"@ | ConvertFrom-Yaml
-
-    $datum = New-DatumStructure -DatumHierarchyDefinition $d
-
-    $settings = $(Resolve-NodeProperty -PropertyPath Settings -DatumTree $datum).Settings
-    
-    # Return
     if ($Name)
     {
-        if ($null -eq $settings[$Name] -and $null -ne $Default)
+        $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name).Value
+        if ($null -eq $setting -and $null -ne $Default)
         {
             return $Default
         }
 
-        return $settings[$Name]
+        return $setting
     }
 
-    $settings
+    Get-PSFConfig -Module AutomatedLab
 }
 #endregion Get-LabConfigurationItem
 
