@@ -1,201 +1,4 @@
-﻿#region Start-Log
-function Start-Log
-{
-    [CmdletBinding(ConfirmImpact = 'Low')]
-    param
-    (
-        [Parameter(Position = 0, Mandatory = $true, ParameterSetName = 'UserDefined')]
-        [ValidateScript({
-                    if (-not $_.Exists)
-                    {
-                        throw 'LogPath does not exist'
-                    }
-                    return $true
-                }
-        )]
-        [System.IO.DirectoryInfo]$LogPath,
-
-        [Parameter(Position = 1, Mandatory = $true, ParameterSetName = 'UserDefined')]
-        [ValidateNotNullOrEmpty()]
-        [string]$LogName,
-
-        [Parameter(Position = 2, Mandatory = $true, ParameterSetName = 'UserDefined')]
-        [System.Diagnostics.SourceLevels]$Level,
-
-        [Parameter()]
-        [switch]$Silent,
-
-        [Parameter(Mandatory = $true, ParameterSetName = 'UseDefaults')]
-        [switch]$UseDefaults
-    )
-
-    if ($UseDefaults)
-    {
-        $script:defaults = $MyInvocation.MyCommand.Module.PrivateData
-        if (-not $defaults.DefaultFolder)
-        {
-            $LogPath = [Environment]::GetFolderPath('MyDocuments')
-        }
-        else
-        {
-            $LogPath = $defaults.DefaultFolder
-        }
-
-        if (-not $defaults.DefaultName)
-        {
-            $LogName = $Env:USERNAME
-        }
-        else
-        {
-            $LogName = $defaults.DefaultName
-        }
-
-        if (-not $defaults.Level)
-        {
-            $Level = 'All'
-        }
-        else
-        {
-            $Level = $defaults.Level
-        }
-
-        $Silent = $defaults.Silent
-    }
-
-    Add-Type -AssemblyName Microsoft.VisualBasic
-    $script:LogFile = $LogName
-    $script:Log = New-Object -TypeName Microsoft.VisualBasic.Logging.Log
-    $script:Log.DefaultFileLogWriter.Append = $true
-    $script:Log.DefaultFileLogWriter.AutoFlush = $true
-    $script:Log.DefaultFileLogWriter.Delimiter = ';'
-    $script:Log.DefaultFileLogWriter.MaxFileSize = 2GB
-    $script:Log.DefaultFileLogWriter.ReserveDiskSpace = 1GB
-    $script:Log.DefaultFileLogWriter.LogFileCreationSchedule = 'Daily'
-    $script:Log.DefaultFileLogWriter.Location = 'Custom'
-    $script:Log.DefaultFileLogWriter.CustomLocation = $LogPath
-    $script:Log.DefaultFileLogWriter.BaseFileName = $LogName
-    $script:Log.TraceSource.Switch.Level = $Level
-
-    $script:PSLog_Silent = $Silent
-
-    if (!$UseDefaults)
-    {
-        Write-LogEntry -Message 'Starting log' -EntryType Information
-    }
-}
-#endregion
-
-#region Stop-Log
-function Stop-Log
-{
-    Write-LogEntry -Message 'Closing log' -EntryType Verbose
-    $Log.DefaultFileLogWriter.Flush()
-    $Log.DefaultFileLogWriter.Close()
-}
-#endregion
-
-#region Write-LogEntry
-function Write-LogEntry
-{
-    param
-    (
-        [Parameter(Position = 0, Mandatory = $true)]
-        [AllowEmptyString()]
-        [string]$Message,
-
-        [Parameter(Position = 1, Mandatory = $true)]
-        [System.Diagnostics.TraceEventType] $EntryType,
-
-        [Parameter(Position = 2)]
-        [ValidateNotNullOrEmpty()]
-        [string] $Details,
-
-        [Parameter()]
-        [ValidateNotNullOrEmpty()]
-        [switch] $SupressConsole
-    )
-
-
-
-    if (($EntryType -band $Log.TraceSource.Switch.Level) -ne $EntryType)
-    {
-        return
-    }
-
-    $caller = (Get-PSCallStack)[1]
-    if ($caller.Command -eq 'Write-Host' -or
-        $caller.Command -eq 'Write-Warning' -or
-        $caller.Command -eq 'Write-Verbose' -or
-        $caller.Command -eq 'Write-Debug' -or
-        $caller.Command -eq 'Write-Error' -or
-        $caller.Command -eq 'Start-Log' -or
-    $caller.Command -eq 'Stop-Log')
-    {
-        $caller = (Get-PSCallStack)[2]
-    }
-
-    $callerFunctionName = $caller.Command
-    if ($caller.ScriptName)
-    {
-        $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
-    }
-    $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, $Details
-    $Log.WriteEntry($Message, $EntryType)
-
-    if (-not $SupressConsole)
-    {
-        $Message = ($Message -split ';')[2..3]
-        if ($Details)
-        {
-            $Message += ": $Details"
-        }
-
-        if ($EntryType -eq 'Verbose')
-        {
-            Microsoft.PowerShell.Utility\Write-Verbose $Message
-        }
-        elseif ($EntryType -eq 'Warning')
-        {
-            Microsoft.PowerShell.Utility\Write-Warning $Message
-        }
-        elseif ($EntryType -eq 'Information')
-        {
-            if ($script:PSLog_Silent)
-            {
-                Microsoft.PowerShell.Utility\Write-Verbose $Message
-            }
-            else
-            {
-                Microsoft.PowerShell.Utility\Write-Host $Message -ForegroundColor DarkGreen
-            }
-        }
-        elseif ($EntryType -eq 'Error')
-        {
-            if ($script:PSLog_Silent)
-            {
-                Microsoft.PowerShell.Utility\Write-Verbose $Message
-            }
-            else
-            {
-                Microsoft.PowerShell.Utility\Write-Host $Message -ForegroundColor Red
-            }
-        }
-        elseif ($EntryType -eq 'Critical')
-        {
-            if ($script:PSLog_Silent)
-            {
-                Microsoft.PowerShell.Utility\Write-Verbose $Message
-            }
-            else
-            {
-                Microsoft.PowerShell.Utility\Write-Host $Message -ForegroundColor Red
-            }
-        }
-    }
-}
-#endregion
-
-#region Write-LogFunctionEntry
+﻿#region Write-LogFunctionEntry
 function Write-LogFunctionEntry
 {
     [CmdletBinding()]
@@ -204,20 +7,6 @@ function Write-LogFunctionEntry
     $Global:LogFunctionEntryTime = Get-Date
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
-
-    if (!$Log)
-    {
-        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
-        {
-            Write-Verbose 'starting log'
-            Start-Log -UseDefaults
-        }
-        else
-        {
-            Microsoft.PowerShell.Utility\Write-Verbose 'Cannot write to the log file until Start-Log has been called'
-            return
-        }
-    }
 
     $Message = 'Entering...'
 
@@ -280,7 +69,6 @@ function Write-LogFunctionEntry
     $Message += ')'
 
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
-    $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Verbose)
     $Message = ($Message -split ';')[2..3] -join ' '
 
     Microsoft.PowerShell.Utility\Write-Verbose $Message
@@ -308,24 +96,6 @@ function Write-LogFunctionExit
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (!$Log)
-    {
-        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
-        {
-            Start-Log -UseDefaults
-        }
-        else
-        {
-            Microsoft.PowerShell.Utility\Write-Verbose 'Cannot write to the log file until Start-Log has been called'
-            return
-        }
-    }
-
-    if (([System.Diagnostics.TraceEventType]::Verbose -band $Log.TraceSource.Switch.Level) -ne [System.Diagnostics.TraceEventType]::Verbose)
-    {
-        return
-    }
-
     if ($ReturnValue)
     {
         $Message = "...leaving - return value is '{0}'..." -f $ReturnValue
@@ -343,7 +113,6 @@ function Write-LogFunctionExit
     }
 
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, ("(Time elapsed: {0:hh}:{0:mm}:{0:ss}:{0:fff})" -f $ts)
-    $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Verbose)
     $Message = -join ($Message -split ';')[2..4]
 
     Microsoft.PowerShell.Utility\Write-Verbose $Message
@@ -379,24 +148,6 @@ function Write-LogFunctionExitWithError
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (!$Log)
-    {
-        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
-        {
-            Start-Log -UseDefaults
-        }
-        else
-        {
-            Microsoft.PowerShell.Utility\Write-Verbose 'Cannot write to the log file until Start-Log has been called'
-            return
-        }
-    }
-
-    if (([System.Diagnostics.TraceEventType]::Error -band $Log.TraceSource.Switch.Level) -ne [System.Diagnostics.TraceEventType]::Error)
-    {
-        return
-    }
-
     switch ($pscmdlet.ParameterSetName)
     {
         'Message'
@@ -427,7 +178,7 @@ function Write-LogFunctionExitWithError
     {
         $Message += ';' + $Details
     }
-    $Log.WriteEntry($Message, [System.Diagnostics.TraceEventType]::Error)
+    
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)
@@ -465,24 +216,6 @@ function Write-LogError
 
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (!$Log)
-    {
-        if ($MyInvocation.MyCommand.Module.PrivateData.AutoStart)
-        {
-            Start-Log -UseDefaults
-        }
-        else
-        {
-            Microsoft.PowerShell.Utility\Write-Verbose 'Cannot write to the log file until Start-Log has been called'
-            return
-        }
-    }
-
-    if ($EntryType -band $Log.TraceSource.Switch.Level -ne $EntryType)
-    {
-        return
-    }
-
     $EntryType = 'Error'
 
     $caller = (Get-PSCallStack)[1]
@@ -505,7 +238,7 @@ function Write-LogError
     {
         $Message += ';' + $Details
     }
-    $Log.WriteEntry($Message, $EntryType)
+    
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)

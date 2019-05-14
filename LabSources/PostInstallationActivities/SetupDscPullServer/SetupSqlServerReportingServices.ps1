@@ -1,6 +1,6 @@
 function Get-ConfigSet
 {
-    return Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting -ComputerName localhost
+    return Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting -ComputerName localhost
 }
 
 $configSet = Get-ConfigSet
@@ -50,7 +50,7 @@ if (-not $configSet.IsInitialized)
     [void]$configSet.ListReportServersInDatabase()
     [void]$configSet.ListReservedUrls()
 
-    $inst = Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
+    $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
 
     #$inst.GetReportServerUrls()
 }

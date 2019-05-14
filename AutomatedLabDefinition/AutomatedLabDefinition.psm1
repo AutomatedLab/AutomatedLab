@@ -760,7 +760,7 @@ function New-LabDefinition
         #Citrix
         $reservedMacAddresses += '00:16:3E'
 
-        $macAddress = Get-WmiObject Win32_NetworkAdapter |
+        $macAddress = Get-CimInstance Win32_NetworkAdapter |
         Where-Object { $_.NetEnabled -and $_.NetConnectionID } |
         Where-Object { $_.MACaddress.ToString().SubString(0, 8) -notin $reservedMacAddresses } |
         Select-Object -ExpandProperty MACAddress -Unique
@@ -2635,7 +2635,7 @@ function Add-LabMachineDefinition
         if ($processors -eq 0)
         {
             $processors = 1
-            if (-not $script:processors) { $script:processors = (Get-WmiObject -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors }
+            if (-not $script:processors) { $script:processors = (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors }
             if ($script:processors -ge 2)
             {
                 $machine.Processors = 2

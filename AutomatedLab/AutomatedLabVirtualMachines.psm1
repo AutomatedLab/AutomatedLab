@@ -1092,7 +1092,7 @@ function Get-LabVMUptime
     Write-LogFunctionEntry
 
     $cmdGetUptime = {
-        $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
+        $lastboottime = (Get-CimInstance -Class Win32_OperatingSystem).LastBootUpTime
         (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
     }
 

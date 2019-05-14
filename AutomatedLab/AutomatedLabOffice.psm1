@@ -112,7 +112,7 @@ function Install-LabOffice2013
                 $start = Get-Date
 
                 Push-Location
-                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
                 Write-Verbose 'Calling "$($PWD.Path)setup.exe /config C:\Office2013Config.xml"'
                 .\setup.exe /config C:\Office2013Config.xml
                 Pop-Location
