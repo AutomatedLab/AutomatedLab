@@ -297,3 +297,10 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 } -Initialize
 
 #endregion
+
+#region ArgumentCompleter
+Register-PSFTeppScriptblock -Name "AutomatedLab-NotificationProviders" -ScriptBlock {
+	(Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object {($_ -split '\.')[3]} | Select -Unique
+}
+Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
+#endregion

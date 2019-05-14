@@ -814,8 +814,6 @@ function New-LabDefinition
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
-    $script:defaults = Get-LabConfigurationItem
-
     $script:lab = New-Object AutomatedLab.Lab
 
     $script:lab.Name = $Name
@@ -827,12 +825,12 @@ function New-LabDefinition
         Remove-LabVirtualNetworkDefinition -Name (Get-LabVirtualNetworkDefinition)[0].Name
     }
 
-    $machineDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath $defaults.MachineFileName
+    $machineDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem MachineFileName)
     $machineDefinitionFile = New-Object AutomatedLab.MachineDefinitionFile
     $machineDefinitionFile.Path = $machineDefinitionFilePath
     $script:lab.MachineDefinitionFiles.Add($machineDefinitionFile)
 
-    $diskDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath $defaults.DiskFileName
+    $diskDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem DiskFileName)
     $diskDefinitionFile = New-Object AutomatedLab.DiskDefinitionFile
     $diskDefinitionFile.Path = $diskDefinitionFilePath
     $script:lab.DiskDefinitionFiles.Add($diskDefinitionFile)
@@ -1162,7 +1160,7 @@ function Export-LabDefinition
     }
 
 
-    $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath $script:defaults.LabFileName
+    $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem LabFileName)
     $script:lab | Add-Member -Name Path -MemberType NoteProperty -Value $labFilePath -Force
 
     if (-not (Test-Path $script:labPath))
@@ -1258,8 +1256,6 @@ function Test-LabDefinition
 
     Write-LogFunctionEntry
 
-    $script:defaults = Get-LabConfigurationItem
-
     $lab = Get-LabDefinition
     if (-not $lab)
     {
@@ -1274,7 +1270,7 @@ function Test-LabDefinition
 
     if (-not $Path)
     {
-        $Path = Join-Path -Path $lab.LabPath -ChildPath $script:defaults.LabFileName
+        $Path = Join-Path -Path $lab.LabPath -ChildPath (Get-LabConfigurationItem LabFileName)
     }
 
     #we need to get the machine config files as well
