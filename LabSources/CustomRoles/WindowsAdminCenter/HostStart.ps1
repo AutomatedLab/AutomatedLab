@@ -26,7 +26,8 @@ if (-not $lab)
 }
 
 $labMachine = Get-LabVm -ComputerName $ComputerName
-$wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\SoftwarePackages\WAC.msi" -PassThru -NoDisplay
+$wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\SoftwarePackages" -FileName WAC.msi -PassThru -NoDisplay
+Copy-LabFileItem -Path $wacDownload.FullName -DestinationFolderPath C:\ -ComputerName AZMS
 
 if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.DomainName -ErrorAction SilentlyContinue) )
 {
@@ -76,7 +77,7 @@ if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
 }
 
 Write-ScreenInfo -Type Verbose -Message "Starting installation of Windows Admin Center on $labMachine"
-$installation = Install-LabSoftwarePackage -Path $wacDownload.Path -CommandLine $($arguments -join ' ') -ComputerName $labMachine -ExpectedReturnCodes 0, 3010 -AsJob -PassThru -NoDisplay
+$installation = Install-LabSoftwarePackage -LocalPath C:\WAC.msi -CommandLine $($arguments -join ' ') -ComputerName $labMachine -ExpectedReturnCodes 0, 3010 -AsJob -PassThru -NoDisplay
 
 Write-ScreenInfo -Message "Waiting for the installation of Windows Admin Center to finish on $labMachine"
 Wait-LWLabJob -Job $installation -ProgressIndicator 5 -NoNewLine -NoDisplay
@@ -121,6 +122,7 @@ $bodyHash = foreach ($machine in (Get-LabVm | Where-Object -Property Name -ne $C
 
 try
 {
+    [ServerCertificateValidationCallback]::Ignore()
     $response = Invoke-RestMethod -Method PUT -Uri $apiEndpoint -Credential $labMachine.GetCredential($lab) -Body $($bodyHash | ConvertTo-Json) -ContentType application/json -ErrorAction Stop
     Write-ScreenInfo -Message "Successfully added all lab machines as connections for $($labMachine.GetCredential($lab).UserName)"
 }
