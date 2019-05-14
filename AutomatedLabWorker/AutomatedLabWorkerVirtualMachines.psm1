@@ -308,7 +308,7 @@ function New-LWHypervVM
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
         $nextDriveLetter = [char[]](67..90) | 
-        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 
         Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
         Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
@@ -596,7 +596,7 @@ $disks = $diskpartCmd | diskpart.exe
     if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')	
     {	
         #$nextDriveLetter = [char[]](67..90) | 	
-        #Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 	
+        #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 	
         #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 	
         #Select-Object -First 1	
          $diskNumber = $Matches.DiskNumber	
@@ -612,7 +612,7 @@ $disks = $diskpartCmd | diskpart.exe
         }	
     }	
 }	
- foreach ($volume in (Get-WmiObject -Class Win32_Volume))	
+ foreach ($volume in (Get-CimInstance -Class Win32_Volume))	
 {	
     if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')	
     {	
@@ -1447,7 +1447,7 @@ function Mount-LWIsoImage
         $delayIndex = 0
 
         $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         #this is required as Compare-Object cannot work with a null object
@@ -1490,7 +1490,7 @@ function Mount-LWIsoImage
         }
         
         $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
@@ -1572,7 +1572,7 @@ function Repair-LWHypervNetworkConfig
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
                 Write-Verbose "Looking for network adapter with using filter '$filter'"
-                $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
+                $adapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter $filter
     
                 Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
                 $adapter.NetConnectionID = $newName

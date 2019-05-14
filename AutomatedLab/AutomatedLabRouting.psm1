@@ -78,7 +78,7 @@ function Install-LabRouting
 
                 Write-Verbose 'Setting up NAT...'
 
-                $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
+                $externalAdapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
                     Select-Object -ExpandProperty NetConnectionID
 
                 netsh.exe routing ip nat install
@@ -141,7 +141,7 @@ function Set-LabADDNSServerForwarder
         {
             Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
 
-                Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
+                Get-CimInstance -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
 
             } -PassThru -NoDisplay
         }

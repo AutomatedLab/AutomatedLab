@@ -1,8 +1,8 @@
 #region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
-    
-    [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
+    # .ExternalHelp AutomatedLab.Help.xml
+    [int](((Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
 
@@ -726,7 +726,7 @@ function Get-LabSourcesLocationInternal
     
     if ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
         
         $folders = foreach ($drive in $hardDrives)
         {

@@ -235,7 +235,7 @@ GO
                     while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
                     {
                         Start-Sleep -Seconds 2
-                        $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
+                        $dvdDrive = (Get-CimInstance -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
                     }
 
                     if ($dvdDrive)

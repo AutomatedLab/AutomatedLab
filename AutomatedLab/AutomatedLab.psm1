@@ -1976,7 +1976,7 @@ function Install-VisualStudio2013
                 Write-Verbose 'Installing Visual Studio 2013'
 
                 Push-Location
-                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -2095,7 +2095,7 @@ function Install-VisualStudio2015
                 Write-Verbose 'Installing Visual Studio 2015'
 
                 Push-Location
-                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -3396,7 +3396,7 @@ function Update-LabMemorySettings
 
         $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and $_.Name -notin $machinesNotCreated.Name } | Measure-Object -Property Memory -Sum).Sum
 
-        $totalMemory = (Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).FreePhysicalMemory * 1KB * 0.8 - $totalMemoryAlreadyReserved + $totalMemoryAlreadyReservedAndClaimed
+        $totalMemory = (Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).FreePhysicalMemory * 1KB * 0.8 - $totalMemoryAlreadyReserved + $totalMemoryAlreadyReservedAndClaimed
 
         if ($lab.MaxMemory -ne 0 -and $lab.MaxMemory -le $totalMemory)
         {

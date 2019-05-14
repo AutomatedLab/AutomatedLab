@@ -590,7 +590,7 @@ function Initialize-LWAzureVM
                 if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
                 {
                     $nextDriveLetter = [char[]](67..90) |
-                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
+                        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
                                 Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
                         Select-Object -First 1
 
