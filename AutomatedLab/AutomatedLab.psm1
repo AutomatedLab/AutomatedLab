@@ -3334,7 +3334,7 @@ function Invoke-LabCommand
             $scriptContent = if ($isLabPathIsOnLabAzureLabSourcesStorage)
             {
                 #if the script is on an Azure file storage, the host machine cannot access it. The read operation is done on the first Azure machine.
-                Invoke-LabCommand -ComputerName $machines[0] -ScriptBlock { Get-Content -Path $FilePath -Raw } -Variable (Get-Variable -Name FilePath) -NoDisplay -PassThru
+                Invoke-LabCommand -ComputerName ($machines | Where-Object HostType -eq 'Azure')[0] -ScriptBlock { Get-Content -Path $FilePath -Raw } -Variable (Get-Variable -Name FilePath) -NoDisplay -PassThru
             }
             else
             {
