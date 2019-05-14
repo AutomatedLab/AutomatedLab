@@ -60,7 +60,8 @@
         'AutomatedLabNotifications',
         'AutomatedLab.Common',
         'powershell-yaml',
-        'Datum'
+        'Datum',
+        'PSFramework'
     )
 
     CmdletsToExport        = @()
