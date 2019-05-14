@@ -3140,10 +3140,11 @@ function Invoke-LabCommand
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-
+    
     if ($FilePath)
     {
-        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
+        $isLabPathIsOnLabAzureLabSourcesStorage = Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath
+        if ($isLabPathIsOnLabAzureLabSourcesStorage)
         {
             Write-Verbose "$FilePath is on Azure. Skipping test."
         }
@@ -3330,7 +3331,15 @@ function Invoke-LabCommand
 
         if ($FilePath)
         {
-            $scriptContent = Get-Content -Path $FilePath -Raw
+            $scriptContent = if ($isLabPathIsOnLabAzureLabSourcesStorage)
+            {
+                #if the script is on an Azure file storage, the host machine cannot access it. The read operation is done on the first Azure machine.
+                Invoke-LabCommand -ComputerName ($machines | Where-Object HostType -eq 'Azure')[0] -ScriptBlock { Get-Content -Path $FilePath -Raw } -Variable (Get-Variable -Name FilePath) -NoDisplay -PassThru
+            }
+            else
+            {
+                 Get-Content -Path $FilePath -Raw
+            }
             $ScriptBlock = [scriptblock]::Create($scriptContent)
         }
 
@@ -4248,6 +4257,3 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
 }
-
-#Import available operating systms from cache (if available)
-#Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null
