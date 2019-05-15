@@ -299,8 +299,38 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 #endregion
 
 #region ArgumentCompleter
-Register-PSFTeppScriptblock -Name "AutomatedLab-NotificationProviders" -ScriptBlock {
+Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBlock {
 	(Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object {($_ -split '\.')[3]} | Select -Unique
 }
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-OperatingSystem' -ScriptBlock {
+    if (-not $global:AL_OperatingSystems)
+    {
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache -NoDisplay
+    }
+
+    $global:AL_OperatingSystems.OperatingSystemName
+}
+
+Register-PSFTeppscriptblock -Name 'AutomatedLab-Labs' -ScriptBlock {
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    (Get-ChildItem -Path $path -Directory).Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-Roles' -ScriptBlock {
+    [System.Enum]::GetNames([AutomatedLab.Roles])
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-Domains' -ScriptBlock {
+    (Get-LabDefinition -ErrorAction SilentlyContinue).Domains.Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-ComputerName' -ScriptBlock {
+    (Get-LabVM -All -IncludeLinux -SkipConnectionInfo).Name
+}
+
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
+Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab -Parameter Name -Name 'AutomatedLab-Labs'
+Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
 #endregion

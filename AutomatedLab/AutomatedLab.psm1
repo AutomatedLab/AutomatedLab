@@ -578,7 +578,7 @@ function Import-Lab
     Write-ScreenInfo ("Lab '{0}' hosted on '{1}' imported with {2} machines" -f $Script:data.Name, $Script:data.DefaultVirtualizationEngine ,$Script:data.Machines.Count) -Type Info
 
     Register-LabArgumentCompleters
-
+    
     Write-LogFunctionExit -ReturnValue $true
 }
 #endregion Import-Lab
@@ -4177,46 +4177,4 @@ if (-not (Test-Path -Path $productKeyCustomFilePath))
     $store.Export($productKeyCustomFilePath)
 }
 
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName OperatingSystem -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    if (-not $global:AL_OperatingSystems)
-    {
-        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache |
-        Where-Object { ($_.ProductKey -or $_.OperatingSystemType -eq 'Linux') -and $_.OperatingSystemName -like "*$wordToComplete*" } |
-        Group-Object -Property OperatingSystemName |
-        ForEach-Object { $_.Group | Sort-Object -Property Version -Descending | Select-Object -First 1 } |
-        Sort-Object -Property OperatingSystemName
-    }
-
-    foreach ($os in $global:AL_OperatingSystems )
-    {
-        [System.Management.Automation.CompletionResult]::new("'$($os.OperatingSystemName)'", "'$($os.OperatingSystemName)'", 'ParameterValue', "$($os.Version) $($os.OperatingSystemName)")
-    }
-}
-
-Register-ArgumentCompleter -CommandName Import-Lab, Remove-Lab -ParameterName Name -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
-    Get-ChildItem -Path $path -Directory |
-    ForEach-Object {
-        if ($_.Name -contains ' ')
-        {
-            [System.Management.Automation.CompletionResult]::new("'$($_.Name)'", "'$($_.Name)'", 'ParameterValue', $_.Name)
-        }
-        else
-        {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
-}
-
-Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName Roles -ScriptBlock {
-    param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-    [System.Enum]::GetNames([AutomatedLab.Roles]) |
-    ForEach-Object {
-        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
-    }
-}
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter OperatingSystem -Name 'AutomatedLab-OperatingSystem'
