@@ -459,9 +459,9 @@ function Get-LabInternetFile
             
             [string]$FileName,
 
-            [switch]$NoDisplay,
+            [bool]$NoDisplay,
 
-            [switch]$Force
+            [bool]$Force
         )
 
         if (Test-Path -Path $Path -PathType Container)
@@ -521,6 +521,11 @@ function Get-LabInternetFile
                     {
                         Write-Verbose 'Responce received'
                         $remoteStream = $response.GetResponseStream()
+                        $parent = Split-Path -Path $Path
+                        if (-not (Test-Path -Path $Path))
+                        {
+                            New-Item -Path $parent -ItemType Directory -Force | Out-Null
+                        }
 
                         $localStream = [System.IO.File]::Create($Path)
 
@@ -536,7 +541,7 @@ function Get-LabInternetFile
                             $percentageCompleted = $bytesProcessed / $response.ContentLength
                             if ($percentageCompleted -gt 0)
                             {
-                                Write-Progress -Activity "Downloading file '$fileName'" `
+                                Write-Progress -Activity "Downloading file '$FileName'" `
                                 -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
                                 -PercentComplete ($percentageCompleted * 100)
                             }
@@ -582,7 +587,12 @@ function Get-LabInternetFile
         $machine = Get-LabVM -IsRunning | Select-Object -First 1
         Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $Uri, $Path -PassThru
+        $argumentList = $Uri, $Path, $FileName
+
+        $argumentList += if ($NoDisplay) {$true} else {$false}
+        $argumentList += if ($Force) {$true} else {$false}
+        
+        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
     }
     else
     {

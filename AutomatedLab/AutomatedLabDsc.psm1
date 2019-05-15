@@ -193,12 +193,14 @@ function Install-LabDscPullServer
         if ($machine.DefaultVirtualizationEngine -eq 'Azure')
         {
             Write-Verbose -Message ('Adding external port 8080 to Azure load balancer')
-            Add-LWAzureLoadBalancedPort -Port 8080 -ComputerName $machine -ErrorAction SilentlyContinue
+            (Get-Lab).AzureSettings.LoadBalancerPortCounter++
+            $remotePort = (Get-Lab).AzureSettings.LoadBalancerPortCounter
+            Add-LWAzureLoadBalancedPort -Port $remotePort -DestinationPort 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
         Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru | Out-Null
 
-        $cert = Request-LabCertificate -Subject "CN=*.$($machine.DomainName)" -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
+        $cert = Request-LabCertificate -Subject "CN=$($machine.Name)" -SAN $machine.Name, $machine.FQDN -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
 
         $setupParams = @{
             ComputerName = $machine

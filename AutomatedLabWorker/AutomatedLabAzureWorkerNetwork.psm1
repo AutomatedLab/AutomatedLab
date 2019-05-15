@@ -60,7 +60,7 @@ function New-LWAzureNetworkSwitch
 
         $azureNetworkParameters.Add('Subnet', $azureSubnets)
 
-        New-AzVirtualNetwork @azureNetworkParameters -Force -WarningAction SilentlyContinue -AsJob
+        New-AzVirtualNetwork @azureNetworkParameters -Force -AsJob
     }
 
     #Wait for network creation jobs and configure vnet peering
@@ -82,12 +82,12 @@ function New-LWAzureNetworkSwitch
         }
         else
         {
-            $sourceNetwork = Get-AzVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue
+            $sourceNetwork = Get-AzVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
             foreach ($connectedNetwork in $network.ConnectToVnets)
             {
                 # Configure bidirectional access
-                $remoteNetwork = Get-AzVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup) -WarningAction SilentlyContinue
+                $remoteNetwork = Get-AzVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
                 Write-Verbose -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
 
@@ -101,7 +101,7 @@ function New-LWAzureNetworkSwitch
 
                 if (-not $alreadyExists)
                 {
-                    Add-AzVirtualNetworkPeering -Name "$($network.Name)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                    Add-AzVirtualNetworkPeering -Name "$($network.Name)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop | Out-Null
                 }
 
                 $existingPeerings = Get-AzVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
@@ -114,7 +114,7 @@ function New-LWAzureNetworkSwitch
 
                 if (-not (Get-AzVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)))
                 {
-                    Add-AzVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                    Add-AzVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop | Out-Null
                 }
                 Write-Verbose -Message 'Peering successfully configured'
             }
@@ -219,7 +219,7 @@ function New-LWAzureLoadBalancer
         {
             $publicIp = New-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
                 -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
-                -DomainNameLabel $dnsLabel -ErrorAction SilentlyContinue -WarningAction SilentlyContinue
+                -DomainNameLabel $dnsLabel -ErrorAction SilentlyContinue
         }
 
         $frontendConfig = New-AzLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
@@ -233,7 +233,7 @@ function New-LWAzureLoadBalancer
             $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
         }
 
-        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -WarningAction SilentlyContinue -AsJob
+        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -AsJob
     }
 
     # If Wait is not used, return either nothing or the jobs
@@ -305,7 +305,7 @@ function Set-LWAzureDnsServer
 
         $azureVnet.DhcpOptions.DnsServers = New-Object -TypeName System.Collections.Generic.List[string]
         $network.DnsServers.AddressAsString | ForEach-Object { $azureVnet.DhcpOptions.DnsServers.Add($PSItem)}
-        $null = $azureVnet | Set-AzVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
+        $null = $azureVnet | Set-AzVirtualNetwork -ErrorAction Stop
 
         if ($PassThru)
         {
@@ -322,9 +322,13 @@ function Add-LWAzureLoadBalancedPort
 {
     param
     (
-        [Parameter()]
-        [int]
+        [Parameter(Mandatory)]
+        [uint16]
         $Port,
+
+        [Parameter(Mandatory)]
+        [uint16]
+        $DestinationPort,
 
         [Parameter(Mandatory)]
         [string]
@@ -335,16 +339,15 @@ function Add-LWAzureLoadBalancedPort
 
     if (Get-LabAzureLoadBalancedPort @PSBoundParameters)
     {
-        Write-Verbose -Message ('Port {0} already configured for {1}' -f $Port, $ComputerName)
+        Write-Verbose -Message ('Port {0} -> {1} already configured for {2}' -f $Port, $DestinationPort, $ComputerName)
         return
     }
 
     $lab = Get-Lab
-    $resourceGroup = $lab.Name
+    $resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     $machine = Get-LabVm -ComputerName $ComputerName
 
-
-    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
     {
         Write-Verbose "No load balancer found to add port rules to"
@@ -353,14 +356,7 @@ function Add-LWAzureLoadBalancedPort
 
     $frontendConfig = $lb | Get-AzLoadBalancerFrontendIpConfig
 
-    $lab.AzureSettings.LoadBalancerPortCounter++
-    $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
-
-    if (-not $Port)
-    {
-        $Port = $remotePort
-    }
-    $lb = Add-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())$Port" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $remotePort -BackendPort $Port
+    $lb = Add-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())-$Port-$DestinationPort" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $Port -BackendPort $DestinationPort
     $lb = $lb | Set-AzLoadBalancer
 
     $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
@@ -369,12 +365,12 @@ function Add-LWAzureLoadBalancedPort
     $nic.IpConfigurations[0].LoadBalancerInboundNatRules = $rules
     [void] ($nic | Set-AzNetworkInterface)
 
-    if (-not $machine.InternalNotes."AdditionalPort$Port")
+    if (-not $machine.InternalNotes."AdditionalPort-$Port-$DestinationPort")
     {
-        $machine.InternalNotes.Add("AdditionalPort$Port", $remotePort)
+        $machine.InternalNotes.Add("AdditionalPort-$Port-$DestinationPort", $DestinationPort)
     }
 
-    $machine.InternalNotes."AdditionalPort$Port" = $remotePort
+    $machine.InternalNotes."AdditionalPort-$Port-$DestinationPort" = $DestinationPort
 
     Export-Lab
 }
@@ -383,9 +379,13 @@ function Get-LWAzureLoadBalancedPort
 {
     param
     (
-
-        [int]
+        [Parameter()]
+        [uint16]
         $Port,
+
+        [Parameter()]
+        [uint16]
+        $DestinationPort,
 
         [Parameter(Mandatory)]
         [string]
@@ -397,44 +397,54 @@ function Get-LWAzureLoadBalancedPort
     $lab = Get-Lab
     $resourceGroup = $lab.Name
 
-    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup -WarningAction SilentlyContinue
+    $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
     {
         Write-Verbose "No load balancer found to list port rules of"
         return
     }
 
-    $existingConfiguration = if ($Port)
-    {
-        $lb | Get-AzLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -eq "$ComputerName$Port"
-    }
-    else
-    {
-        $lb | Get-AzLoadBalancerInboundNatRuleConfig | Where-Object -Property Name -like "$ComputerName*"
-    }
+    $existingConfiguration = $lb | Get-AzLoadBalancerInboundNatRuleConfig
 
-
+    # Port müssen unique sein, destination port + computername müssen unique sein
     if ($Port)
     {
-        return ($existingConfiguration | Where-Object -Property BackendPort -eq $Port)
+        $filteredRules = $existingConfiguration | Where-Object -Property FrontendPort -eq $Port
+
+        if (($filteredRules | Where-Object Name -notlike "$ComputerName*"))
+        {
+            $err = ($filteredRules | Where-Object Name -notlike "$ComputerName*")[0].Name
+            $existingComputer = $err.Substring(0, $err.IndexOf('-'))
+            Write-Error -Message ("Incoming port {0} is already mapped to {1}!" -f $Port, $existingComputer)
+            return
+        }
+
+        return $filteredRules
+    }
+    
+    if ($DestinationPort)
+    {
+        return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$ComputerName*"})
     }
 
-    return $existingConfiguration
+    return ($existingConfiguration | Where-Object -Property Name -like "$ComputerName*")
 }
 
 function Get-LabAzureLoadBalancedPort
 {
     param
     (
-        [int]
+        [Parameter()]
+        [uint16]
         $Port,
+
+        [uint16]
+        $DestinationPort,
 
         [Parameter(Mandatory)]
         [string]
         $ComputerName
     )
-
-    Test-LabHostConnected -Throw -Quiet
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
@@ -452,12 +462,28 @@ function Get-LabAzureLoadBalancedPort
         return
     }
 
-    if ($Port)
+    $ports = if ($DestinationPort -and $Port)
     {
-        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -eq "AdditionalPort$Port" | Select-Object -ExpandProperty Value
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -eq "AdditionalPort-$Port-$DestinationPort"
+    }
+    elseif ($DestinationPort)
+    {
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like "AdditionalPort-*-$DestinationPort"
+    }
+    elseif ($Port)
+    {
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like "AdditionalPort-$Port-*"
     }
     else
     {
-        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like 'AdditionalPort*' | Select-Object -ExpandProperty Value
+        $machine.InternalNotes.GetEnumerator() | Where-Object -Property Key -like 'AdditionalPort*'
+    }
+
+    $ports | Foreach-Object {
+        [pscustomobject]@{
+            Port = ($_.Key -split '-')[1]
+            DestinationPort = ($_.Key -split '-')[2]
+            ComputerName = $machine.Name
+        }
     }
 }

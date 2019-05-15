@@ -954,6 +954,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
+    {
+        Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
+
+        Install-LabHyperV
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode,FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
@@ -1059,12 +1068,17 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker))
+    if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps).Name -join ', ')'"
 
-        Start-LabVm -RoleName Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        $machinesToStart = Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps | Where-Object -Property SkipDeployment -eq $false
+        if ($machinesToStart)
+        {
+            Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        }
+        
         Install-LabTeamFoundationEnvironment
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
@@ -1175,7 +1189,7 @@ function Remove-Lab
         $jobs | Remove-Job -Force -ErrorAction SilentlyContinue
         Write-Verbose '...done'
 
-        if ((Get-LabVM | Where-Object HostType -eq Azure) -or (Get-LabAzureResourceGroup))
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
             Write-ScreenInfo -Message "Removing Resource Group '$labName' and all resources in this group"
             #without cloning the collection, a Runtime Exceptionis thrown: An error occurred while enumerating through a collection: Collection was modified; enumeration operation may not execute
@@ -2486,7 +2500,9 @@ function Install-LabSoftwarePackage
 
     Write-Verbose -Message "Starting background job for '$($parameters.ActivityName)'"
 
+    # Import module to import .NET types necessary
     $parameters.ScriptBlock = {
+        Import-Module AutomatedLab.Common
         Install-SoftwarePackage @installParams
     }
 
@@ -2496,6 +2512,9 @@ function Install-LabSoftwarePackage
     {
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
+
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name newtonsoft.json)[0] -Session (New-LabPSSession -ComputerName $ComputerName)
+    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common)[0] -Session (New-LabPSSession -ComputerName $ComputerName)
 
     $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
 
@@ -2776,8 +2795,8 @@ function New-LabPSSession
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
-                    #remove the existing session if connecting to Azure LabSoruce did not work in case the session connects to an Azure VM.
-                    Write-ScreenInfo "Removing session to '$internalSession.LabMachineName' as ALLabSourcesMapped was false" -Type Warning
+                    #remove the existing session if connecting to Azure LabSource did not work in case the session connects to an Azure VM.
+                    Write-ScreenInfo "Removing session to '$($internalSession.LabMachineName)' as ALLabSourcesMapped was false" -Type Warning
                     Remove-LabPSSession -ComputerName $internalSession.LabMachineName
                     $internalSession = $null
                 }
@@ -3121,10 +3140,11 @@ function Invoke-LabCommand
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-
+    
     if ($FilePath)
     {
-        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath)
+        $isLabPathIsOnLabAzureLabSourcesStorage = Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath
+        if ($isLabPathIsOnLabAzureLabSourcesStorage)
         {
             Write-Verbose "$FilePath is on Azure. Skipping test."
         }
@@ -3311,7 +3331,15 @@ function Invoke-LabCommand
 
         if ($FilePath)
         {
-            $scriptContent = Get-Content -Path $FilePath -Raw
+            $scriptContent = if ($isLabPathIsOnLabAzureLabSourcesStorage)
+            {
+                #if the script is on an Azure file storage, the host machine cannot access it. The read operation is done on the first Azure machine.
+                Invoke-LabCommand -ComputerName ($machines | Where-Object HostType -eq 'Azure')[0] -ScriptBlock { Get-Content -Path $FilePath -Raw } -Variable (Get-Variable -Name FilePath) -NoDisplay -PassThru
+            }
+            else
+            {
+                 Get-Content -Path $FilePath -Raw
+            }
             $ScriptBlock = [scriptblock]::Create($scriptContent)
         }
 
@@ -4229,6 +4257,3 @@ Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName 
         [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
     }
 }
-
-#Import available operating systms from cache (if available)
-#Get-LabAvailableOperatingSystem -Path $labSources\ISOs -NoDisplay | Out-Null

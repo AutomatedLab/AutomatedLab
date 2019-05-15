@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,13 +20,14 @@ namespace AutomatedLab
 
         public override IEnumerable<ValidationMessage> Validate()
         {
-            var sqlRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("Tfs2"));
+            var devopsRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => Regex.IsMatch(r.ToString(), @"Tfs\d{4}|AzDevOps"));
 
-            foreach (var role in sqlRoles)
+            foreach (var role in devopsRoles)
             {
-                var machines = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0 & m.HostType == VirtualizationHost.HyperV);
+                // SkipDeployment: It is an Azure DevOps hosted instance somewhere
+                var machines = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0 && !m.SkipDeployment);
 
-                if (machines.Count() > 0 & lab.Sources.ISOs.Where(iso => iso.Name == role.ToString()).Count() == 0)
+                if (machines.Count() > 0 && lab.Sources.ISOs.Where(iso => iso.Name == role.ToString()).Count() == 0)
                 {
                     yield return new ValidationMessage
                     {

@@ -33,7 +33,7 @@ else
     Write-ScreenInfo ".net Versions installed on '$proGetServer' are '$($installedDotnetVersion.Version -join ', ')', skipping .net Framework 4.5.2 installation"
 }
 
-if (-not (Test-LabMachineInternetConnectivity -ComputerName (Get-LabVM -Role Routing)))
+if (-not (Test-LabMachineInternetConnectivity -ComputerName $proGetServer))
 {
     Write-Error "The lab is not connected to the internet. Internet connectivity is required to install ProGet. Check the configuration on the machines with the Routing role."
     return
@@ -158,7 +158,7 @@ while (-not $isActivated -and $activationRetries -gt 0)
         iisreset.exe | Out-Null
 
         Start-Sleep -Seconds 30
-        Invoke-WebRequest -Uri http://localhost:80
+        Invoke-WebRequest -Uri http://localhost:80 -UseBasicParsing
         Start-Sleep -Seconds 30
 
     } -NoDisplay

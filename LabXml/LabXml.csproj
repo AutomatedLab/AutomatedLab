@@ -128,6 +128,8 @@
     <Compile Include="Validator\FailoverCluster\DuplicateClusterIp.cs" />
     <Compile Include="Validator\FailoverCluster\TooFewNodesForCluster.cs" />
     <Compile Include="Validator\FailoverCluster\ClusterOperatingSystem.cs" />
+    <Compile Include="Validator\HyperV\HyperVWrongOs.cs" />
+    <Compile Include="Validator\HyperV\HyperVWrongRoleSize.cs" />
     <Compile Include="Validator\LabInformation\LabNameContainsIllegalCharacters.cs" />
     <Compile Include="Validator\Machines\Azure\AzureSpecifiedRoleSizeNotFound.cs" />
     <Compile Include="Validator\Machines\Azure\AzureDoesSupportMax8NetworkAdapters.cs" />
@@ -159,6 +161,8 @@
     <Compile Include="Validator\Routing\RoutingRoleNotSupportedOnAzure.cs" />
     <Compile Include="Validator\Routing\RoutingMachineHasAtLeastTwoNetworkCards.cs" />
     <Compile Include="Validator\Sql\SqlIsosExist.cs" />
+    <Compile Include="Validator\Tfs\TfsSqlIsosExist.cs" />
+    <Compile Include="Validator\Tfs\HighlanderRole.cs" />
     <Compile Include="Validator\Tfs\TfsIsosExist.cs" />
     <Compile Include="Validator\ValidationMessage.cs" />
     <Compile Include="Validator\ValidatorBase.cs" />

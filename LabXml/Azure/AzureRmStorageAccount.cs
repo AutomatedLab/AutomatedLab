@@ -15,12 +15,6 @@ namespace AutomatedLab.Azure
         Unavailable
     }
 
-    public enum Kind
-    {
-        Storage,
-        BlobStorage
-    }
-
     public enum AccessTier
     {
         Hot,
@@ -33,7 +27,7 @@ namespace AutomatedLab.Azure
         public string StorageAccountName { get; set; }
         public DateTime? CreationTime { get; set; }
         public string Id { get; set; }
-        public Kind? Kind { get; set; }
+        public string Kind { get; set; }
         public AccessTier? AccessTier { get; set; }
         public DateTime? LastGeoFailoverTime { get; set; }
         public string PrimaryLocation { get; set; }

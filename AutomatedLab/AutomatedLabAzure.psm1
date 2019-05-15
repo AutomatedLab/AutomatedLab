@@ -93,7 +93,7 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
     
     # Select the subscription which is associated with this AzureRmProfile
-    $subscriptions = Get-AzSubscription -WarningAction SilentlyContinue
+    $subscriptions = Get-AzSubscription
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
     Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
 
@@ -176,7 +176,7 @@ function Add-LabAzureSubscription
     $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureRmResourceGroup]::Create($resourceGroups)
     Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
-    $storageAccounts = Get-AzStorageAccount -ResourceGroupName $DefaultResourceGroupName -WarningAction SilentlyContinue
+    $storageAccounts = Get-AzStorageAccount -ResourceGroupName $DefaultResourceGroupName
     foreach ($storageAccount in $storageAccounts)
     {
         $alStorageAccount = [AutomatedLab.Azure.AzureRmStorageAccount]::Create($storageAccount)
@@ -336,7 +336,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
     Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
-    $vms = Get-AzVM -WarningAction SilentlyContinue
+    $vms = Get-AzVM
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
     Write-Verbose "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
@@ -627,7 +627,7 @@ function New-LabAzureDefaultStorageAccount
         Write-ScreenInfo -Message "Creating a new storage account named '$storageAccountName' for location '$($param.Location)'"
     }
 
-    $result = New-AzStorageAccount @param -ErrorAction Stop -WarningAction SilentlyContinue
+    $result = New-AzStorageAccount @param -ErrorAction Stop
 
     if ($result.ProvisioningState -ne 'Succeeded')
     {
@@ -842,7 +842,7 @@ function Remove-LabAzureResourceGroup
             Write-ScreenInfo -Message "Removing the Resource Group '$name'" -Type Warning
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
-                Remove-AzResourceGroup -Name $name -Force:$Force -WarningAction SilentlyContinue | Out-Null
+                Remove-AzResourceGroup -Name $name -Force:$Force | Out-Null
                 Write-Verbose "Resource Group '$($name)' removed"
 
                 $resourceGroup = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
@@ -888,7 +888,14 @@ function Get-LabAzureResourceGroup
     }
     elseif ($CurrentLab)
     {
-        $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
+        $result = $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
+
+        if ($null -eq $result)
+        {
+            $result = $script:lab.AzureSettings.DefaultResourceGroup
+        }
+        
+        $result
     }
     else
     {
@@ -1024,7 +1031,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [string]$Path
     )
     
-    Test-LabHostConnected -Throw -Quiet
+    if (-not (Test-LabHostConnected)) { return $false }
 
     try
     {
@@ -1240,12 +1247,12 @@ function Get-LabAzureLabSourcesContent
 
     if ($File)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFile'}
+        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile'}
     }
 
     if ($Directory)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFileDirectory'}
+        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory'}
     }
 
     $content = $content |
@@ -1270,12 +1277,12 @@ function Get-LabAzureLabSourcesContentRecursive
     $temporaryContent = $StorageContext | Get-AzStorageFile
     foreach ($item in $temporaryContent)
     {
-        if ($item.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFileDirectory')
+        if ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory')
         {
             $content += $item
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.GetType().FullName -eq 'Microsoft.WindowsAzure.Storage.File.CloudFile')
+        elseif ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile')
         {
             $content += $item
         }

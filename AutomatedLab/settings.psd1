@@ -226,7 +226,7 @@
         DiskDeploymentInProgressPath           = 'C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt'
 
         #Azure
-        MinimumAzureModuleVersion              = '1.0'
+        MinimumAzureModuleVersion              = '2.0.0'
         DefaultAzureRoleSize                   = 'D'
         LabSourcesMaxFileSizeMb                = 50
 

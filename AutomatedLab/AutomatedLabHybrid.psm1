@@ -360,7 +360,7 @@ function Initialize-GatewayNetwork
     if (-not $gatewaySubnet)
     {
         $vnet | Add-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -AddressPrefix "$($gatewayNetworkAddress)/$($sourceMask)"
-        $vnet = $vnet | Set-AzVirtualNetwork -ErrorAction Stop -WarningAction SilentlyContinue
+        $vnet = $vnet | Set-AzVirtualNetwork -ErrorAction Stop
     }
 
     $vnet = (Get-LWAzureNetworkSwitch -VirtualNetwork $targetNetwork | Where-Object -Property ID)[0]
@@ -418,8 +418,8 @@ function Connect-OnPremisesWithAzure
     $publicIpParameters.Add('Force', $true)
 
     $gatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
-    $gatewayPublicIp = New-AzPublicIpAddress @publicIpParameters -WarningAction SilentlyContinue
-    $gatewayIpConfiguration = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id -WarningAction SilentlyContinue
+    $gatewayPublicIp = New-AzPublicIpAddress @publicIpParameters
+    $gatewayIpConfiguration = New-AzVirtualNetworkGatewayIpConfig -Name gwipconfig -SubnetId $gatewaySubnet.Id -PublicIpAddressId $gatewayPublicIp.Id
 
     $remoteGatewayParameters = $genericParameters.Clone()
     $remoteGatewayParameters.Add('Name', 's2sgw')
@@ -440,14 +440,14 @@ function Connect-OnPremisesWithAzure
     if (-not $gw)
     {
         Write-ScreenInfo -TaskStart -Message 'Creating Azure Virtual Network Gateway - this will take some time.'
-        $gw = New-AzVirtualNetworkGateway @remoteGatewayParameters -WarningAction SilentlyContinue
+        $gw = New-AzVirtualNetworkGateway @remoteGatewayParameters
         Write-ScreenInfo -TaskEnd -Message 'Virtual Network Gateway created.'
     }
 
     $onPremisesGw = Get-AzLocalNetworkGateway -Name onpremgw -ResourceGroupName $sourceResourceGroupName -ErrorAction SilentlyContinue
     if (-not $onPremisesGw -or $onPremisesGw.GatewayIpAddress -ne $labPublicIp)
     {
-        $onPremisesGw = New-AzLocalNetworkGateway @onPremGatewayParameters -WarningAction SilentlyContinue
+        $onPremisesGw = New-AzLocalNetworkGateway @onPremGatewayParameters
     }
 
     # Connection creation
@@ -460,7 +460,7 @@ function Connect-OnPremisesWithAzure
     $connectionParameters.Add('VirtualNetworkGateway1', $gw)
     $connectionParameters.Add('LocalNetworkGateway2', $onPremisesGw)
 
-    $conn = New-AzVirtualNetworkGatewayConnection @connectionParameters -WarningAction SilentlyContinue
+    $conn = New-AzVirtualNetworkGatewayConnection @connectionParameters
 
     # Step 3: Import the HyperV lab and install a Router if not already present
     Import-Lab $DestinationLab -NoValidation
