@@ -2,6 +2,23 @@
 
 ## Unreleased
 
+## 5.10.0 - 2019-05-15
+
+### Bug fixes
+
+- Fixed issue with Azure resource groups occasionally not getting removed
+- Azure port mapping for TFS, DSC Pull, ... improved
+- Bug with DSC SQL Database Creation for Pull Server fixed
+- Get-LabInternetFile on Azure fixed
+- Offline Hyper-V environments now don't complain about Azure-related things any more
+
+### Enhancements
+
+- Hyper-V role added for lab machines
+- Copy-LabFileItem now also copies hidden files
+- Using Az 2.0 now
+- Windows Admin Center implemented on Azure as well
+
 ## 5.9.0 - 2019-03-25
 
 ### Enhancements
