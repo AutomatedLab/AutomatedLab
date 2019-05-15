@@ -1732,7 +1732,9 @@ function Get-LabVM
 
         [switch]$IncludeLinux,
 
-        [switch]$IsRunning
+        [switch]$IsRunning,
+
+        [Switch]$SkipConnectionInfo
     )
 
     begin
@@ -1800,7 +1802,7 @@ function Get-LabVM
     {
         #Add Azure Connection Info
         $azureVMs = $Script:data.Machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
-        if ($azureVMs)
+        if ($azureVMs -and -not $SkipConnectionInfo.IsPresent)
         {
             $azureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $azureVMs
 
