@@ -57,7 +57,7 @@ before_build:
 
         Write-Host "Setting version number in files"
         Add-AppveyorMessage -Message "Setting version number in files" -Category Information
-        gci -Filter *.psd1 -Recurse | foreach {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName}
+        gci -Filter *.psd1 -Recurse | foreach {if ($_.Directory.Name -eq $_.BaseName) {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName} }
 
 build:
   project: AutomatedLab.sln
