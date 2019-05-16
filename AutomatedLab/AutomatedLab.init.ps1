@@ -15,11 +15,11 @@ if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedL
 
 Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarning -Value true
 
-Set-Alias -Name Write-Host -Value Write-PSFMessageProxy
-Set-Alias -Name Write-Error -Value Write-PSFMessageProxy
-Set-Alias -Name Write-Warning -Value Write-PSFMessageProxy
-Set-Alias -Name Write-Debug -Value Write-PSFMessageProxy
-Set-Alias -Name Write-Verbose -Value Write-PSFMessageProxy
+Set-Alias -Name Write-Host -Value Write-PSFMessageProxy -Scope Script
+Set-Alias -Name Write-Error -Value Write-PSFMessageProxy -Scope Script
+Set-Alias -Name Write-Warning -Value Write-PSFMessageProxy -Scope Script
+Set-Alias -Name Write-Debug -Value Write-PSFMessageProxy -Scope Script
+Set-Alias -Name Write-Verbose -Value Write-PSFMessageProxy -Scope Script
 
 #region Register default configuration if not present
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.Key' -Value 'Your IFTTT key here' -Initialize -Validation string -Description "IFTTT Key Name"
