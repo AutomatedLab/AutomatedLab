@@ -5,13 +5,13 @@
     
     CompanyName            = 'AutomatedLab Team'
 	
-	CompatiblePSEditions = 'Core', 'Desktop'
+    CompatiblePSEditions   = 'Core', 'Desktop'
     
-    Copyright              = '2018'
+    Copyright              = '2019'
     
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
-    PowerShellVersion      = '5.0'
+    PowerShellVersion      = '5.1'
     
     DotNetFrameworkVersion = '4.0'
     
@@ -21,11 +21,11 @@
 
     GUID                   = '35afbbac-f3d2-49a1-ad6e-abb89aac4349'
 
-    FunctionsToExport      = '*'
+    FunctionsToExport      = 'Send-ALNotification'
 
-    CmdletsToExport        = 'Send-ALNotification'
+    CmdletsToExport        = @()
 
-    VariablesToExport      = '*'
+    VariablesToExport      = @()
 
     AliasesToExport        = @()
 
@@ -33,7 +33,7 @@
         "Public\Send-ALNotification.ps1"
     )
 
-    PrivateData            = @{  }
+    PrivateData            = @{ }
 
     # HelpInfo URI of this module
     # HelpInfoURI = ''

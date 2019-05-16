@@ -108,4 +108,5 @@ New-PolarisDeleteRoute -Path /Lab -ScriptBlock {
 }
 
 Start-Polaris -Port 80
-Read-Host
+while ($true)
+{ sleep 1 }

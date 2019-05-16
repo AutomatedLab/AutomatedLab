@@ -2,6 +2,8 @@
     RootModule                = 'PSLog.psm1'
     
     ModuleVersion             = '1.0.0'
+	
+    CompatiblePSEditions   = 'Core', 'Desktop'
     
     GUID                      = 'cd303a6c-f405-4dcb-b1ce-fbc2c52264e9'
     
@@ -11,9 +13,9 @@
     
     CompanyName               = 'AutomatedLab Team'
     
-    Copyright                 = '2018'
+    Copyright                 = '2019'
     
-    PowerShellVersion         = '2.0'
+    PowerShellVersion         = '5.1'
     
     DotNetFrameworkVersion    = '3.5'
     

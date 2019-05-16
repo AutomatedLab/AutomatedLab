@@ -3,7 +3,7 @@
     
     ModuleVersion          = '1.0.0'
 	
-	CompatiblePSEditions   = 'Core', 'Desktop'
+    CompatiblePSEditions   = 'Core', 'Desktop'
     
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
     
@@ -11,11 +11,11 @@
     
     CompanyName            = 'AutomatedLab Team'
     
-    Copyright              = '2018'
+    Copyright              = '2019'
     
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
     
-    PowerShellVersion      = '5.0'
+    PowerShellVersion      = '5.1'
     
     DotNetFrameworkVersion = '4.0'
     
