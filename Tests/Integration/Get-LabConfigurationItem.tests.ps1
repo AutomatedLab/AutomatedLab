@@ -7,7 +7,6 @@ Copy-Item -Path $configurationPath -Destination (Join-Path (Get-Module Automated
 
 if (-not (Get-Module -List PSFramework)) {Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
-if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber}
 
 Import-Module -Name Newtonsoft.Json, PSFramework
 Import-Module -Name "$rootpath\..\..\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" -Force -Verbose

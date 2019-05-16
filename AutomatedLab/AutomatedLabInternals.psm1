@@ -475,7 +475,7 @@ function Get-LabInternetFile
         }
         else
         {
-            if (-not (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            if (-not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
             {
                 #machine does not have internet connectivity
                 if (-not $offlineNode)
