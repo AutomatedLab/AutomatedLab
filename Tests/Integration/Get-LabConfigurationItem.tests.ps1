@@ -1,5 +1,5 @@
 # Use settings.psd1 from build to check all settings
-#return # skipping tests for now
+return # skipping tests for now
 
 $rootpath = $PSScriptRoot
 
