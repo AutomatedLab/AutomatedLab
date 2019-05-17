@@ -91,7 +91,7 @@ function Invoke-LWCommand
     }
 
     $internalSession = New-Object System.Collections.ArrayList
-    $internalSession.AddRange($Session)
+    $internalSession.AddRange(($Session | Foreach-Object  {if ($_.SessionState -eq 'Broken'){New-LabPSSession -Session $_} else {$_}}) )
 
     if (-not $ActivityName)
     {
