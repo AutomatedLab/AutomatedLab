@@ -169,6 +169,7 @@ namespace AutomatedLab
         {
             get
             {
+                //get all keys mathing the OS name
                 var keys = productKeys.Where(pk => pk.OperatingSystemName == operatingSystemImageName).OrderByDescending(pk => (Version)pk.Version);
                 if (keys.Count() == 0)
                 {
@@ -178,18 +179,18 @@ namespace AutomatedLab
                 {
                     return keys.FirstOrDefault().Key;
                 }
-                else
+                else //if there is more than one key
                 {
-                    //get the keys matching the version OS version
-                    var keys2 = keys.Where(pk => (Version)pk.Version >= version).OrderByDescending(pk => (Version)pk.Version);
+                    // get the keys equals or greater thanthe OS version
+                    var keysOsVersion = keys.Where(pk => pk.Version >= version).OrderByDescending(pk => (Version)pk.Version);
 
-                    if (keys2.Count() == 0)
+                    if (keysOsVersion.Count() == 0)
                     {
-                        //if no keys are available, try the one with the highest version
-                        keys2 = keys.OrderByDescending(pk => (Version)pk.Version);
+                        //if no keys are available for the specific version, try the one with the highest version for the given OS
+                        keysOsVersion = keys.OrderByDescending(pk => (Version)pk.Version);
                     }
 
-                    return keys2.First().Key;
+                    return keysOsVersion.First().Key;
                 }
             }
         }
