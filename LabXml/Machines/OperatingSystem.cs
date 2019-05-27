@@ -180,8 +180,16 @@ namespace AutomatedLab
                 }
                 else
                 {
-                    keys = keys.Where(pk => pk.Version >= version).OrderByDescending(pk => (Version)pk.Version);
-                    return keys.Last().Key;
+                    //get the keys matching the version OS version
+                    var keys2 = keys.Where(pk => (Version)pk.Version >= version).OrderByDescending(pk => (Version)pk.Version);
+
+                    if (keys2.Count() == 0)
+                    {
+                        //if no keys are available, try the one with the highest version
+                        keys2 = keys.OrderByDescending(pk => (Version)pk.Version);
+                    }
+
+                    return keys2.First().Key;
                 }
             }
         }
