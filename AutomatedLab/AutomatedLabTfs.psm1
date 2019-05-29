@@ -313,7 +313,7 @@ function Install-LabBuildWorker
         if ($shouldExport) { Export-Lab }
 
         $tfsTest = Test-LabTfsEnvironment -ComputerName $tfsServer -NoDisplay
-        if ($tfsTest.ServerDeploymentOk -and $tfsTest.BuildWorker.Where({$_.WorkerDeploymentOk -and $_.Name -eq $machine.Name}))
+        if ($tfsTest.ServerDeploymentOk -and -not $tfsTest.BuildWorker[$machine.Name].WorkerDeploymentOk)
         {
             Write-ScreenInfo -Message "Build worker $machine assigned to $tfsServer appears to be configured. Skipping..."
             continue
@@ -1027,104 +1027,121 @@ function Test-LabTfsEnvironment
 
     $lab = Get-Lab -ErrorAction Stop
     $machine = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object -Property Name -eq $ComputerName
+    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
     
     if (-not $machine) { return }
+
+    if (-not $script:tfsDeploymentStatus)
+    {
+        $script:tfsDeploymentStatus = @{ }
+    }
     
-    $status = [pscustomobject]@{ServerDeploymentOk = $false; BuildWorker = @() }
-    $uri = Get-LabTfsUri -ComputerName $machine
-    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
-    $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
-    $initialCollection = 'AutomatedLab'
-    $tfsPort = 8080
-    $tfsInstance = $machine.FQDN
-    $credential = $machine.GetCredential((Get-Lab))
-    $useSsl = $machine.InternalNotes.ContainsKey('CertificateThumbprint')
+    if (-not $script:tfsDeploymentStatus.ContainsKey($ComputerName))
+    {
+        $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $false; BuildWorker = @{} }
+    }
+
+    if (-not $script:tfsDeploymentStatus[$ComputerName].ServerDeploymentOk)
+    {
+        $uri = Get-LabTfsUri -ComputerName $machine        
+        $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
+        $initialCollection = 'AutomatedLab'
+        $tfsPort = 8080
+        $tfsInstance = $machine.FQDN
+        $credential = $machine.GetCredential((Get-Lab))
+        $useSsl = $machine.InternalNotes.ContainsKey('CertificateThumbprint')
   
-    if ($role.Properties.ContainsKey('Port'))
-    {
-        $tfsPort = $role.Properties['Port']
-    }
+        if ($role.Properties.ContainsKey('Port'))
+        {
+            $tfsPort = $role.Properties['Port']
+        }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($machine.Roles.Name -eq 'AzDevOps' -and $machine.SkipDeployment))
-    {
-        $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue).FrontendPort
-        $tfsInstance = $machine.AzureConnectionInfo.DnsName
-    }
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($machine.Roles.Name -eq 'AzDevOps' -and $machine.SkipDeployment))
+        {
+            $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $machine -ErrorAction SilentlyContinue).FrontendPort
+            $tfsInstance = $machine.AzureConnectionInfo.DnsName
+        }
 
-    if ($role.Properties.ContainsKey('InitialCollection'))
-    {
-        $initialCollection = $role.Properties['InitialCollection']
-    }
+        if ($role.Properties.ContainsKey('InitialCollection'))
+        {
+            $initialCollection = $role.Properties['InitialCollection']
+        }
 
-    if ($machine.Roles.Name -eq 'AzDevOps' -and $machine.SkipDeployment)
-    {
-        $tfsInstance = 'dev.azure.com'
-        $initialCollection = $role.Properties['Organisation']
-        $accessToken = $role.Properties['PAT']
-    }
+        if ($machine.Roles.Name -eq 'AzDevOps' -and $machine.SkipDeployment)
+        {
+            $tfsInstance = 'dev.azure.com'
+            $initialCollection = $role.Properties['Organisation']
+            $accessToken = $role.Properties['PAT']
+        }
 
-    $defaultParam = @{
-        InstanceName   = $tfsInstance
-        Port           = $tfsPort
-        CollectionName = $initialCollection
-        UseSsl         = $useSsl
-        ErrorAction    = 'Stop'
-        ErrorVariable  = 'apiErr'
-    }
+        $defaultParam = @{
+            InstanceName   = $tfsInstance
+            Port           = $tfsPort
+            CollectionName = $initialCollection
+            UseSsl         = $useSsl
+            ErrorAction    = 'Stop'
+            ErrorVariable  = 'apiErr'
+        }
     
-    $defaultParam.ApiVersion = switch ($role.Name)
-    {
-        'Tfs2015' { '2.0'; break }
-        'Tfs2017' { '3.0'; break }
-        { $_ -match '2018|AzDevOps' } { '4.0'; break }
-        default { '2.0' }
-    }
+        $defaultParam.ApiVersion = switch ($role.Name)
+        {
+            'Tfs2015' { '2.0'; break }
+            'Tfs2017' { '3.0'; break }
+            { $_ -match '2018|AzDevOps' } { '4.0'; break }
+            default { '2.0' }
+        }
     
-    if ($accessToken)
-    {
-        $defaultParam.PersonalAccessToken = $accessToken
-    }
-    elseif ($credential)
-    {
-        $defaultParam.Credential = $credential
-    }
-
-    try
-    {
         if ($accessToken)
         {
-            $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Headers @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
+            $defaultParam.PersonalAccessToken = $accessToken
         }
-        else
+        elseif ($credential)
         {
-            $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Credential $credential
+            $defaultParam.Credential = $credential
         }
-    }
-    catch
-    {
-        Write-ScreenInfo -Type Error -Message "TFS URI $uri could not be accessed. Exception: $($_.Exception)"
-        return $status
-    }
 
-    try
-    {
-        $null = Get-TfsProject @defaultParam
-    }
-    catch
-    {
-        Write-ScreenInfo -Type Error -Message "TFS URI $uri accessible, but no API call was possible. Exception: $($apiErr)"
-        return $status
-    }
+        try
+        {
+            if ($accessToken)
+            {
+                $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Headers @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
+            }
+            else
+            {
+                $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Credential $credential
+            }
+        }
+        catch
+        {
+            Write-ScreenInfo -Type Error -Message "TFS URI $uri could not be accessed. Exception: $($_.Exception)"
+            return $script:tfsDeploymentStatus[$ComputerName]
+        }
 
-    $status.ServerDeploymentOk = $true
+        try
+        {
+            $null = Get-TfsProject @defaultParam
+        }
+        catch
+        {
+            Write-ScreenInfo -Type Error -Message "TFS URI $uri accessible, but no API call was possible. Exception: $($apiErr)"
+            return $script:tfsDeploymentStatus[$ComputerName]
+        }
+
+        $script:tfsDeploymentStatus[$ComputerName].ServerDeploymentOk = $true
+    }
 
     foreach ($worker in $assignedBuildWorkers)
     {
+        if ($script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name].WorkerDeploymentOk)
+        {
+            continue
+        }
+
         $svcRunning = Invoke-LabCommand -PassThru -ComputerName $worker -ScriptBlock { Get-Service -Name *vsts* } -NoDisplay
-        $status.BuildWorker += [pscustomobject]@{Name = $worker.Name; WorkerDeploymentOk = $svcRunning.Status -eq 'Running' }
+        $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name].WorkerDeploymentOk = $svcRunning.Status -eq 'Running'
     }
 
-    return $status
+    return $script:tfsDeploymentStatus[$ComputerName]
 }
 
 function Open-LabTfsSite
