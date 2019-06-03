@@ -1,0 +1,287 @@
+---
+external help file: AutomatedLab.Help.xml
+Module Name: automatedlab
+online version:
+schema: 2.0.0
+---
+
+# Start-LabVM
+
+## SYNOPSIS
+Start a machine
+
+## SYNTAX
+
+### ByName (Default)
+```
+Start-LabVM [[-ComputerName] <String[]>] [-Wait] [-DoNotUseCredSsp] [-NoNewline]
+ [-DelayBetweenComputers <Int32>] [-TimeoutInMinutes <Int32>] [-StartNextMachines <Int32>]
+ [-StartNextDomainControllers <Int32>] [-Domain <String>] [-RootDomainMachines] [-ProgressIndicator <Int32>]
+ [-PreDelaySeconds <Int32>] [-PostDelaySeconds <Int32>] [<CommonParameters>]
+```
+
+### ByRole
+```
+Start-LabVM -RoleName <Roles> [-Wait] [-DoNotUseCredSsp] [-NoNewline] [-DelayBetweenComputers <Int32>]
+ [-TimeoutInMinutes <Int32>] [-StartNextMachines <Int32>] [-StartNextDomainControllers <Int32>]
+ [-Domain <String>] [-RootDomainMachines] [-ProgressIndicator <Int32>] [-PreDelaySeconds <Int32>]
+ [-PostDelaySeconds <Int32>] [<CommonParameters>]
+```
+
+### All
+```
+Start-LabVM [-All] [-Wait] [-DoNotUseCredSsp] [-NoNewline] [-DelayBetweenComputers <Int32>]
+ [-TimeoutInMinutes <Int32>] [-StartNextMachines <Int32>] [-StartNextDomainControllers <Int32>]
+ [-Domain <String>] [-RootDomainMachines] [-ProgressIndicator <Int32>] [-PreDelaySeconds <Int32>]
+ [-PostDelaySeconds <Int32>] [<CommonParameters>]
+```
+
+## DESCRIPTION
+Starts one or more lab machines
+
+## EXAMPLES
+
+### Example 1
+```powershell
+PS C:\> {{ Add example code here }}
+```
+
+{{ Add example description here }}
+
+## PARAMETERS
+
+### -ComputerName
+The machines to start
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Wait
+Indicates that we should wait for the startup procedure to finish
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoNewline
+Indicates that no new lines should be present in the output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DelayBetweenComputers
+The delay in minutes between the computer startups
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeoutInMinutes
+The startup timeout in minutes
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartNextMachines
+Start the next n machines
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartNextDomainControllers
+Start the next n domain controllers
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Domain
+Starts all machines of a specific domain
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RootDomainMachines
+Start all machines of the root domain
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressIndicator
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreDelaySeconds
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostDelaySeconds
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RoleName
+The roles to start
+
+```yaml
+Type: Roles
+Parameter Sets: ByRole
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Start all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+@{Text=}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+## NOTES
+
+## RELATED LINKS
