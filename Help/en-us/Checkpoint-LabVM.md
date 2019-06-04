@@ -28,9 +28,8 @@ This function creates a checkpoint of a lab virtual machine running on HyperV
 ## EXAMPLES
 
 ### Example 1
-@{paragraph=PS C:\\\>}
 
-```
+```powershell
 Checkpoint-LabVM -All -SnapshotName 'FirstSnapshot'
 ```
 

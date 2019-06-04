@@ -3933,7 +3933,8 @@ function Add-LabVMUserRight
                 'SeSynchAgentPrivilege',
                 'SeTakeOwnershipPrivilege'
         )]
-        [string[]]$Priveleges
+        [Alias('Priveleges')]
+        [string[]]$Privilege
     )
 
     $Job = @()
@@ -3945,9 +3946,9 @@ function Add-LabVMUserRight
         $param.add('Right', $Right)
         $param.add('ComputerName', $Computer)
 
-        $Job += Invoke-LabCommand -ComputerName $Computer -ActivityName "Configure user rights '$($Priveleges -join ', ')' for user accounts: '$($UserName -join ', ')'" -NoDisplay -AsJob -PassThru -ScriptBlock {
-            Add-AccountPrivilege -UserName $UserName -Privilege $Priveleges
-        } -Variable (Get-Variable UserName, Priveleges) -Function (Get-Command Add-AccountPrivilege)
+        $Job += Invoke-LabCommand -ComputerName $Computer -ActivityName "Configure user rights '$($Privilege -join ', ')' for user accounts: '$($UserName -join ', ')'" -NoDisplay -AsJob -PassThru -ScriptBlock {
+            Add-AccountPrivilege -UserName $UserName -Privilege $Privilege
+        } -Variable (Get-Variable UserName, Privilege) -Function (Get-Command Add-AccountPrivilege)
     }
     Wait-LWLabJob -Job $Job -NoDisplay
 }

@@ -34,9 +34,8 @@ a machine with the Routing role and one external NIC.
 ## EXAMPLES
 
 ### On-Prem to Azure
-@{paragraph=PS C:\\\>}
 
-```
+```powershell
 Connect-Lab -SourceLab MyOnPremisesLab -DestinationLab MyAzureLab
 ```
 
@@ -46,9 +45,8 @@ On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public I
 On Hyper-V, S2SVPN will be enabled on the router.
 
 ### On-Prem to somewhere
-@{paragraph=PS C:\\\>}
 
-```
+```powershell
 Connect-Lab -SourceLab MyOnPremLab -DestinationIpAddress myvpngateway.mycompany.com -PreSharedKey VeryS3cureKey -AddressSpace @("192.168.30.0/24", "192.168.60.0/24", "192.168.90.0/24")
 ```
 

@@ -17,16 +17,16 @@ Clear-Lab [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Clears the variable $script:data to effectively clear the lab definition
+Clears the variable $script:data to effectively clear the current lab definition
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Clear-Lab
 ```
 
-{{ Add example description here }}
+Removes the current lab definition, so that e.g. Get-LabVm will not return anything any longer.
 
 ## PARAMETERS
 

@@ -13,7 +13,7 @@ Adds user rights on lab machines
 ## SYNTAX
 
 ```
-Add-LabVMUserRight -ComputerName <String[]> [-UserName <String[]>] [-Priveleges <String[]>]
+Add-LabVMUserRight -ComputerName <String[]> [-UserName <String[]>] [-Privilege <String[]>]
  [<CommonParameters>]
 ```
 
@@ -61,9 +61,8 @@ Adds user rights on a lab machine from the following rights:
 ## EXAMPLES
 
 ### Example 1
-@{paragraph=PS C:\\\>}
 
-```
+```powershell
 Add-LabVMUserRight -UserName 'domain\myServiceUser' -ComputerName FS1 -Priveleges SeInteractiveLogonRight,SeServiceLogonRight
 ```
 
@@ -101,13 +100,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Priveleges
+### -Privilege
 The array of rights to assign to the user
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases:
+Aliases: Priveleges
 
 Required: False
 Position: Named

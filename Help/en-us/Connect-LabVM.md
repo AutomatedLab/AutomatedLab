@@ -8,7 +8,7 @@ schema: 2.0.0
 # Connect-LabVM
 
 ## SYNOPSIS
-Connect to a lab VM
+Connect to a lab VM via Remote Desktop
 
 ## SYNTAX
 

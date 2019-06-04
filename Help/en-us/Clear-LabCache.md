@@ -18,15 +18,17 @@ Clear-LabCache [<CommonParameters>]
 
 ## DESCRIPTION
 Removes the automated lab cache from the Windows registry: HKEY_CURRENT_USER\Software\AutomatedLab\Cache
+Clearing the cache can solve issues with wrong operating systems being detected, or to simply
+reset all time stamps that are created.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Clear-LabCache -Verbose
 ```
 
-{{ Add example description here }}
+Clears the AutomatedLab cache for the current user
 
 ## PARAMETERS
 
