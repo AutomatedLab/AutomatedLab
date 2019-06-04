@@ -10,6 +10,9 @@ git reset --hard
 git submodule -q update --init --recursive
 git pull origin master
 
+# Compile Common libary
+dotnet build $SolutionDir\AutomatedLab.Common
+
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file AutomatedLab.Common.psd1'
 Copy-Item -Path $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1 -Destination $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file Includes.wxi'
@@ -30,3 +33,15 @@ Microsoft.PowerShell.Utility\Write-Host "Replacing version in 'AutomatedLab.Comm
 (Get-Content -Path .\AutomatedLab.Common\AutomatedLab.Common.psd1 -Raw) -replace "(ModuleVersion([ =]+))(')(?<Version>\d{1,2}\.\d{1,2}\.\d{1,2})", "`$1'$alCommonVersion" | Out-File -FilePath .\AutomatedLab.Common\AutomatedLab.Common.psd1
 
 Pop-Location
+
+# Update installer
+$commonDllCorePath = Join-Path -Path $SolutionDir -ChildPath 'AutomatedLab.Common\AutomatedLab.Common\lib\core'
+$commonDllPath = Join-Path -Path $SolutionDir -ChildPath 'AutomatedLab.Common\AutomatedLab.Common\lib\full'
+
+Microsoft.PowerShell.Utility\Write-Host "Locating libraries in $commonDllPath and $commonDllCorePath" #<File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psm1" />
+$newContentFull = Get-ChildItem -File -Filter *.dll -Path $commonDllPath | ForEach-Object { '<File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\lib\full\{0}" Id="{1}" />' -f $_.Name,"$($_.BaseName)full" }
+$newContentCore = Get-ChildItem -File -Filter *.dll -Path $commonDllCorePath | ForEach-Object { '<File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\lib\core\{0}" Id="{1}" />' -f $_.Name,"$($_.BaseName)core" }
+
+Microsoft.PowerShell.Utility\Write-Host "Creating backup of file product.wxs"
+Copy-Item -Path $SolutionDir\Installer\product.wxs -Destination $SolutionDir\Installer\product.wxs.original
+(Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8

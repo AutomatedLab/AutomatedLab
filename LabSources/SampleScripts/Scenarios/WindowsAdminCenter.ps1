@@ -9,7 +9,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2019 Datacenter'
 }
 
 # Domain
@@ -24,6 +24,9 @@ Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 # WAC Server
 $role = Get-LabPostInstallationActivity -CustomRole WindowsAdminCenter -Properties @{
     WacDownloadLink = 'http://aka.ms/WACDownload'
+    <# Remove the comment to enable developer mode
+    EnableDevMode   = 'True'
+    #>
 }
 Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles WebServer -PostInstallationActivity $role
 
