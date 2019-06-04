@@ -124,6 +124,7 @@ function Install-LabTeamFoundationServer
     {
         if (Get-LabIssuingCA)
         {
+            Write-ScreenInfo -Type Verbose -Message "Found CA in lab, requesting certificate"
             $cert = Request-LabCertificate -Subject "CN=$machine" -TemplateName WebServer -SAN $machine.AzureConnectionInfo.DnsName, $machine.FQDN, $machine.Name -ComputerName $machine -PassThru -ErrorAction Stop
             $machine.InternalNotes.Add('CertificateThumbprint', $cert.Thumbprint)
             Export-Lab
