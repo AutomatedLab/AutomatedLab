@@ -1,15 +1,29 @@
 if ($PSEdition -eq 'Core')
 {
-	Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
+    Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
+    
+    # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
+    # However, if they are not, they need to be imported.
+    $requiredModules = @('Dism', 'International')
+
+    foreach ($module in $requiredModules)
+    {
+        Import-Module -SkipEditionCheck -Name $module -ErrorAction SilentlyContinue -ErrorVariable +ipmoErr
+    }
+
+    if ($ipmoErr)
+    {
+        Write-PSFMessage -Level Warning -Message "Could not import modules: $($ipmoErr.TargetObject -join ',') - your experience might be impacted."
+    }
 }
 else
 {
-	Add-Type -Path $PSScriptRoot\lib\full\AutomatedLab.dll
+    Add-Type -Path $PSScriptRoot\lib\full\AutomatedLab.dll
 }
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
 {
-    Import-Module Ships,AutomatedLab.Ships
+    Import-Module Ships, AutomatedLab.Ships
     [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
 
@@ -294,7 +308,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 
 #region ArgumentCompleter
 Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBlock {
-	(Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object {($_ -split '\.')[3]} | Select -Unique
+    (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object { ($_ -split '\.')[3] } | Select -Unique
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-OperatingSystem' -ScriptBlock {

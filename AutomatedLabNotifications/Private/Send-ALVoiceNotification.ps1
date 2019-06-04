@@ -33,7 +33,7 @@ function Send-ALVoiceNotification
 
     if (-not $synth.Voice)
     {
-        Write-Warning -Message ('No voice installed for culture {0} and gender {1}' -f $culture, $gender)
+        Write-PSFMessage -Level Warning -Message ('No voice installed for culture {0} and gender {1}' -f $culture, $gender)
         return;
     }
     $synth.SetOutputToDefaultAudioDevice()

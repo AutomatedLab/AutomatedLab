@@ -415,7 +415,7 @@ function Save-LabVM
         {
             'HyperV' { Save-LWHypervVM -ComputerName $vms}
             'VMWare' { Save-LWVMWareVM -ComputerName $vms}
-            'Azure'  { Write-Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
+            'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
 
         Write-LogFunctionExit

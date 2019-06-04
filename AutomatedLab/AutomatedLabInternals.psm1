@@ -738,7 +738,7 @@ function Get-LabSourcesLocationInternal
 
         if ($folders.Count -gt 1)
         {
-            Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
+            Write-PSFMessage -Level Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
         }
 
         $folders
@@ -774,7 +774,7 @@ function Update-LabSysinternalsTools
         }
     }
     catch {
-        Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+        Write-PSFMessage -Level Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
     }
 
     try

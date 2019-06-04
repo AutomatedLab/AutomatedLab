@@ -471,7 +471,7 @@ function Get-LabAzureLocation
                 catch
                 {
                     9999
-                    #Write-Warning "$testUrl $($_.Exception.Message)"
+                    #Write-PSFMessage -Level Warning "$testUrl $($_.Exception.Message)"
                 }
             }
         }

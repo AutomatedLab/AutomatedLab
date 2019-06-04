@@ -28,6 +28,7 @@
     RequiredModules        = @(
         'AutomatedLabUnattended'
         'PSLog'
+        'PSFramework'
     )
 
     CmdletsToExport        = @()
