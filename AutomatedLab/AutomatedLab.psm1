@@ -3632,10 +3632,10 @@ function Set-LabInstallationCredential
 
             if ($checks -lt 4)
             {
-                Write-Host 'Password must be have minimum length of 8'
-                Write-Host 'Password must contain minimum one upper case character'
-                Write-Host 'Password must contain minimum one lower case character'
-                Write-Host 'Password must contain minimum one special character'
+                Write-PSFMessage -Level Host 'Password must be have minimum length of 8'
+                Write-PSFMessage -Level Host 'Password must contain minimum one upper case character'
+                Write-PSFMessage -Level Host 'Password must contain minimum one lower case character'
+                Write-PSFMessage -Level Host 'Password must contain minimum one special character'
             }
         }
         until ($checks -ge 4 -or (-not $promptUser) -or (-not $promptPassword) -or $promptPassword -eq 'x')

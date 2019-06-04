@@ -87,8 +87,8 @@ function Invoke-LabScript
     })
     $result.PSObject.TypeNames.Insert(0, 'AutomatedLab.TestResult')
 
-    Write-Host "Invoking script '$Path'"
-    Write-Host '-------------------------------------------------------------'
+    Write-PSFMessage -Level Host "Invoking script '$Path'"
+    Write-PSFMessage -Level Host '-------------------------------------------------------------'
     try
     {
         Clear-Host
@@ -125,8 +125,8 @@ function Invoke-LabScript
 
         $result.RemoveErrors = $removeErrors
 
-        Write-Host '-------------------------------------------------------------'
-        Write-Host "Finished invkoing script '$Path'"
+        Write-PSFMessage -Level Host '-------------------------------------------------------------'
+        Write-PSFMessage -Level Host "Finished invkoing script '$Path'"
 
         $result
     }

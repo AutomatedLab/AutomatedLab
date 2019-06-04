@@ -418,71 +418,71 @@ function Update-LabIsoImage
         return
     }
 
-    Write-Host 'Creating an updated ISO from'
-    Write-Host "Target path             $TargetIsoImagePath"
-    Write-Host "Source path             $SourceIsoImagePath"
-    Write-Host "with updates from path  $UpdateFolderPath"
-    Write-Host
-    Write-Host "This process can take a long time, depending on the number of updates"
+    Write-PSFMessage -Level Host 'Creating an updated ISO from'
+    Write-PSFMessage -Level Host "Target path             $TargetIsoImagePath"
+    Write-PSFMessage -Level Host "Source path             $SourceIsoImagePath"
+    Write-PSFMessage -Level Host "with updates from path  $UpdateFolderPath"
+    Write-PSFMessage -Level Host
+    Write-PSFMessage -Level Host "This process can take a long time, depending on the number of updates"
     $start = Get-Date
-    Write-Host "Start time: $start"
+    Write-PSFMessage -Level Host "Start time: $start"
 
     $extractTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
     $mountTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
 
     $isoImageName = Get-IsoImageName -IsoImagePath $SourceIsoImagePath
 
-    Write-Host "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
+    Write-PSFMessage -Level Host "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
     Extract-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
 
     $installWim = Get-ChildItem -Path $extractTempFolder -Filter install.wim -Recurse
-    Write-Host "Working with '$installWim'"
-    Write-Host "Exporting install.wim to $labSources"
+    Write-PSFMessage -Level Host "Working with '$installWim'"
+    Write-PSFMessage -Level Host "Exporting install.wim to $labSources"
     Export-WindowsImage -SourceImagePath $installWim.FullName -DestinationImagePath $labSources\install.wim -SourceIndex $SourceImageIndex
 
     $windowsImage = Get-WindowsImage -ImagePath $labSources\install.wim
-    Write-Host "The Windows Image exported is named '$($windowsImage.ImageName)'"
-    Write-Host
+    Write-PSFMessage -Level Host "The Windows Image exported is named '$($windowsImage.ImageName)'"
+    Write-PSFMessage -Level Host
 
     $patches = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu, *.cab
-    Write-Host "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
+    Write-PSFMessage -Level Host "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
 
-    Write-Host "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
+    Write-PSFMessage -Level Host "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $windowsImage.ImagePath -Index 1
 
-    Write-Host
-    Write-Host "Adding patches to the mounted Windows Image. This can take quite some time..."
+    Write-PSFMessage -Level Host
+    Write-PSFMessage -Level Host "Adding patches to the mounted Windows Image. This can take quite some time..."
     foreach ($patch in $patches)
     {
-        Write-Host "Adding patch '$($patch.Name)'..." -NoNewline
+        Write-PSFMessage -Level Host "Adding patch '$($patch.Name)'..." -NoNewline
         Add-WindowsPackage -PackagePath $patch.FullName -Path $mountTempFolder | Out-Null
-        Write-Host 'finished'
+        Write-PSFMessage -Level Host 'finished'
     }
-    Write-Host
+    Write-PSFMessage -Level Host
 
-    Write-Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
+    Write-PSFMessage -Level Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
     Dismount-WindowsImage -Path $mountTempFolder -Save
-    Write-Host 'finished'
+    Write-PSFMessage -Level Host 'finished'
 
-    Write-Host "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
+    Write-PSFMessage -Level Host "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
     Move-Item -Path $labsources\install.wim -Destination $extractTempFolder\sources -Force
-    Write-Host
+    Write-PSFMessage -Level Host
 
-    Write-Host "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..." -NoNewline
+    Write-PSFMessage -Level Host "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..." -NoNewline
     $cmd = "$labSources\Tools\oscdimg.exe -m -o -u2 -l$isoImageName -udfver102 -bootdata:2#p0,e,b$extractTempFolder\boot\etfsboot.com#pEF,e,b$extractTempFolder\efi\microsoft\boot\efisys.bin $extractTempFolder $TargetIsoImagePath"
     Write-PSFMessage $cmd
     $global:oscdimgResult = Invoke-Expression -Command $cmd 2>&1
-    Write-Host 'finished'
+    Write-PSFMessage -Level Host 'finished'
 
-    Write-Host "Deleting temp folder '$extractTempFolder'"
+    Write-PSFMessage -Level Host "Deleting temp folder '$extractTempFolder'"
     Remove-Item -Path $extractTempFolder -Recurse -Force
 
-    Write-Host "Deleting temp folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host "Deleting temp folder '$mountTempFolder'"
     Remove-Item -Path $mountTempFolder -Recurse -Force
 
-    Write-Host
+    Write-PSFMessage -Level Host
     $end = Get-Date
-    Write-Host "finished at $end. Runtime: $($end - $start)"
+    Write-PSFMessage -Level Host "finished at $end. Runtime: $($end - $start)"
 }
 #endregion Update-LabIsoImage
 
@@ -519,31 +519,31 @@ function Update-LabBaseImage
         return
     }
 
-    Write-Host 'Updating base image'
-    Write-Host $BaseImagePath
-    Write-Host "with $($patchesCab.Count + $patchesMsu.Count) updates from"
-    Write-Host $UpdateFolderPath
-    Write-Host
-    Write-Host 'This process can take a long time, depending on the number of updates'
+    Write-PSFMessage -Level Host 'Updating base image'
+    Write-PSFMessage -Level Host $BaseImagePath
+    Write-PSFMessage -Level Host "with $($patchesCab.Count + $patchesMsu.Count) updates from"
+    Write-PSFMessage -Level Host $UpdateFolderPath
+    Write-PSFMessage -Level Host
+    Write-PSFMessage -Level Host 'This process can take a long time, depending on the number of updates'
 
     $start = Get-Date
-    Write-Host "Start time: $start"
+    Write-PSFMessage -Level Host "Start time: $start"
 
-    Write-Host 'Creating temp folder (mount point)'
+    Write-PSFMessage -Level Host 'Creating temp folder (mount point)'
     $mountTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
 
-    Write-Host "Mounting Windows Image '$BaseImagePath'"
-    Write-Host "to folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host "Mounting Windows Image '$BaseImagePath'"
+    Write-PSFMessage -Level Host "to folder '$mountTempFolder'"
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $BaseImagePath -Index 1
 
-    Write-Host 'Adding patches to the mounted Windows Image.'
+    Write-PSFMessage -Level Host 'Adding patches to the mounted Windows Image.'
     $patchesCab | ForEach-Object {
 
         $UpdateReady = Get-WindowsPackage -PackagePath $_ -Path $mountTempFolder | Select-Object -Property PackageState, PackageName, Applicable
 
         if ($UpdateReady.PackageState -eq 'Installed')
         {
-            Write-Host "$($UpdateReady.PackageName) is already installed"
+            Write-PSFMessage -Level Host "$($UpdateReady.PackageName) is already installed"
         }
         elseif ($UpdateReady.Applicable -eq $true)
         {
@@ -555,14 +555,14 @@ function Update-LabBaseImage
         Add-WindowsPackage -PackagePath $_.FullName -Path $mountTempFolder
     }
 
-    Write-Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
+    Write-PSFMessage -Level Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
     Dismount-WindowsImage -Path $mountTempFolder -Save
-    Write-Host 'finished'
+    Write-PSFMessage -Level Host 'finished'
 
-    Write-Host "Deleting temp folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host "Deleting temp folder '$mountTempFolder'"
     Remove-Item -Path $mountTempFolder -Recurse -Force
 
     $end = Get-Date
-    Write-Host "finished at $end. Runtime: $($end - $start)"
+    Write-PSFMessage -Level Host "finished at $end. Runtime: $($end - $start)"
 }
 #endregion Update-LabBaseImage

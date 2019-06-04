@@ -705,22 +705,22 @@ function New-LabDefinition
     {
         $osName = $((Get-CimInstance -ClassName Win32_OperatingSystem).Caption.PadRight(10))
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
-        Write-Host '***************************************************************************'
-        Write-Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        Write-Host
-        Write-Host '   Operating System detected as:'
-        Write-Host "     Name:  $osName"
-        Write-Host "     Build: $osBuild"
-        Write-Host
-        Write-Host ' AutomatedLab is supported on the following virtualization platforms'
-        Write-Host
-        Write-Host ' - Microsoft Azure'
-        Write-Host ' - Windows 2016 1607 or newer'
-        Write-Host ' - Windows 10 1607 or newer'
-        Write-Host ' - Windows 8.1 Professional or Enterprise'
-        Write-Host ' - Windows 2012 R2'
+        Write-PSFMessage -Level Host '***************************************************************************'
+        Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host '   Operating System detected as:'
+        Write-PSFMessage -Level Host "     Name:  $osName"
+        Write-PSFMessage -Level Host "     Build: $osBuild"
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ' AutomatedLab is supported on the following virtualization platforms'
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ' - Microsoft Azure'
+        Write-PSFMessage -Level Host ' - Windows 2016 1607 or newer'
+        Write-PSFMessage -Level Host ' - Windows 10 1607 or newer'
+        Write-PSFMessage -Level Host ' - Windows 8.1 Professional or Enterprise'
+        Write-PSFMessage -Level Host ' - Windows 2012 R2'
 
-        Write-Host '***************************************************************************'
+        Write-PSFMessage -Level Host '***************************************************************************'
     }
 
     #settings for a new log
