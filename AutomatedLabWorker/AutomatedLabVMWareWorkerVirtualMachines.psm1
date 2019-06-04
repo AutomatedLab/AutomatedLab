@@ -346,7 +346,7 @@ function Wait-LWVMWareRestartVM
 
     $start = Get-Date
 
-    Write-Verbose "Starting monitoring the servers at '$start'"
+    Write-PSFMessage "Starting monitoring the servers at '$start'"
 
     $machines = Get-LabVM -ComputerName $ComputerName
 
@@ -368,7 +368,7 @@ function Wait-LWVMWareRestartVM
 
             if ($events)
             {
-                Write-Verbose "VM '$machine' has been restarted"
+                Write-PSFMessage "VM '$machine' has been restarted"
             }
             else
             {

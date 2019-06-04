@@ -24,7 +24,7 @@ function Send-ALToastNotification
 
     if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
     {
-        Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Core'
+        Write-PSFMessage -Message 'No toasts for OS version < 6.3 or Server Core'
         return
     }
     
@@ -62,6 +62,6 @@ function Send-ALToastNotification
     }
     catch
     {
-        Write-Verbose "Error sending toast notification: $($_.Exception.Message)"
+        Write-PSFMessage "Error sending toast notification: $($_.Exception.Message)"
     }
 }

@@ -32,24 +32,24 @@ function New-LWReferenceVHDX
 
     # Get start time
     $start = Get-Date
-    Write-Verbose "Beginning at $start"
+    Write-PSFMessage "Beginning at $start"
 
     try
     {
         $FDVDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
 
         $imageList = Get-LabAvailableOperatingSystem -Path $IsoOsPath
-        Write-Verbose "The Windows Image list contains $($imageList.Count) items"
+        Write-PSFMessage "The Windows Image list contains $($imageList.Count) items"
 
-        Write-Verbose "Mounting ISO image '$IsoOsPath'"
+        Write-PSFMessage "Mounting ISO image '$IsoOsPath'"
         [void] (Mount-DiskImage -ImagePath $IsoOsPath)
 
-        Write-Verbose 'Getting disk image of the ISO'
+        Write-PSFMessage 'Getting disk image of the ISO'
         $isoImage = Get-DiskImage -ImagePath $IsoOsPath | Get-Volume
-        Write-Verbose "Got disk image '$($isoImage.DriveLetter)'"
+        Write-PSFMessage "Got disk image '$($isoImage.DriveLetter)'"
 
         $isoDrive = "$($isoImage.DriveLetter):"
-        Write-Verbose "OS ISO mounted on drive letter '$isoDrive'"
+        Write-PSFMessage "OS ISO mounted on drive letter '$isoDrive'"
 
         $image = $imageList | Where-Object OperatingSystemName -eq $OsName
 
@@ -59,17 +59,17 @@ function New-LWReferenceVHDX
         }
 
         $imageIndex = $image.ImageIndex
-        Write-Verbose "Selected image index '$imageIndex' with name '$($image.ImageName)'"
+        Write-PSFMessage "Selected image index '$imageIndex' with name '$($image.ImageName)'"
 
         $vmDisk = New-VHD -Path $ReferenceVhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
-        Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
+        Write-PSFMessage "Created VHDX file '$($vmDisk.Path)'"
 
         Write-ScreenInfo -Message "Creating base image for operating system '$OsName'" -NoNewLine -TaskStart
 
         [void] (Mount-DiskImage -ImagePath $ReferenceVhdxPath)
         $vhdDisk = Get-DiskImage -ImagePath $ReferenceVhdxPath | Get-Disk
         $vhdDiskNumber = [string]$vhdDisk.Number
-        Write-Verbose "Reference image is on disk number '$vhdDiskNumber'"
+        Write-PSFMessage "Reference image is on disk number '$vhdDiskNumber'"
 
         Initialize-Disk -Number $vhdDiskNumber -PartitionStyle $PartitionStyle | Out-Null
         if ($PartitionStyle -eq 'MBR')
@@ -116,15 +116,15 @@ exit
         }
 
         $vhdWindowsVolume = "$($vhdWindowsDrive.DriveLetter):"
-        Write-Verbose "VHD drive '$vhdWindowsDrive', Vhd volume '$vhdWindowsVolume'"
+        Write-PSFMessage "VHD drive '$vhdWindowsDrive', Vhd volume '$vhdWindowsVolume'"
 
-        Write-Verbose "Disabling Bitlocker Drive Encryption on drive $vhdWindowsVolume"
+        Write-PSFMessage "Disabling Bitlocker Drive Encryption on drive $vhdWindowsVolume"
         if (Test-Path -Path C:\Windows\System32\manage-bde.exe)
         {
             manage-bde.exe -off $vhdWindowsVolume | Out-Null #without this on some devices (for exmaple Surface 3) the VHD was auto-encrypted
         }
 
-        Write-Verbose 'Applying image to the volume...'
+        Write-PSFMessage 'Applying image to the volume...'
 
         $wimPath = "$isoDrive\Sources\install.wim"
         $job = Start-Job -ScriptBlock {
@@ -143,7 +143,7 @@ exit
         }
         Start-Sleep -Seconds 5
 
-        Write-Verbose 'Setting BCDBoot'
+        Write-PSFMessage 'Setting BCDBoot'
         if ($PartitionStyle -eq 'MBR')
         {
             bcdboot.exe $vhdWindowsVolume\Windows /s $vhdWindowsVolume /f BIOS | Out-Null
@@ -176,7 +176,7 @@ exit
     }
     catch
     {
-        Write-Verbose 'Dismounting ISO and new disk'
+        Write-PSFMessage 'Dismounting ISO and new disk'
         [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
         [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
         Remove-Item -Path $ReferenceVhdxPath -Force #removing as the creation did not succeed
@@ -187,7 +187,7 @@ exit
         throw $_.Exception
     }
 
-    Write-Verbose 'Dismounting ISO and new disk'
+    Write-PSFMessage 'Dismounting ISO and new disk'
     [void] (Dismount-DiskImage -ImagePath $ReferenceVhdxPath)
     [void] (Dismount-DiskImage -ImagePath $IsoOsPath)
     if ($FDVDenyWriteAccess) {
@@ -196,7 +196,7 @@ exit
     Write-ScreenInfo -Message 'Finished creating base image' -TaskEnd
 
     $end = Get-Date
-    Write-Verbose "Runtime: '$($end - $start)'"
+    Write-PSFMessage "Runtime: '$($end - $start)'"
 
     Write-LogFunctionExit
 }
@@ -232,11 +232,11 @@ function New-LWVHDX
 
     $VmDisk = New-VHD -Path $VhdxPath -SizeBytes ($SizeInGB * 1GB) -ErrorAction Stop
     Write-ProgressIndicator
-    Write-Verbose "Created VHDX file '$($vmDisk.Path)'"
+    Write-PSFMessage "Created VHDX file '$($vmDisk.Path)'"
 
     if ($SkipInitialize)
     {
-        Write-Verbose -Message "Skipping the initialization of '$($vmDisk.Path)'"
+        Write-PSFMessage -Message "Skipping the initialization of '$($vmDisk.Path)'"
         Write-LogFunctionExit
         return
     }
@@ -295,7 +295,7 @@ function Remove-LWVHDX
     else
     {
         $VmDisk | Remove-Item
-        Write-Verbose "VHDX '$($vmDisk.Path)' removed"
+        Write-PSFMessage "VHDX '$($vmDisk.Path)' removed"
     }
 
     Write-LogFunctionExit

@@ -24,4 +24,6 @@
     FunctionsToExport      = 'Copy-LabFileItem', 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
 	
     FileList               = @('PSFileTransfer.psm1', 'PSFileTransfer.psd1')
+
+    RequiredModules        = @('PSFramework')
 }

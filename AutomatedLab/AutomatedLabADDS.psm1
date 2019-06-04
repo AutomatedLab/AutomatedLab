@@ -1013,7 +1013,7 @@ function Install-LabRootDcs
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role RootDC) -ProgressIndicator 30 -NoNewLine
 
         #Need to make sure that A records for domain is registered
-        Write-Verbose -Message 'Restarting DNS and Netlogon service on Root Domain Controllers'
+        Write-PSFMessage -Message 'Restarting DNS and Netlogon service on Root Domain Controllers'
         $jobs = @()
         foreach ($dc in (@(Get-LabVM -Role RootDC)))
         {
@@ -1153,7 +1153,7 @@ function Install-LabFirstChildDcs
             if ($NewDomainName.Contains('.'))
             {
                 $parentDc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object DomainName -eq $ParentDomainName
-                Write-Verbose -Message "Setting up a new domain tree hence creating a stub zone on Domain Controller '$($parentDc.Name)'"
+                Write-PSFMessage -Message "Setting up a new domain tree hence creating a stub zone on Domain Controller '$($parentDc.Name)'"
 
                 $cmd = "dnscmd . /zoneadd $NewDomainName /dsstub $((Get-LabVM -Role RootDC,FirstChildDC,DC | Where-Object DomainName -eq $NewDomainName).IpV4Address -join ', ') /dp /forest"
 
@@ -1161,7 +1161,7 @@ function Install-LabFirstChildDcs
                 Invoke-LabCommand -ActivityName 'Restart DNS' -ComputerName $parentDc -ScriptBlock { Restart-Service -Name Dns } -NoDisplay
             }
 
-            Write-Verbose -Message 'Invoking script block for DC installation and promotion'
+            Write-PSFMessage -Message 'Invoking script block for DC installation and promotion'
             if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptBlock = $adInstallFirstChildDcPre2012
@@ -1301,7 +1301,7 @@ function Install-LabFirstChildDcs
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role FirstChildDC) -ProgressIndicator 20 -NoNewLine
 
-        Write-Verbose -Message 'Restarting DNS and Netlogon services on Root and Child Domain Controllers and triggering replication'
+        Write-PSFMessage -Message 'Restarting DNS and Netlogon services on Root and Child Domain Controllers and triggering replication'
         $jobs = @()
         foreach ($dc in (@(Get-LabVM -Role RootDC)))
         {
@@ -1439,7 +1439,7 @@ function Install-LabDcs
             $parentDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $lab.GetParentDomain($machine.DomainName).Name
             $parentCredential = $parentDc.GetCredential((Get-Lab))
 
-            Write-Verbose -Message 'Invoking script block for DC installation and promotion'
+            Write-PSFMessage -Message 'Invoking script block for DC installation and promotion'
             if ($machine.OperatingSystem.Version -lt 6.2)
             {
                 $scriptblock = $adInstallDcPre2012
@@ -1549,7 +1549,7 @@ function Install-LabDcs
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
 
-        Write-Verbose -Message 'Restarting DNS and Netlogon services on all Domain Controllers and triggering replication'
+        Write-PSFMessage -Message 'Restarting DNS and Netlogon services on all Domain Controllers and triggering replication'
         $jobs = @()
         foreach ($dc in (Get-LabVM -Role RootDC))
         {
@@ -1634,7 +1634,7 @@ function Wait-LabADReady
 
             if (-not $machine.AdRetries)
             {
-                Write-Verbose -Message "Active Directory is now ready on Domain Controller '$machine'"
+                Write-PSFMessage -Message "Active Directory is now ready on Domain Controller '$machine'"
             }
             else
             {
@@ -1672,8 +1672,8 @@ function Wait-LabADReady
 
     if (($machines.AdRetries | Measure-Object -Maximum).Maximum -le 0)
     {
-        Write-Verbose -Message 'Domain Controllers specified are now ready:'
-        Write-Verbose -Message ($machines.Name -join ', ')
+        Write-PSFMessage -Message 'Domain Controllers specified are now ready:'
+        Write-PSFMessage -Message ($machines.Name -join ', ')
     }
     else
     {
@@ -1805,7 +1805,7 @@ function Sync-LabActiveDirectory
     {
         if (-not $machine.DomainName)
         {
-            Write-Verbose -Message 'The machine is not domain joined hence AD replication cannot be triggered'
+            Write-PSFMessage -Message 'The machine is not domain joined hence AD replication cannot be triggered'
             return
         }
 
@@ -1990,7 +1990,7 @@ function New-LabADSubnet
         $subnetMask = ($machine.IpAddress -split '/')[1] | ConvertTo-Mask
 
         $networkInfo = Get-NetworkSummary -IPAddress $ipAddress -SubnetMask $subnetMask
-        Write-Verbose -Message "Creating subnet '$($networkInfo.Network)' with mask '$($networkInfo.MaskLength)' on machine '$($machine.Name)'"
+        Write-PSFMessage -Message "Creating subnet '$($networkInfo.Network)' with mask '$($networkInfo.MaskLength)' on machine '$($machine.Name)'"
 
         #if the machine is not a Root Domain Controller
         if (-not ($machine.Roles | Where-Object { $_.Name -eq 'RootDC'}))
@@ -2042,15 +2042,15 @@ function New-LabADSite
 
     if (-not $dcRole)
     {
-        Write-Verbose "No Domain Controller roles found on computer '$Computer'"
+        Write-PSFMessage "No Domain Controller roles found on computer '$Computer'"
         return
     }
 
-    Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
+    Write-PSFMessage -Message "Try to find domain root machine for '$ComputerName'"
     $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $machine.DomainName
     if (-not $rootDc)
     {
-        Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
+        Write-PSFMessage -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
         $domain = $lab.Domains | Where-Object Name -eq $machine.DomainName
         if (-not $lab.IsRootDomain($domain))
@@ -2144,7 +2144,7 @@ function Move-LabDomainController
 
     if (-not $dcRole)
     {
-        Write-Verbose "No Domain Controller roles found on computer '$ComputerName'"
+        Write-PSFMessage "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
     
@@ -2160,11 +2160,11 @@ function Move-LabDomainController
         $lab.GetParentDomain($machine.DomainName)
     }
 
-    Write-Verbose -Message "Try to find domain root machine for '$ComputerName'"
+    Write-PSFMessage -Message "Try to find domain root machine for '$ComputerName'"
     $domainRootMachine = Get-LabVM -Role RootDC | Where-Object DomainName -eq $forest
     if (-not $domainRootMachine)
     {
-        Write-Verbose -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
+        Write-PSFMessage -Message "No RootDC found in same domain as '$ComputerName'. Looking for FirstChildDC instead"
 
         $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
@@ -2287,7 +2287,7 @@ function Install-LabADDSTrust
     {
         $trusts = $trustMesh | Where-Object { $_.Source -eq $rootDc.DomainName }
 
-        Write-Verbose "Creating trusts on machine $($rootDc.Name)"
+        Write-PSFMessage "Creating trusts on machine $($rootDc.Name)"
         foreach ($trust in $trusts)
         {
             $domainAdministrator = ((Get-Lab).Domains | Where-Object { $_.Name -eq ($rootDcs | Where-Object { $_.DomainName -eq $trust.Destination }).DomainName }).Administrator

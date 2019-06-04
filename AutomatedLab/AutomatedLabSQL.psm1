@@ -214,7 +214,7 @@ GO
                     }
                     catch
                     {
-                        Write-Verbose -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
+                        Write-PSFMessage -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
                     }
                 }
 
@@ -287,7 +287,7 @@ GO
 
                 if ($additionalMachinesToInstall)
                 {
-                    Write-Verbose -Message 'Preparing more machines while waiting for installation to finish'
+                    Write-PSFMessage -Message 'Preparing more machines while waiting for installation to finish'
 
                     $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
                     Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
@@ -295,17 +295,17 @@ GO
 
                     while ($startTime.AddMinutes(5) -gt (Get-Date) -and $machinesToPrepare)
                     {
-                        Write-Verbose -Message "Starting machines '$($machinesToPrepare -join ', ')'"
+                        Write-PSFMessage -Message "Starting machines '$($machinesToPrepare -join ', ')'"
                         Start-LabVM -ComputerName $machinesToPrepare -Wait -NoNewline
 
-                        Write-Verbose -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesToPrepare -join ', ')'"
+                        Write-PSFMessage -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesToPrepare -join ', ')'"
                         $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $m -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
-                        Write-Verbose -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
+                        Write-PSFMessage -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
 
                         $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
                     }
-                    Write-Verbose -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
+                    Write-PSFMessage -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
 
                 $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }

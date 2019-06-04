@@ -113,16 +113,16 @@ function New-LabVM
     {
         Write-ScreenInfo -Message 'Initializing machines' -TaskStart
 
-        Write-Verbose -Message 'Calling Enable-PSRemoting on machines'
+        Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
         Enable-LWAzureWinRm -Machine $azureVMs -Wait
 
-        Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
+        Write-PSFMessage -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
-        Write-Verbose -Message 'Restarting machines to apply DNS settings'
+        Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
         Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
 
-        Write-Verbose -Message 'Executing initialization script on machines'
+        Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -306,7 +306,7 @@ function Start-LabVM
             }
         }
 
-        Write-Verbose "Starting VMs '$($vms.Name -join ', ')'"
+        Write-PSFMessage "Starting VMs '$($vms.Name -join ', ')'"
 
         $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
         if ($hypervVMs)
@@ -410,7 +410,7 @@ function Save-LabVM
             return
         }
 
-        Write-Verbose -Message "Saving VMs '$($vms -join ',')"
+        Write-PSFMessage -Message "Saving VMs '$($vms -join ',')"
         switch ($lab.DefaultVirtualizationEngine)
         {
             'HyperV' { Save-LWHypervVM -ComputerName $vms}
@@ -461,16 +461,16 @@ function Restart-LabVM
         return
     }
 
-    Write-Verbose "Stopping machine '$ComputerName' and waiting for shutdown"
+    Write-PSFMessage "Stopping machine '$ComputerName' and waiting for shutdown"
     Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine -KeepAzureVmProvisioned
-    Write-Verbose "Machine '$ComputerName' is stopped"
+    Write-PSFMessage "Machine '$ComputerName' is stopped"
 
     Write-Debug 'Waiting 10 seconds'
     Start-Sleep -Seconds 10
 
-    Write-Verbose "Starting machine '$ComputerName' and waiting for availability"
+    Write-PSFMessage "Starting machine '$ComputerName' and waiting for availability"
     Start-LabVM -ComputerName $ComputerName -Wait:$Wait -ProgressIndicator $ProgressIndicator -NoNewline:$NoNewLine
-    Write-Verbose "Machine '$ComputerName' is started"
+    Write-PSFMessage "Machine '$ComputerName' is started"
 
     Write-LogFunctionExit
 }
@@ -667,7 +667,7 @@ function Wait-LabVM
 
         if ($session)
         {
-            Write-Verbose "Computer '$vm' was reachable"
+            Write-PSFMessage "Computer '$vm' was reachable"
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param (
                     [string]$ComputerName
@@ -678,7 +678,7 @@ function Wait-LabVM
         }
         else
         {
-            Write-Verbose "Computer '$($vm.ComputerName)' was not reachable, waiting..."
+            Write-PSFMessage "Computer '$($vm.ComputerName)' was not reachable, waiting..."
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param(
                     [Parameter(Mandatory)]
@@ -707,7 +707,7 @@ function Wait-LabVM
         }
     }
 
-    Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
+    Write-PSFMessage "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay -Timeout $TimeoutInMinutes
 
@@ -730,7 +730,7 @@ function Wait-LabVM
     }
     else
     {
-        Write-Verbose "The following machines are ready: $($completed -join ', ')"
+        Write-PSFMessage "The following machines are ready: $($completed -join ', ')"
 
         foreach ($machine in $completed)
         {
@@ -1222,7 +1222,7 @@ function Get-LabVMRdpFile
 
     foreach ($machine in $machines)
     {
-        Write-Verbose "Creating RDP file for machine '$($machine.Name)'"
+        Write-PSFMessage "Creating RDP file for machine '$($machine.Name)'"
         $port = 3389
         $name = $machine.Name
 
@@ -1277,7 +1277,7 @@ authentication level:i:0
 "@
         $path = Join-Path -Path $lab.LabPath -ChildPath ($machine.Name + '.rdp')
         $rdpContent | Out-File -FilePath $path
-        Write-Verbose "RDP file saved to '$path'"
+        Write-PSFMessage "RDP file saved to '$path'"
     }
 }
 #endregion Get-LabVMRdpFile
@@ -1358,13 +1358,13 @@ function Join-LabVMDomain
     $jobs = @()
     $startTime = Get-Date
 
-    Write-Verbose "Starting joining $($Machine.Count) machines to domains"
+    Write-PSFMessage "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
     {
         $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
         $cred = $domain.GetCredential()
 
-        Write-Verbose "Joining machine '$m' to domain '$domain'"
+        Write-PSFMessage "Joining machine '$m' to domain '$domain'"
         $jobParameters = @{
             ComputerName = $m
             ActivityName = "DomainJoin_$m"
@@ -1385,7 +1385,7 @@ function Join-LabVMDomain
 
     if ($jobs)
     {
-        Write-Verbose 'Waiting on jobs to finish'
+        Write-PSFMessage 'Waiting on jobs to finish'
         Wait-LWLabJob -Job $jobs -ProgressIndicator 15 -NoDisplay -NoNewLine
 
         Write-ProgressIndicatorEnd
@@ -1850,7 +1850,7 @@ function Enable-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Enabling autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Enabling autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVm @PSBoundParameters
 
@@ -1892,7 +1892,7 @@ function Disable-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Disabling autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Disabling autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVm @PSBoundParameters
 
@@ -1914,7 +1914,7 @@ function Test-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Testing autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
@@ -1948,7 +1948,7 @@ function Test-LabAutoLogon
             $values
         } -PassThru -NoDisplay
 
-        Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
+        Write-PSFMessage -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
 
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
@@ -2053,7 +2053,7 @@ function Checkpoint-LabVM
         $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
         if ($sessions)
         {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
+            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine"
             $sessions | Remove-PSSession
         }
     }
@@ -2118,7 +2118,7 @@ function Restore-LabVMSnapshot
         $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
         if ($sessions)
         {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
+            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine '$machine'"
             $sessions | Remove-PSSession
         }
     }

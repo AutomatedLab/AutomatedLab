@@ -40,12 +40,12 @@ function New-LabBaseImages
 
         if ($hostOsVersion -ge [System.Version]'6.3' -and $os.Version -ge [System.Version]'6.2')
         {
-            Write-Verbose -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, setting partition style to GPT."
+            Write-PSFMessage -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, setting partition style to GPT."
             $partitionStyle = 'GPT'
         }
         else
         {
-            Write-Verbose -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, KEEPING partition style as MBR."
+            Write-PSFMessage -Message "Host OS version is '$($hostOsVersion)' and OS to create disk for is version '$($os.Version)'. So, KEEPING partition style as MBR."
             $partitionStyle = 'MBR'
         }
 
@@ -68,12 +68,12 @@ function New-LabBaseImages
             }
             else
             {
-                Write-Verbose -Message "The base image $baseDiskPath already exists"
+                Write-PSFMessage -Message "The base image $baseDiskPath already exists"
             }
         }
         else
         {
-            Write-Verbose -Message "Base disk for operating system '$os' already created previously"
+            Write-PSFMessage -Message "Base disk for operating system '$os' already created previously"
         }
     }
 
@@ -98,12 +98,12 @@ function Stop-ShellHWDetectionService
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
     if (-not $service)
     {
-        Write-Verbose "The service 'ShellHWDetection' is not installed, exiting."
+        Write-PSFMessage "The service 'ShellHWDetection' is not installed, exiting."
         Write-LogFunctionExit
         return
     }
 
-    Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
+    Write-PSFMessage 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
 
     $retries = 5
     while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Stopped'))
@@ -132,19 +132,19 @@ function Start-ShellHWDetectionService
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
     if (-not $service)
     {
-        Write-Verbose "The service 'ShellHWDetection' is not installed, exiting."
+        Write-PSFMessage "The service 'ShellHWDetection' is not installed, exiting."
         Write-LogFunctionExit
         return
     }
 
     if ((Get-Service -Name ShellHWDetection).Status -eq 'Running')
     {
-        Write-Verbose -Message "'ShellHWDetection' Service is already running."
+        Write-PSFMessage -Message "'ShellHWDetection' Service is already running."
         Write-LogFunctionExit
         return
     }
 
-    Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+    Write-PSFMessage 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
 
     $retries = 5
     while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Running'))
@@ -186,7 +186,7 @@ function New-LabVHDX
         return
     }
 
-    Write-Verbose 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
+    Write-PSFMessage 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
     Stop-ShellHWDetectionService
 
     if ($Name)
@@ -200,7 +200,7 @@ function New-LabVHDX
 
     if (-not $disks)
     {
-        Write-Verbose 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
+        Write-PSFMessage 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
         Write-LogFunctionExit
         return
     }
@@ -235,7 +235,7 @@ function New-LabVHDX
         }
     }
 
-    Write-Verbose 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+    Write-PSFMessage 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
     Start-ShellHWDetectionService
 
     Write-LogFunctionExit
@@ -356,10 +356,10 @@ function Update-LabIsoImage
             $volume = Get-DiskImage -ImagePath $image.ImagePath | Get-Volume
             $source = $volume.DriveLetter + ':\*'
 
-            Write-Verbose "Extracting ISO image '$source' to '$OutputPath'"
+            Write-PSFMessage "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
             [void] (Dismount-DiskImage -ImagePath $SourceIsoImagePath)
-            Write-Verbose 'Copy complete'
+            Write-PSFMessage 'Copy complete'
         }
         else
         {
@@ -470,7 +470,7 @@ function Update-LabIsoImage
 
     Write-Host "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..." -NoNewline
     $cmd = "$labSources\Tools\oscdimg.exe -m -o -u2 -l$isoImageName -udfver102 -bootdata:2#p0,e,b$extractTempFolder\boot\etfsboot.com#pEF,e,b$extractTempFolder\efi\microsoft\boot\efisys.bin $extractTempFolder $TargetIsoImagePath"
-    Write-Verbose $cmd
+    Write-PSFMessage $cmd
     $global:oscdimgResult = Invoke-Expression -Command $cmd 2>&1
     Write-Host 'finished'
 

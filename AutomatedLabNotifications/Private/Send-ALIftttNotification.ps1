@@ -28,11 +28,11 @@ function Send-ALIftttNotification
         
         if (-not $request.StatusCode -eq 200)
         {
-            Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
+            Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
         }
     }
     catch 
     {
-        Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName."
+        Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName."
     }    
 }

@@ -97,12 +97,12 @@ function Invoke-LWCommand
     {
         $ActivityName = '<unnamed>'
     }
-    Write-Verbose -Message "Starting Activity '$ActivityName'"
+    Write-PSFMessage -Message "Starting Activity '$ActivityName'"
 
     #if the image path is set we mount the image to the VM
     if ($PSCmdlet.ParameterSetName -like 'FileContentDependency*')
     {
-        Write-Verbose -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
+        Write-PSFMessage -Message "Copying files from '$DependencyFolderPath' to $ComputerName..."
 
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
@@ -144,7 +144,7 @@ function Invoke-LWCommand
                 $cmd += "Remove-Item '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))' -Recurse -Force"
             }
 
-            Write-Verbose -Message "Invoking script '$ScriptFileName'"
+            Write-PSFMessage -Message "Invoking script '$ScriptFileName'"
 
             $parameters = @{ }
             $parameters.Add('Session', $internalSession)
@@ -231,9 +231,9 @@ function Invoke-LWCommand
             $nonAvailableSessions = @($internalSession | Where-Object State -ne Opened)
             foreach ($nonAvailableSession in $nonAvailableSessions)
             {
-                Write-Verbose "Re-creating unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
+                Write-PSFMessage "Re-creating unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
                 $internalSession.Add((New-LabPSSession -Session $nonAvailableSession)) | Out-Null
-                Write-Verbose "removing unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
+                Write-PSFMessage "removing unavailable session for machine '$($nonAvailableSessions.ComputerName)'"
                 $internalSession.Remove($nonAvailableSession)
             }
 
@@ -251,7 +251,7 @@ function Invoke-LWCommand
 
             if ($Retries -gt 0 -and $internalSession.Count -gt 0)
             {
-                Write-Verbose "Scriptblock did not run on all machines, retrying (Retries = $Retries)"
+                Write-PSFMessage "Scriptblock did not run on all machines, retrying (Retries = $Retries)"
                 Start-Sleep -Seconds $RetryIntervalInSeconds
             }
         }
@@ -272,10 +272,10 @@ function Invoke-LWCommand
     {
         $resultVariable = New-Variable -Name ("AL_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         $resultVariable.Value = $result
-        Write-Verbose "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
+        Write-PSFMessage "The Output of the task on machine '$($ComputerName)' will be available in the variable '$($resultVariable.Name)'"
     }
 
-    Write-Verbose -Message "Finished Installation Activity '$ActivityName'"
+    Write-PSFMessage -Message "Finished Installation Activity '$ActivityName'"
 
     Write-LogFunctionExit -ReturnValue $resultVariable
 }
@@ -839,7 +839,7 @@ function Wait-LWLabJob
 
     if (-not $Job -and -not $Name)
     {
-        Write-Verbose 'There is no job to wait for'
+        Write-PSFMessage 'There is no job to wait for'
         Write-LogFunctionExit
         return
     }

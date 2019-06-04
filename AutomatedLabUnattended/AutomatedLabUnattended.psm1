@@ -3,7 +3,7 @@ $importFolders = Get-ChildItem $PSScriptRoot -Include Types, Public, Private -Re
 $private = @()
 $public = @()
 
-Write-Verbose -Message "Importing from $($importFolders.Count) folders"
+Write-PSFMessage -Message "Importing from $($importFolders.Count) folders"
 foreach ($folder in $importFolders)
 {
     switch ( $folder.Name)

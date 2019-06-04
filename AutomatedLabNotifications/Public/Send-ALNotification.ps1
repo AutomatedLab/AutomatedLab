@@ -19,7 +19,7 @@ function Send-ALNotification
         $lab = Get-Lab -ErrorAction SilentlyContinue
         if (-not $lab)
         {
-            Write-Verbose -Message "No lab data available. Skipping notification."
+            Write-PSFMessage -Message "No lab data available. Skipping notification."
         }
     }
 
@@ -33,7 +33,7 @@ function Send-ALNotification
         foreach ($selectedProvider in $Provider)
         {
             $functionName = "Send-AL$($selectedProvider)Notification"
-            Write-Verbose $functionName
+            Write-PSFMessage $functionName
 
             &$functionName -Activity $Activity -Message $Message
         }

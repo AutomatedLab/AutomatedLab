@@ -10,5 +10,5 @@ function Set-UnattendedKickstartAutoLogon
 		[Parameter(Mandatory = $true)]
 		[string]$Password
     )
-    Write-Verbose -Message "Auto-logon not implemented yet for RHEL/CentOS/Fedora"
+    Write-PSFMessage -Message "Auto-logon not implemented yet for RHEL/CentOS/Fedora"
 }

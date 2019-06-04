@@ -83,7 +83,7 @@ function Get-HostFile
 	$hostEntries = New-Object -TypeName System.Collections.ArrayList
 
 	$path = "$($env:SystemRoot)\System32\drivers\etc\hosts"
-    Write-Verbose "Opening file '$path'"
+    Write-PSFMessage "Opening file '$path'"
 
     $currentHostContent = (Get-Content -Path $Path)
     if ($currentHostContent)
@@ -133,7 +133,7 @@ function Get-HostFile
         }
     }
 
-    Write-Verbose "File loaded with $($hostContent.Count) lines"
+    Write-PSFMessage "File loaded with $($hostContent.Count) lines"
 
     $hostContent, $hostEntries
 

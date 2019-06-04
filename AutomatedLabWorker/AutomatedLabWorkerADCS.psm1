@@ -543,7 +543,7 @@ function Install-LWLabCAServers
 
     #endregion
 
-    Write-Verbose -Message "Performing installation of $($param.CAType) on '$($param.ComputerName)'"
+    Write-PSFMessage -Message "Performing installation of $($param.CAType) on '$($param.ComputerName)'"
     $job = Invoke-LabCommand -ActivityName "Install CA on '$($param.Computername)'" -ComputerName $param.ComputerName`
     -Scriptblock $caScriptBlock -ArgumentList $param -NoDisplay -AsJob -PassThru
 
@@ -1214,7 +1214,7 @@ function Install-LWLabCAServers2008
 
     #endregion
 
-    Write-Verbose -Message "Performing installation of $($param.CAType) on '$($param.ComputerName)'"
+    Write-PSFMessage -Message "Performing installation of $($param.CAType) on '$($param.ComputerName)'"
     $cred = (New-Object System.Management.Automation.PSCredential($param.UserName, ($param.Password | ConvertTo-SecureString -AsPlainText -Force)))
     $caSession = New-LabPSSession -ComputerName $param.ComputerName
     $Job = Invoke-Command -Session $caSession -Scriptblock $caScriptBlock -ArgumentList $param -AsJob -JobName "Install CA on '$($param.Computername)'" -Verbose

@@ -585,7 +585,7 @@ function Get-LabInternetFile
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
         $machine = Get-LabVM -IsRunning | Select-Object -First 1
-        Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+        Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
         $argumentList = $Uri, $Path, $FileName
 
@@ -596,13 +596,13 @@ function Get-LabInternetFile
     }
     else
     {
-        Write-Verbose "Target path is local, invoking the copy job locally."
+        Write-PSFMessage "Target path is local, invoking the copy job locally."
         $PSBoundParameters.Remove('PassThru') | Out-Null
         $result = Get-LabInternetFileInternal @PSBoundParameters
     }
 
     $end = Get-Date
-    Write-Verbose "Download has taken: $($end - $start)"
+    Write-PSFMessage "Download has taken: $($end - $start)"
 
     if ($PassThru)
     {
@@ -636,7 +636,7 @@ function Unblock-LabSources
 
     if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
     {
-        Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
+        Write-PSFMessage 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
         return
     }
 
@@ -651,25 +651,25 @@ function Unblock-LabSources
     try
     {
         $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
-        Write-Verbose 'Imported Cache\Timestamps from regirtry'
+        Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
     }
     catch
     {
         $cache = New-Object $type
-        Write-Verbose 'No entry found in the regirtry at Cache\Timestamps'
+        Write-PSFMessage 'No entry found in the regirtry at Cache\Timestamps'
     }
 
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
     {
-        Write-Verbose 'Last unblock more than 24 hours ago, unblocking files'
+        Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
         Get-ChildItem -Path $Path -Recurse | Unblock-File
         $cache['LabSourcesLastUnblock'] = Get-Date
         $cache.ExportToRegistry('Cache', 'Timestamps')
-        Write-Verbose 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
+        Write-PSFMessage 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
     }
     else
     {
-        Write-Verbose 'Last unblock less than 24 hours ago, doing nothing'
+        Write-PSFMessage 'Last unblock less than 24 hours ago, doing nothing'
     }
 
     Write-LogFunctionExit
@@ -769,7 +769,7 @@ function Update-LabSysinternalsTools
     try {
         #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
         if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') {
-            Write-Verbose -Message 'Adding support for TLS 1.2'
+            Write-PSFMessage -Message 'Adding support for TLS 1.2'
             [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
         }
     }
@@ -779,14 +779,14 @@ function Update-LabSysinternalsTools
 
     try
     {
-        Write-Verbose -Message 'Get last check time of SysInternals suite'
+        Write-PSFMessage -Message 'Get last check time of SysInternals suite'
         $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
-        Write-Verbose -Message "Last check was '$lastChecked'."
+        Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
     catch
     {
-        Write-Verbose -Message 'Last check time could not be retrieved. SysInternals suite never updated'
+        Write-PSFMessage -Message 'Last check time could not be retrieved. SysInternals suite never updated'
         $lastChecked = Get-Date -Year 1601
         $timestamps = New-Object $type
     }
@@ -798,20 +798,20 @@ function Update-LabSysinternalsTools
 
     if ((Get-Date) -gt $lastChecked)
     {
-        Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
+        Write-PSFMessage -Message 'Last check time is more then a week ago. Check web site for update.'
         
         $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
         $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
     
         try
         {
-            Write-Verbose -Message 'Web page downloaded'
+            Write-PSFMessage -Message 'Web page downloaded'
             $webRequest = Invoke-WebRequest -Uri $sysInternalsURL -UseBasicParsing
             $pageDownloaded = $true
         }
         catch
         {
-            Write-Verbose -Message 'Web page could not be downloaded'
+            Write-PSFMessage -Message 'Web page could not be downloaded'
             Write-ScreenInfo -Message "No connection to '$sysInternalsURL'. Skipping." -Type Error
             $pageDownloaded = $false
         }
@@ -822,7 +822,7 @@ function Update-LabSysinternalsTools
             $updateFinish = $webRequest.Content.IndexOf('</p>', $updateStart)
             $updateStringFromWebPage = $webRequest.Content.Substring($updateStart, $updateFinish - $updateStart).Trim()
 
-            Write-Verbose -Message "Update string from web page: '$updateStringFromWebPage'"
+            Write-PSFMessage -Message "Update string from web page: '$updateStringFromWebPage'"
 
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
@@ -834,7 +834,7 @@ function Update-LabSysinternalsTools
                 $versions = New-Object $type
             }
 
-            Write-Verbose -Message "Update string from registry: '$currentVersion'"
+            Write-PSFMessage -Message "Update string from registry: '$currentVersion'"
 
             if ($versions['SysInternals'] -ne $updateStringFromWebPage)
             {
@@ -845,13 +845,13 @@ function Update-LabSysinternalsTools
 
                 $tempFilePath = [System.IO.Path]::GetTempFileName()
                 $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
-                Write-Verbose -Message "Temp file: '$tempFilePath'"
+                Write-PSFMessage -Message "Temp file: '$tempFilePath'"
 
                 try
                 {
                     Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
                     $fileDownloaded = $true
-                    Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
+                    Write-PSFMessage -Message "File '$sysInternalsDownloadURL' downloaded"
                 }
                 catch
                 {
@@ -866,22 +866,22 @@ function Update-LabSysinternalsTools
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools' does not exist. Creating now."
                         New-Item -ItemType Directory -Path "$labSources\Tools" | Out-Null
                     }
                     if (-not (Test-Path -Path "$labSources\Tools\SysInternals"))
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
                     else
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
                         Remove-Item -Path "$labSources\Tools\SysInternals" -Recurse | Out-Null
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
 
-                    Write-Verbose -Message 'Extracting files'
+                    Write-PSFMessage -Message 'Extracting files'
                     Microsoft.PowerShell.Archive\Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
                     Remove-Item -Path $tempFilePath
 
