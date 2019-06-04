@@ -940,9 +940,9 @@ function Install-LabRootDcs
         Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
 
-        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $machines -ScriptBlock {
-            dnscmd /ResetForwarders 168.63.129.16
-        } -DoNotUseCredSsp -NoDisplay
+#        Invoke-LabCommand -ActivityName 'Configuring DNS Forwarders on Azure Root DCs' -ComputerName $machines -ScriptBlock {
+#            dnscmd /ResetForwarders 168.63.129.16
+#        } -DoNotUseCredSsp -NoDisplay
 
         #Create reverse lookup zone (forest scope)
         foreach ($network in ((Get-LabVirtualNetworkDefinition).AddressSpace.IpAddress.AddressAsString))
