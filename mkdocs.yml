@@ -3,6 +3,10 @@ repo_url: https://github.com/AutomatedLab/AutomatedLab
 nav:
 - Home: index.md
 - Installation: install.md
+- Getting started: Wiki/gettingstarted.md
+- Defining your lab:
+  - Creating a new lab: Wiki/createnewlab.md
+  - Networks and IP Addresses: Wiki/networksandaddresses.md
 - AutomatedLab:
   - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md
   - Add-LabAzureSubscription: AutomatedLab/en-us/Add-LabAzureSubscription.md
