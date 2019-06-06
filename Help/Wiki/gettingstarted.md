@@ -1,4 +1,3 @@
-# Getting started
 ## Placing ISO files
 Of course AutomatedLab (AL) cannot install an operating system without actually having the bits. Hence you need to download an ISO file from MSDN, TechNet Evaluation Center or somewhere else. These files need to go to your folder "ISOs" located in the "LabSoures" folder.
 

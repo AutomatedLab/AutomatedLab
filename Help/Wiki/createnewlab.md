@@ -1,5 +1,3 @@
-# Create a new lab
-
 Creating your lab starts with New-LabDefinition. This cmdlet creates a container that holds all the lab items like networks and machines.
 
 It is mandatory to define the name of the lab and the virtualization engine. So far AL supports Hyper-V and Azure.

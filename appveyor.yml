@@ -69,7 +69,9 @@ before_build:
                 $ci = try { [cultureinfo]$language.BaseName} catch { }
                 if (-not $ci) {continue}
 
-                New-ExternalHelp -Path $language.FullName -OutputPath ".\$($moduleName.BaseName)\$($language.BaseName)"
+                $opPath = Join-Path -Path $env:APPVEYOR_BUILD_FOLDER -ChildPath "$($moduleName.BaseName)\$($language.BaseName)"
+                Write-Host "Generating help XML in $opPath"
+                New-ExternalHelp -Path $language.FullName -OutputPath $opPath
             }
         }
 

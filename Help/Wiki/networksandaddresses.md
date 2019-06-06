@@ -1,5 +1,3 @@
-# Networks and IP addresses
-
 AutomatedLab can handle everything about networking and IP addresses automatically for you. But, if you prefer, you can define everything by your own. AL supported also working with multiple subnets and internet connected labs. It takes care about the routing if a machine with the role 'Routing' is defined in the network.
 
 ## Fully automated
