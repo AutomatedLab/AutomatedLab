@@ -62,7 +62,7 @@ before_build:
         Write-Host "Init task - compiling help for Installer"
         Install-PackageProvider -Name Nuget -Force
         Install-Module PlatyPs -Force -AllowClobber -SkipPublisherCheck
-        New-ExternalHelp -Path .\AutomatedLab.Common\Help\en-us .\AutomatedLab.Common\AutomatedLab.Common\en-us
+        New-ExternalHelp -Path .\AutomatedLab.Common\Help\en-us -OutputPath .\AutomatedLab.Common\AutomatedLab.Common\en-us
         foreach ($moduleName in (Get-ChildItem -Path .\Help -Directory))
         {
             foreach ($language in ($moduleName | Get-ChildItem -Directory))
