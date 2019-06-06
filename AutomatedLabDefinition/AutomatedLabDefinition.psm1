@@ -581,7 +581,7 @@ $autoyastContent = @"
 
 function Get-LabVolumesOnPhysicalDisks
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     $physicalDisks = Get-PhysicalDisk
     $disks = Get-CimInstance -Class Win32_DiskDrive
@@ -667,7 +667,7 @@ namespace AutomatedLab
 #region New-LabDefinition
 function New-LabDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -906,7 +906,7 @@ function New-LabDefinition
 #region Get-LabDefinition
 function Get-LabDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.Lab])]
@@ -962,7 +962,7 @@ function Set-LabDefinition
 #region Export-LabDefinition
 function Export-LabDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1247,7 +1247,7 @@ function Export-LabDefinition
 #region Test-LabDefinition
 function Test-LabDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1386,7 +1386,7 @@ function Test-LabDefinition
 #region Add-LabDomainDefinition
 function Add-LabDomainDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1436,7 +1436,7 @@ function Add-LabDomainDefinition
 #region Get-LabDomainDefinition
 function Get-LabDomainDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -1449,7 +1449,7 @@ function Get-LabDomainDefinition
 #region Remove-LabDomainDefinition
 function Remove-LabDomainDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1480,7 +1480,7 @@ function Remove-LabDomainDefinition
 #region Add-LabIsoImageDefinition
 function Add-LabIsoImageDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1653,7 +1653,7 @@ function Add-LabIsoImageDefinition
 #region Get-LabIsoImageDefinition
 function Get-LabIsoImageDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -1666,7 +1666,7 @@ function Get-LabIsoImageDefinition
 #region Remove-LabIsoImageDefinition
 function Remove-LabIsoImageDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -1699,7 +1699,7 @@ function Remove-LabIsoImageDefinition
 #region Add-LabDiskDefinition
 function Add-LabDiskDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.Disk])]
@@ -1792,7 +1792,7 @@ function Add-LabDiskDefinition
 #region Add-LabMachineDefinition
 function Add-LabMachineDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'Network')]
     [OutputType([AutomatedLab.Machine])]
@@ -2808,7 +2808,7 @@ function Add-LabMachineDefinition
 #region Get-LabMachineDefinition
 function Get-LabMachineDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
@@ -2886,7 +2886,7 @@ function Get-LabMachineDefinition
 #region Remove-LabMachineDefinition
 function Remove-LabMachineDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -2915,7 +2915,7 @@ function Remove-LabMachineDefinition
 #region Get-LabMachineRoleDefinition
 function Get-LabMachineRoleDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -2947,7 +2947,7 @@ function Get-LabMachineRoleDefinition
 #region Get-LabPostInstallationActivity
 function Get-LabPostInstallationActivity
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -3142,7 +3142,7 @@ function Get-LabPostInstallationActivity
 #region Get-DiskSpeed
 function Get-DiskSpeed
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -3198,7 +3198,7 @@ function Get-DiskSpeed
 #region Set-LabLocalVirtualMachineDiskAuto
 function Set-LabLocalVirtualMachineDiskAuto
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
     [cmdletBinding()]
     param
     (
@@ -3337,7 +3337,7 @@ function Set-LabLocalVirtualMachineDiskAuto
 #region Get-LabVirtualNetwork
 function Get-LabVirtualNetwork
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [cmdletBinding()]
 
@@ -3369,7 +3369,7 @@ function Get-LabVirtualNetwork
 #region Get-LabAvailableAddresseSpace
 function Get-LabAvailableAddresseSpace
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
     $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
 
     if (-not $defaultAddressSpace)
@@ -3426,7 +3426,7 @@ function Get-LabAvailableAddresseSpace
 #region Internal
 function Repair-LabDuplicateIpAddresses
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
     foreach ($machine in (Get-LabMachineDefinition))
     {
         foreach ($adapter in $machine.NetworkAdapters)

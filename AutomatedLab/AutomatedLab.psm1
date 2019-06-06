@@ -7,7 +7,7 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -206,7 +206,7 @@ function Undo-LabHostRemoting
         [switch]$NoDisplay
     )
 
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -278,7 +278,7 @@ function Test-LabHostRemoting
 
     param()
 
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     Write-LogFunctionEntry
 
     $configOk = $true
@@ -354,7 +354,7 @@ function Test-LabHostRemoting
 #region Import-Lab
 function Import-Lab
 {
-    #.ExternalHelp AutomatedLab.help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
@@ -586,7 +586,7 @@ function Import-Lab
 #region Export-Lab
 function Export-Lab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param ()
@@ -616,7 +616,7 @@ function Export-Lab
 #region Get-Lab
 function Get-Lab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     [OutputType([AutomatedLab.Lab])]
 
@@ -654,7 +654,7 @@ function Get-Lab
 #region Clear-Lab
 function Clear-Lab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param ()
@@ -674,7 +674,7 @@ function Clear-Lab
 #region Install-Lab
 function Install-Lab
 {
-    #.ExternalHelp AutomatedLab.help.xml
+    
 
     [cmdletBinding()]
     param (
@@ -1132,7 +1132,7 @@ function Install-Lab
 #region Remove-Lab
 function Remove-Lab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'Path', ConfirmImpact = 'High', SupportsShouldProcess)]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByPath')]
@@ -1297,7 +1297,7 @@ function Remove-Lab
 #region Get-LabAvailableOperatingSystem
 function Get-LabAvailableOperatingSystem
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName='Local')]
     [OutputType([AutomatedLab.OperatingSystem])]
     param
@@ -1566,7 +1566,7 @@ function Get-LabAvailableOperatingSystem
 #region Enable-LabVMRemoting
 function Enable-LabVMRemoting
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -1618,7 +1618,7 @@ function Enable-LabVMRemoting
 #region Install-LabWebServers
 function Install-LabWebServers
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 
@@ -1668,7 +1668,7 @@ function Install-LabWebServers
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1761,7 +1761,7 @@ function Install-LabWindowsFeature
 #region Get-LabWindowsFeature
 function Get-LabWindowsFeature
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1848,7 +1848,7 @@ function Get-LabWindowsFeature
 #region Uninstall-LabWindowsFeature
 function Uninstall-LabWindowsFeature
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1928,7 +1928,7 @@ function Uninstall-LabWindowsFeature
 #region Install-VisualStudio2013
 function Install-VisualStudio2013
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2013Installation)
@@ -2047,7 +2047,7 @@ function Install-VisualStudio2013
 #region Install-VisualStudio2015
 function Install-VisualStudio2015
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2015Installation)
@@ -2171,7 +2171,7 @@ function Install-VisualStudio2015
 #region Install-LabOrchestrator2012
 function Install-LabOrchestrator2012
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -2334,7 +2334,7 @@ function Install-LabOrchestrator2012
 #region Install-LabSoftwarePackage
 function Install-LabSoftwarePackage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ParameterSetName = 'SinglePackage')]
         [ValidateNotNullOrEmpty()]
@@ -2544,7 +2544,7 @@ function Install-LabSoftwarePackage
 #region Get-LabSoftwarePackage
 function Get-LabSoftwarePackage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory)]
         [ValidateScript({
@@ -2575,7 +2575,7 @@ function Get-LabSoftwarePackage
 #region Install-LabSoftwarePackages
 function Install-LabSoftwarePackages
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [AutomatedLab.Machine[]]$Machine,
@@ -2641,7 +2641,7 @@ function Install-LabSoftwarePackages
 #region New-LabPSSession
 function New-LabPSSession
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
@@ -2887,7 +2887,7 @@ function New-LabPSSession
 #region Get-LabPSSession
 function Get-LabPSSession
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     [OutputType([System.Management.Automation.Runspaces.PSSession])]
 
@@ -2941,7 +2941,7 @@ function Get-LabPSSession
 #region Remove-LabPSSession
 function Remove-LabPSSession
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -3004,7 +3004,7 @@ function Remove-LabPSSession
 #region Enter-LabPSSession
 function Enter-LabPSSession
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string]$ComputerName,
@@ -3038,7 +3038,7 @@ function Enter-LabPSSession
 #region Invoke-LabCommand
 function Invoke-LabCommand
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [string]$ActivityName = '<unnamed>',
@@ -3380,7 +3380,7 @@ function Invoke-LabCommand
 #region Update-LabMemorySettings
 function Update-LabMemorySettings
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     Param ()
 
@@ -3562,7 +3562,7 @@ function Update-LabMemorySettings
 #region Set-LabInstallationCredential
 function Set-LabInstallationCredential
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'All')]
     Param (
         [Parameter(Mandatory, ParameterSetName = 'All')]
@@ -3651,7 +3651,7 @@ function Set-LabInstallationCredential
 #region Show-LabDeploymentSummary
 function Show-LabDeploymentSummary
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([System.TimeSpan])]
     [Cmdletbinding()]
     param (
@@ -3723,7 +3723,7 @@ function Show-LabDeploymentSummary
 #region Set-LabGlobalNamePrefix
 function Set-LabGlobalNamePrefix
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory = $false)]
@@ -3738,7 +3738,7 @@ function Set-LabGlobalNamePrefix
 #region Set-LabToolsPath
 function Set-LabDefaultToolsPath
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3752,7 +3752,7 @@ function Set-LabDefaultToolsPath
 #region Set-LabDefaultOperatingSYstem
 function Set-LabDefaultOperatingSystem
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3793,7 +3793,7 @@ function Set-LabDefaultOperatingSystem
 #region Set-LabDefaultVirtualization
 function Set-LabDefaultVirtualizationEngine
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3815,7 +3815,7 @@ function Set-LabDefaultVirtualizationEngine
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param
     (
         [switch]$Local
@@ -3828,7 +3828,7 @@ function Get-LabSourcesLocation
 #region Get-LabVariable
 function Get-LabVariable
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     $pattern = 'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'
     Get-Variable -Scope Global | Where-Object Name -Match $pattern
 }
@@ -3837,7 +3837,7 @@ function Get-LabVariable
 #region Remove-LabVariable
 function Remove-LabVariable
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     $pattern = 'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'
     Get-LabVariable | Remove-Variable -Scope Global
 }
@@ -3846,7 +3846,7 @@ function Remove-LabVariable
 #region Clear-LabCache
 function Clear-LabCache
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param()
@@ -3888,7 +3888,7 @@ function Get-LabCache
 #region function Add-LabVMUserRight
 function Add-LabVMUserRight
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param
     (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByMachine')]

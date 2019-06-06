@@ -1,6 +1,6 @@
 function Connect-Lab
 {
-    #.ExternalHelp AutomatedLab.help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'Lab2Lab')]
     param
     (
@@ -119,7 +119,7 @@ function Connect-Lab
 
 function Disconnect-Lab
 {
-    #.ExternalHelp AutomatedLab.help.xml
+    
     [CmdletBinding()]
     param
     (
@@ -196,7 +196,7 @@ function Disconnect-Lab
 
 function Restore-LabConnection
 {
-    #.ExternalHelp AutomatedLab.help.xml
+    
     param
     (
         [Parameter(Mandatory = $true)]

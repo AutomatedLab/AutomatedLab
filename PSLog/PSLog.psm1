@@ -1073,7 +1073,7 @@ function Get-CallerPreference
 #region Write-ProgressIndicator
 function Write-ProgressIndicator
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
@@ -1086,7 +1086,7 @@ function Write-ProgressIndicator
 #region Write-ProgressIndicatorEnd
 function Write-ProgressIndicatorEnd
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
@@ -1103,7 +1103,7 @@ function Write-ProgressIndicatorEnd
 #region Write-ScreenInfo
 function Write-ScreenInfo
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param
     (
         [Parameter(Position = 1)]

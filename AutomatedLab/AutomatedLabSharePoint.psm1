@@ -25,7 +25,7 @@ $setupConfigFileContent = '<Configuration>
 #region Install-LabSharePoint2013
 function Install-LabSharePoint2013
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
       

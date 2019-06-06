@@ -1,7 +1,7 @@
 #region New-LabVM
 function New-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -142,7 +142,7 @@ function New-LabVM
 #region Start-LabVM
 function Start-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(ParameterSetName = 'ByName', Position = 0)]
@@ -341,7 +341,7 @@ function Start-LabVM
 #region Save-LabVM
 function Save-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [cmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
@@ -426,7 +426,7 @@ function Save-LabVM
 #region Restart-LabVM
 function Restart-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -479,7 +479,7 @@ function Restart-LabVM
 #region Stop-LabVM
 function Stop-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -564,7 +564,7 @@ function Stop-LabVM
 #region Stop-LabVM2
 function Stop-LabVM2
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -607,7 +607,7 @@ function Stop-LabVM2
 #region Wait-LabVM
 function Wait-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -804,7 +804,7 @@ function Wait-LabVM
 
 function Wait-LabVMRestart
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -878,7 +878,7 @@ function Wait-LabVMRestart
 #region Wait-LabVMShutdown
 function Wait-LabVMShutdown
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -944,7 +944,7 @@ function Wait-LabVMShutdown
 #region Remove-LabVM
 function Remove-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -1031,7 +1031,7 @@ function Remove-LabVM
 function Get-LabVMStatus
 {
     [cmdletBinding()]
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [string[]]$ComputerName,
 
@@ -1082,7 +1082,7 @@ function Get-LabVMStatus
 #region Get-LabVMUptime
 function Get-LabVMUptime
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1113,7 +1113,7 @@ function Get-LabVMUptime
 #region Connect-LabVM
 function Connect-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1198,7 +1198,7 @@ function Connect-LabVM
 #region Get-LabVMRdpFile
 function Get-LabVMRdpFile
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$ComputerName,
@@ -1285,7 +1285,7 @@ authentication level:i:0
 #region Join-LabVMDomain
 function Join-LabVMDomain
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param(
@@ -1416,7 +1416,7 @@ function Join-LabVMDomain
 #region Mount-LabIsoImage
 function Mount-LabIsoImage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1472,7 +1472,7 @@ function Mount-LabIsoImage
 #region Dismount-LabIsoImage
 function Dismount-LabIsoImage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1522,7 +1522,7 @@ function Dismount-LabIsoImage
 #region Get / Set-LabVMUacStatus
 function Set-VMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [bool]$EnableLUA,
@@ -1563,7 +1563,7 @@ function Set-VMUacStatus
 
 function Get-VMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
@@ -1589,7 +1589,7 @@ function Get-VMUacStatus
 
 function Set-LabVMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -1638,7 +1638,7 @@ function Set-LabVMUacStatus
 
 function Get-LabVMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -1666,7 +1666,7 @@ function Get-LabVMUacStatus
 #region Test-LabMachineInternetConnectivity
 function Test-LabMachineInternetConnectivity
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([bool])]
     [CmdletBinding()]
     param (
@@ -1716,7 +1716,7 @@ function Test-LabMachineInternetConnectivity
 #region Get-LabVM
 function Get-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
     param (
@@ -1975,7 +1975,7 @@ function Test-LabAutoLogon
 #region Get-LabVMDotNetFrameworkVersion
 function Get-LabVMDotNetFrameworkVersion
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -2005,7 +2005,7 @@ function Get-LabVMDotNetFrameworkVersion
 #region Checkpoint-LabVM
 function Checkpoint-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -2070,7 +2070,7 @@ function Checkpoint-LabVM
 #region Restore-LabVMSnapshot
 function Restore-LabVMSnapshot
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -2135,7 +2135,7 @@ function Restore-LabVMSnapshot
 #region Remove-LabVMSnapshot
 function Remove-LabVMSnapshot
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]

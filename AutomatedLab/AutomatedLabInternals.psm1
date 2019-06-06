@@ -1,7 +1,7 @@
 #region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
@@ -9,7 +9,7 @@ function Get-LabHyperVAvailableMemory
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     Remove-Lab
     Remove-Module *
 }
@@ -18,7 +18,7 @@ function Reset-AutomatedLab
 #region Save-Hashes
 function Save-Hashes
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -47,7 +47,7 @@ function Save-Hashes
 #region Test-FileHashes
 function Test-FileHashes
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -83,7 +83,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -97,7 +97,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -121,7 +121,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -138,7 +138,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -155,7 +155,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -325,7 +325,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path C:\unattend.xml
@@ -339,7 +339,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -377,7 +377,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -431,7 +431,7 @@ function Disable-LabVMFirewallGroup
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -621,7 +621,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [string]$Path = $global:labSources
     )
@@ -679,7 +679,7 @@ function Unblock-LabSources
 
 function Set-LabVMDescription
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,

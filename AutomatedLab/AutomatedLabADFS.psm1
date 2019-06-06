@@ -1,7 +1,7 @@
 ﻿#region Install-LabAdfs
 function Install-LabAdfs
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -137,7 +137,7 @@ function Install-LabAdfs
 #region Install-LabAdfsProxy
 function Install-LabAdfsProxy
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
