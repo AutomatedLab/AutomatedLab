@@ -2,6 +2,7 @@ copyright: AutomatedLab is licensed under the <a href='https://github.com/Automa
 repo_url: https://github.com/AutomatedLab/AutomatedLab
 nav:
 - Home: index.md
+- Installation: install.md
 - AutomatedLab:
   - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md
   - Add-LabAzureSubscription: AutomatedLab/en-us/Add-LabAzureSubscription.md
