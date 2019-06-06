@@ -69,7 +69,7 @@ before_build:
                 $ci = try { [cultureinfo]$language.BaseName} catch { }
                 if (-not $ci) {continue}
 
-                New-ExternalHelp -Path $language.FullName -OutputPath (Join-Path $ProjectRoot -ChildPath "$($moduleName.BaseName)\$($language.BaseName)")
+                New-ExternalHelp -Path $language.FullName -OutputPath ".\$($moduleName.BaseName)\$($language.BaseName)"
             }
         }
 
