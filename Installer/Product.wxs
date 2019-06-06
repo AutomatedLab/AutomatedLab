@@ -105,6 +105,7 @@
                 <Directory Id="InstallFolder_CommonCommon" Name="Common">
                   <Directory Id="CommonHelp">
                     <Component Id="CommonHelpComponent" Guid="*">
+                      <File Source="$(var.SolutionDir)AutomatedLab.Common\en-us\about_AutomatedLab.Common.help.txt" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\en-us\AutomatedLab.Common-help.xml" />
                     </Component>
                   </Directory>

@@ -5,6 +5,7 @@ param
 
     [string[]]
     $Module = @('AutomatedLabUnattended' # Careful... This is also the import order!
+        'AutomatedLabTest',
         'PSLog',
         'PSFileTransfer',
         'AutomatedLabDefinition',
