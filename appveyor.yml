@@ -23,7 +23,7 @@ init:
         Write-Host "Init task - compiling help for Installer"
         Install-PackageProvider -Name Nuget -Force
         Install-Module PlatyPs -Force -AllowClobber -SkipPublisherCheck
-        foreach ($moduleName in (Get-ChildItem -Path .\AutomatedLab\Help -Directory))
+        foreach ($moduleName in (Get-ChildItem -Path "$env:APPVEYOR_BUILD_FOLDER\Help" -Directory))
         {
             foreach ($language in ($moduleName | Get-ChildItem -Directory))
             {
