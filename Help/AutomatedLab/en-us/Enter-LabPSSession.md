@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enter-LabPSSession
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enter a PSSession
 
 ## SYNTAX
 
@@ -23,21 +23,27 @@ Enter-LabPSSession [-Machine] <Machine> [-DoNotUseCredSsp] [-UseLocalCredential]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create and enter a new PowerShell session to a lab machine.
+The default authentication method is CredSsp.
+To override this, the switch parameter DoNotUseCredSsp can be used.
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Get-LabVM FS1 | Enter-LabPSSession -UseLocalCredentials
 ```
 
-{{ Add example description here }}
+Find the lab machine FS1 and enter a session
+
+A PowerShell session to FS1 with local credentials
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer name
 
 ```yaml
 Type: String
@@ -51,8 +57,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+### -UseLocalCredential
+Indicates whether the machine's local user credentials should be used
 
 ```yaml
 Type: SwitchParameter
@@ -67,7 +73,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+The lab machine
 
 ```yaml
 Type: Machine
@@ -81,8 +87,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used while connecting to the machine
 
 ```yaml
 Type: SwitchParameter
@@ -101,11 +107,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

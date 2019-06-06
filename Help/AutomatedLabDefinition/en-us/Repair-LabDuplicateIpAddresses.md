@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Repair-LabDuplicateIpAddresses
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Repair duplicate IPs
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Repair-LabDuplicateIpAddresses
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Modifies duplicate IP addresses for machines by incrementing the address by one
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

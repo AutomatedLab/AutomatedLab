@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Export-LabDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Export lab as XML
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Export-LabDefinition [-Force] [-ExportDefaultUnattendedXml] [-Silent] [<CommonPa
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Exports the whole lab definition as XML files in the standard path $env:ProgramData\AutomatedLab\Labs
 
 ## EXAMPLES
 
@@ -30,8 +30,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -ExportDefaultUnattendedXml
-{{ Fill ExportDefaultUnattendedXml Description }}
+### -Force
+Overwrite existing XML files
 
 ```yaml
 Type: SwitchParameter
@@ -45,8 +45,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Force
-{{ Fill Force Description }}
+### -ExportDefaultUnattendedXml
+Export the unattend.xml for all machines as well
 
 ```yaml
 Type: SwitchParameter
@@ -80,11 +80,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

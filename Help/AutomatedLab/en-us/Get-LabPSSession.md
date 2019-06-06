@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabPSSession
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get PSSessions
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabPSSession [[-ComputerName] <String[]>] [-DoNotUseCredSsp] [<CommonParamet
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get all open PowerShell sessions to one or more lab machines
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -65,12 +65,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
 ### System.Management.Automation.Runspaces.PSSession
-
 ## NOTES
 
 ## RELATED LINKS

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabInstallationCredential
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the installation credential
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Set-LabInstallationCredential [-Username <String>] [-Password <String>] [-Prompt
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets the installation credential for all lab machines
 
 ## EXAMPLES
 
@@ -36,8 +36,35 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
+### -Username
+The installation user name
+
+```yaml
+Type: String
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+```yaml
+Type: String
+Parameter Sets: Prompt
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Password
-{{ Fill Password Description }}
+The installation user's password
 
 ```yaml
 Type: String
@@ -64,7 +91,7 @@ Accept wildcard characters: False
 ```
 
 ### -Prompt
-{{ Fill Prompt Description }}
+Indicates that a prompt should be displayed for the username and password
 
 ```yaml
 Type: SwitchParameter
@@ -78,43 +105,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Username
-{{ Fill Username Description }}
-
-```yaml
-Type: String
-Parameter Sets: All
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-```yaml
-Type: String
-Parameter Sets: Prompt
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

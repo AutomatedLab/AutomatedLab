@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabDnsForwarder
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create DNS forwarders
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabDnsForwarder
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates conditional DNS forwarders for every forest in the lab
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

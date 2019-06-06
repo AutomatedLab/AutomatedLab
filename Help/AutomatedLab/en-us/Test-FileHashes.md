@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-FileHashes
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Tests a file hash
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Test-FileHashes [[-Filename] <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Tests a file hash against a list of cached file hashes produced by Save-Hashes
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Filename
-{{ Fill Filename Description }}
+The list of file hashes
 
 ```yaml
 Type: Object
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

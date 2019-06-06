@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,6 @@ schema: 2.0.0
 # Add-LabAzureWebAppDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
 
 ## SYNTAX
 
@@ -31,8 +30,23 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AppServicePlan
-{{ Fill AppServicePlan Description }}
+### -Name
+{{ Fill Name Description }}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceGroup
+{{ Fill ResourceGroup Description }}
 
 ```yaml
 Type: String
@@ -40,7 +54,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 3
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -55,22 +69,22 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: 3
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -AppServicePlan
+{{ Fill AppServicePlan Description }}
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: True
-Position: 0
+Required: False
+Position: 4
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -86,22 +100,7 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ResourceGroup
-{{ Fill ResourceGroup Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
@@ -111,12 +110,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
 ### AutomatedLab.Azure.AzureRmService
-
 ## NOTES
 
 ## RELATED LINKS

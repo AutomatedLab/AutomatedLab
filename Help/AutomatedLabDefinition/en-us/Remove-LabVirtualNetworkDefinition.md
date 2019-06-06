@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabVirtualNetworkDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a virtual network definition
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Remove-LabVirtualNetworkDefinition [-Name] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes a virtual network definition from the lab's network definitions
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+The name of the virtual network
 
 ```yaml
 Type: String[]
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String[]
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -17,7 +17,7 @@ Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetw
  [[-Gateways] <IPAddress[]>] [[-DnsServers] <IPAddress[]>] [[-ConnectionSpecificDNSSuffix] <String>]
  [[-DnsDomain] <String>] [[-UseDomainNameDevolution] <String>] [[-DNSSuffixSearchOrder] <String>]
  [[-EnableAdapterDomainNameRegistration] <String>] [[-DisableDynamicUpdate] <String>]
- [[-NetbiosOptions] <String>] [-IsKickstart] [-IsAutoYast] [<CommonParameters>]
+ [[-NetbiosOptions] <String>] [-IsKickstart] [-IsAutoYast]
 ```
 
 ## DESCRIPTION
@@ -228,9 +228,6 @@ Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
-
-### CommonParameters
-This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

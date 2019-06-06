@@ -1,7 +1,7 @@
 ---
 external help file: PSLog-help.xml
 Module Name: PSLog
-online version: https://go.microsoft.com/fwlink/?LinkID=113426
+online version:
 schema: 2.0.0
 ---
 

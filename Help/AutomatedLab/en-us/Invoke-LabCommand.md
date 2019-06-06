@@ -8,7 +8,7 @@ schema: 2.0.0
 # Invoke-LabCommand
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Invoke command on a lab vm
 
 ## SYNTAX
 
@@ -64,21 +64,32 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-ScriptBl
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Invokes a script block or a script file on a lab VM with the ability to add function definitions and variables for the script block to use.
+Scripts and script blocks can also use a dependency folder containing dependencies.
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+$ALocallyDefinedVariable = "This is a"
+$AndAnother = "Test"
+function Get-SomeThingOnMyLocalMachine
+{
+    Write-Host "$ALocallyDefinedVariable $AndAnother"
+}
+
+Invoke-LabCommand -ActivityName GetStuff -ComputerName DC1 -ScriptBlock {Get-SomeThingOnMyLocalMachine} -Variable ALocallyDefinedVariable,AndAnother -Function (Get-Command Get-SomeThingOnMyLocalMachine) -UseLocalCredential -Retries 3 -RetryIntervalInSeconds 20
 ```
 
-{{ Add example description here }}
+Invokes a script block calling a locally-defined function on the machine DC1.
+The locally-defined function as well as the two local variables are passed to the VM before the script block is executed
 
 ## PARAMETERS
 
 ### -ActivityName
-{{ Fill ActivityName Description }}
+The name of the activity to execute
 
 ```yaml
 Type: String
@@ -92,27 +103,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -ArgumentList
-{{ Fill ArgumentList Description }}
-
-```yaml
-Type: Object[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AsJob
-{{ Fill AsJob Description }}
+### -PostInstallationActivity
+Indicates if the post installation activities defined in the lab should be processed instead of a script block
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
+Parameter Sets: PostInstallationActivity
 Aliases:
 
 Required: False
@@ -123,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -137,8 +133,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ArgumentList
+The argument list for the script block or the script
+
+```yaml
+Type: Object[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UseLocalCredential
+Indicates if the machines' local credentials should be used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Credential
-{{ Fill Credential Description }}
+The credential that should be used
 
 ```yaml
 Type: PSCredential
@@ -152,12 +178,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -CustomRoleName
-{{ Fill CustomRoleName Description }}
+### -Variable
+The names of the variables to add to the sessions executing the lab command
 
 ```yaml
-Type: String[]
-Parameter Sets: PostInstallationActivity
+Type: PSVariable[]
+Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -167,8 +193,143 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Function
+The function definitions to add to the sessions executing the lab command
+
+```yaml
+Type: FunctionInfo[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ThrottleLimit
+The amount of parallel jobs to create
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AsJob
+Indicates if the lab commands should be executed in the background
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the resulting jobs should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ScriptBlock
+The script block to execute on the machines
+
+```yaml
+Type: ScriptBlock
+Parameter Sets: ScriptBlock, ScriptBlockFileContentDependency
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Retries
+The number of retries in case the script block fails
+
+```yaml
+Type: Int32
+Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RetryIntervalInSeconds
+The amount of seconds to wait between each retry
+
+```yaml
+Type: Int32
+Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -FilePath
+The script file path if a script file should be used
+
+```yaml
+Type: String
+Parameter Sets: Script, ScriptFileContentDependency
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -DependencyFolderPath
-{{ Fill DependencyFolderPath Description }}
+The folder containing the files the script or the script block depend on
 
 ```yaml
 Type: String
@@ -195,7 +356,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -210,7 +371,7 @@ Accept wildcard characters: False
 ```
 
 ### -FileName
-{{ Fill FileName Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -224,162 +385,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FilePath
-{{ Fill FilePath Description }}
+### -CustomRoleName
+{{ Fill CustomRoleName Description }}
 
 ```yaml
-Type: String
-Parameter Sets: Script, ScriptFileContentDependency
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Function
-{{ Fill Function Description }}
-
-```yaml
-Type: FunctionInfo[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoDisplay
-{{ Fill NoDisplay Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-{{ Fill PassThru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PostInstallationActivity
-{{ Fill PostInstallationActivity Description }}
-
-```yaml
-Type: SwitchParameter
+Type: String[]
 Parameter Sets: PostInstallationActivity
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Retries
-{{ Fill Retries Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RetryIntervalInSeconds
-{{ Fill RetryIntervalInSeconds Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: ScriptBlock, Script, ScriptFileNameContentDependency, ScriptFileContentDependency, ScriptBlockFileContentDependency
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ScriptBlock
-{{ Fill ScriptBlock Description }}
-
-```yaml
-Type: ScriptBlock
-Parameter Sets: ScriptBlock, ScriptBlockFileContentDependency
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ThrottleLimit
-{{ Fill ThrottleLimit Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Variable
-{{ Fill Variable Description }}
-
-```yaml
-Type: PSVariable[]
-Parameter Sets: (All)
 Aliases:
 
 Required: False
@@ -394,11 +405,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

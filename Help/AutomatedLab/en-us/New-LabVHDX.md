@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create new VHDX
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ New-LabVHDX [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates new VHDX files for the lab and initializing them with NTFS and a partition called Data
 
 ## EXAMPLES
 
@@ -36,23 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+The names of the VHDX files to create
 
 ```yaml
 Type: String[]
@@ -66,18 +51,28 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -All
+Indicates if all disks defined in the lab should be created
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### System.String[]
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

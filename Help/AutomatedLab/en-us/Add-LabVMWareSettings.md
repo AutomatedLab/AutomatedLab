@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-LabVMWareSettings
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add VMWare specific settings to the lab
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Add-LabVMWareSettings [-DataCenterName] <String> [-DataStoreName] <String> [-Res
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Adds the necessary VMWare settings to the lab definition: Data Center, Data Store, Resource Pool and VCenter server
 
 ## EXAMPLES
 
@@ -31,23 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -Credential
-{{ Fill Credential Description }}
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -DataCenterName
-{{ Fill DataCenterName Description }}
+The VMWare data center name
 
 ```yaml
 Type: String
@@ -62,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -DataStoreName
-{{ Fill DataStoreName Description }}
+The VMWare data store name
 
 ```yaml
 Type: String
@@ -76,23 +61,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-{{ Fill PassThru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ResourcePoolName
-{{ Fill ResourcePoolName Description }}
+The VMWare resource pool name
 
 ```yaml
 Type: String
@@ -107,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -VCenterServerName
-{{ Fill VCenterServerName Description }}
+The VCenter server name
 
 ```yaml
 Type: String
@@ -121,16 +91,43 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Credential
+Credentials to connect to VMWare
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Switch parameter to return VMWare settings object
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

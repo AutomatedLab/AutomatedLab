@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Validates the lab definition
 
 ## SYNTAX
 
@@ -17,21 +17,48 @@ Test-LabDefinition [[-Path] <String>] [-Quiet] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Use this function to (manually) validate the lab definition before attempting to actually deploy it.
+A lot of checks is being done which can potentially avoid issues up front instead of having to wait for these to occur during deployment and perhaps after considerably long time.
 
 ## EXAMPLES
 
 ### Example 1
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Test-LabDefinition -Path D:\MyLabs\MyTestLab\Lab.xml
 ```
 
-{{ Add example description here }}
+Performs validation of the lab saved in the file 'D:\MyLabs\MyTestLab\Lab.xml'
+
+Type        Message                TargetObject     
+----        -------                ------------     
+Information Role defined           RootDC           
+Information Role defined           FirstChildDC     
+Information Role defined           DC               
+Information Machine defined in lab DC1              
+Information Machine defined in lab DC2              
+Information Machine defined in lab DC3              
+Information Machine defined in lab SRV1             
+Information Domain defined         contoso.com      
+Information Domain defined         child.contoso.com
+Summary     Ok                     Lab              
+
+
+
+True
+
+### Example 2
+
+```powershell
+Test-LabDefinition -Path D:\MyLabs\MyTestLab\Lab.xml -Quiet
+```
+
+Performs validation of the lab saved in the file 'D:\MyLabs\MyTestLab\Lab.xml'.
 
 ## PARAMETERS
 
 ### -Path
-{{ Fill Path Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -46,7 +73,7 @@ Accept wildcard characters: False
 ```
 
 ### -Quiet
-{{ Fill Quiet Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -65,11 +92,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

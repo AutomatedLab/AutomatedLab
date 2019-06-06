@@ -8,17 +8,34 @@ schema: 2.0.0
 # Install-LabSqlServers
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install SQL servers
 
 ## SYNTAX
 
 ```
-Install-LabSqlServers [[-InstallationTimeout] <Int32>] [-CreateCheckPoints] [[-ProgressIndicator] <Int32>]
+Install-LabSqlServers [[-InstallationTimeout] <Int32>] [-CreateCheckPoints] [-ProgressIndicator <Int32>]
  [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Installs all SQL servers in the current lab with the configured installation properties of each server.
+The valid properties include:
+Features
+InstanceName
+Collation
+SQLSvcAccount     
+SQLSvcPassword    
+AgtSvcAccount     
+AgtSvcPassword    
+RsSvcAccount
+AgtSvcStartupType
+BrowserSvcStartupType
+RsSvcStartupType
+AsSysAdminAccounts
+AsSvcAccount
+IsSvcAccount
+SQLSysAdminAccounts
+SQLServer2008
 
 ## EXAMPLES
 
@@ -31,23 +48,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -CreateCheckPoints
-{{ Fill CreateCheckPoints Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -InstallationTimeout
-{{ Fill InstallationTimeout Description }}
+The timeout in minutes we should wait for the installation to finish
 
 ```yaml
 Type: Int32
@@ -56,6 +58,21 @@ Aliases:
 
 Required: False
 Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CreateCheckPoints
+Indicates if a checkpoint should be created after installing SQL
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -70,7 +87,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,11 +98,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

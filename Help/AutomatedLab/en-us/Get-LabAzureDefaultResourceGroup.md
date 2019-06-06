@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureDefaultResourceGroup
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the default resource group
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabAzureDefaultResourceGroup [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the default resource group for the current lab
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

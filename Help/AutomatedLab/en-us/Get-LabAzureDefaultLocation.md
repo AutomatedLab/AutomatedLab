@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureDefaultLocation
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the default Azure location
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabAzureDefaultLocation [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Returns the selected default location on Azure for the current lab
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

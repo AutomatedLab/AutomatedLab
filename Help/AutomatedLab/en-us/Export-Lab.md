@@ -8,7 +8,7 @@ schema: 2.0.0
 # Export-Lab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Export a lab
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Export-Lab [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Exports a lab including all machine and disk definitions to local XML stores according to the location defined in the lab settings
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

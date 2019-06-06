@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabIssuingCA
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the issuing CA
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabIssuingCA [[-DomainName] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the issuing certificate authority for the current lab and if specified the selected domain FQDN
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -DomainName
-{{ Fill DomainName Description }}
+The domain name the issuing CA should be retrieved from
 
 ```yaml
 Type: String
@@ -50,12 +50,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
 ### AutomatedLab.Machine
-
 ## NOTES
 
 ## RELATED LINKS

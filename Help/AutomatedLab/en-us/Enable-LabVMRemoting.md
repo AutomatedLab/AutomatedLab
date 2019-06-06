@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LabVMRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable remoting on machines
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Enable-LabVMRemoting [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enables remoting on one or more lab machines on Azure, HyperV and VMWare
 
 ## EXAMPLES
 
@@ -36,12 +36,12 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
+### -ComputerName
+The computer names
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: All
+Type: String[]
+Parameter Sets: ByName
 Aliases:
 
 Required: True
@@ -51,12 +51,12 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -ComputerName
-{{ Fill ComputerName Description }}
+### -All
+Indicates whether all lab machines should be used
 
 ```yaml
-Type: String[]
-Parameter Sets: ByName
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
 Required: True
@@ -71,13 +71,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String[]
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

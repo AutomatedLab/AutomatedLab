@@ -8,7 +8,7 @@ schema: 2.0.0
 # Import-LabAzureCertificate
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Not implemented
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Import-LabAzureCertificate [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Not implemented
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

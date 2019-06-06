@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-DiskSpeed
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Measures the disk speed of the specified logical drive letter
 
 ## SYNTAX
 
@@ -17,21 +17,33 @@ Get-DiskSpeed [-DriveLetter] <String> [[-Interations] <Int32>] [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Measures the disk speed of the specified logical drive letter.
+This is used by AutomatedLab when determining optimal placement of harddisk files of Hyper-V virtual machines
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Get-DiskSpeed -DriveLetter C
 ```
 
-{{ Add example description here }}
+Measure disk speed of drive C
+
+### Example 2
+
+
+```powershell
+Get-DiskSpeed -DriveLetter D: -Iterations 5
+```
+
+Measure disk speed of drive D using 5 iterations (repetetive measurements) and return average measurement
 
 ## PARAMETERS
 
 ### -DriveLetter
-{{ Fill DriveLetter Description }}
+Drive letter to measure
 
 ```yaml
 Type: String
@@ -46,7 +58,7 @@ Accept wildcard characters: False
 ```
 
 ### -Interations
-{{ Fill Interations Description }}
+Number of measurements to perform
 
 ```yaml
 Type: Int32
@@ -65,11 +77,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

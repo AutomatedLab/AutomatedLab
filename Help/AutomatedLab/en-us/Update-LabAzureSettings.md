@@ -8,7 +8,7 @@ schema: 2.0.0
 # Update-LabAzureSettings
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Update Azure settings
 
 ## SYNTAX
 
@@ -17,7 +17,8 @@ Update-LabAzureSettings
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Updates the lab's Azure settings after e.g.
+Add-LabAzureSubscription is called
 
 ## EXAMPLES
 
@@ -32,11 +33,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

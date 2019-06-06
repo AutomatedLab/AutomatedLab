@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabAdfs
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable ADFS
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabAdfs [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures the Active Directory Federation Services for the current lab by generating certificates from the lab CA, creating a service user and the necessary DNS entries as well as setting up an ADFS farm
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

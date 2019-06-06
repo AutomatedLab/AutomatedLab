@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabPathIsOnLabAzureLabSourcesStorage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Tests if a path is on Azure
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Test-LabPathIsOnLabAzureLabSourcesStorage [-Path] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Tests if a given path is inside the Azure lab source storage share
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Path
-{{ Fill Path Description }}
+The path to check
 
 ```yaml
 Type: String
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

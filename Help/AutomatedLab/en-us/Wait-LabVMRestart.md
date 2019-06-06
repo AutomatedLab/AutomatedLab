@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LabVMRestart
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for machine restart
 
 ## SYNTAX
 
@@ -19,7 +19,7 @@ Wait-LabVMRestart [-ComputerName] <String[]> [-DoNotUseCredSsp] [-TimeoutInMinut
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Waits for the restart of a lab machine
 
 ## EXAMPLES
 
@@ -33,7 +33,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine names to be waited on
 
 ```yaml
 Type: String[]
@@ -47,56 +47,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+### -TimeoutInMinutes
+The wait timeout in minutes
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MonitorJob
-{{ Fill MonitorJob Description }}
-
-```yaml
-Type: Object
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MonitoringStartTime
-{{ Fill MonitoringStartTime Description }}
-
-```yaml
-Type: DateTime
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoNewLine
-{{ Fill NoNewLine Description }}
-
-```yaml
-Type: SwitchParameter
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
@@ -108,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -123,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -StartMachinesWhileWaiting
-{{ Fill StartMachinesWhileWaiting Description }}
+Indicates the machines that should be started while waiting for the VM restart
 
 ```yaml
 Type: Machine[]
@@ -137,11 +92,56 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+### -NoNewLine
+Indicates that no new lines should be present in the output
 
 ```yaml
-Type: Double
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitorJob
+not implemented
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+@{Text=}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -MonitoringStartTime
+@{Text=}
+
+```yaml
+Type: DateTime
 Parameter Sets: (All)
 Aliases:
 
@@ -157,11 +157,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

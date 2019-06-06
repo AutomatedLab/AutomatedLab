@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVMRdpFile
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get RDP connection file
 
 ## SYNTAX
 
@@ -23,7 +23,8 @@ Get-LabVMRdpFile [-UseLocalCredential] [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets a Remote Desktop connection file for one or more lab machines and stores the files in the LabLocation, e.g.
+%ProgramData%\AutomatedLab\Labs\\\<LabName\>\
 
 ## EXAMPLES
 
@@ -36,23 +37,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -67,11 +53,26 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Indicates whether the machines' local credentials should be used to connect
 
 ```yaml
 Type: SwitchParameter
 Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Create RDP files for all lab VMs
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
 Required: False
@@ -86,11 +87,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

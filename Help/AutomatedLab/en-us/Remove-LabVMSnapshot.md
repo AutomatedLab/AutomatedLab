@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a snapshot
 
 ## SYNTAX
 
@@ -33,7 +33,7 @@ Remove-LabVMSnapshot [-AllMachines] [-AllSnapShots] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes a named snapshot or all snapshots for one or more machines
 
 ## EXAMPLES
 
@@ -46,12 +46,27 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AllMachines
-{{ Fill AllMachines Description }}
+### -SnapshotName
+The snapshot name
+
+```yaml
+Type: String
+Parameter Sets: ByNameSnapshotByName, AllMachinesSnapshotByName
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -AllSnapShots
+Indicates that all snapshots of the current lab should be removed
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: AllMachinesSnapshotByName, AllMachinesAllSnapshots
+Parameter Sets: ByNameAllSnapShots, AllMachinesAllSnapshots
 Aliases:
 
 Required: False
@@ -61,12 +76,12 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -AllSnapShots
-{{ Fill AllSnapShots Description }}
+### -AllMachines
+Indicates that the snapshot should be removed for all machines
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: ByNameAllSnapShots, AllMachinesAllSnapshots
+Parameter Sets: AllMachinesSnapshotByName, AllMachinesAllSnapshots
 Aliases:
 
 Required: False
@@ -91,35 +106,13 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -SnapshotName
-{{ Fill SnapshotName Description }}
-
-```yaml
-Type: String
-Parameter Sets: ByNameSnapshotByName, AllMachinesSnapshotByName
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### System.String[]
-
-### System.String
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -19,11 +19,12 @@ $location = $PSScriptRoot
 
 $outPath = foreach ($moduleName in $Module)
 {
-    Join-Path $location -ChildPath "Help\$moduleName\en-us"
-    Import-Module .\$moduleName -Force
+    $outputFolder = Join-Path $location -ChildPath "Help\$moduleName\en-us"
+    $outputFolder
+    Import-Module $moduleName -Force
     if ($Create.IsPresent)
     {
-        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder
+        $null = New-MarkdownHelp -Module $moduleName -WithModulePage -OutputFolder $outputFolder -Force
     }
 }
 

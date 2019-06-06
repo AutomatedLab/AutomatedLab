@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVolumesOnPhysicalDisks
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get lab volumes
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabVolumesOnPhysicalDisks
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get all file-backed virtual volumes on all disks with drive letter and serial number
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

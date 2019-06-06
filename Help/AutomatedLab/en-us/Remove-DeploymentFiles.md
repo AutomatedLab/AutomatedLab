@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-DeploymentFiles
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove deployment data
 
 ## SYNTAX
 
@@ -17,7 +17,11 @@ Remove-DeploymentFiles
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes the following files and folders used to deploy the machines from all running lab machines:
+C:\unattend.xml
+C:\WSManRegKey.reg
+C:\DeployDebug
+C:\AdditionalDisksOnline.ps1
 
 ## EXAMPLES
 
@@ -32,11 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVirtualNetworkDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Returns all virtual network definitions in the lab
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Get-LabVirtualNetworkDefinition -AddressSpace <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+eturns all virtual network definitions in the lab
 
 ## EXAMPLES
 
@@ -36,23 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AddressSpace
-{{ Fill AddressSpace Description }}
-
-```yaml
-Type: String
-Parameter Sets: ByAddressSpace
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -66,16 +51,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AddressSpace
+@{Text=}
+
+```yaml
+Type: String
+Parameter Sets: ByAddressSpace
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### AutomatedLab.VirtualNetwork
 
 ## NOTES
 

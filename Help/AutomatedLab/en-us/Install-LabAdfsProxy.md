@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabAdfsProxy
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create ADFS proxy
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabAdfsProxy [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures an ADFS proxy for existing ADFS lab machines by retrieving a valid certificate for one ADFS machine and then installing a web application proxy
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

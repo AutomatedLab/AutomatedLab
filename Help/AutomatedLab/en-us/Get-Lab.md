@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-Lab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Show lab data
 
 ## SYNTAX
 
@@ -17,21 +17,24 @@ Get-Lab [-List] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return the lab data for the current lab or list all existing labs
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Import-Lab MyLabName
+$LabData = Get-Lab
 ```
 
-{{ Add example description here }}
+Imports a lab and stores the lab data in the variable LabData
 
 ## PARAMETERS
 
 ### -List
-{{ Fill List Description }}
+Indicates whether all existing labs should be listed
 
 ```yaml
 Type: SwitchParameter
@@ -50,11 +53,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### AutomatedLab.Lab
 
 ## NOTES
 

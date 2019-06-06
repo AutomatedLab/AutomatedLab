@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new virtual machine
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ New-LabVM [-All] [-CreateCheckPoints] [-ProgressIndicator <Int32>] [<CommonParam
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates new virtual machines for the machine definitions present in the lab
 
 ## EXAMPLES
 
@@ -36,38 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CreateCheckPoints
-{{ Fill CreateCheckPoints Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+The names of the machines to create
 
 ```yaml
 Type: String[]
@@ -81,8 +51,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -CreateCheckPoints
+Indicates if a checkpoint should be created after machine creation
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Indicates that all lab machines should be created
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -101,11 +101,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

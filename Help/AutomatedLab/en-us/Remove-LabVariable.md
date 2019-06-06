@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabVariable
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove AutomatedLab variables
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Remove-LabVariable
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes all variables matching  'AL_(\[a-zA-Z0-9\]{8})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{12})'
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

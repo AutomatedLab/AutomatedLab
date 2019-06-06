@@ -8,7 +8,7 @@ schema: 2.0.0
 # Restore-LabVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Restore a snapshot
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Restore-LabVMSnapshot -SnapshotName <String> [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Restores a named snapshot on one or more machines
 
 ## EXAMPLES
 
@@ -36,23 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -67,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The snapshot name
 
 ```yaml
 Type: String
@@ -81,20 +66,28 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -All
+Indicates that the snapshot should be restored on all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### System.String[]
-
-### System.String
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

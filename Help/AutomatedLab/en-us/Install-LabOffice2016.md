@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabOffice2016
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install Microsoft Office 2016
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabOffice2016 [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Installs Microsoft Office 2016 on designated lab machines
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

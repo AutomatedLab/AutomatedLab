@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-FolderExist
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test-Path
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Test-FolderExist [[-FolderName] <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Wrapper for Test-Path
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -FolderName
-{{ Fill FolderName Description }}
+The folder to test
 
 ```yaml
 Type: Object
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

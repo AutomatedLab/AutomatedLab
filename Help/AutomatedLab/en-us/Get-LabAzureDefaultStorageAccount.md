@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureDefaultStorageAccount
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the default storage account
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabAzureDefaultStorageAccount [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the lab's default storage account in the lab resource group/lab location
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

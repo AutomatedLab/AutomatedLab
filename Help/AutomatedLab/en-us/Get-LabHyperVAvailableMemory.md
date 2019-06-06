@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabHyperVAvailableMemory
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get available HyperV memory
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabHyperVAvailableMemory
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the available of the amount of RAM the local HyperV manages (TotalVisibleMemorySize of the Win32_OperatingSystem WMI class)
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

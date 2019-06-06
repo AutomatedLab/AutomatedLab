@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for VM
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Wait-LabVM [-ComputerName] <String[]> [-TimeoutInMinutes <Double>] [-PostDelaySe
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Waits for a lab machine to accept incoming sessions, indicating that it is ready to be used
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+@{Text=}
 
 ```yaml
 Type: String[]
@@ -46,26 +46,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+### -TimeoutInMinutes
+@{Text=}
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoNewLine
-{{ Fill NoNewLine Description }}
-
-```yaml
-Type: SwitchParameter
+Type: Double
 Parameter Sets: (All)
 Aliases:
 
@@ -77,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -PostDelaySeconds
-{{ Fill PostDelaySeconds Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -92,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -106,11 +91,26 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+### -NoNewLine
+@{Text=}
 
 ```yaml
-Type: Double
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+@{Text=}
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -126,11 +126,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

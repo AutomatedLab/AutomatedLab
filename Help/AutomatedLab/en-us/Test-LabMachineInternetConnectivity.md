@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabMachineInternetConnectivity
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Check internet connection
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Test-LabMachineInternetConnectivity [-ComputerName] <String> [[-Count] <Int32>] 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Tests if the specified lab machine has a working internet connection
 
 ## EXAMPLES
 
@@ -30,23 +30,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AsJob
-{{ Fill AsJob Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine name
 
 ```yaml
 Type: String
@@ -60,8 +45,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AsJob
+Indicates that the test should be carried out as a background job
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -Count
-{{ Fill Count Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -80,12 +80,9 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
 ### System.Boolean
-
 ## NOTES
 
 ## RELATED LINKS

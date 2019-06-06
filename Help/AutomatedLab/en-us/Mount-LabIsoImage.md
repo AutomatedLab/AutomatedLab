@@ -8,7 +8,7 @@ schema: 2.0.0
 # Mount-LabIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Mount an ISO
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Mount-LabIsoImage [-ComputerName] <String[]> [-IsoPath] <String> [-SupressOutput
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Mounts a disk image on one or more lab machines
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsoPath
-{{ Fill IsoPath Description }}
+The full path of the ISO file to mount
 
 ```yaml
 Type: String
@@ -61,8 +61,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PassThru
-{{ Fill PassThru Description }}
+### -SupressOutput
+Indicates if output should be suppressed
 
 ```yaml
 Type: SwitchParameter
@@ -76,8 +76,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SupressOutput
-{{ Fill SupressOutput Description }}
+### -PassThru
+Indicates if a psobject containing drive info should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -96,11 +96,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

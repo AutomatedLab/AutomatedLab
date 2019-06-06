@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get Windows feature status
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Get-LabWindowsFeature [-ComputerName] <String[]> [[-FeatureName] <String[]>] [-U
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the status of one or more Windows features on one or more lab machines
 
 ## EXAMPLES
 
@@ -31,23 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AsJob
-{{ Fill AsJob Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -62,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+The feature names
 
 ```yaml
 Type: String[]
@@ -76,8 +61,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoDisplay
-{{ Fill NoDisplay Description }}
+### -UseLocalCredential
+Indicates whether local credentials should be used
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -106,8 +91,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AsJob
+Indicates if output should be running as a background Job.
 
 ```yaml
 Type: SwitchParameter
@@ -126,11 +126,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

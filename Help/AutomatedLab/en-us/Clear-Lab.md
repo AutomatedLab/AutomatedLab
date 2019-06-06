@@ -8,7 +8,7 @@ schema: 2.0.0
 # Clear-Lab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Clear lab data
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Clear-Lab [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Clears the variable $script:data to effectively clear the lab definition
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

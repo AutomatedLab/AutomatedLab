@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Gets the lab definition
 
 ## SYNTAX
 
@@ -17,16 +17,18 @@ Get-LabDefinition [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Retrieves all lab definition information
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Get-LabDefinition
 ```
 
-{{ Add example description here }}
+Retrieves all lab definition information
 
 ## PARAMETERS
 
@@ -35,11 +37,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### AutomatedLab.Lab
 
 ## NOTES
 

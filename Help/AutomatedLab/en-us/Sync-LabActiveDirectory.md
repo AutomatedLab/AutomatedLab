@@ -8,7 +8,7 @@ schema: 2.0.0
 # Sync-LabActiveDirectory
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Start AD replication
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Sync-LabActiveDirectory [-ComputerName] <String[]> [[-ProgressIndicator] <Int32>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Initiates the Active Directory synchronisation in the lab environment by calling repadmin on the selected machines
 
 ## EXAMPLES
 
@@ -31,23 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AsJob
-{{ Fill AsJob Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines repadmin should be executed on
 
 ```yaml
 Type: String[]
@@ -61,23 +46,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Passthru
-{{ Fill Passthru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -91,16 +61,43 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AsJob
+Indicates that replication should be started as a job
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Passthru
+Indicates that the resulting job objects should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

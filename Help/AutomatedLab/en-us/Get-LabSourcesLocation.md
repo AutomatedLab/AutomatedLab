@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabSourcesLocation
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get lab source location
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabSourcesLocation [-Local]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the lab sources location by either returning it directly if defined or by scanning all local disks for a folder called LabSources
 
 ## EXAMPLES
 
@@ -47,11 +47,8 @@ Accept wildcard characters: False
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

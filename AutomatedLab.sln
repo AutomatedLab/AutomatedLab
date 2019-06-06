@@ -74,7 +74,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLab", "{03FEFD6A-B999-4BBA-875B-6CFA083E43CC}"
 	ProjectSection(SolutionItems) = preProject
 		AutomatedLab\AutomatedLab.format.ps1xml = AutomatedLab\AutomatedLab.format.ps1xml
-		AutomatedLab\AutomatedLab.Help.xml = AutomatedLab\AutomatedLab.Help.xml
+		AutomatedLab\AutomatedLab-help.xml = AutomatedLab\AutomatedLab-help.xml
 		AutomatedLab\AutomatedLab.init.ps1 = AutomatedLab\AutomatedLab.init.ps1
 		AutomatedLab\AutomatedLab.psd1 = AutomatedLab\AutomatedLab.psd1
 		AutomatedLab\AutomatedLab.psm1 = AutomatedLab\AutomatedLab.psm1

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabGlobalNamePrefix
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set a machine prefix
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Set-LabGlobalNamePrefix [[-Name] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets a prefix to prepend to all machine names
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+The prefix
 
 ```yaml
 Type: String
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

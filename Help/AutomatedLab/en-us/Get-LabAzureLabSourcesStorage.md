@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureLabSourcesStorage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get Azure storage data
 
 ## SYNTAX
 
@@ -17,7 +17,8 @@ Get-LabAzureLabSourcesStorage [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the ResourceGroupName, StorageAccountName, StorageAccountKey and Path of the lab sources file storage.
+To be able to use the cmdlet, you need to Add-LabAzureSubscription before.
 
 ## EXAMPLES
 
@@ -35,11 +36,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

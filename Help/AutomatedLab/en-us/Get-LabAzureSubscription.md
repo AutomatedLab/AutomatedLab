@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureSubscription
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get an Azure subscription
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabAzureSubscription
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets all subscriptions for a given lab
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

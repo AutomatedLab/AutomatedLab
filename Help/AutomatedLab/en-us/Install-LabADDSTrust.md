@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabADDSTrust
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create forest trust
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabADDSTrust
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates DNS forwarders and a bidirectional trust for all forests in the current lab
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

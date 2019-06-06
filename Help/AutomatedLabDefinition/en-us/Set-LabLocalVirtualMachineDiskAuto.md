@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabLocalVirtualMachineDiskAuto
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the VM disk container
 
 ## SYNTAX
 
@@ -17,7 +17,8 @@ Set-LabLocalVirtualMachineDiskAuto [[-SpaceNeeded] <Int64>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Automatically determines the disk to store all VMs on by latency.
+Boot volumes are only selected if no other volumes are present or if the next drive is more than 50% slower than the boot drive.
 
 ## EXAMPLES
 
@@ -31,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -SpaceNeeded
-{{ Fill SpaceNeeded Description }}
+The space needed for the whole lab installation
 
 ```yaml
 Type: Int64
@@ -50,11 +51,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

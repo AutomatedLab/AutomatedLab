@@ -8,7 +8,7 @@ schema: 2.0.0
 # Start-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Start a machine
 
 ## SYNTAX
 
@@ -37,7 +37,7 @@ Start-LabVM [-All] [-Wait] [-DoNotUseCredSsp] [-NoNewline] [-DelayBetweenCompute
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Starts one or more lab machines
 
 ## EXAMPLES
 
@@ -50,23 +50,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to start
 
 ```yaml
 Type: String[]
@@ -80,41 +65,11 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -DelayBetweenComputers
-{{ Fill DelayBetweenComputers Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+### -Wait
+Indicates that we should wait for the startup procedure to finish
 
 ```yaml
 Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Domain
-{{ Fill Domain Description }}
-
-```yaml
-Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -126,7 +81,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewline
-{{ Fill NoNewline Description }}
+Indicates that no new lines should be present in the output
 
 ```yaml
 Type: SwitchParameter
@@ -140,99 +95,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PostDelaySeconds
-{{ Fill PostDelaySeconds Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PreDelaySeconds
-{{ Fill PreDelaySeconds Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RoleName
-{{ Fill RoleName Description }}
-
-```yaml
-Type: Roles
-Parameter Sets: ByRole
-Aliases:
-Accepted values: RootDC, FirstChildDC, DC, ADDS, FileServer, WebServer, DHCP, Routing, CaRoot, CaSubordinate, SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, VisualStudio2013, VisualStudio2015, SharePoint2013, SharePoint2016, Orchestrator2012, SQLServer2017, SQLServer, DSCPullServer, Office2013, Office2016, ADFS, ADFSWAP, ADFSProxy, FailoverStorage, FailoverNode, Tfs2015, Tfs2017, TfsBuildWorker, Tfs2018, HyperV, AzDevOps
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RootDomainMachines
-{{ Fill RootDomainMachines Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StartNextDomainControllers
-{{ Fill StartNextDomainControllers Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -StartNextMachines
-{{ Fill StartNextMachines Description }}
+### -DelayBetweenComputers
+The delay in minutes between the computer startups
 
 ```yaml
 Type: Int32
@@ -247,7 +111,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+The startup timeout in minutes
 
 ```yaml
 Type: Int32
@@ -261,8 +125,143 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Wait
-{{ Fill Wait Description }}
+### -StartNextMachines
+Start the next n machines
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -StartNextDomainControllers
+Start the next n domain controllers
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Domain
+Starts all machines of a specific domain
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RootDomainMachines
+Start all machines of the root domain
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressIndicator
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PreDelaySeconds
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostDelaySeconds
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RoleName
+The roles to start
+
+```yaml
+Type: Roles
+Parameter Sets: ByRole
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Start all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DoNotUseCredSsp
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -281,11 +280,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

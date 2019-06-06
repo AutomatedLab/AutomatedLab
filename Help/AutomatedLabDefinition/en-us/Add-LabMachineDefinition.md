@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-LabMachineDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Adds a definition of a machine to the lab
 
 ## SYNTAX
 
@@ -42,321 +42,70 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Adds a definition of a machine to the lab.
+This does not create the actual machine.
+It creates the information of how the machines should look like.
 
 ## EXAMPLES
 
-### Example 1
+### EXAMPLE 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER' -ToolsPath 'C:\LabSources\MyLabTools1' -ToolsPathDestination 'C:\MyDistTools'
 ```
 
-{{ Add example description here }}
+Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER'.
+Machine will not be domain joined but be placed in workgroup.
+
+If using a folder for tools folder for each machine in the lab ie C:\MyLabTools1\Server1, C:\MyLabTools1\Server2 etc, you can use 'C:\MyLabTools1\\\<machine\>' and AutomatedLab will map using the name of each machine to find the tools folder.
+
+### EXAMPLE 2
+
+
+```powershell
+Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2008 R2 Datacenter (Full Installation)' -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName 'contoso.com'
+```
+
+Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2008 R2 Datacenter (Full Installation)'.
+
+Following parameters for the machine, will be auto-configured:
+- Processors
+- IPv4 address and subnet mask
+- DNS server
+- Regional settings (will be set to match the host machine)
+- Time zone (will be set to match the host machine)
+- Userlocale  (will be set to match the host machine)
+- Windows firewall is disabled
+- Hyper-V switch or Azure virtual network depending on -DefaultVirtualizationEngine parameter used for New-LabDefinition or -VirtualizationEngine parameter used for this function (Add-LabMachineDefinition)
+
+### EXAMPLE 3
+
+
+```powershell
+Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress '192.168.100.5/24' -Network Network1
+```
+
+Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2012 R2 Datacenter (Server with a GUI)' with build version of '6.3.9600.17415'.
+
+Memory will be set to 2GB (static).
+
+### EXAMPLE 4
+
+
+```powershell
+Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'
+```
+
+Adds a definition of a Hyper-V machine with the name 'Server1' with the operating system of 'Windows Server 2012 R2 Datacenter (Server with a GUI)'.
+
+Memory will be set to 2GB (static).
 
 ## PARAMETERS
 
-### -AutoLogonDomainName
-{{ Fill AutoLogonDomainName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AutoLogonPassword
-{{ Fill AutoLogonPassword Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AutoLogonUserName
-{{ Fill AutoLogonUserName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AzureProperties
-{{ Fill AzureProperties Description }}
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -AzureRoleSize
-{{ Fill AzureRoleSize Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DefaultDomain
-{{ Fill DefaultDomain Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -DiskName
-{{ Fill DiskName Description }}
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DnsServer1
-{{ Fill DnsServer1 Description }}
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DnsServer2
-{{ Fill DnsServer2 Description }}
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DomainName
-{{ Fill DomainName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -EnableWindowsFirewall
-{{ Fill EnableWindowsFirewall Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -FriendlyName
-{{ Fill FriendlyName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Gateway
-{{ Fill Gateway Description }}
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -HypervProperties
-{{ Fill HypervProperties Description }}
-
-```yaml
-Type: Hashtable
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -InstallationUserCredential
-{{ Fill InstallationUserCredential Description }}
-
-```yaml
-Type: PSCredential
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IpAddress
-{{ Fill IpAddress Description }}
-
-```yaml
-Type: String
-Parameter Sets: Network
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -IsDomainJoined
-{{ Fill IsDomainJoined Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MaxMemory
-{{ Fill MaxMemory Description }}
-
-```yaml
-Type: Double
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Memory
-{{ Fill Memory Description }}
-
-```yaml
-Type: Double
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -MinMemory
-{{ Fill MinMemory Description }}
-
-```yaml
-Type: Double
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+Name of machine
+Name must consist of characters a-z, A-Z, '-' or 0-9 and must be 1-15 in length.
 
 ```yaml
 Type: String
@@ -370,41 +119,74 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -Network
-{{ Fill Network Description }}
+### -Memory
+Startup memory for machine or, if -MinMemory or -MaxMemory is not specified, static memory for machine.
+Specified in bytes and must be within range 128MB-128GB.
 
 ```yaml
-Type: String
-Parameter Sets: Network
+Type: Double
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NetworkAdapter
-{{ Fill NetworkAdapter Description }}
+### -MinMemory
+Minimum dynamic memory for machine
+Specified in bytes and must be within range 128MB-128GB.
 
 ```yaml
-Type: NetworkAdapter[]
-Parameter Sets: NetworkAdapter
+Type: Double
+Parameter Sets: (All)
 Aliases:
 
 Required: False
 Position: Named
-Default value: None
+Default value: 0
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Notes
-{{ Fill Notes Description }}
+### -MaxMemory
+Maximum dynamic memory for machine
+Specified in bytes and must be within range 128MB-128GB.
 
 ```yaml
-Type: Hashtable
+Type: Double
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Processors
+Virtual processor count for machine
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: 0
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DiskName
+The disk names created by Add-LabDiskDefinition
+
+```yaml
+Type: String[]
 Parameter Sets: (All)
 Aliases:
 
@@ -416,7 +198,7 @@ Accept wildcard characters: False
 ```
 
 ### -OperatingSystem
-{{ Fill OperatingSystem Description }}
+The lab operating system to use
 
 ```yaml
 Type: OperatingSystem
@@ -431,7 +213,385 @@ Accept wildcard characters: False
 ```
 
 ### -OperatingSystemVersion
-{{ Fill OperatingSystemVersion Description }}
+The operating system version
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Network
+The lab network to connect this machine to
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IpAddress
+The static private IP address of this machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Gateway
+The default gateway for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DnsServer1
+The first DNS server for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DnsServer2
+The second DNS server for the machine
+
+```yaml
+Type: String
+Parameter Sets: Network
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IsDomainJoined
+Indicates that the machine should be joined to a lab domain
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DefaultDomain
+The default domain for the machine
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -InstallationUserCredential
+The credentials of the installation user (i.e.
+the local admin)
+
+```yaml
+Type: PSCredential
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DomainName
+The domain name of the machine.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Roles
+The machine's role definitions
+
+```yaml
+Type: Role[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProductKey
+The product key of the machine
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -UserLocale
+The locale to use
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TimeZone
+The machine's time zone
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PostInstallationActivity
+Post installation activities as defined with Get-LabPostInstallationActivity
+
+```yaml
+Type: PostInstallationActivity[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ToolsPath
+The local tools path to be copied to the machine
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ToolsPathDestination
+The tools path on the destination machine
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -VirtualizationHost
+The virtualization host to use.
+It is recommended to define the default virtualization host when creating a new lab
+
+```yaml
+Type: VirtualizationHost
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -EnableWindowsFirewall
+Indicates that Windows firewall should be enabled on the machine
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonDomainName
+The domain for the auto logon user
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonUserName
+The user name for the auto logon user
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoLogonPassword
+The password for the auto logon user
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AzureProperties
+The Azure properties.
+Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -HypervProperties
+The HyperV properties
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Notes
+Notes to add to the machine
+
+```yaml
+Type: Hashtable
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AzureRoleSize
+The role size of the machine on Azure
 
 ```yaml
 Type: String
@@ -446,7 +606,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the machine definition should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -460,12 +620,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -PostInstallationActivity
-{{ Fill PostInstallationActivity Description }}
+### -NetworkAdapter
+The lab network adapter to connect this machine to
 
 ```yaml
-Type: PostInstallationActivity[]
-Parameter Sets: (All)
+Type: NetworkAdapter[]
+Parameter Sets: NetworkAdapter
 Aliases:
 
 Required: False
@@ -475,23 +635,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Processors
-{{ Fill Processors Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProductKey
-{{ Fill ProductKey Description }}
+### -FriendlyName
+{{ Fill FriendlyName Description }}
 
 ```yaml
 Type: String
@@ -520,21 +665,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Roles
-{{ Fill Roles Description }}
-
-```yaml
-Type: Role[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -SkipDeployment
 {{ Fill SkipDeployment Description }}
 
@@ -550,96 +680,15 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TimeZone
-{{ Fill TimeZone Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-Accepted values: Afghanistan Standard Time, Alaskan Standard Time, Aleutian Standard Time, Altai Standard Time, Arab Standard Time, Arabian Standard Time, Arabic Standard Time, Argentina Standard Time, Astrakhan Standard Time, Atlantic Standard Time, AUS Central Standard Time, Aus Central W. Standard Time, AUS Eastern Standard Time, Azerbaijan Standard Time, Azores Standard Time, Bahia Standard Time, Bangladesh Standard Time, Belarus Standard Time, Bougainville Standard Time, Canada Central Standard Time, Cape Verde Standard Time, Caucasus Standard Time, Cen. Australia Standard Time, Central America Standard Time, Central Asia Standard Time, Central Brazilian Standard Time, Central Europe Standard Time, Central European Standard Time, Central Pacific Standard Time, Central Standard Time, Central Standard Time (Mexico), Chatham Islands Standard Time, China Standard Time, Cuba Standard Time, Dateline Standard Time, E. Africa Standard Time, E. Australia Standard Time, E. Europe Standard Time, E. South America Standard Time, Easter Island Standard Time, Eastern Standard Time, Eastern Standard Time (Mexico), Egypt Standard Time, Ekaterinburg Standard Time, Fiji Standard Time, FLE Standard Time, Georgian Standard Time, GMT Standard Time, Greenland Standard Time, Greenwich Standard Time, GTB Standard Time, Haiti Standard Time, Hawaiian Standard Time, India Standard Time, Iran Standard Time, Israel Standard Time, Jordan Standard Time, Kaliningrad Standard Time, Kamchatka Standard Time, Korea Standard Time, Libya Standard Time, Line Islands Standard Time, Lord Howe Standard Time, Magadan Standard Time, Magallanes Standard Time, Marquesas Standard Time, Mauritius Standard Time, Mid-Atlantic Standard Time, Middle East Standard Time, Montevideo Standard Time, Morocco Standard Time, Mountain Standard Time, Mountain Standard Time (Mexico), Myanmar Standard Time, N. Central Asia Standard Time, Namibia Standard Time, Nepal Standard Time, New Zealand Standard Time, Newfoundland Standard Time, Norfolk Standard Time, North Asia East Standard Time, North Asia Standard Time, North Korea Standard Time, Omsk Standard Time, Pacific SA Standard Time, Pacific Standard Time, Pacific Standard Time (Mexico), Pakistan Standard Time, Paraguay Standard Time, Qyzylorda Standard Time, Romance Standard Time, Russia Time Zone 10, Russia Time Zone 11, Russia Time Zone 3, Russian Standard Time, SA Eastern Standard Time, SA Pacific Standard Time, SA Western Standard Time, Saint Pierre Standard Time, Sakhalin Standard Time, Samoa Standard Time, Sao Tome Standard Time, Saratov Standard Time, SE Asia Standard Time, Singapore Standard Time, South Africa Standard Time, Sri Lanka Standard Time, Sudan Standard Time, Syria Standard Time, Taipei Standard Time, Tasmania Standard Time, Tocantins Standard Time, Tokyo Standard Time, Tomsk Standard Time, Tonga Standard Time, Transbaikal Standard Time, Turkey Standard Time, Turks And Caicos Standard Time, Ulaanbaatar Standard Time, US Eastern Standard Time, US Mountain Standard Time, UTC, UTC+12, UTC+13, UTC-02, UTC-08, UTC-09, UTC-11, Venezuela Standard Time, Vladivostok Standard Time, Volgograd Standard Time, W. Australia Standard Time, W. Central Africa Standard Time, W. Europe Standard Time, W. Mongolia Standard Time, West Asia Standard Time, West Bank Standard Time, West Pacific Standard Time, Yakutsk Standard Time
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ToolsPath
-{{ Fill ToolsPath Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ToolsPathDestination
-{{ Fill ToolsPathDestination Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -UserLocale
-{{ Fill UserLocale Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -VirtualizationHost
-{{ Fill VirtualizationHost Description }}
-
-```yaml
-Type: VirtualizationHost
-Parameter Sets: (All)
-Aliases:
-Accepted values: HyperV, Azure, VMWare
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### System.String
-
-### System.Management.Automation.SwitchParameter
-
+### None
 ## OUTPUTS
 
-### AutomatedLab.Machine
-
+### None
 ## NOTES
 
 ## RELATED LINKS

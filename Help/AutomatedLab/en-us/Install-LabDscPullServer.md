@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabDscPullServer
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install a DSC pull server
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Install-LabDscPullServer [[-InstallationTimeout] <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures the labs DSC pull servers with SSL
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -InstallationTimeout
-{{ Fill InstallationTimeout Description }}
+The timeout in minutes how long we should wait for the installation
 
 ```yaml
 Type: Int32
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

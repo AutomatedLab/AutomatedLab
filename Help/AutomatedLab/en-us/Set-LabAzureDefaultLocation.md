@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabAzureDefaultLocation
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set Azure location
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Set-LabAzureDefaultLocation [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets the default location for all Azure-based lab commands
 
 ## EXAMPLES
 
@@ -31,7 +31,8 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+The location display name, e.g.
+'West US'
 
 ```yaml
 Type: String
@@ -50,11 +51,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

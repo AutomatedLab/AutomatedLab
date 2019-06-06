@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabDefaultVirtualizationEngine
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set default virtualization engine
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Set-LabDefaultVirtualizationEngine [-VirtualizationEngine] <String> [<CommonPara
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets the default virtualization engine for the lab
 
 ## EXAMPLES
 
@@ -31,13 +31,13 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -VirtualizationEngine
-{{ Fill VirtualizationEngine Description }}
+The virtualization engine to use.
+Supported values: HyperV, VMWare, Azure
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
-Accepted values: Azure, HyperV, VMware
 
 Required: True
 Position: 0
@@ -51,11 +51,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

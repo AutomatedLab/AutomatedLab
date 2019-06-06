@@ -8,7 +8,7 @@ schema: 2.0.0
 # Dismount-LabIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Dismounts an ISO
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Dismount-LabIsoImage [-ComputerName] <String[]> [-SupressOutput] [<CommonParamet
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Dismounts the mounted ISO image file from one or more lab machines
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SupressOutput
-{{ Fill SupressOutput Description }}
+Indicates whether output should be suppressed or not
 
 ```yaml
 Type: SwitchParameter
@@ -65,11 +65,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

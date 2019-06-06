@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LabVMFirewallGroup
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable firewall group on machine
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Enable-LabVMFirewallGroup [-ComputerName] <String[]> [-FirewallGroup] <String[]>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enables one or more named firewall groups on one or more lab machines
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -FirewallGroup
-{{ Fill FirewallGroup Description }}
+The firewall group names
 
 ```yaml
 Type: String[]
@@ -65,11 +65,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

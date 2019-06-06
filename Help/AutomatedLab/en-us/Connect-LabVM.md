@@ -8,7 +8,7 @@ schema: 2.0.0
 # Connect-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Connect to a lab VM
 
 ## SYNTAX
 
@@ -17,21 +17,23 @@ Connect-LabVM [-ComputerName] <String[]> [-UseLocalCredential] [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the connection information for Azure and HyperV VMs and uses the information to open a Remote Desktop Session to those machines
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Connect-LabVM -ComputerName DC1,DC2 -Credential (Get-Credential)
 ```
 
-{{ Add example description here }}
+Connects the machines DC1 and DC2 via Remote Desktop and the credentials specified in Get-Credential
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names to connect to
 
 ```yaml
 Type: String[]
@@ -46,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Switch parameter to indicate if a local user credential of the machine should be used
 
 ```yaml
 Type: SwitchParameter
@@ -65,11 +67,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

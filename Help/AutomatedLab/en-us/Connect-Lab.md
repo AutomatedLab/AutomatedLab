@@ -8,7 +8,7 @@ schema: 2.0.0
 # Connect-Lab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Connect two labs via VPN
 
 ## SYNTAX
 
@@ -25,51 +25,55 @@ Connect-Lab [-SourceLab] <String> [-DestinationIpAddress] <String> [-PreSharedKe
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+This cmdlet allows you to connect two labs through a persistent IPSEC VPN connection.
+Currently connections from Hyper-V labs to Azure labs, connections from Hyper-V labs to any VPN Gateway and connections of two Azure labs are possible.
+
+To make use of this cmdlet, your on-premises lab needs to contain a router, i.e.
+a machine with the Routing role and one external NIC.
 
 ## EXAMPLES
 
-### Example 1
+### On-Prem to Azure
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Connect-Lab -SourceLab MyOnPremisesLab -DestinationLab MyAzureLab
 ```
 
-{{ Add example description here }}
+This connects the two existing labs, MyOnPremisesLab - a Hyper-V lab with at least one router - and MyAzureLab, which is any Azure based lab.
+
+On Azure, the resources Virtual Network Gateway, Local Network Gateway, Public IP Address and Virtual Network Connection will be created.
+On Hyper-V, S2SVPN will be enabled on the router.
+
+### On-Prem to somewhere
+
+
+```powershell
+Connect-Lab -SourceLab MyOnPremLab -DestinationIpAddress myvpngateway.mycompany.com -PreSharedKey VeryS3cureKey -AddressSpace @("192.168.30.0/24", "192.168.60.0/24", "192.168.90.0/24")
+```
+
+This command connects the Hyper-V lab MyOnPremLab to a VPN gateway listening on myvpngateway.mycompany.com.
+Requests to one of the address spaces "192.168.30.0/24", "192.168.60.0/24" and "192.168.90.0/24" will be routed through the VPN connection
 
 ## PARAMETERS
 
-### -AddressSpace
-{{ Fill AddressSpace Description }}
-
-```yaml
-Type: String[]
-Parameter Sets: Site2Site
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DestinationIpAddress
-{{ Fill DestinationIpAddress Description }}
+### -SourceLab
+The source lab name
 
 ```yaml
 Type: String
-Parameter Sets: Site2Site
+Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: 1
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
 ### -DestinationLab
-{{ Fill DestinationLab Description }}
+The destination lab name
 
 ```yaml
 Type: String
@@ -84,7 +88,7 @@ Accept wildcard characters: False
 ```
 
 ### -NetworkAdapterName
-{{ Fill NetworkAdapterName Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -98,8 +102,39 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -AddressSpace
+One or more address spaces to be routed in case you are connecting to an external VPN gateway and not to another lab.
+Example: 192.168.2.30/24
+
+```yaml
+Type: String[]
+Parameter Sets: Site2Site
+Aliases:
+
+Required: False
+Position: 3
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DestinationIpAddress
+@{Text=}
+
+```yaml
+Type: String
+Parameter Sets: Site2Site
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -PreSharedKey
-{{ Fill PreSharedKey Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -113,31 +148,13 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -SourceLab
-{{ Fill SourceLab Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

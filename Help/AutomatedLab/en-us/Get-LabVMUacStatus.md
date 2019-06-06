@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVMUacStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the UAC status of a machine
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabVMUacStatus [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Retrieves the status of the User Account Control of one or more lab machines
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

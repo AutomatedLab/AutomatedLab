@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureCertificate
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Not Implemented
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabAzureCertificate [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Not Implemented
 
 ## EXAMPLES
 
@@ -35,11 +35,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.Security.Cryptography.X509Certificates.X509Certificate2
 
 ## NOTES
 

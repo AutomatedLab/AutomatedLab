@@ -14,24 +14,6 @@ Locale: en-US
 ### [Get-CallerPreference](Get-CallerPreference.md)
 {{ Fill in the Description }}
 
-### [Start-Log](Start-Log.md)
-{{ Fill in the Description }}
-
-### [Stop-Log](Stop-Log.md)
-{{ Fill in the Description }}
-
-### [Write-Debug](Write-Debug.md)
-{{ Fill in the Description }}
-
-### [Write-Error](Write-Error.md)
-{{ Fill in the Description }}
-
-### [Write-Host](Write-Host.md)
-{{ Fill in the Description }}
-
-### [Write-LogEntry](Write-LogEntry.md)
-{{ Fill in the Description }}
-
 ### [Write-LogError](Write-LogError.md)
 {{ Fill in the Description }}
 
@@ -51,11 +33,5 @@ Locale: en-US
 {{ Fill in the Description }}
 
 ### [Write-ScreenInfo](Write-ScreenInfo.md)
-{{ Fill in the Description }}
-
-### [Write-Verbose](Write-Verbose.md)
-{{ Fill in the Description }}
-
-### [Write-Warning](Write-Warning.md)
 {{ Fill in the Description }}
 

@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabAzureLabSourcesStorage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create Azure lab source storage
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ New-LabAzureLabSourcesStorage [[-LocationName] <String>] [-NoDisplay] [<CommonPa
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates the resource group AutomatedLabSources and a random storage account with a file share called labsources on it in your subscription
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -LocationName
-{{ Fill LocationName Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -65,11 +65,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

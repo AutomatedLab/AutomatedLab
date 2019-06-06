@@ -414,7 +414,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.psd1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.init.ps1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.format.ps1xml" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab.Help.xml" />
+                  <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLab-help.xml" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabADDS.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabFailover.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzure.psm1" />

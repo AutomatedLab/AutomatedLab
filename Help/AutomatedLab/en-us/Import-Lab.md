@@ -8,7 +8,8 @@ schema: 2.0.0
 # Import-Lab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+
+Import a lab
 
 ## SYNTAX
 
@@ -19,7 +20,7 @@ Import-Lab [-Name] <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonPar
 
 ### ByPath
 ```
-Import-Lab [-Path] <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
+Import-Lab -Path <String> [-PassThru] [-NoValidation] [-NoDisplay] [<CommonParameters>]
 ```
 
 ### ByValue
@@ -28,25 +29,72 @@ Import-Lab [-LabBytes] <Byte[]> [-PassThru] [-NoValidation] [-NoDisplay] [<Commo
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Imports an installed lab environment
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Import-Lab -Name MyLab -NoValidation
 ```
 
-{{ Add example description here }}
+Import the lab "MyLab" from XML, skipping the validation
 
 ## PARAMETERS
 
-### -LabBytes
-{{ Fill LabBytes Description }}
+### -Path
+ooasdfosadf
 
 ```yaml
-Type: Byte[]
-Parameter Sets: ByValue
+Type: String
+Parameter Sets: ByPath
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+@{Text=}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoValidation
+@{Text=}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Name
+@{Text=}
+
+```yaml
+Type: String
+Parameter Sets: ByName
 Aliases:
 
 Required: True
@@ -56,12 +104,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -LabBytes
+@{Text=}
 
 ```yaml
-Type: String
-Parameter Sets: ByName
+Type: Byte[]
+Parameter Sets: ByValue
 Aliases:
 
 Required: True
@@ -86,61 +134,14 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoValidation
-{{ Fill NoValidation Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-{{ Fill PassThru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Path
-{{ Fill Path Description }}
-
-```yaml
-Type: String
-Parameter Sets: ByPath
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
+aa
 
 ## RELATED LINKS

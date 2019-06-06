@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get lab disks
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Get-LabVHDX [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets lab disk files either by name or returns all lab disks
 
 ## EXAMPLES
 
@@ -36,12 +36,12 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
+### -Name
+@{Text=}
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: All
+Type: String[]
+Parameter Sets: ByName
 Aliases:
 
 Required: True
@@ -51,12 +51,12 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Name
-{{ Fill Name Description }}
+### -All
+Switch parameter to return all disks
 
 ```yaml
-Type: String[]
-Parameter Sets: ByName
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
 Required: True
@@ -71,11 +71,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### AutomatedLab.Machine
 
 ## NOTES
 

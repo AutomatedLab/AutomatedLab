@@ -8,7 +8,7 @@ schema: 2.0.0
 # Request-LabCertificate
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Request a certificate
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Request-LabCertificate [-Subject] <String> [[-SAN] <String[]>] [[-OnlineCA] <Str
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Requests a certificate from the lab CA
 
 ## EXAMPLES
 
@@ -31,68 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -ComputerName
-{{ Fill ComputerName Description }}
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -OnlineCA
-Please enter the Online Certificate Authority
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-{{ Fill PassThru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -SAN
-Please enter the SAN domains as a comma separated list
-
-```yaml
-Type: String[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Subject
-Please enter the subject beginning with CN=
+The certificate's subject
 
 ```yaml
 Type: String
@@ -106,8 +46,38 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -SAN
+The subject alternative names
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -OnlineCA
+The CA to use
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 2
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -TemplateName
-Please enter the Online Certificate Authority
+The template to use
 
 ```yaml
 Type: String
@@ -121,16 +91,43 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ComputerName
+The machine for which a certificate is to be requested
+
+```yaml
+Type: String[]
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 4
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates that the certificate should be passed back to the caller
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

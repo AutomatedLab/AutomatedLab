@@ -8,7 +8,7 @@ schema: 2.0.0
 # Show-LabDeploymentSummary
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Show installation time
 
 ## SYNTAX
 
@@ -17,7 +17,8 @@ Show-LabDeploymentSummary [-Detailed] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Shows the lab installation time.
+AutomatedLab keeps track of the time it took from the first lab command to the execution of Show-LabDeploymentSummary
 
 ## EXAMPLES
 
@@ -31,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Detailed
-{{ Fill Detailed Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -50,11 +51,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### System.TimeSpan
 
 ## NOTES
 

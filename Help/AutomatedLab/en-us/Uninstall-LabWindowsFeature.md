@@ -8,7 +8,7 @@ schema: 2.0.0
 # Uninstall-LabWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Uninstalls a Windowsfeature of one or more Lab Machines
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Uninstall-LabWindowsFeature [-ComputerName] <String[]> [-FeatureName] <String[]>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Uninstalls a Windowsfeature of one or more Lab Machines
 
 ## EXAMPLES
 
@@ -31,23 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AsJob
-{{ Fill AsJob Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -62,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+The feature names
 
 ```yaml
 Type: String[]
@@ -76,38 +61,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -IncludeManagementTools
-{{ Fill IncludeManagementTools Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoDisplay
-{{ Fill NoDisplay Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-{{ Fill PassThru Description }}
+### -UseLocalCredential
+Indicates whether local credentials should be used
 
 ```yaml
 Type: SwitchParameter
@@ -122,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -136,8 +91,53 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+### -NoDisplay
+Indicates if output should be suppressed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeManagementTools
+Indicates if Management Tools should also be uninstalled.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the result should be returned to the user.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AsJob
+Indicates if the uninstallation of the Windows Feature should be running in the background.
 
 ```yaml
 Type: SwitchParameter
@@ -156,11 +156,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

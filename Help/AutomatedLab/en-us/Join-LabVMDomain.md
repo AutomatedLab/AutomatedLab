@@ -8,7 +8,7 @@ schema: 2.0.0
 # Join-LabVMDomain
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Join a VM to a domain
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Join-LabVMDomain [-Machine] <Machine[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Joins one or more lab VMs to their defined domain
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The lab machines
 
 ```yaml
 Type: Machine[]
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

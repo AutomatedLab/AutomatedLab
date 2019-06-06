@@ -8,7 +8,7 @@ schema: 2.0.0
 # Stop-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Stop a machine
 
 ## SYNTAX
 
@@ -25,7 +25,7 @@ Stop-LabVM [-ShutdownTimeoutInMinutes <Double>] [-All] [-Wait] [-ProgressIndicat
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Stops one or more lab machines
 
 ## EXAMPLES
 
@@ -38,23 +38,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -68,53 +53,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -KeepAzureVmProvisioned
-{{ Fill KeepAzureVmProvisioned Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -NoNewLine
-{{ Fill NoNewLine Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ShutdownTimeoutInMinutes
-{{ Fill ShutdownTimeoutInMinutes Description }}
+The shutdown timeout in minutes
 
 ```yaml
 Type: Double
@@ -129,7 +69,67 @@ Accept wildcard characters: False
 ```
 
 ### -Wait
-{{ Fill Wait Description }}
+Indicates that we should wait for the machine to stop
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ProgressIndicator
+@{Text=}
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoNewLine
+Indicates that no new lines should be present in the output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Indicates that all lab machines should be stopped
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -KeepAzureVmProvisioned
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -148,11 +148,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

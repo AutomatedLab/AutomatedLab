@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LabCertificateAutoenrollment
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable certificate auto-enrollment
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Enable-LabCertificateAutoenrollment [-Computer] [-User] [-CodeSigning] [[-CodeSi
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enables the auto-enrollment for machines, including code-signing certificates
 
 ## EXAMPLES
 
@@ -31,38 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -CodeSigning
-{{ Fill CodeSigning Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -CodeSigningTemplateName
-{{ Fill CodeSigningTemplateName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Computer
-{{ Fill Computer Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -User
-{{ Fill User Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -91,16 +61,43 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -CodeSigning
+@{Text=}
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -CodeSigningTemplateName
+@{Text=}
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

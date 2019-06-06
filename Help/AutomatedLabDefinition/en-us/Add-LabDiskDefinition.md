@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,17 +8,18 @@ schema: 2.0.0
 # Add-LabDiskDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add lab disk definition
 
 ## SYNTAX
 
 ```
-Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [[-Label] <String>] [[-DriveLetter] <Char>]
- [-UseLargeFRS] [[-AllocationUnitSize] <Int64>] [-SkipInitialize] [-PassThru] [<CommonParameters>]
+Add-LabDiskDefinition [-Name] <String> [-DiskSizeInGb] <Int32> [-Label <String>] [-DriveLetter <Char>]
+ [-UseLargeFRS] [-AllocationUnitSize <Int64>] [-SkipInitialize] [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Adds a disk definition the the current lab.
+Disk definitions can be used by lab machines
 
 ## EXAMPLES
 
@@ -31,68 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -AllocationUnitSize
-{{ Fill AllocationUnitSize Description }}
-
-```yaml
-Type: Int64
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 4
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DiskSizeInGb
-{{ Fill DiskSizeInGb Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
-### -DriveLetter
-{{ Fill DriveLetter Description }}
-
-```yaml
-Type: Char
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 3
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Label
-{{ Fill Label Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 2
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+The disk name
 
 ```yaml
 Type: String
@@ -106,11 +47,71 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -DiskSizeInGb
+The disk size in GB
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the disk object should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllocationUnitSize
+{{ Fill AllocationUnitSize Description }}
+
+```yaml
+Type: Int64
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -DriveLetter
+{{ Fill DriveLetter Description }}
+
+```yaml
+Type: Char
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Label
+{{ Fill Label Description }}
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -156,13 +157,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String
-
-### System.Int32
-
 ## OUTPUTS
-
-### AutomatedLab.Disk
 
 ## NOTES
 

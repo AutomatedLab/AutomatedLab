@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabPSSession
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove sessions
 
 ## SYNTAX
 
@@ -28,7 +28,7 @@ Remove-LabPSSession [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes one or more PowerShell sessions currently active
 
 ## EXAMPLES
 
@@ -41,23 +41,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names for which sessions should be removed
 
 ```yaml
 Type: String[]
@@ -72,7 +57,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+The lab machines for which sessions should be removed
 
 ```yaml
 Type: Machine[]
@@ -86,16 +71,28 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -All
+Indicates that all sessions should be removed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

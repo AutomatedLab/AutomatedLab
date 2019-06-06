@@ -8,7 +8,7 @@ schema: 2.0.0
 # Checkpoint-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a VM checkpoint
 
 ## SYNTAX
 
@@ -23,36 +23,23 @@ Checkpoint-LabVM -SnapshotName <String> [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+This function creates a checkpoint of a lab virtual machine running on HyperV
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Checkpoint-LabVM -All -SnapshotName 'FirstSnapshot'
 ```
 
-{{ Add example description here }}
+Creates a snapshot called FirstSnapshot for all machines of a given lab
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer name
 
 ```yaml
 Type: String[]
@@ -67,7 +54,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The snapshot name
 
 ```yaml
 Type: String
@@ -81,20 +68,28 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
+### -All
+Switch parameter to snapshot all lab VMs
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### System.String[]
-
-### System.String
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

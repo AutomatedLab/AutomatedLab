@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabSoftwarePackages
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install multiple packages
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Install-LabSoftwarePackages [-Machine] <Machine[]> [-SoftwarePackage] <SoftwareP
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Installs one or more software packages on lab machines by calling Install-LabSoftwarePackage
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The target machines
 
 ```yaml
 Type: Machine[]
@@ -46,23 +46,8 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -PassThru
-{{ Fill PassThru Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -SoftwarePackage
-{{ Fill SoftwarePackage Description }}
+The software packages to install
 
 ```yaml
 Type: SoftwarePackage[]
@@ -77,7 +62,22 @@ Accept wildcard characters: False
 ```
 
 ### -WaitForInstallation
-{{ Fill WaitForInstallation Description }}
+Indicates if the script should be waiting for the installation of all packages on all machines
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -PassThru
+Indicates if the resulting jobs should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -96,13 +96,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### AutomatedLab.Machine[]
-
-### AutomatedLab.SoftwarePackage[]
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

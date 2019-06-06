@@ -8,7 +8,7 @@ schema: 2.0.0
 # Save-Hashes
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Saves hashes
 
 ## SYNTAX
 
@@ -17,7 +17,8 @@ Save-Hashes [[-Filename] <Object>] [[-FolderName] <Object>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Saves file hashes of all AutomatedLab module files or of all files in a folder to be used in Test-FileHashed.
+Export is done in csv format
 
 ## EXAMPLES
 
@@ -31,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Filename
-{{ Fill Filename Description }}
+The file name to hash
 
 ```yaml
 Type: Object
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FolderName
-{{ Fill FolderName Description }}
+The folder containing files to be hashed
 
 ```yaml
 Type: Object
@@ -65,11 +66,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

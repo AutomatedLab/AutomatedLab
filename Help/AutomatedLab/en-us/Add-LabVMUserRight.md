@@ -8,30 +8,71 @@ schema: 2.0.0
 # Add-LabVMUserRight
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Adds user rights on lab machines
 
 ## SYNTAX
 
 ```
-Add-LabVMUserRight -ComputerName <String[]> [-UserName <String[]>] [-Privilege <String[]>] [<CommonParameters>]
+Add-LabVMUserRight -ComputerName <String[]> [-UserName <String[]>] [-Priveleges <String[]>]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Adds user rights on a lab machine from the following rights:
+'SeNetworkLogonRight', 
+                'SeRemoteInteractiveLogonRight', 
+                'SeBatchLogonRight', 
+                'SeInteractiveLogonRight', 
+                'SeServiceLogonRight', 
+                'SeDenyNetworkLogonRight', 
+                'SeDenyInteractiveLogonRight', 
+                'SeDenyBatchLogonRight', 
+                'SeDenyServiceLogonRight', 
+                'SeDenyRemoteInteractiveLogonRight', 
+                'SeTcbPrivilege', 
+                'SeMachineAccountPrivilege', 
+                'SeIncreaseQuotaPrivilege', 
+                'SeBackupPrivilege', 
+                'SeChangeNotifyPrivilege', 
+                'SeSystemTimePrivilege', 
+                'SeCreateTokenPrivilege', 
+                'SeCreatePagefilePrivilege', 
+                'SeCreateGlobalPrivilege', 
+                'SeDebugPrivilege', 
+                'SeEnableDelegationPrivilege', 
+                'SeRemoteShutdownPrivilege', 
+                'SeAuditPrivilege', 
+                'SeImpersonatePrivilege', 
+                'SeIncreaseBasePriorityPrivilege', 
+                'SeLoadDriverPrivilege', 
+                'SeLockMemoryPrivilege', 
+                'SeSecurityPrivilege', 
+                'SeSystemEnvironmentPrivilege', 
+                'SeManageVolumePrivilege', 
+                'SeProfileSingleProcessPrivilege', 
+                'SeSystemProfilePrivilege', 
+                'SeUndockPrivilege', 
+                'SeAssignPrimaryTokenPrivilege', 
+                'SeRestorePrivilege', 
+                'SeShutdownPrivilege', 
+                'SeSynchAgentPrivilege', 
+                'SeTakeOwnershipPrivilege'
 
 ## EXAMPLES
 
 ### Example 1
-```powershell
-PS C:\> {{ Add example code here }}
+
+
+```
+Add-LabVMUserRight -UserName 'domain\myServiceUser' -ComputerName FS1 -Priveleges SeInteractiveLogonRight,SeServiceLogonRight
 ```
 
-{{ Add example description here }}
+Assigns SeInteractiveLogonRight,SeServiceLogonRight to domain\myServiceUser on FS1
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer name the rights are being granted on
 
 ```yaml
 Type: String[]
@@ -45,14 +86,13 @@ Accept pipeline input: True (ByPropertyName)
 Accept wildcard characters: False
 ```
 
-### -Privilege
-{{ Fill Privilege Description }}
+### -UserName
+The user name to be granted rights
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
-Aliases: Priveleges
-Accepted values: SeNetworkLogonRight, SeRemoteInteractiveLogonRight, SeBatchLogonRight, SeInteractiveLogonRight, SeServiceLogonRight, SeDenyNetworkLogonRight, SeDenyInteractiveLogonRight, SeDenyBatchLogonRight, SeDenyServiceLogonRight, SeDenyRemoteInteractiveLogonRight, SeTcbPrivilege, SeMachineAccountPrivilege, SeIncreaseQuotaPrivilege, SeBackupPrivilege, SeChangeNotifyPrivilege, SeSystemTimePrivilege, SeCreateTokenPrivilege, SeCreatePagefilePrivilege, SeCreateGlobalPrivilege, SeDebugPrivilege, SeEnableDelegationPrivilege, SeRemoteShutdownPrivilege, SeAuditPrivilege, SeImpersonatePrivilege, SeIncreaseBasePriorityPrivilege, SeLoadDriverPrivilege, SeLockMemoryPrivilege, SeSecurityPrivilege, SeSystemEnvironmentPrivilege, SeManageVolumePrivilege, SeProfileSingleProcessPrivilege, SeSystemProfilePrivilege, SeUndockPrivilege, SeAssignPrimaryTokenPrivilege, SeRestorePrivilege, SeShutdownPrivilege, SeSynchAgentPrivilege, SeTakeOwnershipPrivilege
+Aliases:
 
 Required: False
 Position: Named
@@ -61,8 +101,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -UserName
-{{ Fill UserName Description }}
+### -Priveleges
+The array of rights to assign to the user
 
 ```yaml
 Type: String[]
@@ -81,11 +121,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String[]
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

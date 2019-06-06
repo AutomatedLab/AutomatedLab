@@ -8,17 +8,17 @@ schema: 2.0.0
 # Install-LabRootDcs
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install root domain controllers
 
 ## SYNTAX
 
 ```
 Install-LabRootDcs [[-DcPromotionRestartTimeout] <Int32>] [[-AdwsReadyTimeout] <Int32>] [-CreateCheckPoints]
- [[-ProgressIndicator] <Int32>] [<CommonParameters>]
+ [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Installs all root domain controllers (machines with role RootDC) and root domains in the current lab
 
 ## EXAMPLES
 
@@ -31,8 +31,24 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
+### -DcPromotionRestartTimeout
+The DC promo restart timeout, i.e.
+how long we should wait for the restart after the DC promo to complete
+
+```yaml
+Type: Int32
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -AdwsReadyTimeout
-{{ Fill AdwsReadyTimeout Description }}
+The timeout to wait for the Active Directory Web Services
 
 ```yaml
 Type: Int32
@@ -47,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -CreateCheckPoints
-{{ Fill CreateCheckPoints Description }}
+Indicates if checkpoints should be created after DC promo
 
 ```yaml
 Type: SwitchParameter
@@ -56,21 +72,6 @@ Aliases:
 
 Required: False
 Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DcPromotionRestartTimeout
-{{ Fill DcPromotionRestartTimeout Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -85,7 +86,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 2
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -96,11 +97,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

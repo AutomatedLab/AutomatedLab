@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition-help.xml
+external help file: AutomatedLabDefinition.Help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabIsoImageDefinition
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Returns all ISOs in the lab
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabIsoImageDefinition
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Returns all image definitions currently found in the lab
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabDscClient
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Configure DSC clients
 
 ## SYNTAX
 
@@ -23,7 +23,7 @@ Install-LabDscClient [-All] [-PullServer <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures all lab machines' LCM to work with the lab's DSC pull server
 
 ## EXAMPLES
 
@@ -36,23 +36,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names
 
 ```yaml
 Type: String[]
@@ -67,11 +52,26 @@ Accept wildcard characters: False
 ```
 
 ### -PullServer
-{{ Fill PullServer Description }}
+The pull server names
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Indicates if all lab machines should be selected except for 'DC', 'RootDC', 'FirstChildDC', 'DSCPullServer'
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
 Required: False
@@ -86,11 +86,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

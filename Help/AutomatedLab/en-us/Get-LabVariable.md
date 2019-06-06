@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVariable
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get lab variables
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Get-LabVariable
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets all defined variables in the global scope matching the name pattern 'AL_(\[a-zA-Z0-9\]{8})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{4})+\[-.\]+(\[a-zA-Z0-9\]{12})'
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

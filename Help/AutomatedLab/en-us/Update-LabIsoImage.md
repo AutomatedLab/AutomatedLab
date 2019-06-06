@@ -8,7 +8,7 @@ schema: 2.0.0
 # Update-LabIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Update an ISO
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Update-LabIsoImage -SourceIsoImagePath <String> -TargetIsoImagePath <String> -Up
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Updates a lab iso image by adding installable hotfixes from a location to the ISO and saving it
 
 ## EXAMPLES
 
@@ -31,23 +31,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -SourceImageIndex
-{{ Fill SourceImageIndex Description }}
-
-```yaml
-Type: Int32
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -SourceIsoImagePath
-{{ Fill SourceIsoImagePath Description }}
+The source ISO
 
 ```yaml
 Type: String
@@ -62,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -TargetIsoImagePath
-{{ Fill TargetIsoImagePath Description }}
+The target ISO
 
 ```yaml
 Type: String
@@ -77,10 +62,25 @@ Accept wildcard characters: False
 ```
 
 ### -UpdateFolderPath
-{{ Fill UpdateFolderPath Description }}
+The folder containing the updates
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SourceImageIndex
+The image index of the edition to update
+
+```yaml
+Type: Int32
 Parameter Sets: (All)
 Aliases:
 
@@ -96,11 +96,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

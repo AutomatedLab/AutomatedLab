@@ -8,16 +8,17 @@ schema: 2.0.0
 # Install-LabRouting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Configure RRAS
 
 ## SYNTAX
 
 ```
-Install-LabRouting [[-InstallationTimeout] <Int32>] [[-ProgressIndicator] <Int32>] [<CommonParameters>]
+Install-LabRouting [[-InstallationTimeout] <Int32>] [-ProgressIndicator <Int32>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures Routing and Remote Access Services on one or more lab machines connected to an externally facing interface.
+Will set up full NAT and a DNS proxy.
 
 ## EXAMPLES
 
@@ -31,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -InstallationTimeout
-{{ Fill InstallationTimeout Description }}
+@{Text=}
 
 ```yaml
 Type: Int32
@@ -54,7 +55,7 @@ Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: 1
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -65,11 +66,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

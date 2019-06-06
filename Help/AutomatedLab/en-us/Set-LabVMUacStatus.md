@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabVMUacStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the UAC
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Set-LabVMUacStatus [-ComputerName] <String[]> [[-EnableLUA] <Boolean>] [[-Consen
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets the UAC for a lab machine
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computer names to set UAC on
 
 ```yaml
 Type: String[]
@@ -46,8 +46,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -EnableLUA
+Indicates whether LUA should be enabled or not
+
+```yaml
+Type: Boolean
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### -ConsentPromptBehaviorAdmin
-{{ Fill ConsentPromptBehaviorAdmin Description }}
+Sets the consent prompt behavior for administrative users
 
 ```yaml
 Type: Int32
@@ -62,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConsentPromptBehaviorUser
-{{ Fill ConsentPromptBehaviorUser Description }}
+Sets the consent prompt behavior for users
 
 ```yaml
 Type: Int32
@@ -76,23 +91,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -EnableLUA
-{{ Fill EnableLUA Description }}
-
-```yaml
-Type: Boolean
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the results should be passed back to the caller
 
 ```yaml
 Type: SwitchParameter
@@ -111,11 +111,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

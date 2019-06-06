@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabCATemplate
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test CA template existence
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Test-LabCATemplate [-TemplateName] <String> [-ComputerName] <String> [<CommonPar
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Tests if the specified certificate template exists
 
 ## EXAMPLES
 
@@ -30,23 +30,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -ComputerName
-{{ Fill ComputerName Description }}
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: True
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -TemplateName
-{{ Fill TemplateName Description }}
+The template name (common name)
 
 ```yaml
 Type: String
@@ -60,16 +45,28 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -ComputerName
+The machine to check for template existence on
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: True
+Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

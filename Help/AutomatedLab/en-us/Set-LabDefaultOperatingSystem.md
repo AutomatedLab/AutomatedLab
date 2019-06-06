@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabDefaultOperatingSystem
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set default OS
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Set-LabDefaultOperatingSystem [-OperatingSystem] <String> [[-Version] <String>] 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets the default operating system for all lab machines
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -OperatingSystem
-{{ Fill OperatingSystem Description }}
+The OS name
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Version
-{{ Fill Version Description }}
+The OS version string
 
 ```yaml
 Type: String
@@ -65,11 +65,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

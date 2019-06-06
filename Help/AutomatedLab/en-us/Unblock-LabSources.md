@@ -8,7 +8,7 @@ schema: 2.0.0
 # Unblock-LabSources
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Unblock lab sources
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Unblock-LabSources [[-Path] <String>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Unblocks all lab sources in order to be able to properly execute all scripts and downloaded files
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Path
-{{ Fill Path Description }}
+@{Text=}
 
 ```yaml
 Type: String
@@ -47,11 +47,8 @@ Accept wildcard characters: False
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

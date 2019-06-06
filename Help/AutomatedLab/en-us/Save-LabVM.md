@@ -8,7 +8,7 @@ schema: 2.0.0
 # Save-LabVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Save a VM
 
 ## SYNTAX
 
@@ -28,7 +28,7 @@ Save-LabVM [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Saves the state of a lab machine on HyperV and VMWare
 
 ## EXAMPLES
 
@@ -41,23 +41,8 @@ PS C:\> {{ Add example code here }}
 
 ## PARAMETERS
 
-### -All
-{{ Fill All Description }}
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: All
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: True (ByPropertyName)
-Accept wildcard characters: False
-```
-
 ### -Name
-{{ Fill Name Description }}
+The machine names
 
 ```yaml
 Type: String[]
@@ -72,15 +57,29 @@ Accept wildcard characters: False
 ```
 
 ### -RoleName
-{{ Fill RoleName Description }}
+The roles of the machines to be saved
 
 ```yaml
 Type: Roles
 Parameter Sets: ByRole
 Aliases:
-Accepted values: RootDC, FirstChildDC, DC, ADDS, FileServer, WebServer, DHCP, Routing, CaRoot, CaSubordinate, SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, VisualStudio2013, VisualStudio2015, SharePoint2013, SharePoint2016, Orchestrator2012, SQLServer2017, SQLServer, DSCPullServer, Office2013, Office2016, ADFS, ADFSWAP, ADFSProxy, FailoverStorage, FailoverNode, Tfs2015, Tfs2017, TfsBuildWorker, Tfs2018, HyperV, AzDevOps
 
 Required: True
+Position: Named
+Default value: None
+Accept pipeline input: True (ByPropertyName)
+Accept wildcard characters: False
+```
+
+### -All
+Indicates that all machines should be saved
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: False
 Position: Named
 Default value: None
 Accept pipeline input: True (ByPropertyName)
@@ -92,15 +91,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### System.String[]
-
-### AutomatedLab.Roles
-
-### System.Management.Automation.SwitchParameter
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

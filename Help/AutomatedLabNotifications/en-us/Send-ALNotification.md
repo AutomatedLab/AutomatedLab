@@ -13,7 +13,7 @@ schema: 2.0.0
 ## SYNTAX
 
 ```
-Send-ALNotification [-Activity] <String> [-Message] <String> [-Provider <String[]>] [<CommonParameters>]
+Send-ALNotification [-Activity] <String> [-Message] <String> [-Provider] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -64,12 +64,12 @@ Accept wildcard characters: False
 {{ Fill Provider Description }}
 
 ```yaml
-Type: String[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
-Position: Named
+Required: True
+Position: 2
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Clear-LabCache
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Clear the lab cache
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Clear-LabCache [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Removes the automated lab cache from the Windows registry: HKEY_CURRENT_USER\Software\AutomatedLab\Cache
 
 ## EXAMPLES
 
@@ -35,11 +35,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

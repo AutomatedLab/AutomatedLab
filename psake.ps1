@@ -16,22 +16,7 @@ Task Init {
     "`n"
 }
 
-Task CompileHelp -Depends Init {
-    $lines
-    "`n`tSTATUS: Compiling help content from markdown"
-    foreach ($moduleName in (Get-ChildItem -Path (Join-Path $ProjectRoot -ChildPath Help) -Directory))
-    {
-        foreach ($language in ($moduleName | Get-ChildItem -Directory))
-        {
-            $ci = try { [cultureinfo]$language.BaseName} catch { }
-            if (-not $ci) {continue}
-
-            New-ExternalHelp -Path $language.FullName -OutputPath (Join-Path $ProjectRoot -ChildPath "$($moduleName.BaseName)\$($language.BaseName)")
-        }
-    }
-}
-
-Task Test -Depends CompileHelp {
+Task Test -Depends Init {
     $lines
     "`n`tSTATUS: Testing with PowerShell $PSVersion"
 

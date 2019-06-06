@@ -8,13 +8,13 @@ schema: 2.0.0
 # Get-LabAvailableOperatingSystem
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Show available lab OS
 
 ## SYNTAX
 
 ### Local (Default)
 ```
-Get-LabAvailableOperatingSystem [-Path <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
+Get-LabAvailableOperatingSystem [[-Path] <String[]>] [-UseOnlyCache] [-NoDisplay] [<CommonParameters>]
 ```
 
 ### Azure
@@ -23,18 +23,48 @@ Get-LabAvailableOperatingSystem [-UseOnlyCache] [-NoDisplay] [-Azure] -Location 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Shows all available operating systems that are available for an imported or newly created lab.
+Available after either calling New-LabDefinition or Import-Lab or by specifying a path to the ISO folder
 
 ## EXAMPLES
 
 ### Example 1
+
+
 ```powershell
-PS C:\> {{ Add example code here }}
+Get-LabAvailableOperatingSystem -Path D:\LabSources\ISOs
 ```
 
-{{ Add example description here }}
+List all available OS in the lab sources directory
+
+OperatingSystemName                         Idx Version        PublishedDate       IsoPath                             
+-------------------                         --- -------        -------------       -------                             
+Windows Server 2012 R2 Standard (Server Core Installation)   1   6.3.9600.17415 21.11.2014 15:34:09 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 Standard (Server with a GUI)       2   6.3.9600.17415 21.11.2014 15:45:29 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 Datacenter (Server Core Installation) 3   6.3.9600.17415 21.11.2014 15:54:25 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 Datacenter (Server with a GUI)     4   6.3.9600.17415 21.11.2014 16:06:15 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 Standard      1   10.0.14393.0   12.09.2016 13:04:57 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 Standard (Desktop Experience)          2   10.0.14393.0   12.09.2016 13:09:49 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 Datacenter    3   10.0.14393.0   12.09.2016 13:12:56 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2016 Datacenter (Desktop Experience)        4   10.0.14393.0   12.09.2016 13:17:32 D:\LabSources\ISOs\en_windows_ser...
+Windows Server 2012 R2 Datacenter (Server with a GUI)     1   6.3.9600.17415 21.11.2014 16:06:15 D:\LabSources\ISOs\UpdatedServer2...
 
 ## PARAMETERS
+
+### -Path
+Lab ISO folder path
+
+```yaml
+Type: String[]
+Parameter Sets: Local
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
 
 ### -Azure
 {{ Fill Azure Description }}
@@ -81,21 +111,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Path
-{{ Fill Path Description }}
-
-```yaml
-Type: String[]
-Parameter Sets: Local
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -UseOnlyCache
 {{ Fill UseOnlyCache Description }}
 
@@ -116,11 +131,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
-
-### AutomatedLab.OperatingSystem
 
 ## NOTES
 

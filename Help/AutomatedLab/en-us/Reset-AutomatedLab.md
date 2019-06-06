@@ -8,7 +8,7 @@ schema: 2.0.0
 # Reset-AutomatedLab
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Reset the lab
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Reset-AutomatedLab
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Resets the lab by removing the current lab and unloading all modules
 
 ## EXAMPLES
 
@@ -32,11 +32,8 @@ PS C:\> {{ Add example code here }}
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS

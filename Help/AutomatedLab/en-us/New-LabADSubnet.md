@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabADSubnet
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create new AD subnet
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ New-LabADSubnet [-PassThru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates a new Active Directory subnet for the site Default-First-Site-Name
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -PassThru
-{{ Fill PassThru Description }}
+@{Text=}
 
 ```yaml
 Type: SwitchParameter
@@ -50,11 +50,8 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
-### None
-
 ## OUTPUTS
 
-### System.Object
 ## NOTES
 
 ## RELATED LINKS
