@@ -564,14 +564,14 @@ function Write-ScreenInfo
                 }
                 Info
                 {
-                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ }
+                    $Message | ForEach-Object { Write-PSFMessage -Level Host $_ }
                     $Global:PSLog_NoNewLine = $false
                 }
                 Verbose
                 {
                     if ($VerbosePreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_  -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
                     }
                 }
@@ -579,7 +579,7 @@ function Write-ScreenInfo
                 {
                     if ($DebugPreference -eq 'Continue')
                     {
-                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_  -ForegroundColor Cyan }
+                        $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ -ForegroundColor Cyan }
                         $Global:PSLog_NoNewLine = $false
                     }
                 }
@@ -601,7 +601,7 @@ function Write-ScreenInfo
                 }
                 Info
                 {
-                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
+                    $Message | ForEach-Object { Write-PSFMessage -Level Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
                 }
                 Debug
                 {
