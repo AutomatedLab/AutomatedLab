@@ -3680,7 +3680,6 @@ function Show-LabDeploymentSummary
     }
     else
     {
-        Write-ScreenInfo
         Write-ScreenInfo -Message '----------------------------- Network Summary -----------------------------'
         $networkInfo = $lab.VirtualNetworks | Format-Table -Property Name, AddressSpace, SwitchType, AdapterName, @{ Name = 'IssuedIpAddresses'; Expression = { $_.IssuedIpAddresses.Count } } | Out-String
         $networkInfo -split "`n" | ForEach-Object {
