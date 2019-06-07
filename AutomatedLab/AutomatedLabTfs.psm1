@@ -1136,6 +1136,13 @@ function Test-LabTfsEnvironment
         {
             continue
         }
+        if (-not $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name])
+        {
+            $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{}
+        }
+        {
+            continue
+        }
 
         $svcRunning = Invoke-LabCommand -PassThru -ComputerName $worker -ScriptBlock { Get-Service -Name *vsts* } -NoDisplay
         $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name].WorkerDeploymentOk = $svcRunning.Status -eq 'Running'
