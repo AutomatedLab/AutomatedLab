@@ -7,6 +7,22 @@ nav:
 - Defining your lab:
   - Creating a new lab: Wiki/createnewlab.md
   - Networks and IP Addresses: Wiki/networksandaddresses.md
+- Adding machines: Wiki/addmachines.md
+- Roles : Wiki/roles.md
+- Custom roles: Wiki/customroles.md
+- Customizing your lab:
+  - Installing Windows features: installwindowsfeatures.md
+  - Installing software: installsoftware.md
+  - Run remote commands: invokelabcommand.md
+  - Use DSC: usedsc.md
+  - Exchanging data: exchangedata.md
+  - Notification system: notifications.md
+  - Connecting two labs: connectlabs.md
+- Azure labs:
+    - Adding a subscription: addazuresubscription.md
+    - Synchronise local lab sources: synclabsources.md
+- Lab telemetry: telemetry.md
+- Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - AutomatedLab:
   - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md
   - Add-LabAzureSubscription: AutomatedLab/en-us/Add-LabAzureSubscription.md
