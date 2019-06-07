@@ -513,6 +513,8 @@ function Write-ScreenInfo
     $date = Get-Date
     $timeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
 
+    $Message | Foreach-Object { Write-PSFMessage -Level Verbose $_ }
+
     if ($NoNewLine)
     {
         if ($Global:PSLog_NoNewLine)
@@ -524,9 +526,7 @@ function Write-ScreenInfo
                 Info { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
                 Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
                 Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
-            }
-            
-            $Message | Foreach-Object { Write-PSFMessage -Level Verbose $_ }
+            }            
         }
         else
         {
@@ -549,7 +549,6 @@ function Write-ScreenInfo
     {
         if ($Global:PSLog_NoNewLine)
         {
-            $Message | ForEach-Object { Write-PSFMessage -Level Verbose -Message $_ }
             switch ($Type)
             {
                 Error
@@ -564,7 +563,7 @@ function Write-ScreenInfo
                 }
                 Info
                 {
-                    $Message | ForEach-Object { Write-PSFMessage -Level Host $_ }
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host $_ }
                     $Global:PSLog_NoNewLine = $false
                 }
                 Verbose
@@ -601,7 +600,7 @@ function Write-ScreenInfo
                 }
                 Info
                 {
-                    $Message | ForEach-Object { Write-PSFMessage -Level Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
+                    $Message | ForEach-Object { Microsoft.PowerShell.Utility\Write-Host "$timeCurrent|$timeDeltaString|$timeDeltaString2| $_" }
                 }
                 Debug
                 {
