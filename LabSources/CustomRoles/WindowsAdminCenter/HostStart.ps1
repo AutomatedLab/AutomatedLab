@@ -33,7 +33,7 @@ if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.Do
 {
     $san = @(
         $labMachine.Name
-        if ($lab.DefaultVirtualizationEngine -eq 'Azure') { $labMachine.AzureConnectionInfo.DnsName}
+        if ($lab.DefaultVirtualizationEngine -eq 'Azure') { $labMachine.AzureConnectionInfo.DnsName }
     )
     $cert = Request-LabCertificate -Subject "CN=$($labMachine.FQDN)" -SAN $san -TemplateName WebServer -ComputerName $labMachine -PassThru -ErrorAction Stop
 }
@@ -123,7 +123,22 @@ $bodyHash = foreach ($machine in (Get-LabVm | Where-Object -Property Name -ne $C
 try
 {
     [ServerCertificateValidationCallback]::Ignore()
-    $response = Invoke-RestMethod -Method PUT -Uri $apiEndpoint -Credential $labMachine.GetCredential($lab) -Body $($bodyHash | ConvertTo-Json) -ContentType application/json -ErrorAction Stop
+
+    $paramIwr = @{
+        Method      = 'PUT'
+        Uri         = $apiEndpoint
+        Credential  = $labMachine.GetCredential($lab)
+        Body        = $($bodyHash | ConvertTo-Json)
+        ContentType = 'application/json'
+        ErrorAction = 'Stop'
+    }
+
+    if ($PSEdition -eq 'Core' -and (Get-Command INvoke-RestMethod).Parameters.COntainsKey('SkipCertificateCheck'))
+    {
+        $paramIwr.SkipCertificateCheck = $true
+    }
+
+    $response = Invoke-RestMethod @paramIwr
     Write-ScreenInfo -Message "Successfully added all lab machines as connections for $($labMachine.GetCredential($lab).UserName)"
 }
 catch

@@ -1038,7 +1038,7 @@ function Test-LabTfsEnvironment
     
     if (-not $script:tfsDeploymentStatus.ContainsKey($ComputerName))
     {
-        $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $false; BuildWorker = @{} }
+        $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $false; BuildWorker = @{ } }
     }
 
     if (-not $script:tfsDeploymentStatus[$ComputerName].ServerDeploymentOk)
@@ -1102,14 +1102,27 @@ function Test-LabTfsEnvironment
 
         try
         {
+            $parma = @{
+                Method      = 'Get'
+                Uri         = $uri
+                ErrorAction = 'Stop'
+            }
+
+            if ($PSEdition -eq 'Core' -and (Get-Command INvoke-RestMethod).Parameters.COntainsKey('SkipCertificateCheck'))
+            {
+                $parma.SkipCertificateCheck = $true
+            }
+
             if ($accessToken)
             {
-                $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Headers @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
+                $parma.Headers = @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
             }
             else
             {
-                $null = Invoke-RestMethod -Method Get -Uri $uri -ErrorAction Stop -Credential $credential
+                $parma.Credential = $credential
             }
+
+            $null = Invoke-RestMethod @parma
         }
         catch
         {
@@ -1138,7 +1151,7 @@ function Test-LabTfsEnvironment
         }
         if (-not $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name])
         {
-            $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{}
+            $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{ }
         }
 
         $svcRunning = Invoke-LabCommand -PassThru -ComputerName $worker -ScriptBlock { Get-Service -Name *vsts* } -NoDisplay
