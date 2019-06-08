@@ -284,7 +284,7 @@ function Install-LabBuildWorker
     Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path
 
     $installationJobs = @()
-    foreach ( $machine in $buildWorkers)
+    foreach ($machine in $buildWorkers)
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
         $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
@@ -313,7 +313,7 @@ function Install-LabBuildWorker
         if ($shouldExport) { Export-Lab }
 
         $tfsTest = Test-LabTfsEnvironment -ComputerName $tfsServer -NoDisplay
-        if ($tfsTest.ServerDeploymentOk -and -not $tfsTest.BuildWorker[$machine.Name].WorkerDeploymentOk)
+        if ($tfsTest.ServerDeploymentOk -and $tfsTest.BuildWorker[$machine.Name].WorkerDeploymentOk)
         {
             Write-ScreenInfo -Message "Build worker $machine assigned to $tfsServer appears to be configured. Skipping..."
             continue
@@ -1139,9 +1139,6 @@ function Test-LabTfsEnvironment
         if (-not $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name])
         {
             $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{}
-        }
-        {
-            continue
         }
 
         $svcRunning = Invoke-LabCommand -PassThru -ComputerName $worker -ScriptBlock { Get-Service -Name *vsts* } -NoDisplay
