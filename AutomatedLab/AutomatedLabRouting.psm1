@@ -1,7 +1,7 @@
 ﻿#region Install-LabRouting
 function Install-LabRouting
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15,
@@ -123,7 +123,7 @@ function Install-LabRouting
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     Write-Verbose 'Setting DNS fowarder on all domain controllers in root domains'
 

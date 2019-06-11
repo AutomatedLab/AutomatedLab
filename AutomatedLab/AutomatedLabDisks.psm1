@@ -1,7 +1,7 @@
 #region New-LabBaseImages
 function New-LabBaseImages
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -91,7 +91,7 @@ function New-LabBaseImages
 
 function Stop-ShellHWDetectionService
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -125,7 +125,7 @@ function Stop-ShellHWDetectionService
 
 function Start-ShellHWDetectionService
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     Write-LogFunctionEntry
 
@@ -167,7 +167,7 @@ function Start-ShellHWDetectionService
 #region New-LabVHDX
 function New-LabVHDX
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
@@ -245,7 +245,7 @@ function New-LabVHDX
 #region Get-LabVHDX
 function Get-LabVHDX
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([AutomatedLab.Machine])]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByName')]
@@ -299,7 +299,7 @@ function Get-LabVHDX
 #region Update-LabIsoImage
 function Update-LabIsoImage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory)]

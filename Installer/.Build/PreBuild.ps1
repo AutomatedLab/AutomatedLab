@@ -13,6 +13,15 @@ git pull origin master
 # Compile Common libary
 dotnet build $SolutionDir\AutomatedLab.Common
 
+# Compile Help
+If (-not (Get-Module -List PlatyPs))
+{
+    $null = Install-PackageProvider nuget -Force
+    Install-Module PlatyPS -Force -AllowClobber -SkipPublisherCheck
+}
+
+$null = New-ExternalHelp -Path $SolutionDir\AutomatedLab.Common\Help\en-us -OutputPath $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\en-us
+
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file AutomatedLab.Common.psd1'
 Copy-Item -Path $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1 -Destination $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file Includes.wxi'

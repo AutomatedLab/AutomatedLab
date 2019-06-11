@@ -7,6 +7,9 @@
 *.userosscache
 *.sln.docstates
 
+# Ignore help
+*-help.xml
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 

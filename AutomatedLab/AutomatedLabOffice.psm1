@@ -1,7 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -155,7 +155,7 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 

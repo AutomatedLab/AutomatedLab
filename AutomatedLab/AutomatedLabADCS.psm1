@@ -1229,7 +1229,7 @@ $ExtendedKeyUsages = @{
 #region Get-LabCertificate
 function Get-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'FindCer')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'FindCer')]
@@ -1304,7 +1304,7 @@ function Get-LabCertificate
 #region Add-LabCertificate
 function Add-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'ByteArray')]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'File')]
@@ -1374,7 +1374,7 @@ function Add-LabCertificate
 #region New-LabCATemplate
 function New-LabCATemplate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1446,7 +1446,7 @@ function New-LabCATemplate
 #region Test-LabCATemplate
 function Test-LabCATemplate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1480,7 +1480,7 @@ function Test-LabCATemplate
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
 
@@ -1532,7 +1532,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1599,7 +1599,7 @@ function Request-LabCertificate
 #region Install-LabCA
 function Install-LabCA
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 
@@ -1751,7 +1751,7 @@ function Install-LabCA
 #region Install-LabCAMachine
 function Install-LabCAMachine
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
 
     param (
@@ -2918,7 +2918,7 @@ function Install-LabCAMachine
 #region Get-LabCAInstallCertificates
 function Get-LabCAInstallCertificates
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [AutomatedLab.Machine[]]$Machines
@@ -2963,7 +2963,7 @@ function Get-LabCAInstallCertificates
 #region Publish-LabCAInstallCertificates
 function Publish-LabCAInstallCertificates
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [switch]$PassThru
     )
@@ -3091,7 +3091,7 @@ function Publish-LabCAInstallCertificates
 #region Enable-LabCertificateAutoenrollment
 function Enable-LabCertificateAutoenrollment
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param

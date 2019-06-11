@@ -8,9 +8,12 @@ function Send-ALNotification
 
         [Parameter(Mandatory = $true)]
         [System.String]
-        $Message
+        $Message,
+
+        [ValidateSet('Toast','Ifttt','Mail','Voice')]
+        $Provider
     )
-    DynamicParam
+    <#DynamicParam
     {
         $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
 
@@ -25,7 +28,7 @@ function Send-ALNotification
 
         $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
         return $RuntimeParameterDictionary
-    }
+    }#>
 
     begin
     {

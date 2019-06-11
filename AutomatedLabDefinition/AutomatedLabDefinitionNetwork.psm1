@@ -2,7 +2,7 @@
 #region Add-LabVirtualNetworkDefinition
 function Add-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -184,7 +184,7 @@ function Add-LabVirtualNetworkDefinition
 #region Get-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
@@ -222,7 +222,7 @@ function Get-LabVirtualNetworkDefinition
 #region Remove-LabVirtualNetworkDefinition
 function Remove-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -255,7 +255,7 @@ function Remove-LabVirtualNetworkDefinition
 #region New-LabNetworkAdapterDefinition
 function New-LabNetworkAdapterDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'manual')]
     param (

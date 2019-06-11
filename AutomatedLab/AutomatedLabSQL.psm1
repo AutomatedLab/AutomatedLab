@@ -1,7 +1,7 @@
 ﻿#region Install-LabSqlServers
 function Install-LabSqlServers
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_Sql2012Installation),
