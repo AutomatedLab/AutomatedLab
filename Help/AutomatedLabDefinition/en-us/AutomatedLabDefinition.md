@@ -2,7 +2,7 @@
 Module Name: AutomatedLabDefinition
 Module Guid: e85df8ec-4ce6-4ecc-9720-1d08e14f27ad
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 

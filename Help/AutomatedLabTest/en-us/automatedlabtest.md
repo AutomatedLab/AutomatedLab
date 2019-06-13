@@ -2,7 +2,7 @@
 Module Name: automatedlabtest
 Module Guid: 16580260-aab3-4f4c-a7ca-75cd310e4f0b
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 

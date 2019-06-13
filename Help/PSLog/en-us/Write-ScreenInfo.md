@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-ScreenInfo
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Write formatted text on screen
 
 ## SYNTAX
 
@@ -18,21 +18,31 @@ Write-ScreenInfo [[-Message] <String[]>] [[-TimeDelta] <TimeSpan>] [[-TimeDelta2
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Write formatted text on screen. Using TimeDelta and TimeDelta2 you can indicate the runtime of a process or
+an operation. With the parameters TaskStart and TaskEnd you can control the indentation.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+Write-ScreenInfo -Message 'So it begins...' -TaskStart
+Write-ScreenInfo -Message 'So it continues...'
+Write-ScreenInfo -Message 'So it ends...' -TaskEnd
+Write-ScreenInfo -Message 'Intendation normal'
 ```
 
-{{ Add example description here }}
+Returns the following:
+```
+15:36:20|00:00:04|00:00:00.000| So it begins...
+15:36:20|00:00:04|00:00:00.005| - So it continues...
+15:36:20|00:00:04|00:00:00.011| - So it ends...
+15:36:20|00:00:04|00:00:03.235| Intendation normal
+```
 
 ## PARAMETERS
 
 ### -Message
-{{ Fill Message Description }}
+The message to be displayed
 
 ```yaml
 Type: String[]
@@ -47,7 +57,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Do not add a new line after the output
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +72,7 @@ Accept wildcard characters: False
 ```
 
 ### -OverrideNoDisplay
-{{ Fill OverrideNoDisplay Description }}
+Override the NoDisplay parameter of the calling cmdlet
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +87,7 @@ Accept wildcard characters: False
 ```
 
 ### -TaskEnd
-{{ Fill TaskEnd Description }}
+Indicates that the indentation will return back to the previous value
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +102,7 @@ Accept wildcard characters: False
 ```
 
 ### -TaskStart
-{{ Fill TaskStart Description }}
+Indicates that the indentation should be increased.
 
 ```yaml
 Type: SwitchParameter
@@ -107,7 +117,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeDelta
-{{ Fill TimeDelta Description }}
+Controls the first timespan that is displayed after the current time. Calculated automatically
 
 ```yaml
 Type: TimeSpan
@@ -122,7 +132,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeDelta2
-{{ Fill TimeDelta2 Description }}
+Controls the second timespan that is displayed after the current time. Calculated automatically
 
 ```yaml
 Type: TimeSpan
@@ -137,7 +147,7 @@ Accept wildcard characters: False
 ```
 
 ### -Type
-{{ Fill Type Description }}
+The type of the message. Default is Info
 
 ```yaml
 Type: String

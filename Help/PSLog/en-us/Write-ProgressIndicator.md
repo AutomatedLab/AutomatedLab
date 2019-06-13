@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-ProgressIndicator
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Write a . to the console, indicating an activity
 
 ## SYNTAX
 
@@ -17,16 +17,29 @@ Write-ProgressIndicator
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Write a . to the console, indicating an activity
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+function foo
+{
+    [CmdletBinding()]
+    param
+    ()
+    
+    foreach ($thing in $things)
+    {
+        #Long running operation. Need to have output.
+        Write-ProgressIndicator
+        sleep 120
+    }
+    Write-ProgressIndicatorEnd
+}
 ```
 
-{{ Add example description here }}
+Write . to the console host as long as loop is processing
 
 ## PARAMETERS
 

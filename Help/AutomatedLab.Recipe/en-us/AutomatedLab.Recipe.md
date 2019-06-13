@@ -2,7 +2,7 @@
 Module Name: AutomatedLab.Recipe
 Module Guid: 0c1fa63a-6982-48c3-bc12-c74806861b08
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 

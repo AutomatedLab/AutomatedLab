@@ -77,11 +77,11 @@ Starting with AutomatedLab version 5 we are collecting telemetry. To see what yo
 
 
 
-### [1. Installation](https://github.com/AutomatedLab/AutomatedLab/wiki/1.-Installation)
+### [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
 
-### [2. Getting started](https://github.com/AutomatedLab/AutomatedLab/wiki/2.-Getting-Started)
+### [2. Getting started](https://automatedlab.org/en/latest/Wiki/gettingstarted/)
 
-### [3. Contributing](/CONTRIBUTING.md)
+### [3. Contributing](https://github.com/AutomatedLab/AutomatedLab/blob/master/CONTRIBUTING.md)
 
-### [Version History](/CHANGELOG.md)
+### [Version History](https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md)
 

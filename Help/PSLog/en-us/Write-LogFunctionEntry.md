@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-LogFunctionEntry
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Log entering a function
 
 ## SYNTAX
 
@@ -17,16 +17,25 @@ Write-LogFunctionEntry [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Logs entering of an advanced function. Logs all parameters as well
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+function foo
+{
+    [CmdletBinding()]
+    param
+    ()
+    
+    Write-LogFunctionEntry
+}
+foo -Verbose
 ```
 
-{{ Add example description here }}
+Will log a verbose function entry whenever foo is executed. Output would be:
+`VERBOSE: foo Entering... (Verbose=True)`
 
 ## PARAMETERS
 

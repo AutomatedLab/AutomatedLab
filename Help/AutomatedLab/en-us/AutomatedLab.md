@@ -2,7 +2,7 @@
 Module Name: AutomatedLab
 Module Guid: 6ee6d36f-7914-4bf6-9e3b-c0131669e808
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 

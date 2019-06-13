@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-LogFunctionExit
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Logs leaving an advanced function.
 
 ## SYNTAX
 
@@ -17,21 +17,30 @@ Write-LogFunctionExit [[-ReturnValue] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Logs leaving an advanced function.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+function foo
+{
+    [CmdletBinding()]
+    param
+    ()
+    
+    Write-LogFunctionExit
+}
+foo -Verbose
 ```
 
-{{ Add example description here }}
+Will log a verbose function exit whenever foo is executed. Output would be:
+`VERBOSE: foo...leaving...(Time elapsed: 00:00:00:005)`
 
 ## PARAMETERS
 
 ### -ReturnValue
-{{ Fill ReturnValue Description }}
+Optionally add a return value
 
 ```yaml
 Type: String

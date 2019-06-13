@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-LogFunctionExitWithError
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Logs leaving an advanced function while raising an error.
 
 ## SYNTAX
 
@@ -28,21 +28,35 @@ Write-LogFunctionExitWithError [[-Exception] <Exception>] [[-Details] <String>] 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Logs leaving an advanced function while raising an error.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+function foo
+{
+    [CmdletBinding()]
+    param
+    ()
+    
+    try
+    {
+        Enable-WorldDomination -Force -ErrorAction Stop
+    }
+    catch
+    {
+        Write-LogFunctionExitWithError -Exception $_.Exception
+    }
+}
 ```
 
-{{ Add example description here }}
+Exits the function foo with the Write-Error cmdlet and the rethrown exception
 
 ## PARAMETERS
 
 ### -Details
-{{ Fill Details Description }}
+Additional error details
 
 ```yaml
 Type: String
@@ -57,7 +71,7 @@ Accept wildcard characters: False
 ```
 
 ### -ErrorRecord
-{{ Fill ErrorRecord Description }}
+An error record to return
 
 ```yaml
 Type: ErrorRecord
@@ -72,7 +86,7 @@ Accept wildcard characters: False
 ```
 
 ### -Exception
-{{ Fill Exception Description }}
+An exception to return
 
 ```yaml
 Type: Exception
@@ -87,7 +101,7 @@ Accept wildcard characters: False
 ```
 
 ### -Message
-{{ Fill Message Description }}
+A message to return as an error
 
 ```yaml
 Type: String

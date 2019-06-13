@@ -2,7 +2,7 @@
 Module Name: HostsFile
 Module Guid: 8dc3dd5c-5ae8-4198-a8f2-2157ab6b725c
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 

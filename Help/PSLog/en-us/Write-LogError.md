@@ -8,7 +8,7 @@ schema: 2.0.0
 # Write-LogError
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Log an exception with the ability to add more details
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Write-LogError [-Message] <String> [[-Details] <String>] [-Exception <Exception>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Logs an error to the log buffer
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Write-LogError -Message 'Bad things happen'
 ```
 
-{{ Add example description here }}
+Log the message Bad things happen as an error
 
 ## PARAMETERS
 
 ### -Details
-{{ Fill Details Description }}
+Additional details for an exception
 
 ```yaml
 Type: String
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -Exception
-{{ Fill Exception Description }}
+An exception object
 
 ```yaml
 Type: Exception
@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -Message
-{{ Fill Message Description }}
+The message to log
 
 ```yaml
 Type: String

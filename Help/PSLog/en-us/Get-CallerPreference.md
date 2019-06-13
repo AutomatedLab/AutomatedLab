@@ -32,21 +32,21 @@ and $PSCmdlet, Get-CallerPreference will set the caller's preference variables l
 ## EXAMPLES
 
 ### EXAMPLE 1
-```
+```powershell
 Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 ```
 
 Imports the default PowerShell preference variables from the caller into the local scope.
 
 ### EXAMPLE 2
-```
+```powershell
 Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState -Name 'ErrorActionPreference','SomeOtherVariable'
 ```
 
 Imports only the ErrorActionPreference and SomeOtherVariable variables into the local scope.
 
 ### EXAMPLE 3
-```
+```powershell
 'ErrorActionPreference','SomeOtherVariable' | Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 ```
 
