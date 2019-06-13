@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-HostEntry
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add a entry to the hosts file
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Add-HostEntry -InputObject <Object> -Section <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Add a entry to the hosts file
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-HostEntry -IpAddress 192.168.2.1 -HostName homerouter -Section HomeEnvironment
 ```
 
-{{ Add example description here }}
+Adds the host entry for the name homerouter to the section HomeEnvironment
 
 ## PARAMETERS
 
 ### -HostName
-{{ Fill HostName Description }}
+The host name to add
 
 ```yaml
 Type: Object
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-{{ Fill InputObject Description }}
+Piped input object
 
 ```yaml
 Type: Object
@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -IpAddress
-{{ Fill IpAddress Description }}
+The ip address to add to the host entry
 
 ```yaml
 Type: IPAddress
@@ -82,7 +82,7 @@ Accept wildcard characters: False
 ```
 
 ### -Section
-{{ Fill Section Description }}
+The section to store the entry in
 
 ```yaml
 Type: String

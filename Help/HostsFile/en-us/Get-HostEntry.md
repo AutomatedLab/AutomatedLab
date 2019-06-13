@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-HostEntry
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Retreive a host entry by host name or IP
 
 ## SYNTAX
 
@@ -23,21 +23,28 @@ Get-HostEntry [-IpAddress <IPAddress>] [-Section <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Retreive a host entry by host name or IP
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-HostEntry -IpAddress 8.8.8.8
 ```
 
-{{ Add example description here }}
+Returns the host file entry that points to 8.8.8.8
+
+### Example 2
+```powershell
+PS C:\> Get-HostEntry -HostName dsctfs01
+```
+
+Returns the host file entry that points to dsctfs01
 
 ## PARAMETERS
 
 ### -HostName
-{{ Fill HostName Description }}
+The host name to look up
 
 ```yaml
 Type: String
@@ -52,7 +59,7 @@ Accept wildcard characters: False
 ```
 
 ### -IpAddress
-{{ Fill IpAddress Description }}
+The IP address to look up
 
 ```yaml
 Type: IPAddress
@@ -67,7 +74,7 @@ Accept wildcard characters: False
 ```
 
 ### -Section
-{{ Fill Section Description }}
+The section to search in
 
 ```yaml
 Type: String

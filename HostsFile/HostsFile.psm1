@@ -77,12 +77,18 @@ function Get-HostFile
         [string]$Section
     )
 
-    Write-LogFunctionEntry
-
     $hostContent = New-Object -TypeName System.Collections.ArrayList
 	$hostEntries = New-Object -TypeName System.Collections.ArrayList
 
-	$path = "$($env:SystemRoot)\System32\drivers\etc\hosts"
+    $path = if ($PSEdition -eq 'Desktop' -or $IsWindows)
+    {
+        "$($env:SystemRoot)\System32\drivers\etc\hosts"
+    }
+    elseif ($PSEdition -eq 'Core' -and $IsLinux)
+    {
+        '/etc/hosts'
+    }
+
     Write-PSFMessage "Opening file '$path'"
 
     $currentHostContent = (Get-Content -Path $Path)
@@ -136,8 +142,6 @@ function Get-HostFile
     Write-PSFMessage "File loaded with $($hostContent.Count) lines"
 
     $hostContent, $hostEntries
-
-    Write-LogFunctionExit
 }
 #endregion Get-HostFile
 
@@ -151,13 +155,11 @@ function Get-HostEntry
 
 		[Parameter(ParameterSetName = 'ByIpAddress')]
 		[ValidateNotNullOrEmpty()]
-		[AutomatedLab.IPAddress]$IpAddress,
+		[System.Net.IPAddress]$IpAddress,
 
 		[Parameter()]
 		[string]$Section
 	)
-
-    Write-LogFunctionEntry
 
     if ($Section)
     {
@@ -188,8 +190,6 @@ function Get-HostEntry
     {
 		$hostEntries
     }
-
-    Write-LogFunctionExit
 }
 #endregion Get-HostEntry
 
@@ -199,7 +199,7 @@ function Add-HostEntry
 	[CmdletBinding()]
     param (
 		[Parameter(Mandatory, ParameterSetName = 'ByString')]
-		[AutomatedLab.IPAddress]$IpAddress,
+		[System.Net.IPAddress]$IpAddress,
 
 		[Parameter(Mandatory, ParameterSetName = 'ByString')]
 		$HostName,
@@ -210,8 +210,6 @@ function Add-HostEntry
         [Parameter(Mandatory)]
         [string]$Section
 	)
-
-	Write-LogFunctionEntry
 
     if (-not $InputObject)
 	{
@@ -245,8 +243,6 @@ function Add-HostEntry
 
 	$hostContent | Out-File -FilePath "$($env:SystemRoot)\System32\drivers\etc\hosts"
 
-    Write-LogFunctionExit
-
 	return $true
 }
 #endregion Add-HostEntry
@@ -257,7 +253,7 @@ function Remove-HostEntry
 	[CmdletBinding()]
 	param (
 		[Parameter(Mandatory, ParameterSetName = 'ByIpAddress')]
-		[AutomatedLab.IPAddress]$IpAddress,
+		[System.Net.IPAddress]$IpAddress,
 
 		[Parameter(Mandatory, ParameterSetName = 'ByHostName')]
 		$HostName,
@@ -268,8 +264,6 @@ function Remove-HostEntry
         [Parameter(Mandatory)]
         [string]$Section
 	)
-
-	Write-LogFunctionEntry
 
     if (-not $InputObject -and -not $IpAddress -and -not $HostName)
     {
@@ -317,8 +311,6 @@ function Remove-HostEntry
 
         $hostContent | Out-File -FilePath "$($env:SystemRoot)\System32\drivers\etc\hosts"
 	}
-
-    Write-LogFunctionExit
 }
 #endregion Remove-HostEntry
 
@@ -332,8 +324,6 @@ function Clear-HostFile
         [Parameter(Mandatory)]
         [string]$Section
     )
-
-    Write-LogFunctionEntry
 
     $hostContent, $hostEntries = Get-HostFile
 
@@ -350,7 +340,5 @@ function Clear-HostFile
 
 	$hostContent.RemoveRange($startPosition, $endPosition - $startPosition + 1)
     $hostContent | Out-File -FilePath "$($env:SystemRoot)\System32\drivers\etc\hosts"
-
-    Write-LogFunctionExit
 }
 #endregion function Clear-HostFile
