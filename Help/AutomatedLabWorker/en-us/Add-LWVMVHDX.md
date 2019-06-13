@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-LWVMVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Attach a VHDX file to a VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Add-LWVMVHDX [-VMName] <String> [-VhdxPath] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Attach a VHDX file to a VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-LWVMVHDX -VMName Client01 -VhdxPath D:\SomeFile.vhdx
 ```
 
-{{ Add example description here }}
+Attaches SomeFile.vhdx to Client01
 
 ## PARAMETERS
 
 ### -VMName
-{{ Fill VMName Description }}
+The virtual machine
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -VhdxPath
-{{ Fill VhdxPath Description }}
+The VHDX path
 
 ```yaml
 Type: String

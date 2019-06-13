@@ -8,7 +8,7 @@ schema: 2.0.0
 # Checkpoint-LWHypervVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a checkpoint of a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Checkpoint-LWHypervVM [-ComputerName] <String[]> [-SnapshotName] <String> [<Comm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a checkpoint of a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Checkpoint-LWHypervVm -ComputerName DC01 -SnapshotName BeforeSchemaUpdate
 ```
 
-{{ Add example description here }}
+Creates the snapshot BeforeSchemaUpdate for host DC01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to snapshot
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot.
 
 ```yaml
 Type: String

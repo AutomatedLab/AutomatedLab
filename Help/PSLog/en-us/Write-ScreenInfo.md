@@ -32,12 +32,10 @@ Write-ScreenInfo -Message 'Intendation normal'
 ```
 
 Returns the following:
-```
 15:36:20|00:00:04|00:00:00.000| So it begins...
 15:36:20|00:00:04|00:00:00.005| - So it continues...
 15:36:20|00:00:04|00:00:00.011| - So it ends...
 15:36:20|00:00:04|00:00:03.235| Intendation normal
-```
 
 ## PARAMETERS
 
