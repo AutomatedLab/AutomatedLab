@@ -28,7 +28,7 @@
     <SetProperty Id="RunPowerShellScript"
              Before ="InstallFiles"
              Sequence="execute"
-             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module Newtonsoft.Json,powershell-yaml,Datum -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
+             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module Newtonsoft.Json -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
     <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="deferred" Return="check" Impersonate="yes" />
     <InstallExecuteSequence>
       <Custom Action="RunPowerShellScript" Before="InstallFinalize"><![CDATA[NOT Installed]]></Custom>
@@ -479,10 +479,6 @@
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabHybrid.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabAzureServices.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLab\AutomatedLabTfs.psm1" />
-                  <File Source="$(var.SolutionDir)\AutomatedLab\settings.psd1" />
-                  <File Id="AutomatedLabDll" Source="$(var.LabXml.ProjectDir)\bin\debug\AutomatedLab.dll" />
-                  <File Id="AppInsightsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\Microsoft.ApplicationInsights.dll" />
-                  <File Id="AppInsightsDiagnosticsDll" Source="$(var.LabXml.ProjectDir)\bin\debug\System.Diagnostics.DiagnosticSource.dll" />
                   <RemoveFolder Id="RemoveFolderAutomatedLab" Directory="InstallFolder_AutomatedLab" On="both"/>
                   <RemoveFolder Id="RemoveFolderWindowsPowerShell" Directory="WindowsPowerShell" On="both"/>
                   <RemoveFolder Id="RemoveFolderINSTALLDIR" Directory="INSTALLDIR" On="both"/>
@@ -505,6 +501,18 @@
                       <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.bgi" />
                       <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\bginfo.exe" />
                       <File Source="$(var.SolutionDir)\AutomatedLab\Tools\HyperV\nvspbind.exe" />
+                    </Component>
+                  </Directory>
+                </Directory>
+                <Directory Id="InstallFolder_Libraries" Name="lib">
+                  <Directory Id="InstallFolder_LibrariesCore" Name="core">
+                    <Component Id="InstallFolder_LibrariesCoreComponent" Guid="cbe3d047-005e-426d-99ee-a4706e56df09">
+                      <!-- %%%FILEPLACEHOLDERCORE%%% -->
+                    </Component>
+                  </Directory>
+                  <Directory Id="InstallFolder_LibrariesFull" Name="full">
+                    <Component Id="InstallFolder_LibrariesFullComponent" Guid="e02c9295-faf7-4ad2-afdb-69ccfa354015">
+                      <!-- %%%FILEPLACEHOLDERFULL%%% -->
                     </Component>
                   </Directory>
                 </Directory>
@@ -673,6 +681,8 @@
         <ComponentRef Id='AutomatedLabUnattendedComponentPublic' />
         <ComponentRef Id='AutomatedLabToolsComponent'/>
         <ComponentRef Id='AutomatedLabHypervToolsComponent'/>
+        <ComponentRef Id='InstallFolder_LibrariesCoreComponent'/>
+        <ComponentRef Id='InstallFolder_LibrariesFullComponent'/>
         <ComponentRef Id='AutomatedLabAssets'/>
       </Feature>
       <Feature Id='LabSources' Title='Lab Sources' Description='Creates a folder structure that all samples scripts are based on and provides some lab preparation scripts.' Level='1' ConfigurableDirectory='LABSOURCESDIR'>

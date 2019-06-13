@@ -5,5 +5,5 @@ function Set-UnattendedKickstartProductKey
         [string]$ProductKey
     )
 
-    Write-Verbose -Message 'No product key necessary for RHEL/CentOS/Fedora'
+    Write-PSFMessage -Message 'No product key necessary for RHEL/CentOS/Fedora'
 }

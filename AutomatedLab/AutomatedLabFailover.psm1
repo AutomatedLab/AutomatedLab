@@ -76,7 +76,7 @@ function Install-LabFailoverCluster
                     if ($line -match 'Disk (?<DiskNumber>\d) \s+(Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) GB')
                     {
                         $nextDriveLetter = [char[]](67..90) |
-                            Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
+                            Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
                                     Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
                             Select-Object -First 1
 
@@ -206,7 +206,7 @@ function Install-LabFailoverStorage
         $initiatorIds = Invoke-LabCommand -ActivityName 'Retrieving IQNs' -ComputerName $machines -ScriptBlock {
             Set-Service -Name MSiSCSI -StartupType Automatic
             Start-Service -Name MSiSCSI
-            "IQN:$((Get-WmiObject -Namespace root\wmi -Class MSiSCSIInitiator_MethodClass).iSCSINodeName)"
+            "IQN:$((Get-CimInstance -Namespace root\wmi -Class MSiSCSIInitiator_MethodClass).iSCSINodeName)"
         } -PassThru -ErrorAction Stop
 
         $clusters[$clusterName] = $initiatorIds

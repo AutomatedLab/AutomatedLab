@@ -192,7 +192,7 @@ function Install-LabDscPullServer
 
         if ($machine.DefaultVirtualizationEngine -eq 'Azure')
         {
-            Write-Verbose -Message ('Adding external port 8080 to Azure load balancer')
+            Write-PSFMessage -Message ('Adding external port 8080 to Azure load balancer')
             (Get-Lab).AzureSettings.LoadBalancerPortCounter++
             $remotePort = (Get-Lab).AzureSettings.LoadBalancerPortCounter
             Add-LWAzureLoadBalancedPort -Port $remotePort -DestinationPort 8080 -ComputerName $machine -ErrorAction SilentlyContinue

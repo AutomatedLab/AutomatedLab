@@ -171,7 +171,7 @@ function Add-LabVirtualNetworkDefinition
     }
 
     $script:lab.VirtualNetworks.Add($network)
-    Write-Verbose "Network '$Name' added. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
+    Write-PSFMessage "Network '$Name' added. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
 
     if ($PassThru)
     {
@@ -243,7 +243,7 @@ function Remove-LabVirtualNetworkDefinition
         else
         {
             [Void]$script:lab.VirtualNetworks.Remove($network)
-            Write-Verbose "Network '$n' removed. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
+            Write-PSFMessage "Network '$n' removed. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
         }
     }
 

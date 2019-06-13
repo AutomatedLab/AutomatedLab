@@ -92,7 +92,7 @@ function New-LabRecipe
 
     if ((Test-Path -Path $recipeFileName) -and -not $Force.IsPresent)
     {
-        Write-Warning -Message "$recipeFileName exists and -Force was not used. Not storing recipe."
+        Write-PSFMessage -Level Warning -Message "$recipeFileName exists and -Force was not used. Not storing recipe."
         return
     }
 

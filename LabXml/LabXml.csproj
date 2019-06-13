@@ -1,189 +1,32 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{A27BCDC6-9D37-46D2-805F-930A509EFC9D}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AutomatedLab</RootNamespace>
+    <TargetFrameworks>netstandard2.0;net462;netcoreapp2.2</TargetFrameworks>
     <AssemblyName>AutomatedLab</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <SccProjectName>SAK</SccProjectName>
-    <SccLocalPath>SAK</SccLocalPath>
-    <SccAuxPath>SAK</SccAuxPath>
-    <SccProvider>SAK</SccProvider>
-    <TargetFrameworkProfile />
+    <RootNamespace>AutomatedLab</RootNamespace>
+    <Version>1.0.0</Version>
+    <FileVersion>1.0.0</FileVersion>
+    <Authors>Raimund Andree, Per Pedersen, Jan-Hendrik Peters</Authors>
+    <Copyright>© 2019 AutomatedLab team</Copyright>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.ApplicationInsights, Version=2.9.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.ApplicationInsights.2.9.1\lib\net45\Microsoft.ApplicationInsights.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=4.0.3.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.4.5.1\lib\net45\System.Diagnostics.DiagnosticSource.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Management.Automation, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\Windows\assembly\GAC_MSIL\System.Management.Automation\1.0.0.0__31bf3856ad364e35\System.Management.Automation.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Azure\AzureAccount.cs" />
-    <Compile Include="Azure\AzureAvailabilitySet.cs" />
-    <Compile Include="Azure\AzureLocation.cs" />
-    <Compile Include="Azure\AzureOSImage.cs" />
-    <Compile Include="Azure\AzureRm.cs" />
-    <Compile Include="Azure\AzureRmSkuDescription.cs" />
-    <Compile Include="Azure\AzureRmHostNameSslState.cs" />
-    <Compile Include="Azure\AzureRmResourceGroup.cs" />
-    <Compile Include="Azure\AzureRmServerFarmWithRichSku.cs" />
-    <Compile Include="Azure\AzureRmService.cs" />
-    <Compile Include="Azure\AzureRmStorageAccount.cs" />
-    <Compile Include="Azure\AzureRmVmSize.cs" />
-    <Compile Include="Azure\AzureSubscription.cs" />
-    <Compile Include="Azure\AzureVirtualMachine.cs" />
-    <Compile Include="Azure\CopiedObject.cs" />
-    <Compile Include="Disks\Disk.cs" />
-    <Compile Include="Disks\ISO.cs" />
-    <Compile Include="Disks\LocalDisk.cs" />
-    <Compile Include="DynamicVariable.cs" />
-    <Compile Include="Enums.cs" />
-    <Compile Include="Extensions\Extensions.cs" />
-    <Compile Include="Lab\AzureConfiguration.cs" />
-    <Compile Include="Lab\Domain.cs" />
-    <Compile Include="Lab\Lab.cs" />
-    <Compile Include="Lab\Path.cs" />
-    <Compile Include="Lab\VMWareConfiguration.cs" />
-    <Compile Include="Machines\Machine.cs" />
-    <Compile Include="Machines\NetworkAdapter.cs" />
-    <Compile Include="Machines\OperatingSystem.cs" />
-    <Compile Include="Machines\PostInstallationActivity.cs" />
-    <Compile Include="Machines\ProductKey.cs" />
-    <Compile Include="Machines\Role.cs" />
-    <Compile Include="Machines\Snapshot.cs" />
-    <Compile Include="Machines\SoftwarePackage.cs" />
-    <Compile Include="Machines\User.cs" />
-    <Compile Include="Machines\Version.cs" />
-    <Compile Include="Machines\WindowsFeature.cs" />
-    <Compile Include="Network\IPAddress Class\IPAddress AddOns.cs" />
-    <Compile Include="Network\IPAddress Class\IPAddress Conversion.cs" />
-    <Compile Include="Network\IPAddress Class\IPAddress Subnet.cs" />
-    <Compile Include="Network\IPAddress Class\IPAddress Defaults.cs" />
-    <Compile Include="Network\IPAddressExtensions.cs" />
-    <Compile Include="Network\AzureSubnet.cs" />
-    <Compile Include="Network\IPNetwork Class\BigIntegerExt.cs" />
-    <Compile Include="Network\IPAddressCollection.cs" />
-    <Compile Include="Network\IPNetwork Class\IPNetwork.cs" />
-    <Compile Include="Network\IPNetwork Class\IPNetwork2.cs" />
-    <Compile Include="Network\IPNetworkCollection.cs" />
-    <Compile Include="Network\VirtualNetwork.cs" />
-    <Compile Include="PowerShellHelper.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Stores\DictionaryXmlStore.cs" />
-    <Compile Include="Stores\ListXmlStore.cs" />
-    <Compile Include="Stores\SerializableDictionary.cs" />
-    <Compile Include="Stores\SerializableList.cs" />
-    <Compile Include="Stores\XmlStore.cs" />
-    <Compile Include="Telemetry\LabTelemetry.cs" />
-    <Compile Include="Validator\ActiveDirectory\DomainInformation.cs" />
-    <Compile Include="Validator\ActiveDirectory\DuplicateDomainRoles.cs" />
-    <Compile Include="Validator\ActiveDirectory\EmptyDomains.cs" />
-    <Compile Include="Validator\ActiveDirectory\InvalidDomainCredentials.cs" />
-    <Compile Include="Validator\ActiveDirectory\DoaminHasNoRootOrFirstChildDC.cs" />
-    <Compile Include="Validator\ActiveDirectory\MachineInAnUndefinedDomain.cs" />
-    <Compile Include="Validator\ActiveDirectory\DomainWithTooLongName.cs" />
-    <Compile Include="Validator\DscPullServer\DscSqlServerPresent.cs" />
-    <Compile Include="Validator\DscPullServer\DscSqlServerKnown.cs" />
-    <Compile Include="Validator\FailoverCluster\ClusterNoDomain.cs" />
-    <Compile Include="Validator\FailoverCluster\DuplicateClusterIp.cs" />
-    <Compile Include="Validator\FailoverCluster\TooFewNodesForCluster.cs" />
-    <Compile Include="Validator\FailoverCluster\ClusterOperatingSystem.cs" />
-    <Compile Include="Validator\HyperV\HyperVWrongOs.cs" />
-    <Compile Include="Validator\HyperV\HyperVWrongRoleSize.cs" />
-    <Compile Include="Validator\LabInformation\LabNameContainsIllegalCharacters.cs" />
-    <Compile Include="Validator\Machines\Azure\AzureSpecifiedRoleSizeNotFound.cs" />
-    <Compile Include="Validator\Machines\Azure\AzureDoesSupportMax8NetworkAdapters.cs" />
-    <Compile Include="Validator\Machines\HyperV\HypervMemorySettings.cs" />
-    <Compile Include="Validator\Machines\HyperV\HypervDoesSupportMax8NetworkAdapters.cs" />
-    <Compile Include="Validator\Network\Azure Network\AzureVnetAddressSpaceTooSmall.cs" />
-    <Compile Include="Validator\Network\Azure Network\AzureVnetDnsServerInvalid.cs" />
-    <Compile Include="Validator\Network\Azure Network\AzureVnetDnsServerRequiredForActiveDirectory.cs" />
-    <Compile Include="Validator\Network\Azure Network\AzureVnetConnectsToUnknownVnet.cs" />
-    <Compile Include="Validator\Disks\DiskAssignedMultipleTimes.cs" />
-    <Compile Include="Validator\Network\DuplicateAddressSpaceAssigned.cs" />
-    <Compile Include="Validator\Network\HyperV Network\ExternalSwitchConnectsWifi.cs" />
-    <Compile Include="Validator\Network\HyperV Network\ExternalSwitchNameCollision.cs" />
-    <Compile Include="Validator\Network\HyperV Network\ExternalSwitchNetworkAdapterBridgedAlready.cs" />
-    <Compile Include="Validator\Network\HyperV Network\ExternalSwitchNetworkAdapterExists.cs" />
-    <Compile Include="Validator\Network\HyperV Network\RoutingRoleMustBeInRootDomainy.cs" />
-    <Compile Include="Validator\Network\HyperV Network\ExternalSwitchNoDhcp.cs" />
-    <Compile Include="Validator\LabValidator.cs" />
-    <Compile Include="Validator\Machines\DuplicateMachineNames.cs" />
-    <Compile Include="Validator\Machines\MachineInformation.cs" />
-    <Compile Include="Validator\Machines\MachineRoleInformation.cs" />
-    <Compile Include="Validator\Machines\MachineWithTooLongName.cs" />
-    <Compile Include="Validator\Machines\NoMachinesDefined.cs" />
-    <Compile Include="Validator\Office\OfficeIsosExist.cs" />
-    <Compile Include="Validator\Orchestrator\OrchestratorIsosExist.cs" />
-    <Compile Include="Validator\Roles\UnknownRoleProperties.cs" />
-    <Compile Include="Validator\Roles\MandatoryRoleProperties.cs" />
-    <Compile Include="Validator\Roles\EmptyRoleProperties.cs" />
-    <Compile Include="Validator\Routing\RoutingRoleNotSupportedOnAzure.cs" />
-    <Compile Include="Validator\Routing\RoutingMachineHasAtLeastTwoNetworkCards.cs" />
-    <Compile Include="Validator\Sql\SqlIsosExist.cs" />
-    <Compile Include="Validator\Tfs\TfsSqlIsosExist.cs" />
-    <Compile Include="Validator\Tfs\HighlanderRole.cs" />
-    <Compile Include="Validator\Tfs\TfsIsosExist.cs" />
-    <Compile Include="Validator\ValidationMessage.cs" />
-    <Compile Include="Validator\ValidatorBase.cs" />
-    <Compile Include="Validator\VisualStudio\VisualStudioIsosExist.cs" />
-    <Compile Include="Validator\XmlValidator.cs" />
-    <Compile Include="Validator\Xml\PathValidator.cs" />
-  </ItemGroup>
+
   <ItemGroup>
     <None Include=".Build\PostBuild.ps1" />
-    <None Include="app.config" />
-    <None Include="packages.config" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>PowerShell -NoProfile -ExecutionPolicy Unrestricted -File $(ProjectDir)\.Build\PostBuild.ps1 $(SolutionDir) $(TargetPath) $(TargetDir)</PostBuildEvent>
-  </PropertyGroup>
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.9.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
+    <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.1" />
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
+  </ItemGroup>
+  <Target Name="GetTargetPath" Returns="@(_FakeOutputPath)">
+    <ItemGroup>
+      <_FakeOutputPath Include="$(MSBuildProjectDirectory)\$(PackageOutputPath)\$(AssemblyName).UNK" />
+    </ItemGroup>
   </Target>
-  <Target Name="AfterBuild">
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="PowerShell -NoProfile -ExecutionPolicy Unrestricted -File $(ProjectDir)\.Build\PostBuild.ps1 $(SolutionDir) $(TargetDir)" />
   </Target>
-  -->
 </Project>

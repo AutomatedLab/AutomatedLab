@@ -34,11 +34,11 @@ function New-LWAzureVM
 
     if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
     {
-        Write-Verbose -Message "Target machine $($Machine.Name) already exists. Skipping..."
+        Write-PSFMessage -Message "Target machine $($Machine.Name) already exists. Skipping..."
         return
     }
 
-    Write-Verbose -Message "Target resource group for machine: '$machineResourceGroup'"
+    Write-PSFMessage -Message "Target resource group for machine: '$machineResourceGroup'"
 
     if (-not $global:cacheVMs)
     {
@@ -52,7 +52,7 @@ function New-LWAzureVM
         return
     }
 
-    Write-Verbose -Message "Creating container 'automatedlabdisks' for additional disks"
+    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
     $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
 
     if (-not $storageContext)
@@ -66,13 +66,13 @@ function New-LWAzureVM
         $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
     }
 
-    Write-Verbose -Message "Scheduling creation Azure machine '$Machine'"
+    Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
 
     #random number in the path to prevent conflicts
     $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
     $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
     $lab.AzureSettings.VmDisks.Add($osVhdLocation)
-    Write-Verbose -Message "The location of the VM disk is '$osVhdLocation'"
+    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
@@ -106,7 +106,7 @@ function New-LWAzureVM
 
     if ($sqlServerRoleName -and -not $useStandardVm)
     {
-        Write-Verbose -Message 'This is going to be a SQL Server VM'
+        Write-PSFMessage -Message 'This is going to be a SQL Server VM'
         $pattern = 'SQL(?<SqlVersion>\d{4})(?<SqlIsR2>R2)??(?<SqlServicePack>SP\d)?-(?<OS>WS\d{4}(R2)?)'
 
         #get all SQL images matching the RegEx pattern and then get only the latest one
@@ -149,7 +149,7 @@ function New-LWAzureVM
             Write-ScreenInfo 'SQL Server image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sqlServerImage in $sqlServerImages)
             {
-                Write-Host $sqlServerImage.Offer
+                Write-PSFMessage -Level Host $sqlServerImage.Offer
             }
 
             throw "There is no Azure VM image for '$sqlServerRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -157,7 +157,7 @@ function New-LWAzureVM
     }
     elseif ($visualStudioRoleName)
     {
-        Write-Verbose -Message 'This is going to be a Visual Studio VM'
+        Write-PSFMessage -Message 'This is going to be a Visual Studio VM'
 
         $pattern = 'VS-(?<Version>\d{4})-(?<Edition>\w+)-VSU(?<Update>\d)-AzureSDK-\d{2,3}-((?<OS>WIN\d{2})|(?<OS>WS\d{4,6}))'
 
@@ -197,7 +197,7 @@ function New-LWAzureVM
     }
     elseif ($sharePointRoleName)
     {
-        Write-Verbose -Message 'This is going to be a SharePoint VM'
+        Write-PSFMessage -Message 'This is going to be a SharePoint VM'
 
         # AzureRM currently has only one SharePoint offer
 
@@ -232,7 +232,7 @@ function New-LWAzureVM
             Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
             foreach ($sharePointImage in $sharePointImages)
             {
-                Write-Host $sharePointImage.Offer $sharePointImage.Skus
+                Write-PSFMessage -Level Host $sharePointImage.Offer $sharePointImage.Skus
             }
 
             throw "There is no Azure VM image for '$sharePointRoleName' on operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
@@ -254,7 +254,7 @@ function New-LWAzureVM
         $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
         $skusName = $vmImage | Select-Object -ExpandProperty Skus
     }
-    Write-Verbose -Message "We selected the SKUs $skusName from offer $offerName by publisher $publisherName"
+    Write-PSFMessage -Message "We selected the SKUs $skusName from offer $offerName by publisher $publisherName"
 
     Write-ProgressIndicator
 
@@ -262,7 +262,7 @@ function New-LWAzureVM
     {
         $roleSize = $lab.AzureSettings.RoleSizes |
             Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
-        Write-Verbose -Message "Using specified role size of '$($roleSize.Name)'"
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)'"
     }
     elseif ($machine.AzureProperties.UseAllRoleSizes)
     {
@@ -272,7 +272,7 @@ function New-LWAzureVM
             Sort-Object -Property MemoryInMB, NumberOfCores |
             Select-Object -First 1
 
-        Write-Verbose -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
     }
     else
     {
@@ -292,7 +292,7 @@ function New-LWAzureVM
             Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
             Select-Object -First 1
 
-        Write-Verbose -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
 
     if (-not $roleSize)
@@ -313,24 +313,24 @@ function New-LWAzureVM
     $DefaultIpAddress = $Machine.NetworkAdapters[0].Ipv4Address.IpAddress
     $LabName = $lab.Name
 
-    Write-Verbose '-------------------------------------------------------'
-    Write-Verbose "Machine: $($Machine.name)"
-    Write-Verbose "Vnet: $Vnet"
-    Write-Verbose "RoleSize: $RoleSize"
-    Write-Verbose "VmImageName: $VmImageName"
-    Write-Verbose "OsVhdLocation: $OsVhdLocation"
-    Write-Verbose "AdminUserName: $AdminUserName"
-    Write-Verbose "AdminPassword: $AdminPassword"
-    Write-Verbose "ResourceGroupName: $ResourceGroupName"
-    Write-Verbose "StorageAccountName: $($StorageContext.StorageAccountName)"
-    Write-Verbose "BlobEndpoint: $($StorageContext.BlobEndpoint)"
-    Write-Verbose "DefaultIpAddress: $DefaultIpAddress"
-    Write-Verbose "Location: $Location"
-    Write-Verbose "Lab name: $LabName"
-    Write-Verbose "Publisher: $PublisherName"
-    Write-Verbose "Offer: $OfferName"
-    Write-Verbose "Skus: $SkusName"
-    Write-Verbose '-------------------------------------------------------'
+    Write-PSFMessage '-------------------------------------------------------'
+    Write-PSFMessage "Machine: $($Machine.name)"
+    Write-PSFMessage "Vnet: $Vnet"
+    Write-PSFMessage "RoleSize: $RoleSize"
+    Write-PSFMessage "VmImageName: $VmImageName"
+    Write-PSFMessage "OsVhdLocation: $OsVhdLocation"
+    Write-PSFMessage "AdminUserName: $AdminUserName"
+    Write-PSFMessage "AdminPassword: $AdminPassword"
+    Write-PSFMessage "ResourceGroupName: $ResourceGroupName"
+    Write-PSFMessage "StorageAccountName: $($StorageContext.StorageAccountName)"
+    Write-PSFMessage "BlobEndpoint: $($StorageContext.BlobEndpoint)"
+    Write-PSFMessage "DefaultIpAddress: $DefaultIpAddress"
+    Write-PSFMessage "Location: $Location"
+    Write-PSFMessage "Lab name: $LabName"
+    Write-PSFMessage "Publisher: $PublisherName"
+    Write-PSFMessage "Offer: $OfferName"
+    Write-PSFMessage "Skus: $SkusName"
+    Write-PSFMessage '-------------------------------------------------------'
 
     $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
             Get-AzVirtualNetworkSubnetConfig | 
@@ -343,7 +343,7 @@ function New-LWAzureVM
         throw 'No subnet configuration found to fit machine in! Review the IP address of your machine and your lab virtual network.'
     }
 
-    Write-Verbose -Message "Subnet for the VM is '$($subnet.Name)'"
+    Write-PSFMessage -Message "Subnet for the VM is '$($subnet.Name)'"
     $cred = New-Object -TypeName pscredential -ArgumentList $adminUserName, ($adminPassword | ConvertTo-SecureString -AsPlainText -Force)
 
     $machineAvailabilitySet = Get-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -ErrorAction SilentlyContinue
@@ -355,15 +355,15 @@ function New-LWAzureVM
     $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop
     $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
 
-    Write-Verbose "Choosing latest source image for $SkusName in $OfferName"
+    Write-PSFMessage "Choosing latest source image for $SkusName in $OfferName"
     $vm = Set-AzVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
 
-    Write-Verbose -Message "Setting private IP address."
+    Write-PSFMessage -Message "Setting private IP address."
     $defaultIPv4Address = $DefaultIpAddress
 
-    Write-Verbose -Message "Default IP address is '$DefaultIpAddress'."
+    Write-PSFMessage -Message "Default IP address is '$DefaultIpAddress'."
 
-    Write-Verbose -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
+    Write-PSFMessage -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
     $LoadBalancer = Get-AzLoadBalancer -Name "$($ResourceGroupName)$($machine.Network[0])loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop
 
     $inboundNatRules = @(Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
@@ -383,17 +383,17 @@ function New-LWAzureVM
         Force                          = $true
     }
 
-    Write-Verbose -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
+    Write-PSFMessage -Message "Creating new network interface with configured private and public IP and subnet $($subnet.Name)"
     $networkInterface = New-AzNetworkInterface @nicProperties
 
-    Write-Verbose -Message 'Adding primary NIC to VM'
+    Write-PSFMessage -Message 'Adding primary NIC to VM'
     $vm = Add-AzVMNetworkInterface -VM $vm -Id $networkInterface.Id -ErrorAction Stop -Primary
 
     Write-ProgressIndicator
 
     if ($Disks)
     {
-        Write-Verbose "Adding $($Disks.Count) data disks"
+        Write-PSFMessage "Adding $($Disks.Count) data disks"
         $lun = 0
 
         foreach ($Disk in $Disks.GetEnumerator())
@@ -401,7 +401,7 @@ function New-LWAzureVM
             $dataDiskName = $Disk.Key.ToLower()
             $diskSize = $Disk.Value
 
-            Write-Verbose -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
+            Write-PSFMessage -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
             $diskConfig = New-AzDiskConfig -SkuName Standard_LRS -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
             $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $dataDiskName -Disk $diskConfig
             $vm = $vm | Add-AzVMDataDisk -Name $dataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $diskSize -Lun $lun -CreateOption Attach
@@ -421,7 +421,7 @@ function New-LWAzureVM
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $adapter.Ipv4Address[0].IpAddress.ToString()
             }
 
-        Write-Verbose -Message "Adding additional network adapter to $Machine"
+        Write-PSFMessage -Message "Adding additional network adapter to $Machine"
         $additionalNicParameters = @{
             Name              = "$($Machine.Name.ToLower())nic$niccount"
             ResourceGroupName = $ResourceGroupName
@@ -436,7 +436,7 @@ function New-LWAzureVM
         $niccount++
     }
 
-    Write-Verbose -Message 'Calling New-AzureRMVm'
+    Write-PSFMessage -Message 'Calling New-AzureRMVm'
 
     $vmParameters = @{
         ResourceGroupName = $ResourceGroupName
@@ -590,7 +590,7 @@ function Initialize-LWAzureVM
                 if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
                 {
                     $nextDriveLetter = [char[]](67..90) |
-                        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |
+                        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
                                 Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
                         Select-Object -First 1
 
@@ -623,7 +623,7 @@ function Initialize-LWAzureVM
     while ((Get-AzVM -ResourceGroupName $lab.Name | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
     {
         Start-Sleep -Seconds 10
-        Write-Verbose 'Still waiting for all machines to be visible in Azure'
+        Write-PSFMessage 'Still waiting for all machines to be visible in Azure'
     }
     Write-ScreenInfo -Message "$($Machine.Count) new machine(s) has been created and now visible in Azure"
     Write-ScreenInfo -Message 'Waiting until all machines have a DNS name in Azure'
@@ -681,7 +681,7 @@ function Initialize-LWAzureVM
         Write-ScreenInfo -Message "($($Machine.Count)) new Azure machines were configured"
     }
 
-    Write-Verbose "Removing all sessions after VmInit"
+    Write-PSFMessage "Removing all sessions after VmInit"
     Remove-LabPSSession
 
     Write-LogFunctionExit
@@ -809,10 +809,10 @@ function Start-LWAzureVM
 
     if ($machinesToJoin)
     {
-        Write-Verbose -Message "Waiting for machines '$($machinesToJoin -join ', ')' to come online"
+        Write-PSFMessage -Message "Waiting for machines '$($machinesToJoin -join ', ')' to come online"
         Wait-LabVM -ComputerName $machinesToJoin -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
 
-        Write-Verbose -Message 'Start joining the machines to the respective domains'
+        Write-PSFMessage -Message 'Start joining the machines to the respective domains'
         Join-LabVMDomain -Machine $machinesToJoin
 
         Enable-LabAutoLogon -ComputerName $machinesToJoin
@@ -942,7 +942,7 @@ function Wait-LWAzureRestartVM
     
     $start = $MonitoringStartTime.ToUniversalTime()
 
-    Write-Verbose -Message "Starting monitoring the servers at '$start'"
+    Write-PSFMessage -Message "Starting monitoring the servers at '$start'"
 
     $machines = Get-LabVM -ComputerName $ComputerName
 
@@ -979,7 +979,7 @@ function Wait-LWAzureRestartVM
 
             if ($events)
             {
-                Write-Verbose -Message "VM '$machine' has been restarted"
+                Write-PSFMessage -Message "VM '$machine' has been restarted"
             }
             else
             {
@@ -1003,7 +1003,7 @@ function Wait-LWAzureRestartVM
         }
     }
 
-    Write-Verbose -Message "Finished monitoring the servers at '$(Get-Date)'"
+    Write-PSFMessage -Message "Finished monitoring the servers at '$(Get-Date)'"
 
     Write-LogFunctionExit
 }
@@ -1082,7 +1082,7 @@ function Get-LWAzureVMConnectionInfo
 
     if (-not $lab)
     {
-        Write-Verbose "Could not retrieve machine info for '$($ComputerName.Name -join ',')'. No lab was imported."
+        Write-PSFMessage "Could not retrieve machine info for '$($ComputerName.Name -join ',')'. No lab was imported."
     }
 
     if (-not ((Get-AzContext).Subscription.Name -eq $lab.AzureSettings.DefaultSubscription))
@@ -1113,15 +1113,15 @@ function Get-LWAzureVMConnectionInfo
             ResourceGroupName = $azureVM.ResourceGroupName
         }
 
-        Write-Verbose "Get-LWAzureVMConnectionInfo created connection info for VM '$name'"
-        Write-Verbose "ComputerName      = $($name.Name)"
-        Write-Verbose "DnsName           = $($ip.DnsSettings.Fqdn)"
-        Write-Verbose "HttpsName         = $($ip.DnsSettings.Fqdn)"
-        Write-Verbose "VIP               = $($ip.IpAddress)"
-        Write-Verbose "Port              = $($name.LoadBalancerWinrmHttpPort)"
-        Write-Verbose "HttpsPort         = $($name.LoadBalancerWinrmHttpsPort)"
-        Write-Verbose "RdpPort           = $($name.LoadBalancerRdpPort)"
-        Write-Verbose "ResourceGroupName = $($azureVM.ResourceGroupName)"
+        Write-PSFMessage "Get-LWAzureVMConnectionInfo created connection info for VM '$name'"
+        Write-PSFMessage "ComputerName      = $($name.Name)"
+        Write-PSFMessage "DnsName           = $($ip.DnsSettings.Fqdn)"
+        Write-PSFMessage "HttpsName         = $($ip.DnsSettings.Fqdn)"
+        Write-PSFMessage "VIP               = $($ip.IpAddress)"
+        Write-PSFMessage "Port              = $($name.LoadBalancerWinrmHttpPort)"
+        Write-PSFMessage "HttpsPort         = $($name.LoadBalancerWinrmHttpsPort)"
+        Write-PSFMessage "RdpPort           = $($name.LoadBalancerRdpPort)"
+        Write-PSFMessage "ResourceGroupName = $($azureVM.ResourceGroupName)"
 
         $result
     }

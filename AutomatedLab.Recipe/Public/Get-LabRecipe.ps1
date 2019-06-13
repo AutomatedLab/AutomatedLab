@@ -16,7 +16,7 @@ function Get-LabRecipe
     {
         if ($Name.Count -gt 1)
         {
-            Write-Warning -Message "Provided more than one name when using RecipeContent. Ignoring every value but the first."
+            Write-PSFMessage -Level Warning -Message "Provided more than one name when using RecipeContent. Ignoring every value but the first."
         }
 
         $newScript = "[hashtable]@{$($RecipeContent.ToString())}"

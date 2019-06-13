@@ -705,22 +705,22 @@ function New-LabDefinition
     {
         $osName = $((Get-CimInstance -ClassName Win32_OperatingSystem).Caption.PadRight(10))
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
-        Write-Host '***************************************************************************'
-        Write-Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        Write-Host
-        Write-Host '   Operating System detected as:'
-        Write-Host "     Name:  $osName"
-        Write-Host "     Build: $osBuild"
-        Write-Host
-        Write-Host ' AutomatedLab is supported on the following virtualization platforms'
-        Write-Host
-        Write-Host ' - Microsoft Azure'
-        Write-Host ' - Windows 2016 1607 or newer'
-        Write-Host ' - Windows 10 1607 or newer'
-        Write-Host ' - Windows 8.1 Professional or Enterprise'
-        Write-Host ' - Windows 2012 R2'
+        Write-PSFMessage -Level Host '***************************************************************************'
+        Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host '   Operating System detected as:'
+        Write-PSFMessage -Level Host "     Name:  $osName"
+        Write-PSFMessage -Level Host "     Build: $osBuild"
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ' AutomatedLab is supported on the following virtualization platforms'
+        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ' - Microsoft Azure'
+        Write-PSFMessage -Level Host ' - Windows 2016 1607 or newer'
+        Write-PSFMessage -Level Host ' - Windows 10 1607 or newer'
+        Write-PSFMessage -Level Host ' - Windows 8.1 Professional or Enterprise'
+        Write-PSFMessage -Level Host ' - Windows 2012 R2'
 
-        Write-Host '***************************************************************************'
+        Write-PSFMessage -Level Host '***************************************************************************'
     }
 
     #settings for a new log
@@ -760,7 +760,7 @@ function New-LabDefinition
         #Citrix
         $reservedMacAddresses += '00:16:3E'
 
-        $macAddress = Get-WmiObject Win32_NetworkAdapter |
+        $macAddress = Get-CimInstance Win32_NetworkAdapter |
         Where-Object { $_.NetEnabled -and $_.NetConnectionID } |
         Where-Object { $_.MACaddress.ToString().SubString(0, 8) -notin $reservedMacAddresses } |
         Select-Object -ExpandProperty MACAddress -Unique
@@ -814,8 +814,6 @@ function New-LabDefinition
     }
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
-    $script:defaults = Get-LabConfigurationItem
-
     $script:lab = New-Object AutomatedLab.Lab
 
     $script:lab.Name = $Name
@@ -827,12 +825,12 @@ function New-LabDefinition
         Remove-LabVirtualNetworkDefinition -Name (Get-LabVirtualNetworkDefinition)[0].Name
     }
 
-    $machineDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath $defaults.MachineFileName
+    $machineDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem MachineFileName)
     $machineDefinitionFile = New-Object AutomatedLab.MachineDefinitionFile
     $machineDefinitionFile.Path = $machineDefinitionFilePath
     $script:lab.MachineDefinitionFiles.Add($machineDefinitionFile)
 
-    $diskDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath $defaults.DiskFileName
+    $diskDefinitionFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem DiskFileName)
     $diskDefinitionFile = New-Object AutomatedLab.DiskDefinitionFile
     $diskDefinitionFile.Path = $diskDefinitionFilePath
     $script:lab.DiskDefinitionFiles.Add($diskDefinitionFile)
@@ -1059,16 +1057,16 @@ function Export-LabDefinition
                     }
                     else #machine is domain joined and not a RootDC or FirstChildDC
                     {
-                        Write-Verbose "Looking for a root DC in the machine's domain '$($machine.DomainName)'"
+                        Write-PSFMessage "Looking for a root DC in the machine's domain '$($machine.DomainName)'"
                         $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $machine.DomainName
                         if ($rootDc)
                         {
-                            Write-Verbose "RootDC found, using the IP address of '$rootDc' for DNS: "
+                            Write-PSFMessage "RootDC found, using the IP address of '$rootDc' for DNS: "
                             $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
                         }
                         else
                         {
-                            Write-Verbose "No RootDC found, looking for FirstChildDC in the machine's domain"
+                            Write-PSFMessage "No RootDC found, looking for FirstChildDC in the machine's domain"
                             $firstChildDC = Get-LabMachineDefinition -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
 
                             if ($firstChildDC)
@@ -1112,9 +1110,9 @@ function Export-LabDefinition
 
         $spaceNeeded = $spaceNeededBaseDisks + $spaceNeededData - $spaceBaseDisksAlreadyClaimed
 
-        Write-Verbose -Message "Space needed by HyperV base disks:                     $([int]($spaceNeededBaseDisks / 1GB))"
-        Write-Verbose -Message "Space needed by HyperV base disks but already claimed: $([int]($spaceBaseDisksAlreadyClaimed / 1GB * -1))"
-        Write-Verbose -Message "Space estimated for HyperV data:                       $([int]($spaceNeededData / 1GB))"
+        Write-PSFMessage -Message "Space needed by HyperV base disks:                     $([int]($spaceNeededBaseDisks / 1GB))"
+        Write-PSFMessage -Message "Space needed by HyperV base disks but already claimed: $([int]($spaceBaseDisksAlreadyClaimed / 1GB * -1))"
+        Write-PSFMessage -Message "Space estimated for HyperV data:                       $([int]($spaceNeededData / 1GB))"
         if (-not $Silent)
         {
             Write-ScreenInfo -Message "Estimated (additional) local drive space needed for all machines: $([System.Math]::Round(($spaceNeeded / 1GB),2)) GB" -Type Info
@@ -1127,7 +1125,7 @@ function Export-LabDefinition
             {
                 try
                 {
-                    Write-Verbose "Creating new folder '$labTargetPath'"
+                    Write-PSFMessage "Creating new folder '$labTargetPath'"
                     New-Item -ItemType Directory -Path $labTargetPath -ErrorAction Stop | Out-Null
                 }
                 catch
@@ -1137,9 +1135,9 @@ function Export-LabDefinition
                 }
             }
 
-            Write-Verbose "Calling 'Get-LabFreeDiskSpace' targeting path '$labTargetPath'"
+            Write-PSFMessage "Calling 'Get-LabFreeDiskSpace' targeting path '$labTargetPath'"
             $freeSpace = (Get-LabFreeDiskSpace -Path $labTargetPath).FreeBytesAvailable
-            Write-Verbose "Free disk space is '$([Math]::Round($freeSpace / 1GB, 2))GB'"
+            Write-PSFMessage "Free disk space is '$([Math]::Round($freeSpace / 1GB, 2))GB'"
             if ($freeSpace -lt $spaceNeeded)
             {
                 throw "VmPath parameter is specified for the lab and contains: '$labTargetPath'. However, estimated needed space be $([int]($spaceNeeded / 1GB))GB but drive has only $([System.Math]::Round($freeSpace / 1GB)) GB of free space"
@@ -1162,7 +1160,7 @@ function Export-LabDefinition
     }
 
 
-    $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath $script:defaults.LabFileName
+    $lab.LabFilePath = Join-Path -Path $script:labPath -ChildPath (Get-LabConfigurationItem LabFileName)
     $script:lab | Add-Member -Name Path -MemberType NoteProperty -Value $labFilePath -Force
 
     if (-not (Test-Path $script:labPath))
@@ -1258,8 +1256,6 @@ function Test-LabDefinition
 
     Write-LogFunctionEntry
 
-    $script:defaults = Get-LabConfigurationItem
-
     $lab = Get-LabDefinition
     if (-not $lab)
     {
@@ -1274,7 +1270,7 @@ function Test-LabDefinition
 
     if (-not $Path)
     {
-        $Path = Join-Path -Path $lab.LabPath -ChildPath $script:defaults.LabFileName
+        $Path = Join-Path -Path $lab.LabPath -ChildPath (Get-LabConfigurationItem LabFileName)
     }
 
     #we need to get the machine config files as well
@@ -1288,7 +1284,7 @@ function Test-LabDefinition
         return $false
     }
 
-    Write-Verbose "There are $($machineDefinitionFiles.Count) machine XML file referenced in the lab xml file"
+    Write-PSFMessage "There are $($machineDefinitionFiles.Count) machine XML file referenced in the lab xml file"
     foreach ($machineDefinitionFile in $machineDefinitionFiles)
     {
         if (-not (Test-Path -Path $machineDefinitionFile))
@@ -1299,7 +1295,7 @@ function Test-LabDefinition
 
     $Script:ValidationPass = $true
 
-    Write-Verbose 'Starting validation against all xml files'
+    Write-PSFMessage 'Starting validation against all xml files'
     try
     {
         [AutomatedLab.XmlValidatorArgs]::XmlPath = $Path
@@ -1335,7 +1331,7 @@ function Test-LabDefinition
         throw $_
     }
 
-    Write-Verbose -Message "Lab Validation complete, overvall runtime was $($summaryMessageContainer.Runtime)"
+    Write-PSFMessage -Message "Lab Validation complete, overvall runtime was $($summaryMessageContainer.Runtime)"
 
     $messages = $summaryMessageContainer | ForEach-Object { $_.GetFilteredMessages('All') }
     if (-not $Quiet)
@@ -1344,7 +1340,7 @@ function Test-LabDefinition
 
         if ($VerbosePreference -eq 'Continue')
         {
-            Write-Verbose ($messages | Where-Object { $_.Type -band [AutomatedLab.MessageType]::VerboseDebug } | Out-String)
+            Write-PSFMessage ($messages | Where-Object { $_.Type -band [AutomatedLab.MessageType]::VerboseDebug } | Out-String)
         }
     }
     else
@@ -1422,7 +1418,7 @@ function Add-LabDomainDefinition
     $domain.Administrator = $user
 
     $script:lab.Domains.Add($domain)
-    Write-Verbose "Added domain '$Name'. Lab now has $($Script:lab.Domains.Count) domain(s) defined"
+    Write-PSFMessage "Added domain '$Name'. Lab now has $($Script:lab.Domains.Count) domain(s) defined"
 
     if ($PassThru)
     {
@@ -1468,7 +1464,7 @@ function Remove-LabDomainDefinition
     else
     {
         [Void]$script:lab.Domains.Remove($domain)
-        Write-Verbose "Domain '$Name' removed. Lab has $($Script:lab.Domains.Count) domain(s) defined"
+        Write-PSFMessage "Domain '$Name' removed. Lab has $($Script:lab.Domains.Count) domain(s) defined"
     }
 
     Write-LogFunctionExit
@@ -1513,11 +1509,11 @@ function Add-LabIsoImageDefinition
     {
         $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
         $cachedIsos = $importMethodInfo.Invoke($null, ('Cache', 'LocalIsoImages'))
-        Write-Verbose "Read $($cachedIsos.Count) ISO images from the cache"
+        Write-PSFMessage "Read $($cachedIsos.Count) ISO images from the cache"
     }
     catch
     {
-        Write-Verbose 'Could not read ISO images info from the cache'
+        Write-PSFMessage 'Could not read ISO images info from the cache'
         $cachedIsos = New-Object $type
     }
 
@@ -1532,7 +1528,7 @@ function Add-LabIsoImageDefinition
             if (-not $isoFiles -and $Name)
             {
                 $filterPath = Split-Path -Path $Path -Leaf
-                Write-Verbose -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
+                Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
                 Sync-LabAzureLabSources -Filter $filterPath
 
                 $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
@@ -1568,7 +1564,7 @@ function Add-LabIsoImageDefinition
 
         if ($cachedIsos -contains $iso)
         {
-            Write-Verbose "The ISO '$($iso.Path)' with a size '$($iso.Size)' is already in the cache."
+            Write-PSFMessage "The ISO '$($iso.Path)' with a size '$($iso.Size)' is already in the cache."
             $cachedIso = ($cachedIsos -eq $iso)[0]
             if ($PSBoundParameters.ContainsKey('Name'))
             {
@@ -1580,7 +1576,7 @@ function Add-LabIsoImageDefinition
         {
             if (-not $script:lab.DefaultVirtualizationEngine -eq 'Azure')
             {
-                Write-Verbose "The ISO '$($iso.Path)' with a size '$($iso.Size)' is not in the cache. Reading the operating systems from ISO."
+                Write-PSFMessage "The ISO '$($iso.Path)' with a size '$($iso.Size)' is not in the cache. Reading the operating systems from ISO."
                 [void] (Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO)
                 Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
                 $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
@@ -1644,7 +1640,7 @@ function Add-LabIsoImageDefinition
         $script:lab.Sources.ISOs.Add($iso)
         Write-ScreenInfo -Message "Added '$($iso.Path)'"
     }
-    Write-Verbose "Final Lab ISO count: $($script:lab.Sources.ISOs.Count)"
+    Write-PSFMessage "Final Lab ISO count: $($script:lab.Sources.ISOs.Count)"
 
     Write-LogFunctionExit
 }
@@ -1687,7 +1683,7 @@ function Remove-LabIsoImageDefinition
     else
     {
         [Void]$script:lab.Sources.ISOs.Remove($iso)
-        Write-Verbose "Iso Image '$Name' removed. Lab has $($Script:lab.Sources.ISOs.Count) Iso Image(s) defined"
+        Write-PSFMessage "Iso Image '$Name' removed. Lab has $($Script:lab.Sources.ISOs.Count) Iso Image(s) defined"
     }
 
     Write-LogFunctionExit
@@ -1778,7 +1774,7 @@ function Add-LabDiskDefinition
 
     $script:disks.Add($disk)
 
-    Write-Verbose "Added disk '$Name' with path '$Path'. Lab now has $($Script:disks.Count) disk(s) defined"
+    Write-PSFMessage "Added disk '$Name' with path '$Path'. Lab now has $($Script:disks.Count) disk(s) defined"
 
     if ($PassThru)
     {
@@ -2158,36 +2154,36 @@ function Add-LabMachineDefinition
                     $parentDomainInProperties = $role.Properties.ParentDomain
                     $newDomainInProperties = $role.Properties.NewDomain
 
-                    Write-Verbose -Message "Machine contains custom properties for FirstChildDC: 'ParentDomain'='$parentDomainInProperties', 'NewDomain'='$newDomainInProperties'"
+                    Write-PSFMessage -Message "Machine contains custom properties for FirstChildDC: 'ParentDomain'='$parentDomainInProperties', 'NewDomain'='$newDomainInProperties'"
                 }
 
                 if ((-not $containsProperties) -and (-not $DomainName))
                 {
-                    Write-Verbose -Message 'Nothing specified (no DomainName nor ANY Properties). Giving up'
+                    Write-PSFMessage -Message 'Nothing specified (no DomainName nor ANY Properties). Giving up'
 
                     throw 'Domain name not specified for Child Domain Controller'
                 }
 
                 if ((-not $DomainName) -and ((-not $parentDomainInProperties -or (-not $newDomainInProperties))))
                 {
-                    Write-Verbose -Message 'No DomainName or Properties for ParentName and NewDomain specified. Giving up'
+                    Write-PSFMessage -Message 'No DomainName or Properties for ParentName and NewDomain specified. Giving up'
 
                     throw 'Domain name not specified for Child Domain Controller'
                 }
 
                 if ($containsProperties -and $parentDomainInProperties -and $newDomainInProperties -and (-not $DomainName))
                 {
-                    Write-Verbose -Message 'Properties specified but DomainName is not. Then populate DomainName based on Properties'
+                    Write-PSFMessage -Message 'Properties specified but DomainName is not. Then populate DomainName based on Properties'
 
                     $DomainName = "$($role.Properties.NewDomain).$($role.Properties.ParentDomain)"
-                    Write-Verbose -Message "Machine contains custom properties for FirstChildDC but DomainName parameter is not specified. Setting now to '$DomainName'"
+                    Write-PSFMessage -Message "Machine contains custom properties for FirstChildDC but DomainName parameter is not specified. Setting now to '$DomainName'"
                 }
                 elseif (((-not $containsProperties) -or ($containsProperties -and (-not $parentDomainInProperties) -and (-not $newDomainInProperties))) -and $DomainName)
                 {
                     $newDomainName = $DomainName.Substring(0, $DomainName.IndexOf('.'))
                     $parentDomainName = $DomainName.Substring($DomainName.IndexOf('.') + 1)
 
-                    Write-Verbose -Message 'No Properties specified (or properties for ParentName and NewDomain omitted) but DomainName parameter is specified. Calculating/updating ParentDomain and NewDomain properties'
+                    Write-PSFMessage -Message 'No Properties specified (or properties for ParentName and NewDomain omitted) but DomainName parameter is specified. Calculating/updating ParentDomain and NewDomain properties'
                     if (-not $containsProperties)
                     {
                         $role.Properties = @{ 'NewDomain' = $newDomainName }
@@ -2207,8 +2203,8 @@ function Add-LabMachineDefinition
                     }
                     $parentDomainInProperties = $role.Properties.ParentDomain
                     $newDomainInProperties = $role.Properties.NewDomain
-                    Write-Verbose -Message "ParentDomain now set to '$parentDomainInProperties'"
-                    Write-Verbose -Message "NewDomain now set to '$newDomainInProperties'"
+                    Write-PSFMessage -Message "ParentDomain now set to '$parentDomainInProperties'"
+                    Write-PSFMessage -Message "NewDomain now set to '$newDomainInProperties'"
                 }
             }
 
@@ -2296,7 +2292,7 @@ function Add-LabMachineDefinition
                 $existingNetwork = $Global:existingAzureNetworks | Where-Object { $_.Name -eq $autoNetworkName }
                 if ($existingNetwork)
                 {
-                    Write-Verbose -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
+                    Write-PSFMessage -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
                     $addressSpace = $existingNetwork.AddressSpace.AddressPrefixes
 
                     Write-ScreenInfo -Message "Creating virtual network '$autoNetworkName' with address spacee '$addressSpace'" -Type Warning
@@ -2310,7 +2306,7 @@ function Add-LabMachineDefinition
                 }
                 else
                 {
-                    Write-Verbose -Message 'No Azure virtual network found with same name as network name. Attempting to find unused network in the range 192.168.2.x-192.168.255.x'
+                    Write-PSFMessage -Message 'No Azure virtual network found with same name as network name. Attempting to find unused network in the range 192.168.2.x-192.168.255.x'
 
                     $networkFound = $false
                     [int]$octet = 1
@@ -2328,7 +2324,7 @@ function Add-LabMachineDefinition
                         }
                         if ($azureInUse)
                         {
-                            Write-Verbose -Message "Network '192.168.$octet.0/24' is in use by an existing Azure virtual network"
+                            Write-PSFMessage -Message "Network '192.168.$octet.0/24' is in use by an existing Azure virtual network"
                             continue
                         }
 
@@ -2355,7 +2351,7 @@ function Add-LabMachineDefinition
         }
         elseif ($VirtualizationHost -eq 'HyperV')
         {
-            Write-Verbose -Message 'Detect if a virtual switch already exists with same name as lab being deployed. If so, use this switch for defining network name and address space.'
+            Write-PSFMessage -Message 'Detect if a virtual switch already exists with same name as lab being deployed. If so, use this switch for defining network name and address space.'
 
             #this takes a lot of time hence it should be called only once in a deployment
             if (-not $script:existingHyperVVirtualSwitches)
@@ -2378,14 +2374,14 @@ function Add-LabMachineDefinition
                 $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $autoNetworkName
                 if ($existingNetwork)
                 {
-                    Write-Verbose -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
+                    Write-PSFMessage -Message 'Virtual switch already exists with same name as lab being deployed. Trying to re-use.'
 
                     Write-ScreenInfo -Message "Using virtual network '$autoNetworkName' with address space '$addressSpace'" -Type Info
                     Add-LabVirtualNetworkDefinition -Name $autoNetworkName -AddressSpace $existingNetwork.AddressSpace
                 }
                 else
                 {
-                    Write-Verbose -Message 'No virtual switch found with same name as network name. Attempting to find unused network'
+                    Write-PSFMessage -Message 'No virtual switch found with same name as network name. Attempting to find unused network'
 
                     $addressSpace = Get-LabAvailableAddresseSpace
 
@@ -2402,7 +2398,7 @@ function Add-LabMachineDefinition
             }
             else
             {
-                Write-Verbose -Message 'One or more virtual network(s) has been specified.'
+                Write-PSFMessage -Message 'One or more virtual network(s) has been specified.'
 
                 #Using first specified virtual network '$($networkDefinitions[0])' with address space '$($networkDefinitions[0].AddressSpace)'."
 
@@ -2410,7 +2406,7 @@ function Add-LabMachineDefinition
                         if ($script:autoIPAddress)
                         {
                         #Network already created and IP range already found
-                        Write-Verbose -Message 'Network already created and IP range already found'
+                        Write-PSFMessage -Message 'Network already created and IP range already found'
                         }
                         else
                         {
@@ -2424,7 +2420,7 @@ function Add-LabMachineDefinition
                     #does the current network definition has an address space assigned
                     if ($networkDefinition.AddressSpace)
                     {
-                        Write-Verbose -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
+                        Write-PSFMessage -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
 
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)
@@ -2437,11 +2433,11 @@ function Add-LabMachineDefinition
                                 {
                                     Write-ScreenInfo "Address space defined '$($networkDefinition.AddressSpace)' for network '$networkDefinition' is different from the address space '$($existingNetwork.AddressSpace)' used by currently existing Hyper-V switch with same name." -Type Warning
                                     Write-ScreenInfo "This is an advanced configuration, ensure external switching and routing is configured correctly" -Type Warning
-                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with different address space. This is an allowed advanced configuration'
+                                    Write-PSFMessage -Message 'Existing External Hyper-V virtual switch found with different address space. This is an allowed advanced configuration'
                                 }
                                 else
                                 {
-                                    Write-Verbose -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
+                                    Write-PSFMessage -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
                                 }
                             }
                             else 
@@ -2472,27 +2468,27 @@ function Add-LabMachineDefinition
                                 throw "The Hyper-V virtual switch '$($otherHypervSwitch.Name)' is using an address space ($($otherHypervSwitch.AddressSpace)) that overlaps with the specified one in this lab ($($networkDefinition.AddressSpace)). Cannot continue."
                             }
 
-                            Write-Verbose -Message 'Address space specified is valid'
+                            Write-PSFMessage -Message 'Address space specified is valid'
                         }
                     }
                     else
                     {
                         if ($networkDefinition.SwitchType -eq 'External')
                         {
-                            Write-Verbose 'External network interfaces will not get automatic IP addresses'
+                            Write-PSFMessage 'External network interfaces will not get automatic IP addresses'
                             continue
                         }
 
-                        Write-Verbose -Message "Virtual network '$networkDefinition' specified but without address space specified"
+                        Write-PSFMessage -Message "Virtual network '$networkDefinition' specified but without address space specified"
 
                         if ($existingNetwork)
                         {
-                            Write-Verbose -Message "Existing Hyper-V virtual switch found with same name as first virtual network name. Using it with address space '$($existingNetwork.AddressSpace)'."
+                            Write-PSFMessage -Message "Existing Hyper-V virtual switch found with same name as first virtual network name. Using it with address space '$($existingNetwork.AddressSpace)'."
                             $networkDefinition.AddressSpace = $existingNetwork.AddressSpace
                         }
                         else
                         {
-                            Write-Verbose -Message 'No Hyper-V virtual switch found with same name as lab name. Attempting to find unused network.'
+                            Write-PSFMessage -Message 'No Hyper-V virtual switch found with same name as lab name. Attempting to find unused network.'
 
                             $addressSpace = Get-LabAvailableAddresseSpace
 
@@ -2639,7 +2635,7 @@ function Add-LabMachineDefinition
         if ($processors -eq 0)
         {
             $processors = 1
-            if (-not $script:processors) { $script:processors = (Get-WmiObject -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors }
+            if (-not $script:processors) { $script:processors = (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors }
             if ($script:processors -ge 2)
             {
                 $machine.Processors = 2
@@ -2905,7 +2901,7 @@ function Remove-LabMachineDefinition
     else
     {
         [Void]$script:machines.Remove($machine)
-        Write-Verbose "Machine '$Name' removed. Lab has $($Script:machines.Count) machine(s) defined"
+        Write-PSFMessage "Machine '$Name' removed. Lab has $($Script:machines.Count) machine(s) defined"
     }
 
     Write-LogFunctionExit
@@ -3213,11 +3209,11 @@ function Set-LabLocalVirtualMachineDiskAuto
     {
         $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
         $cachedDrives = $importMethodInfo.Invoke($null, ('Cache', 'LocalDisks'))
-        Write-Verbose "Read $($cachedDrives.Count) drive infos from the cache"
+        Write-PSFMessage "Read $($cachedDrives.Count) drive infos from the cache"
     }
     catch
     {
-        Write-Verbose 'Could not read info from the cache'
+        Write-PSFMessage 'Could not read info from the cache'
     }
 
     #Retrieve drives with enough space for placement of VMs
@@ -3267,7 +3263,7 @@ function Set-LabLocalVirtualMachineDiskAuto
     }
 
     #Measure speed on drives found
-    Write-Verbose -Message 'Measuring speed on fixed drives...'
+    Write-PSFMessage -Message 'Measuring speed on fixed drives...'
 
     for ($i = 0; $i -lt $drives.Count; $i++)
     {
@@ -3277,7 +3273,7 @@ function Set-LabLocalVirtualMachineDiskAuto
         {
             $drive = ($cachedDrives -eq $drive)[0]
             $drives[$drives.IndexOf($drive)] = $drive
-            Write-Verbose -Message "(cached) Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
+            Write-PSFMessage -Message "(cached) Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
         }
         else
         {
@@ -3285,7 +3281,7 @@ function Set-LabLocalVirtualMachineDiskAuto
             $drive.ReadSpeed = $result.ReadRandom
             $drive.WriteSpeed = $result.WriteRandom
 
-            Write-Verbose -Message "Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
+            Write-PSFMessage -Message "Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
         }
     }
     $drives.ExportToRegistry('Cache', 'LocalDisks')
@@ -3295,39 +3291,39 @@ function Set-LabLocalVirtualMachineDiskAuto
     $bootDrive = $drives | Where-Object DriveLetter -eq $env:SystemDrive[0]
     if ($bootDrive)
     {
-        Write-Verbose -Message "Boot drive is drive '$bootDrive'"
+        Write-PSFMessage -Message "Boot drive is drive '$bootDrive'"
     }
     else
     {
-        Write-Verbose -Message 'Boot drive is not part of the selected drive'
+        Write-PSFMessage -Message 'Boot drive is not part of the selected drive'
     }
 
     if ($drives[0] -ne $bootDrive)
     {
         #Fastest drive is not the boot drive. Selecting this drive!
-        Write-Verbose -Message "Selecing drive $($drives[0].DriveLetter) for VMs based on speed and NOT being the boot drive"
+        Write-PSFMessage -Message "Selecing drive $($drives[0].DriveLetter) for VMs based on speed and NOT being the boot drive"
         $script:lab.Target.Path = "$($drives[0].DriveLetter):\AutomatedLab-VMs"
     }
     else
     {
         if ($drives.Count -lt 2)
         {
-            Write-Verbose "Selecing drive $($drives[0].DriveLetter) for VMs as it is the only one"
+            Write-PSFMessage "Selecing drive $($drives[0].DriveLetter) for VMs as it is the only one"
             $script:lab.Target.Path = "$($drives[0].DriveLetter):\AutomatedLab-VMs"
         }
         #Fastest drive is the boot drive. If speed on next fastest drive is close to the boot drive in speed (within 50%), select this drive now instead of the boot drive
         #If not, select the boot drive
         elseif (($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed) -gt 50)
         {
-            Write-Verbose "Selecing drive $($drives[1].DriveLetter) for VMs based on speed and NOT being the boot drive"
-            Write-Verbose "Selected disk speed compared to system disk is $(($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed))%"
+            Write-PSFMessage "Selecing drive $($drives[1].DriveLetter) for VMs based on speed and NOT being the boot drive"
+            Write-PSFMessage "Selected disk speed compared to system disk is $(($drives[1].TotalSpeed * 100 / $drives[0].TotalSpeed))%"
 
             $script:lab.Target.Path = "$($drives[1].DriveLetter):\AutomatedLab-VMs"
         }
         else
         {
-            Write-Verbose "Selecing drive $($drives[0].DriveLetter) for VMs based on speed though this drive is actually the boot drive but is much faster than second fastest drive ($($drives[1].DriveLetter))"
-            Write-Verbose ('Selected system disk, speed of next fastest disk compared to system disk is {0:P}' -f ($drives[1].TotalSpeed / $drives[0].TotalSpeed))
+            Write-PSFMessage "Selecing drive $($drives[0].DriveLetter) for VMs based on speed though this drive is actually the boot drive but is much faster than second fastest drive ($($drives[1].DriveLetter))"
+            Write-PSFMessage ('Selected system disk, speed of next fastest disk compared to system disk is {0:P}' -f ($drives[1].TotalSpeed / $drives[0].TotalSpeed))
             $script:lab.Target.Path = "$($drives[0].DriveLetter):\AutomatedLab-VMs"
         }
     }
@@ -3392,25 +3388,25 @@ function Get-LabAvailableAddresseSpace
         $conflictingSwitch = $existingHyperVVirtualSwitches | Where-Object AddressSpace -eq $addressSpace
         if ($conflictingSwitch)
         {
-            Write-Verbose -Message "Network '$addressSpace' is in use by existing Hyper-V virtual switch '$conflictingSwitch'"
+            Write-PSFMessage -Message "Network '$addressSpace' is in use by existing Hyper-V virtual switch '$conflictingSwitch'"
             continue
         }
 
         if ($addressSpace -in $reservedAddressSpaces)
         {
-            Write-Verbose -Message "Network '$addressSpace' has already been defined in this lab"
+            Write-PSFMessage -Message "Network '$addressSpace' has already been defined in this lab"
             continue
         }
 
         if ($addressSpace.IpAddress -in (Get-NetIPAddress -AddressFamily IPv4).IPAddress)
         {
-            Write-Verbose -Message "Network '$addressSpace' is in use locally"
+            Write-PSFMessage -Message "Network '$addressSpace' is in use locally"
             continue
         }
 
         if (Get-NetRoute -DestinationPrefix $addressSpace.ToString() -ErrorAction SilentlyContinue)
         {
-            Write-Verbose -Message "Network '$addressSpace' is routable"
+            Write-PSFMessage -Message "Network '$addressSpace' is routable"
             continue
         }
 

@@ -38,7 +38,7 @@ function Connect-Lab
 
     if ($DestinationIpAddress)
     {
-        Write-Verbose -Message ('Connecting {0} to {1}' -f $SourceLab, $DestinationIpAddress)
+        Write-PSFMessage -Message ('Connecting {0} to {1}' -f $SourceLab, $DestinationIpAddress)
         Connect-OnPremisesWithEndpoint -LabName $SourceLab -IPAddress $DestinationIpAddress -AddressSpace $AddressSpace -Psk $PreSharedKey
         return
     }
@@ -78,7 +78,7 @@ function Connect-Lab
         }
     }
 
-    Write-Verbose -Message ('Source Hypervisor: {0}, Destination Hypervisor: {1}' -f $sourceHypervisor, $destinationHypervisor)
+    Write-PSFMessage -Message ('Source Hypervisor: {0}, Destination Hypervisor: {1}' -f $sourceHypervisor, $destinationHypervisor)
 
     if (-not ($sourceHypervisor -eq 'Azure' -or $destinationHypervisor -eq 'Azure'))
     {
@@ -106,12 +106,12 @@ function Connect-Lab
 
     if ($sourceHypervisor -eq 'Azure' -and $destinationHypervisor -eq 'Azure')
     {
-        Write-Verbose -Message ('Connecting Azure lab {0} to Azure lab {1}' -f $SourceLab, $DestinationLab)
+        Write-PSFMessage -Message ('Connecting Azure lab {0} to Azure lab {1}' -f $SourceLab, $DestinationLab)
         Connect-AzureLab -SourceLab $SourceLab -DestinationLab $DestinationLab
         return
     }
 
-    Write-Verbose -Message ('Connecting on-premises lab to Azure lab. Source: {0} <-> Destination {1}' -f $SourceLab, $DestinationLab)
+    Write-PSFMessage -Message ('Connecting on-premises lab to Azure lab. Source: {0} <-> Destination {1}' -f $SourceLab, $DestinationLab)
     Connect-OnPremisesWithAzure @connectionParameters
 
     Write-LogFunctionExit
@@ -145,7 +145,7 @@ function Disconnect-Lab
         {
             $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
-            Write-Verbose -Message ('Removing VPN resources in Azure lab {0}, Resource group {1}' -f $lab.Name, $resourceGroupName)
+            Write-PSFMessage -Message ('Removing VPN resources in Azure lab {0}, Resource group {1}' -f $lab.Name, $resourceGroupName)
 
             $connection = Get-AzVirtualNetworkGatewayConnection -Name s2sconnection -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
             $gw = Get-AzVirtualNetworkGateway -Name s2sgw -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
@@ -182,7 +182,7 @@ function Disconnect-Lab
                 continue
             }
 
-            Write-Verbose -Message ('Disabling S2SVPN in on-prem lab {0} on router {1}' -f $lab.Name, $router.Name)
+            Write-PSFMessage -Message ('Disabling S2SVPN in on-prem lab {0} on router {1}' -f $lab.Name, $router.Name)
 
             Invoke-LabCommand -ActivityName "Disabling S2S on $($router.Name)" -ComputerName $router -ScriptBlock {
                 Get-VpnS2SInterface -Name AzureS2S -ErrorAction SilentlyContinue | Remove-VpnS2SInterface -Force -ErrorAction SilentlyContinue
@@ -246,7 +246,7 @@ function Restore-LabConnection
         $destination = $SourceLab
     }
 
-    Write-Verbose -Message "Checking Azure lab $source"
+    Write-PSFMessage -Message "Checking Azure lab $source"
     Import-Lab -Name $source -NoValidation
     $resourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
@@ -264,7 +264,7 @@ function Restore-LabConnection
 
     if ($localGateway.GatewayIpAddress -ne $labIp)
     {
-        Write-Verbose -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
+        Write-PSFMessage -Message "Gateway address $($localGateway.GatewayIpAddress) does not match local IP $labIP and will be changed"
         $localGateway.GatewayIpAddress = $labIp
         [void] ($localGateway | Set-AzLocalNetworkGateway)
     }
@@ -299,7 +299,7 @@ function Initialize-GatewayNetwork
     )
 
     Write-LogFunctionEntry
-    Write-Verbose -Message ('Creating gateway subnet for lab {0}' -f $Lab.Name)
+    Write-PSFMessage -Message ('Creating gateway subnet for lab {0}' -f $Lab.Name)
 
     $targetNetwork = $Lab.VirtualNetworks | Select-Object -First 1
     $sourceMask = $targetNetwork.AddressSpace.Cidr
@@ -352,7 +352,7 @@ function Initialize-GatewayNetwork
         }
     }
 
-    Write-Verbose -Message ('Calculated supernet: {0}, extending Azure VNet and creating gateway subnet {1}' -f "$($superNetIp)/$($superNetMask)", "$($gatewayNetworkAddress)/$($sourceMask)")
+    Write-PSFMessage -Message ('Calculated supernet: {0}, extending Azure VNet and creating gateway subnet {1}' -f "$($superNetIp)/$($superNetMask)", "$($gatewayNetworkAddress)/$($sourceMask)")
     $vNet = Get-LWAzureNetworkSwitch -virtualNetwork $targetNetwork
     $vnet.AddressSpace.AddressPrefixes[0] = "$($superNetIp)/$($superNetMask)"
     $gatewaySubnet = Get-AzVirtualNetworkSubnetConfig -Name GatewaySubnet -VirtualNetwork $vnet -ErrorAction SilentlyContinue
@@ -403,7 +403,7 @@ function Connect-OnPremisesWithAzure
         throw 'No public IP for hypervisor found. Make sure you are connected to the internet.'
     }
 
-    Write-Verbose -Message "Found Hypervisor host public IP of $labPublicIp"
+    Write-PSFMessage -Message "Found Hypervisor host public IP of $labPublicIp"
 
     $genericParameters = @{
         ResourceGroupName = $sourceResourceGroupName
@@ -515,7 +515,7 @@ function Connect-OnPremisesWithAzure
             $MacAddress
         )
 
-        $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
+        $externalAdapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $MacAddress) |
             Select-Object -ExpandProperty NetConnectionID
 
         Set-Service -Name RemoteAccess -StartupType Automatic
@@ -833,7 +833,7 @@ function Connect-AzureLab
     [void] (New-AzVirtualNetworkGatewayConnection @sourceConnection)
     [void] (New-AzVirtualNetworkGatewayConnection @destinationConnection)
 
-    Write-Verbose -Message 'Connection created - please allow some time for initial connection.'
+    Write-PSFMessage -Message 'Connection created - please allow some time for initial connection.'
 
     Set-VpnDnsForwarders -SourceLab $SourceLab -DestinationLab $DestinationLab
 
@@ -885,9 +885,9 @@ function Set-VpnDnsForwarders
         }
 
         $cmd = @"
-            Write-Verbose "Creating a DNS forwarder on server '$env:COMPUTERNAME'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
+            Write-PSFMessage "Creating a DNS forwarder on server '$env:COMPUTERNAME'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             dnscmd localhost /ZoneAdd $($forwarder.Destination) /Forwarder $($masterServers.IpV4Address)
-            Write-Verbose '...done'
+            Write-PSFMessage '...done'
 "@
 
         Invoke-LabCommand -ComputerName $targetMachine -ScriptBlock ([scriptblock]::Create($cmd)) -NoDisplay

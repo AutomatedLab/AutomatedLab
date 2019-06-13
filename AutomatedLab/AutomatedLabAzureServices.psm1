@@ -715,7 +715,7 @@ function Send-FtpFolder
         [switch]$Recure
     )
 
-    Add-Type -Path 'C:\Program Files\WindowsPowerShell\Modules\AutomatedLab\Tools\FluentFTP.dll'
+    Add-Type -Path (Join-Path -Path (Get-Module AutomatedLab).ModuleBase -ChildPath 'Tools\FluentFTP.dll')
     $fileCount = 0
 
     if (-not (Test-Path -Path $Path -PathType Container))
@@ -748,12 +748,12 @@ function Send-FtpFolder
     }
 
     $files = Get-ChildItem -Path $Path -File -Recurse:$Recure
-    Write-Verbose "Sending folder '$Path' with $($files.Count) files"
+    Write-PSFMessage "Sending folder '$Path' with $($files.Count) files"
 
     foreach ($file in $files)
     {
         $fileCount++
-        Write-Verbose "Sending file $($file.FullName) ($fileCount)"
+        Write-PSFMessage "Sending file $($file.FullName) ($fileCount)"
         Write-Progress -Activity "Uploading file '$($file.FullName)'" -Status x -PercentComplete ($fileCount / $files.Count * 100)
         $relativeFullName = $file.FullName.Replace($path, '').Replace('\', '/')
         if ($relativeFullName.StartsWith('/')) { $relativeFullName = $relativeFullName.Substring(1) }
@@ -777,7 +777,7 @@ function Send-FtpFolder
         }
     }
 
-    Write-Verbose "Finsihed sending folder '$Path'"
+    Write-PSFMessage "Finsihed sending folder '$Path'"
 
     $client.Disconnect()
 }

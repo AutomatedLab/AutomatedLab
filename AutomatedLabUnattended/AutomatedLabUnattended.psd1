@@ -1,25 +1,27 @@
 ﻿@{
-	RootModule = 'AutomatedLabUnattended.psm1'
+    RootModule             = 'AutomatedLabUnattended.psm1'
 
-	ModuleVersion = '1.0.0'
-
-	GUID = 'b20c8df3-3f74-4537-a40b-b53186084dd5'
-
-	Author = 'Raimund Andree, Per Pedersen'
+    ModuleVersion          = '1.0.0'
 	
-	CompanyName = 'AutomatedLab Team'
+    CompatiblePSEditions   = 'Core', 'Desktop'
 
-	Copyright = '2018'
+    GUID                   = 'b20c8df3-3f74-4537-a40b-b53186084dd5'
 
-	Description = 'The module is managing settings inside an unattended.xml file'
+    Author                 = 'Raimund Andree, Per Pedersen'
+	
+    CompanyName            = 'AutomatedLab Team'
 
-	PowerShellVersion = '3.0'
+    Copyright              = '2019'
 
-	DotNetFrameworkVersion = '4.0'
+    Description            = 'The module is managing settings inside an unattended.xml file'
 
-	ModuleList = @('AutomatedLabUnattended')
+    PowerShellVersion      = '5.1'
 
-	FileList = @('AutomatedLabUnattended.psm1')
+    DotNetFrameworkVersion = '4.0'
+
+    ModuleList             = @('AutomatedLabUnattended')
+
+    FileList               = @('AutomatedLabUnattended.psm1')
 }
 
 

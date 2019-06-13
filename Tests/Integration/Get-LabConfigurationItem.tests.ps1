@@ -2,19 +2,19 @@
 return # skipping tests for now
 
 $rootpath = $PSScriptRoot
-$configurationPath = $(Resolve-Path -Path "$rootpath\..\..\AutomatedLab\settings.psd1" -ErrorAction Stop).Path
-Copy-Item -Path $configurationPath -Destination (Join-Path (Get-Module AutomatedLab -List)[0].ModuleBase 'settings.psd1') -ErrorAction SilentlyContinue -Force
 
+if (-not (Get-Module -List AutomatedLab.Common)) {Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber}
+if (-not (Get-Module -List PSFramework)) {Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
-if (-not (Get-Module -List powershell-yaml)) {Install-Module -Name powershell-yaml -Force -SkipPublisherCheck -AllowClobber}
-if (-not (Get-Module -List Datum)) {Install-Module -Name Datum -Force -SkipPublisherCheck -AllowClobber}
 
-Import-Module -Name Newtonsoft.Json,powershell-yaml
-Import-Module -Name Datum,"$rootpath\..\..\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1" -Force -Verbose
-[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
-$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
+Import-Module -Name Newtonsoft.Json, PSFramework, AutomatedLab.Common, Pester
+if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+{
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
+}
 
-$reqdModules = @(
+$reqdModules = @(    
     'AutomatedLabUnattended'
     'PSLog',
     'PSFileTransfer',
@@ -33,20 +33,18 @@ foreach ($mod in $reqdModules)
 Write-Host "Testing with Pester $($(Get-Module -Name Pester).Version)"
 
 Describe 'Get-LabConfigurationItem' {
-    $functionCalls = (Get-ChildItem -Path "$rootpath\..\.." -Recurse -Filter *.ps*1 | select-string -Pattern 'Get-LabConfigurationItem -Name \w+').Matches.Value | Sort-Object -Unique
+    $functionCalls = (Get-ChildItem -Path "$rootpath\..\.." -Recurse -Filter *.ps*1 | select-string -Pattern 'Get-LabConfigurationItem -Name [\w\.-]+').Matches.Value | Sort-Object -Unique
 
     It 'Should contain all settings' {
-        Get-LabConfigurationItem -GlobalPath $configurationPath | Should -Not -Be $null
+        Get-LabConfigurationItem  | Should -Not -Be $null
     }
     
-
-    $configuration = Get-LabConfigurationItem -GlobalPath $configurationPath
-
     foreach ($call in $functionCalls)
     {
-        $m = $call -match '-Name\s(?<Name>\w+)'
-        It "Should contain a key for setting $($Matches.Name)" {
-            $configuration.Contains($Matches.Name) | Should -Be $true
+        $m = $call -match '-Name\s(?<Name>[\w\.-]+)'
+        $n = $Matches.Name
+        It "Should contain a key for setting $n" {
+            Get-LabConfigurationItem -Name $n | Should -Not -Be $null
         }
     }
 }

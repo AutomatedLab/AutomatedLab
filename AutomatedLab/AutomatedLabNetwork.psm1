@@ -26,12 +26,12 @@ function New-LabNetworkSwitches
             }
             else
             {
-                Write-Verbose "Network '$($vmwareNetwork.Name)' found"
+                Write-PSFMessage "Network '$($vmwareNetwork.Name)' found"
             }
         }
     }
 
-    Write-Verbose "Creating network switch '$($virtualNetwork.Name)'..."
+    Write-PSFMessage "Creating network switch '$($virtualNetwork.Name)'..."
 
     $hypervNetworks = $data.VirtualNetworks | Where-Object HostType -eq HyperV
     if ($hypervNetworks)
@@ -45,7 +45,7 @@ function New-LabNetworkSwitches
         New-LWAzureNetworkSwitch -VirtualNetwork $azureNetworks
     }
 
-    Write-Verbose 'done'
+    Write-PSFMessage 'done'
 
     Write-LogFunctionExit
 }
@@ -77,7 +77,7 @@ function Remove-LabNetworkSwitches
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object { $_.HostType -eq 'HyperV' -and $_.Name -ne 'Default Switch' }
     foreach ($virtualNetwork in $virtualNetworks)
     {
-        Write-Verbose "Removing Hyper-V network switch '$($virtualNetwork.Name)'..."
+        Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.Name)'..."
 
         if ($virtualNetwork.SwitchType -eq 'External')
         {
@@ -88,10 +88,10 @@ function Remove-LabNetworkSwitches
         {
             Remove-LWNetworkSwitch -Name $virtualNetwork.Name
         }
-        Write-Verbose '...done'
+        Write-PSFMessage '...done'
     }
 
-    Write-Verbose 'done'
+    Write-PSFMessage 'done'
 
     Write-LogFunctionExit
 }

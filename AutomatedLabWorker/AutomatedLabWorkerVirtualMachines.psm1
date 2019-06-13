@@ -48,7 +48,7 @@ function New-LWHypervVM
         $PSDefaultParameterValues['*:IsAutoYast'] = $true
     }
 
-    Write-Verbose "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
+    Write-PSFMessage "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
 
     #region Unattend XML settings
     if (-not $Machine.ProductKey)
@@ -295,7 +295,7 @@ function New-LWHypervVM
     
     $vmPath = $lab.GetMachineTargetPath($Machine.Name)
     $path = "$vmPath\$($Machine.Name).vhdx"
-    Write-Verbose "`tVM Disk path is '$path'"
+    Write-PSFMessage "`tVM Disk path is '$path'"
     
     if (Test-Path -Path $path)
     {
@@ -308,7 +308,7 @@ function New-LWHypervVM
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
         $nextDriveLetter = [char[]](67..90) | 
-        Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 
+        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 
         Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
         Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
@@ -400,7 +400,7 @@ function New-LWHypervVM
     {
         $referenceDiskPath = $Machine.OperatingSystem.BaseDiskPath
         $systemDisk = New-VHD -Path $path -Differencing -ParentPath $referenceDiskPath -ErrorAction Stop
-        Write-Verbose "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
+        Write-PSFMessage "`tcreated differencing disk '$($systemDisk.Path)' pointing to '$ReferenceVhdxPath'"
     }
 
     Write-ProgressIndicator
@@ -477,11 +477,11 @@ function New-LWHypervVM
         if (-not $adapter.AccessVLANID -eq 0) {
 
             Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
-            Write-Verbose "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
+            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
         }
     }
     
-    Write-Verbose "`tMachine '$Name' created"
+    Write-PSFMessage "`tMachine '$Name' created"
     
     $automaticStartAction = 'Nothing'
     $automaticStartDelay  = 0
@@ -517,31 +517,35 @@ function New-LWHypervVM
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
     
-        Write-Verbose "`tDisk mounted to drive $VhdVolume"
+        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
 
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
     
         $unattendXmlContent = Get-UnattendedContent
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
-        Write-Verbose "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
+        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
     
         #copy AL tools to lab machine and optionally the tools folder
         $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
-        Write-Verbose 'Copying AL tools to VHD...'
+        Write-PSFMessage 'Copying AL tools to VHD...'
         $tempPath = "$([System.IO.Path]::GetTempPath())$([System.IO.Path]::GetRandomFileName())"
         New-Item -ItemType Directory -Path $tempPath | Out-Null
         Copy-Item -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -Destination $tempPath -Recurse
         foreach ($file in (Get-ChildItem -Path $tempPath -Recurse -File))
         {
-            $file.Decrypt()
+            # Why???
+            if ($PSEdition -eq 'Desktop')
+            {
+                $file.Decrypt()
+            }
         }
         Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 
         Remove-Item -Path $tempPath -Recurse
     
-        Write-Verbose '...done'
+        Write-PSFMessage '...done'
 
         if ($Machine.ToolsPath.Value)
         {
@@ -550,9 +554,9 @@ function New-LWHypervVM
             {
                 $toolsDestination = "$($toolsDestination[0])$($Machine.ToolsPathDestination.Substring(1,$Machine.ToolsPathDestination.Length - 1))"
             }
-            Write-Verbose 'Copying tools to VHD...'
+            Write-PSFMessage 'Copying tools to VHD...'
             Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
-            Write-Verbose '...done'
+            Write-PSFMessage '...done'
         }
     
         $enableWSManRegDump = @'
@@ -596,7 +600,7 @@ $disks = $diskpartCmd | diskpart.exe
     if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')	
     {	
         #$nextDriveLetter = [char[]](67..90) | 	
-        #Where-Object { (Get-WmiObject -Class Win32_LogicalDisk | 	
+        #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 	
         #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 	
         #Select-Object -First 1	
          $diskNumber = $Matches.DiskNumber	
@@ -612,7 +616,7 @@ $disks = $diskpartCmd | diskpart.exe
         }	
     }	
 }	
- foreach ($volume in (Get-WmiObject -Class Win32_Volume))	
+ foreach ($volume in (Get-CimInstance -Class Win32_Volume))	
 {	
     if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')	
     {	
@@ -630,12 +634,12 @@ Stop-Transcript
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)	
 
         [void] (Dismount-DiskImage -ImagePath $path)
-        Write-Verbose "`tdisk image dismounted"
+        Write-PSFMessage "`tdisk image dismounted"
     
         Write-ProgressIndicator
     }
     
-    Write-Verbose "`tSettings RAM, start and stop actions"
+    Write-PSFMessage "`tSettings RAM, start and stop actions"
     $param = @{}
     $param.Add('MemoryStartupBytes', $Machine.Memory)
     $param.Add('AutomaticCheckpointsEnabled', $false)
@@ -647,11 +651,11 @@ Stop-Transcript
     if ($Machine.MaxMemory -or $Machine.MinMemory)
     { 
         $param.Add('DynamicMemory', $true)
-        Write-Verbose "`tSettings dynamic memory to MemoryStartupBytes $($Machine.Memory), minimum $($Machine.MinMemory), maximum $($Machine.MaxMemory)"
+        Write-PSFMessage "`tSettings dynamic memory to MemoryStartupBytes $($Machine.Memory), minimum $($Machine.MinMemory), maximum $($Machine.MaxMemory)"
     }
     else
     {
-        Write-Verbose "`tSettings static memory to $($Machine.Memory)"
+        Write-PSFMessage "`tSettings static memory to $($Machine.Memory)"
         $param.Add('StaticMemory', $true)
     }
 
@@ -671,7 +675,7 @@ Stop-Transcript
         Set-VMBios -VMName $Machine.Name -EnableNumLock
     }
     
-    Write-Verbose "Creating snapshot named '$($Machine.Name) - post OS Installation'"
+    Write-PSFMessage "Creating snapshot named '$($Machine.Name) - post OS Installation'"
     if ($CreateCheckPoints)
     {
         Checkpoint-VM -VM (Get-VM -Name $Machine.Name) -SnapshotName 'Post OS Installation'
@@ -718,19 +722,19 @@ function Remove-LWHypervVM
     
         if ($vm.State -eq 'Saved')
         {
-            Write-Verbose "Deleting saved state of VM '$($Name)'"
+            Write-PSFMessage "Deleting saved state of VM '$($Name)'"
             Remove-VMSavedState -VMName $Name
         }
         else
         {
-            Write-Verbose "Stopping VM '$($Name)'"
+            Write-PSFMessage "Stopping VM '$($Name)'"
             Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
     
-        Write-Verbose "Removing VM '$($Name)'"
+        Write-PSFMessage "Removing VM '$($Name)'"
         Remove-VM -Name $Name -Force
 
-        Write-Verbose "Removing VM files for '$($Name)'"
+        Write-PSFMessage "Removing VM files for '$($Name)'"
         Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     }
     
@@ -800,7 +804,7 @@ function Wait-LWHypervVMRestart
                 {
                     if (($diskTime[(($diskTime).Count - 15)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 50 -and ($diskTime[(($diskTime).Count-5)..(($diskTime).Count)] | Measure-Object -Average).Average -lt 60)
                     {
-                        Write-Verbose -Message 'Starting next machine'
+                        Write-PSFMessage -Message 'Starting next machine'
                         $lastMachineStart = (Get-Date)
                         Start-LabVM -ComputerName $StartMachinesWhileWaiting[0] -NoNewline:$NoNewLine
                         $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
@@ -843,7 +847,7 @@ function Wait-LWHypervVMRestart
             Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
-                Write-Verbose -Message "Machine '$machine' is now stopped"
+                Write-PSFMessage -Message "Machine '$machine' is now stopped"
                 $machine.Uptime = 0
             }
         }
@@ -864,7 +868,7 @@ function Wait-LWHypervVMRestart
                     $nonCriticalErrors = $jobError | Where-Object { $_.Exception.Message -like 'AL_ERROR*' }
                     foreach ($nonCriticalError in $nonCriticalErrors)
                     {
-                        Write-Verbose "There was a non-critical error in job $($job.ID) '$($job.Name)' with the message: '($nonCriticalError.Exception.Message)'"
+                        Write-PSFMessage "There was a non-critical error in job $($job.ID) '$($job.Name)' with the message: '($nonCriticalError.Exception.Message)'"
                     }
                 }
             }
@@ -874,7 +878,7 @@ function Wait-LWHypervVMRestart
 
     if (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0)
     {
-        Write-Verbose -Message "All machines have stopped: ($($machines.name -join ', '))"
+        Write-PSFMessage -Message "All machines have stopped: ($($machines.name -join ', '))"
     }
     
     if ((Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)
@@ -931,7 +935,7 @@ function Start-LWHypervVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            Write-Verbose -Message "Skipping the wait period for $machine as it is a Linux system"
+            Write-PSFMessage -Message "Skipping the wait period for $machine as it is a Linux system"
             continue
         }
 
@@ -1235,7 +1239,7 @@ function Restore-LWHypervVMSnapshot
 
     $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
                 
-    Write-Verbose -Message 'Remembering all running machines'
+    Write-PSFMessage -Message 'Remembering all running machines'
     $jobs = foreach ($n in $ComputerName)
     {
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
@@ -1295,7 +1299,7 @@ function Restore-LWHypervVMSnapshot
         }
     }
 
-    Write-Verbose -Message "Restore finished, starting the machines that were running previously ($($runningMachines.Count))"
+    Write-PSFMessage -Message "Restore finished, starting the machines that were running previously ($($runningMachines.Count))"
                     
     $jobs = foreach ($n in $ComputerName)
     {            
@@ -1440,14 +1444,14 @@ function Mount-LWIsoImage
 
     foreach ($machine in $machines)
     {
-        Write-Verbose -Message "Adding DVD drive '$IsoPath' to machine '$machine'"
+        Write-PSFMessage -Message "Adding DVD drive '$IsoPath' to machine '$machine'"
         $start = (Get-Date)
         $done = $false
         $delayBeforeCheck = 5, 10, 15, 30, 45, 60
         $delayIndex = 0
 
         $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         #this is required as Compare-Object cannot work with a null object
@@ -1490,7 +1494,7 @@ function Mount-LWIsoImage
         }
         
         $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
@@ -1520,12 +1524,12 @@ function Dismount-LWIsoImage
     {
         if ($machine.OperatingSystem.Version -ge [System.Version]'6.2')
         {
-            Write-Verbose -Message "Removing DVD drive for machine '$machine'"
+            Write-PSFMessage -Message "Removing DVD drive for machine '$machine'"
             Get-VMDvdDrive -VMName $machine | Remove-VMDvdDrive
         }
         else
         {
-            Write-Verbose -Message "Setting DVD drive for machine '$machine' to null"
+            Write-PSFMessage -Message "Setting DVD drive for machine '$machine' to null"
             Get-VMDvdDrive -VMName $machine | Set-VMDvdDrive -Path $null
         }
     }
@@ -1572,7 +1576,7 @@ function Repair-LWHypervNetworkConfig
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
                 Write-Verbose "Looking for network adapter with using filter '$filter'"
-                $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
+                $adapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter $filter
     
                 Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
                 $adapter.NetConnectionID = $newName

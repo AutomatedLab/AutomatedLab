@@ -105,7 +105,7 @@ function Install-MDTDhcp {
         Start-Sleep -Seconds 10
         Set-DhcpServerv4Binding -BindingState $True -InterfaceAlias "Ethernet" | Out-Null
 
-        If ((Get-WmiObject -Class Win32_ComputerSystem).PartOfDomain) {
+        If ((Get-CimInstance -Class Win32_ComputerSystem).PartOfDomain) {
             Add-DHCPServerinDC
         }
                

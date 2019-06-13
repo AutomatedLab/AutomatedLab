@@ -29,7 +29,7 @@ function New-LWAzureNetworkSwitch
     {
         if (Get-LWAzureNetworkSwitch -VirtualNetwork $network)
         {
-            Write-Verbose "Azure virtual network '$($network.Name)' already exists. Skipping..."
+            Write-PSFMessage "Azure virtual network '$($network.Name)' already exists. Skipping..."
             continue
         }
 
@@ -78,7 +78,7 @@ function New-LWAzureNetworkSwitch
     {
         if (-not $network.ConnectToVnets)
         {
-            Write-Verbose "The network '$($network.Name)' is not connected hence no need for creating a gateway"
+            Write-PSFMessage "The network '$($network.Name)' is not connected hence no need for creating a gateway"
         }
         else
         {
@@ -89,7 +89,7 @@ function New-LWAzureNetworkSwitch
                 # Configure bidirectional access
                 $remoteNetwork = Get-AzVirtualNetwork -Name $connectedNetwork -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
-                Write-Verbose -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
+                Write-PSFMessage -Message "Configuring VNet peering $($sourceNetwork.Name) <-> $($remoteNetwork.Name)"
 
                 $existingPeerings = Get-AzVirtualNetworkPeering -VirtualNetworkName $sourceNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
                 $alreadyExists = foreach ($existingPeering in $existingPeerings)
@@ -116,7 +116,7 @@ function New-LWAzureNetworkSwitch
                 {
                     Add-AzVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop | Out-Null
                 }
-                Write-Verbose -Message 'Peering successfully configured'
+                Write-PSFMessage -Message 'Peering successfully configured'
             }
         }
     }
@@ -144,14 +144,14 @@ function Remove-LWAzureNetworkSwitch
     
     $jobs = foreach ($network in $VirtualNetwork)
     {
-        Write-Verbose "Start removal of virtual network '$($network.name)'"
+        Write-PSFMessage "Start removal of virtual network '$($network.name)'"
         Remove-AzVirtualNetwork -Name $network.Name -ResourceGroupName $resourceGroupName -AsJob -Force
     }
     
-    Write-Verbose "Waiting on the removal of $($jobs.Count)"
+    Write-PSFMessage "Waiting on the removal of $($jobs.Count)"
     Wait-LWLabJob -Job $jobs
 
-    Write-Verbose "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
+    Write-PSFMessage "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
 
     Write-LogFunctionExit
 }
@@ -174,7 +174,7 @@ function Get-LWAzureNetworkSwitch
 
     foreach ($network in $VirtualNetwork)
     {
-        Write-Verbose -Message "Locating Azure virtual network '$($network.Name)'"
+        Write-PSFMessage -Message "Locating Azure virtual network '$($network.Name)'"
 
         $azureNetworkParameters = @{
             Name              = $network.Name
@@ -291,7 +291,7 @@ function Set-LWAzureDnsServer
     {
         if ($network.DnsServers.Count -eq 0)
         {
-            Write-Verbose -Message "Skipping $($network.Name) because no DNS servers are configured"
+            Write-PSFMessage -Message "Skipping $($network.Name) because no DNS servers are configured"
             continue
         }
 
@@ -339,7 +339,7 @@ function Add-LWAzureLoadBalancedPort
 
     if (Get-LabAzureLoadBalancedPort @PSBoundParameters)
     {
-        Write-Verbose -Message ('Port {0} -> {1} already configured for {2}' -f $Port, $DestinationPort, $ComputerName)
+        Write-PSFMessage -Message ('Port {0} -> {1} already configured for {2}' -f $Port, $DestinationPort, $ComputerName)
         return
     }
 
@@ -350,7 +350,7 @@ function Add-LWAzureLoadBalancedPort
     $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
     {
-        Write-Verbose "No load balancer found to add port rules to"
+        Write-PSFMessage "No load balancer found to add port rules to"
         return
     }
 
@@ -400,7 +400,7 @@ function Get-LWAzureLoadBalancedPort
     $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
     {
-        Write-Verbose "No load balancer found to list port rules of"
+        Write-PSFMessage "No load balancer found to list port rules of"
         return
     }
 
@@ -458,7 +458,7 @@ function Get-LabAzureLoadBalancedPort
 
     if (-not $machine)
     {
-        Write-Verbose -Message "$ComputerName not found. Cannot list ports."
+        Write-PSFMessage -Message "$ComputerName not found. Cannot list ports."
         return
     }
 
