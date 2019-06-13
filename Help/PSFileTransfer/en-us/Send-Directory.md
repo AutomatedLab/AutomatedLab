@@ -8,7 +8,7 @@ schema: 2.0.0
 # Send-Directory
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Send a directory to a remote session
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Send-Directory [-SourceFolderPath] <Object> [-DestinationFolderPath] <Object> [-
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Send a directory to a remote session
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Send-Directory -Source .\data -Destination C:\OnRemote -Session $session
 ```
 
-{{ Add example description here }}
+Transmits the entire folder data to the destination folder C:\OnRemote
 
 ## PARAMETERS
 
 ### -DestinationFolderPath
-{{ Fill DestinationFolderPath Description }}
+Remote destination
 
 ```yaml
 Type: Object
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Session
-{{ Fill Session Description }}
+The session to send to 
 
 ```yaml
 Type: PSSession[]
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -SourceFolderPath
-{{ Fill SourceFolderPath Description }}
+Local source path
 
 ```yaml
 Type: Object

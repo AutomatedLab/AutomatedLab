@@ -18,21 +18,22 @@ Send-File [-SourceFilePath] <String> [-DestinationFolderPath] <String> [-Session
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sends a file to a remote session.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
-```
+```powershell
 $session = New-PsSession leeholmes1c23
+Send-File c:\temp\test.exe c:\temp\test.exe $session
 ```
 
-PS \>Send-File c:\temp\test.exe c:\temp\test.exe $session
+Sends the file test.exe to a remote session
 
 ## PARAMETERS
 
 ### -SourceFilePath
-{{ Fill SourceFilePath Description }}
+The local source path
 
 ```yaml
 Type: String
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationFolderPath
-{{ Fill DestinationFolderPath Description }}
+The remote destination path
 
 ```yaml
 Type: String
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Session
-{{ Fill Session Description }}
+The session to send to 
 
 ```yaml
 Type: PSSession[]
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-{{ Fill Force Description }}
+Indicates that existing files will be overwritten
 
 ```yaml
 Type: SwitchParameter

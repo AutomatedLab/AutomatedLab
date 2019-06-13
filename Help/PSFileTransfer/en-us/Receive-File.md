@@ -18,21 +18,22 @@ Receive-File [-SourceFilePath] <String> [-DestinationFilePath] <String> [-Sessio
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Receive files from remote hosts
 
 ## EXAMPLES
 
 ### EXAMPLE 1
-```
+```powershell
 $session = New-PsSession leeholmes1c23
+Receive-File c:\temp\test.exe c:\temp\test.exe $session
 ```
 
-PS \>Receive-File c:\temp\test.exe c:\temp\test.exe $session
+Receives the file test.exe from the remote session
 
 ## PARAMETERS
 
 ### -SourceFilePath
-{{ Fill SourceFilePath Description }}
+Remote source file name
 
 ```yaml
 Type: String
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationFilePath
-{{ Fill DestinationFilePath Description }}
+Local destination file name
 
 ```yaml
 Type: String
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Session
-{{ Fill Session Description }}
+The session to transmit from
 
 ```yaml
 Type: PSSession

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Receive-Directory
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Receive a directory from a remote session
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Receive-Directory [-SourceFolderPath] <Object> [-DestinationFolderPath] <Object>
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Receive a directory from a remote session
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Receive-Directory -SourceFolderPath C:\DeployDebug -DestinationFolderPath D:\Temp -Session $session
 ```
 
-{{ Add example description here }}
+Transmit the folder C:\DeployDebug from the session to the local path D:\Temp
 
 ## PARAMETERS
 
 ### -DestinationFolderPath
-{{ Fill DestinationFolderPath Description }}
+Local destination
 
 ```yaml
 Type: Object
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Session
-{{ Fill Session Description }}
+Session to receive from
 
 ```yaml
 Type: PSSession
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -SourceFolderPath
-{{ Fill SourceFolderPath Description }}
+Remote source
 
 ```yaml
 Type: Object
