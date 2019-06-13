@@ -12,10 +12,10 @@ AL tries to find new subnets by simply increasing 192.168.1.0 until a free netwo
 
 To manually create network definitions in order to have specific network address ranges available, the cmdlet ``Add-LabVirtualNetworkDefinition`` can be used for both HyperV- and Azure-based labs.
 
-``
+```powershell
     # Adds a virtual network with no special options
     Add-LabVirtualNetworkDefinition -Name 'MySimpleNetwork' -AddressSpace 10.1.0.0/16  
-``
+```
 
 Additionally, the parameters AzureProperties and HyperVProperties can be used to pass parameter hashtables. The following are valid keys that can be used as properties for AzureProperties:
 * SubnetName: The name of the subnet to create in the virtual network. AL does not segment virtual networks into subnets. One virtual network per network definition will be created
@@ -33,9 +33,9 @@ For HyperV, the following properties are valid:
 Reviewing the HyperV and Azure properties for ``Add-LabVirtualNetworkDefinition`` we can see that internet-connected virtual networks can easily be created.
 
 To enable HyperV labs to have an internet connection, the following syntax can be used:  
-``
+```powershell
     Add-LabVirtualNetworkDefinition -Name 'MySimpleConnectedNetwork' -AddressSpace 10.1.0.0/16 -HyperVProperties @{SwitchType = 'External'; AdapterName = 'Ethernet'}
-``
+```
 
 This is all it takes for machines to connect to the internet.
 

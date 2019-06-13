@@ -61,19 +61,19 @@ Starting with AutomatedLab version 5 we are collecting telemetry. To see what yo
 
 ### Facts and figures
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiNjgyMzhmMTMtNWUyNC00MzgzLWFkM2MtNTIyMzNjNDY3MDM4IiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection0b2d71458442c214e920" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Country distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiNjgyMzhmMTMtNWUyNC00MzgzLWFkM2MtNTIyMzNjNDY3MDM4IiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectione0de33b40e0866e83ba7" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectiona46e290f733ccaa8ef5f" frameborder="0" allowFullScreen="true"></iframe>
 
 ### Role distribution
 
-<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiNjgyMzhmMTMtNWUyNC00MzgzLWFkM2MtNTIyMzNjNDY3MDM4IiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionbddf70c18d3ca8a92a8c" frameborder="0" allowFullScreen="true"></iframe>
+<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
 
 [AutomatedLab]: https://github.com/AutomatedLab/AutomatedLab
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
-[full report]: https://msit.powerbi.com/view?r=eyJrIjoiNjgyMzhmMTMtNWUyNC00MzgzLWFkM2MtNTIyMzNjNDY3MDM4IiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
+[full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
 
 
 
