@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates that replication should be started as a job
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

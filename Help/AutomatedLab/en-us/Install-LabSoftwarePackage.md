@@ -125,7 +125,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates that the installation should be run as a job
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

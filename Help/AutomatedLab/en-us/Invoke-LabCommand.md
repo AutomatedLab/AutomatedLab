@@ -224,7 +224,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates if the lab commands should be executed in the background
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWHypervVMDescription
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Return the serialized notes field of a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Get-LWHypervVMDescription [-ComputerName] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return the serialized notes field of a Hyper-V VM. The Notes are used to store a bunch of
+information on the status that AutomatedLab found the machine in and is serialized as XML.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWHypervVMDescription -ComputerName POSHDC1
 ```
 
-{{ Add example description here }}
+Deserializes the Notes field of the VM POSHDC1
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The VM name
 
 ```yaml
 Type: String

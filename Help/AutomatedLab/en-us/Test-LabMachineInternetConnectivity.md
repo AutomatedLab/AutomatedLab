@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates that the test should be carried out as a background job
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

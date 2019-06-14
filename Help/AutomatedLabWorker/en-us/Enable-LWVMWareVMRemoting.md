@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LWVMWareVMRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable CredSSP on a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Enable-LWVMWareVMRemoting [-ComputerName] <Object> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable CredSSP on a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LWVMWareVMRemoting -ComputerName SomeServer01
 ```
 
-{{ Add example description here }}
+Configures CredSSP on SomeServer01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to enable CredSSP on
 
 ```yaml
 Type: Object

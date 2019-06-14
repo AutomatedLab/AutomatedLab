@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWAzureVMConnectionInfo
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Return the connection details of Azure VMs
 
 ## SYNTAX
 
@@ -17,21 +17,32 @@ Get-LWAzureVMConnectionInfo [-ComputerName] <Machine[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return the connection details of Azure VMs. Returns the following properties:  
+|Name|Purpose|
+|---|---|
+|ComputerName      | Host name|
+|DnsName           | The Azure DNS Name (of the load balancer)|
+|HttpsName         | The Azure DNS Name (of the load balancer)|
+|VIP               | The public IP address (of the load balancer)|
+|Port              | The load balanced WinRM port|
+|HttpsPort         | The load balanced WinRM over HTTPS port|
+|RdpPort           | The load balanced RDP port|
+|ResourceGroupName | The resource group name|
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> $details = Get-LWAzureVMConnectionInfo DC01
+PS C:\> mstsc /v "$($details.DnsName):$($details.RdpPort)"
 ```
 
-{{ Add example description here }}
+Returns all necessary details to connect to DC01 and uses Remote Desktop to connect.
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host to retrieve information from
 
 ```yaml
 Type: Machine[]

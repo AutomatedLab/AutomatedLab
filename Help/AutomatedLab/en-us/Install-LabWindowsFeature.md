@@ -140,7 +140,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates if the installation jobs should be started in the background or should be waited upon
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Dismount-LWIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Unmount all ISOs from a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Dismount-LWIsoImage [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Unmount all ISOs from a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Dismount-LWIsoImage -ComputerName (Get-LabVm -Role AzDevOps)
 ```
 
-{{ Add example description here }}
+Unmount all ISO images on all machines with the role Azure DevOps
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to dismount all ISOs on
 
 ```yaml
 Type: String[]

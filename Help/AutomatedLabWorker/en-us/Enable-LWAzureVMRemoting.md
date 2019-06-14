@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LWAzureVMRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable Windows Remote Management on an Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Enable-LWAzureVMRemoting [-ComputerName] <String[]> [-UseSSL] [<CommonParameters
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable CredSSP on an Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LWAzureVMRemoting -ComputerName (Get-LabVm) -UseSsl
 ```
 
-{{ Add example description here }}
+Configure CredSSP on all lab VMs and connect via SSL
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to enable remoting on
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseSSL
-{{ Fill UseSSL Description }}
+Indicates that SSL should be used to connect to the VM
 
 ```yaml
 Type: SwitchParameter
