@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWHypervLinuxVm
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Unused
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ New-LWHypervLinuxVm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Unused
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Unused
 ```
 
-{{ Add example description here }}
+Unused
 
 ## PARAMETERS
 

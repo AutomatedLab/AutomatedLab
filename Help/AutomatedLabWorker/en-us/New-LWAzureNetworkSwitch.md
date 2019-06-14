@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWAzureNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a new Azure virtual network
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ New-LWAzureNetworkSwitch [-VirtualNetwork] <VirtualNetwork[]> [-PassThru] [<Comm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates a new Azure virtual network that maps to the lab network definition
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWAzureNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition)
 ```
 
-{{ Add example description here }}
+Creates all virtual networks in the lab
 
 ## PARAMETERS
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the VNets should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -VirtualNetwork
-{{ Fill VirtualNetwork Description }}
+The virtual networks to create
 
 ```yaml
 Type: VirtualNetwork[]

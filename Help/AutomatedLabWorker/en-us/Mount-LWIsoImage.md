@@ -8,7 +8,7 @@ schema: 2.0.0
 # Mount-LWIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Mounts an ISO image on a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Mount-LWIsoImage [-ComputerName] <String[]> [-IsoPath] <String> [-PassThru] [<Co
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Mounts an ISO image on a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Mount-LWIsoImage -ComputerName DC01 -IsoPath $labsources\Tfs2018.iso
 ```
 
-{{ Add example description here }}
+Mounts the ISO Tfs2018.iso on DC01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The Hyper-V lab machine to mount the ISO on
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsoPath
-{{ Fill IsoPath Description }}
+The path to the ISO. Use $LabSources if possible.
 
 ```yaml
 Type: String
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the drive letter should be returned
 
 ```yaml
 Type: SwitchParameter

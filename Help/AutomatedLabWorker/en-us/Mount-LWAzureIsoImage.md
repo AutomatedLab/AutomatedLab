@@ -8,7 +8,7 @@ schema: 2.0.0
 # Mount-LWAzureIsoImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Mount an ISO image on an Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Mount-LWAzureIsoImage [-ComputerName] <String[]> [-IsoPath] <String> [-PassThru]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Mount an ISO image on an Azure VM. Tries to use the Azure lab sources file share to mount the ISO from
+if you are using the dynamic variable $LabSources
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Mount-LWAzureIsoImage -ComputerName DC01 -IsoPath $LabSources\ISOs\Tfs2018.iso
 ```
 
-{{ Add example description here }}
+Mounts Tfs2018.iso from the Azure file share on DC01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host to mount the ISO on
 
 ```yaml
 Type: String[]
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsoPath
-{{ Fill IsoPath Description }}
+The path of the ISO. Use $LabSources if possible.
 
 ```yaml
 Type: String
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the drive letter should be returned
 
 ```yaml
 Type: SwitchParameter

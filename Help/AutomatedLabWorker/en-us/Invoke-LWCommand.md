@@ -8,7 +8,7 @@ schema: 2.0.0
 # Invoke-LWCommand
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Cmdlet executed by Invoke-LabCommand
 
 ## SYNTAX
 
@@ -74,21 +74,22 @@ Invoke-LWCommand -ComputerName <String[]> -Session <PSSession[]> [-ActivityName 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Executes code on remote hosts. Has various modes of operation like transmitting dependency content or executing scripts on the remote host.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Invoke-LWCommand -ComputerName Host1 -ScriptFilePath C:\StartDeployment.ps1 -Retries 3 -RetryInterval 10
 ```
 
-{{ Add example description here }}
+Executes the script StartDeployment.ps1 which exists on the remote host Host1 with up to 3 retries and a
+retry interval of 10 seconds.
 
 ## PARAMETERS
 
 ### -ActivityName
-{{ Fill ActivityName Description }}
+Name of the activity. Relevant for logging and display
 
 ```yaml
 Type: String
@@ -103,7 +104,7 @@ Accept wildcard characters: False
 ```
 
 ### -ArgumentList
-{{ Fill ArgumentList Description }}
+The list of arguments to pass to script
 
 ```yaml
 Type: Object[]
@@ -133,7 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host to execute the code on
 
 ```yaml
 Type: String[]
@@ -148,7 +149,7 @@ Accept wildcard characters: False
 ```
 
 ### -DependencyFolderPath
-{{ Fill DependencyFolderPath Description }}
+The dependencies that should be copied to the VM
 
 ```yaml
 Type: String
@@ -163,7 +164,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsoImagePath
-{{ Fill IsoImagePath Description }}
+UNUSED
 
 ```yaml
 Type: String
@@ -178,7 +179,7 @@ Accept wildcard characters: False
 ```
 
 ### -KeepFolder
-{{ Fill KeepFolder Description }}
+Indicates that the files copied to the remote host should not be removed
 
 ```yaml
 Type: SwitchParameter
@@ -193,7 +194,7 @@ Accept wildcard characters: False
 ```
 
 ### -ParameterVariableName
-{{ Fill ParameterVariableName Description }}
+The name of the variable containing the parameters to pass
 
 ```yaml
 Type: String
@@ -208,7 +209,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the result should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -223,7 +224,7 @@ Accept wildcard characters: False
 ```
 
 ### -Retries
-{{ Fill Retries Description }}
+The number of retries
 
 ```yaml
 Type: Int32
@@ -250,7 +251,7 @@ Accept wildcard characters: False
 ```
 
 ### -RetryIntervalInSeconds
-{{ Fill RetryIntervalInSeconds Description }}
+The interval between retries
 
 ```yaml
 Type: Int32
@@ -277,7 +278,7 @@ Accept wildcard characters: False
 ```
 
 ### -ScriptBlock
-{{ Fill ScriptBlock Description }}
+The script block to execute
 
 ```yaml
 Type: ScriptBlock
@@ -292,7 +293,7 @@ Accept wildcard characters: False
 ```
 
 ### -ScriptFileName
-{{ Fill ScriptFileName Description }}
+The name of the local script to execute remotely
 
 ```yaml
 Type: String
@@ -307,7 +308,7 @@ Accept wildcard characters: False
 ```
 
 ### -ScriptFilePath
-{{ Fill ScriptFilePath Description }}
+The path of the local script
 
 ```yaml
 Type: String
@@ -322,7 +323,7 @@ Accept wildcard characters: False
 ```
 
 ### -Session
-{{ Fill Session Description }}
+The session to execute the code in
 
 ```yaml
 Type: PSSession[]
@@ -337,7 +338,7 @@ Accept wildcard characters: False
 ```
 
 ### -ThrottleLimit
-{{ Fill ThrottleLimit Description }}
+The throttle limit for Invoke-Command
 
 ```yaml
 Type: Int32

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWVMWareVMStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the power state of a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LWVMWareVMStatus [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the power state of a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWVMWareStatus -ComputerName Host1
 ```
 
-{{ Add example description here }}
+Get the power state of Host1
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host name
 
 ```yaml
 Type: String[]

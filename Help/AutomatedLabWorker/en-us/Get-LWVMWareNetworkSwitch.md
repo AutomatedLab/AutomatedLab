@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWVMWareNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Return a VMWare network switch for a lab network
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LWVMWareNetworkSwitch [-VirtualNetwork] <VirtualNetwork[]> [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return a VMWare network switch for a lab network
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWVMWareNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition -Name SkyNet)
 ```
 
-{{ Add example description here }}
+Return the VSwitch for the SkyNet network
 
 ## PARAMETERS
 
 ### -VirtualNetwork
-{{ Fill VirtualNetwork Description }}
+The lab network
 
 ```yaml
 Type: VirtualNetwork[]
