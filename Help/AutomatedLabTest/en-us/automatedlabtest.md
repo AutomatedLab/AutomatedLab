@@ -8,12 +8,13 @@ Locale: en-US
 
 # automatedlabtest Module
 ## Description
-{{ Fill in the Description }}
+This simple module is capable of running one or more lab scripts and aggregating the
+results to do a test of AutomatedLab's functionality
 
 ## automatedlabtest Cmdlets
 ### [Import-LabTestResult](Import-LabTestResult.md)
-{{ Fill in the Description }}
+After running a test suite, import the results and examine them
 
 ### [Test-LabDeployment](Test-LabDeployment.md)
-{{ Fill in the Description }}
+Run one or more lab deployments to test if some functions of AutomatedLab broke.
 
