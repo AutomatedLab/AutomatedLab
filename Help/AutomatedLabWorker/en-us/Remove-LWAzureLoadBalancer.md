@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWAzureLoadBalancer
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove an Azure load balancer
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Remove-LWAzureLoadBalancer
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove an Azure load balancer
 
 ## EXAMPLES
 

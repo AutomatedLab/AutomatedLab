@@ -8,7 +8,7 @@ schema: 2.0.0
 # Restore-LWHypervVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Restore a Hyper-V VM checkpoint
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Restore-LWHypervVMSnapshot [-ComputerName] <String[]> [-SnapshotName] <String> [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Restore a Hyper-V VM checkpoint.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restore-LWHypervVMSnapshot -ComputerName DC01 -SnapshotName CP01
 ```
 
-{{ Add example description here }}
+Restore checkpoint CP01 on DC01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host names to restore a snapshot from
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot to restore
 
 ```yaml
 Type: String

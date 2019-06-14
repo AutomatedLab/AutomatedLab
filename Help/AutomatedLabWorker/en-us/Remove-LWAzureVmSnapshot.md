@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWAzureVmSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove an Azure VM snapshot
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Remove-LWAzureVmSnapshot -ComputerName <String[]> -SnapshotName <String> [<Commo
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove an Azure VM snapshot
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWAzureVmSnapshot -ComputerName Host1,Host2 -All
 ```
 
-{{ Add example description here }}
+Remove all snapshots of hosts Host1 and Host2
 
 ## PARAMETERS
 
 ### -All
-{{ Fill All Description }}
+Indicates that all snapshots should be removed
 
 ```yaml
 Type: SwitchParameter
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computers to remove snapshots of
 
 ```yaml
 Type: String[]
@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot to remove
 
 ```yaml
 Type: String

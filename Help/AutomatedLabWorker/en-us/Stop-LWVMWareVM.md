@@ -8,7 +8,7 @@ schema: 2.0.0
 # Stop-LWVMWareVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Stop a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Stop-LWVMWareVM [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Stop a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Stop-LWVMWareVM -ComputerName (Get-LabVM)
 ```
 
-{{ Add example description here }}
+Stops all VMWare VMs in the lab
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to stop
 
 ```yaml
 Type: String[]

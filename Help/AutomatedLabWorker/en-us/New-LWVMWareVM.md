@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWVMWareVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new VMWare VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ New-LWVMWareVM -Name <String> -ReferenceVM <String> -AdminUserName <String> -Adm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a new VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWVMWareVM -Name Host1 -ReferenceVM Server2019GoldenMaster -AdminUserName Hans -AdminPassword Reuben -DomainName contoso.com -DomainJoinCredential $vm.GetCredential((Get-Lab))
 ```
 
-{{ Add example description here }}
+Create a new VM from a reference VM
 
 ## PARAMETERS
 
 ### -AdminPassword
-{{ Fill AdminPassword Description }}
+The admin password
 
 ```yaml
 Type: String
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -AdminUserName
-{{ Fill AdminUserName Description }}
+The admin user
 
 ```yaml
 Type: String
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -DomainJoinCredential
-{{ Fill DomainJoinCredential Description }}
+The credential to join a domain. Can be retrieved from each lab VM
 
 ```yaml
 Type: PSCredential
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -DomainName
-{{ Fill DomainName Description }}
+The domain to join
 
 ```yaml
 Type: String
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+The machine name
 
 ```yaml
 Type: String
@@ -122,7 +122,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+returns the created machine
 
 ```yaml
 Type: SwitchParameter
@@ -137,7 +137,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReferenceVM
-{{ Fill ReferenceVM Description }}
+The reference VM to create the new VM from
 
 ```yaml
 Type: String

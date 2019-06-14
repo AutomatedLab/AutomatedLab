@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LWVMWareRestartVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for the restart of a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Wait-LWVMWareRestartVM [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Wait for the restart of a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LWVMWareRestartVM -ComputerName DC01 -Timeout 12.5
 ```
 
-{{ Add example description here }}
+Wait 12:30 for DC01 to reboot
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to wait for
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+The timeout to wait in minutes
 
 ```yaml
 Type: Double

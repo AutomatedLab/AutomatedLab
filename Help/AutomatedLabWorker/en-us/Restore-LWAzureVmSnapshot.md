@@ -8,7 +8,7 @@ schema: 2.0.0
 # Restore-LWAzureVmSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Restore the snapshot of an Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Restore-LWAzureVmSnapshot [-ComputerName] <String[]> [-SnapshotName] <String> [<
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Restore the snapshot of an Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restore-LWAzureVmSnapshot -ComputerName DC01,FS01 -SnapshotName BeforeSchemaUpdate
 ```
 
-{{ Add example description here }}
+Restores the snapshot BeforeSchemaUpdate on DC01 and FS01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host names to restore a snapshot from
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot to restore
 
 ```yaml
 Type: String

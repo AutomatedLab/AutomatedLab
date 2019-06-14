@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWVMWareVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a VMWare virtual machine
 
 ## SYNTAX
 
@@ -17,16 +17,17 @@ Remove-LWVMWareVM [-ComputerName] <String> [-AsJob] [-PassThru] [<CommonParamete
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a VMWare virtual machine
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWVMWareVM -ComputerName SomeHost -AsJob -PassThru
 ```
 
-{{ Add example description here }}
+Removes the VMWare machine SomeHost in a background job and returns
+the job object
 
 ## PARAMETERS
 
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The VM to remove
 
 ```yaml
 Type: String
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that objects should be returned
 
 ```yaml
 Type: SwitchParameter

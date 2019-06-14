@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LWAzureRestartVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for the restart of an Azure VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Wait-LWAzureRestartVM [-ComputerName] <String[]> [-DoNotUseCredSsp] [[-TimeoutIn
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Use the event log to watch for a reboot event of the Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LWAzureRestartVM -ComputerName SQL01 -MonitoringStartTime (Get-Date).AddMinutes(15) -Timeout 30
 ```
 
-{{ Add example description here }}
+Start in 15 minutes to watch for a reboot of SQL01, for a maximum time of 30 minutes
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to wait for
 
 ```yaml
 Type: String[]
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+Indicates that CredSSP should not be used to connect
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -MonitoringStartTime
-{{ Fill MonitoringStartTime Description }}
+When does monitoring of the event log start?
 
 ```yaml
 Type: DateTime
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+The timeout in minutes to wait for the restart of the machine
 
 ```yaml
 Type: Double

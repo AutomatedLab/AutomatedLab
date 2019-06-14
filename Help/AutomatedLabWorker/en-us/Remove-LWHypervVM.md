@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWHypervVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LWHypervVM [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWHypervVM -Name DC01
 ```
 
-{{ Add example description here }}
+Deletes the VM DC01
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+The name of the machine to remove
 
 ```yaml
 Type: String

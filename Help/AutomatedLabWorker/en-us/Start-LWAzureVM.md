@@ -8,7 +8,7 @@ schema: 2.0.0
 # Start-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Start Azure VMs
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Start-LWAzureVM [-ComputerName] <String[]> [[-DelayBetweenComputers] <Int32>] [[
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Start Azure VMs in parallel or staggered, with or without progress indicators
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Start-LWAzureVM -ComputerName (Get-LabVm) -DelayBetweenComputers 5
 ```
 
-{{ Add example description here }}
+Start all Azure lab VMs with a five minute delay between each
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to start
 
 ```yaml
 Type: String[]
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -DelayBetweenComputers
-{{ Fill DelayBetweenComputers Description }}
+The delay in minutes between the start of each machine
 
 ```yaml
 Type: Int32
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32

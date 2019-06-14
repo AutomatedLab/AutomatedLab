@@ -8,7 +8,7 @@ schema: 2.0.0
 # Save-LWVMWareVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Save the state of a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Save-LWVMWareVM [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Save the state of a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Save-LWVMWareVM -ComputerName (Get-LabVm)
 ```
 
-{{ Add example description here }}
+Saves all lab VMs
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to save
 
 ```yaml
 Type: String[]
