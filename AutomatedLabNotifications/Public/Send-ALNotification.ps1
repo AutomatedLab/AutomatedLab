@@ -11,6 +11,7 @@ function Send-ALNotification
         $Message,
 
         [ValidateSet('Toast','Ifttt','Mail','Voice')]
+        [string[]]
         $Provider
     )
 
