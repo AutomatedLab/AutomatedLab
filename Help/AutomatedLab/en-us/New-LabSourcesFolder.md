@@ -26,7 +26,7 @@ This cmdlet can be used to update sample scripts. Be aware that it will overwrit
 The local lab sources can optionally be synced with Azure, all Lab cmdlets are aware of that and select the
 correct location for you, if you use the variable $LabSources
 
-### Content
+Folder content:
 DscConfigurations - Lab DSC configurations that have been applied to machines
 GitRepositories - Cloned repositories that have been pushed to your lab CI/CD release pipeline
 ISOs - Essential. Should contain OS ISOs you deploy your VMs from, can optionally contain product ISOs like SQL
