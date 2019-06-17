@@ -38,7 +38,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -Store
-@{Text=}
+The certificate store to add the cert to
 
 ```yaml
 Type: StoreName
@@ -53,7 +53,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-@{Text=}
+The location of the certificate store
 
 ```yaml
 Type: CertStoreLocation
@@ -68,7 +68,7 @@ Accept wildcard characters: False
 ```
 
 ### -ServiceName
-@{Text=}
+The name of the service to add a certificate to
 
 ```yaml
 Type: String
@@ -83,7 +83,7 @@ Accept wildcard characters: False
 ```
 
 ### -CertificateType
-@{Text=}
+The certificate type (cer, pfx)
 
 ```yaml
 Type: String
@@ -98,7 +98,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-@{Text=}
+The password to decrypt the private key
 
 ```yaml
 Type: String
@@ -113,7 +113,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-@{Text=}
+The host to add the certificate to
 
 ```yaml
 Type: String[]
@@ -128,7 +128,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-@{Text=}
+The path of the cer/pfx file
 
 ```yaml
 Type: String
@@ -143,7 +143,7 @@ Accept wildcard characters: False
 ```
 
 ### -RawContentBytes
-{{ Fill RawContentBytes Description }}
+Certificate as Byte[]
 
 ```yaml
 Type: Byte[]

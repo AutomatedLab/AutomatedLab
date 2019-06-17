@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP is not to be used
 
 ```yaml
 Type: SwitchParameter

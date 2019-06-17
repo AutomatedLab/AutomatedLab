@@ -50,7 +50,8 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -SearchString
-@{Text=}
+The search string to use. For more information, see:
+https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2collection.find
 
 ```yaml
 Type: String
@@ -65,7 +66,7 @@ Accept wildcard characters: False
 ```
 
 ### -FindType
-@{Text=}
+Sets which attribute will be searched, e.g. FindBySubjectName
 
 ```yaml
 Type: X509FindType
@@ -80,7 +81,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-@{Text=}
+The location to search in. Possible values CERT_SYSTEM_STORE_CURRENT_USER, CERT_SYSTEM_STORE_LOCAL_MACHINE, CERT_SYSTEM_STORE_SERVICES, CERT_SYSTEM_STORE_USERS
 
 ```yaml
 Type: CertStoreLocation
@@ -95,7 +96,7 @@ Accept wildcard characters: False
 ```
 
 ### -Store
-@{Text=}
+The store to look in, e.g. My
 
 ```yaml
 Type: StoreName
@@ -110,7 +111,7 @@ Accept wildcard characters: False
 ```
 
 ### -ServiceName
-@{Text=}
+The name of the service
 
 ```yaml
 Type: String
@@ -125,7 +126,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-@{Text=}
+The password used to decrypt the PFX private key
 
 ```yaml
 Type: SecureString
@@ -140,7 +141,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-@{Text=}
+The hosts to get certificates from
 
 ```yaml
 Type: String[]
@@ -155,7 +156,7 @@ Accept wildcard characters: False
 ```
 
 ### -All
-@{Text=}
+Retrieve all certificates
 
 ```yaml
 Type: SwitchParameter
@@ -170,7 +171,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeServices
-@{Text=}
+Indicates that services will be included
 
 ```yaml
 Type: SwitchParameter
@@ -185,7 +186,7 @@ Accept wildcard characters: False
 ```
 
 ### -ExportPrivateKey
-{{ Fill ExportPrivateKey Description }}
+Indicates that the private key should be exported
 
 ```yaml
 Type: SwitchParameter

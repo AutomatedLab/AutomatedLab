@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabSqlSampleDatabases
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install sample databases for the selected SQL version
 
 ## SYNTAX
 
@@ -17,21 +17,24 @@ Install-LabSqlSampleDatabases [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Install sample databases for the selected SQL version. Attempts to download the fitting
+version from either CodePlex (up to SQL 2012) or GitHub (2014+)
+
+Downloads will be stored in $LabSources\SoftwarePackages\SqlSampleDbs and not downloaded a second time.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabSqlSampleDatabases -Machine SQL01
 ```
 
-{{ Add example description here }}
+Install the Northwind Trades DB for some old edition of SQL Server
 
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The machine to deploy the sample databases to
 
 ```yaml
 Type: Machine

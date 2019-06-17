@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabSourcesLocationInternal
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Internal cmdlet to retrieve lab sources location
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LabSourcesLocationInternal [-Local]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Internal cmdlet to retrieve lab sources location
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabSourcesLocationInternal
 ```
 
-{{ Add example description here }}
+Retrieve the lab sources location depending on the chosen Hypervisor
 
 ## PARAMETERS
 
 ### -Local
-{{ Fill Local Description }}
+Skip Hypervisor detection and simply use the local folder
 
 ```yaml
 Type: SwitchParameter

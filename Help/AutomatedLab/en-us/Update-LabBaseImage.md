@@ -8,7 +8,7 @@ schema: 2.0.0
 # Update-LabBaseImage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Update a base image with OS updates
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Update-LabBaseImage -BaseImagePath <String> -UpdateFolderPath <String> [<CommonP
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Update a base image with OS updates
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Update-LabBaseImage -BaseImagePath "D:\AutomatedLab-VMs\BASE_WindowsServer2016Datacenter(DesktopExperience)_10.0.14393.0.vhdx" -UpdateFolderPath $LabSources/OSUpdates/2016
 ```
 
-{{ Add example description here }}
+Apply all updates in the 2016 folder to the base image
 
 ## PARAMETERS
 
 ### -BaseImagePath
-{{ Fill BaseImagePath Description }}
+Path to VHDX file
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -UpdateFolderPath
-{{ Fill UpdateFolderPath Description }}
+Path to the updates
 
 ```yaml
 Type: String

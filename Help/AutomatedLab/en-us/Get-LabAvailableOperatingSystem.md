@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -Azure
-{{ Fill Azure Description }}
+Indicates that we are looking for Azure SKUs and not local ISO files
 
 ```yaml
 Type: SwitchParameter
@@ -82,7 +82,7 @@ Accept wildcard characters: False
 ```
 
 ### -Location
-{{ Fill Location Description }}
+The Azure location, e.g. West Europe
 
 ```yaml
 Type: Object
@@ -97,7 +97,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Do not display console messages
 
 ```yaml
 Type: SwitchParameter
@@ -112,7 +112,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseOnlyCache
-{{ Fill UseOnlyCache Description }}
+Indicates that only the cache should be used, which speeds up the operation significantly
 
 ```yaml
 Type: SwitchParameter

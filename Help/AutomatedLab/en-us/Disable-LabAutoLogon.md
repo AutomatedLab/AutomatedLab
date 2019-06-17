@@ -8,7 +8,7 @@ schema: 2.0.0
 # Disable-LabAutoLogon
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Disable the automatic logon of a Windows account
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Disable-LabAutoLogon [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Disable the automatic logon of a Windows account
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Disable-LabAutoLogon -ComputerName DC01,DC02
 ```
 
-{{ Add example description here }}
+Disables the automatic logon on DC01 and DC02
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to disable autologon on
 
 ```yaml
 Type: String[]

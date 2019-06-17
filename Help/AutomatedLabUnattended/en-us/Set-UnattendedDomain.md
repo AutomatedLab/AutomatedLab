@@ -33,7 +33,7 @@ Configures the domain join credentials for a Windows unattend file.
 ## PARAMETERS
 
 ### -DomainName
-{{ Fill DomainName Description }}
+The domain to configure
 
 ```yaml
 Type: String
@@ -78,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-{{ Fill Password Description }}
+The password of the domain join account
 
 ```yaml
 Type: String
@@ -93,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -Username
-{{ Fill Username Description }}
+The domain join account
 
 ```yaml
 Type: String

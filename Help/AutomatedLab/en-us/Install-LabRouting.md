@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -InstallationTimeout
-@{Text=}
+Timeout in minutes for the installation to finish
 
 ```yaml
 Type: Int32
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+After n seconds, print a . to the console
 
 ```yaml
 Type: Int32

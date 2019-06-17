@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabHostConnected
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test if the lab host is connected
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Test-LabHostConnected [-Throw] [-Quiet] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Test if the lab host is connected. Optionally throws an exception
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabHostConnected -Throw
 ```
 
-{{ Add example description here }}
+If the host is not connected to the internet, throws a terminating error
 
 ## PARAMETERS
 
 ### -Quiet
-{{ Fill Quiet Description }}
+Do not return any data
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Throw
-{{ Fill Throw Description }}
+Throw an exception if host is not connected
 
 ```yaml
 Type: SwitchParameter

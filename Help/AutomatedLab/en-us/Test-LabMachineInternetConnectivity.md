@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Count
-@{Text=}
+Count of connection tests
 
 ```yaml
 Type: Int32

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Save-LabRecipe
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Save a lab recipe to disk
 
 ## SYNTAX
 
@@ -17,16 +17,18 @@ Save-LabRecipe [-Recipe] <PSObject> [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Save a lab recipe to disk
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+LabRecipe SuperEasy {
+    DeployRole = 'Domain', 'PKI'
+} | Save-LabRecipe
 ```
 
-{{ Add example description here }}
+Saves the recipe SuperEasy
 
 ## PARAMETERS
 
@@ -46,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recipe
-{{ Fill Recipe Description }}
+The recipe to store
 
 ```yaml
 Type: PSObject

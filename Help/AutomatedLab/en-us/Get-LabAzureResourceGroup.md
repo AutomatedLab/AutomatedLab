@@ -29,10 +29,10 @@ Returns either named Azure resource groups defined in the lab settings or return
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureResourceGroup -CurrentLab
 ```
 
-{{ Add example description here }}
+Returns the Resource Group of the current lab
 
 ## PARAMETERS
 
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -CurrentLab
-{{ Fill CurrentLab Description }}
+Indicates that the Resource Group of the current lab should be returned
 
 ```yaml
 Type: SwitchParameter

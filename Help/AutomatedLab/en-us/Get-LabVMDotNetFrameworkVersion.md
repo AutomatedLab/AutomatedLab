@@ -8,6 +8,7 @@ schema: 2.0.0
 # Get-LabVMDotNetFrameworkVersion
 
 ## SYNOPSIS
+Get the .NET Framework version of lab VMs
 
 ## SYNTAX
 
@@ -16,21 +17,21 @@ Get-LabVMDotNetFrameworkVersion [-ComputerName] <String[]> [-NoDisplay] [<Common
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the .NET Framework version of lab VMs
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMDotNetFrameworkVersion -ComputerName SQL01
 ```
 
-{{ Add example description here }}
+List the installed .NET versions on SQL01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to get the info from
 
 ```yaml
 Type: String[]
@@ -45,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Indicates that no console output should be visible
 
 ```yaml
 Type: SwitchParameter

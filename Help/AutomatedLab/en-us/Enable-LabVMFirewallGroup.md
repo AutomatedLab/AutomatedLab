@@ -23,10 +23,10 @@ Enables one or more named firewall groups on one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LabVMFirewallGroup -ComputerName WSUS1,WSUS2 -FirewallGroup 'Delivery Optimization'
 ```
 
-{{ Add example description here }}
+Enable the 'Delivery Optimization' firewall group on WSUS1 and WSUS2
 
 ## PARAMETERS
 

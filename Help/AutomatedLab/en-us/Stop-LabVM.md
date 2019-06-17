@@ -84,7 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -129,7 +129,7 @@ Accept wildcard characters: False
 ```
 
 ### -KeepAzureVmProvisioned
-@{Text=}
+Indicates that an Azure VM should not be deallocated
 
 ```yaml
 Type: SwitchParameter

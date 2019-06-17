@@ -95,7 +95,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -155,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeManagementTools
-{{ Fill IncludeManagementTools Description }}
+Indicates that the management tools should be included
 
 ```yaml
 Type: SwitchParameter

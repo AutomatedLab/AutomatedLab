@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabHyperV
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install all Hyper-V nested hypervisors
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Install-LabHyperV [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Install all Hyper-V nested hypervisors
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabHyperV
 ```
 
-{{ Add example description here }}
+Installs all Lab HyperV
 
 ## PARAMETERS
 

@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -LocationName
-@{Text=}
+The location to store the lab sources in. Defaults to lab location
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-@{Text=}
+Indicates that no text should be displayed on the console host
 
 ```yaml
 Type: SwitchParameter

@@ -23,15 +23,15 @@ Unblocks all lab sources in order to be able to properly execute all scripts and
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Unblock-LabSources
 ```
 
-{{ Add example description here }}
+Strips the Zone Identifier from all files inside $LabSources
 
 ## PARAMETERS
 
 ### -Path
-@{Text=}
+Unblock the lab sources directory
 
 ```yaml
 Type: String

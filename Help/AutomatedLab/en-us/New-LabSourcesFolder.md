@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabSourcesFolder
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create and populate a new labsources folder
 
 ## SYNTAX
 
@@ -17,16 +17,33 @@ New-LabSourcesFolder [[-DriveLetter] <String>] [-Force] [-WhatIf] [-Confirm] [<C
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create and populate a new labsources folder. The labsources folder contains a bunch
+of useful or necessary components. When the cmdlet is executed for the first time, the
+lab sources content will be pulled from the master branch of the GitHub repository AutomatedLab.
+
+This cmdlet can be used to update sample scripts. Be aware that it will overwrite your changes to any files.
+
+The local lab sources can optionally be synced with Azure, all Lab cmdlets are aware of that and select the
+correct location for you, if you use the variable $LabSources
+
+### Content
+DscConfigurations - Lab DSC configurations that have been applied to machines
+GitRepositories - Cloned repositories that have been pushed to your lab CI/CD release pipeline
+ISOs - Essential. Should contain OS ISOs you deploy your VMs from, can optionally contain product ISOs like SQL
+OSUpdates - Intended for OS updates, not automatically used
+PostInstallationActivities - Used in many samples, this folder contains some tasks like setting up a DSC Pull Server or creating thousands of users.
+Sample Scripts - Contains a wide range of sample scripts for you to play with
+SoftwarePackages - Intended for installers and the like
+Tools - Intended for little tools that e.g. get copied to each machine, if enabled
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabSourcesFolder -Drive D -Force
 ```
 
-{{ Add example description here }}
+Download lab sources content to D:\LabSources and overwrite any existing files
 
 ## PARAMETERS
 
@@ -46,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -DriveLetter
-{{ Fill DriveLetter Description }}
+The drive to store LabSources on
 
 ```yaml
 Type: String
@@ -61,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-{{ Fill Force Description }}
+Indicates that content will be replaced
 
 ```yaml
 Type: SwitchParameter

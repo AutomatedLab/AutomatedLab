@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabReleasePipeline
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new release pipeline
 
 ## SYNTAX
 
@@ -26,21 +26,21 @@ New-LabReleasePipeline [-ProjectName <String>] [-SourceRepository <String>] -Sou
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a new release pipeline from an existing git repository
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabReleasePipeline -ProjectName DscWorkshop -SourceRepository https://github.com/automatedlab/dscworkshop -CodeUpload git
 ```
 
-{{ Add example description here }}
+Create a build and release pipeline without any build and release steps from the git repository dscworkshop.
 
 ## PARAMETERS
 
 ### -BuildSteps
-{{ Fill BuildSteps Description }}
+A collection of build steps. See Get-LabBuildStep
 
 ```yaml
 Type: Hashtable[]
@@ -55,7 +55,7 @@ Accept wildcard characters: False
 ```
 
 ### -CodeUploadMethod
-{{ Fill CodeUploadMethod Description }}
+FileCopy for a local repo, Git for an online repo
 
 ```yaml
 Type: String
@@ -71,7 +71,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The CI/CD server. Defaults to the most recent version
 
 ```yaml
 Type: String
@@ -86,7 +86,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProjectName
-{{ Fill ProjectName Description }}
+Name of the new team project. Default AutomatedLab
 
 ```yaml
 Type: String
@@ -101,7 +101,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReleaseSteps
-{{ Fill ReleaseSteps Description }}
+Collection of release steps. See Get-LabReleaseStep
 
 ```yaml
 Type: Hashtable[]
@@ -116,7 +116,7 @@ Accept wildcard characters: False
 ```
 
 ### -SourcePath
-{{ Fill SourcePath Description }}
+The local repository path
 
 ```yaml
 Type: String
@@ -131,7 +131,7 @@ Accept wildcard characters: False
 ```
 
 ### -SourceRepository
-{{ Fill SourceRepository Description }}
+The remote repository URL
 
 ```yaml
 Type: String

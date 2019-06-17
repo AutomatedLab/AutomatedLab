@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedTimeZone
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Configure the time zone
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Set-UnattendedTimeZone [-TimeZone] <String> [-IsKickstart] [-IsAutoYast] [<Commo
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configure the time zone
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedTimeZone -TimeZone 'Dateline Standard Time'
 ```
 
-{{ Add example description here }}
+Set the time zone to dateline standard time.
 
 ## PARAMETERS
 
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeZone
-{{ Fill TimeZone Description }}
+The time zone. Refer to Get-TimeZone -List for details
 
 ```yaml
 Type: String

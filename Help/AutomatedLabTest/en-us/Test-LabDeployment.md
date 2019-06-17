@@ -57,7 +57,7 @@ Test all scripts in the HyperV folder
 ## PARAMETERS
 
 ### -All
-{{ Fill All Description }}
+Test all scripts in a folder
 
 ```yaml
 Type: SwitchParameter
@@ -72,7 +72,7 @@ Accept wildcard characters: False
 ```
 
 ### -Filter
-{{ Fill Filter Description }}
+Filter scripts
 
 ```yaml
 Type: String
@@ -87,7 +87,7 @@ Accept wildcard characters: False
 ```
 
 ### -LogDirectory
-{{ Fill LogDirectory Description }}
+Log folder for test results
 
 ```yaml
 Type: String
@@ -102,7 +102,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+Path to the lab script(s)
 
 ```yaml
 Type: String[]
@@ -117,7 +117,7 @@ Accept wildcard characters: False
 ```
 
 ### -Replace
-{{ Fill Replace Description }}
+Replace hashtable keys with hashtable values in each script
 
 ```yaml
 Type: Hashtable
@@ -132,7 +132,7 @@ Accept wildcard characters: False
 ```
 
 ### -SampleScriptsPath
-{{ Fill SampleScriptsPath Description }}
+Path to the sample scripts
 
 ```yaml
 Type: String

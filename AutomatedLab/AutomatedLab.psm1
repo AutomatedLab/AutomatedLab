@@ -3875,8 +3875,9 @@ function Get-LabCache
             $content = [xml]$key.GetValue($value)
             $timestamp = $content.SelectSingleNode('//Timestamp')
             [pscustomobject]@{
-                Store = $value
+                Store     = $value
                 Timestamp = $timestamp.datetime -as [datetime]
+                Content   = $content
             }
         }
     }

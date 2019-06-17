@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedAutoLogon
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the auto logon account in the unattend file
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Set-UnattendedAutoLogon [-DomainName] <String> [-Username] <String> [-Password] 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the auto logon account in the unattend file
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedAutoLogon -Domain contoso.com -User Hans -Password Somepass1
 ```
 
-{{ Add example description here }}
+Enables the automatic login of the account Hans in the domain contoso.com
 
 ## PARAMETERS
 
 ### -DomainName
-{{ Fill DomainName Description }}
+The domain name
 
 ```yaml
 Type: String
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-{{ Fill Password Description }}
+The password of the autologon account
 
 ```yaml
 Type: String
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -Username
-{{ Fill Username Description }}
+The account name to automatically log on
 
 ```yaml
 Type: String

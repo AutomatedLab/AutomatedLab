@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the existing checkpoints of a lab VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LabVMSnapshot [[-ComputerName] <String[]>] [[-SnapshotName] <String>] [<Comm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the existing checkpoints of a lab VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMSnapshot -ComputerName DC1
 ```
 
-{{ Add example description here }}
+List all checkpoints of DC1
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to list snapshots of
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The snapshot to look for
 
 ```yaml
 Type: String

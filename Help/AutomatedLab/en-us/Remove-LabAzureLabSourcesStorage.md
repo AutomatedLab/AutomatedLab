@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -WhatIf
-@{Text=}
+Indicates that the operation should be tested before being executed
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Confirm
-@{Text=}
+Requests a user confirmation before continuing
 
 ```yaml
 Type: SwitchParameter

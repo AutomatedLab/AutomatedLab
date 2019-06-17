@@ -8,7 +8,7 @@ schema: 2.0.0
 # Open-LabTfsSite
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Open the CI/CD servers home page
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Open-LabTfsSite [[-ComputerName] <String>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Open the CI/CD servers home page, including the correct credentials
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Open-LabTfsSite
 ```
 
-{{ Add example description here }}
+Open the default browser and point it to https://TFSHOSTNAME:8080/AutomatedLab
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The CI/CD server
 
 ```yaml
 Type: String

@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to remove a snapshot from
 
 ```yaml
 Type: String[]

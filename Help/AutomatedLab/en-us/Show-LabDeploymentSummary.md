@@ -24,15 +24,15 @@ AutomatedLab keeps track of the time it took from the first lab command to the e
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Show-LabDeploymentSummary -Detailed
 ```
 
-{{ Add example description here }}
+Display all necessary bits of information on the current lab deployment, including helpful cmdlets to get started
 
 ## PARAMETERS
 
 ### -Detailed
-@{Text=}
+Indicates that a detailed summary should be displayed
 
 ```yaml
 Type: SwitchParameter

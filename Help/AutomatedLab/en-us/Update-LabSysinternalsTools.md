@@ -8,7 +8,7 @@ schema: 2.0.0
 # Update-LabSysinternalsTools
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Download new Sysinternals Suite
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Update-LabSysinternalsTools
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Download new Sysinternals Suite if not already downloaded and no newer version available
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Update-LabSysinternalsTools
 ```
 
-{{ Add example description here }}
+Download new Sysinternals Suite if not already downloaded and no newer version available
 
 ## PARAMETERS
 

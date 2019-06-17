@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LabAutoLogon
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable the automatic logon of a Windows account
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Enable-LabAutoLogon [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable the automatic logon of a Windows account
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LabAutoLogon -ComputerName SQL01
 ```
 
-{{ Add example description here }}
+Enable the automatic logon on SQL01 with the lab installation account (or domain admin account).
+Useful for Installations that require a user session
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to enable auto logon on
 
 ```yaml
 Type: String[]

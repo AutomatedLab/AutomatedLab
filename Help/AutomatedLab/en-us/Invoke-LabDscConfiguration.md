@@ -8,7 +8,7 @@ schema: 2.0.0
 # Invoke-LabDscConfiguration
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Invoke a DSC configuration on one or more nodes
 
 ## SYNTAX
 
@@ -24,21 +24,32 @@ Invoke-LabDscConfiguration -ComputerName <String[]> [-UseExisting] [-Wait] [<Com
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Invoke a DSC configuration on one or more nodes. Compareable with a push, the configuration
+will be applied to the target nodes. The configuration needs to be stored in a file that should
+be imported before. Can either deploy a fresh configuration or use an existing one.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+configuration Baseline
+{
+    WindowsFeature ADTools
+    {
+        Name = 'RSAT-AD-Tools'
+        Ensure = 'Present'
+    }
+}
+
+Invoke-LabDscConfiguration -Configuration (Get-Command Baseline) -ComputerName Node1,Node2 -Wait
 ```
 
-{{ Add example description here }}
+Apply the configuration Baseline on Node1 and Node2
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The target nodes
 
 ```yaml
 Type: String[]
@@ -53,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Configuration
-{{ Fill Configuration Description }}
+The configuration that is stored somewhere. Retrieve with Get-Command
 
 ```yaml
 Type: ConfigurationInfo
@@ -68,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationData
-{{ Fill ConfigurationData Description }}
+The configuration data that should be applied to build the MOF
 
 ```yaml
 Type: Hashtable
@@ -83,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseExisting
-{{ Fill UseExisting Description }}
+The parameter UseExisting of Start-DscConfiguration
 
 ```yaml
 Type: SwitchParameter
@@ -98,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -Wait
-{{ Fill Wait Description }}
+Wait for the configuration to finish
 
 ```yaml
 Type: SwitchParameter

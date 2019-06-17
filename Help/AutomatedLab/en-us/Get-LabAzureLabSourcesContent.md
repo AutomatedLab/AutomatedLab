@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureLabSourcesContent
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the file content of the Azure lab sources file share
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-File] [-Directory] [<C
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the file content of the Azure lab sources file share. Capable of Regex filtering
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File
 ```
 
-{{ Add example description here }}
+Get all ISO files in the Azure lab sources file share
 
 ## PARAMETERS
 
 ### -Directory
-{{ Fill Directory Description }}
+Indicates that only directories (Data type Microsoft.Azure.Storage.File.CloudFileDirectory) should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -File
-{{ Fill File Description }}
+INdicates that only files (data type Microsoft.Azure.Storage.File.CloudFile) should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -RegexFilter
-{{ Fill RegexFilter Description }}
+The regular expression to filter the list of files on
 
 ```yaml
 Type: String

@@ -127,7 +127,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeLinux
-{{ Fill IncludeLinux Description }}
+Include Linux VMs in the output
 
 ```yaml
 Type: SwitchParameter
@@ -142,7 +142,7 @@ Accept wildcard characters: False
 ```
 
 ### -SkipConnectionInfo
-{{ Fill SkipConnectionInfo Description }}
+Skip generating the Azure connection info to speed up things
 
 ```yaml
 Type: SwitchParameter

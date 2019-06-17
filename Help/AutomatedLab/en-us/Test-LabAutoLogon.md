@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabAutoLogon
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test if the autologon settings are correct
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Test-LabAutoLogon [[-ComputerName] <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Test if the autologon settings are correct
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
 ```
 
-{{ Add example description here }}
+If auto logon is not configured, configure it for SQL01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to test auto logon on
 
 ```yaml
 Type: String[]

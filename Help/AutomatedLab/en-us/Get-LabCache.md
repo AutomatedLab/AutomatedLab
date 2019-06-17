@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabCache
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the content of the lab cache
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Get-LabCache [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the content of the lab cache that is stored as XML in the registry
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabCache
 ```
 
-{{ Add example description here }}
+Gets the timestamp and XML content of each cache in HKCU:\Software\AutomatedLab\Cache
 
 ## PARAMETERS
 
