@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-UnattendedNetworkAdapter
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add a network adapter to the unattend file
 
 ## SYNTAX
 
@@ -21,21 +21,23 @@ Add-UnattendedNetworkAdapter [[-Interfacename] <String>] [[-IpAddresses] <IPNetw
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Add a network adapter to the unattend file. Default is Windows, switch parameters can be used for
+either Kickstart or AutoYAST.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-UnattendedNetworkAdapter -InterfaceName lan01 -IpAddresses 192.168.2.12/24 -Gateways 192.168.2.1 -DnsServers 192.168.2.10,192.168.2.11 -DnsDomain contoso.com -IsKickstart
 ```
 
-{{ Add example description here }}
+Add the network adapter lan01 to the Kickstart file for a VM. Default is Windows, switch parameters can be used for
+either Kickstart or AutoYAST.
 
 ## PARAMETERS
 
 ### -ConnectionSpecificDNSSuffix
-{{ Fill ConnectionSpecificDNSSuffix Description }}
+DNS suffix for this connection. Not used on Linux.
 
 ```yaml
 Type: String
@@ -50,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -DNSSuffixSearchOrder
-{{ Fill DNSSuffixSearchOrder Description }}
+The DNS suffix search order. Not used on Linux.
 
 ```yaml
 Type: String
@@ -65,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -DisableDynamicUpdate
-{{ Fill DisableDynamicUpdate Description }}
+Disable the dynamic update of this adapter. Not used on Linux.
 
 ```yaml
 Type: String
@@ -80,7 +82,7 @@ Accept wildcard characters: False
 ```
 
 ### -DnsDomain
-{{ Fill DnsDomain Description }}
+The DNS domain name for this connection
 
 ```yaml
 Type: String
@@ -95,7 +97,7 @@ Accept wildcard characters: False
 ```
 
 ### -DnsServers
-{{ Fill DnsServers Description }}
+The list of DNS servers for this adapter
 
 ```yaml
 Type: IPAddress[]
@@ -110,7 +112,7 @@ Accept wildcard characters: False
 ```
 
 ### -EnableAdapterDomainNameRegistration
-{{ Fill EnableAdapterDomainNameRegistration Description }}
+Enable the DNS registration of this adapter. Not used on Linux.
 
 ```yaml
 Type: String
@@ -125,7 +127,7 @@ Accept wildcard characters: False
 ```
 
 ### -Gateways
-{{ Fill Gateways Description }}
+The gateways for this connection
 
 ```yaml
 Type: IPAddress[]
@@ -140,7 +142,7 @@ Accept wildcard characters: False
 ```
 
 ### -Interfacename
-{{ Fill Interfacename Description }}
+The interface name of this connection
 
 ```yaml
 Type: String
@@ -155,7 +157,7 @@ Accept wildcard characters: False
 ```
 
 ### -IpAddresses
-{{ Fill IpAddresses Description }}
+The IP addresses to assign
 
 ```yaml
 Type: IPNetwork[]
@@ -170,7 +172,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -185,7 +187,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -200,7 +202,7 @@ Accept wildcard characters: False
 ```
 
 ### -NetbiosOptions
-{{ Fill NetbiosOptions Description }}
+The NetBIOS options for this adapter. 0 Default, 1 Enabled, 2 Disabled
 
 ```yaml
 Type: String
@@ -215,7 +217,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseDomainNameDevolution
-{{ Fill UseDomainNameDevolution Description }}
+Enable Domain Name Devolution. Windows only.
 
 ```yaml
 Type: String

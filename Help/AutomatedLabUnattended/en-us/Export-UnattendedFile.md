@@ -8,7 +8,7 @@ schema: 2.0.0
 # Export-UnattendedFile
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Save the unattend file
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Export-UnattendedFile [-Path] <String> [-IsKickstart] [-IsAutoYast] [<CommonPara
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Save the unattend file. Creates an XML file for Windows and AutoYAST or a Kickstart (cfg) file
+for Kickstart.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Export-UnattendFile -Path .\unattend.xml
 ```
 
-{{ Add example description here }}
+Exports an Unattend file for Windows
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+The path to the resulting file.
 
 ```yaml
 Type: String

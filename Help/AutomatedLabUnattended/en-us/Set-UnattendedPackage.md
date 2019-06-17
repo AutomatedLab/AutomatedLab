@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedPackage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Adds additional packages on Linux.
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Set-UnattendedPackage [-Package] <String[]> [-IsKickstart] [-IsAutoYast] [<Commo
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Adds additional packages on Linux.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedPackage -Package '@core','@^graphical-server-environment'
 ```
 
-{{ Add example description here }}
+Add the package group 'core' and the environment 'graphical-server-environment' to the list
+of packages to install.
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Package
-{{ Fill Package Description }}
+The packages to install
 
 ```yaml
 Type: String[]

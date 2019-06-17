@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedLocalIntranetSites
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the local intranet sites. Windows only.
 
 ## SYNTAX
 
@@ -17,7 +17,7 @@ Set-UnattendedLocalIntranetSites [-Values] <String[]> [-IsKickstart] [-IsAutoYas
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the local intranet sites. Windows only.
 
 ## EXAMPLES
 
@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter

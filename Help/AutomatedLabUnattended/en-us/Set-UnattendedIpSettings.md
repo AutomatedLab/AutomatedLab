@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedIpSettings
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the default network configuration
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Set-UnattendedIpSettings [[-IpAddress] <String>] [[-Gateway] <String>] [[-DnsSer
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the default network configuration
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedIpSettings -IpAddress 192.168.2.12 -Gateway 192.168.2.1 -DnsServer 8.8.8.8,8.8.4.4
 ```
 
-{{ Add example description here }}
+Configures the IP settings
 
 ## PARAMETERS
 
 ### -DnsDomain
-{{ Fill DnsDomain Description }}
+The DNS domain to configure
 
 ```yaml
 Type: String
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -DnsServers
-{{ Fill DnsServers Description }}
+The DNS servers to add
 
 ```yaml
 Type: String[]
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Gateway
-{{ Fill Gateway Description }}
+The gateway to use
 
 ```yaml
 Type: String
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -IpAddress
-{{ Fill IpAddress Description }}
+The IP address to configure
 
 ```yaml
 Type: String
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
