@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabIsoImageDefinition
 
 ## SYNOPSIS
-Returns all ISOs in the lab
+Returns all ISO definitions in the lab
 
 ## SYNTAX
 
@@ -23,10 +23,10 @@ Returns all image definitions currently found in the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabIsoImageDefinition
 ```
 
-{{ Add example description here }}
+Returns a list of ISOs that have been added with Add-LabIsoImageDefinition
 
 ## PARAMETERS
 

@@ -23,21 +23,21 @@ Get-LabVirtualNetworkDefinition -AddressSpace <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-eturns all virtual network definitions in the lab
+Returns all virtual network definitions in the lab
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVirtualNetworkDefinition -AddressSpace 192.168.2.0/24
 ```
 
-{{ Add example description here }}
+Tries to locate the network definition that has the address space 192.168.2.0/24
 
 ## PARAMETERS
 
 ### -Name
-@{Text=}
+The name of the network
 
 ```yaml
 Type: String
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -AddressSpace
-@{Text=}
+The address space of the network in CIDR notation
 
 ```yaml
 Type: String

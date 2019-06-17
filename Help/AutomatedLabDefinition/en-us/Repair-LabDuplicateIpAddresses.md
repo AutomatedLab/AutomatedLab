@@ -23,10 +23,10 @@ Modifies duplicate IP addresses for machines by incrementing the address by one
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Repair-LabDuplicateIpAddresses
 ```
 
-{{ Add example description here }}
+Repair any duplicate IP addresses
 
 ## PARAMETERS
 

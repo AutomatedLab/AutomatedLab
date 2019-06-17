@@ -23,10 +23,10 @@ Get all file-backed virtual volumes on all disks with drive letter and serial nu
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVolumesOnPhysicalDisks
 ```
 
-{{ Add example description here }}
+Return all physical disks on the lab host
 
 ## PARAMETERS
 

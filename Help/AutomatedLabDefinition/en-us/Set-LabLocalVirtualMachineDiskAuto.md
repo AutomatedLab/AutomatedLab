@@ -24,10 +24,10 @@ Boot volumes are only selected if no other volumes are present or if the next dr
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabLocalVirtualMachineDiskAuto -SpaceNeeded 20GB
 ```
 
-{{ Add example description here }}
+Locates a disk with at least 20GB free space to place the VMs on.
 
 ## PARAMETERS
 

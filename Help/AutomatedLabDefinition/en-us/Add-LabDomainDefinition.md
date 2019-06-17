@@ -25,10 +25,12 @@ This information is used for AutomatedLab to be able to logon to all machines du
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-LabDomainDefinition -Name comtoso.com -AdminUser Install -AdminPassword Somepass1
+PS C:\> Set-LabInstallationCredential -User Install -Password Somepass1
 ```
 
-{{ Add example description here }}
+Configures the contoso domain for the entire lab. Take care to select the same installation credentials,
+otherwise the domain controller deployment will not work.
 
 ## PARAMETERS
 

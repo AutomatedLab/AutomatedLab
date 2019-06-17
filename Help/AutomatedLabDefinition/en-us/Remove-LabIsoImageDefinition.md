@@ -23,10 +23,10 @@ Removes an ISO image from the lab's image definitions
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabIsoImageDefinition -Name Sql2017
 ```
 
-{{ Add example description here }}
+Remove the ISO for SQL Server 2017 from the current lab definition
 
 ## PARAMETERS
 

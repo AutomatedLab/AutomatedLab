@@ -23,10 +23,10 @@ Removes a machine definition from the current lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabMachineDefinition -Name DC02
 ```
 
-{{ Add example description here }}
+Remove DC02 from the lab machine definitions
 
 ## PARAMETERS
 

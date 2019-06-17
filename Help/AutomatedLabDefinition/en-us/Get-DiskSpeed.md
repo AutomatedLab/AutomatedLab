@@ -18,13 +18,13 @@ Get-DiskSpeed [-DriveLetter] <String> [[-Interations] <Int32>] [<CommonParameter
 
 ## DESCRIPTION
 Measures the disk speed of the specified logical drive letter.
-This is used by AutomatedLab when determining optimal placement of harddisk files of Hyper-V virtual machines
+This is used by AutomatedLab when determining optimal placement of harddisk files of Hyper-V virtual machines.
+
+This requires the tool WinSAT which is part of the module deployment. As such, this cmdlet only works on Windows.
 
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Get-DiskSpeed -DriveLetter C
 ```

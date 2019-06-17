@@ -58,7 +58,7 @@ Performs validation of the lab saved in the file 'D:\MyLabs\MyTestLab\Lab.xml'.
 ## PARAMETERS
 
 ### -Path
-@{Text=}
+The path to an exported lab definition
 
 ```yaml
 Type: String
@@ -73,7 +73,7 @@ Accept wildcard characters: False
 ```
 
 ### -Quiet
-@{Text=}
+Indicates that no console messages should be displayed
 
 ```yaml
 Type: SwitchParameter

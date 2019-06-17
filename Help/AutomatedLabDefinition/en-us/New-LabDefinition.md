@@ -278,7 +278,7 @@ Accept wildcard characters: False
 ```
 
 ### -Passthru
-{{ Fill Passthru Description }}
+Indicates that the created definition should also be returned
 
 ```yaml
 Type: SwitchParameter

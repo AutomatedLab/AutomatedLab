@@ -23,10 +23,11 @@ Exports the whole lab definition as XML files in the standard path $env:ProgramD
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Export-LabDefinition -Force
 ```
 
-{{ Add example description here }}
+Export the current lab definition (Get-LabDefinition, Get-Lab) to $env:ProgramData\AutomatedLab\Labs, overwriting
+any existing files
 
 ## PARAMETERS
 
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Silent
-{{ Fill Silent Description }}
+Do not display any output
 
 ```yaml
 Type: SwitchParameter

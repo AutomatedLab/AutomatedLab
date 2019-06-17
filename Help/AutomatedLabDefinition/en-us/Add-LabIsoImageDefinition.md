@@ -28,8 +28,6 @@ If so, you must specify manually using Add-LabIsoImageDefinition, where the ISO 
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 Add-LabIsoImageDefinition -Path E:\ISOs\MyWin2016ServerFile.iso
 ```
@@ -48,16 +46,9 @@ Adds a definition of ISO file to be used when installing SQL Server 2014.
 ## PARAMETERS
 
 ### -Name
-Logical name for reference.
+Logical name for reference. Names are case sensitive.
 
-Names are case sensitive.
-Built-in possible options:
- SQLServer2008
- SQLServer2008R2
- SQLServer2012
- SQLServer2014
- VisualStudio
- Office2013
+In order to deploy certain roles like SQL, TFS, ... use the role name for the ISO, e.g. SQLServer2016
 
 ```yaml
 Type: String
