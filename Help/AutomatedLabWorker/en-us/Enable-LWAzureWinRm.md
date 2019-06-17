@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LWAzureWinRm
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable CredSSP and WinRM
 
 ## SYNTAX
 
@@ -17,21 +17,23 @@ Enable-LWAzureWinRm [-Machine] <Machine[]> [-PassThru] [-Wait] [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable CredSSP and WinRM on an Azure VM using Invoke-AzVMRunCommand
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> $jobs = Enable-LWAzureWinRm -Machine (Get-LabVm) -PassThru
+PS C:\> Wait-LWLabJob $jobs
 ```
 
-{{ Add example description here }}
+Enable WinRM and CredSSP on all lab machines and return the job objects.
+Uses Wait-LWLabJob to wait for all jobs to finish.
 
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The machines to enable remoting on
 
 ```yaml
 Type: Machine[]
@@ -46,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that jobs should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Wait
-{{ Fill Wait Description }}
+Indicates that the cmdlet should wait for all jobs to finish
 
 ```yaml
 Type: SwitchParameter

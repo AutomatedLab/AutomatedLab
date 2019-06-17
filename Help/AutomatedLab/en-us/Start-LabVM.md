@@ -186,7 +186,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -201,7 +201,7 @@ Accept wildcard characters: False
 ```
 
 ### -PreDelaySeconds
-@{Text=}
+The pre-start delay
 
 ```yaml
 Type: Int32
@@ -216,7 +216,7 @@ Accept wildcard characters: False
 ```
 
 ### -PostDelaySeconds
-@{Text=}
+The post-start delay
 
 ```yaml
 Type: Int32
@@ -261,7 +261,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter

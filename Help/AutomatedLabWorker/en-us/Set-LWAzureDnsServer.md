@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LWAzureDnsServer
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the DNS servers of an Azure virtual network
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-LWAzureDnsServer [-VirtualNetwork] <VirtualNetwork[]> [-PassThru] [<CommonPa
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the DNS servers of an Azure virtual network to the lab DNS servers, if configured
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LWAzureDnsServer -VirtualNetwork (Get-Lab).VirtualNetworks
 ```
 
-{{ Add example description here }}
+Configure the proper DNS servers for all Azure VNets of a lab
 
 ## PARAMETERS
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Return the Azure VNets
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -VirtualNetwork
-{{ Fill VirtualNetwork Description }}
+The networks to configure
 
 ```yaml
 Type: VirtualNetwork[]

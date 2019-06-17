@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedUserLocale
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+The locale to configure
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedUserLocale [-UserLocale] <String> [-IsKickstart] [-IsAutoYast] [<C
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+The locale to configure
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedUserLocale -UserLocale ja-jp
 ```
 
-{{ Add example description here }}
+Configures the user locale to Japanese.
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -UserLocale
-{{ Fill UserLocale Description }}
+The locale to use. Refer to \[cultureinfo\]::GetCultures('AllCultures')
 
 ```yaml
 Type: String

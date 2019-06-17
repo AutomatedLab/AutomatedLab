@@ -8,7 +8,7 @@ schema: 2.0.0
 # Register-LabArgumentCompleters
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Register the necessary argument completers for AutomatedLab
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Register-LabArgumentCompleters
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Register the necessary argument completers for AutomatedLab. Is called when the module is ipmorted.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Register-LabArgumentCompleters
 ```
 
-{{ Add example description here }}
+Register the necessary argument completers for AutomatedLab
 
 ## PARAMETERS
 

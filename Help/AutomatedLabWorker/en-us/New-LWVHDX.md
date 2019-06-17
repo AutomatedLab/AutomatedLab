@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new virtual disk
 
 ## SYNTAX
 
@@ -18,21 +18,23 @@ New-LWVHDX [-VhdxPath] <String> [-SizeInGB] <Int32> [[-Label] <String>] [-UseLar
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates a new Hyper-V VHDX file. Allows you to specify if FRS is used, which drive letter to mount
+the VHDX to, the allocation unit size in Byte or if the disk should not be initialized
+with the NTFS file system
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWVHDX -VhdxPath D:\SQLData.vhdx -SizeInGb 350 -Label DATA -DriveLetter X -AllocationUnitSIze 64kb
 ```
 
-{{ Add example description here }}
+Creates a new disk with an allocation unit size of 64kb, a size of 350GB and the label DATA.
 
 ## PARAMETERS
 
 ### -AllocationUnitSize
-{{ Fill AllocationUnitSize Description }}
+The allocation unit size in byte
 
 ```yaml
 Type: Int64
@@ -47,7 +49,7 @@ Accept wildcard characters: False
 ```
 
 ### -DriveLetter
-{{ Fill DriveLetter Description }}
+The intended drive letter
 
 ```yaml
 Type: Char
@@ -62,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
-{{ Fill Label Description }}
+The file system label
 
 ```yaml
 Type: String
@@ -77,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -SizeInGB
-{{ Fill SizeInGB Description }}
+The disk size in GB
 
 ```yaml
 Type: Int32
@@ -92,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -SkipInitialize
-{{ Fill SkipInitialize Description }}
+Indicates that the disk will not be initialized with a file system
 
 ```yaml
 Type: SwitchParameter
@@ -107,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLargeFRS
-{{ Fill UseLargeFRS Description }}
+Indicates that large File Record Segment should be used, which is common in deduplication scenarios
 
 ```yaml
 Type: SwitchParameter
@@ -122,7 +124,7 @@ Accept wildcard characters: False
 ```
 
 ### -VhdxPath
-{{ Fill VhdxPath Description }}
+The path to the VHDX file
 
 ```yaml
 Type: String

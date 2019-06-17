@@ -2,7 +2,7 @@ copyright: AutomatedLab is licensed under the <a href='https://github.com/Automa
 repo_url: https://github.com/AutomatedLab/AutomatedLab
 nav:
 - Home: index.md
-- Installation: install.md
+- Installation: Wiki/install.md
 - Getting started: Wiki/gettingstarted.md
 - Defining your lab:
   - Creating a new lab: Wiki/createnewlab.md
@@ -11,17 +11,17 @@ nav:
 - Roles : Wiki/roles.md
 - Custom roles: Wiki/customroles.md
 - Customizing your lab:
-  - Installing Windows features: installwindowsfeatures.md
-  - Installing software: installsoftware.md
-  - Run remote commands: invokelabcommand.md
-  - Use DSC: usedsc.md
-  - Exchanging data: exchangedata.md
-  - Notification system: notifications.md
-  - Connecting two labs: connectlabs.md
+  - Installing Windows features: Wiki/installwindowsfeatures.md
+  - Installing software: Wiki/installsoftware.md
+  - Run remote commands: Wiki/invokelabcommand.md
+  - Use DSC: Wiki/usedsc.md
+  - Exchanging data: Wiki/exchangedata.md
+  - Notification system: Wiki/notifications.md
+  - Connecting two labs: Wiki/connectlabs.md
 - Azure labs:
-    - Adding a subscription: addazuresubscription.md
-    - Synchronise local lab sources: synclabsources.md
-- Lab telemetry: telemetry.md
+    - Adding a subscription: Wiki/addazuresubscription.md
+    - Synchronise local lab sources: Wiki/synclabsources.md
+- Lab telemetry: Wiki/telemetry.md
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - AutomatedLab:
   - Set-LabAutoLogon: AutomatedLab/en-us/Set-LabAutoLogon.md

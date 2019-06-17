@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedAdministratorName
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the admin name
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedAdministratorName [-Name] <String> [-IsKickstart] [-IsAutoYast] [<
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the admin name. On a Linux system, adds another root user.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedAdministratorName -Name FranzJosef
 ```
 
-{{ Add example description here }}
+Sets the local administrator in the Windows unattended file to FranzJosef
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+The user name to set.
 
 ```yaml
 Type: String

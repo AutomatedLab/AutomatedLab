@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabDscLocalConfigurationManagerConfiguration
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Reset the LCM configuration of a lab VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LabDscLocalConfigurationManagerConfiguration [-ComputerName] <String[]> [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Reset the LCM configuration of a lab VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabDscLocalConfigurationManagerConfiguration -ComputerName DC01
 ```
 
-{{ Add example description here }}
+Reset the LCM config of DC01 to the defaults
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The nodes to reset
 
 ```yaml
 Type: String[]

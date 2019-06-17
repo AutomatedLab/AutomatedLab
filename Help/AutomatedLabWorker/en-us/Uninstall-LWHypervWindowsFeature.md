@@ -8,7 +8,7 @@ schema: 2.0.0
 # Uninstall-LWHypervWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Disable a Windows feature on a Hyper-V VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Uninstall-LWHypervWindowsFeature [-Machine] <Machine[]> [-FeatureName] <String[]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Disable a Windows feature on a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Uninstall-LWHypervWindowsFeature -Machine DC01 -FeatureName FS-DFS-Replication -AsJob
 ```
 
-{{ Add example description here }}
+Disable DFS-R on DC01 in a background job
 
 ## PARAMETERS
 
 ### -AsJob
-{{ Fill AsJob Description }}
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+The feature to disable
 
 ```yaml
 Type: String[]
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeManagementTools
-{{ Fill IncludeManagementTools Description }}
+Indicates that management tools should be removed as well
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+The machine to remove the feature from
 
 ```yaml
 Type: Machine[]
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Returns the jobs
 
 ```yaml
 Type: SwitchParameter
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Indicates that a local credential should be used
 
 ```yaml
 Type: SwitchParameter

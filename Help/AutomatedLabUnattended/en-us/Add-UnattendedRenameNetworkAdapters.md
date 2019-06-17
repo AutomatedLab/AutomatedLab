@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-UnattendedRenameNetworkAdapters
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add script to rename network adapters. Windows only.
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Add-UnattendedRenameNetworkAdapters [-IsKickstart] [-IsAutoYast]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Add script to rename network adapters. Windows only.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-UnattendedRenameNetworkAdapters
 ```
 
-{{ Add example description here }}
+Adds a script to rename network adapters
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter

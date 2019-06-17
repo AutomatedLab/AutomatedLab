@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LWLabJob
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for a job
 
 ## SYNTAX
 
@@ -25,21 +25,22 @@ Wait-LWLabJob -Name <String[]> [-ProgressIndicator <Int32>] [-Timeout <Int32>] [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Wait for one or more jobs to finish, with the added ability of writing a progress indicator. By default
+returns nothing and just blocks execution.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LWLabJob -Job (Uninstall-LWHypervWindowsFeature (Get-LabVm) -AsJob)
 ```
 
-{{ Add example description here }}
+Wait for the removal jobs to finish
 
 ## PARAMETERS
 
 ### -Job
-{{ Fill Job Description }}
+The job objects to wait for
 
 ```yaml
 Type: Job[]
@@ -54,7 +55,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+The job names to wait for
 
 ```yaml
 Type: String[]
@@ -69,7 +70,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Indicates that no console messages should be displayed
 
 ```yaml
 Type: SwitchParameter
@@ -84,7 +85,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -99,7 +100,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the job objects will be returned
 
 ```yaml
 Type: SwitchParameter
@@ -114,7 +115,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32
@@ -129,7 +130,7 @@ Accept wildcard characters: False
 ```
 
 ### -Timeout
-{{ Fill Timeout Description }}
+Timeout in seconds to wait for a job to finish
 
 ```yaml
 Type: Int32

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedWorkgroup
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Configures the workgroup of a non domain-joined system
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedWorkgroup [-WorkgroupName] <String> [-IsKickstart] [-IsAutoYast] [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures the workgroup of a non domain-joined system
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedWorkgroup -WorkgroupName LocalWG
 ```
 
-{{ Add example description here }}
+Joins the workgroup LocalWG
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -WorkgroupName
-{{ Fill WorkgroupName Description }}
+The workgroup to configure
 
 ```yaml
 Type: String

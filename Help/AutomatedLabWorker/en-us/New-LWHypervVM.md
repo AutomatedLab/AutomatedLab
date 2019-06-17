@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWHypervVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ New-LWHypervVM [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a new Hyper-V VM. Takes care of both Windows and Linux VMs.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWHypervVM -Machine Host1
 ```
 
-{{ Add example description here }}
+Creates the VM Host1 with all accompanying artifacts like Disks, ...
 
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The machine definition to deploy
 
 ```yaml
 Type: Machine

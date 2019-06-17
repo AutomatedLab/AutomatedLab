@@ -8,6 +8,7 @@ schema: 2.0.0
 # New-LabAzureRmResourceGroup
 
 ## SYNOPSIS
+Wrapper to create a new resource group and include it in the lab metadata
 
 ## SYNTAX
 
@@ -17,21 +18,21 @@ New-LabAzureRmResourceGroup [-ResourceGroupNames] <String[]> [-LocationName] <St
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Wrapper to create a new resource group and include it in the lab metadata
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabAzureRmResourceGroup -ResourceGroupNames a,b,c -LocationName 'westeurope'
 ```
 
-{{ Add example description here }}
+Create three new resource groups in West Europe
 
 ## PARAMETERS
 
 ### -ResourceGroupNames
-{{ Fill ResourceGroupNames Description }}
+Resource groups to create
 
 ```yaml
 Type: String[]
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -LocationName
-{{ Fill LocationName Description }}
+Location to create resource in 
 
 ```yaml
 Type: String
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the cmdlet returns data
 
 ```yaml
 Type: SwitchParameter

@@ -22,10 +22,9 @@ Gets a role definition to be used with the parameter Roles for a new virtual mac
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'contoso.com'; NewDomain = 'child' }
+Add-LabMachineDefinition -Name Host -Role $role
 ```
 
 Gets a role definition for the first DC of a child domain with the additional properties ParentDomain = contoso.com and the child domain name NewDomain = child

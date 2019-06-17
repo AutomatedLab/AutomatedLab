@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LWHypervVMRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable CredSSP on a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Enable-LWHypervVMRemoting [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable CredSSP on a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LWHypervVMRemoting (Get-LabVM)
 ```
 
-{{ Add example description here }}
+Enable CredSSP on all lab VMs
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to enable CredSSP on
 
 ```yaml
 Type: String[]

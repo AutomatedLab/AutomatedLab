@@ -8,7 +8,7 @@ schema: 2.0.0
 # Initialize-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Initialize new Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Initialize-LWAzureVM [-Machine] <Machine[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Sets power plan, mounts the lab sources share and sets the regional settings.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Initialize-LWAzureVM -Machine AZDC01
 ```
 
-{{ Add example description here }}
+Sets power plan, mounts the lab sources share and sets the regional settings on AZDC01.
 
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The host to configure
 
 ```yaml
 Type: Machine[]

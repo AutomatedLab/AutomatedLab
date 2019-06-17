@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-IpInSameSameNetwork
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test if an IP address is in the same network as another address
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Test-IpInSameSameNetwork [[-Ip1] <IPNetwork>] [[-Ip2] <IPNetwork>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Test if IP2 is in the same network as IP1
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-IpInSameSameNetwork -Ip1 192.168.2.12/23 -Ip2 192.168.2.50/28
 ```
 
-{{ Add example description here }}
+Checks if both IPs are in the same network.
 
 ## PARAMETERS
 
 ### -Ip1
-{{ Fill Ip1 Description }}
+The reference IP. Can be an entire network object or an IP in the CIDR notation, e.g. 192.168.2.12/24
 
 ```yaml
 Type: IPNetwork
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -Ip2
-{{ Fill Ip2 Description }}
+The difference IP. Can be an entire network object or an IP in the CIDR notation, e.g. 192.168.2.12/24
 
 ```yaml
 Type: IPNetwork

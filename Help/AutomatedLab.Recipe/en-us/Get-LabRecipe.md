@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabRecipe
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get a lab recipe to invoke fresh or from the store
 
 ## SYNTAX
 
@@ -17,21 +17,24 @@ Get-LabRecipe [[-Name] <String[]>] [[-RecipeContent] <ScriptBlock>] [<CommonPara
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get a lab recipe to invoke fresh or from the store
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+LabRecipe MyLab {
+    DeployRoles = 'Domain','PKI'
+    VmPrefix    = 'MY'
+}
 ```
 
-{{ Add example description here }}
+Get a new recipe that deploys a Domain and a PKI environment with all VMs having MY as their prefix, eg MYDC01
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+Name of the lab
 
 ```yaml
 Type: String[]
@@ -46,7 +49,15 @@ Accept wildcard characters: False
 ```
 
 ### -RecipeContent
-{{ Fill RecipeContent Description }}
+Lab script block to enable a DSL. Possible configuration items:
+'Description' - Recipe description
+'RequiredProductIsos' - ISOs for special roles like CI_CD or SQL
+'DeployRole' - A list of simple roles to deploy. Domain, PKI,CI_CD,SQL,Exchange
+'DefaultVirtualizationEngine' - HyperV,Azure,VMWare
+'DefaultDomainName' - Specify a different default domain
+'DefaultAddressSpace' - Specify a different default address space
+'DefaultOperatingSystem' - Specify a different default operating system
+'VmPrefix' - The VM name prefix to use
 
 ```yaml
 Type: ScriptBlock

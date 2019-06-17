@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWAzureNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the Azure Virtual Network associated with a lab network
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Get-LWAzureNetworkSwitch [-virtualNetwork] <VirtualNetwork[]> [<CommonParameters
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the Azure Virtual Network associated with a lab network
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWAzureNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition -Name LabNet)
 ```
 
-{{ Add example description here }}
+During lab deployment, return the virtual network that has been provisioned
+from the network definition LabNet
 
 ## PARAMETERS
 
 ### -virtualNetwork
-{{ Fill virtualNetwork Description }}
+The lab network to search for
 
 ```yaml
 Type: VirtualNetwork[]

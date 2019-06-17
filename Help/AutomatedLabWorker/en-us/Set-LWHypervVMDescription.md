@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LWHypervVMDescription
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the Notes field of a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,24 @@ Set-LWHypervVMDescription [-Hashtable] <Hashtable> [-ComputerName] <String> [<Co
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the Notes field of a Hyper-V VM to store information about the VMs status.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LWHypervVMDescription -Hashtable @{
+    CreatedBy = 'JHP'
+    Purpose   = 'Compute'
+} -ComputerName HV01
 ```
 
-{{ Add example description here }}
+Deserializes the hashtable with tags to the Notes field of the Hyper-V VM HV01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to set the notes field of
 
 ```yaml
 Type: String
@@ -46,7 +49,7 @@ Accept wildcard characters: False
 ```
 
 ### -Hashtable
-{{ Fill Hashtable Description }}
+A hashtable containing notes. Values will be converted to String
 
 ```yaml
 Type: Hashtable

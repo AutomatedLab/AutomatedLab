@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabBuildStep
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get a list of possible build steps for a TFS/Azure DevOps build pipeline
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Get-LabBuildStep [[-ComputerName] <String>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get a list of possible build steps for a TFS/Azure DevOps build pipeline
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabBuildStep
 ```
 
-{{ Add example description here }}
+Searches for the lab's Azure DevOps server and lists all possible steps
+for a new build pipeline definition, e.g. Copy File, Run Script
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The name of the CI/CD server
 
 ```yaml
 Type: String

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWAzureVmSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+List an Azure snapshot
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LWAzureVmSnapshot [[-ComputerName] <String[]>] [[-SnapshotName] <String>] [<
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+List an Azure snapshot
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWAzureVmSnapshot -ComputerName DC01,FS01 -SnapshotName EndOfTheWorld
 ```
 
-{{ Add example description here }}
+Returns details about the snapshot EndOfTheWorld for DC01 and FS01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host names
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The snapshot name
 
 ```yaml
 Type: String

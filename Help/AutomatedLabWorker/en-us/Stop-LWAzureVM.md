@@ -8,7 +8,7 @@ schema: 2.0.0
 # Stop-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Stop an Azure VM
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Stop-LWAzureVM [-ComputerName] <String[]> [[-ProgressIndicator] <Int32>] [-NoNew
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Stop an Azure VM, with the option to keep the VM provisioned
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Stop-LWAzureVM -ComputerName (Get-LabVm) -StayProvisioned
 ```
 
-{{ Add example description here }}
+Shut down all lab VMs while keeping their resources provisioned for a faster
+start next time.
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to stop
 
 ```yaml
 Type: String[]
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -ShutdownFromOperatingSystem
-{{ Fill ShutdownFromOperatingSystem Description }}
+Initiate the shutdown from the operating system instead of using Stop-AzVm
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -StayProvisioned
-{{ Fill StayProvisioned Description }}
+Indicates that the VM should stay provisioned
 
 ```yaml
 Type: Boolean

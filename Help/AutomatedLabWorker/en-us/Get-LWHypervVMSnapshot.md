@@ -8,30 +8,30 @@ schema: 2.0.0
 # Get-LWHypervVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Find snapshots of Hyper-V VMs
 
 ## SYNTAX
 
 ```
-Get-LWHypervVMSnapshot [[-VMName] <String[]>] [[-Name] <String>] [<CommonParameters>]
+Get-LWHypervVMSnapshot [-VMName] <String[]> [[-Name] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Find snapshots of Hyper-V VMs
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWHypervVMSnapshot -VMName DSCDC01
 ```
 
-{{ Add example description here }}
+List all existing snapshots of DSCDC01
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+Snapshot name to look for
 
 ```yaml
 Type: String
@@ -46,14 +46,14 @@ Accept wildcard characters: False
 ```
 
 ### -VMName
-{{ Fill VMName Description }}
+VM to get snapshots from
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 0
 Default value: None
 Accept pipeline input: False

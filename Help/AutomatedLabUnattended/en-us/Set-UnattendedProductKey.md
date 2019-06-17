@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedProductKey
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the Windows product key.
 
 ## SYNTAX
 
@@ -17,13 +17,14 @@ Set-UnattendedProductKey [-ProductKey] <String> [-IsKickstart] [-IsAutoYast] [<C
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the Windows product key. Currently not supported on Linux, but in a future release will
+configure the enterprise distributions RHEL and SLES.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedProductKey -ProductKey FCKGW-YouKnowTheRest
 ```
 
 {{ Add example description here }}
@@ -31,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProductKey
-{{ Fill ProductKey Description }}
+The product key to set
 
 ```yaml
 Type: String

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-LWAzureLoadBalancedPort
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add a new port to the Azure load balancer
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Add-LWAzureLoadBalancedPort [-Port] <UInt16> [-DestinationPort] <UInt16> [-Compu
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Add a new port to the Azure load balancer for the current lab. Please refer to the official
+documentation to learn more about the limitations of the inbound NAT rules of a load balancer.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-LWAzureLoadBalancedPort -Port 4711 -DestinationPort 22 -ComputerName CentOS01
 ```
 
-{{ Add example description here }}
+Adds port 4711 to the Azure load balancer and points it to port 22 on machine CentOS01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to add a load balanced port for.
 
 ```yaml
 Type: String
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationPort
-{{ Fill DestinationPort Description }}
+The destination port
 
 ```yaml
 Type: UInt16
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Port
-{{ Fill Port Description }}
+The port on the load balancer. Cannot be in use already.
 
 ```yaml
 Type: UInt16

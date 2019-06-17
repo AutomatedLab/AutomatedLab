@@ -8,7 +8,7 @@ schema: 2.0.0
 # Start-LWHypervVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Start a Hyper-V VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Start-LWHypervVM [-ComputerName] <String[]> [[-DelayBetweenComputers] <Int32>] [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Start a Hyper-V VM with optional delays before, after and between starts.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Start-LWHypervVM -ComputerName CLU01,CLU02 -PostDelaySeconds 10
 ```
 
-{{ Add example description here }}
+Start the VMs CLU01 and CLU02 with a post delay of 10 seconds
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host to start
 
 ```yaml
 Type: String[]
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -DelayBetweenComputers
-{{ Fill DelayBetweenComputers Description }}
+The delay between starts in minutes
 
 ```yaml
 Type: Int32
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -PostDelaySeconds
-{{ Fill PostDelaySeconds Description }}
+The delay after a machine has started in seconds
 
 ```yaml
 Type: Int32
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -PreDelaySeconds
-{{ Fill PreDelaySeconds Description }}
+The delay before a machine has started in seconds
 
 ```yaml
 Type: Int32
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32

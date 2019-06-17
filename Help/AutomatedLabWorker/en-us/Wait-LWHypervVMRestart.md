@@ -8,7 +8,7 @@ schema: 2.0.0
 # Wait-LWHypervVMRestart
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Wait for the restart of a Hyper-V VM
 
 ## SYNTAX
 
@@ -18,7 +18,7 @@ Wait-LWHypervVMRestart [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Monitors the uptime of a VM to wait for it to restart
 
 ## EXAMPLES
 
@@ -32,7 +32,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to restart
 
 ```yaml
 Type: String[]
@@ -47,7 +47,8 @@ Accept wildcard characters: False
 ```
 
 ### -MonitorJob
-{{ Fill MonitorJob Description }}
+Keep monitoring on or more jobs until the timeout is reached or the uptime of the
+VM is reset
 
 ```yaml
 Type: Job[]
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32
@@ -92,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -StartMachinesWhileWaiting
-{{ Fill StartMachinesWhileWaiting Description }}
+Indicates that other machines can be started while waiting for this machine to restart
 
 ```yaml
 Type: Machine[]
@@ -107,7 +108,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+The timeout in minutes to wait for the restart of the machine
 
 ```yaml
 Type: Double

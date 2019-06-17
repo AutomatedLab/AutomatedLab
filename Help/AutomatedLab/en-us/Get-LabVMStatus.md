@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabVMStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Gets the power state of lab machines
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LabVMStatus [[-ComputerName] <String[]>] [-AsHashTable] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Gets the power state of lab machines
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMStatus
 ```
 
-{{ Add example description here }}
+Returns the status of al lab VMs
 
 ## PARAMETERS
 
 ### -AsHashTable
-{{ Fill AsHashTable Description }}
+Convert the result into a hashtable with the machine names as keys
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to get the status from
 
 ```yaml
 Type: String[]

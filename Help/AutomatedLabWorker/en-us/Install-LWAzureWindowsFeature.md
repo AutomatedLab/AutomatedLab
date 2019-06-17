@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LWAzureWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable a Windows feature on an Azure VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Install-LWAzureWindowsFeature [-Machine] <Machine[]> [-FeatureName] <String[]> [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable a Windows feature on an Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LWAzureWindowsFeature -Machine Host1,Host2 -FeatureName ActiveDirectory -IncludeAllSubFeature -IncludeManagementTools
 ```
 
-{{ Add example description here }}
+Install the role ActiveDirectory including management tools and subfeatures on Host1 and Host2
 
 ## PARAMETERS
 
 ### -AsJob
-{{ Fill AsJob Description }}
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+The feature to install
 
 ```yaml
 Type: String[]
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeAllSubFeature
-{{ Fill IncludeAllSubFeature Description }}
+Indicates that all subfeatures should be installed as well
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -IncludeManagementTools
-{{ Fill IncludeManagementTools Description }}
+Indicates that management tools should be included
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+The host to install on
 
 ```yaml
 Type: Machine[]
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that objects will be returned
 
 ```yaml
 Type: SwitchParameter
@@ -122,7 +122,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Indicates that the local installation account should be used
 
 ```yaml
 Type: SwitchParameter

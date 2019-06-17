@@ -78,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+After n seconds, print a . to the console
 
 ```yaml
 Type: Int32

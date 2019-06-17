@@ -64,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-@{Text=}
+Path to store the file in
 
 ```yaml
 Type: String
@@ -79,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-@{Text=}
+Indicates that the downloaded file should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -94,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -FileName
-{{ Fill FileName Description }}
+The file name to save the file as
 
 ```yaml
 Type: String
@@ -109,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Do not show console output
 
 ```yaml
 Type: SwitchParameter

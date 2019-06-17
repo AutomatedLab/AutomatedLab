@@ -49,10 +49,23 @@ Returns a new post-installation activity that can be attached to machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+$proGetRole = Get-LabPostInstallationActivity -CustomRole ProGet5 -Properties @{
+    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.1.23.exe'
+    SqlServer          = 'DSCCASQL01'
+}
 ```
 
-{{ Add example description here }}
+Configures the custom role ProGet5 with two role properties.
+
+### Example 2
+```powershell
+$postInstallActivity = @()
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
+$postInstallActivity += Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
+Add-LabMachineDefinition -Name POSHDC1 -Memory 512MB -Roles RootDC -IpAddress 192.168.30.10 -PostInstallationActivity $postInstallActivity
+```
+
+Create objects in your lab domain: 5995 users, 138 OUs, 138 groups, sites and site links and more.
 
 ## PARAMETERS
 
@@ -132,7 +145,8 @@ Accept wildcard characters: False
 ```
 
 ### -CustomRole
-{{ Fill CustomRole Description }}
+Instead of a regular script, add this as a custom role. Custom roles adhere to a specific
+format. For more information, just have a look at $labsources\CustomRoles
 
 ```yaml
 Type: String
@@ -147,7 +161,8 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-{{ Fill DoNotUseCredSsp Description }}
+Indicates that CredSSP should not be used for connections. Useful in existing environments
+that you connected to with -SkipDeployment
 
 ```yaml
 Type: SwitchParameter
@@ -162,7 +177,9 @@ Accept wildcard characters: False
 ```
 
 ### -Properties
-{{ Fill Properties Description }}
+The hashtable of properties for your custom role, if a custom role was selected.
+Bear in mind that this is a Dictionary\<string,string\>, and requires your input
+to consist of strings only.
 
 ```yaml
 Type: Hashtable

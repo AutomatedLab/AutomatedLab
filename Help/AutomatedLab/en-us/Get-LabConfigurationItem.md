@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabConfigurationItem
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get AutomatedLab settings
 
 ## SYNTAX
 
@@ -17,21 +17,23 @@ Get-LabConfigurationItem [[-Name] <String>] [[-Default] <Object>] [<CommonParame
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get-LabConfigurationItem is a wrapper to retrieve configuration settings through PSFramework (before that: Datum)
+
+It is used mostly internally to get specific settings like the default lab VM restart timeout.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown
 ```
 
-{{ Add example description here }}
+Returns the configured timeout for the shutdown during Restart-LabVM. Default is 30, but can be configured with the PSFramework module
 
 ## PARAMETERS
 
 ### -Default
-{{ Fill Default Description }}
+A default value that should be returned in case there is no such setting
 
 ```yaml
 Type: Object
@@ -46,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+The name of the setting, e.g. Timeout_RestartLabMachine_Shutdown
 
 ```yaml
 Type: String

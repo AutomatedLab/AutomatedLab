@@ -8,7 +8,7 @@ schema: 2.0.0
 # Enable-LabHostRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Configures several local policy settings to enable lab host remoting
 
 ## SYNTAX
 
@@ -17,21 +17,27 @@ Enable-LabHostRemoting [-Force] [-NoDisplay]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Configures several local policy settings to enable lab host remoting. These are:
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials, set to 1
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentialsWhenNTLMOnly, set to 1
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentials, set to 1
+SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowSavedCredentialsWhenNTLMOnly, set to 1
+SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System\CredSSP\Parameters -Name AllowEncryptionOracle, set to 2
+
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LabHostRemoting -Force -NoDisplay
 ```
 
-{{ Add example description here }}
+Enable all remoting-relevant settings to allow remote management of the lab machines.
 
 ## PARAMETERS
 
 ### -Force
-{{ Fill Force Description }}
+Do not query user.
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Do not display console messages
 
 ```yaml
 Type: SwitchParameter

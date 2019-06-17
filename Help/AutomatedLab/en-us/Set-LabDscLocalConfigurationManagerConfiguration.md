@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-LabDscLocalConfigurationManagerConfiguration
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set LCM settings for a node
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Set-LabDscLocalConfigurationManagerConfiguration [-ComputerName] <String[]> [[-A
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set LCM settings for a node. Supports all parameters of the Settings resource
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabDscLocalConfigurationManagerConfiguration -RebootNodeIfNeeded $trure -ComputerName (Get-LabVm)
 ```
 
-{{ Add example description here }}
+Sets the LCM to reboot on all lab VMs
 
 ## PARAMETERS
 
 ### -ActionAfterReboot
-{{ Fill ActionAfterReboot Description }}
+What to do after a node has restarted
 
 ```yaml
 Type: String
@@ -53,7 +53,7 @@ Accept wildcard characters: False
 ```
 
 ### -AllowModuleOverwrite
-{{ Fill AllowModuleOverwrite Description }}
+Allow overwriting modules with data from the configuration or resource repository
 
 ```yaml
 Type: Boolean
@@ -68,7 +68,7 @@ Accept wildcard characters: False
 ```
 
 ### -CertificateID
-{{ Fill CertificateID Description }}
+The certificate thumbprint to decrypt configurations
 
 ```yaml
 Type: String
@@ -83,7 +83,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to configure
 
 ```yaml
 Type: String[]
@@ -98,7 +98,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationID
-{{ Fill ConfigurationID Description }}
+The GUID of the configuration (PS v4)
 
 ```yaml
 Type: String
@@ -113,7 +113,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationMode
-{{ Fill ConfigurationMode Description }}
+The desired configuration mode
 
 ```yaml
 Type: String
@@ -129,7 +129,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationModeFrequencyMins
-{{ Fill ConfigurationModeFrequencyMins Description }}
+The configuration mode interval. Minimum is 15
 
 ```yaml
 Type: Int32
@@ -144,7 +144,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationNames
-{{ Fill ConfigurationNames Description }}
+The configurations to pull from a pull server
 
 ```yaml
 Type: String[]
@@ -159,7 +159,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConfigurationRepositoryWeb
-{{ Fill ConfigurationRepositoryWeb Description }}
+The pull server
 
 ```yaml
 Type: Hashtable[]
@@ -174,7 +174,7 @@ Accept wildcard characters: False
 ```
 
 ### -DebugMode
-{{ Fill DebugMode Description }}
+Debugging settings
 
 ```yaml
 Type: String
@@ -190,7 +190,7 @@ Accept wildcard characters: False
 ```
 
 ### -PartialConfiguration
-{{ Fill PartialConfiguration Description }}
+Partial configurations to apply
 
 ```yaml
 Type: Hashtable[]
@@ -205,7 +205,7 @@ Accept wildcard characters: False
 ```
 
 ### -RebootNodeIfNeeded
-{{ Fill RebootNodeIfNeeded Description }}
+Indicates that the node will automatically reboot if a resource expects it to
 
 ```yaml
 Type: Boolean
@@ -220,7 +220,7 @@ Accept wildcard characters: False
 ```
 
 ### -RefreshFrequencyMins
-{{ Fill RefreshFrequencyMins Description }}
+Refresh frequency. Minimum is 30
 
 ```yaml
 Type: Int32
@@ -235,7 +235,7 @@ Accept wildcard characters: False
 ```
 
 ### -RefreshMode
-{{ Fill RefreshMode Description }}
+Refresh mode, Push or Pull
 
 ```yaml
 Type: String
@@ -251,7 +251,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReportServerWeb
-{{ Fill ReportServerWeb Description }}
+The report server to select
 
 ```yaml
 Type: Hashtable[]
@@ -266,7 +266,7 @@ Accept wildcard characters: False
 ```
 
 ### -StatusRetentionTimeInDays
-{{ Fill StatusRetentionTimeInDays Description }}
+The status retention time
 
 ```yaml
 Type: Int32

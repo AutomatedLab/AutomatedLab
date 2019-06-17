@@ -60,7 +60,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-@{Text=}
+Return the imported lab
 
 ```yaml
 Type: SwitchParameter
@@ -75,7 +75,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoValidation
-@{Text=}
+Skip all validation steps
 
 ```yaml
 Type: SwitchParameter
@@ -90,7 +90,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-@{Text=}
+Which lab should be imported
 
 ```yaml
 Type: String
@@ -105,7 +105,7 @@ Accept wildcard characters: False
 ```
 
 ### -LabBytes
-@{Text=}
+The raw byte content of a lab to import.
 
 ```yaml
 Type: Byte[]
@@ -120,7 +120,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Indicates that no console output should be visible
 
 ```yaml
 Type: SwitchParameter

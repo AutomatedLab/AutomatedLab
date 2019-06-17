@@ -24,15 +24,15 @@ Enables the auto-enrollment for machines, including code-signing certificates
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LabCertificateAutoEnrollent -Computer -User
 ```
 
-{{ Add example description here }}
+Configure auto-enrollment for user and machine certificates
 
 ## PARAMETERS
 
 ### -Computer
-@{Text=}
+Indicates that machine certificates should be auto-enrolled
 
 ```yaml
 Type: SwitchParameter
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -User
-@{Text=}
+Indicates that user certificates should be auto-enrolled
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -CodeSigning
-@{Text=}
+Indicates that code-signing certificates should be auto-enrolled
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -CodeSigningTemplateName
-@{Text=}
+The code signing template to use
 
 ```yaml
 Type: String

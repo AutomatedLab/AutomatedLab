@@ -8,7 +8,7 @@ schema: 2.0.0
 # Copy-LabFileItem
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Copy files to lab machines
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Copy-LabFileItem [-Path] <String[]> [-ComputerName] <String[]> [[-DestinationFol
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Copy one or more paths to one or more lab machines. Optionally able to copy from the Azure lab sources
+for an Azure lab instead of sending local data to Azure machines.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Copy-LabFileItem -Path $Labsources\Tools\git.exe -ComputerName (Get-LabVm) -DestinationFolderPath C:\Windows
 ```
 
-{{ Add example description here }}
+Copies git.exe to the C:\Windows folder on all lab machines.
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The name of the lab machine to copy to
 
 ```yaml
 Type: String[]
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationFolderPath
-{{ Fill DestinationFolderPath Description }}
+The destination folder path where the data should be copied to
 
 ```yaml
 Type: String
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -FallbackToPSSession
-{{ Fill FallbackToPSSession Description }}
+Indicates that the fallback to a PSSession should be used if SMB is not possible
 
 ```yaml
 Type: Boolean
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the copied objects will be returned
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+The paths to copy
 
 ```yaml
 Type: String[]
@@ -107,7 +108,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recurse
-{{ Fill Recurse Description }}
+Indicates that the content should be copied recursively
 
 ```yaml
 Type: SwitchParameter
@@ -122,7 +123,8 @@ Accept wildcard characters: False
 ```
 
 ### -UseAzureLabSourcesOnAzureVm
-{{ Fill UseAzureLabSourcesOnAzureVm Description }}
+Indicates that the Azure File Share for lab sources should be used in case
+the path is part of $labsources
 
 ```yaml
 Type: Boolean

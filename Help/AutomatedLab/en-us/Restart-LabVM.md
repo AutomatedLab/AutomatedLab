@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Indicates that no console output should be displayed
 
 ```yaml
 Type: SwitchParameter

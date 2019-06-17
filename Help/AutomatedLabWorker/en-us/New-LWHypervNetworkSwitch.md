@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWHypervNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new Hyper-V switch
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ New-LWHypervNetworkSwitch [-VirtualNetwork] <VirtualNetwork[]> [-PassThru] [<Com
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a new Hyper-V switch
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWHypervNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition) -PassThru
 ```
 
-{{ Add example description here }}
+Create all requested lab VSwitches
 
 ## PARAMETERS
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the virtual switches should be returned on completion
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -VirtualNetwork
-{{ Fill VirtualNetwork Description }}
+The networks to deploy
 
 ```yaml
 Type: VirtualNetwork[]

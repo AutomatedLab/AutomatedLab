@@ -29,10 +29,10 @@ Enables remoting on one or more lab machines on Azure, HyperV and VMWare
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Enable-LabVMRemoting
 ```
 
-{{ Add example description here }}
+Enable Windows Remote Management on lab VMs
 
 ## PARAMETERS
 

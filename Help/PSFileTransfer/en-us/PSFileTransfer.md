@@ -2,27 +2,27 @@
 Module Name: PSFileTransfer
 Module Guid: 789c9c76-4756-4489-a74f-31ca64488c7b
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 
 # PSFileTransfer Module
 ## Description
-{{ Fill in the Description }}
+This module facilitates file transfer to and from hosts.
 
 ## PSFileTransfer Cmdlets
 ### [Copy-LabFileItem](Copy-LabFileItem.md)
-{{ Fill in the Description }}
+For use with AutomatedLab, this function copies data to machines
 
 ### [Receive-Directory](Receive-Directory.md)
-{{ Fill in the Description }}
+Receive an entire directory from a remote host.
 
 ### [Receive-File](Receive-File.md)
-{{ Fill in the Description }}
+Receive a file from a remote host
 
 ### [Send-Directory](Send-Directory.md)
-{{ Fill in the Description }}
+Transmit a directory to a remote host
 
 ### [Send-File](Send-File.md)
-{{ Fill in the Description }}
+Transfer a file to a remote host
 

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LabAzureLoadBalancedPort
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Return the custom load-balanced ports of an Azure VM
 
 ## SYNTAX
 
@@ -18,21 +18,23 @@ Get-LabAzureLoadBalancedPort [[-Port] <UInt16>] [[-DestinationPort] <UInt16>] [-
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return the custom load-balanced ports of an Azure VM. Enables filtering on
+load-balanced port and destination port.
+Uses the InternalNotes property of a machine.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureLoadBalancedPort -DestinationPort 8080 -ComputerName DscTfs01
 ```
 
-{{ Add example description here }}
+If exists, return an object containing the load-balanced port and destination port.
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine to list ports from
 
 ```yaml
 Type: String
@@ -47,7 +49,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationPort
-{{ Fill DestinationPort Description }}
+The destination port on the VM
 
 ```yaml
 Type: UInt16
@@ -62,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -Port
-{{ Fill Port Description }}
+The publishes port on the load balancer
 
 ```yaml
 Type: UInt16

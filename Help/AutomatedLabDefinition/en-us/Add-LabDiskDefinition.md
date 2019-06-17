@@ -25,10 +25,11 @@ Disk definitions can be used by lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-LabDiskDefinition -Name SQL_DataDrive -DiskSizeInGb 100 -Label Data -DriveLetter D -AllocationUnitSize 64kb
+PS C:\> Add-LabMachineDefinition -Name SQL01 -Disk SQL_DataDrive
 ```
 
-{{ Add example description here }}
+Creates a new disk definition and attaches the disk to the machine definition SQL01.
 
 ## PARAMETERS
 
@@ -78,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -AllocationUnitSize
-{{ Fill AllocationUnitSize Description }}
+The allocation unit size in Byte to use, e.g. 64kb
 
 ```yaml
 Type: Int64
@@ -93,7 +94,7 @@ Accept wildcard characters: False
 ```
 
 ### -DriveLetter
-{{ Fill DriveLetter Description }}
+The drive letter to assign
 
 ```yaml
 Type: Char
@@ -108,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -Label
-{{ Fill Label Description }}
+The label to assign
 
 ```yaml
 Type: String
@@ -123,7 +124,7 @@ Accept wildcard characters: False
 ```
 
 ### -SkipInitialize
-{{ Fill SkipInitialize Description }}
+Indicates that the initialization of the disk with a file system should be skipped
 
 ```yaml
 Type: SwitchParameter
@@ -138,7 +139,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLargeFRS
-{{ Fill UseLargeFRS Description }}
+Indicates that large FRS should be used.
 
 ```yaml
 Type: SwitchParameter

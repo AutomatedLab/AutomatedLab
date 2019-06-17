@@ -8,7 +8,7 @@ schema: 2.0.0
 # Send-ALNotification
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Send a notification to a provider
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Send-ALNotification [-Activity] <String> [-Message] <String> [-Provider] <String
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Send a notification to a provider. The lab data is retrieved automatically, and activity and message are simply
+posted to the provider.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Send-ALNotification -Activity 'Doing stuff' -Message 'Doing it really well.' -Provider Mail
 ```
 
-{{ Add example description here }}
+Sends a mail
 
 ## PARAMETERS
 
 ### -Activity
-{{ Fill Activity Description }}
+The activity that was executed, e.g. Lab started
 
 ```yaml
 Type: String
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Message
-{{ Fill Message Description }}
+The message, e.g. Lab finished with 0 errors
 
 ```yaml
 Type: String
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Provider
-{{ Fill Provider Description }}
+The provider to use. Uses a dynamic ValidateSet over all possible providers.
 
 ```yaml
 Type: String

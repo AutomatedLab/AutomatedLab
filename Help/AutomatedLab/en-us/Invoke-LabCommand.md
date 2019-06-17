@@ -224,7 +224,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates if the lab commands should be executed in the background
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -356,7 +356,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -371,7 +371,7 @@ Accept wildcard characters: False
 ```
 
 ### -FileName
-@{Text=}
+The script file to execute
 
 ```yaml
 Type: String
@@ -386,7 +386,7 @@ Accept wildcard characters: False
 ```
 
 ### -CustomRoleName
-{{ Fill CustomRoleName Description }}
+The custom role that should be deployed, e.g. ProGet
 
 ```yaml
 Type: String[]

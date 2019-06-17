@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-UnattendedContent
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Return the current unattend content that has been created
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Get-UnattendedContent
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Return the current unattend content that has been created
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-UnattendedContent
 ```
 
-{{ Add example description here }}
+Returns whatever Unattend content has been created.
 
 ## PARAMETERS
 

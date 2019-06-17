@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWAzureNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove an Azure network switch
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LWAzureNetworkSwitch [-VirtualNetwork] <VirtualNetwork[]> [<CommonParamet
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove an Azure network switch.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWAzureNetworkSwitch -VirtualNetwork (Get-LabVirtualNetworkDefinition)
 ```
 
-{{ Add example description here }}
+Remove all lab virtual networks on Azure
 
 ## PARAMETERS
 
 ### -VirtualNetwork
-{{ Fill VirtualNetwork Description }}
+The network to remove
 
 ```yaml
 Type: VirtualNetwork[]

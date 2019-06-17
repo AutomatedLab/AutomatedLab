@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWAzureWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+List installed Windows features on an Azure VM
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Get-LWAzureWindowsFeature [-Machine] <Machine[]> [-FeatureName] <String[]> [-Use
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+List installed Windows features on an Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWAzureWindowsFeature -Machine HostA -FeatureName Microsoft-Hyper-V-All
 ```
 
-{{ Add example description here }}
+Retrieves the status of the optional feature Hyper-V from the Azure VM HostA
 
 ## PARAMETERS
 
 ### -AsJob
-{{ Fill AsJob Description }}
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+The name of the feature
 
 ```yaml
 Type: String[]
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+The name of the machine
 
 ```yaml
 Type: Machine[]
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Indicates that a local account should be used to connect
 
 ```yaml
 Type: SwitchParameter

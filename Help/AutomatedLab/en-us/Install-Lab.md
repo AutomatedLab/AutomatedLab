@@ -327,7 +327,7 @@ Accept wildcard characters: False
 ```
 
 ### -ADFS
-@{Text=}
+Install all ADFS components
 
 ```yaml
 Type: SwitchParameter
@@ -342,7 +342,7 @@ Accept wildcard characters: False
 ```
 
 ### -DSCPullServer
-@{Text=}
+Install all DSC Pull Servers
 
 ```yaml
 Type: SwitchParameter
@@ -463,7 +463,7 @@ Accept wildcard characters: False
 ```
 
 ### -Office2016
-@{Text=}
+Install all Office 2016 Servers
 
 ```yaml
 Type: SwitchParameter
@@ -478,7 +478,7 @@ Accept wildcard characters: False
 ```
 
 ### -AzureServices
-{{ Fill AzureServices Description }}
+Deploy only Azure services
 
 ```yaml
 Type: SwitchParameter
@@ -493,7 +493,7 @@ Accept wildcard characters: False
 ```
 
 ### -FailoverCluster
-{{ Fill FailoverCluster Description }}
+Deploy only Failover Clusters
 
 ```yaml
 Type: SwitchParameter
@@ -508,7 +508,7 @@ Accept wildcard characters: False
 ```
 
 ### -TeamFoundation
-{{ Fill TeamFoundation Description }}
+Deploy only CI/CD servers
 
 ```yaml
 Type: SwitchParameter

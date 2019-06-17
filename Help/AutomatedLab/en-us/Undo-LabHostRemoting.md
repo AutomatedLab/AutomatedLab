@@ -8,7 +8,7 @@ schema: 2.0.0
 # Undo-LabHostRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Reset the local policy values to their defaults
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Undo-LabHostRemoting [-Force] [-NoDisplay]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Reset the local policy values to their defaults. See Enable-LabHostRemoting for those settings.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Undo-LabHostRemoting -Force
 ```
 
-{{ Add example description here }}
+Without user interaction, reset all values
 
 ## PARAMETERS
 
 ### -Force
-{{ Fill Force Description }}
+Indicates that no interaction is requested
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDisplay
-{{ Fill NoDisplay Description }}
+Indicates that no console output should be returned
 
 ```yaml
 Type: SwitchParameter

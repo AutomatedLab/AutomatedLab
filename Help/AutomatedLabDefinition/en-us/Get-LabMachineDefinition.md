@@ -34,15 +34,15 @@ Returns all machine definitions in the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabMachineDefinition -Role WebServer
 ```
 
-{{ Add example description here }}
+Get all WebServer machine definitions
 
 ## PARAMETERS
 
 ### -ComputerName
-@{Text=}
+The machine definitions to return
 
 ```yaml
 Type: String[]
@@ -57,7 +57,7 @@ Accept wildcard characters: False
 ```
 
 ### -Role
-@{Text=}
+The roles to filter the machine definitions on
 
 ```yaml
 Type: Roles
@@ -72,7 +72,7 @@ Accept wildcard characters: False
 ```
 
 ### -All
-@{Text=}
+Indicates that all definitions should be returned
 
 ```yaml
 Type: SwitchParameter

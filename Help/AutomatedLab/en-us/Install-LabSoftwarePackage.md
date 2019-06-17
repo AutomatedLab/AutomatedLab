@@ -125,7 +125,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates that the installation should be run as a job
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -170,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -230,7 +230,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -245,7 +245,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsScheduledJob
-@{Text=}
+Indicates that the installation should be executed in a scheduled job, if it does not work otherwise
 
 ```yaml
 Type: SwitchParameter
@@ -260,7 +260,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseShellExecute
-@{Text=}
+Indicates that the ProcessStartInfo property UseShellExecute should be used
 
 ```yaml
 Type: SwitchParameter
@@ -275,7 +275,7 @@ Accept wildcard characters: False
 ```
 
 ### -ExpectedReturnCodes
-{{ Fill ExpectedReturnCodes Description }}
+The list of expected return codes, e.g. 0,3010
 
 ```yaml
 Type: Int32[]
@@ -290,7 +290,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseExplicitCredentialsForScheduledJob
-{{ Fill UseExplicitCredentialsForScheduledJob Description }}
+Use credentials instead of logged on account for the scheduled job
 
 ```yaml
 Type: SwitchParameter

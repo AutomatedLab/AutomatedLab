@@ -31,7 +31,7 @@ PS C:\> {{ Add example code here }}
 ## PARAMETERS
 
 ### -PassThru
-@{Text=}
+Indicates that the subnet will be returned
 
 ```yaml
 Type: SwitchParameter

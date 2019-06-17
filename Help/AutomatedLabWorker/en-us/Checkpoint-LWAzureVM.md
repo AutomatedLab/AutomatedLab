@@ -8,7 +8,7 @@ schema: 2.0.0
 # Checkpoint-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a snapshot of an Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Checkpoint-LWAzureVM [-ComputerName] <String[]> [-SnapshotName] <String> [<Commo
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a snapshot of an Azure VM that uses managed disks
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Checkpoint-LWAzureVM -ComputerName (Get-LabVm) -SnapshotName AfterInstall
 ```
 
-{{ Add example description here }}
+Creates a snapshot called AfterInstall for all Azure lab VMs
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to snapshot
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot. Will be added as a Tag to the resource
 
 ```yaml
 Type: String

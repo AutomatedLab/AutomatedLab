@@ -23,10 +23,14 @@ Returns all existing virtual networks (switches) on a Hyper-V host
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVirtualNetwork | Format-Table Name, AddressSpace
 ```
 
-{{ Add example description here }}
+Get the network name and address space of all lab networks, e.g.
+Name           AddressSpace
+----           ------------
+DscWorkshop    192.168.111.0/24
+Default Switch 172.18.29.64/28
 
 ## PARAMETERS
 

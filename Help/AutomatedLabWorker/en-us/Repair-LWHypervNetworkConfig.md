@@ -8,7 +8,7 @@ schema: 2.0.0
 # Repair-LWHypervNetworkConfig
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Reorder and rename Hyper-V VM network adapters
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Repair-LWHypervNetworkConfig [-ComputerName] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Reorder and rename Hyper-V VM network adapters. The status of the repair will be
+added to the notes field of the VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Repair-LWHypervNetworkConfig -ComputerName Router01
 ```
 
-{{ Add example description here }}
+Reorders and renames all NICs of Router01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+Host name to repair
 
 ```yaml
 Type: String

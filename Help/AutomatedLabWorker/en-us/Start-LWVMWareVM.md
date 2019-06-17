@@ -8,7 +8,7 @@ schema: 2.0.0
 # Start-LWVMWareVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Start a VMWare VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Start-LWVMWareVM [-ComputerName] <String[]> [[-DelayBetweenComputers] <Int32>] [
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Start a VMWare VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Start-LWVMWareVM Host1,Host2
 ```
 
-{{ Add example description here }}
+Start Host1 and Host2 in parallel
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The hosts to start
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -DelayBetweenComputers
-{{ Fill DelayBetweenComputers Description }}
+The delay in minutes between each start
 
 ```yaml
 Type: Int32

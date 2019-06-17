@@ -23,15 +23,15 @@ Gets the lab sources location by either returning it directly if defined or by s
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabSourcesLocation -Local
 ```
 
-{{ Add example description here }}
+Returns the local lab sources, e.g. D:\LabSources
 
 ## PARAMETERS
 
 ### -Local
-{{ Fill Local Description }}
+Indicates that the local lab sources should be used instead of automatically determining the location
 
 ```yaml
 Type: SwitchParameter

@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a new Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,28 @@ New-LWAzureVM [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a new Azure VM. The VM role size is gathered from either the default role size, the configured role
+size in the machine definition or by the memory and CPU consumption.
+
+Depending on the role, a SKU will be selected. SQL Server for example is available as a separate SKU and
+will be automatically selected.
+
+This cmdlet also takes care of assigning the necessary managed disks, network adapters and is responsible
+for creating the necessary inbound NAT rules for each new VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWAzureVM -Machine DC01
 ```
 
-{{ Add example description here }}
+Creates the VM DC01
 
 ## PARAMETERS
 
 ### -Machine
-{{ Fill Machine Description }}
+The machine definition to deploy
 
 ```yaml
 Type: Machine

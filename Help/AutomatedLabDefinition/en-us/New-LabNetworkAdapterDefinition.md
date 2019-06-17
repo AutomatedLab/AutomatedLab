@@ -39,15 +39,18 @@ This NIC can then be connected to a lab machine when defining the machine using 
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+$netAdapter = @()
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.30.50
+$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
+Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer, Routing -NetworkAdapter $netAdapter
 ```
 
-{{ Add example description here }}
+In order to create a machine capable of routing, you can assign two network adapter definitions to it
 
 ## PARAMETERS
 
 ### -VirtualSwitch
-@{Text=}
+The name of the virtual switch.
 
 ```yaml
 Type: String
@@ -62,7 +65,7 @@ Accept wildcard characters: False
 ```
 
 ### -InterfaceName
-@{Text=}
+The name of the interface on the VM
 
 ```yaml
 Type: String
@@ -77,7 +80,7 @@ Accept wildcard characters: False
 ```
 
 ### -Ipv4Address
-@{Text=}
+The IP address of the adapter
 
 ```yaml
 Type: IPNetwork[]
@@ -92,7 +95,7 @@ Accept wildcard characters: False
 ```
 
 ### -Ipv4Gateway
-@{Text=}
+The gateway that should be used
 
 ```yaml
 Type: IPAddress
@@ -107,7 +110,7 @@ Accept wildcard characters: False
 ```
 
 ### -Ipv4DNSServers
-@{Text=}
+The DNS servers to use
 
 ```yaml
 Type: IPAddress[]
@@ -122,7 +125,7 @@ Accept wildcard characters: False
 ```
 
 ### -IPv6Address
-@{Text=}
+The IPv6 address of this adapter
 
 ```yaml
 Type: IPNetwork[]
@@ -137,7 +140,7 @@ Accept wildcard characters: False
 ```
 
 ### -IPv6AddressPrefix
-@{Text=}
+The IPv6 prefix
 
 ```yaml
 Type: Int32
@@ -152,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -IPv6Gateway
-@{Text=}
+The IPv6 gateway to configure
 
 ```yaml
 Type: String
@@ -167,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -IPv6DNSServers
-@{Text=}
+The IPv6 DNS server list
 
 ```yaml
 Type: String[]
@@ -182,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -ConnectionSpecificDNSSuffix
-@{Text=}
+The DNS suffix (Windows)
 
 ```yaml
 Type: String
@@ -197,7 +200,7 @@ Accept wildcard characters: False
 ```
 
 ### -AppendParentSuffixes
-@{Text=}
+Indicates that parent suffixes should be appended to the DNS suffix
 
 ```yaml
 Type: Boolean
@@ -212,7 +215,7 @@ Accept wildcard characters: False
 ```
 
 ### -AppendDNSSuffixes
-@{Text=}
+List of DNS suffixes to append
 
 ```yaml
 Type: String[]
@@ -227,7 +230,7 @@ Accept wildcard characters: False
 ```
 
 ### -RegisterInDNS
-@{Text=}
+Indicates that the name should be registered in DNS
 
 ```yaml
 Type: Boolean
@@ -242,7 +245,7 @@ Accept wildcard characters: False
 ```
 
 ### -DnsSuffixInDnsRegistration
-@{Text=}
+Indicates that the DNS suffix should be included in the DNS registration
 
 ```yaml
 Type: Boolean
@@ -257,7 +260,7 @@ Accept wildcard characters: False
 ```
 
 ### -NetBIOSOptions
-@{Text=}
+The NetBIOS options to set (Default, Enabled, Disabled)
 
 ```yaml
 Type: String
@@ -272,7 +275,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseDhcp
-@{Text=}
+Indicates that DHCP should be used. Useful e.g. for the Default Switch
 
 ```yaml
 Type: SwitchParameter
@@ -287,7 +290,7 @@ Accept wildcard characters: False
 ```
 
 ### -AccessVLANID
-{{ Fill AccessVLANID Description }}
+The VLAN ID to configure
 
 ```yaml
 Type: Int32

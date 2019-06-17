@@ -9,6 +9,8 @@ schema: 2.0.0
 
 ## SYNOPSIS
 
+Restore the lab connection
+
 ## SYNTAX
 
 ```
@@ -17,19 +19,21 @@ Restore-LabConnection [-SourceLab] <String> [-DestinationLab] <String> [<CommonP
 
 ## DESCRIPTION
 
+Restore the lab connection
+
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restore-LabConnection -Source Lab1 -Destination Lab2
 ```
 
-{{ Add example description here }}
+In case of changed public IP addresses restore the lab connection
 
 ## PARAMETERS
 
 ### -SourceLab
-@{Text=}
+The source lab that has been used for the first connection
 
 ```yaml
 Type: String
@@ -44,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationLab
-@{Text=}
+The destination lab that has been used
 
 ```yaml
 Type: String

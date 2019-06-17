@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedComputerName
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the host name
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedComputerName [-ComputerName] <String> [-IsKickstart] [-IsAutoYast]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the host name
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedComputerName -ComputerName Erebor
 ```
 
-{{ Add example description here }}
+Sets the host name to Erebor
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host name to set
 
 ```yaml
 Type: String
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter

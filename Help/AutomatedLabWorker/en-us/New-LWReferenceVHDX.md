@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWReferenceVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create a reference disk from an OS image
 
 ## SYNTAX
 
@@ -18,21 +18,28 @@ New-LWReferenceVHDX [-IsoOsPath] <String> [-ReferenceVhdxPath] <String> [-OsName
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create a reference disk from an OS image to speed up lab deployments.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+Stop-ShellHWDetectionService
+
+New-LWReferenceVHDX -IsoOsPath $labSources\ISOs\2019.iso `
+    -ReferenceVhdxPath D:\LabVms\10.0.18362.145.vhdx `
+    -OsName 'Windows Server 2019 Datacenter' `
+    -ImageName 'Windows Server 2019 Datacenter' `
+    -SizeInGb 350 `
+    -PartitionStyle GPT
 ```
 
-{{ Add example description here }}
+Initializes a new reference disk for Windows Server 2019 with a GPT layout.
 
 ## PARAMETERS
 
 ### -ImageName
-{{ Fill ImageName Description }}
+The name of the OS image
 
 ```yaml
 Type: String
@@ -47,7 +54,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsoOsPath
-{{ Fill IsoOsPath Description }}
+The path to the operating system ISO
 
 ```yaml
 Type: String
@@ -62,7 +69,7 @@ Accept wildcard characters: False
 ```
 
 ### -OsName
-{{ Fill OsName Description }}
+The name of the operating system
 
 ```yaml
 Type: String
@@ -77,7 +84,7 @@ Accept wildcard characters: False
 ```
 
 ### -PartitionStyle
-{{ Fill PartitionStyle Description }}
+The intendend partition style
 
 ```yaml
 Type: String
@@ -93,7 +100,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReferenceVhdxPath
-{{ Fill ReferenceVhdxPath Description }}
+The path where the reference should be created
 
 ```yaml
 Type: String
@@ -108,7 +115,7 @@ Accept wildcard characters: False
 ```
 
 ### -SizeInGB
-{{ Fill SizeInGB Description }}
+The size of the disk in GB
 
 ```yaml
 Type: Int32

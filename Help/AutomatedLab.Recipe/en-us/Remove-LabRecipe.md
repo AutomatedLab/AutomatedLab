@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LabRecipe
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a stored recipe
 
 ## SYNTAX
 
@@ -23,16 +23,16 @@ Remove-LabRecipe -Recipe <PSCustomObject> [-WhatIf] [-Confirm] [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a stored recipe. Does not remove any lab
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabRecipe -Name MyBuildEnvironment
 ```
 
-{{ Add example description here }}
+Removes the recipe MyBuildEnvironment
 
 ## PARAMETERS
 
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+Name of the recipe
 
 ```yaml
 Type: String
@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recipe
-{{ Fill Recipe Description }}
+Recipe to remove
 
 ```yaml
 Type: PSCustomObject

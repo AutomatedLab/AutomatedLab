@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWAzureVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove an Azure VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LWAzureVM [-ComputerName] <String> [-AsJob] [-PassThru] [<CommonParameter
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove an Azure VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWAzureVm -ComputerName DC01 -AsJob
 ```
 
-{{ Add example description here }}
+Removes the host DC01 in a background job
 
 ## PARAMETERS
 
 ### -AsJob
-{{ Fill AsJob Description }}
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host to remove
 
 ```yaml
 Type: String
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that a job object should be returned
 
 ```yaml
 Type: SwitchParameter

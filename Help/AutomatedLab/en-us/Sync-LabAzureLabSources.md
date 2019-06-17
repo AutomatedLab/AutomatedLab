@@ -26,15 +26,15 @@ All files are hashed to ensure that no existing files are overwritten
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Sync-LabAzureLabSources -MaxFileSizeInMb 500 -Filter *.exe
 ```
 
-{{ Add example description here }}
+Upload all executables smaller than 500MB to Azure
 
 ## PARAMETERS
 
 ### -SkipIsos
-@{Text=}
+Indicates that ISOs should not be uploaded
 
 ```yaml
 Type: SwitchParameter
@@ -49,7 +49,7 @@ Accept wildcard characters: False
 ```
 
 ### -MaxFileSizeInMb
-@{Text=}
+The maximum file size to upload
 
 ```yaml
 Type: Int32
@@ -64,7 +64,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotSkipOsIsos
-{{ Fill DoNotSkipOsIsos Description }}
+Indicates that OS ISOs should indeed be uploaded to Azure
 
 ```yaml
 Type: SwitchParameter
@@ -79,7 +79,7 @@ Accept wildcard characters: False
 ```
 
 ### -Filter
-{{ Fill Filter Description }}
+Wildcard filter
 
 ```yaml
 Type: String

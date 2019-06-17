@@ -200,7 +200,7 @@ Accept wildcard characters: False
 ```
 
 ### -KeyUsage
-@{Text=}
+The keu usage type
 
 ```yaml
 Type: KeyUsage

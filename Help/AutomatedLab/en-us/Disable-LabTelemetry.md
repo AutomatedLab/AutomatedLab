@@ -8,7 +8,7 @@ schema: 2.0.0
 # Disable-LabTelemetry
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Disable the transmission of telemetry
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Disable-LabTelemetry
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Disable the transmission of telemetry by setting the environment variable AUTOMATEDLAB_TELEMETRY_OPTOUT to 1
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Disable-LabTelemetry
 ```
 
-{{ Add example description here }}
+Disable telemetry until Enable-LabTelemetry is used.
 
 ## PARAMETERS
 

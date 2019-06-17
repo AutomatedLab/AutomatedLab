@@ -42,9 +42,8 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
 ```
 
 ## DESCRIPTION
-Adds a definition of a machine to the lab.
-This does not create the actual machine.
-It creates the information of how the machines should look like.
+Adds a definition of a machine to the lab. This does not create the actual machine.
+It merely creates the information of how the machines should look like.
 
 ## EXAMPLES
 
@@ -545,8 +544,8 @@ Accept wildcard characters: False
 ```
 
 ### -AzureProperties
-The Azure properties.
-Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize'
+The Azure properties. Don't add them unless you know what you are doing.
+Currently valid properties:  'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
 
 ```yaml
 Type: Hashtable
@@ -561,7 +560,7 @@ Accept wildcard characters: False
 ```
 
 ### -HypervProperties
-The HyperV properties
+The HyperV properties. Currently valid properties: 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
 ```yaml
 Type: Hashtable
@@ -636,7 +635,7 @@ Accept wildcard characters: False
 ```
 
 ### -FriendlyName
-{{ Fill FriendlyName Description }}
+not implemented.
 
 ```yaml
 Type: String
@@ -651,7 +650,7 @@ Accept wildcard characters: False
 ```
 
 ### -RhelPackage
-{{ Fill RhelPackage Description }}
+The RHEL packages to install
 
 ```yaml
 Type: String[]
@@ -666,7 +665,8 @@ Accept wildcard characters: False
 ```
 
 ### -SkipDeployment
-{{ Fill SkipDeployment Description }}
+Indicates that this machine is already deployed somewhere and should only be included in the lab.
+When the lab is removed, these machines are not destroyed.
 
 ```yaml
 Type: SwitchParameter

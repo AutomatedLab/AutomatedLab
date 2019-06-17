@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWNetworkSwitch
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a Hyper-V network switch
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LWNetworkSwitch [-Name] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a Hyper-V network switch
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWNetworkSwitch -Name LabNetwork
 ```
 
-{{ Add example description here }}
+Remove the virtual switch LabNetwork
 
 ## PARAMETERS
 
 ### -Name
-{{ Fill Name Description }}
+The name of the switch to remove.
 
 ```yaml
 Type: String

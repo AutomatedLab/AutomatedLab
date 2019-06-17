@@ -88,7 +88,7 @@ Accept wildcard characters: False
 ```
 
 ### -NetworkAdapterName
-@{Text=}
+Optionally specify the adapter to use
 
 ```yaml
 Type: String
@@ -119,7 +119,7 @@ Accept wildcard characters: False
 ```
 
 ### -DestinationIpAddress
-@{Text=}
+S2S VPN: The IP address of the remote VPN gateway
 
 ```yaml
 Type: String
@@ -134,7 +134,7 @@ Accept wildcard characters: False
 ```
 
 ### -PreSharedKey
-@{Text=}
+The pre-shared key for the S2S VPN
 
 ```yaml
 Type: String

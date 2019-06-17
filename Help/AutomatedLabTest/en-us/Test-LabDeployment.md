@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabDeployment
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test a lab deployment
 
 ## SYNTAX
 
@@ -24,21 +24,40 @@ Test-LabDeployment [-SampleScriptsPath <String>] [-Filter <String>] [-All] [-Log
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Test a lab deployment. Optionally replace values in the scripts like image versions or Azure
+resource group names.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+$result = Test-LabDeployment -Path "$labSources\Sample Scripts\Workshop Labs\PowerShell Lab - Azure.ps1" -Replace @{
+    '<SOME UNIQUE DATA>' = "somelab$(Get-Random)"
+    "(\`$azureDefaultLocation = ')(\w| )+(')" = '$1North Europe$3'
+    '(Add-LabAzureSubscription -DefaultLocationName \$azureDefaultLocation)' = '$1 -SubscriptionName AL'
+}
 ```
 
-{{ Add example description here }}
+Test an Azure based lab, replacing the place holders with your own subscription data
+
+### Example 2
+```powershell
+$result = Test-LabDeployment -Path "$labSources\Sample Scripts\HyperV\Single 2012R2 Server.ps1"
+```
+
+Test a single script
+
+### Example 3
+```powershell
+$result = Test-LabDeployment -SampleScriptsPath "$labSources\Sample Scripts\HyperV" -All
+```
+
+Test all scripts in the HyperV folder
 
 ## PARAMETERS
 
 ### -All
-{{ Fill All Description }}
+Test all scripts in a folder
 
 ```yaml
 Type: SwitchParameter
@@ -53,7 +72,7 @@ Accept wildcard characters: False
 ```
 
 ### -Filter
-{{ Fill Filter Description }}
+Filter scripts
 
 ```yaml
 Type: String
@@ -68,7 +87,7 @@ Accept wildcard characters: False
 ```
 
 ### -LogDirectory
-{{ Fill LogDirectory Description }}
+Log folder for test results
 
 ```yaml
 Type: String
@@ -83,7 +102,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+Path to the lab script(s)
 
 ```yaml
 Type: String[]
@@ -98,7 +117,7 @@ Accept wildcard characters: False
 ```
 
 ### -Replace
-{{ Fill Replace Description }}
+Replace hashtable keys with hashtable values in each script
 
 ```yaml
 Type: Hashtable
@@ -113,7 +132,7 @@ Accept wildcard characters: False
 ```
 
 ### -SampleScriptsPath
-{{ Fill SampleScriptsPath Description }}
+Path to the sample scripts
 
 ```yaml
 Type: String

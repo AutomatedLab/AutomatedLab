@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWHypervWindowsFeature
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get Windows features from a Hyper-V VM
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Get-LWHypervWindowsFeature [-Machine] <Machine[]> [-FeatureName] <String[]> [-Us
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get Windows features from a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWHypervWindowsFeature -Machine DC01 -FeatureName FS-DFS-Replication -AsJob
 ```
 
-{{ Add example description here }}
+In a background job, get the status of the feature FS-DFS-Replication on DC01
 
 ## PARAMETERS
 
 ### -AsJob
-{{ Fill AsJob Description }}
+
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -FeatureName
-{{ Fill FeatureName Description }}
+Name of the feature
 
 ```yaml
 Type: String[]
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -Machine
-{{ Fill Machine Description }}
+Name of the VM
 
 ```yaml
 Type: Machine[]
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseLocalCredential
-{{ Fill UseLocalCredential Description }}
+Indicates that a local administrative account should be used
 
 ```yaml
 Type: SwitchParameter

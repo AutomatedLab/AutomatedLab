@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabAzureLabSourcesStorage
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Test if the Azure labsources file share exists
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Test-LabAzureLabSourcesStorage [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Test if the Azure labsources file share exists
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabAzureLabSourcesStorage
 ```
 
-{{ Add example description here }}
+Returns true or false
 
 ## PARAMETERS
 

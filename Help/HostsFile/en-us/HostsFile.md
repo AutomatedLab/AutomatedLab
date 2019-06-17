@@ -2,24 +2,24 @@
 Module Name: HostsFile
 Module Guid: 8dc3dd5c-5ae8-4198-a8f2-2157ab6b725c
 Download Help Link: {{ Update Download Link }}
-Help Version: {{ Please enter version of help manually (X.X.X.X) format }}
+Help Version: 1.0.0.0
 Locale: en-US
 ---
 
 # HostsFile Module
 ## Description
-{{ Fill in the Description }}
+Helper module to work with the hosts file
 
 ## HostsFile Cmdlets
 ### [Add-HostEntry](Add-HostEntry.md)
-{{ Fill in the Description }}
+Add a new static host entry
 
 ### [Clear-HostFile](Clear-HostFile.md)
-{{ Fill in the Description }}
+Clear a section of the hosts file
 
 ### [Get-HostEntry](Get-HostEntry.md)
-{{ Fill in the Description }}
+Get one host entry
 
 ### [Remove-HostEntry](Remove-HostEntry.md)
-{{ Fill in the Description }}
+Remove a single host entry
 

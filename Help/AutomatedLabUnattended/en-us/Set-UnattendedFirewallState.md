@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedFirewallState
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Enable or disable the OS firewall
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedFirewallState [-State] <Boolean> [-IsKickstart] [-IsAutoYast] [<Co
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Enable or disable the OS firewall
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedFirewallState -State $false
 ```
 
-{{ Add example description here }}
+Disable the OS firewall
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -State
-{{ Fill State Description }}
+Is the firewall enabled or not
 
 ```yaml
 Type: Boolean

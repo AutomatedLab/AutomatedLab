@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LWAzureLoadBalancer
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Creates a new load balancer for the lab environment
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ New-LWAzureLoadBalancer [[-ConnectedMachines] <Machine[]>] [-PassThru] [-Wait]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Creates a new load balancer for the lab environment. Reserves a public IP for the lab
+and creates the necessary frontend and backend address pools.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LWAzureLoadBalancer -PassThru
 ```
 
-{{ Add example description here }}
+Creates a new Azure load balancer and returns the created object
 
 ## PARAMETERS
 
 ### -ConnectedMachines
-{{ Fill ConnectedMachines Description }}
+Optionally specify which machines are connected to the load balancer
 
 ```yaml
 Type: Machine[]
@@ -46,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that objects should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -Wait
-{{ Fill Wait Description }}
+Indicates that the cmdlet should wait for the creation of the load balancer
 
 ```yaml
 Type: SwitchParameter

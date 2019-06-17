@@ -23,10 +23,10 @@ Removes a domain definition from the lab domain definitions
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabDomainDefinition -Name a.contoso.com
 ```
 
-{{ Add example description here }}
+In order not to start over entirely, remove a single domain definition from the lab
 
 ## PARAMETERS
 

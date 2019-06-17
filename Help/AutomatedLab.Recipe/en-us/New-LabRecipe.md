@@ -8,7 +8,7 @@ schema: 2.0.0
 # New-LabRecipe
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Create and store a new lab recipe
 
 ## SYNTAX
 
@@ -19,16 +19,16 @@ New-LabRecipe [-Name] <String> [[-Description] <String>] [[-VmPrefix] <String>] 
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Create and store a new lab recipe that can be called with Get-LabRecipe and Invoke-LabRecipe later on
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabRecipe -Name Build -Description 'Build environment for tests' -DeployRole Domain
 ```
 
-{{ Add example description here }}
+This recipe deploys a minuscule environment for automated tests
 
 ## PARAMETERS
 
@@ -48,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultAddressSpace
-{{ Fill DefaultAddressSpace Description }}
+Default address space for a new lab
 
 ```yaml
 Type: IPNetwork
@@ -63,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultDomainName
-{{ Fill DefaultDomainName Description }}
+Default domain name for a new lab
 
 ```yaml
 Type: String
@@ -78,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultOperatingSystem
-{{ Fill DefaultOperatingSystem Description }}
+Default OS for a new lab
 
 ```yaml
 Type: OperatingSystem
@@ -93,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultVirtualizationEngine
-{{ Fill DefaultVirtualizationEngine Description }}
+Default virtualization engine for a new lab
 
 ```yaml
 Type: String
@@ -109,7 +109,7 @@ Accept wildcard characters: False
 ```
 
 ### -DeployRole
-{{ Fill DeployRole Description }}
+Roles to deploy
 
 ```yaml
 Type: String[]
@@ -125,7 +125,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+The description to set for a recipe
 
 ```yaml
 Type: String
@@ -140,7 +140,7 @@ Accept wildcard characters: False
 ```
 
 ### -Force
-{{ Fill Force Description }}
+Indicates that the target recipe will be overwritten if already present
 
 ```yaml
 Type: SwitchParameter
@@ -155,7 +155,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+Name of the recipe
 
 ```yaml
 Type: String
@@ -170,7 +170,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Indicates that the recipe will be returned, so that it can be piped to Invoke-LabRecipe for example
 
 ```yaml
 Type: SwitchParameter
@@ -185,7 +185,7 @@ Accept wildcard characters: False
 ```
 
 ### -VmPrefix
-{{ Fill VmPrefix Description }}
+The default prefix for new VMs
 
 ```yaml
 Type: String

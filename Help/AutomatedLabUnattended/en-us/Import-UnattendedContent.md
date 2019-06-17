@@ -8,7 +8,7 @@ schema: 2.0.0
 # Import-UnattendedContent
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Import the XML or config content of the various unattend files
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Import-UnattendedContent [-Content] <String[]> [-IsKickstart] [-IsAutoYast] [<Co
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Import the XML or config content of the various unattend files
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Import-UnattendedContent -Content $Machine.UnattendedContent -IsAutoYast
 ```
 
-{{ Add example description here }}
+Imports the AutoYAST XML content from the machine's UnattendedContent property
 
 ## PARAMETERS
 
 ### -Content
-{{ Fill Content Description }}
+The content to import. Either XML or plain text.
 
 ```yaml
 Type: String[]
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter

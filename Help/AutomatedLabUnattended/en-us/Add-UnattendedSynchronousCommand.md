@@ -8,7 +8,7 @@ schema: 2.0.0
 # Add-UnattendedSynchronousCommand
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Add commands to the post deployment. 
 
 ## SYNTAX
 
@@ -18,21 +18,21 @@ Add-UnattendedSynchronousCommand [-Command] <String> [-Description] <String> [-I
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Add commands to the post deployment. Apply common sense when adding Linux commands, these work differently.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Add-UnattendedSynchronousCommand -Command 'useradd mary -G mary -g wheel' -IsKickstart
 ```
 
-{{ Add example description here }}
+Adds a command to add a user with a specific group membership set to a Kickstart file.
 
 ## PARAMETERS
 
 ### -Command
-{{ Fill Command Description }}
+The command to execute
 
 ```yaml
 Type: String
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -Description
-{{ Fill Description Description }}
+The description of the command.
 
 ```yaml
 Type: String
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter

@@ -23,10 +23,10 @@ Returns all definitions of Active Directory domains/forest in the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabDomainDefinition
 ```
 
-{{ Add example description here }}
+Return the current domain definition that has been added to a lab.
 
 ## PARAMETERS
 

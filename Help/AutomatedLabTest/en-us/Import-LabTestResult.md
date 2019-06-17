@@ -8,7 +8,7 @@ schema: 2.0.0
 # Import-LabTestResult
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Import the results from Test-LabDeployment
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Import-LabTestResult [-Path <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Import the results from Test-LabDeployment
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Import-LabTestResult -LogDirectory $home/Documents
 ```
 
-{{ Add example description here }}
+Import all test result files in $home/Documents
 
 ## PARAMETERS
 
 ### -LogDirectory
-{{ Fill LogDirectory Description }}
+The directory to import from
 
 ```yaml
 Type: String
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+The single result files to import
 
 ```yaml
 Type: String[]

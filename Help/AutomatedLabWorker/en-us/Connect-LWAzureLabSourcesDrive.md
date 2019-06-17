@@ -8,7 +8,7 @@ schema: 2.0.0
 # Connect-LWAzureLabSourcesDrive
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Connect the Azure File Share 'LabSources' in a session
 
 ## SYNTAX
 
@@ -17,21 +17,22 @@ Connect-LWAzureLabSourcesDrive [-Session] <PSSession> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Connect the Azure File Share 'LabSources' in a session so that file copies
+and installations are possible using $LabSources
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Connect-LWAzureLabSourcesDrive -Session (Get-LabPSSession DC01)
 ```
 
-{{ Add example description here }}
+Mount the Azure file share inside DC01
 
 ## PARAMETERS
 
 ### -Session
-{{ Fill Session Description }}
+The session to mount the drive in
 
 ```yaml
 Type: PSSession

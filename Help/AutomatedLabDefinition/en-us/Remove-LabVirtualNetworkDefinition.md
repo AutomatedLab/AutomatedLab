@@ -23,10 +23,10 @@ Removes a virtual network definition from the lab's network definitions
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabVirtualNetworkDefinition -Name 'Lab01
 ```
 
-{{ Add example description here }}
+Remove the network definition Lab01
 
 ## PARAMETERS
 

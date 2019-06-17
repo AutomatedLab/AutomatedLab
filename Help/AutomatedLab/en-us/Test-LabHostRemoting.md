@@ -8,7 +8,7 @@ schema: 2.0.0
 # Test-LabHostRemoting
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Check if remoting settings on lab host are correct
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Test-LabHostRemoting [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Check if remoting settings on lab host are correct
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Test-LabHostRemoting
 ```
 
-{{ Add example description here }}
+Check if remoting settings on lab host are correct
 
 ## PARAMETERS
 

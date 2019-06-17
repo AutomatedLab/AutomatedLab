@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-HostEntry
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a host entry
 
 ## SYNTAX
 
@@ -28,21 +28,21 @@ Remove-HostEntry -InputObject <Object> -Section <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a host entry
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-HostEntry -Ip 8.8.8.8 | Remove-HostEntry
 ```
 
-{{ Add example description here }}
+Gets a host entry and uses the bound parameter InputObject to remove the entry
 
 ## PARAMETERS
 
 ### -HostName
-{{ Fill HostName Description }}
+The host name to remove
 
 ```yaml
 Type: Object
@@ -57,7 +57,7 @@ Accept wildcard characters: False
 ```
 
 ### -InputObject
-{{ Fill InputObject Description }}
+The host file entry to remove
 
 ```yaml
 Type: Object
@@ -72,7 +72,7 @@ Accept wildcard characters: False
 ```
 
 ### -IpAddress
-{{ Fill IpAddress Description }}
+The IP address to remove
 
 ```yaml
 Type: IPAddress
@@ -87,7 +87,7 @@ Accept wildcard characters: False
 ```
 
 ### -Section
-{{ Fill Section Description }}
+The section to remove in
 
 ```yaml
 Type: String

@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -137,7 +137,7 @@ Accept wildcard characters: False
 ```
 
 ### -AsJob
-Indicates if the uninstallation of the Windows Feature should be running in the background.
+Indicates that the cmdlet should run in the background
 
 ```yaml
 Type: SwitchParameter

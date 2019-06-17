@@ -8,7 +8,7 @@ schema: 2.0.0
 # Stop-LWHypervVM
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Stop a Hyper-V VM
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Stop-LWHypervVM [-ComputerName] <String[]> [[-TimeoutInMinutes] <Double>] [[-Pro
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Stop a Hyper-V VM, with the ability to wait for a timeout in minutes. Both Windows and Linux
+support a shutdown from the OS, if they are available via WinRM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Stop-LWHypervVM -ComputerName SAPHANA -TimeoutInMinutes 20
 ```
 
-{{ Add example description here }}
+Wait for a busy system to shut down for up to 20 minutes.
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machines to stop
 
 ```yaml
 Type: String[]
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-{{ Fill NoNewLine Description }}
+Indicates that no line break should be emitted after the console output
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-{{ Fill ProgressIndicator Description }}
+Interval in seconds that a . should be written to the console
 
 ```yaml
 Type: Int32
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -ShutdownFromOperatingSystem
-{{ Fill ShutdownFromOperatingSystem Description }}
+Initiate the shutdown from the operating system. Uses shutdown.exe on Windows or /bin/shutdown on Linux
 
 ```yaml
 Type: SwitchParameter
@@ -92,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-{{ Fill TimeoutInMinutes Description }}
+The maximum timeout to wait for a proper VM shutdown
 
 ```yaml
 Type: Double

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedAdministratorPassword
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the admin user's password
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Set-UnattendedAdministratorPassword [-Password] <String> [-IsKickstart] [-IsAuto
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the admin user's password. Sets both the root as well as the user password.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedAdministratorPassword -Password swordfish -IsKickstart
 ```
 
-{{ Add example description here }}
+For the Kickstart file, sets the password to swordfish
 
 ## PARAMETERS
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -46,7 +46,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -61,7 +61,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-{{ Fill Password Description }}
+The password to set
 
 ```yaml
 Type: String

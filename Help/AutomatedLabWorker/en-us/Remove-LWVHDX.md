@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWVHDX
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove a VHDX file
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Remove-LWVHDX [-VhdxPath] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove a VHDX file
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWVHDX -VhdxPath D:\Some.vhdx
 ```
 
-{{ Add example description here }}
+Remove the file Some.vhdx
 
 ## PARAMETERS
 
 ### -VhdxPath
-{{ Fill VhdxPath Description }}
+The path to the VHDX file
 
 ```yaml
 Type: String

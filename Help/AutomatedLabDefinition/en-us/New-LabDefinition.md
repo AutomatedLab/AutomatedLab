@@ -184,7 +184,7 @@ Accept wildcard characters: False
 ```
 
 ### -Notes
-@{Text=}
+Notes to add to the lab
 
 ```yaml
 Type: Hashtable
@@ -247,7 +247,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoAzurePublishSettingsFile
-@{Text=}
+???
 
 ```yaml
 Type: SwitchParameter
@@ -278,7 +278,7 @@ Accept wildcard characters: False
 ```
 
 ### -Passthru
-{{ Fill Passthru Description }}
+Indicates that the created definition should also be returned
 
 ```yaml
 Type: SwitchParameter

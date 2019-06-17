@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabTeamFoundationEnvironment
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install all CI/CD servers in the lab
 
 ## SYNTAX
 
@@ -17,16 +17,17 @@ Install-LabTeamFoundationEnvironment [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Install all CI/CD servers in the lab including all build workers. Only installs components that are not
+yet present.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabTeamFoundationEnvironment
 ```
 
-{{ Add example description here }}
+Install all CI/CD servers and their build agents
 
 ## PARAMETERS
 

@@ -8,7 +8,7 @@ schema: 2.0.0
 # Set-UnattendedDomain
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Set the domain membership
 
 ## SYNTAX
 
@@ -18,21 +18,22 @@ Set-UnattendedDomain [-DomainName] <String> [-Username] <String> [-Password] <St
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Set the domain membership. On Linux, requires the necessary packages for the realm
+command to complete. These are oddjob, oddjob-mkhomedir, sssd, adcli and krb5-workstation.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-UnattendedDomain -DomainName contoso.com -UserName Install -Password Somepass1
 ```
 
-{{ Add example description here }}
+Configures the domain join credentials for a Windows unattend file.
 
 ## PARAMETERS
 
 ### -DomainName
-{{ Fill DomainName Description }}
+The domain to configure
 
 ```yaml
 Type: String
@@ -47,7 +48,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsAutoYast
-{{ Fill IsAutoYast Description }}
+Indicates that this setting is placed in an AutoYAST file
 
 ```yaml
 Type: SwitchParameter
@@ -62,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -IsKickstart
-{{ Fill IsKickstart Description }}
+Indicates that this setting is placed in a Kickstart file
 
 ```yaml
 Type: SwitchParameter
@@ -77,7 +78,7 @@ Accept wildcard characters: False
 ```
 
 ### -Password
-{{ Fill Password Description }}
+The password of the domain join account
 
 ```yaml
 Type: String
@@ -92,7 +93,7 @@ Accept wildcard characters: False
 ```
 
 ### -Username
-{{ Fill Username Description }}
+The domain join account
 
 ```yaml
 Type: String

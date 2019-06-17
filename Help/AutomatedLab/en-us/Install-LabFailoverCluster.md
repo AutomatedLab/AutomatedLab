@@ -8,7 +8,7 @@ schema: 2.0.0
 # Install-LabFailoverCluster
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Install all failover clusters
 
 ## SYNTAX
 
@@ -17,16 +17,16 @@ Install-LabFailoverCluster [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Install all failover clusters
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Install-LabFailoverCluster
 ```
 
-{{ Add example description here }}
+Installs the failover clusters
 
 ## PARAMETERS
 

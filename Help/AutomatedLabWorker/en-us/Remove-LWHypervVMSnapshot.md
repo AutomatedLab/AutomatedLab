@@ -8,7 +8,7 @@ schema: 2.0.0
 # Remove-LWHypervVMSnapshot
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Remove Hyper-V checkpoints
 
 ## SYNTAX
 
@@ -23,21 +23,21 @@ Remove-LWHypervVMSnapshot -ComputerName <String[]> -SnapshotName <String> [<Comm
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Remove Hyper-V checkpoints
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LWHypervVMSnapshot -ComputerName HOst1,Host2 -SnapshotName AfterDeployment
 ```
 
-{{ Add example description here }}
+Remove the checkpoint AfterDeployment from hosts Host1 and Host2
 
 ## PARAMETERS
 
 ### -All
-{{ Fill All Description }}
+Indicates that all snapshots should be removed
 
 ```yaml
 Type: SwitchParameter
@@ -52,7 +52,7 @@ Accept wildcard characters: False
 ```
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The computers to remove snapshots of
 
 ```yaml
 Type: String[]
@@ -67,7 +67,7 @@ Accept wildcard characters: False
 ```
 
 ### -SnapshotName
-{{ Fill SnapshotName Description }}
+The name of the snapshot to remove
 
 ```yaml
 Type: String

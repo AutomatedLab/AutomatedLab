@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWAzureVMStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Returns the power state of a lab's Azure VMs
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LWAzureVMStatus [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Returns the power state of a lab's Azure VMs
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWAzureVMStatus -ComputerName HostA,HostB
 ```
 
-{{ Add example description here }}
+Returns the power state of HostA and HostB
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The machine names to get the power state from
 
 ```yaml
 Type: String[]

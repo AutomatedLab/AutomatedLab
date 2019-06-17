@@ -29,15 +29,15 @@ Gets lab disk files either by name or returns all lab disks
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVhdx
 ```
 
-{{ Add example description here }}
+Return all lab VHDX files
 
 ## PARAMETERS
 
 ### -Name
-@{Text=}
+Name of the VHDX file
 
 ```yaml
 Type: String[]

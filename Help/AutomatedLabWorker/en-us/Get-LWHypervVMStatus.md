@@ -8,7 +8,7 @@ schema: 2.0.0
 # Get-LWHypervVMStatus
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Get the power state of a Hyper-V VM
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Get-LWHypervVMStatus [-ComputerName] <String[]> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Get the power state of a Hyper-V VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LWHypervVMStatus -ComputerName DSCDC01
 ```
 
-{{ Add example description here }}
+Returns the VM state of DSCDC01
 
 ## PARAMETERS
 
 ### -ComputerName
-{{ Fill ComputerName Description }}
+The host name to get the power state from
 
 ```yaml
 Type: String[]

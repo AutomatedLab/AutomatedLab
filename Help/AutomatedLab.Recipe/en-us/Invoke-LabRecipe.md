@@ -8,7 +8,7 @@ schema: 2.0.0
 # Invoke-LabRecipe
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Invoke a recipe
 
 ## SYNTAX
 
@@ -27,16 +27,19 @@ Invoke-LabRecipe -Recipe <Object> [-DefaultVirtualizationEngine <String>] [-LabC
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Invoke a recipe. Can either export the recipe as a normal script file or directly deploy the lab that
+the recipe describes.
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+LabRecipe SuperEasy {    
+    DeployRole = 'Domain', 'PKI'
+} | Invoke-LabRecipe -NoDeploy -OutFile D:\SuperEasy.ps1
 ```
 
-{{ Add example description here }}
+Instead of invoking the recipe, stores it as D:\SuperEasy.ps1
 
 ## PARAMETERS
 
@@ -56,7 +59,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultAddressSpace
-{{ Fill DefaultAddressSpace Description }}
+Override the default address space of the recipe
 
 ```yaml
 Type: IPNetwork
@@ -71,7 +74,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultDomainName
-{{ Fill DefaultDomainName Description }}
+Override the default domain name of the recipe
 
 ```yaml
 Type: String
@@ -86,7 +89,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultOperatingSystem
-{{ Fill DefaultOperatingSystem Description }}
+Override the default OS of the recipe
 
 ```yaml
 Type: OperatingSystem
@@ -101,7 +104,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultVirtualizationEngine
-{{ Fill DefaultVirtualizationEngine Description }}
+Override the default virtualization engine of the recipe
 
 ```yaml
 Type: String
@@ -117,7 +120,7 @@ Accept wildcard characters: False
 ```
 
 ### -LabCredential
-{{ Fill LabCredential Description }}
+Set a different lab credential
 
 ```yaml
 Type: PSCredential
@@ -132,7 +135,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-{{ Fill Name Description }}
+The name of the recipe to invoke
 
 ```yaml
 Type: String
@@ -147,7 +150,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoDeploy
-{{ Fill NoDeploy Description }}
+Indicates that no deployment should be attempted
 
 ```yaml
 Type: SwitchParameter
@@ -162,7 +165,7 @@ Accept wildcard characters: False
 ```
 
 ### -OutFile
-{{ Fill OutFile Description }}
+The output file path for the lab script, in order to redeploy it later
 
 ```yaml
 Type: String
@@ -177,7 +180,7 @@ Accept wildcard characters: False
 ```
 
 ### -PassThru
-{{ Fill PassThru Description }}
+Return the lab script block to persist it or send it somewhere
 
 ```yaml
 Type: SwitchParameter
@@ -192,7 +195,7 @@ Accept wildcard characters: False
 ```
 
 ### -Recipe
-{{ Fill Recipe Description }}
+The recipe object to invoke, from Get-LabRecipe
 
 ```yaml
 Type: Object

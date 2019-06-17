@@ -8,7 +8,7 @@ schema: 2.0.0
 # Clear-HostFile
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Clear a section in the hosts file
 
 ## SYNTAX
 
@@ -17,21 +17,21 @@ Clear-HostFile [-Section] <String> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Clear a section in the hosts file, thereby removing all contained entries
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Clear-HostFile -Section HomeEnvironment
 ```
 
-{{ Add example description here }}
+Remove the section HomeEnvironment
 
 ## PARAMETERS
 
 ### -Section
-{{ Fill Section Description }}
+The section to remove
 
 ```yaml
 Type: String

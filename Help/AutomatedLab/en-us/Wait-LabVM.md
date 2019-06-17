@@ -24,15 +24,15 @@ Waits for a lab machine to accept incoming sessions, indicating that it is ready
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LabVM -COmputerName DC01; Invoke-LabCommand DC01 {42}
 ```
 
-{{ Add example description here }}
+Wait for DC01 to be accessible before continuing with the lab
 
 ## PARAMETERS
 
 ### -ComputerName
-@{Text=}
+The host to wait for
 
 ```yaml
 Type: String[]
@@ -47,7 +47,7 @@ Accept wildcard characters: False
 ```
 
 ### -TimeoutInMinutes
-@{Text=}
+The timeout to wait for in minutes
 
 ```yaml
 Type: Double
@@ -62,7 +62,7 @@ Accept wildcard characters: False
 ```
 
 ### -PostDelaySeconds
-@{Text=}
+The post-wait delay
 
 ```yaml
 Type: Int32
@@ -77,7 +77,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -92,7 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### -NoNewLine
-@{Text=}
+Indicates that no line break should be printed to the console
 
 ```yaml
 Type: SwitchParameter
@@ -107,7 +107,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter

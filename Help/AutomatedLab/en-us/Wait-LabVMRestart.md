@@ -63,7 +63,7 @@ Accept wildcard characters: False
 ```
 
 ### -ProgressIndicator
-@{Text=}
+Every n seconds, print a . to the console
 
 ```yaml
 Type: Int32
@@ -123,7 +123,7 @@ Accept wildcard characters: False
 ```
 
 ### -DoNotUseCredSsp
-@{Text=}
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -138,7 +138,7 @@ Accept wildcard characters: False
 ```
 
 ### -MonitoringStartTime
-@{Text=}
+The start of the monitoring job
 
 ```yaml
 Type: DateTime
