@@ -1,4 +1,4 @@
-#region Get-LabHyperVAvailableMemory
+﻿#region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
     # .ExternalHelp AutomatedLab.Help.xml
@@ -90,7 +90,7 @@ function Save-FileList
         $Filename = 'C:\ALfiles.txt'
     )
 
-    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | % {Get-ChildItem $_.FullName | Select-Object FullName} | Export-Csv -Path $Filename
+    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName} | Export-Csv -Path $Filename
 }
 #endregion Save-FileList
 
@@ -105,7 +105,7 @@ function Test-FileList
     )
 
     $StoredFiles = Import-Csv -Path $Filename
-    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | % {Get-ChildItem $_.FullName | Select-Object FullName}
+    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName}
 
     if (Compare-Object -ReferenceObject $StoredFiles -DifferenceObject $Files)
     {

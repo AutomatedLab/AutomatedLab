@@ -5,7 +5,7 @@
 
 Push-Location
 
-cd -Path $SolutionDir\AutomatedLab.Common
+Set-Location -Path $SolutionDir\AutomatedLab.Common
 git reset --hard
 git submodule -q update --init --recursive
 git pull origin master

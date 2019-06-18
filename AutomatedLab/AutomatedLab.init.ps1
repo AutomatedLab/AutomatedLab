@@ -1,4 +1,4 @@
-if ($PSEdition -eq 'Core')
+﻿if ($PSEdition -eq 'Core')
 {
     Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
     
@@ -308,7 +308,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
 
 #region ArgumentCompleter
 Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBlock {
-    (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object { ($_ -split '\.')[3] } | Select -Unique
+    (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object { ($_ -split '\.')[3] } | Select-Object -Unique
 }
 
 Register-PSFTeppScriptblock -Name 'AutomatedLab-OperatingSystem' -ScriptBlock {

@@ -1,4 +1,4 @@
-#region New-LabVM
+﻿#region New-LabVM
 function New-LabVM
 {
     
@@ -1137,7 +1137,7 @@ function Connect-LabVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 
             if (-not $sshBinary)
             {
@@ -1151,7 +1151,7 @@ function Connect-LabVM
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
                     Microsoft.PowerShell.Archive\Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
-                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
                 }
             }
 
