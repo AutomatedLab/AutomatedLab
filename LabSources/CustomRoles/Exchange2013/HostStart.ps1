@@ -208,6 +208,7 @@ function Start-ExchangeInstallSequence
         if ($script:useISO)
         {
             $MountedOSImage = Mount-LabIsoImage -IsoPath $IsoPath -ComputerName $ComputerName -SupressOutput -PassThru
+            Remove-LabPSSession -ComputerName $prepMachine
             $ExchangeInstallCommand = $MountedOSImage.DriveLetter + '\SETUP.EXE'
         }
         else
