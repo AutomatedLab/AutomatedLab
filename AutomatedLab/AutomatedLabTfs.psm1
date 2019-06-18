@@ -502,11 +502,12 @@ function New-LabReleasePipeline
     }
 
     $defaultParam = @{
-        InstanceName   = $tfsInstance
-        Port           = $tfsPort
-        CollectionName = $initialCollection
-        ProjectName    = $ProjectName
-        UseSsl         = $useSsl
+        InstanceName         = $tfsInstance
+        Port                 = $tfsPort
+        CollectionName       = $initialCollection
+        ProjectName          = $ProjectName
+        UseSsl               = $useSsl
+        SkipCertificateCheck = $true
     }
 
     $defaultParam.ApiVersion = switch ($role.Name)
