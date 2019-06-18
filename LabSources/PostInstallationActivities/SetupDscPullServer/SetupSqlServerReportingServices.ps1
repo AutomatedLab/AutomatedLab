@@ -59,14 +59,14 @@ if (-not $configSet.IsInitialized)
     # Update the current configuration
     $configSet = Get-ConfigSet
 
-    [void]$configSet.IsReportManagerEnabled
-    [void]$configSet.IsInitialized
-    [void]$configSet.IsWebServiceEnabled
-    [void]$configSet.IsWindowsServiceEnabled
-    [void]$configSet | Invoke-CimMethod -MethodName ListReportServersInDatabase
-    [void]$configSet | Invoke-CimMethod -MethodName ListReservedUrls
+    $configSet | Invoke-CimMethod -MethodName ListReportServersInDatabase | Out-Null
+    $configSet | Invoke-CimMethod -MethodName ListReservedUrls | Out-Null
 
     $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
 
-    #($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs
+    Write-Host 'Reporting Services are now configured. The URLs to access the reporting servies are:'
+    foreach ($url in ($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs)
+    {
+        Write-Host "`t$url"
+    }
 }
