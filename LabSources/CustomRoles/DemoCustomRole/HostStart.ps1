@@ -11,7 +11,7 @@ param(
 
 Import-Lab -Name $data.Name
 
-mkdir -Path $LocalSoftwareFolder -Force | Out-Null
+New-Item -ItemType Directory -Path $LocalSoftwareFolder -Force | Out-Null
 
 $notepadInstaller = Get-LabInternetFile -Uri $NotepadDownloadUrl -Path $LocalSoftwareFolder -PassThru
 

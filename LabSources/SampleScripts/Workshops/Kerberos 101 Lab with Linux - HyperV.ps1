@@ -136,7 +136,7 @@ Restart-LabVM -ComputerName $fileServers -Wait
 #Create SMB share and test file on the file server
 Invoke-LabCommand -ActivityName 'Create SMB Share' -ComputerName (Get-LabVM -Role FileServer) -ScriptBlock {
 
-    mkdir C:\Test -ErrorAction SilentlyContinue
+    New-Item -ItemType Directory C:\Test -ErrorAction SilentlyContinue
     New-SmbShare -Name Test -Path C:\Test -FullAccess Everyone
     New-Item -Path C:\Test\TestFile.txt -ItemType File
     

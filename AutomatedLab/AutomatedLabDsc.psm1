@@ -378,7 +378,7 @@ function Invoke-LabDscConfiguration
         {
             Remove-Item -Path $outputPath -Recurse -Force
         }
-        mkdir -Path $outputPath -Force | Out-Null
+        New-Item -ItemType Directory -Path $outputPath -Force | Out-Null
 
         if ($ConfigurationData)
         {
@@ -391,7 +391,7 @@ function Invoke-LabDscConfiguration
 
         $tempPath = [System.IO.Path]::GetTempFileName()
         Remove-Item -Path $tempPath
-        mkdir -Path $tempPath | Out-Null
+        New-Item -ItemType Directory -Path $tempPath | Out-Null
 
         $dscModules = @()
 
@@ -511,7 +511,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             }
         }
 
-        $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
+        $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         Remove-DscConfigurationDocument -Stage Current, Pending -Force
         LcmDefaultConfiguration -OutputPath $path.FullName | Out-Null
@@ -721,7 +721,7 @@ function Set-LabDscLocalConfigurationManagerConfiguration
         Invoke-Expression $sb.ToString()
         $sb.ToString() | Out-File -FilePath c:\AL_DscLcm_Debug.txt
 
-        $path = mkdir -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
+        $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         LcmConfiguration -OutputPath $path.FullName | Out-Null
         Set-DscLocalConfigurationManager -Path $path.FullName

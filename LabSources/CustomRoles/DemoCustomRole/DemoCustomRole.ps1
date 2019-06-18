@@ -9,5 +9,5 @@ Install-WindowsFeature -Name XPS-Viewer
 
 foreach ($folder in $RemoteFolders)
 {
-    mkdir -Path $folder
+    New-Item -ItemType Directory -Path $folder
 }

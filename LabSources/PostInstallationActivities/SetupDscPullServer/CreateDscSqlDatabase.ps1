@@ -568,7 +568,7 @@ GO
 
 if (-not (Test-Path -Path C:\DSCDB))
 {
-    mkdir -Path C:\DSCDB | Out-Null
+    New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
 }
 
 Write-Host "Creating the DSC database on the local default SQL instance..." -NoNewline

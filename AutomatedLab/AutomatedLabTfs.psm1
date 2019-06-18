@@ -733,7 +733,7 @@ function New-LabReleasePipeline
         
             if (-not (Test-Path -Path C:\Git))
             {
-                mkdir -Path C:\Git | Out-Null
+                New-Item -ItemType Directory -Path C:\Git | Out-Null
             }
             Set-Location -Path C:\Git
             git -c http.sslVerify=false clone $repository.remoteUrl 2>&1

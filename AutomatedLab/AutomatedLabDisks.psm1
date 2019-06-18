@@ -344,7 +344,7 @@ function Update-LabIsoImage
             Remove-Item -Path $OutputPath -Force -Recurse -ErrorAction Ignore
         }
 
-        mkdir -Path $OutputPath | Out-Null
+        New-Item -ItemType Directory -Path $OutputPath | Out-Null
 
 
         $image = Mount-DiskImage -ImagePath $SourceIsoImagePath -PassThru
@@ -427,8 +427,8 @@ function Update-LabIsoImage
     $start = Get-Date
     Write-PSFMessage -Level Host "Start time: $start"
 
-    $extractTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
-    $mountTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
+    $extractTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
+    $mountTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
 
     $isoImageName = Get-IsoImageName -IsoImagePath $SourceIsoImagePath
 
@@ -530,7 +530,7 @@ function Update-LabBaseImage
     Write-PSFMessage -Level Host "Start time: $start"
 
     Write-PSFMessage -Level Host 'Creating temp folder (mount point)'
-    $mountTempFolder = mkdir -Path $labSources -Name ([guid]::NewGuid())
+    $mountTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
 
     Write-PSFMessage -Level Host "Mounting Windows Image '$BaseImagePath'"
     Write-PSFMessage -Level Host "to folder '$mountTempFolder'"
