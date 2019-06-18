@@ -3578,9 +3578,55 @@ function Set-LabInstallationCredential
         [switch]$Prompt
     )
 
+    # https://docs.microsoft.com/en-us/azure/virtual-machines/windows/faq#what-are-the-password-requirements-when-creating-a-vm
+    $azurePasswordBlacklist = @(
+        'abc@123'
+        'iloveyou!'
+        'P@$$w0rd'
+        'P@ssw0rd'
+        'P@ssword123'
+        'Pa$$word'
+        'pass@word1'
+        'Password!'
+        'Password1'
+        'Password22'
+    )
+
     if (-not (Get-LabDefinition))
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabInstallationCredential.'
+    }
+    
+    if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if ($null -ne $Password -and $azurePasswordBlacklist -contains $Password)
+        {
+            throw "Password '$Password' is in the list of forbidden passwords for Azure VMs: $($azurePasswordBlacklist -join ', ')"
+        }
+        
+        if ($Username -eq 'Administrator')
+        {
+            throw 'Username may not be Administrator for Azure VMs.'
+        }
+
+        $checks = @(
+            $Password -match '[A-Z]'
+            $Password -match '[a-z]'
+            $Password -match '\d'
+            $Password -match '[\W_]'
+            $Password.Length -ge 8
+        )
+
+        if ($null -ne $Password -and $checks -contains $false)
+        {
+            throw "Passwords for Azure VM administrator have to:
+            Be at least 8 characters long
+            Have lower characters
+            Have upper characters
+            Have a digit
+            Have a special character (Regex match [\W_])
+            "
+        }
     }
 
     if ($PSCmdlet.ParameterSetName -eq 'All')
@@ -3590,7 +3636,7 @@ function Set-LabInstallationCredential
     }
     else
     {
-        $promptUser = Read-Host "Type desired username for admin user (or leave blank for 'Install'. Username cannot be 'Administrator' is deploying in Azure)"
+        $promptUser = Read-Host "Type desired username for admin user (or leave blank for 'Install'. Username cannot be 'Administrator' if deploying in Azure)"
 
         if (-not $promptUser)
         {
