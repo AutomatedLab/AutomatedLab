@@ -2500,9 +2500,15 @@ function Install-LabSoftwarePackage
 
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
-    # Import module to import .NET types necessary
+    # Transfer ALCommon library
+    $libraryFolder = Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent
+    foreach ($item in (Get-ChildItem -Path $libraryFolder))
+    {
+        Send-File -SourceFilePath $item.FullName -DestinationFolderPath '/ALLibraries' -Session (New-LabPSSession -ComputerName $ComputerName)
+    }
+
     $parameters.ScriptBlock = {
-        Import-Module AutomatedLab.Common
+        Add-Type -Path '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         Install-SoftwarePackage @installParams
     }
 
@@ -2512,9 +2518,6 @@ function Install-LabSoftwarePackage
     {
         Write-ScreenInfo -Message "Copying files and initiating setup on '$($ComputerName -join ', ')' and waiting for completion" -NoNewLine
     }
-
-    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name newtonsoft.json)[0] -Session (New-LabPSSession -ComputerName $ComputerName)
-    Send-ModuleToPSSession -Module (Get-Module -ListAvailable -Name AutomatedLab.Common)[0] -Session (New-LabPSSession -ComputerName $ComputerName)
 
     $job = Invoke-LabCommand @parameters -Variable (Get-Variable -Name installParams) -Function (Get-Command -Name Install-SoftwarePackage)
 
