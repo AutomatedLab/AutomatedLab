@@ -543,7 +543,7 @@ function Initialize-LWAzureVM
         $cmdkeyTarget = ($labSourcesStorageAccount.Path -split '\\')[2]
         $script = $script -f $labSourcesStorageAccount.Path, $cmdkeyTarget, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
 
-        mkdir -Path C:\AL -Force
+        New-Item -ItemType Directory -Path C:\AL -Force
         $labSourcesStorageAccount | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
         $script | Out-File C:\AL\AzureLabSources.ps1 -Force
 

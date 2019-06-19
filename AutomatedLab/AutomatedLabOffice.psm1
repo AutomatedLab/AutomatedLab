@@ -224,7 +224,7 @@ function Install-LabOffice2016
         $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
 
         Invoke-LabCommand -ActivityName 'Copy Office to C' -ComputerName $machine -ScriptBlock {
-            mkdir -Path C:\Office | Out-Null
+            New-Item -ItemType Directory -Path C:\Office | Out-Null
             Copy-Item -Path "$($args[0])\Office" -Destination C:\Office -Recurse
         } -ArgumentList $disk.DriveLetter
 

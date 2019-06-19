@@ -1,4 +1,4 @@
-#region Lab-specific functionality
+﻿#region Lab-specific functionality
 function Install-LabTeamFoundationEnvironment
 {
     [CmdletBinding()]
@@ -733,7 +733,7 @@ function New-LabReleasePipeline
         
             if (-not (Test-Path -Path C:\Git))
             {
-                mkdir -Path C:\Git | Out-Null
+                New-Item -ItemType Directory -Path C:\Git | Out-Null
             }
             Set-Location -Path C:\Git
             git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
@@ -1028,7 +1028,7 @@ function Test-LabTfsEnvironment
 
     $lab = Get-Lab -ErrorAction Stop
     $machine = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object -Property Name -eq $ComputerName
-    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
+    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where-Object Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
     
     if (-not $machine) { return }
 

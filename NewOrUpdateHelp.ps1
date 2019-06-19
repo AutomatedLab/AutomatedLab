@@ -1,4 +1,4 @@
-param
+﻿param
 (
     [switch]
     $Create,
@@ -38,7 +38,7 @@ if (-not $Create.IsPresent)
 $mkdocs = Join-Path -Path $location -ChildPath mkdocs.yml -Resolve -ErrorAction Stop
 $mkdocsContent = Get-Content -Raw -Path $mkdocs | ConvertFrom-Yaml
 
-foreach ($moduleName in ($Module | Sort))
+foreach ($moduleName in ($Module | Sort-Object))
 {
     $moduleObject = @{$moduleName = New-Object System.Collections.ArrayList}
     foreach ($command in (Get-Command -Module $moduleName))

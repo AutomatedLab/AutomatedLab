@@ -19,8 +19,8 @@ if (-not (Microsoft.PowerShell.Management\Test-Path -Path $SolutionDir\Automated
 	$null = New-Item -Path $SolutionDir\AutomatedLab\lib\full -Force -ItemType Directory
 }
 
-$coreClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where {$_.FullName -match 'coreapp' }
-$fullClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where {$_.FullName -notmatch 'coreapp|standard' }
+$coreClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where-Object {$_.FullName -match 'coreapp' }
+$fullClr = Get-ChildItem -Recurse -Filter *.dll -Path $tDir | Where-Object {$_.FullName -notmatch 'coreapp|standard' }
 
 $coreClr | Copy-Item -Destination $SolutionDir\AutomatedLab\lib\core
 $fullClr | Copy-Item -Destination $SolutionDir\AutomatedLab\lib\full

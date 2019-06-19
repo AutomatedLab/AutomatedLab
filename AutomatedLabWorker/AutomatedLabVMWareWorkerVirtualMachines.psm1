@@ -1,4 +1,4 @@
-<#
+﻿<#
         An AutomatedLab user could have a VMWare environment on premisis _and_ have Hyper-V enabled on his own device.
         When the user has both Hyper-V and VMWare modules loaded in one session, this can cause unwanted behaviour.
 
@@ -108,7 +108,7 @@ function New-LWVMWareVM
     }
 
 
-    $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | select -last 1
+    $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | Select-Object -last 1
 
     $parameters = @{
         Name = $Name

@@ -281,7 +281,7 @@ function Send-Directory
 
         if (-not (Test-Path $DestinationPath))
         {
-            $null = mkdir -Path $DestinationPath -ErrorAction Stop
+            $null = New-Item -ItemType Directory -Path $DestinationPath -ErrorAction Stop
         }
         elseif (-not (Test-Path $DestinationPath -PathType Container))
         {
@@ -356,7 +356,7 @@ function Write-File
         if (-not (Test-Path -Path $parentPath))
         {
             Write-PSFMessage -Message "Force is set and destination folder '$parentPath' does not exist, creating it."
-            mkdir -Path $parentPath -Force | Out-Null
+            New-Item -ItemType Directory -Path $parentPath -Force | Out-Null
         }
     }
 
@@ -571,7 +571,7 @@ function Copy-LabFileItem
 
             if (-not (Test-Path -Path $newDestinationFolderPath))
             {
-                mkdir -Path $newDestinationFolderPath | Out-Null
+                New-Item -ItemType Directory -Path $newDestinationFolderPath | Out-Null
             }
         }
         else
