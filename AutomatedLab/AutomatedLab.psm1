@@ -2502,7 +2502,10 @@ function Install-LabSoftwarePackage
 
     # Transfer ALCommon library
     $libraryFolder = Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent
-    Copy-LabFileItem -Path "$libraryFolder\*.*" -ComputerName $ComputerName -DestinationFolderPath '/ALLibraries'
+    if (-not (Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
+    {
+        Copy-LabFileItem -Path "$libraryFolder\*.*" -ComputerName $ComputerName -DestinationFolderPath '/ALLibraries'
+    }
 
     $parameters.ScriptBlock = {
         Add-Type -Path '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
