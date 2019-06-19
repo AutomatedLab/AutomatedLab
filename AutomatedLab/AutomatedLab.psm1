@@ -2501,7 +2501,9 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     # Transfer ALCommon library
-    $libraryFolder = Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent
+    $childPath = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} }
+    $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
+    $libraryFolder = Join-Path -Path $libLocation -ChildPath $childPath
     if (-not (Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
     {
         Copy-LabFileItem -Path "$libraryFolder\*.*" -ComputerName $ComputerName -DestinationFolderPath '/ALLibraries'
