@@ -422,6 +422,7 @@
                     <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALIftttNotification.ps1" />
                     <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALMailNotification.ps1" />
                     <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALToastNotification.ps1" />
+                    <File Source="$(var.SolutionDir)\AutomatedLabNotifications\Private\Send-ALVoiceNotification.ps1" />
                   </Component>
                 </Directory>
                 <Directory Id="InstallFolder_AutomatedLabNotificationsPublic" Name="Public">
