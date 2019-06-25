@@ -71,7 +71,7 @@ function Send-File
 
     $firstChunk = $true
 
-    Write-PSFMessage -Message "PSFileTransfer: Sending file $SourceFilePath to $DestinationFolderPath on $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
+    Write-Verbose -Message "PSFileTransfer: Sending file $SourceFilePath to $DestinationFolderPath on $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
 
     $sourcePath = (Resolve-Path $SourceFilePath -ErrorAction SilentlyContinue).Path
     if (-not $sourcePath)
@@ -114,7 +114,7 @@ function Send-File
 
     $sourceFileStream.Close()
 
-    Write-PSFMessage -Message "PSFileTransfer: Finished sending file $SourceFilePath"
+    Write-Verbose -Message "PSFileTransfer: Finished sending file $SourceFilePath"
 }
 #endregion Send-File
 
