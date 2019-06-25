@@ -2982,7 +2982,7 @@ function Get-LabPostInstallationActivity
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $ParameterAttribute.ParameterSetName = 'CustomRole'
         $AttributeCollection.Add($ParameterAttribute)
-        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory).Name
+        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
 
         if ($arrSet)
         {
