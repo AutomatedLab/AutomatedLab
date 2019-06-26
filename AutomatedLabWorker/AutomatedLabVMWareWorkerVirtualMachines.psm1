@@ -1,4 +1,4 @@
-<#
+﻿<#
         An AutomatedLab user could have a VMWare environment on premisis _and_ have Hyper-V enabled on his own device.
         When the user has both Hyper-V and VMWare modules loaded in one session, this can cause unwanted behaviour.
 
@@ -108,7 +108,7 @@ function New-LWVMWareVM
     }
 
 
-    $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | select -last 1
+    $referenceSnapshot = (Get-Snapshot -VM (VMware.VimAutomation.Core\Get-VM $ReferenceVM)).Name | Select-Object -last 1
 
     $parameters = @{
         Name = $Name
@@ -346,7 +346,7 @@ function Wait-LWVMWareRestartVM
 
     $start = Get-Date
 
-    Write-Verbose "Starting monitoring the servers at '$start'"
+    Write-PSFMessage "Starting monitoring the servers at '$start'"
 
     $machines = Get-LabVM -ComputerName $ComputerName
 
@@ -368,7 +368,7 @@ function Wait-LWVMWareRestartVM
 
             if ($events)
             {
-                Write-Verbose "VM '$machine' has been restarted"
+                Write-PSFMessage "VM '$machine' has been restarted"
             }
             else
             {

@@ -7,7 +7,7 @@ function Set-UnattendedYastTimeZone
     )
 	
     $tzInfo = Get-TimeZone -Id $TimeZone
-    Write-Verbose -Message ('Since non-standard timezone names are used, we revert to Etc/GMT{0}' -f $tzInfo.BaseUtcOffset.TotalHours)
+    Write-PSFMessage -Message ('Since non-standard timezone names are used, we revert to Etc/GMT{0}' -f $tzInfo.BaseUtcOffset.TotalHours)
 
     $timeNode = $script:un.SelectSingleNode('/un:profile/un:timezone/un:timezone', $script:nsm)
 

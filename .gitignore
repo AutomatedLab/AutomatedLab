@@ -6,6 +6,10 @@
 *.user
 *.userosscache
 *.sln.docstates
+AutomatedLab/lib/
+
+# Ignore help
+*-help.xml
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs

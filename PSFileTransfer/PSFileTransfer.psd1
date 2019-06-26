@@ -1,25 +1,29 @@
 ﻿@{
-	RootModule               = 'PSFileTransfer.psm1'
+    RootModule             = 'PSFileTransfer.psm1'
 	
-	ModuleVersion            = '1.0.0'
+    ModuleVersion          = '1.0.0'
 	
-	GUID                     = '789c9c76-4756-4489-a74f-31ca64488c7b'
+    CompatiblePSEditions   = 'Core', 'Desktop'
 	
-	Author                   = 'Raimund Andree, Per Pedersen'
+    GUID                   = '789c9c76-4756-4489-a74f-31ca64488c7b'
 	
-	CompanyName              = 'AutomatedLab Team'
+    Author                 = 'Raimund Andree, Per Pedersen'
 	
-	Copyright                = '2018'
+    CompanyName            = 'AutomatedLab Team'
 	
-	Description              = 'This module packages functions created by Lee Holmes for transfering files over PowerShell Remoting'
+    Copyright              = '2019'
 	
-	PowerShellVersion        = '3.0'
+    Description            = 'This module packages functions created by Lee Holmes for transfering files over PowerShell Remoting'
 	
-	DotNetFrameworkVersion   = '2.0'
+    PowerShellVersion      = '5.1'
+	
+    DotNetFrameworkVersion = '2.0'
 
-	ModuleList               = @('PSFileTransfer')
+    ModuleList             = @('PSFileTransfer')
 	
-	FunctionsToExport        = 'Copy-LabFileItem', 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
+    FunctionsToExport      = 'Copy-LabFileItem', 'Send-Directory', 'Send-File', 'Receive-Directory', 'Receive-File'
 	
-	FileList                 = @('PSFileTransfer.psm1', 'PSFileTransfer.psd1')
+    FileList               = @('PSFileTransfer.psm1', 'PSFileTransfer.psd1')
+
+    RequiredModules        = @('PSFramework')
 }

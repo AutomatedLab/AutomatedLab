@@ -1,4 +1,4 @@
-function Add-UnattendedWindowsRenameNetworkAdapters
+﻿function Add-UnattendedWindowsRenameNetworkAdapters
 {
     function Add-XmlGroup
     {
@@ -52,7 +52,7 @@ function Add-UnattendedWindowsRenameNetworkAdapters
         $element.InnerText = $Text
     }
         
-    $order = (($script:un | Select-Xml -XPath "$WinPENode/un:RunSynchronousCommand" -Namespace $script:ns).node.childnodes.order | measure -Maximum).maximum
+    $order = (($script:un | Select-Xml -XPath "$WinPENode/un:RunSynchronousCommand" -Namespace $script:ns).node.childnodes.order | Measure-Object -Maximum).maximum
     $order++
 
     Add-XmlGroup -XPath '//un:settings[@pass = "oobeSystem"]/un:component[@name = "Microsoft-Windows-Shell-Setup"]/un:FirstLogonCommands' -ElementName 'SynchronousCommand' -Action 'add'

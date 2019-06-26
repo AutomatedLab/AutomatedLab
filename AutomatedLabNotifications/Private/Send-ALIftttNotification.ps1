@@ -13,8 +13,8 @@ function Send-ALIftttNotification
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
 
-    $key = (Get-LabConfigurationItem -Name NotificationProviders).Ifttt.Key
-    $eventName = (Get-LabConfigurationItem -Name NotificationProviders).Ifttt.EventName
+    $key = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Ifttt.Key
+    $eventName = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Ifttt.EventName
 
     $messageBody = @{
         value1 = $lab.Name + " on " + $lab.DefaultVirtualizationEngine
@@ -28,11 +28,11 @@ function Send-ALIftttNotification
         
         if (-not $request.StatusCode -eq 200)
         {
-            Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
+            Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
         }
     }
     catch 
     {
-        Write-Verbose -Message "Notification to IFTTT could not be sent with event $eventName."
+        Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName."
     }    
 }

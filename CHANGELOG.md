@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+## 5.11.0 - 2019-06-26
+
+### Bug fixes
+- DNS forwarder on Azure DC will not be reset any longer (thanks @dmi3mis)
+- Certificate issues fixed
+- Azure module version increase
+- Set-LabInstallationCredential now checks Azure password rules
+- Old exchange installation fixed
+- Software installation on lab clients with PS < 5 fails
+- Fixing error messages during lab deployment when CustomRoles folder is missing (but unused)
+
+### Enhancements
+- Deployment test added to TFS deployment
+- Help updated to use ReadTheDocs.io
+- .NET Core compatibility enabled
+- Adopted PSFramework in favor of datum (Thanks @friedrichweinmann for PSFramwork!)
+- Aliases replaced
+- AutomatedLabNotifications is able to use Microsoft.Speech (Voice output)
+
 ## 5.10.0 - 2019-05-15
 
 ### Bug fixes

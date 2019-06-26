@@ -2,5 +2,5 @@ function Add-UnattendedKickstartRenameNetworkAdapters
 {
     [CmdletBinding()]
     param ( )
-    Write-Verbose -Message 'Method not yet implemented for RHEL/CentOS/Fedora'
+    Write-PSFMessage -Message 'Method not yet implemented for RHEL/CentOS/Fedora'
 }

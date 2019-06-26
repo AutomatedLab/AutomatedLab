@@ -1,7 +1,7 @@
-#region New-LabVM
+﻿#region New-LabVM
 function New-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -113,16 +113,16 @@ function New-LabVM
     {
         Write-ScreenInfo -Message 'Initializing machines' -TaskStart
 
-        Write-Verbose -Message 'Calling Enable-PSRemoting on machines'
+        Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
         Enable-LWAzureWinRm -Machine $azureVMs -Wait
 
-        Write-Verbose -Message 'Setting lab DNS servers for newly created machines'
+        Write-PSFMessage -Message 'Setting lab DNS servers for newly created machines'
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
-        Write-Verbose -Message 'Restarting machines to apply DNS settings'
+        Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
         Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
 
-        Write-Verbose -Message 'Executing initialization script on machines'
+        Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -142,7 +142,7 @@ function New-LabVM
 #region Start-LabVM
 function Start-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(ParameterSetName = 'ByName', Position = 0)]
@@ -306,7 +306,7 @@ function Start-LabVM
             }
         }
 
-        Write-Verbose "Starting VMs '$($vms.Name -join ', ')'"
+        Write-PSFMessage "Starting VMs '$($vms.Name -join ', ')'"
 
         $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
         if ($hypervVMs)
@@ -341,7 +341,7 @@ function Start-LabVM
 #region Save-LabVM
 function Save-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [cmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
@@ -410,12 +410,12 @@ function Save-LabVM
             return
         }
 
-        Write-Verbose -Message "Saving VMs '$($vms -join ',')"
+        Write-PSFMessage -Message "Saving VMs '$($vms -join ',')"
         switch ($lab.DefaultVirtualizationEngine)
         {
             'HyperV' { Save-LWHypervVM -ComputerName $vms}
             'VMWare' { Save-LWVMWareVM -ComputerName $vms}
-            'Azure'  { Write-Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
+            'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
 
         Write-LogFunctionExit
@@ -426,7 +426,7 @@ function Save-LabVM
 #region Restart-LabVM
 function Restart-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -461,16 +461,16 @@ function Restart-LabVM
         return
     }
 
-    Write-Verbose "Stopping machine '$ComputerName' and waiting for shutdown"
+    Write-PSFMessage "Stopping machine '$ComputerName' and waiting for shutdown"
     Stop-LabVM -ComputerName $ComputerName -ShutdownTimeoutInMinutes $ShutdownTimeoutInMinutes -Wait -ProgressIndicator $ProgressIndicator -NoNewLine -KeepAzureVmProvisioned
-    Write-Verbose "Machine '$ComputerName' is stopped"
+    Write-PSFMessage "Machine '$ComputerName' is stopped"
 
     Write-Debug 'Waiting 10 seconds'
     Start-Sleep -Seconds 10
 
-    Write-Verbose "Starting machine '$ComputerName' and waiting for availability"
+    Write-PSFMessage "Starting machine '$ComputerName' and waiting for availability"
     Start-LabVM -ComputerName $ComputerName -Wait:$Wait -ProgressIndicator $ProgressIndicator -NoNewline:$NoNewLine
-    Write-Verbose "Machine '$ComputerName' is started"
+    Write-PSFMessage "Machine '$ComputerName' is started"
 
     Write-LogFunctionExit
 }
@@ -479,7 +479,7 @@ function Restart-LabVM
 #region Stop-LabVM
 function Stop-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -564,7 +564,7 @@ function Stop-LabVM
 #region Stop-LabVM2
 function Stop-LabVM2
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -607,7 +607,7 @@ function Stop-LabVM2
 #region Wait-LabVM
 function Wait-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -667,7 +667,7 @@ function Wait-LabVM
 
         if ($session)
         {
-            Write-Verbose "Computer '$vm' was reachable"
+            Write-PSFMessage "Computer '$vm' was reachable"
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param (
                     [string]$ComputerName
@@ -678,7 +678,7 @@ function Wait-LabVM
         }
         else
         {
-            Write-Verbose "Computer '$($vm.ComputerName)' was not reachable, waiting..."
+            Write-PSFMessage "Computer '$($vm.ComputerName)' was not reachable, waiting..."
             $jobs += Start-Job -Name "Waiting for machine '$vm'" -ScriptBlock {
                 param(
                     [Parameter(Mandatory)]
@@ -707,7 +707,7 @@ function Wait-LabVM
         }
     }
 
-    Write-Verbose "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
+    Write-PSFMessage "Waiting for $($jobs.Count) machines to respond in timeout ($TimeoutInMinutes minute(s))"
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -NoDisplay -Timeout $TimeoutInMinutes
 
@@ -730,7 +730,7 @@ function Wait-LabVM
     }
     else
     {
-        Write-Verbose "The following machines are ready: $($completed -join ', ')"
+        Write-PSFMessage "The following machines are ready: $($completed -join ', ')"
 
         foreach ($machine in $completed)
         {
@@ -804,7 +804,7 @@ function Wait-LabVM
 
 function Wait-LabVMRestart
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -878,7 +878,7 @@ function Wait-LabVMRestart
 #region Wait-LabVMShutdown
 function Wait-LabVMShutdown
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -944,7 +944,7 @@ function Wait-LabVMShutdown
 #region Remove-LabVM
 function Remove-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
@@ -1031,7 +1031,7 @@ function Remove-LabVM
 function Get-LabVMStatus
 {
     [cmdletBinding()]
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [string[]]$ComputerName,
 
@@ -1082,7 +1082,7 @@ function Get-LabVMStatus
 #region Get-LabVMUptime
 function Get-LabVMUptime
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1092,7 +1092,7 @@ function Get-LabVMUptime
     Write-LogFunctionEntry
 
     $cmdGetUptime = {
-        $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
+        $lastboottime = (Get-CimInstance -Class Win32_OperatingSystem).LastBootUpTime
         (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
     }
 
@@ -1113,7 +1113,7 @@ function Get-LabVMUptime
 #region Connect-LabVM
 function Connect-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1137,7 +1137,7 @@ function Connect-LabVM
 
         if ($machine.OperatingSystemType -eq 'Linux')
         {
-            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+            $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
 
             if (-not $sshBinary)
             {
@@ -1151,7 +1151,7 @@ function Connect-LabVM
                     Get-LabInternetFile -Uri $downloadUri -Path $downloadPath
 
                     Microsoft.PowerShell.Archive\Expand-Archive -Path $downloadPath -DestinationPath $targetPath -Force
-                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select -First 1
+                    $sshBinary = Get-ChildItem $labsources\Tools\OpenSSH -Filter ssh.exe -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
                 }
             }
 
@@ -1198,7 +1198,7 @@ function Connect-LabVM
 #region Get-LabVMRdpFile
 function Get-LabVMRdpFile
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$ComputerName,
@@ -1222,7 +1222,7 @@ function Get-LabVMRdpFile
 
     foreach ($machine in $machines)
     {
-        Write-Verbose "Creating RDP file for machine '$($machine.Name)'"
+        Write-PSFMessage "Creating RDP file for machine '$($machine.Name)'"
         $port = 3389
         $name = $machine.Name
 
@@ -1277,7 +1277,7 @@ authentication level:i:0
 "@
         $path = Join-Path -Path $lab.LabPath -ChildPath ($machine.Name + '.rdp')
         $rdpContent | Out-File -FilePath $path
-        Write-Verbose "RDP file saved to '$path'"
+        Write-PSFMessage "RDP file saved to '$path'"
     }
 }
 #endregion Get-LabVMRdpFile
@@ -1285,7 +1285,7 @@ authentication level:i:0
 #region Join-LabVMDomain
 function Join-LabVMDomain
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param(
@@ -1358,13 +1358,13 @@ function Join-LabVMDomain
     $jobs = @()
     $startTime = Get-Date
 
-    Write-Verbose "Starting joining $($Machine.Count) machines to domains"
+    Write-PSFMessage "Starting joining $($Machine.Count) machines to domains"
     foreach ($m in $Machine)
     {
         $domain = $lab.Domains | Where-Object Name -eq $m.DomainName
         $cred = $domain.GetCredential()
 
-        Write-Verbose "Joining machine '$m' to domain '$domain'"
+        Write-PSFMessage "Joining machine '$m' to domain '$domain'"
         $jobParameters = @{
             ComputerName = $m
             ActivityName = "DomainJoin_$m"
@@ -1385,7 +1385,7 @@ function Join-LabVMDomain
 
     if ($jobs)
     {
-        Write-Verbose 'Waiting on jobs to finish'
+        Write-PSFMessage 'Waiting on jobs to finish'
         Wait-LWLabJob -Job $jobs -ProgressIndicator 15 -NoDisplay -NoNewLine
 
         Write-ProgressIndicatorEnd
@@ -1416,7 +1416,7 @@ function Join-LabVMDomain
 #region Mount-LabIsoImage
 function Mount-LabIsoImage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1472,7 +1472,7 @@ function Mount-LabIsoImage
 #region Dismount-LabIsoImage
 function Dismount-LabIsoImage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1522,7 +1522,7 @@ function Dismount-LabIsoImage
 #region Get / Set-LabVMUacStatus
 function Set-VMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [bool]$EnableLUA,
@@ -1563,7 +1563,7 @@ function Set-VMUacStatus
 
 function Get-VMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
@@ -1589,7 +1589,7 @@ function Get-VMUacStatus
 
 function Set-LabVMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -1638,7 +1638,7 @@ function Set-LabVMUacStatus
 
 function Get-LabVMUacStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -1666,7 +1666,7 @@ function Get-LabVMUacStatus
 #region Test-LabMachineInternetConnectivity
 function Test-LabMachineInternetConnectivity
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([bool])]
     [CmdletBinding()]
     param (
@@ -1716,7 +1716,7 @@ function Test-LabMachineInternetConnectivity
 #region Get-LabVM
 function Get-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
     param (
@@ -1732,7 +1732,9 @@ function Get-LabVM
 
         [switch]$IncludeLinux,
 
-        [switch]$IsRunning
+        [switch]$IsRunning,
+
+        [Switch]$SkipConnectionInfo
     )
 
     begin
@@ -1800,7 +1802,7 @@ function Get-LabVM
     {
         #Add Azure Connection Info
         $azureVMs = $Script:data.Machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
-        if ($azureVMs)
+        if ($azureVMs -and -not $SkipConnectionInfo.IsPresent)
         {
             $azureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $azureVMs
 
@@ -1848,7 +1850,7 @@ function Enable-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Enabling autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Enabling autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVm @PSBoundParameters
 
@@ -1890,7 +1892,7 @@ function Disable-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Disabling autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Disabling autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVm @PSBoundParameters
 
@@ -1912,7 +1914,7 @@ function Test-LabAutoLogon
         $ComputerName
     )
 
-    Write-Verbose -Message "Testing autologon on $($ComputerName.Count) machines"
+    Write-PSFMessage -Message "Testing autologon on $($ComputerName.Count) machines"
 
     $Machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
@@ -1946,7 +1948,7 @@ function Test-LabAutoLogon
             $values
         } -PassThru -NoDisplay
 
-        Write-Verbose -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
+        Write-PSFMessage -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
 
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
@@ -1975,7 +1977,7 @@ function Test-LabAutoLogon
 #region Get-LabVMDotNetFrameworkVersion
 function Get-LabVMDotNetFrameworkVersion
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [Cmdletbinding()]
     param(
         [Parameter(Mandatory)]
@@ -2005,7 +2007,7 @@ function Get-LabVMDotNetFrameworkVersion
 #region Checkpoint-LabVM
 function Checkpoint-LabVM
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -2051,7 +2053,7 @@ function Checkpoint-LabVM
         $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
         if ($sessions)
         {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine"
+            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine"
             $sessions | Remove-PSSession
         }
     }
@@ -2070,7 +2072,7 @@ function Checkpoint-LabVM
 #region Restore-LabVMSnapshot
 function Restore-LabVMSnapshot
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -2116,7 +2118,7 @@ function Restore-LabVMSnapshot
         $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
         if ($sessions)
         {
-            Write-Verbose "Removing $($sessions.Count) open sessions to the machine '$machine'"
+            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine '$machine'"
             $sessions | Remove-PSSession
         }
     }
@@ -2135,7 +2137,7 @@ function Restore-LabVMSnapshot
 #region Remove-LabVMSnapshot
 function Remove-LabVMSnapshot
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]

@@ -5,5 +5,5 @@ function Set-UnattendedKickstartLocalIntranetSites
 		[string[]]$Values
 	)
 
-	Write-Verbose -Message 'No local intranet sites for RHEL/CentOS/Fedora'
+	Write-PSFMessage -Message 'No local intranet sites for RHEL/CentOS/Fedora'
 }

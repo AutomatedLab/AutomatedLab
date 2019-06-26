@@ -62,7 +62,7 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName PGClient1 -Sc
     $targetPath = 'C:\ProgramData\Microsoft\Windows\PowerShell\PowerShellGet'
     if (-not (Test-Path -Path $targetPath))
     {
-        mkdir -Path $targetPath -Force | Out-Null
+        New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
     }
 
     $sourceNugetExe = 'http://nuget.org/NuGet.exe'

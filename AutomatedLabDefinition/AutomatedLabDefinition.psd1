@@ -1,7 +1,9 @@
 ﻿@{
     RootModule             = 'AutomatedLabDefinition.psm1'
     
-     ModuleVersion          = '1.0.0'
+    ModuleVersion          = '1.0.0'
+	
+    CompatiblePSEditions   = 'Core', 'Desktop'
     
     GUID                   = 'e85df8ec-4ce6-4ecc-9720-1d08e14f27ad'
     
@@ -9,11 +11,11 @@
     
     CompanyName            = 'AutomatedLab Team'
     
-    Copyright              = '2018'
+    Copyright              = '2019'
     
     Description            = 'The module creates the lab and machine definition for the AutomatedLab module saved in XML'
     
-    PowerShellVersion      = '4.0'
+    PowerShellVersion      = '5.1'
     
     DotNetFrameworkVersion = '4.0'
 
@@ -26,6 +28,7 @@
     RequiredModules        = @(
         'AutomatedLabUnattended'
         'PSLog'
+        'PSFramework'
     )
 
     CmdletsToExport        = @()

@@ -1,4 +1,4 @@
-New-PolarisRouteMiddleware -Name JsonBodyParser -ScriptBlock {
+﻿New-PolarisRouteMiddleware -Name JsonBodyParser -ScriptBlock {
     if ($Request.BodyString -ne $null)
     {
         $Request.Body = $Request.BodyString | ConvertFrom-Json
@@ -108,4 +108,5 @@ New-PolarisDeleteRoute -Path /Lab -ScriptBlock {
 }
 
 Start-Polaris -Port 80
-Read-Host
+while ($true)
+{ Start-Sleep 1 }

@@ -24,13 +24,13 @@ function Send-ALToastNotification
 
     if ($PSVersionTable.BuildVersion -lt 6.3 -or -not $isFullGui)
     {
-        Write-Verbose -Message 'No toasts for OS version < 6.3 or Server Core'
+        Write-PSFMessage -Message 'No toasts for OS version < 6.3 or Server Core'
         return
     }
     
     # Hardcoded toaster from PowerShell - no custom Toast providers after 1709
     $toastProvider = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
-    $imageLocation = (Get-LabConfigurationItem -Name NotificationProviders).Toast.Image
+    $imageLocation = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Toast.Image
     $imagePath = 'C:\ProgramData\AutomatedLab\Assets'
     $imageFilePath = Join-Path $imagePath -ChildPath (Split-Path $imageLocation -Leaf)
 
@@ -62,6 +62,6 @@ function Send-ALToastNotification
     }
     catch
     {
-        Write-Verbose "Error sending toast notification: $($_.Exception.Message)"
+        Write-PSFMessage "Error sending toast notification: $($_.Exception.Message)"
     }
 }

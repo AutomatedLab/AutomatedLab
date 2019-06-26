@@ -1,4 +1,4 @@
-version: 5.10.{build}
+version: 5.11.{build}
 image:
 - Visual Studio 2017
 
@@ -19,6 +19,7 @@ init:
         Write-Host "Init task - Set version number if necessary"
         $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
         $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0,0)
+        
         if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
         {          
           $properVersion = $compareVersion.ToString(3)
@@ -43,6 +44,15 @@ init:
 install:
   - git submodule -q update --init --recursive
 
+dotnet_csproj:
+  patch: true
+  file: '**\LabXml.csproj'
+  version: '{version}'
+  package_version: '{version}'
+  assembly_version: '{version}'
+  file_version: '{version}'
+  informational_version: '{version}'
+
 assembly_info:
   patch: true
   file: AssemblyInfo.*
@@ -58,6 +68,21 @@ before_build:
         Write-Host "Setting version number in files"
         Add-AppveyorMessage -Message "Setting version number in files" -Category Information
         gci -Filter *.psd1 -Recurse | foreach {if ($_.Directory.Name -eq $_.BaseName) {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName} }
+        Write-Host "Init task - compiling help for Installer"
+        Install-PackageProvider -Name Nuget -Force
+        Install-Module PlatyPs -Force -AllowClobber -SkipPublisherCheck
+        foreach ($moduleName in (Get-ChildItem -Path .\Help -Directory))
+        {
+            foreach ($language in ($moduleName | Get-ChildItem -Directory))
+            {
+                $ci = try { [cultureinfo]$language.BaseName} catch { }
+                if (-not $ci) {continue}
+
+                $opPath = Join-Path -Path $env:APPVEYOR_BUILD_FOLDER -ChildPath "$($moduleName.BaseName)\$($language.BaseName)"
+                Write-Host "Generating help XML in $opPath"
+                New-ExternalHelp -Path $language.FullName -OutputPath $opPath
+            }
+        }
 
 build:
   project: AutomatedLab.sln

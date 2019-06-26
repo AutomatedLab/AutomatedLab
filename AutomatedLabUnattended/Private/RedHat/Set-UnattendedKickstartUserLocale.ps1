@@ -11,7 +11,7 @@ function Set-UnattendedKickstartUserLocale
     }
     catch
     {
-        Write-Verbose -Message "Could not determine culture from $UserLocale. Assuming en_us"
+        Write-PSFMessage -Message "Could not determine culture from $UserLocale. Assuming en_us"
         $script:un.Add("keyboard 'us'")
         $script:un.Add('lang en_us')
         return

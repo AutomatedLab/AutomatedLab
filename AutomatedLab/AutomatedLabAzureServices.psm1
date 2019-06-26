@@ -1,6 +1,6 @@
 function Install-LabAzureServices
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param ()
 
@@ -39,7 +39,7 @@ function Install-LabAzureServices
 #region New-LabAzureAppServicePlan
 function New-LabAzureAppServicePlan
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
@@ -104,7 +104,7 @@ function New-LabAzureAppServicePlan
 #region Set-LabAzureWebAppContent
 function Set-LabAzureWebAppContent
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -157,7 +157,7 @@ function Set-LabAzureWebAppContent
 #region New-LabAzureWebApp
 function New-LabAzureWebApp
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
@@ -231,7 +231,7 @@ function New-LabAzureWebApp
 #region Get-LabAzureAppServicePlan
 function Get-LabAzureAppServicePlan
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
@@ -285,7 +285,7 @@ function Get-LabAzureAppServicePlan
 #region Get-LabAzureWebApp
 function Get-LabAzureWebApp
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
@@ -332,7 +332,7 @@ function Get-LabAzureWebApp
 #region Remove-LabAzureWebApp
 function Remove-LabAzureWebApp
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -380,7 +380,7 @@ function Remove-LabAzureWebApp
 #region Remove-LabAzureAppServicePlan
 function Remove-LabAzureAppServicePlan
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -428,7 +428,7 @@ function Remove-LabAzureAppServicePlan
 #region Start-LabAzureWebApp
 function Start-LabAzureWebApp
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
@@ -492,7 +492,7 @@ function Start-LabAzureWebApp
 #region Stop-LabAzureWebApp
 function Stop-LabAzureWebApp
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
@@ -556,7 +556,7 @@ function Stop-LabAzureWebApp
 #region Get-LabAzureWebAppStatus
 function Get-LabAzureWebAppStatus
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([System.Collections.Hashtable])]
     param (
@@ -650,7 +650,7 @@ function Get-LabAzureWebAppStatus
 #region Send-LabAzureWebAppContent
 function Send-LabAzureWebAppContent
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([string])]
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
@@ -715,7 +715,7 @@ function Send-FtpFolder
         [switch]$Recure
     )
 
-    Add-Type -Path 'C:\Program Files\WindowsPowerShell\Modules\AutomatedLab\Tools\FluentFTP.dll'
+    Add-Type -Path (Join-Path -Path (Get-Module AutomatedLab).ModuleBase -ChildPath 'Tools\FluentFTP.dll')
     $fileCount = 0
 
     if (-not (Test-Path -Path $Path -PathType Container))
@@ -748,12 +748,12 @@ function Send-FtpFolder
     }
 
     $files = Get-ChildItem -Path $Path -File -Recurse:$Recure
-    Write-Verbose "Sending folder '$Path' with $($files.Count) files"
+    Write-PSFMessage "Sending folder '$Path' with $($files.Count) files"
 
     foreach ($file in $files)
     {
         $fileCount++
-        Write-Verbose "Sending file $($file.FullName) ($fileCount)"
+        Write-PSFMessage "Sending file $($file.FullName) ($fileCount)"
         Write-Progress -Activity "Uploading file '$($file.FullName)'" -Status x -PercentComplete ($fileCount / $files.Count * 100)
         $relativeFullName = $file.FullName.Replace($path, '').Replace('\', '/')
         if ($relativeFullName.StartsWith('/')) { $relativeFullName = $relativeFullName.Substring(1) }
@@ -777,7 +777,7 @@ function Send-FtpFolder
         }
     }
 
-    Write-Verbose "Finsihed sending folder '$Path'"
+    Write-PSFMessage "Finsihed sending folder '$Path'"
 
     $client.Disconnect()
 }

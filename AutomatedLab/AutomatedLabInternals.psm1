@@ -1,15 +1,15 @@
-#region Get-LabHyperVAvailableMemory
+﻿#region Get-LabHyperVAvailableMemory
 function Get-LabHyperVAvailableMemory
 {
     # .ExternalHelp AutomatedLab.Help.xml
-    [int](((Get-WmiObject -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
+    [int](((Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
 
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     Remove-Lab
     Remove-Module *
 }
@@ -18,7 +18,7 @@ function Reset-AutomatedLab
 #region Save-Hashes
 function Save-Hashes
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -47,7 +47,7 @@ function Save-Hashes
 #region Test-FileHashes
 function Test-FileHashes
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -83,21 +83,21 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
         $Filename = 'C:\ALfiles.txt'
     )
 
-    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | % {Get-ChildItem $_.FullName | Select-Object FullName} | Export-Csv -Path $Filename
+    Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName} | Export-Csv -Path $Filename
 }
 #endregion Save-FileList
 
 #region Test-FileList
 function Test-FileList
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -105,7 +105,7 @@ function Test-FileList
     )
 
     $StoredFiles = Import-Csv -Path $Filename
-    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | % {Get-ChildItem $_.FullName | Select-Object FullName}
+    $Files = Get-ChildItem $ModulePath -Recurse -Directory -Include 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog' | ForEach-Object {Get-ChildItem $_.FullName | Select-Object FullName}
 
     if (Compare-Object -ReferenceObject $StoredFiles -DifferenceObject $Files)
     {
@@ -121,7 +121,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -138,7 +138,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -155,7 +155,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -325,7 +325,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path C:\unattend.xml
@@ -339,7 +339,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -377,7 +377,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param
     (
@@ -431,7 +431,7 @@ function Disable-LabVMFirewallGroup
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -475,7 +475,7 @@ function Get-LabInternetFile
         }
         else
         {
-            if (-not (Get-NetConnectionProfile | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            if (-not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
             {
                 #machine does not have internet connectivity
                 if (-not $offlineNode)
@@ -585,7 +585,7 @@ function Get-LabInternetFile
     if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
     {
         $machine = Get-LabVM -IsRunning | Select-Object -First 1
-        Write-Verbose "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+        Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
         $argumentList = $Uri, $Path, $FileName
 
@@ -596,13 +596,13 @@ function Get-LabInternetFile
     }
     else
     {
-        Write-Verbose "Target path is local, invoking the copy job locally."
+        Write-PSFMessage "Target path is local, invoking the copy job locally."
         $PSBoundParameters.Remove('PassThru') | Out-Null
         $result = Get-LabInternetFileInternal @PSBoundParameters
     }
 
     $end = Get-Date
-    Write-Verbose "Download has taken: $($end - $start)"
+    Write-PSFMessage "Download has taken: $($end - $start)"
 
     if ($PassThru)
     {
@@ -621,7 +621,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param(
         [string]$Path = $global:labSources
     )
@@ -636,7 +636,7 @@ function Unblock-LabSources
 
     if($lab.DefaultVirtualizationEngine -eq 'Azure' -and $Path.StartsWith("\\"))
     {
-        Write-Verbose 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
+        Write-PSFMessage 'Skipping the unblocking of lab sources since we are on Azure and lab sources are unblocked during Sync-LabAzureLabSources'
         return
     }
 
@@ -651,25 +651,25 @@ function Unblock-LabSources
     try
     {
         $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
-        Write-Verbose 'Imported Cache\Timestamps from regirtry'
+        Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
     }
     catch
     {
         $cache = New-Object $type
-        Write-Verbose 'No entry found in the regirtry at Cache\Timestamps'
+        Write-PSFMessage 'No entry found in the regirtry at Cache\Timestamps'
     }
 
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
     {
-        Write-Verbose 'Last unblock more than 24 hours ago, unblocking files'
+        Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
         Get-ChildItem -Path $Path -Recurse | Unblock-File
         $cache['LabSourcesLastUnblock'] = Get-Date
         $cache.ExportToRegistry('Cache', 'Timestamps')
-        Write-Verbose 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
+        Write-PSFMessage 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
     }
     else
     {
-        Write-Verbose 'Last unblock less than 24 hours ago, doing nothing'
+        Write-PSFMessage 'Last unblock less than 24 hours ago, doing nothing'
     }
 
     Write-LogFunctionExit
@@ -679,7 +679,7 @@ function Unblock-LabSources
 
 function Set-LabVMDescription
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,
@@ -726,7 +726,7 @@ function Get-LabSourcesLocationInternal
     
     if ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-WmiObject -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
         
         $folders = foreach ($drive in $hardDrives)
         {
@@ -738,7 +738,7 @@ function Get-LabSourcesLocationInternal
 
         if ($folders.Count -gt 1)
         {
-            Write-Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
+            Write-PSFMessage -Level Warning "The LabSources folder is available more than once ('$($folders -join "', '")'). The LabSources folder must exist only on one drive and in the root of the drive."
         }
 
         $folders
@@ -769,24 +769,24 @@ function Update-LabSysinternalsTools
     try {
         #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
         if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') {
-            Write-Verbose -Message 'Adding support for TLS 1.2'
+            Write-PSFMessage -Message 'Adding support for TLS 1.2'
             [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
         }
     }
     catch {
-        Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+        Write-PSFMessage -Level Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
     }
 
     try
     {
-        Write-Verbose -Message 'Get last check time of SysInternals suite'
+        Write-PSFMessage -Message 'Get last check time of SysInternals suite'
         $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
-        Write-Verbose -Message "Last check was '$lastChecked'."
+        Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
     catch
     {
-        Write-Verbose -Message 'Last check time could not be retrieved. SysInternals suite never updated'
+        Write-PSFMessage -Message 'Last check time could not be retrieved. SysInternals suite never updated'
         $lastChecked = Get-Date -Year 1601
         $timestamps = New-Object $type
     }
@@ -798,20 +798,20 @@ function Update-LabSysinternalsTools
 
     if ((Get-Date) -gt $lastChecked)
     {
-        Write-Verbose -Message 'Last check time is more then a week ago. Check web site for update.'
+        Write-PSFMessage -Message 'Last check time is more then a week ago. Check web site for update.'
         
         $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
         $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
     
         try
         {
-            Write-Verbose -Message 'Web page downloaded'
+            Write-PSFMessage -Message 'Web page downloaded'
             $webRequest = Invoke-WebRequest -Uri $sysInternalsURL -UseBasicParsing
             $pageDownloaded = $true
         }
         catch
         {
-            Write-Verbose -Message 'Web page could not be downloaded'
+            Write-PSFMessage -Message 'Web page could not be downloaded'
             Write-ScreenInfo -Message "No connection to '$sysInternalsURL'. Skipping." -Type Error
             $pageDownloaded = $false
         }
@@ -822,7 +822,7 @@ function Update-LabSysinternalsTools
             $updateFinish = $webRequest.Content.IndexOf('</p>', $updateStart)
             $updateStringFromWebPage = $webRequest.Content.Substring($updateStart, $updateFinish - $updateStart).Trim()
 
-            Write-Verbose -Message "Update string from web page: '$updateStringFromWebPage'"
+            Write-PSFMessage -Message "Update string from web page: '$updateStringFromWebPage'"
 
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
@@ -834,7 +834,7 @@ function Update-LabSysinternalsTools
                 $versions = New-Object $type
             }
 
-            Write-Verbose -Message "Update string from registry: '$currentVersion'"
+            Write-PSFMessage -Message "Update string from registry: '$currentVersion'"
 
             if ($versions['SysInternals'] -ne $updateStringFromWebPage)
             {
@@ -845,13 +845,13 @@ function Update-LabSysinternalsTools
 
                 $tempFilePath = [System.IO.Path]::GetTempFileName()
                 $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
-                Write-Verbose -Message "Temp file: '$tempFilePath'"
+                Write-PSFMessage -Message "Temp file: '$tempFilePath'"
 
                 try
                 {
                     Invoke-WebRequest -Uri $sysInternalsDownloadURL -UseBasicParsing -OutFile $tempFilePath
                     $fileDownloaded = $true
-                    Write-Verbose -Message "File '$sysInternalsDownloadURL' downloaded"
+                    Write-PSFMessage -Message "File '$sysInternalsDownloadURL' downloaded"
                 }
                 catch
                 {
@@ -866,22 +866,22 @@ function Update-LabSysinternalsTools
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools' does not exist. Creating now."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools' does not exist. Creating now."
                         New-Item -ItemType Directory -Path "$labSources\Tools" | Out-Null
                     }
                     if (-not (Test-Path -Path "$labSources\Tools\SysInternals"))
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools\SysInternals' does not exist. Creating now."
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
                     else
                     {
-                        Write-Verbose -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
+                        Write-PSFMessage -Message "Folder '$labSources\Tools\SysInternals' exist. Removing it now and recreating it."
                         Remove-Item -Path "$labSources\Tools\SysInternals" -Recurse | Out-Null
                         New-Item -ItemType Directory -Path "$labSources\Tools\SysInternals" | Out-Null
                     }
 
-                    Write-Verbose -Message 'Extracting files'
+                    Write-PSFMessage -Message 'Extracting files'
                     Microsoft.PowerShell.Archive\Expand-Archive -Path $tempFilePath -DestinationPath "$labSources\Tools\SysInternals"
                     Remove-Item -Path $tempFilePath
 
@@ -903,28 +903,6 @@ function Update-LabSysinternalsTools
 function Register-LabArgumentCompleters
 {
     $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters -and $_.Parameters.ContainsKey('ComputerName') }
-    Register-ArgumentCompleter -CommandName $commands -ParameterName ComputerName -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
 
-        Get-LabVM -All -IncludeLinux |
-        ForEach-Object {
-            if ($_.Roles)
-            {
-                [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Roles)
-            }
-            else
-            {
-                [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-            }
-        }
-    }
-
-    Register-ArgumentCompleter -CommandName Add-LabMachineDefinition -ParameterName DomainName -ScriptBlock {
-        param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameter)
-
-        (Get-LabDefinition).Domains |
-        ForEach-Object {
-            [System.Management.Automation.CompletionResult]::new($_.Name, $_.Name, 'ParameterValue', $_.Name)
-        }
-    }
+    Register-PSFTeppArgumentCompleter -Command $commands -Parameter ComputerName -Name 'AutomatedLab-ComputerName'
 }

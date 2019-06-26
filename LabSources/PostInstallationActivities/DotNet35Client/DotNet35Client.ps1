@@ -35,7 +35,7 @@
 	    return
     }
 
-    $osName = (Get-WmiObject "win32_operatingsystem" | Select caption).Caption
+    $osName = (Get-CimInstance "win32_operatingsystem" | Select-Object caption).Caption
     if ($osName -notlike '*Microsoft Windows 8*')
     {
         Write-Error 'This script only runs on Windows 8'

@@ -145,7 +145,7 @@ function Receive-File
 
     $firstChunk = $true
 
-    Write-Verbose -Message "PSFileTransfer: Receiving file $SourceFilePath to $DestinationFilePath from $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
+    Write-PSFMessage -Message "PSFileTransfer: Receiving file $SourceFilePath to $DestinationFilePath from $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
 
     $sourceLength = Invoke-Command -Session $Session -ScriptBlock (Get-Command Get-FileLength).ScriptBlock `
         -ArgumentList $SourceFilePath -ErrorAction Stop
@@ -173,7 +173,7 @@ function Receive-File
         $firstChunk = $false
     }
 
-    Write-Verbose -Message "PSFileTransfer: Finished receiving file $SourceFilePath"
+    Write-PSFMessage -Message "PSFileTransfer: Finished receiving file $SourceFilePath"
 }
 #endregion Receive-File
 
@@ -193,7 +193,7 @@ function Receive-Directory
         [Parameter(Mandatory = $true)]
         [System.Management.Automation.Runspaces.PSSession] $Session
     )
-    Write-Verbose -Message "Receive-Directory $($env:COMPUTERNAME): remote source $SourceFolderPath, local destination $DestinationFolderPath, session $($Session.ComputerName)"
+    Write-PSFMessage -Message "Receive-Directory $($env:COMPUTERNAME): remote source $SourceFolderPath, local destination $DestinationFolderPath, session $($Session.ComputerName)"
 
     $remoteDir = Invoke-Command -Session $Session -ScriptBlock {
         param ($Source)
@@ -267,7 +267,7 @@ function Send-Directory
         $initialSourceParent = Split-Path -Path $initialSource -Parent
     }
 
-    Write-Verbose -Message "Send-Directory $($env:COMPUTERNAME): local source $SourceFolderPath, remote destination $DestinationFolderPath, session $($Session.ComputerName)"
+    Write-PSFMessage -Message "Send-Directory $($env:COMPUTERNAME): local source $SourceFolderPath, remote destination $DestinationFolderPath, session $($Session.ComputerName)"
 
     $localDir = Get-Item $SourceFolderPath -ErrorAction Stop -Force
     if (-not $localDir.PSIsContainer)
@@ -281,7 +281,7 @@ function Send-Directory
 
         if (-not (Test-Path $DestinationPath))
         {
-            $null = mkdir -Path $DestinationPath -ErrorAction Stop
+            $null = New-Item -ItemType Directory -Path $DestinationPath -ErrorAction Stop
         }
         elseif (-not (Test-Path $DestinationPath -PathType Container))
         {
@@ -355,8 +355,8 @@ function Write-File
         $parentPath = Split-Path -Path $DestinationFullName -Parent
         if (-not (Test-Path -Path $parentPath))
         {
-            Write-Verbose -Message "Force is set and destination folder '$parentPath' does not exist, creating it."
-            mkdir -Path $parentPath -Force | Out-Null
+            Write-PSFMessage -Message "Force is set and destination folder '$parentPath' does not exist, creating it."
+            New-Item -ItemType Directory -Path $parentPath -Force | Out-Null
         }
     }
 
@@ -557,7 +557,7 @@ function Copy-LabFileItem
         }
     }
 
-    Write-Verbose -Message "Copying the items '$($Path -join ', ')' to machines '$($connectedMachines.Keys -join ', ')'"
+    Write-PSFMessage -Message "Copying the items '$($Path -join ', ')' to machines '$($connectedMachines.Keys -join ', ')'"
 
     foreach ($machine in $connectedMachines.GetEnumerator())
     {
@@ -571,7 +571,7 @@ function Copy-LabFileItem
 
             if (-not (Test-Path -Path $newDestinationFolderPath))
             {
-                mkdir -Path $newDestinationFolderPath | Out-Null
+                New-Item -ItemType Directory -Path $newDestinationFolderPath | Out-Null
             }
         }
         else
@@ -598,7 +598,7 @@ function Copy-LabFileItem
 
         $machine.Value | Remove-PSDrive
         Write-Debug -Message "Drive '$($drive.Name)' removed"
-        Write-Verbose -Message "Files copied on to machine '$($machine.Name)'"
+        Write-PSFMessage -Message "Files copied on to machine '$($machine.Name)'"
     }
 
     Write-LogFunctionExit

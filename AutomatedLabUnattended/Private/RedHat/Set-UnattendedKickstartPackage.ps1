@@ -11,7 +11,7 @@ function Set-UnattendedKickstartPackage
     }
     elseif ($Package -like '*KDE*')
     {
-        Write-Warning -Message 'Adding KDE UI to RHEL/CentOS via kickstart file is not supported. Please configure your UI manually.'
+        Write-PSFMessage -Level Warning -Message 'Adding KDE UI to RHEL/CentOS via kickstart file is not supported. Please configure your UI manually.'
     }
 
     $script:un.Add('%packages --ignoremissing')

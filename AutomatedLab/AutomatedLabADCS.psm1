@@ -1229,7 +1229,7 @@ $ExtendedKeyUsages = @{
 #region Get-LabCertificate
 function Get-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'FindCer')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'FindCer')]
@@ -1304,7 +1304,7 @@ function Get-LabCertificate
 #region Add-LabCertificate
 function Add-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding(DefaultParameterSetName = 'ByteArray')]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'File')]
@@ -1374,7 +1374,7 @@ function Add-LabCertificate
 #region New-LabCATemplate
 function New-LabCATemplate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1446,7 +1446,7 @@ function New-LabCATemplate
 #region Test-LabCATemplate
 function Test-LabCATemplate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1480,7 +1480,7 @@ function Test-LabCATemplate
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
 
@@ -1532,7 +1532,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1599,7 +1599,7 @@ function Request-LabCertificate
 #region Install-LabCA
 function Install-LabCA
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 
@@ -1665,17 +1665,17 @@ function Install-LabCA
 
         Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoDisplay
 
-        Write-Verbose -Message "Getting certificates from Root CA servers and placing them in '<labfolder>\Certs' on host machine"
+        Write-PSFMessage -Message "Getting certificates from Root CA servers and placing them in '<labfolder>\Certs' on host machine"
         Get-LabVM -Role CaRoot | Get-LabCAInstallCertificates
 
         Write-ScreenInfo -Message 'Publishing certificates from CA servers to all online machines' -NoNewLine
         $jobs = Publish-LabCAInstallCertificates -PassThru
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
 
-        Write-Verbose -Message 'Waiting for all running machines to be contactable'
+        Write-PSFMessage -Message 'Waiting for all running machines to be contactable'
         Wait-LabVM -ComputerName (Get-LabVM -All -IsRunning) -ProgressIndicator 20 -NoNewLine
 
-        Write-Verbose -Message 'Invoking a GPUpdate on all running machines'
+        Write-PSFMessage -Message 'Invoking a GPUpdate on all running machines'
         $jobs = Invoke-LabCommand -ActivityName 'GPUpdate after Root CA install' -ComputerName (Get-LabVM -All -IsRunning) -ScriptBlock {
             gpupdate.exe /force
         } -AsJob -PassThru -NoDisplay
@@ -1723,14 +1723,14 @@ function Install-LabCA
 
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoNewLine -NoDisplay
 
-            Write-Verbose -Message "- Getting certificates from CA servers and placing them in '<labfolder>\Certs' on host machine"
+            Write-PSFMessage -Message "- Getting certificates from CA servers and placing them in '<labfolder>\Certs' on host machine"
             Get-LabVM -Role CaRoot, CaSubordinate | Get-LabCAInstallCertificates
 
-            Write-Verbose -Message '- Publishing certificates from Subordinate CA servers to all online machines'
+            Write-PSFMessage -Message '- Publishing certificates from Subordinate CA servers to all online machines'
             $jobs = Publish-LabCAInstallCertificates -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoNewLine -NoDisplay
 
-            Write-Verbose -Message 'Invoking a GPUpdate on all machines that are online'
+            Write-PSFMessage -Message 'Invoking a GPUpdate on all machines that are online'
             $jobs = Invoke-LabCommand -ComputerName (Get-LabVM -All -IsRunning) -ActivityName 'GPUpdate after Root CA install' -NoDisplay -ScriptBlock { gpupdate.exe /force } -AsJob -PassThru
             Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -Timeout 30 -NoDisplay
         }
@@ -1751,7 +1751,7 @@ function Install-LabCA
 #region Install-LabCAMachine
 function Install-LabCAMachine
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
 
     param (
@@ -1765,9 +1765,9 @@ function Install-LabCAMachine
 
     Write-LogFunctionEntry
 
-    Write-Verbose -Message '****************************************************'
-    Write-Verbose -Message "Starting installation of machine: $($machine.name)"
-    Write-Verbose -Message '****************************************************'
+    Write-PSFMessage -Message '****************************************************'
+    Write-PSFMessage -Message "Starting installation of machine: $($machine.name)"
+    Write-PSFMessage -Message '****************************************************'
 
     $role = $machine.Roles | Where-Object { $_.Name -eq ([AutomatedLab.Roles]::CaRoot) -or $_.Name -eq ([AutomatedLab.Roles]::CaSubordinate) }
 
@@ -2377,7 +2377,7 @@ function Install-LabCAMachine
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
 
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
             } -Variable (Get-Variable -Name DatabaseDirectoryDrive) -PassThru
 
             if (-not $disk -or -not $disk.DriveType -eq 3)
@@ -2391,7 +2391,7 @@ function Install-LabCAMachine
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-WMIObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
             } -Variable (Get-Variable -Name LogDirectoryDrive) -PassThru
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
@@ -2472,7 +2472,7 @@ function Install-LabCAMachine
             {
                 $param.ParentCALogicalName = ($rootCA.Roles | Where-Object Name -eq CaRoot).Properties.CACommonName
                 $param.ParentCA = $rootCA.Name
-                Write-Verbose "Root CA '$($param.ParentCALogicalName)' ($($param.ParentCA)) automatically selected as parent CA"
+                Write-PSFMessage "Root CA '$($param.ParentCALogicalName)' ($($param.ParentCA)) automatically selected as parent CA"
                 $ValidityPeriod = $rootCA.roles.Properties.CertsValidityPeriod
                 $ValidityPeriodUnits = $rootCA.roles.Properties.CertsValidityPeriodUnits
             }
@@ -2491,7 +2491,7 @@ function Install-LabCAMachine
             $totalretries = 20
             $retries = 0
 
-            Write-Verbose -Message "Testing Root CA availability: certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)"
+            Write-PSFMessage -Message "Testing Root CA availability: certutil -ping $($param.ParentCA)\$($param.ParentCALogicalName)"
             do
             {
                 $result = Invoke-LabCommand -ComputerName $param.ComputerName -ScriptBlock {
@@ -2506,7 +2506,7 @@ function Install-LabCAMachine
                 {
                     $result | ForEach-Object { Write-Debug -Message $_ }
                     $retries++
-                    Write-Verbose -Message "Could not contact ParentCA. (Computername=$($param.ParentCA), LogicalCAName=$($param.ParentCALogicalName)). (Check $retries of $totalretries)"
+                    Write-PSFMessage -Message "Could not contact ParentCA. (Computername=$($param.ParentCA), LogicalCAName=$($param.ParentCALogicalName)). (Check $retries of $totalretries)"
                     if ($retries -lt $totalretries) { Start-Sleep -Seconds 5 }
                 }
             }
@@ -2514,7 +2514,7 @@ function Install-LabCAMachine
 
             if ($result | Where-Object { $_ -like '*interface is alive*' })
             {
-                Write-Verbose -Message "Parent CA ($($param.ParentCA)) is contactable"
+                Write-PSFMessage -Message "Parent CA ($($param.ParentCA)) is contactable"
             }
             else
             {
@@ -2904,7 +2904,7 @@ function Install-LabCAMachine
 
     $param.PreDelaySeconds = $PreDelaySeconds
 
-    Write-Verbose -Message "Starting install of $($param.CaType) role on machine '$($machine.Name)'"
+    Write-PSFMessage -Message "Starting install of $($param.CaType) role on machine '$($machine.Name)'"
     $job = Install-LWLabCAServers @param
     if ($PassThru)
     {
@@ -2918,7 +2918,7 @@ function Install-LabCAMachine
 #region Get-LabCAInstallCertificates
 function Get-LabCAInstallCertificates
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [AutomatedLab.Machine[]]$Machines
@@ -2963,7 +2963,7 @@ function Get-LabCAInstallCertificates
 #region Publish-LabCAInstallCertificates
 function Publish-LabCAInstallCertificates
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [switch]$PassThru
     )
@@ -2979,7 +2979,7 @@ function Publish-LabCAInstallCertificates
 
     #Also publish to any machines not domain joined
     $targetMachines += Get-LabVM -All -IsRunning | Where-Object { -not $_.IsDomainJoined }
-    Write-Verbose -Message "Target machines for publishing: '$($targetMachines -join ', ')'"
+    Write-PSFMessage -Message "Target machines for publishing: '$($targetMachines -join ', ')'"
 
     $machinesNotTargeted = Get-LabVM -All | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Name -notin $targetMachines.Name -and -not $_.IsDomainJoined }
 
@@ -2994,7 +2994,7 @@ function Publish-LabCAInstallCertificates
         $machineSession = New-LabPSSession -ComputerName $machine
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
-            Write-Verbose -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
+            Write-PSFMessage -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
             Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath C:\Windows -Session $machineSession
         }
 
@@ -3003,7 +3003,7 @@ function Publish-LabCAInstallCertificates
             {
                 Write-Verbose -Message "Install certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) on machine $(hostname)"
                 #If workgroup, publish to local store
-                if ((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
+                if ((Get-CimInstance -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
                 {
                     Write-Verbose -Message '  Machine is not domain joined. Publishing certificate to local store'
 
@@ -3091,7 +3091,7 @@ function Publish-LabCAInstallCertificates
 #region Enable-LabCertificateAutoenrollment
 function Enable-LabCertificateAutoenrollment
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
 
     param
@@ -3109,7 +3109,7 @@ function Enable-LabCertificateAutoenrollment
 
     $issuingCAs = Get-LabIssuingCA
 
-    Write-Verbose -Message "All issuing CAs: '$($issuingCAs -join ', ')'"
+    Write-PSFMessage -Message "All issuing CAs: '$($issuingCAs -join ', ')'"
 
     if (-not $issuingCAs)
     {
@@ -3120,10 +3120,10 @@ function Enable-LabCertificateAutoenrollment
     Write-ScreenInfo -Message 'Configuring certificate auto enrollment' -TaskStart
 
     $domainsToProcess = (Get-LabVM -Role RootDC, FirstChildDC, DC | Where-Object DomainName -in $issuingCAs.DomainName | Group-Object DomainName).Name | Sort-Object -Unique
-    Write-Verbose -Message "Domains to process: '$($domainsToProcess -join ', ')'"
+    Write-PSFMessage -Message "Domains to process: '$($domainsToProcess -join ', ')'"
 
     $issuingCAsToProcess = ($issuingCAs | Where-Object DomainName -in $domainsToProcess).Name
-    Write-Verbose -Message "Issuing CAs to process: '$($issuingCAsToProcess -join ', ')'"
+    Write-PSFMessage -Message "Issuing CAs to process: '$($issuingCAsToProcess -join ', ')'"
 
     $dcsToProcess = @()
     foreach ($domain in $issuingCAs.DomainName)
@@ -3132,7 +3132,7 @@ function Enable-LabCertificateAutoenrollment
     }
     $dcsToProcess = $dcsToProcess.Name | Sort-Object -Unique
 
-    Write-Verbose -Message "DCs to process: '$($dcsToProcess -join ', ')'"
+    Write-PSFMessage -Message "DCs to process: '$($dcsToProcess -join ', ')'"
 
 
     if ($Computer)

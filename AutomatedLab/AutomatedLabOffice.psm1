@@ -1,7 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -112,7 +112,7 @@ function Install-LabOffice2013
                 $start = Get-Date
 
                 Push-Location
-                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
                 Write-Verbose 'Calling "$($PWD.Path)setup.exe /config C:\Office2013Config.xml"'
                 .\setup.exe /config C:\Office2013Config.xml
                 Pop-Location
@@ -155,7 +155,7 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -224,7 +224,7 @@ function Install-LabOffice2016
         $disk = Mount-LabIsoImage -ComputerName $machine -IsoPath $isoImage.Path -PassThru -SupressOutput
 
         Invoke-LabCommand -ActivityName 'Copy Office to C' -ComputerName $machine -ScriptBlock {
-            mkdir -Path C:\Office | Out-Null
+            New-Item -ItemType Directory -Path C:\Office | Out-Null
             Copy-Item -Path "$($args[0])\Office" -Destination C:\Office -Recurse
         } -ArgumentList $disk.DriveLetter
 

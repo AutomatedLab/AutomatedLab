@@ -1,7 +1,7 @@
 ﻿#region Install-LabRouting
 function Install-LabRouting
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15,
@@ -78,7 +78,7 @@ function Install-LabRouting
 
                 Write-Verbose 'Setting up NAT...'
 
-                $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
+                $externalAdapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
                     Select-Object -ExpandProperty NetConnectionID
 
                 netsh.exe routing ip nat install
@@ -103,7 +103,7 @@ function Install-LabRouting
 
     if (Get-LabVM -Role RootDC)
     {
-        Write-Verbose "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
+        Write-PSFMessage "This lab knows about an Active Directory, calling 'Set-LabADDNSServerForwarder'"
         Set-LabADDNSServerForwarder
     }
 
@@ -112,7 +112,7 @@ function Install-LabRouting
     Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -Timeout $InstallationTimeout -NoDisplay -NoNewLine
 
     #to make sure the routing service works, restart the routers
-    Write-Verbose "Restarting machines '$($machines -join ', ')'"
+    Write-PSFMessage "Restarting machines '$($machines -join ', ')'"
     Restart-LabVM -ComputerName $machines -Wait -NoNewLine
 
     Write-ProgressIndicatorEnd
@@ -123,9 +123,9 @@ function Install-LabRouting
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
 
-    Write-Verbose 'Setting DNS fowarder on all domain controllers in root domains'
+    Write-PSFMessage 'Setting DNS fowarder on all domain controllers in root domains'
 
     $rootDcs = Get-LabVM -Role RootDC
 
@@ -133,7 +133,7 @@ function Set-LabADDNSServerForwarder
 
     $dcs = Get-LabVM -Role RootDC, DC | Where-Object DomainName -in $rootDomains
     $router = Get-LabVM -Role Routing
-    Write-Verbose "Root DCs are '$dcs'"
+    Write-PSFMessage "Root DCs are '$dcs'"
 
     foreach ($dc in $dcs)
     {
@@ -141,7 +141,7 @@ function Set-LabADDNSServerForwarder
         {
             Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
 
-                Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
+                Get-CimInstance -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
 
             } -PassThru -NoDisplay
         }
@@ -151,7 +151,7 @@ function Set-LabADDNSServerForwarder
             $netAdapter.Ipv4Gateway.AddressAsString
         }
 
-        Write-Verbose "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
+        Write-PSFMessage "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
 
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {
             dnscmd /resetforwarders $args[0]

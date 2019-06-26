@@ -1,7 +1,7 @@
 ﻿#region Install-LabAdfs
 function Install-LabAdfs
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -41,9 +41,9 @@ function Install-LabAdfs
         Write-ScreenInfo "Installing the ADFS Servers '$($adfsServers -join ',')'" -Type Info
 
         $ca = Get-LabIssuingCA -DomainName $domainName
-        Write-Verbose "The CA that will be used is '$ca'"
+        Write-PSFMessage "The CA that will be used is '$ca'"
         $adfsDc = Get-LabVM -Role RootDC, FirstChildDC, DC | Where-Object DomainName -eq $domainName
-        Write-Verbose "The DC that will be used is '$adfsDc'"
+        Write-PSFMessage "The DC that will be used is '$adfsDc'"
 
         $1stAdfsServer = $adfsServers | Select-Object -First 1
         $1stAdfsServerAdfsRole = $1stAdfsServer.Roles | Where-Object Name -eq ADFS
@@ -61,15 +61,15 @@ function Install-LabAdfs
         $adfsServicePassword = $1stAdfsServerAdfsRole.Properties.ServicePassword
         if (-not $adfsServicePassword) { $adfsServicePassword = 'Somepass1'}
 
-        Write-Verbose "The ADFS Farm display name in domain '$domainName' is '$adfsDisplayName'"
+        Write-PSFMessage "The ADFS Farm display name in domain '$domainName' is '$adfsDisplayName'"
         $adfsCertificateSubject = "CN=adfs.$($domainGroup.Name)"
-        Write-Verbose "The subject used to obtain an SSL certificate is '$adfsCertificateSubject'"
+        Write-PSFMessage "The subject used to obtain an SSL certificate is '$adfsCertificateSubject'"
         $adfsCertificateSAN = "adfs.$domainName" , "enterpriseregistration.$domainName"
 
         $adfsFlatName = $adfsCertificateSubject.Substring(3).Split('.')[0]
-        Write-Verbose "The ADFS flat name is '$adfsFlatName'"
+        Write-PSFMessage "The ADFS flat name is '$adfsFlatName'"
         $adfsFullName = $adfsCertificateSubject.Substring(3)
-        Write-Verbose "The ADFS full name is '$adfsFullName'"
+        Write-PSFMessage "The ADFS full name is '$adfsFullName'"
 
         if (-not (Test-LabCATemplate -TemplateName AdfsSsl -ComputerName $ca))
         {
@@ -77,14 +77,14 @@ function Install-LabAdfs
             -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
         }
 
-        Write-Verbose "Requesting SSL certificate on the '$1stAdfsServer'"
+        Write-PSFMessage "Requesting SSL certificate on the '$1stAdfsServer'"
         $cert = Request-LabCertificate -Subject $adfsCertificateSubject -SAN $adfsCertificateSAN -TemplateName AdfsSsl -ComputerName $1stAdfsServer -PassThru
         $certThumbprint = $cert.Thumbprint
-        Write-Verbose "Certificate thumbprint is '$certThumbprint'"
+        Write-PSFMessage "Certificate thumbprint is '$certThumbprint'"
 
         foreach ($otherAdfsServer in $otherAdfsServers)
         {
-            Write-Verbose "Adding the SSL certificate to machine '$otherAdfsServer'"
+            Write-PSFMessage "Adding the SSL certificate to machine '$otherAdfsServer'"
             Get-LabCertificate -ComputerName $1stAdfsServer -Thumbprint $certThumbprint | Add-LabCertificate -ComputerName $otherAdfsServer
         }
 
@@ -137,7 +137,7 @@ function Install-LabAdfs
 #region Install-LabAdfsProxy
 function Install-LabAdfsProxy
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param ()
 
@@ -171,23 +171,23 @@ function Install-LabAdfsProxy
     Write-ScreenInfo "Installing the ADFS Proxy Servers '$($labAdfsProxies -join ',')'" -Type Info
     foreach ($labAdfsProxy in $labAdfsProxies)
     {
-        Write-Verbose "Installing ADFS Proxy on '$labAdfsProxy'"
+        Write-PSFMessage "Installing ADFS Proxy on '$labAdfsProxy'"
         $adfsProxyRole = $labAdfsProxy.Roles | Where-Object Name -eq ADFSProxy
         $adfsFullName = $adfsProxyRole.Properties.AdfsFullName
         $adfsDomainName = $adfsProxyRole.Properties.AdfsDomainName
-        Write-Verbose "ADFS Full Name is '$adfsFullName'"
+        Write-PSFMessage "ADFS Full Name is '$adfsFullName'"
 
         $someAdfsServer = Get-LabVM -Role ADFS | Where-Object DomainName -eq $adfsDomainName | Get-Random
-        Write-Verbose "Getting certificate from some ADFS server '$someAdfsServer'"
+        Write-PSFMessage "Getting certificate from some ADFS server '$someAdfsServer'"
         $cert = Get-LabCertificate -ComputerName $someAdfsServer -DnsName $adfsFullName
         if (-not $cert)
         {
             Write-Error "Could not get certificate from '$someAdfsServer'. Cannot continue with ADFS Proxy setup."
             return
         }
-        Write-Verbose "Got certificate with thumbprint '$($cert.Thumbprint)'"
+        Write-PSFMessage "Got certificate with thumbprint '$($cert.Thumbprint)'"
 
-        Write-Verbose "Adding certificate to '$labAdfsProxy'"
+        Write-PSFMessage "Adding certificate to '$labAdfsProxy'"
         $cert | Add-LabCertificate -ComputerName $labAdfsProxy
 
         $certThumbprint = $cert.Thumbprint

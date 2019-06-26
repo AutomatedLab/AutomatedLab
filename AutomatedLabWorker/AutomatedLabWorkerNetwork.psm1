@@ -185,7 +185,7 @@ function Remove-LWNetworkSwitch
             Remove-VMSwitch -Name $Name -Force
         }
 
-        Write-Verbose "Network switch '$Name' removed"
+        Write-PSFMessage "Network switch '$Name' removed"
     }
     else
     {

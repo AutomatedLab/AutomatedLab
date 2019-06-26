@@ -8,7 +8,7 @@ function Add-UnattendedKickstartSynchronousCommand
         [string]$Description
     )
 
-    Write-Verbose -Message "Adding command to %post section to $Description"
+    Write-PSFMessage -Message "Adding command to %post section to $Description"
 
     $idx = $script:un.IndexOf('%post')
 

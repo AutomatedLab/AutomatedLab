@@ -2,7 +2,7 @@
 #region Add-LabVirtualNetworkDefinition
 function Add-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -171,7 +171,7 @@ function Add-LabVirtualNetworkDefinition
     }
 
     $script:lab.VirtualNetworks.Add($network)
-    Write-Verbose "Network '$Name' added. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
+    Write-PSFMessage "Network '$Name' added. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
 
     if ($PassThru)
     {
@@ -184,7 +184,7 @@ function Add-LabVirtualNetworkDefinition
 #region Get-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
@@ -222,7 +222,7 @@ function Get-LabVirtualNetworkDefinition
 #region Remove-LabVirtualNetworkDefinition
 function Remove-LabVirtualNetworkDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding()]
     param (
@@ -243,7 +243,7 @@ function Remove-LabVirtualNetworkDefinition
         else
         {
             [Void]$script:lab.VirtualNetworks.Remove($network)
-            Write-Verbose "Network '$n' removed. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
+            Write-PSFMessage "Network '$n' removed. Lab has $($Script:lab.VirtualNetworks.Count) network(s) defined"
         }
     }
 
@@ -255,7 +255,7 @@ function Remove-LabVirtualNetworkDefinition
 #region New-LabNetworkAdapterDefinition
 function New-LabNetworkAdapterDefinition
 {
-    # .ExternalHelp AutomatedLabDefinition.Help.xml
+    
 
     [CmdletBinding(DefaultParameterSetName = 'manual')]
     param (

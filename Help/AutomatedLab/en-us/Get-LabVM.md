@@ -1,0 +1,169 @@
+---
+external help file: AutomatedLab-help.xml
+Module Name: AutomatedLab
+online version:
+schema: 2.0.0
+---
+
+# Get-LabVM
+
+## SYNOPSIS
+Gets a lab VM object
+
+## SYNTAX
+
+### ByName (Default)
+```
+Get-LabVM [[-ComputerName] <String[]>] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+```
+
+### ByRole
+```
+Get-LabVM -Role <Roles> [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+```
+
+### All
+```
+Get-LabVM [-All] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+```
+
+## DESCRIPTION
+Retrieves one or more lab machine objects by Name, Role or All.
+Optionally only retrieves running machines.
+Tries to retrieve Azure connection info for Azure labs
+
+## EXAMPLES
+
+### All machines
+
+
+```powershell
+Get-LabVm -All
+```
+
+Retrieve all machines
+
+Name       DomainName        Ip Address    OS
+----       ----------        ----------    --
+ContosoDC1 contoso.com       192.168.41.10 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+ContosoDC2 contoso.com       192.168.41.11 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+ChildDC1   child.contoso.com 192.168.41.20 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+ChildDC2   child.contoso.com 192.168.41.21 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+
+### Get all DCs
+
+
+```powershell
+Get-LabVm -Role DC
+```
+
+Retrieves all Root DCs
+
+Name       DomainName        Ip Address    OS
+----       ----------        ----------    --
+ContosoDC2 contoso.com       192.168.41.11 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+ChildDC2   child.contoso.com 192.168.41.21 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
+
+## PARAMETERS
+
+### -ComputerName
+The names of the machines to retrieve
+
+```yaml
+Type: String[]
+Parameter Sets: ByName
+Aliases:
+
+Required: False
+Position: 0
+Default value: None
+Accept pipeline input: True (ByPropertyName, ByValue)
+Accept wildcard characters: False
+```
+
+### -IsRunning
+indicates that only running machines should be retrieved
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Role
+The role for which machines should be returned
+
+```yaml
+Type: Roles
+Parameter Sets: ByRole
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -All
+Indicates that all machines should be retrieved
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: All
+Aliases:
+
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IncludeLinux
+Include Linux VMs in the output
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipConnectionInfo
+Skip generating the Azure connection info to speed up things
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
+
+## INPUTS
+
+## OUTPUTS
+
+### AutomatedLab.Machine
+## NOTES
+
+## RELATED LINKS

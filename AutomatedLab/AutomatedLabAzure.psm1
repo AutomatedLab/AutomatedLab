@@ -6,7 +6,7 @@ $PSDefaultParameterValues = @{
 
 function Update-LabAzureSettings
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -37,7 +37,7 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [string]$SubscriptionName,
 
@@ -95,7 +95,7 @@ function Add-LabAzureSubscription
     # Select the subscription which is associated with this AzureRmProfile
     $subscriptions = Get-AzSubscription
     $script:lab.AzureSettings.Subscriptions = [AutomatedLab.Azure.AzureSubscription]::Create($Subscriptions)
-    Write-Verbose "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.Subscriptions.Count) subscriptions"
 
     if ($SubscriptionName -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object Name -eq $SubscriptionName))
     {
@@ -121,11 +121,11 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
-    Write-Verbose "Azure subscription '$SubscriptionName' selected as default"
+    Write-PSFMessage "Azure subscription '$SubscriptionName' selected as default"
 
     $locations = Get-AzLocation
     $script:lab.AzureSettings.Locations = [AutomatedLab.Azure.AzureLocation]::Create($locations)
-    Write-Verbose "Added $($script:lab.AzureSettings.Locations.Count) locations"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.Locations.Count) locations"
 
     if (-not $DefaultLocationName)
     {
@@ -170,11 +170,11 @@ function Add-LabAzureSubscription
     {
         $script:lab.AzureSettings.DefaultResourceGroup = [AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzResourceGroup -Name $DefaultResourceGroupName))
     }
-    Write-Verbose "Selected $DefaultResourceGroupName as default resource group"
+    Write-PSFMessage "Selected $DefaultResourceGroupName as default resource group"
 
     $resourceGroups = Get-AzResourceGroup
     $script:lab.AzureSettings.ResourceGroups = [AutomatedLab.Azure.AzureRmResourceGroup]::Create($resourceGroups)
-    Write-Verbose "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.ResourceGroups.Count) resource groups"
 
     $storageAccounts = Get-AzStorageAccount -ResourceGroupName $DefaultResourceGroupName
     foreach ($storageAccount in $storageAccounts)
@@ -184,7 +184,7 @@ function Add-LabAzureSubscription
         $script:lab.AzureSettings.StorageAccounts.Add($alStorageAccount)
     }
 
-    Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     if ($global:cacheAzureRoleSizes)
     {
@@ -212,21 +212,21 @@ function Add-LabAzureSubscription
 
     try
     {
-        Write-Verbose -Message 'Get last ISO update time'
+        Write-PSFMessage -Message 'Get last ISO update time'
         $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
         $lastChecked = $timestamps.AzureIsosLastChecked
-        Write-Verbose -Message "Last check was '$lastChecked'."
+        Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
     catch
     {
-        Write-Verbose -Message 'Last check time could not be retrieved. Azure ISOs never updated'
+        Write-PSFMessage -Message 'Last check time could not be retrieved. Azure ISOs never updated'
         $lastChecked = Get-Date -Year 1601
         $timestamps = New-Object $type
     }
 
     if ($lastChecked -lt [datetime]::Now.AddDays(-7))
     {
-        Write-Verbose -Message 'ISO cache outdated. Updating ISO files.'
+        Write-PSFMessage -Message 'ISO cache outdated. Updating ISO files.'
         try
         {
             Write-ScreenInfo -Message 'Auto-adding ISO files from Azure labsources share' -TaskStart
@@ -255,7 +255,7 @@ Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to y
 
 By default, all files smaller than $syncMaxSize MB will be synced. Should you require more control,
 execute Sync-LabAzureLabSources manually. The maximum file size for the automatic sync can also
-be set in your settings.psd1 with the setting LabSourcesMaxFileSizeMb.
+be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
 "@
         $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
@@ -274,14 +274,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     }
     elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
     {
-        Write-Verbose -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
+        Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
         $timestamps.ExportToRegistry('Cache', 'Timestamps')
     }
 
     $script:lab.AzureSettings.VNetConfig = (Get-AzVirtualNetwork) | ConvertTo-Json
-    Write-Verbose 'Added virtual network configuration'
+    Write-PSFMessage 'Added virtual network configuration'
 
     # Read cache
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
@@ -290,11 +290,11 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     {
         $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
         $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
-        Write-Verbose "Read $($global:cacheVmImages.Count) OS images from the cache"
+        Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
         if ($global:cacheVmImages)
         {
-            Write-Verbose ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
+            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
         }
 
         if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
@@ -334,11 +334,11 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
     }
 
-    Write-Verbose "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
 
     $vms = Get-AzVM
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
-    Write-Verbose "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
     #$script:lab.AzureSettings.DefaultStorageAccount cannot be set when creating the definitions but is during the import process
     if (-not $script:lab.AzureSettings.DefaultStorageAccount)
@@ -366,7 +366,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
                 throw 'Cannot proceed with an invalid default storage account'
             }
         }
-        Write-Verbose "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
+        Write-PSFMessage "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
         [void](Set-AzCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
     }
 
@@ -386,7 +386,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
 function Get-LabAzureSubscription
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param ()
 
     Write-LogFunctionEntry
@@ -400,7 +400,7 @@ function Get-LabAzureSubscription
 
 function Get-LabAzureDefaultSubscription
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param ()
 
     Write-LogFunctionEntry
@@ -414,7 +414,7 @@ function Get-LabAzureDefaultSubscription
 
 function Get-LabAzureLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletBinding()]
     param (
         [string]$LocationName,
@@ -471,7 +471,7 @@ function Get-LabAzureLocation
                 catch
                 {
                     9999
-                    #Write-Warning "$testUrl $($_.Exception.Message)"
+                    #Write-PSFMessage -Level Warning "$testUrl $($_.Exception.Message)"
                 }
             }
         }
@@ -484,10 +484,10 @@ function Get-LabAzureLocation
         }
         $jobs | Remove-Job
 
-        Write-Verbose -Message 'DisplayName            Latency'
+        Write-PSFMessage -Message 'DisplayName            Latency'
         foreach ($location in $azureLocations)
         {
-            Write-Verbose -Message "$($location.DisplayName.PadRight(20)): $($location.Latency)"
+            Write-PSFMessage -Message "$($location.DisplayName.PadRight(20)): $($location.Latency)"
         }
 
         if ($List)
@@ -505,7 +505,7 @@ function Get-LabAzureLocation
 
 function Get-LabAzureDefaultLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param ()
 
@@ -526,7 +526,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -549,7 +549,7 @@ function Set-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultStorageAccount
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -572,7 +572,7 @@ function Set-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultStorageAccount
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param ()
 
@@ -593,7 +593,7 @@ function Get-LabAzureDefaultStorageAccount
 
 function New-LabAzureDefaultStorageAccount
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param (
         [Parameter(Mandatory)]
@@ -642,7 +642,7 @@ function New-LabAzureDefaultStorageAccount
     $ALStorageAccount.StorageAccountKey = ($StorageAccount | Get-AzStorageAccountKey)[0].Value
     $script:lab.AzureSettings.StorageAccounts.Add($ALStorageAccount)
 
-    Write-Verbose "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
+    Write-PSFMessage "Added $($script:lab.AzureSettings.StorageAccounts.Count) storage accounts"
 
     Set-LabAzureDefaultStorageAccount -Name $storageAccountName
 
@@ -651,7 +651,7 @@ function New-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultResourceGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param ()
 
@@ -667,7 +667,7 @@ function Get-LabAzureDefaultResourceGroup
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param ()
     
@@ -701,7 +701,7 @@ function Import-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param ()
     throw New-Object System.NotImplementedException
@@ -734,7 +734,7 @@ function New-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
     [cmdletbinding()]
     param ()
@@ -762,7 +762,7 @@ function Get-LabAzureCertificate
 
 function New-LabAzureRmResourceGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
@@ -780,7 +780,7 @@ function New-LabAzureRmResourceGroup
 
     Update-LabAzureSettings
 
-    Write-Verbose "Creating the resource groups '$($ResourceGroupNames -join ', ')' for location '$LocationName'"
+    Write-PSFMessage "Creating the resource groups '$($ResourceGroupNames -join ', ')' for location '$LocationName'"
 
     $resourceGroups = Get-AzResourceGroup
 
@@ -791,7 +791,7 @@ function New-LabAzureRmResourceGroup
             if (-not $script:lab.AzureSettings.ResourceGroups.ResourceGroupName.Contains($name))
             {
                 $script:lab.AzureSettings.ResourceGroups.Add([AutomatedLab.Azure.AzureRmResourceGroup]::Create((Get-AzResourceGroup -ResourceGroupName $name)))
-                Write-Verbose "The resource group '$name' does already exist"
+                Write-PSFMessage "The resource group '$name' does already exist"
             }
             continue
         }
@@ -807,7 +807,7 @@ function New-LabAzureRmResourceGroup
             $result
         }
 
-        Write-Verbose "Resource group '$name' created"
+        Write-PSFMessage "Resource group '$name' created"
     }
 
     Write-LogFunctionExit
@@ -815,7 +815,7 @@ function New-LabAzureRmResourceGroup
 
 function Remove-LabAzureResourceGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
@@ -843,7 +843,7 @@ function Remove-LabAzureResourceGroup
             if ($resourceGroups.ResourceGroupName -contains $name)
             {
                 Remove-AzResourceGroup -Name $name -Force:$Force | Out-Null
-                Write-Verbose "Resource Group '$($name)' removed"
+                Write-PSFMessage "Resource Group '$($name)' removed"
 
                 $resourceGroup = $script:lab.AzureSettings.ResourceGroups | Where-Object ResourceGroupName -eq $name
                 $script:lab.AzureSettings.ResourceGroups.Remove($resourceGroup) | Out-Null
@@ -863,7 +863,7 @@ function Remove-LabAzureResourceGroup
 
 function Get-LabAzureResourceGroup
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [cmdletbinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName')]
@@ -883,7 +883,7 @@ function Get-LabAzureResourceGroup
 
     if ($ResourceGroupName)
     {
-        Write-Verbose "Getting the resource groups '$($ResourceGroupName -join ', ')'"
+        Write-PSFMessage "Getting the resource groups '$($ResourceGroupName -join ', ')'"
         $resourceGroups | Where-Object ResourceGroupName -in $ResourceGroupName
     }
     elseif ($CurrentLab)
@@ -899,7 +899,7 @@ function Get-LabAzureResourceGroup
     }
     else
     {
-        Write-Verbose 'Getting all resource groups'
+        Write-PSFMessage 'Getting all resource groups'
         $resourceGroups
     }
 
@@ -909,7 +909,7 @@ function Get-LabAzureResourceGroup
 #region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param
     (
@@ -973,7 +973,7 @@ function New-LabAzureLabSourcesStorage
 
 function Get-LabAzureLabSourcesStorage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param
     ()
@@ -1023,7 +1023,7 @@ function Test-LabAzureLabSourcesStorage
 
 function Test-LabPathIsOnLabAzureLabSourcesStorage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param
     (
@@ -1050,7 +1050,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
 
 function Remove-LabAzureLabSourcesStorage
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
@@ -1076,7 +1076,7 @@ function Remove-LabAzureLabSourcesStorage
 
 function Sync-LabAzureLabSources
 {
-    # .ExternalHelp AutomatedLab.Help.xml
+    
     [CmdletBinding()]
     param
     (
@@ -1128,14 +1128,14 @@ function Sync-LabAzureLabSources
 
         # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
         New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-        Write-Verbose "Created directory $($folderName) in labsources"
+        Write-PSFMessage "Created directory $($folderName) in labsources"
         if ($err)
         {
             $err = $null
 
             # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
             New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-            Write-Verbose "Created directory '$folderName' in labsources"
+            Write-PSFMessage "Created directory '$folderName' in labsources"
             if ($err)
             {
                 if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
@@ -1160,13 +1160,13 @@ function Sync-LabAzureLabSources
             Write-ProgressIndicator
             if ($SkipIsos -and $file.Directory.Name -eq 'Isos')
             {
-                Write-Verbose "SkipIsos is true, skipping $($file.Name)"
+                Write-PSFMessage "SkipIsos is true, skipping $($file.Name)"
                 continue
             }
 
             if ($MaxFileSizeInMb -and $file.Length / 1MB -ge $MaxFileSizeInMb)
             {
-                Write-Verbose "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
+                Write-PSFMessage "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
                 continue
             }
 
@@ -1177,7 +1177,7 @@ function Sync-LabAzureLabSources
 
                 if ($isOs -and -not $DoNotSkipOsIsos)
                 {
-                    Write-Verbose "Skipping OS ISO $($file.FullName)"
+                    Write-PSFMessage "Skipping OS ISO $($file.FullName)"
                     continue
                 }
             }
@@ -1189,13 +1189,13 @@ function Sync-LabAzureLabSources
             {
                 $azureHash = $azureFile.Properties.ContentMD5
                 $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-                Write-Verbose "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
+                Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
             }
 
             if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
             {
                 $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
-                Write-Verbose "Azure file $fileName successfully uploaded. Generating file hash..."
+                Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
             }
 
             # Try to set the file hash
@@ -1208,7 +1208,7 @@ function Sync-LabAzureLabSources
                 continue
             }
 
-            Write-Verbose "Azure file $fileName successfully uploaded and hash generated"
+            Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
         }
 
         Write-ScreenInfo 'done' #with folder
