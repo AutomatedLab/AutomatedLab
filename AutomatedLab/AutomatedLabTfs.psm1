@@ -1048,7 +1048,7 @@ function Test-LabTfsEnvironment
         $uri = Get-LabTfsUri -ComputerName $machine -ErrorAction SilentlyContinue
         if ($null -eq $uri)
         {
-            Write-ScreenInfo -Type Error -Message "TFS URI could not be determined."
+            Write-PSFMessage -Message "TFS URI could not be determined."
             return $script:tfsDeploymentStatus[$ComputerName]
         }
 
