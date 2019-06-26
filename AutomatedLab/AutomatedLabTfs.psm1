@@ -947,6 +947,7 @@ function Get-LabReleaseStep
 
 function Get-LabTfsUri
 {
+    [CmdletBinding()]
     param
     (
         [string]
@@ -1044,7 +1045,13 @@ function Test-LabTfsEnvironment
 
     if (-not $script:tfsDeploymentStatus[$ComputerName].ServerDeploymentOk)
     {
-        $uri = Get-LabTfsUri -ComputerName $machine        
+        $uri = Get-LabTfsUri -ComputerName $machine -ErrorAction SilentlyContinue
+        if ($null -eq $uri)
+        {
+            Write-ScreenInfo -Type Error -Message "TFS URI could not be determined."
+            return $script:tfsDeploymentStatus[$ComputerName]
+        }
+
         $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
         $initialCollection = 'AutomatedLab'
         $tfsPort = 8080
