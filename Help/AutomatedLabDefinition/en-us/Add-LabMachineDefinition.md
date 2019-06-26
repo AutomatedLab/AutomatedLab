@@ -1,5 +1,5 @@
 ---
-external help file: AutomatedLabDefinition.Help.xml
+external help file: AutomatedLabDefinition-help.xml
 Module Name: AutomatedLabDefinition
 online version:
 schema: 2.0.0
