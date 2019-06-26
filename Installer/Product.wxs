@@ -28,7 +28,7 @@
     <SetProperty Id="RunPowerShellScript"
              Before ="InstallFiles"
              Sequence="execute"
-             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module Newtonsoft.Json -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
+             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module PSFramework -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
     <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="deferred" Return="check" Impersonate="yes" />
     <InstallExecuteSequence>
       <Custom Action="RunPowerShellScript" Before="InstallFinalize"><![CDATA[NOT Installed]]></Custom>

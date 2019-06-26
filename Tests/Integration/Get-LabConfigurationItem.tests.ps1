@@ -5,9 +5,8 @@ $rootpath = $PSScriptRoot
 
 if (-not (Get-Module -List AutomatedLab.Common)) {Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List PSFramework)) {Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber}
-if (-not (Get-Module -List Newtonsoft.Json)) {Install-Module -Name Newtonsoft.Json -Force -SkipPublisherCheck -AllowClobber}
 
-Import-Module -Name Newtonsoft.Json, PSFramework, AutomatedLab.Common, Pester
+Import-Module -Name PSFramework, AutomatedLab.Common, Pester
 if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
     [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
