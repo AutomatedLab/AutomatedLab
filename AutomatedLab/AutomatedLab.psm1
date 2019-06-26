@@ -2502,19 +2502,19 @@ function Install-LabSoftwarePackage
 
     # Transfer ALCommon library
     $childPath = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} }
-    $coreChild = (@($childPath) -eq 'core')[0]
-    $fullChild = (@($childPath) -eq 'full')[0]
+    $coreChild = @($childPath) -eq 'core'
+    $fullChild = @($childPath) -eq 'full'
     $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
     
     if ($coreChild -and -not (Invoke-LabCommand -ComputerName $coreChild.PSComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
     {
-        $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild
+        $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
         Copy-LabFileItem -Path "$coreLibraryFolder\*.*" -ComputerName $coreChild.PSComputerName -DestinationFolderPath '/ALLibraries'
     }
 
     if ($fullChild -and -not (Invoke-LabCommand -ComputerName $fullChild.PSComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
     {
-        $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild
+        $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
         Copy-LabFileItem -Path "$fullLibraryFolder\*.*" -ComputerName $fullChild.PSComputerName -DestinationFolderPath '/ALLibraries'
     }
 
