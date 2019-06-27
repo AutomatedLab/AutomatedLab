@@ -2514,13 +2514,13 @@ function Install-LabSoftwarePackage
     if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
-        Copy-LabFileItem -Path "$coreLibraryFolder\*.*" -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
     if ($fullChild -and @(Invoke-LabCommand -ComputerName $fullChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $fullChild.Count)
     {
         $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
-        Copy-LabFileItem -Path "$fullLibraryFolder\*.*" -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
     $parameters.ScriptBlock = {
