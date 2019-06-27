@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+## 5.13.0 - 2019-06-27
+
+### Bug fixes
+- Copy-LabFileItem in Install-LabSoftwarePackage introduced new issue
 
 ## 5.13.0 - 2019-06-27
 
