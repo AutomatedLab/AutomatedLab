@@ -2501,21 +2501,26 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     # Transfer ALCommon library
-    $childPath = Invoke-LabCommand -ComputerName $ComputerName -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} }
+    $childPath = foreach ($vm in $ComputerName)
+    {        
+        Invoke-LabCommand -ComputerName $vm -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} } |
+        Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
+    }
+
     $coreChild = @($childPath) -eq 'core'
     $fullChild = @($childPath) -eq 'full'
     $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
     
-    if ($coreChild -and -not (Invoke-LabCommand -ComputerName $coreChild.PSComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
+    if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
-        Copy-LabFileItem -Path "$coreLibraryFolder\*.*" -ComputerName $coreChild.PSComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
-    if ($fullChild -and -not (Invoke-LabCommand -ComputerName $fullChild.PSComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}))
+    if ($fullChild -and @(Invoke-LabCommand -ComputerName $fullChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $fullChild.Count)
     {
         $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
-        Copy-LabFileItem -Path "$fullLibraryFolder\*.*" -ComputerName $fullChild.PSComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
     $parameters.ScriptBlock = {

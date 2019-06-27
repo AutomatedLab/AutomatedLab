@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+## 5.13.0 - 2019-06-27
+
+### Bug fixes
+- Software installation in Azure failing
+- Installer needs to install PSFramework
+- Set module version of AutomatedLab.Common in manifest to ensure recent version when
+downloaded through PSGallery
+- Removed dependency of PSFileTransfer to PSFramework, as cmdlets were used in remote sessions
+
 ## 5.11.0 - 2019-06-26
 
 ### Bug fixes

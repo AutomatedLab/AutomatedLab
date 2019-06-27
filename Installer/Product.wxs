@@ -28,7 +28,7 @@
     <SetProperty Id="RunPowerShellScript"
              Before ="InstallFiles"
              Sequence="execute"
-             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module Newtonsoft.Json -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
+             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module PSFramework -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
     <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="deferred" Return="check" Impersonate="yes" />
     <InstallExecuteSequence>
       <Custom Action="RunPowerShellScript" Before="InstallFinalize"><![CDATA[NOT Installed]]></Custom>
@@ -61,7 +61,7 @@
                   <File Source="$(var.SolutionDir)PSLog\PSLog.psd1" />
                   <RemoveFolder Id="RemoveFolderPSLog" Directory="InstallFolder_PSLog" On="both"/>
                 </Component>
-                <Directory Id="PsLogHelp">
+                <Directory Id="PsLogHelp" Name="en-us">
                   <Component Id="PsLogHelpComponent" Guid="a4a7de03-e6ea-46cc-a982-7d2c23b3d577">
                     <File Source="$(var.SolutionDir)PSLog\en-us\PSLog-help.xml" />
                   </Component>
@@ -84,7 +84,7 @@
                   <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psm1" />
                   <File Source="$(var.SolutionDir)AutomatedLab.Recipe\AutomatedLab.Recipe.psd1" />
                 </Component>
-                <Directory Id="RecipeHelp">
+                <Directory Id="RecipeHelp" Name="en-us">
                   <Component Id="RecipeHelpComponent" Guid="c354742e-28a6-42a1-9b5f-0eb81336cd1a">
                     <File Source="$(var.SolutionDir)AutomatedLab.Recipe\en-us\AutomatedLab.Recipe-help.xml" />
                   </Component>
@@ -102,13 +102,13 @@
             </Directory>
             <Directory Id="InstallFolder_Common" Name="AutomatedLab.Common">
               <Directory Id="InstallFolder_CommonVersion" Name="$(var.AutomatedLabCommonVersion)">
-                <Directory Id="InstallFolder_CommonCommon" Name="Common">
-                  <Directory Id="CommonHelp">
+                  <Directory Id="CommonHelp" Name="en-us">
                     <Component Id="CommonHelpComponent" Guid="9c55a8fc-d3ca-4143-96b1-57edce24dd04">
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\en-us\about_AutomatedLab.Common.help.txt" />
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\en-us\AutomatedLab.Common-help.xml" />
                     </Component>
                   </Directory>
+                <Directory Id="InstallFolder_CommonCommon" Name="Common">
                   <Directory Id="InstallFolder_CommonCommonPublic" Name="Public">
                     <Component Id="ALCommonComponent1" Guid="8b0287f3-d70a-47e6-a04f-6cc360f33eab">
                       <File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\Common\Public\Add-AccountPrivilege.ps1" />
@@ -242,7 +242,7 @@
                   <File Source="$(var.SolutionDir)HostsFile\HostsFile.psd1" />
                   <RemoveFolder Id="RemoveFolderHostsFile" Directory="InstallFolder_HostsFile" On="both"/>
                 </Component>
-                <Directory Id="HostsHelp">
+                <Directory Id="HostsHelp" Name="en-us">
                   <Component Id="HostsHelpComponent" Guid="e39d3d59-3779-4f3d-86ae-441b63215791">
                     <File Source="$(var.SolutionDir)HostsFile\en-us\HostsFile-help.xml" />
                   </Component>
@@ -267,7 +267,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLabWorker\AutomatedLabVMWareWorkerVirtualMachines.psm1" />
                   <RemoveFolder Id="RemoveFolderAutomatedLabWorker" Directory="InstallFolder_AutomatedLabWorker" On="both"/>
                 </Component>
-                <Directory Id="WorkerHelp">
+                <Directory Id="WorkerHelp" Name="en-us">
                   <Component Id="WorkerHelpComponent" Guid="42ea3cc3-5099-4084-aa11-6901c8baafcf">
                     <File Source="$(var.SolutionDir)AutomatedLabWorker\en-us\AutomatedLabWorker-help.xml" />
                   </Component>
@@ -283,7 +283,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLabUnattended\AutomatedLabUnattended.psd1" />
                   <RemoveFolder Id="RemoveFolderAutomatedLabUnattended" Directory="InstallFolder_AutomatedLabUnattended" On="both"/>
                 </Component>
-                <Directory Id="UnattendHelp">
+                <Directory Id="UnattendHelp" Name="en-us">
                   <Component Id="UnattendHelpComponent" Guid="97b698b9-d507-4797-a78d-299b543d9df8">
                     <File Source="$(var.SolutionDir)AutomatedLabUnattended\en-us\AutomatedLabUnattended-help.xml" />
                   </Component>
@@ -396,7 +396,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLabTest\AutomatedLabTest.format.ps1xml" />
                   <RemoveFolder Id="RemoveFolderAutomatedLabTest" Directory="InstallFolder_AutomatedLabTest" On="both"/>
                 </Component>
-                <Directory Id="TestHelp">
+                <Directory Id="TestHelp" Name="en-us">
                   <Component Id="TestHelpComponent" Guid="01b5b2a5-07c8-43e4-a504-77a2c0d2645c">
                     <File Source="$(var.SolutionDir)AutomatedLabTest\en-us\AutomatedLabTest-help.xml" />
                   </Component>
@@ -412,7 +412,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLabNotifications\AutomatedLabNotifications.psd1" />
                   <RemoveFolder Id="RemoveFolderAutomatedLabNotifications" Directory="InstallFolder_AutomatedLabNotifications" On="both"/>
                 </Component>
-                <Directory Id="NotificHelp">
+                <Directory Id="NotificHelp" Name="en-us">
                   <Component Id="NotificHelpComponent" Guid="f2ee2e08-81e4-40b9-9eac-9b3e1ba8f56f">
                     <File Source="$(var.SolutionDir)AutomatedLabNotifications\en-us\AutomatedLabNotifications-help.xml" />
                   </Component>
@@ -437,7 +437,6 @@
               <Directory Id="InstallFolder_AutomatedLabDefinitionVersion" Name="$(var.AutomatedLabProductVersion)">
                 <Component Id="AutomatedLabDefinitionComponent" Guid="f26e3e50-ed5e-4619-a89a-842c7ca7aa15">
                   <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="AutomatedLabDefinitionComponent"/>
-                  <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.Help.xml" />
                   <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionAzureServices.psm1" />
                   <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinitionNetwork.psm1" />
@@ -445,7 +444,7 @@
                   <File Source="$(var.SolutionDir)\AutomatedLabDefinition\AutomatedLabDefinition.init.ps1" />
                   <RemoveFolder Id="RemoveFolderAutomatedLabDefinition" Directory="InstallFolder_AutomatedLabDefinition" On="both"/>
                 </Component>
-                <Directory Id="DefHelp">
+                <Directory Id="DefHelp" Name="en-us">
                   <Component Id="DefHelpComponent" Guid="f9500a8d-afb9-481e-b4f3-cea82f2178ab">
                     <File Source="$(var.SolutionDir)AutomatedLabDefinition\en-us\AutomatedLabDefinition-help.xml" />
                   </Component>
@@ -486,7 +485,7 @@
                   <RemoveFolder Id="RemoveAutomatedLabTools" Directory="InstallFolder_AutomatedLabTools" On="both"/>
                   <RemoveFolder Id="RemoveAutomatedLabToolsHyperV" Directory="InstallFolder_AutomatedLabToolsHyperV" On="both"/>
                 </Component>
-                <Directory Id="AutomatedLabHelp">
+                <Directory Id="AutomatedLabHelp" Name="en-us">
                   <Component Id="AutomatedLabHelpComponent" Guid="abde4c0e-c795-4326-84e2-6da801c090a4">
                     <File Source="$(var.SolutionDir)AutomatedLab\en-us\AutomatedLab-help.xml" />
                   </Component>

@@ -25,5 +25,5 @@
 	
     FileList               = @('PSFileTransfer.psm1', 'PSFileTransfer.psd1')
 
-    RequiredModules        = @('PSFramework')
+    RequiredModules        = @()
 }
