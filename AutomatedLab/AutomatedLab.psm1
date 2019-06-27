@@ -2511,20 +2511,28 @@ function Install-LabSoftwarePackage
     $fullChild = @($childPath) -eq 'full'
     $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
     
-    if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
+    if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
         Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
-    if ($fullChild -and @(Invoke-LabCommand -ComputerName $fullChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $fullChild.Count)
+    if ($fullChild -and @(Invoke-LabCommand -ComputerName $fullChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $fullChild.Count)
     {
         $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
         Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
     }
 
     $parameters.ScriptBlock = {
-        Add-Type -Path '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        if ($PSEdition -eq 'core')
+        {
+            Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        }
+        
         Install-SoftwarePackage @installParams
     }
 
