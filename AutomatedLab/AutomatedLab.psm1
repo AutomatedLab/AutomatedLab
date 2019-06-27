@@ -2524,7 +2524,15 @@ function Install-LabSoftwarePackage
     }
 
     $parameters.ScriptBlock = {
-        Add-Type -Path '/ALLibraries/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        if ($PSEdition -eq 'core')
+        {
+            Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        }
+        else
+        {
+            Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+        }
+        
         Install-SoftwarePackage @installParams
     }
 
