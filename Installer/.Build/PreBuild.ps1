@@ -13,14 +13,30 @@ git pull origin master
 # Compile Common libary
 dotnet build $SolutionDir\AutomatedLab.Common
 
-# Compile Help
-If (-not (Get-Module -List PlatyPs))
+Write-Host "Init task - compiling help for Installer"
+if (-not (Get-Module -List PlatyPs))
 {
-    $null = Install-PackageProvider nuget -Force
+    Write-Host 'Installing Package Provider'
+    Install-PackageProvider nuget -Force
+    Write-Host 'Installing Module PlatyPS'
     Install-Module PlatyPS -Force -AllowClobber -SkipPublisherCheck
 }
 
 $null = New-ExternalHelp -Path $SolutionDir\AutomatedLab.Common\Help\en-us -OutputPath $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\en-us
+
+foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
+{
+    Write-Host "Building help for module '$moduleName'"
+    foreach ($language in ($moduleName | Get-ChildItem -Directory))
+    {
+        $ci = try { [cultureinfo]$language.BaseName} catch { }
+        if (-not $ci) { continue }
+
+        $opPath = Join-Path -Path $SolutionDir -ChildPath "$($moduleName.BaseName)\$($language.BaseName)"
+        Write-Host "Generating help XML in $opPath"
+        $null = New-ExternalHelp -Path $language.FullName -OutputPath $opPath
+    }
+}
 
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file AutomatedLab.Common.psd1'
 Copy-Item -Path $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1 -Destination $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original
