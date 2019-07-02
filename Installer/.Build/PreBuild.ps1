@@ -13,8 +13,8 @@ git pull origin master
 # Compile Common libary
 dotnet build $SolutionDir\AutomatedLab.Common
 
-# Compile Help
-If (-not (Get-Module -List PlatyPs))
+Write-Host "Init task - compiling help for Installer"
+if (-not (Get-Module -List PlatyPs))
 {
     Write-Host 'Installing Package Provider'
     Install-PackageProvider nuget -Force
