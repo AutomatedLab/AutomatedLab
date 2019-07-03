@@ -269,7 +269,7 @@ function New-LWHypervVM
                     Description = 'Enable domain admin as sudoer without password'	
                 }	
 
-                 Add-UnattendedSynchronousCommand @sudoParam	
+                Add-UnattendedSynchronousCommand @sudoParam	
             }
         }
     }
@@ -998,18 +998,24 @@ function Stop-LWHypervVM
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where({$_.OperatingSystemType -eq 'Linux'}, 'Split')
+        $linux, $windows = (Get-LabVM -ComputerName $ComputerName -IncludeLinux).Where({ $_.OperatingSystemType -eq 'Linux' }, 'Split')
 
-         $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            	
-            Stop-Computer -Force -ErrorAction Stop	
+        if ($windows)
+        {
+            $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            	
+                Stop-Computer -Force -ErrorAction Stop	
+            }
         }	
 
-         $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {                  	
-            #Sleep as background process so that job does not fail.	
-            [void] (Start-Job {	
-                    Start-Sleep -Seconds 5	
-                    shutdown -P now	
-            }) 	
+        if ($linux)
+        {
+            $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {                  	
+                #Sleep as background process so that job does not fail.	
+                [void] (Start-Job -ScriptBlock {	
+                        Start-Sleep -Seconds 5	
+                        shutdown -P now
+                })
+            }
         }
 
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine
@@ -1027,7 +1033,7 @@ function Stop-LWHypervVM
             }	
         }	
 
-         if ($linuxFailures)	
+        if ($linuxFailures)	
         {	
             Write-ScreenInfo -Message "Force-stopping Linux VMs: $($linuxFailures -join ',')"	
             Stop-VM -Name $linuxFailures -Force	
@@ -1072,10 +1078,10 @@ function Save-LWHypervVM
     $runspaceScript = {
         param 
         (
-            $Name
+            [string]$Name
         )
         Write-LogFunctionEntry
-        Save-VM -Name $Name        
+        Save-VM -Name $Name
         Write-LogFunctionExit
     }
 
@@ -1338,8 +1344,8 @@ function Get-LWHypervVMSnapshot
     Write-LogFunctionEntry
 
     (Hyper-V\Get-VMSnapshot @PSBoundParameters).ForEach({
-		[AutomatedLab.Snapshot]::new($_.Name, $_.VMName, $_.CreationTime)
-	})
+            [AutomatedLab.Snapshot]::new($_.Name, $_.VMName, $_.CreationTime)
+    })
 
     Write-LogFunctionExit
 }
