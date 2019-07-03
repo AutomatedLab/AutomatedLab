@@ -1854,8 +1854,6 @@ function Add-LabMachineDefinition
 
         [AutomatedLab.Role[]]$Roles,
 
-        [string]$ProductKey,
-
         #Created ValidateSet using: "'" + ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name -join "', '") + "'" | clip
         [ValidateScript({ $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name)})]
         [string]$UserLocale,
@@ -2734,7 +2732,6 @@ function Add-LabMachineDefinition
         if (-not $UserLocale) { $UserLocale = (Get-Culture).Name }
         $machine.UserLocale = $UserLocale
 
-        $machine.ProductKey = $ProductKey
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
 
