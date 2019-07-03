@@ -1510,18 +1510,21 @@ function Restore-LWAzureVmSnapshot
     
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+    
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
     if ($runningMachines)
     {
         Stop-LWAzureVM -ComputerName $runningMachines -StayProvisioned $true
         Wait-LabVMShutdown -ComputerName $runningMachines
     }
+
+    $vms = Get-AzVM -ResourceGroupName $resourceGroupName | Where-Object Name -In $ComputerName
     $machineStatus = @{}
     $ComputerName.ForEach( {$machineStatus[$_] = @{ Stage1 = $null; Stage2 = $null; Stage3 = $null } })
 
     foreach ($machine in $ComputerName)
     {
-        $vm = Get-AzVM -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
+        $vm = $vms | Where-Object Name -eq $machine
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
         if (-not $vm) 
         {
@@ -1558,6 +1561,7 @@ function Restore-LWAzureVmSnapshot
 
     foreach ($machine in $ComputerName)
     {
+        $vm = $vms | Where-Object Name -eq $machine
         $newDisk = $machineStatus[$machine].Stage1.Job | Receive-Job -Keep
         $null = Set-AzVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
         $machineStatus[$machine].Stage2 = @{
