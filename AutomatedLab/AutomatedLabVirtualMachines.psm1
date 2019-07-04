@@ -539,12 +539,27 @@ function Stop-LabVM
     $azureVms = $machines | Where-Object HostType -eq 'Azure'
     $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
 
-    if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
-    if ($azureVms) {
-        $stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+    if ($hypervVms)
+    {
+        Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
+        -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
+    }
+    if ($azureVms)
+    {
+        $stayProvisioned = if ($KeepAzureVmProvisioned)
+        {
+            $true
+        }
+        else
+        {
+            $false
+        }
         Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
-    if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
+    if ($vmwareVms)
+    {
+        Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
+    }
 
     $remainingTargets = @()
     if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
