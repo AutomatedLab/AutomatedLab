@@ -707,13 +707,13 @@ function New-LabDefinition
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host '   Operating System detected as:'
         Write-PSFMessage -Level Host "     Name:  $osName"
         Write-PSFMessage -Level Host "     Build: $osBuild"
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' AutomatedLab is supported on the following virtualization platforms'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' - Microsoft Azure'
         Write-PSFMessage -Level Host ' - Windows 2016 1607 or newer'
         Write-PSFMessage -Level Host ' - Windows 10 1607 or newer'
