@@ -513,7 +513,9 @@ function Write-ScreenInfo
     $date = Get-Date
     $timeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
 
-    $Message | Foreach-Object { Write-PSFMessage -Level Verbose $_ }
+    $Message | Foreach-Object {
+        Write-PSFMessage -Level Verbose $_
+    }
 
     if ($NoNewLine)
     {
