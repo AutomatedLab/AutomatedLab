@@ -230,7 +230,6 @@ function New-LabVHDX
         }
         else
         {
-            Write-ScreenInfo
             Write-ScreenInfo "The disk '$diskPath' does already exist, no new disk is created." -Type Warning -TaskEnd
         }
     }
@@ -421,8 +420,7 @@ function Update-LabIsoImage
     Write-PSFMessage -Level Host 'Creating an updated ISO from'
     Write-PSFMessage -Level Host "Target path             $TargetIsoImagePath"
     Write-PSFMessage -Level Host "Source path             $SourceIsoImagePath"
-    Write-PSFMessage -Level Host "with updates from path  $UpdateFolderPath"
-    Write-PSFMessage -Level Host
+    Write-PSFMessage -Level Host "with updates from path  $UpdateFolderPath"    
     Write-PSFMessage -Level Host "This process can take a long time, depending on the number of updates"
     $start = Get-Date
     Write-PSFMessage -Level Host "Start time: $start"
@@ -442,7 +440,6 @@ function Update-LabIsoImage
 
     $windowsImage = Get-WindowsImage -ImagePath $labSources\install.wim
     Write-PSFMessage -Level Host "The Windows Image exported is named '$($windowsImage.ImageName)'"
-    Write-PSFMessage -Level Host
 
     $patches = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu, *.cab
     Write-PSFMessage -Level Host "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
@@ -450,7 +447,6 @@ function Update-LabIsoImage
     Write-PSFMessage -Level Host "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $windowsImage.ImagePath -Index 1
 
-    Write-PSFMessage -Level Host
     Write-PSFMessage -Level Host "Adding patches to the mounted Windows Image. This can take quite some time..."
     foreach ($patch in $patches)
     {
@@ -458,7 +454,6 @@ function Update-LabIsoImage
         Add-WindowsPackage -PackagePath $patch.FullName -Path $mountTempFolder | Out-Null
         Write-PSFMessage -Level Host 'finished'
     }
-    Write-PSFMessage -Level Host
 
     Write-PSFMessage -Level Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
     Dismount-WindowsImage -Path $mountTempFolder -Save
@@ -466,7 +461,6 @@ function Update-LabIsoImage
 
     Write-PSFMessage -Level Host "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
     Move-Item -Path $labsources\install.wim -Destination $extractTempFolder\sources -Force
-    Write-PSFMessage -Level Host
 
     Write-PSFMessage -Level Host "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..." -NoNewline
     $cmd = "$labSources\Tools\oscdimg.exe -m -o -u2 -l$isoImageName -udfver102 -bootdata:2#p0,e,b$extractTempFolder\boot\etfsboot.com#pEF,e,b$extractTempFolder\efi\microsoft\boot\efisys.bin $extractTempFolder $TargetIsoImagePath"
@@ -480,7 +474,6 @@ function Update-LabIsoImage
     Write-PSFMessage -Level Host "Deleting temp folder '$mountTempFolder'"
     Remove-Item -Path $mountTempFolder -Recurse -Force
 
-    Write-PSFMessage -Level Host
     $end = Get-Date
     Write-PSFMessage -Level Host "finished at $end. Runtime: $($end - $start)"
 }
@@ -523,7 +516,6 @@ function Update-LabBaseImage
     Write-PSFMessage -Level Host $BaseImagePath
     Write-PSFMessage -Level Host "with $($patchesCab.Count + $patchesMsu.Count) updates from"
     Write-PSFMessage -Level Host $UpdateFolderPath
-    Write-PSFMessage -Level Host
     Write-PSFMessage -Level Host 'This process can take a long time, depending on the number of updates'
 
     $start = Get-Date
