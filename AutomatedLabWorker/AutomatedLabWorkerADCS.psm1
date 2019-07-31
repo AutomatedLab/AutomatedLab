@@ -147,6 +147,8 @@ function Install-LWLabCAServers
     $caScriptBlock = {
 
         param ($param)
+        
+        $param | Export-Clixml C:\DeployDebug\CaParams.xml
 
         #Make semi-sure that each install of CA server is not done at the same time
         Start-Sleep -Seconds $param.PreDelaySeconds
