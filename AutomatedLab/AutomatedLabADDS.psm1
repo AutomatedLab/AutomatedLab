@@ -1001,9 +1001,6 @@ function Install-LabRootDcs
             }
         }
 
-        #Restart-LabVM -ComputerName $machines -Wait -NoNewLine
-        #Wait-LabADReady -ComputerName $machines -NoNewLine
-
         Enable-LabVMRemoting -ComputerName $machines
 
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
