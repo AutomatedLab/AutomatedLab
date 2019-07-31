@@ -1001,8 +1001,8 @@ function Install-LabRootDcs
             }
         }
 
-        Restart-LabVM -ComputerName $machines -Wait -NoNewLine
-        Wait-LabADReady -ComputerName $machines -NoNewLine
+        #Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+        #Wait-LabADReady -ComputerName $machines -NoNewLine
 
         Enable-LabVMRemoting -ComputerName $machines
 
