@@ -738,15 +738,7 @@ function Install-Lab
         return
     }
 
-    try
-    {
-        [AutomatedLab.LabTelemetry]::Instance.LabStarted((Get-Lab).Export(), (Get-Module AutomatedLab)[-1].Version, $PSVersionTable.BuildVersion, $PSVersionTable.PSVersion)
-    }
-    catch
-    {
-        # Nothing to catch - if an error occurs, we simply do not get telemetry.
-        Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
-    }
+    Send-LabStartedTelemetry -ErrorAction SilentlyContinue
 
     Unblock-LabSources
 
@@ -1113,15 +1105,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    try
-    {
-        [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
-    }
-    catch
-    {
-        # Nothing to catch - if an error occurs, we simply do not get telemetry.
-        Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
-    }
+    Send-LabFinishedTelemetry -ErrorAction SilentlyContinue
     
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
     
@@ -1170,14 +1154,7 @@ function Remove-Lab
     {
         Write-ScreenInfo -Message "Removing lab '$($Script:data.Name)'" -Type Warning -TaskStart
 
-        try
-        {
-            [AutomatedLab.LabTelemetry]::Instance.LabRemoved((Get-Lab).Export())
-        }
-        catch
-        {
-            Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
-        }
+        Send-LabRemovedTelemetry -ErrorAction SilentlyContinue
 
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All
@@ -4108,12 +4085,78 @@ function New-LabSourcesFolder
 #region Telemetry
 function Enable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+    Set-PSFConfig -Module TelemetryHelper -Name AutomatedLab.OptIn -Value $true -PassThru | Register-PSFConfig
 }
 
 function Disable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+    Set-PSFConfig -Module TelemetryHelper -Name AutomatedLab.OptIn -Value $false -PassThru | Register-PSFConfig
+}
+
+function Send-LabStartedTelemetry
+{
+    [CmdletBinding()]
+    param
+    ( )
+
+    $lab = Get-Lab
+
+    Send-THEvent -ModuleName AutomatedLab -EventName LabStarted -PropertiesHash @{
+        version    = (Get-Module AutomatedLab).Version
+        hypervisor = $lab.DefaultVirtualizationEngine
+        osversion  = $PSVersionTable.BuildVersion
+        psversion  = $PSVersionTable.PSVersion
+    } -MetricsHash @{
+        machineCount = $lab.Machines.Count
+    }
+
+    foreach ($machine in (Get-LabVM -IncludeLinux))
+    {
+        foreach ($role in $machine.Roles.Name)
+        {
+            Send-THEvent -ModuleName AutomatedLab -EventName Role -PropertiesHash @{
+                role = $role
+            }
+        }
+
+        foreach ($cRole in ($machine.PostInstallationActivity | Where-Object -Property IsCustomRole).RoleName)
+        {
+            Send-THEvent -ModuleName AutomatedLab -EventName CustomRole -PropertiesHash @{
+                role = $cRole
+            }
+        }
+    }
+}
+
+function Send-LabFinishedTelemetry
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    $labFile = Get-Item $lab.LabFilePath
+    $duration = (Get-Date) - $labFile.CreationTime
+
+    Send-THEvent -ModuleName AutomatedLab -EventName LabFinished -PropertiesHash @{
+        dayOfWeek = $labFile.CreationTime.labStarted.DayOfWeek
+    } -MetricsHash @{
+        timeTakenSeconds = $duration.TotalSeconds
+    }
+}
+
+function Send-LabRemovedTelemetry
+{
+    [CmdletBinding()]
+    param
+    ( )
+
+    $lab = Get-Lab
+    $labFile = Get-Item $lab.LabFilePath
+    $duration = (Get-Date) - $labFile.CreationTime
+    
+    Send-THEvent -ModuleName AutomatedLab -EventName LabRemoved -MetricsHash @{
+        labRunningTicks = $duration.Ticks
+    }
 }
 
 $telemetryChoice = @"
@@ -4121,7 +4164,7 @@ Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLa
 and to bring you fancy dashboards with e.g. the community's favorite roles.
 
 We are collecting the following with Azure Application Insights:
-- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your country and city (IP addresses are by default set to 0.0.0.0 after the location is extracted)
 - Your number of lab machines
 - The roles you used
 - The time it took your lab to finish
@@ -4130,23 +4173,33 @@ We are collecting the following with Azure Application Insights:
 We collect no personally identifiable information.
 
 If you change your mind later on, you can always set the environment
-variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
+variable AUTOMATEDLAB_TELEMETRY_OPTIN to yes, true or 1 in order to opt in or to no,false or 0 to opt out.
 Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
 
-We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
+We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
 
 If you want to opt out, please select Yes.
 "@
 
-if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT))
+if (Test-Path -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    $newValue = switch -Regex ($env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+    {
+        'yes|1|true' {0}
+        'no|0|false' {1}
+    }
 
-    # This is actually enough for the telemetry client.
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', $newValue, 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = $newValue
+    Remove-Item -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT -Force -ErrorAction SilentlyContinue
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $null, 'Machine')
+}
 
-    # We cannot refresh the env drive, so we add the same variable here as well.
-    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice
+if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN))
+{
+    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 1
+    Set-PSFConfig -Module TelemetryHelper -Name AutomatedLab.OptIn -Value $choice -PassThru | Register-PSFConfig
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', $choice, 'Machine')
 }
 #endregion Telemetry
 

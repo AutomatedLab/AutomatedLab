@@ -309,6 +309,9 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     }
 } -Initialize -Description 'Validation settings for lab validation. Please do not modify unless you know what you are doing.'
 
+# Telemetry configuration. Please don't change the instrumentation key.
+Set-PSFConfig -Module 'TelemetryHelper' -Name 'AutomatedLab.OptInVariable' -Value 'AUTOMATEDLAB_TELEMETRY_OPTIN' -Initialize -Hidden
+Set-PSFConfig -Module 'TelemetryHelper' -Name 'AutomatedLab.ApplicationInsights.InstrumentationKey' -Value '03367df3-a45f-4ba8-9163-e73999e2c7b6' -Initialize -Hidden
 #endregion
 
 #region ArgumentCompleter
