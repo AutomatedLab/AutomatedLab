@@ -4085,11 +4085,13 @@ function New-LabSourcesFolder
 #region Telemetry
 function Enable-LabTelemetry
 {
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 1, 'Machine')
     Set-PSFConfig -Module TelemetryHelper -Name AutomatedLab.OptIn -Value $true -PassThru | Register-PSFConfig
 }
 
 function Disable-LabTelemetry
 {
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 0, 'Machine')
     Set-PSFConfig -Module TelemetryHelper -Name AutomatedLab.OptIn -Value $false -PassThru | Register-PSFConfig
 }
 
@@ -4164,9 +4166,9 @@ Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLa
 and to bring you fancy dashboards with e.g. the community's favorite roles.
 
 We are collecting the following with Azure Application Insights:
-- Your country and city (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your country and city (IP addresses are by default set to 0.0.0.0 after the location is extracted, which we have no control over)
 - Your number of lab machines
-- The roles you used
+- The roles you used (Careful: This includes custom roles)
 - The time it took your lab to finish
 - Your AutomatedLab version, OS Version and the lab's Hypervisor type
 
@@ -4178,7 +4180,7 @@ Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomp
 
 We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
 
-If you want to opt out, please select Yes.
+If you want to OPT IN, please select Yes.
 "@
 
 if (Test-Path -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT)
