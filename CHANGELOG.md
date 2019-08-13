@@ -1,6 +1,10 @@
 # Changelog
 
 ## Unreleased
+
+### Changes
+- Telemetry now being sent through dedicated telemetry module
+
 ## 5.13.0 - 2019-06-27
 
 ### Bug fixes
