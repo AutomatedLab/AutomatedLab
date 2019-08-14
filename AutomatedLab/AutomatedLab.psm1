@@ -2501,37 +2501,11 @@ function Install-LabSoftwarePackage
     Write-PSFMessage -Message "Starting background job for '$($parameters.ActivityName)'"
 
     # Transfer ALCommon library
-    $childPath = foreach ($vm in $ComputerName)
-    {        
-        Invoke-LabCommand -ComputerName $vm -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} } |
-        Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
-    }
-
-    $coreChild = @($childPath) -eq 'core'
-    $fullChild = @($childPath) -eq 'full'
-    $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
-    
-    if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
-    {
-        $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
-        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
-    }
-
-    if ($fullChild -and @(Invoke-LabCommand -ComputerName $fullChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $fullChild.Count)
-    {
-        $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
-        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
-    }
+    $libLocation = Join-Path -Path (Get-Module AutomatedLab.Common).ModuleBase -ChildPath 'Types/Win32Exception.cs'
+    Copy-LabFileItem -Path $libLocation -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
 
     $parameters.ScriptBlock = {
-        if ($PSEdition -eq 'core')
-        {
-            Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-        }
-        else
-        {
-            Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-        }
+        Add-Type -Path '/ALLibraries/Win32Exception.cs' -ErrorAction SilentlyContinue -IgnoreWarnings
         
         Install-SoftwarePackage @installParams
     }
