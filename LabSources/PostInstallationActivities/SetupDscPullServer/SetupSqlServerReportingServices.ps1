@@ -1,6 +1,11 @@
 function Get-ConfigSet
 {
-    return Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting
+    return Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting
+}
+
+if ($PSVersionTable.PSVersion -lt ([version]'3.0'))
+{
+    throw 'No reporting services on legacy PowerShell versions.'
 }
 
 $configSet = Get-ConfigSet
@@ -62,7 +67,7 @@ if (-not $configSet.IsInitialized)
     $configSet | Invoke-CimMethod -MethodName ListReportServersInDatabase | Out-Null
     $configSet | Invoke-CimMethod -MethodName ListReservedUrls | Out-Null
 
-    $inst = Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance
+    $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance
 
     Write-Verbose 'Reporting Services are now configured. The URLs to access the reporting services are:'
     foreach ($url in ($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs)
