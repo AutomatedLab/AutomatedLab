@@ -2502,10 +2502,13 @@ function Install-LabSoftwarePackage
 
     # Transfer ALCommon library
     $libLocation = Join-Path -Path (Get-Module AutomatedLab.Common).ModuleBase -ChildPath 'Types/Win32Exception.cs'
-    Copy-LabFileItem -Path $libLocation -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
+    Copy-LabFileItem -Path $libLocation -ComputerName $ComputerName -DestinationFolderPath '/ALLibraries'
 
     $parameters.ScriptBlock = {
-        Add-Type -Path '/ALLibraries/Win32Exception.cs' -ErrorAction SilentlyContinue -IgnoreWarnings
+        if ($PSVersionTable.PSVersion -gt ([version]'2.0'))
+        {
+            Add-Type -Path '/ALLibraries/Win32Exception.cs' -ErrorAction SilentlyContinue -IgnoreWarnings
+        }
         
         Install-SoftwarePackage @installParams
     }
