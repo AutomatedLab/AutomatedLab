@@ -1,6 +1,6 @@
 function Get-ConfigSet
 {
-    return Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting
+    return Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting
 }
 
 $configSet = Get-ConfigSet
@@ -62,7 +62,7 @@ if (-not $configSet.IsInitialized)
     $configSet | Invoke-CimMethod -MethodName ListReportServersInDatabase | Out-Null
     $configSet | Invoke-CimMethod -MethodName ListReservedUrls | Out-Null
 
-    $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
+    $inst = Get-WmiObject -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance
 
     Write-Verbose 'Reporting Services are now configured. The URLs to access the reporting services are:'
     foreach ($url in ($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs)

@@ -2383,7 +2383,7 @@ function Install-LabCAMachine
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
 
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
             } -Variable (Get-Variable -Name DatabaseDirectoryDrive) -PassThru
 
             if (-not $disk -or -not $disk.DriveType -eq 3)
@@ -2397,7 +2397,7 @@ function Install-LabCAMachine
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
             } -Variable (Get-Variable -Name LogDirectoryDrive) -PassThru
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
@@ -3009,7 +3009,7 @@ function Publish-LabCAInstallCertificates
             {
                 Write-Verbose -Message "Install certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) on machine $(hostname)"
                 #If workgroup, publish to local store
-                if ((Get-CimInstance -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
+                if ((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
                 {
                     Write-Verbose -Message '  Machine is not domain joined. Publishing certificate to local store'
 

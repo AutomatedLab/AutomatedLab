@@ -616,7 +616,7 @@ $disks = $diskpartCmd | diskpart.exe
         }	
     }	
 }	
- foreach ($volume in (Get-CimInstance -Class Win32_Volume))	
+ foreach ($volume in (Get-WmiObject -Class Win32_Volume))	
 {	
     if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')	
     {	
@@ -1457,7 +1457,7 @@ function Mount-LWIsoImage
         $delayIndex = 0
 
         $dvdDrivesBefore = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         #this is required as Compare-Object cannot work with a null object
@@ -1500,7 +1500,7 @@ function Mount-LWIsoImage
         }
         
         $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
-            Get-CimInstance -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
+            Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
@@ -1582,7 +1582,7 @@ function Repair-LWHypervNetworkConfig
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
                 Write-Verbose "Looking for network adapter with using filter '$filter'"
-                $adapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter $filter
+                $adapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter $filter
     
                 Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
                 $adapter.NetConnectionID = $newName

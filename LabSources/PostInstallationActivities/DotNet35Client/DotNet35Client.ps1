@@ -35,7 +35,7 @@
 	    return
     }
 
-    $osName = (Get-CimInstance "win32_operatingsystem" | Select-Object caption).Caption
+    $osName = (Get-WmiObject "win32_operatingsystem" | Select-Object caption).Caption
     if ($osName -notlike '*Microsoft Windows 8*')
     {
         Write-Error 'This script only runs on Windows 8'
@@ -79,6 +79,6 @@
     }
 }
 
-$drive = (Get-CimInstance -ClassName Win32_LogicalDisk -Filter "DriveType = 5").DeviceID
+$drive = (Get-WmiObject -Class Win32_LogicalDisk -Filter "DriveType = 5").DeviceID
 $sourcePath = "$drive\sources\sxs"
 Install-NetFramework35 -LocalSource $sourcePath
