@@ -6,7 +6,7 @@
 $labName = 'LabEx2019'
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
-New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -VmPath I:\AutomatedLab-VMs
+New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV 
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
