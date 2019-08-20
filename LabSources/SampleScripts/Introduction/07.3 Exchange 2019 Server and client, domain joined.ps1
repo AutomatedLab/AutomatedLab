@@ -6,19 +6,19 @@
 $labName = 'LabEx2019'
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
-New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV 
+New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -VmPath I:\AutomatedLab-VMs
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = 'contoso.com'
-    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2019 Standard (Desktop Experience)'
+    'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2019 Datacenter (Desktop Experience)' 
 }
 
 #the first machine is the root domain controller. Everything in $labSources\Tools get copied to the machine's Windows folder
 $role = Get-LabPostInstallationActivity -CustomRole Exchange2019 -Properties @{ OrganizationName = 'Contoso' }
 Add-LabMachineDefinition -Name E1DC1 -Memory 2GB -Network $labName -Roles RootDC 
 Add-LabMachineDefinition -Name E1Ex1 -Memory 6GB -PostInstallationActivity $role     
-Add-LabMachineDefinition -Name 'Win10Ent' -Memory 2GB -OperatingSystem 'Windows 10 Enterprise'
+Add-LabMachineDefinition -Name E1Client -Memory 2GB -OperatingSystem 'Windows 10 Enterprise'
     
 Install-Lab -NetworkSwitches -BaseImages -VMs -Domains -StartRemainingMachines
 
