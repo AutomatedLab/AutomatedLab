@@ -597,8 +597,10 @@
                 <File Id='Sample_AGPM1' Name='AGPM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1' />
                 <File Id='Sample_LabInABox1HyperV' Name='Lab in a Box 1 - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1' />
                 <File Id='Sample_LabInABox2Azure' Name='Lab in a Box 2 - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1' />
+                <File Id='Sample_LabInABox3' Name='Lab in a Box 3 - Build worker.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Lab in a Box 3 - Build worker.ps1' />
                 <File Id='Sample_ProGetLab' Name='ProGet Lab - HyperV.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\ProGet Lab - HyperV.ps1' />
                 <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
+                <File Id='Sample_WindowsAdminCenter' Name='WindowsAdminCenter.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WindowsAdminCenter.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
                 <File Id='Sample_DSCPullScenario1S' Name='DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' />
                 <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />
@@ -625,6 +627,7 @@
                 <File Id='Sample_Intro06' Name='06 SQL Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1' />
                 <File Id='Sample_Intro071' Name='07.1 Exchange 2013 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1' />
                 <File Id='Sample_Intro072' Name='07.2 Exchange 2016 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1' />
+                <File Id='Sample_Intro073' Name='07.3 Exchange 2019 Server and client, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\07.3 Exchange 2019 Server and client, domain joined.ps1' />
                 <File Id='Sample_Intro08' Name='08 Standalone Root CA, Sub Ca domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1' />
                 <File Id='Sample_Intro09' Name='09 Web Servers with SSL certs, Root CA, domain joined.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1' />
                 <File Id='Sample_Intro10' Name='10 Development Client, domain joined (internet facing).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1' />
@@ -1739,16 +1742,25 @@
         <File Id="fil342BDDCDD4734ECC9B26FD76634CA36D" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\DownloadSCCM.ps1" />
         <File Id="fil566509688A384CCDA6EB4A512EBB9BA4" Source="$(var.SolutionDir)\LabSources\CustomRoles\SCCM\InstallSCCM.ps1" />
       </Component>
+      <Component Id="cmp31E714FCC0CE42BB89D1E9EDDAFFEF64" Directory="dir1ED29293F8F64AE8983DE482FEC3A5EB" Guid="f20c6f66-1909-4bb2-9603-bb466c19a0ad">
+        <File Id="filC97331127C04463994C815D992DFF5BC" Source="$(var.SolutionDir)\LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1" />
+      </Component>
       <Component Id="cmpAC53BE1435E54EA2B6C138AC6F7B4D01" Directory="dirB373F64E5AF4425A852A91AF628C1053" Guid="bc9fb53b-c471-41bf-b74c-0319b4320284">
         <File Id="fil611A290B504B40AC8067CF36E9A1FE16" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\DemoCustomRole.ps1" />
         <File Id="filBE11AC3DC999442C9450DAD98FF51265" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostEnd.ps1" />
         <File Id="filF8132E52FC96455F841EC3746134B102" Source="$(var.SolutionDir)\LabSources\CustomRoles\DemoCustomRole\HostStart.ps1" />
+      </Component>
+      <Component Id="cmp8F7BE807FC9E40ED95E7DA6CA287F02F" Directory="dir52A8F28BEFFB4F02812378EA14E93873" Guid="3dea0f7f-f575-4e36-89a4-d859d8bba949">
+        <File Id="fil9380E297728F4F10B03B072755AE8F0F" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2019\HostStart.ps1" />
       </Component>
       <Component Id="cmpB7A4553235714D3980022AD29B59E524" Directory="dirD153285282514AC29784E8EEC0425DF4" Guid="6fac1fe1-56ef-4bd6-9126-4350e63d9a44">
         <File Id="filF56497E6FC8F489F817C687FC78899BB" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2016\HostStart.ps1" />
       </Component>
       <Component Id="cmpAC7C8B81D23F4769994947F0CECD3180" Directory="dir0E259F3D4465478A9ACD45BFE861109E" Guid="17bdbdfb-799d-48a7-b8aa-bb70463492af">
         <File Id="fil0ECB36EBB468421ABD44DCA1F37CC377" Source="$(var.SolutionDir)\LabSources\CustomRoles\Exchange2013\HostStart.ps1" />
+      </Component>
+      <Component Id="cmpCFDA434FE2294C39A01B1A9F6DC59529" Directory="dirA53F69F85E224F84873C47FAFD3B88BB" Guid="015a25fd-f85e-4185-8fe7-09b05cb32d9b">
+        <File Id="filDC4663A87BBC486D96836D3BB0F4F246" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\HostStart.ps1" />
       </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\README.md" />
@@ -1918,7 +1930,22 @@
   </Fragment>
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir52A8F28BEFFB4F02812378EA14E93873" Name="Exchange2019" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirA53F69F85E224F84873C47FAFD3B88BB" Name="LabBuilder" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dirD5857EAD5CA449FAA8DEB6655159C72F" Name="SCCM" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir1ED29293F8F64AE8983DE482FEC3A5EB" Name="WindowsAdminCenter" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
