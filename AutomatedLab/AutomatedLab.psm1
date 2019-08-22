@@ -1976,7 +1976,7 @@ function Install-VisualStudio2013
                 Write-Verbose 'Installing Visual Studio 2013'
 
                 Push-Location
-                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -2095,7 +2095,7 @@ function Install-VisualStudio2015
                 Write-Verbose 'Installing Visual Studio 2015'
 
                 Push-Location
-                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -2528,7 +2528,7 @@ function Install-LabSoftwarePackage
         {
             Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
-        else
+        elseif ([System.Environment]::OSVersion.Version -gt '6.3')
         {
             Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }

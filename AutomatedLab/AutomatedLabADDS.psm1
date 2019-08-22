@@ -1753,7 +1753,7 @@ function Reset-DNSConfiguration
             (
                 $DnsServers
             )
-            $AdapterNames = (Get-CimInstance -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
+            $AdapterNames = (Get-WmiObject -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
             foreach ($AdapterName in $AdapterNames)
             {
                 netsh.exe interface ipv4 set dnsservers "$AdapterName" static $DnsServers primary
