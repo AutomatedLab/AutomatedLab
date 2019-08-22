@@ -713,6 +713,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2019", "Exchange201
 		LabSources\CustomRoles\Exchange2019\HostStart.ps1 = LabSources\CustomRoles\Exchange2019\HostStart.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "psconfig", "psconfig", "{E931A24D-E1CF-4A0E-A225-364B8CB85D52}"
+	ProjectSection(SolutionItems) = preProject
+		AutomatedLab\psfconfig\scriptblocks.ps1 = AutomatedLab\psfconfig\scriptblocks.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -828,6 +833,7 @@ Global
 		{9FFE3FB0-9410-494C-912E-10F091E03E77} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{0E26B77E-3AB2-4B78-8812-BEB983EC8197} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{176FD7BD-6CB9-4FCA-8EDD-A02C68938657} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{E931A24D-E1CF-4A0E-A225-364B8CB85D52} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
