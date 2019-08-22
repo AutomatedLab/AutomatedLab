@@ -2,28 +2,33 @@ param(
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
-    [string]$OrganizationName
+    [string]$OrganizationName,
+
+    [Parameter(Mandatory)]
+    [string]$IsoPath
 )
 
 function Download-ExchangeSources
 {
     
     Write-ScreenInfo -Message 'Download Exchange 2019 requirements' -TaskStart
-    $downloadTargetFolder = "$labSources\SoftwarePackages"
-    Write-ScreenInfo -Message "Adding Exchange 2019 iso from '$exchangeDownloadLink'"
-    $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop -FileName 'mu_exchange_server_2019-x64-cu2.iso'
+    
+    #The image is no longer available publicly
+    #$downloadTargetFolder = "$labSources\ISOs"
+    #Write-ScreenInfo -Message "Adding Exchange 2019 iso from '$exchangeDownloadLink'"
+    #$script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop -FileName 'mu_exchange_server_2019-x64-cu2.iso'
 
     $downloadTargetFolder = "$labSources\SoftwarePackages"
-    Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnetDownloadLink'"
-    $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
+    Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
+    $script:dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     Write-ScreenInfo -Message "Downloading the Visual C++ 2012 Redistributable Package from '$VC2012RedristroDownloadLink'"
-    $script:VC2012InstallFile = Get-LabInternetFile -Uri $VC2012RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2012.exe -PassThru -ErrorAction Stop
-    Write-ScreenInfo 'finished' -TaskEnd
+    $script:vc2012InstallFile = Get-LabInternetFile -Uri $VC2012RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2012.exe -PassThru -ErrorAction Stop
 
     Write-ScreenInfo -Message "Downloading the Visual C++ 2013 Redistributable Package from '$VC2013RedristroDownloadLink'"
-    $script:VC2013InstallFile = Get-LabInternetFile -Uri $VC2013RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
-        Write-ScreenInfo 'finished' -TaskEnd
+    $script:vc2013InstallFile = Get-LabInternetFile -Uri $VC2013RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
+    
+    Write-ScreenInfo 'finished' -TaskEnd
 }
 
 function Add-ExchangeAdRights
@@ -50,9 +55,11 @@ function Add-ExchangeAdRights
 function Install-ExchangeWindowsFeature
 {
     Write-ScreenInfo "Installing Windows Features Server-Media-Foundation on '$vm'"  -TaskStart -NoNewLine
+    
     $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
+    
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -64,45 +71,52 @@ function Install-ExchangeRequirements
     Start-LabVM -ComputerName $machines -Wait
 
     $jobs = @()
+    
+    $ucmaInstalled = Invoke-LabCommand -ActivityName 'Test UCMA Installation' -ScriptBlock {
+        Test-Path -Path 'C:\Program Files\Microsoft UCMA 4.0\Runtime\Uninstaller\Setup.exe'
+    } -ComputerName $vm -PassThru
 
-    $drive = Mount-LabIsoImage -ComputerName $vm -IsoPath $labSources\SoftwarePackages\mu_exchange_server_2019-x64-cu2.iso -PassThru
-    $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "$($drive.DriveLetter)\UCMARedist\Setup.exe" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru 
-    Wait-LWLabJob -Job $jobs  -ProgressIndicator 20 
-    Dismount-LabIsoImage -ComputerName $vm
+    if (-not $ucmaInstalled)
+    {
+        $drive = Mount-LabIsoImage -ComputerName $vm -IsoPath $exchangeInstallFile.FullName -PassThru
+        $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "$($drive.DriveLetter)\UCMARedist\Setup.exe" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru
+        Wait-LWLabJob -Job $jobs  -ProgressIndicator 20 
+        Dismount-LabIsoImage -ComputerName $vm
+    }
 
-
-        foreach ($machine in $machines)
+    foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine #-NoDisplay
         if ($dotnetFrameworkVersion.Version -lt '4.8')
         {
             Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet48.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
             Write-ScreenInfo ".net Framework 4.8 is already installed on '$machine'" -Type Verbose
         }
-        if (!(test-path 'Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio'))
+        
+        if (-not (Test-Path -Path 'Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio'))
         { 
             Write-ScreenInfo "Installing Visual C++ redistributals 2012 and 2013 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $VC2012InstallFile.FullName -CommandLine '/install /quiet /norestart /log c:\VC++.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $VC2013InstallFile.FullName -CommandLine '/install /quiet /norestart /log c:\VC++.txt' -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            $cppJobs = @()
+            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2012InstallFile.FullName -CommandLine '/install /quiet /norestart /log C:\DeployDebug\cpp64_2012.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2013InstallFile.FullName -CommandLine '/install /quiet /norestart /log C:\DeployDebug\cpp64_2013.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
+            Wait-LWLabJob -Job $cppJobs -NoDisplay -ProgressIndicator 20 -NoNewLine
         }
         else 
         {
-                Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
+            Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
         
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
-    #Wait-LWLabJob -Job $jobs -ProgressIndicator 20 
     Write-ScreenInfo done
         
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
     Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 10 -NoDisplay
-    #Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 50 
 
     Sync-LabActiveDirectory -ComputerName $rootDc
     Write-ScreenInfo 'finished' -TaskEnd
@@ -290,10 +304,9 @@ function Start-ExchangeInstallation
     }
 }
 
-$exchangeDownloadLink = 'https://download.microsoft.com/download/5/0/E/50E18CDC-E86D-40D3-9C0D-D9655CB1C238/ExchangeServer2019-x64.iso'
-$dotnetDownloadLink =   'https://download.visualstudio.microsoft.com/download/pr/7afca223-55d2-470a-8edc-6a1739ae3252/abd170b4b0ec15ad0222a809b761a036/ndp48-x86-x64-allos-enu.exe'
-$VC2013RedristroDownloadLink = 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe'
-$VC2012RedristroDownloadLink = 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe'
+$dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
+$VC2013RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
+$VC2012RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2012
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -304,6 +317,13 @@ if (-not $OrganizationName)
 {
     $OrganizationName = $lab.Name + 'ExOrg'
 }
+
+if (-not (Test-Path -Path $IsoPath))
+{
+    Write-Error "The ISO file '$IsoPath' could not be found."
+    return
+}
+$exchangeInstallFile = Get-Item -Path $IsoPath
 
 Write-ScreenInfo "Intalling Exchange 2019 '$ComputerName'..." -TaskStart
 
