@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26403.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29123.88
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -72,8 +72,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PSLog", "PSLog", "{81D0BB90
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab", "AutomatedLab", "{03FEFD6A-B999-4BBA-875B-6CFA083E43CC}"
 	ProjectSection(SolutionItems) = preProject
-		AutomatedLab\AutomatedLab.format.ps1xml = AutomatedLab\AutomatedLab.format.ps1xml
 		AutomatedLab\AutomatedLab-help.xml = AutomatedLab\AutomatedLab-help.xml
+		AutomatedLab\AutomatedLab.format.ps1xml = AutomatedLab\AutomatedLab.format.ps1xml
 		AutomatedLab\AutomatedLab.init.ps1 = AutomatedLab\AutomatedLab.init.ps1
 		AutomatedLab\AutomatedLab.psd1 = AutomatedLab\AutomatedLab.psd1
 		AutomatedLab\AutomatedLab.psm1 = AutomatedLab\AutomatedLab.psm1
@@ -171,7 +171,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Workshops", "Workshops", "{
 		LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1 = LabSources\SampleScripts\Workshops\PowerShell Lab - HyperV.ps1
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LabXml", "LabXml\LabXml.csproj", "{A27BCDC6-9D37-46D2-805F-930A509EFC9D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "HyperV", "HyperV", "{F808D90D-4D58-4532-8041-ED753492C589}"
 	ProjectSection(SolutionItems) = preProject
@@ -272,6 +272,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Introduction", "Introductio
 		LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\06 SQL Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.1 Exchange 2013 Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.2 Exchange 2016 Server and client, domain joined.ps1
+		LabSources\SampleScripts\Introduction\07.3 Exchange 2019 Server and client, domain joined.ps1 = LabSources\SampleScripts\Introduction\07.3 Exchange 2019 Server and client, domain joined.ps1
 		LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1 = LabSources\SampleScripts\Introduction\08 Standalone Root CA, Sub Ca domain joined.ps1
 		LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1 = LabSources\SampleScripts\Introduction\09 Web Servers with SSL certs, Root CA, domain joined.ps1
 		LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1 = LabSources\SampleScripts\Introduction\10 Development Client, domain joined (internet facing).ps1
@@ -696,6 +697,22 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Win", "Win", "{3519A5CB-AE9
 		AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1 = AutomatedLabUnattended\Private\Win\Set-UnattendedWindowsWorkgroup.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "LabBuilder", "LabBuilder", "{9FFE3FB0-9410-494C-912E-10F091E03E77}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\LabBuilder\HostStart.ps1 = LabSources\CustomRoles\LabBuilder\HostStart.ps1
+		LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1 = LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WindowsAdminCenter", "WindowsAdminCenter", "{0E26B77E-3AB2-4B78-8812-BEB983EC8197}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1 = LabSources\CustomRoles\WindowsAdminCenter\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Exchange2019", "Exchange2019", "{176FD7BD-6CB9-4FCA-8EDD-A02C68938657}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\Exchange2019\HostStart.ps1 = LabSources\CustomRoles\Exchange2019\HostStart.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -808,6 +825,9 @@ Global
 		{B3AF9CA0-46D4-447A-8D01-CCD7F7C7A31F} = {E2684456-7364-48F8-8D36-CDCE738F3285}
 		{8DD46CA3-D48D-4C7D-A5B0-4F58202B42E4} = {E2684456-7364-48F8-8D36-CDCE738F3285}
 		{3519A5CB-AE93-46DF-AC88-9B6B146BF5E7} = {E2684456-7364-48F8-8D36-CDCE738F3285}
+		{9FFE3FB0-9410-494C-912E-10F091E03E77} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{0E26B77E-3AB2-4B78-8812-BEB983EC8197} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{176FD7BD-6CB9-4FCA-8EDD-A02C68938657} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
