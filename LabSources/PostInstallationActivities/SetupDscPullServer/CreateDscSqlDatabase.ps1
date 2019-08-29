@@ -491,6 +491,7 @@ RETURN
 		SELECT NodeName
 		,MAX(CreationTime) AS MaxEndTime
 		FROM dbo.vBaseNodeLocalStatus
+		WHERE OperationType <> 'LocalConfigurationManager'
 		GROUP BY NodeName
 		
 	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
