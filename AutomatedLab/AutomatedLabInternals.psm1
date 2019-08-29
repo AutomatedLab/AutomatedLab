@@ -581,18 +581,29 @@ function Get-LabInternetFile
         $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
         $PSBoundParameters.FileName = $FileName
     }
-
-    if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
+    
+    $lab = Get-Lab -ErrorAction SilentlyContinue
+    
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $machine = Get-LabVM -IsRunning | Select-Object -First 1
-        Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
+        {
+            $machine = Get-LabVM -IsRunning | Select-Object -First 1
+            Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-        $argumentList = $Uri, $Path, $FileName
+            $argumentList = $Uri, $Path, $FileName
 
-        $argumentList += if ($NoDisplay) {$true} else {$false}
-        $argumentList += if ($Force) {$true} else {$false}
+            $argumentList += if ($NoDisplay) {$true} else {$false}
+            $argumentList += if ($Force) {$true} else {$false}
         
-        $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+        }
+        else
+        {
+            Write-PSFMessage "Target path is local, invoking the copy job locally."
+            $PSBoundParameters.Remove('PassThru') | Out-Null
+            $result = Get-LabInternetFileInternal @PSBoundParameters
+        }
     }
     else
     {
