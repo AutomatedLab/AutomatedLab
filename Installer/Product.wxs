@@ -1,4 +1,4 @@
-<?xml version='1.0' encoding='utf-8'?>
+﻿<?xml version='1.0' encoding='utf-8'?>
 <Wix xmlns='http://schemas.microsoft.com/wix/2006/wi'>
   <?include Includes.wxi ?>
   <Product
@@ -549,6 +549,7 @@
                 <File Id='Sample_Single81Client' Name='Single 81 Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 81 Client.ps1' />
                 <File Id='Sample_Single81ClientWithOffice' Name='Single 81 Client with Office.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 81 Client with Office.ps1' />
                 <File Id='Sample_Single81ClientWithOfficeVSReflector' Name='Single 10 Client with Office, VS and Reflector.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 10 Client with Office, VS and Reflector.ps1' />
+                <File Id='Sample_Single10ClientOffice2019' Name='Single 10 Client with Office2019.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 10 Client with Office2019.ps1' />
                 <File Id='Sample_Single10Client' Name='Single 10 Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\Single 10 Client.ps1' />
                 <File Id='Sample_SmallLab12012R2SingleServer' Name='SmallLab 2012R2 Single Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Server.ps1' />
                 <File Id='Sample_SmallLab12012R2SingleClient' Name='SmallLab 2012R2 Single Client.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\HyperV\SmallLab 2012R2 Single Client.ps1' />
@@ -1731,6 +1732,9 @@
         <File Id="filD931618E1A1748F4BCEA35443E457FF8" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\InstallMDT.ps1" />
         <File Id="filA30EA48DB25F4DFE9B46C7BF8ECC2BEE" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\MDTApplications.xml" />
       </Component>
+      <Component Id="cmpD0587757D9A94FF2B4794226ABE4E3BF" Directory="dir173133541A464C18AA07E8E6F6862181" Guid="c4aea826-aae0-4318-b8c4-d5b29bfd9ab1">
+        <File Id="fil4BCECFAE71234E86B1B97C4A0B0D5848" Source="$(var.SolutionDir)\LabSources\CustomRoles\Office2019\HostStart.ps1" />
+      </Component>
       <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
         <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
         <File Id="filE256ED55FB34497690F40A3DFD18B4F8" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\README.md" />
@@ -1911,6 +1915,11 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dirD49C097A947F489194CAACFE550AC9C2" Name="MDT" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir173133541A464C18AA07E8E6F6862181" Name="Office2019" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
