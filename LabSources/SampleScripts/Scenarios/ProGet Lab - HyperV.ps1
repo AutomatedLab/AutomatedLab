@@ -35,14 +35,13 @@ Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC, Routing -Network
 
 #web server
 $role = Get-LabPostInstallationActivity -CustomRole ProGet5 -Properties @{
-    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.1.17.exe'
+    ProGetDownloadLink = 'https://s3.amazonaws.com/cdn.inedo.com/downloads/proget/ProGetSetup5.2.8.exe'
     SqlServer = 'PGSql1'
 }
 Add-LabMachineDefinition -Name PGWeb1 -Memory 1GB -Roles WebServer -IpAddress 192.168.110.51 -PostInstallationActivity $role
 
-
 #SQL server
-Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labSources\ISOs\en_sql_server_2016_standard_with_service_pack_1_x64_dvd_9540929.iso
+Add-LabIsoImageDefinition -Name SQLServer2016 -Path $labSources\ISOs\en_sql_server_2016_standard_with_service_pack_2_x64_dvd_12124191.iso
 Add-LabMachineDefinition -Name PGSql1 -Memory 2GB -Roles SQLServer2016 -IpAddress 192.168.110.52
 
 #client
@@ -52,7 +51,6 @@ Install-Lab
 
 #Install software to all lab machines
 $machines = Get-LabVM
-Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 

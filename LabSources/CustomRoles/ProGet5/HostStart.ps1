@@ -50,8 +50,10 @@ Invoke-LabCommand -ActivityName 'Removing Default Web Page' -ScriptBlock {
 #download ProGet
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
 
-$installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
-$installArgs = $installArgs -f $SqlServer
+$emailAddressPart1 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$emailAddressPart2 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$installArgs = '/Edition=Trial /EmailAddress={0}@{1}.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
+$installArgs = $installArgs -f $emailAddressPart1, $emailAddressPart2, $SqlServer
 
 Write-ScreenInfo "Installing ProGet on server '$proGetServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
