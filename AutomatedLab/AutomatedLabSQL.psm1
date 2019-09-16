@@ -129,7 +129,7 @@ GO
                 #Dismounting ISO images to have just one drive later
                 Dismount-LabIsoImage -ComputerName $machine -SupressOutput
 
-                $retryCount = 3
+                $retryCount = 10
                 $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                 while (-not $autoLogon -and $retryCount -gt 0)
                 {
