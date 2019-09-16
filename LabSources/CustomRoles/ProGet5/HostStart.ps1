@@ -105,9 +105,6 @@ INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
 
---INSERT INTO [ProGet].[dbo].[Configuration] 
---VALUES ('Web.InvalidatePrivilegesCachedBeforeDate', '2016-05-31T12:37:00.7751728Z')
-
 -- Change user directory to 'Active Directory with Multiple Domains user directory'
 UPDATE [ProGet].[dbo].[Configuration]
     SET [Value_Text] = 3
@@ -115,8 +112,8 @@ UPDATE [ProGet].[dbo].[Configuration]
 GO
 
 -- add a internal PowerShell feed
-INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [SyncToken_Bytes], [SyncTarget_Url], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
-VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
+INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
+VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
 
 GO
 '@ -f $ComputerName, $proGetServer.DomainName, $flatDomainName
