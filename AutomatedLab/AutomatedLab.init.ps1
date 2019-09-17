@@ -118,7 +118,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=858904' -Initialize -Validation string -Description 'Link to SSMS 2017'
 
 # SSRS
-Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder3.msi
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
 Set-PSFConfig -Module 'AutomatedLab' -Name Ssrs2017 -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
 
 #SQL Server sample database contents

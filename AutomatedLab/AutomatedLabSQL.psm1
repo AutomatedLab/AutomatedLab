@@ -351,9 +351,9 @@ GO
         if ($script:externalSsrs)
         {
             Write-ScreenInfo -Message "Installing SSRS on $($script:externalSsrs.Count) machines"
-            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder3.msi
+            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
             Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Ssrs2017) -Path $labSources\SoftwarePackages\SQLServerReportingServices.exe
-            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder3.msi -ComputerName $script:externalSsrs
+            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $script:externalSsrs
             Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $script:externalSsrs
             Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $script:externalSsrs -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1            
         }
