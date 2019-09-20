@@ -78,7 +78,7 @@ function Install-LabRouting
 
                 Write-Verbose 'Setting up NAT...'
 
-                $externalAdapter = Get-WmiObject -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
+                $externalAdapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter ('MACAddress = "{0}"' -f $args[0]) |
                     Select-Object -ExpandProperty NetConnectionID
 
                 netsh.exe routing ip nat install
@@ -141,7 +141,7 @@ function Set-LabADDNSServerForwarder
         {
             Invoke-LabCommand -ActivityName 'Get default gateway' -ComputerName $dc -ScriptBlock {
 
-                Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
+                Get-CimInstance -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.DefaultIPGateway } | Select-Object -ExpandProperty DefaultIPGateway | Select-Object -First 1
 
             } -PassThru -NoDisplay
         }
@@ -152,10 +152,12 @@ function Set-LabADDNSServerForwarder
         }
 
         Write-PSFMessage "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
-
+        
+        $defaultDnsForwarder1 = Get-LabConfigurationItem -Name DefaultDnsForwarder1
+        $defaultDnsForwarder2 = Get-LabConfigurationItem -Name DefaultDnsForwarder2
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {
-            dnscmd /resetforwarders $args[0]
-        } -ArgumentList $gateway -AsJob -NoDisplay
+            dnscmd /resetforwarders $args[0] $args[1]
+        } -ArgumentList $defaultDnsForwarder1, $defaultDnsForwarder2 -AsJob -NoDisplay
     }
 }
 #endregion Set-LabADDNSServerForwarder
