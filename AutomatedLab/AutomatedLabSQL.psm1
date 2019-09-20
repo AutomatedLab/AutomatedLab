@@ -129,7 +129,7 @@ GO
                 #Dismounting ISO images to have just one drive later
                 Dismount-LabIsoImage -ComputerName $machine -SupressOutput
 
-                $retryCount = 3
+                $retryCount = 10
                 $autoLogon = (Test-LabAutoLogon -ComputerName $machine)[$machine.Name]
                 while (-not $autoLogon -and $retryCount -gt 0)
                 {
@@ -153,6 +153,14 @@ GO
                 ?? { $role.Properties.ContainsKey('Features') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
+
+                if ( $global:setupArguments -match '/Features=.*RS' -and $role.Name -eq 'SQLServer2017')
+                {
+                    $global:setupArguments = $global:setupArguments -replace ',?RS'
+
+                    if (-not $script:externalSsrs) { $script:externalSsrs = @() }
+                    $script:externalSsrs += $machine
+                }
 
                 ?? { $role.Properties.ContainsKey('InstanceName') } `
                 {
@@ -235,7 +243,7 @@ GO
                     while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
                     {
                         Start-Sleep -Seconds 2
-                        $dvdDrive = (Get-CimInstance -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
+                        $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
                     }
 
                     if ($dvdDrive)
@@ -339,6 +347,16 @@ GO
         Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
+
+        if ($script:externalSsrs)
+        {
+            Write-ScreenInfo -Message "Installing SSRS on $($script:externalSsrs.Count) machines"
+            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
+            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Ssrs2017) -Path $labSources\SoftwarePackages\SQLServerReportingServices.exe
+            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $script:externalSsrs
+            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $script:externalSsrs
+            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $script:externalSsrs -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1            
+        }
 
         $servers = Get-LabVm |
         Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} |

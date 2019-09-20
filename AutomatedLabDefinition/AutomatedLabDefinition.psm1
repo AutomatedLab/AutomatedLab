@@ -707,13 +707,13 @@ function New-LabDefinition
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host '   Operating System detected as:'
         Write-PSFMessage -Level Host "     Name:  $osName"
         Write-PSFMessage -Level Host "     Build: $osBuild"
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' AutomatedLab is supported on the following virtualization platforms'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' - Microsoft Azure'
         Write-PSFMessage -Level Host ' - Windows 2016 1607 or newer'
         Write-PSFMessage -Level Host ' - Windows 10 1607 or newer'
@@ -1854,8 +1854,6 @@ function Add-LabMachineDefinition
 
         [AutomatedLab.Role[]]$Roles,
 
-        [string]$ProductKey,
-
         #Created ValidateSet using: "'" + ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name -join "', '") + "'" | clip
         [ValidateScript({ $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name)})]
         [string]$UserLocale,
@@ -2734,7 +2732,6 @@ function Add-LabMachineDefinition
         if (-not $UserLocale) { $UserLocale = (Get-Culture).Name }
         $machine.UserLocale = $UserLocale
 
-        $machine.ProductKey = $ProductKey
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
 

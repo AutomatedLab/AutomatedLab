@@ -147,6 +147,8 @@ function Install-LWLabCAServers
     $caScriptBlock = {
 
         param ($param)
+        
+        $param | Export-Clixml C:\DeployDebug\CaParams.xml
 
         #Make semi-sure that each install of CA server is not done at the same time
         Start-Sleep -Seconds $param.PreDelaySeconds
@@ -224,7 +226,7 @@ function Install-LWLabCAServers
 
 
         #region - Install CA
-        $hostOSVersion = [system.version](Get-CimInstance -Class Win32_OperatingSystem).Version
+        $hostOSVersion = [system.version](Get-WmiObject -Class Win32_OperatingSystem).Version
         if ($hostOSVersion -ge [system.version]'6.2')
         {
             $InstallFeatures = 'Import-Module -Name ServerManager; Add-WindowsFeature -IncludeManagementTools -Name ADCS-Cert-Authority'
@@ -705,7 +707,7 @@ function Install-LWLabCAServers2008
 
 
         #region - Install CA
-        $hostOSVersion = [system.version](Get-CimInstance -Class Win32_OperatingSystem).Version
+        $hostOSVersion = [system.version](Get-WmiObject -Class Win32_OperatingSystem).Version
         if ($hostOSVersion -ge [system.version]'6.2')
         {
             $InstallFeatures = 'Import-Module -Name ServerManager; Add-WindowsFeature -IncludeManagementTools -Name ADCS-Cert-Authority'

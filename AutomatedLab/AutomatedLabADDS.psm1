@@ -1001,9 +1001,6 @@ function Install-LabRootDcs
             }
         }
 
-        Restart-LabVM -ComputerName $machines -Wait -NoNewLine
-        Wait-LabADReady -ComputerName $machines -NoNewLine
-
         Enable-LabVMRemoting -ComputerName $machines
 
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
@@ -1756,7 +1753,7 @@ function Reset-DNSConfiguration
             (
                 $DnsServers
             )
-            $AdapterNames = (Get-CimInstance -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
+            $AdapterNames = (Get-WmiObject -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
             foreach ($AdapterName in $AdapterNames)
             {
                 netsh.exe interface ipv4 set dnsservers "$AdapterName" static $DnsServers primary

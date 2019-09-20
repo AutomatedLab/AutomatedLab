@@ -98,12 +98,12 @@ exit
             #does not work, seems to be a bug. Using diskpart as a workaround
             #$systemPartition | Format-Volume -FileSystem FAT32 -NewFileSystemLabel 'System' -Confirm:$false
 
-            $diskpartCmd = "@
-                select disk $vhdDiskNumber
-                select partition $($systemPartition.PartitionNumber)
-                format quick fs=fat32 label=System
-                exit
-            @"
+            $diskpartCmd = @"
+select disk $vhdDiskNumber
+select partition $($systemPartition.PartitionNumber)
+format quick fs=fat32 label=System
+exit
+"@
             $diskpartCmd | diskpart.exe | Out-Null
 
             $reservedPartition = New-Partition -DiskNumber $vhdDiskNumber -GptType '{e3c9e316-0b5c-4db8-817d-f92df00215ae}' -Size 128MB
@@ -141,7 +141,7 @@ exit
             throw (New-Object System.ComponentModel.Win32Exception($dismResult.LastExitCode,
             "The base image for operating system '$OsName' could not be created. The error is $($dismResult.LastExitCode)"))
         }
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 10
 
         Write-PSFMessage 'Setting BCDBoot'
         if ($PartitionStyle -eq 'MBR')
@@ -155,22 +155,22 @@ exit
             $freeDrives = Compare-Object -ReferenceObject $possibleDrives -DifferenceObject $drives | Where-Object { $_.SideIndicator -eq '<=' }
             $freeDrive = ($freeDrives | Select-Object -First 1).InputObject
 
-            $diskpartCmd = "@
-                select disk $vhdDiskNumber
-                select partition $($systemPartition.PartitionNumber)
-                assign letter=$freeDrive
-                exit
-            @"
+            $diskpartCmd = @"
+    select disk $vhdDiskNumber
+    select partition $($systemPartition.PartitionNumber)
+    assign letter=$freeDrive
+    exit
+"@
             $diskpartCmd | diskpart.exe | Out-Null
 
             bcdboot.exe $vhdWindowsVolume\Windows /s "$($freeDrive):" /f UEFI | Out-Null
 
-            $diskpartCmd = "@
-                select disk $vhdDiskNumber
-                select partition $($systemPartition.PartitionNumber)
-                remove letter=$freeDrive
-                exit
-            @"
+            $diskpartCmd = @"
+    select disk $vhdDiskNumber
+    select partition $($systemPartition.PartitionNumber)
+    remove letter=$freeDrive
+    exit
+"@
             $diskpartCmd | diskpart.exe | Out-Null
         }
     }

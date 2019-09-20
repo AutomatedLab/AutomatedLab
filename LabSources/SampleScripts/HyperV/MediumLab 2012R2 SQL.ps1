@@ -52,7 +52,6 @@ Install-Lab
 
 #Install software to all lab machines
 $packs = @()
-$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
 

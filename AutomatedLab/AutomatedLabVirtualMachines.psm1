@@ -539,12 +539,27 @@ function Stop-LabVM
     $azureVms = $machines | Where-Object HostType -eq 'Azure'
     $vmwareVms = $machines | Where-Object HostType -eq 'VMWare'
 
-    if ($hypervVms) { Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine -ErrorVariable hypervErrors -ErrorAction SilentlyContinue }
-    if ($azureVms) {
-        $stayProvisioned = if($KeepAzureVmProvisioned){$true}else{$false}
+    if ($hypervVms)
+    {
+        Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
+        -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
+    }
+    if ($azureVms)
+    {
+        $stayProvisioned = if ($KeepAzureVmProvisioned)
+        {
+            $true
+        }
+        else
+        {
+            $false
+        }
         Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
-    if ($vmwareVms) { Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue }
+    if ($vmwareVms)
+    {
+        Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
+    }
 
     $remainingTargets = @()
     if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
@@ -1092,7 +1107,7 @@ function Get-LabVMUptime
     Write-LogFunctionEntry
 
     $cmdGetUptime = {
-        $lastboottime = (Get-CimInstance -Class Win32_OperatingSystem).LastBootUpTime
+        $lastboottime = (Get-WmiObject -Class Win32_OperatingSystem).LastBootUpTime
         (Get-Date) - [System.Management.ManagementDateTimeconverter]::ToDateTime($lastboottime)
     }
 
@@ -1941,9 +1956,13 @@ function Test-LabAutoLogon
             $values['DefaultDomainName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultDomainName } catch { }
             $values['DefaultUserName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultUserName } catch { }
             $values['DefaultPassword'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultPassword } catch { }
-            $values['LoggedOnUsers'] = Get-CimInstance -ClassName Win32_LogonSession -Filter 'LogonType = 2' |
-            Get-CimAssociatedInstance -Association Win32_LoggedOnUser -ErrorAction SilentlyContinue |
-            Select-Object -ExpandProperty Caption -Unique
+            $values['LoggedOnUsers'] = (Get-WmiObject -Class Win32_LogonSession -Filter 'LogonType=2').GetRelationships('Win32_LoggedOnUser').Antecedent |
+	                        ForEach-Object {
+                            # For deprecated OS versions...
+                            # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
+                            $null = $_ -match 'Domain="(?<Domain>\w+)",Name="(?<Name>\w+)"'
+                            -join ($Matches.Domain, '\', $Matches.Name)
+                        } | Select-Object -Unique
 
             $values
         } -PassThru -NoDisplay

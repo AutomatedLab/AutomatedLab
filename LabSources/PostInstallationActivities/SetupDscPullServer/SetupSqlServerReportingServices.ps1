@@ -64,9 +64,9 @@ if (-not $configSet.IsInitialized)
 
     $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
 
-    Write-Host 'Reporting Services are now configured. The URLs to access the reporting servies are:'
+    Write-Verbose 'Reporting Services are now configured. The URLs to access the reporting services are:'
     foreach ($url in ($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs)
     {
-        Write-Host "`t$url"
+        Write-Verbose "`t$url"
     }
 }

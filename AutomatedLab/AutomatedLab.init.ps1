@@ -74,6 +74,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DscPullServerRegistrationKey -Value '
 #General VM settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableWindowsDefender -Value $true -Initialize -Validation bool -Description 'Indicates that Windows Defender should be disabled on the lab VMs'
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotSkipNonNonEnglishIso -Value $false -Initialize -Validation bool  -Description 'Indicates that non English ISO files will not be skipped'
+Set-PSFConfig -Module 'AutomatedLab' -Name DefaultDnsForwarder1 -Value 1.1.1.1 -Initialize -Description 'If routing is installed on a Root DC, this forwarder is used'
+Set-PSFConfig -Module 'AutomatedLab' -Name DefaultDnsForwarder2 -Value 8.8.8.8 -Initialize -Description 'If routing is installed on a Root DC, this forwarder is used'
 
 #Hyper-V VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -Initialize -Validation string  -Description 'All, Forest, Domain, None'
@@ -102,16 +104,22 @@ Set-PSFConfig -Module 'AutomatedLab' -Name dotnet46DownloadLink -Value 'http://d
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet462DownloadLink -Value 'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.6.2'
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet471DownloadLink -Value 'https://download.microsoft.com/download/9/E/6/9E63300C-0941-4B45-A0EC-0008F96DD480/NDP471-KB4033342-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.1'
 Set-PSFConfig -Module 'AutomatedLab' -Name dotnet472DownloadLink -Value 'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe' -Initialize -Validation string -Description 'Link to .NET 4.7.2'
+Set-PSFConfig -Module 'AutomatedLab' -Name dotnet48DownloadLink -Value 'https://download.visualstudio.microsoft.com/download/pr/7afca223-55d2-470a-8edc-6a1739ae3252/abd170b4b0ec15ad0222a809b761a036/ndp48-x86-x64-allos-enu.exe' -Initialize -Validation string -Description 'Link to .NET 4.8'
 
 # C++ redist
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2017 -Value 'https://aka.ms/vs/15/release/vc_redist.x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2017 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2017 -Value 'https://aka.ms/vs/15/release/vc_redist.x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2017 (x86)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x86)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
 
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=858904' -Initialize -Validation string -Description 'Link to SSMS 2017'
+
+# SSRS
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
+Set-PSFConfig -Module 'AutomatedLab' -Name Ssrs2017 -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
 
 #SQL Server sample database contents
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
@@ -124,7 +132,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
 #TFS Build Agent
-Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsagentpackage.azureedge.net/agent/2.136.1/vsts-agent-win-x64-2.136.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
+Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsagentpackage.azureedge.net/agent/2.153.1/vsts-agent-win-x64-2.153.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
 
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'

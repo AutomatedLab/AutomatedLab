@@ -26,7 +26,6 @@ Add-LabMachineDefinition -Name S1DC1 -Memory 4GB -Network $labName -IpAddress 19
 
 Install-Lab
 
-Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
 Install-LabSoftwarePackage -ComputerName (Get-LabVM) -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 
 Enable-LabCertificateAutoenrollment -Computer -User -CodeSigning
