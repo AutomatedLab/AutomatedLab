@@ -71,11 +71,13 @@ Starting with AutomatedLab version 5 we are collecting telemetry. To see what yo
 
 <iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
 
+### Version distribution
+
+<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiNjgyMzhmMTMtNWUyNC00MzgzLWFkM2MtNTIyMzNjNDY3MDM4IiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
+
 [AutomatedLab]: https://github.com/AutomatedLab/AutomatedLab
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
 [full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
-
-
 
 ### [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
 
