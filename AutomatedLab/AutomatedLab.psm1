@@ -4159,16 +4159,23 @@ if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -and (Get-Date) -ge $next
 {
     $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
 
-    if ($choice -eq 2)
+    switch ($Choice)
     {
-        $ts = (Get-Date).AddDays((Get-Random -Minimum 30 -Maximum 90))
-        $timestamps['TelemetryNextCheck'] = $ts
-        $timestamps.ExportToRegistry('Cache', 'Timestamps')
-        Write-ScreenInfo -Message "Okay, asking you again after $($ts.ToString('yyyy-MM-dd'))"
-    }
-    else
-    {
-        [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', $choice, 'Machine')
+        0
+        {
+            Enable-LabTelemetry
+        }
+        1
+        {
+            Disable-LabTelemetry
+        }
+        2
+        {
+            $ts = (Get-Date).AddDays((Get-Random -Minimum 30 -Maximum 90))
+            $timestamps['TelemetryNextCheck'] = $ts
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            Write-ScreenInfo -Message "Okay, asking you again after $($ts.ToString('yyyy-MM-dd'))"
+        }
     }
 }
 
