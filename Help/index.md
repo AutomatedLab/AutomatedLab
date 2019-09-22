@@ -73,7 +73,7 @@ If you change your mind later on, you can always set the environment
 variable AUTOMATEDLAB_TELEMETRY_OPTIN to no, false or 0 in order to opt out or to yes,true or 1 to opt in.
 Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
 
-We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
+We will not ask you again while $env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
 
 Take a look at the following samples to see what is transmitted. These are actual events. Notice that the IP address defaults
 to 0.0.0.0, and we overwrite any PII with 'nope'.
