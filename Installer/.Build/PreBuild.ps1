@@ -90,8 +90,15 @@ foreach ($depp in $Dependency)
     $modPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $depp
     Save-Module -Name $depp -Path ([IO.Path]::GetTempPath()) -Force -Repository PSGallery
     $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
-
     $nodeHash = @{}
+
+    $rootNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
+    $idAttrib =$xmlContent.CreateAttribute('Id')
+    $idAttrib.Value = (New-Guid).Guid
+    $nameAttrib = $xmlContent.CreateAttribute('Name')
+    $nameAttrib.Value = "$($depp)Root"
+    $null = $rootNode.Attributes.Append($idAttrib)
+    $null = $rootNode.Attributes.Append($nameAttrib)
 
     foreach ($folder in $folders)
     {
@@ -110,7 +117,7 @@ foreach ($depp in $Dependency)
 
         if ($null -eq $parentNode)
         {
-            $null = $programFilesNode.AppendChild($dirNode)
+            $null = $rootNode.AppendChild($dirNode)
             continue
         }
 
@@ -123,8 +130,9 @@ foreach ($depp in $Dependency)
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {
-            $parentNode = $programFilesNode
+            $parentNode = $rootNode
         }
+
         $componentCreated = $nodeHash[$parentNodeName].Component
 
         if (-not $componentCreated)
@@ -144,14 +152,17 @@ foreach ($depp in $Dependency)
             $refIdAttrib.Value = $idAttrib.Value
             $null = $refNode.Attributes.Append($refIdAttrib)
             $null = $componentRefNode.AppendChild($refNode)
+            $nodeHash[$parentNodeName].Component = $true
         }
 
         $fileNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
         $null = $fileNode.Attributes.Append($fileSource)
-        $parentNode.AppendChild($fileNode)
-    }    
+        $null = $parentNode.AppendChild($fileNode)
+    }
+
+    $null = $programFilesNode.AppendChild($rootNode)
 }
 
 $xmlContent.Save("$SolutionDir\Installer\product.wxs")
