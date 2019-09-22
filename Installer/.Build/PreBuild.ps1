@@ -1,6 +1,10 @@
 ﻿param(
     [Parameter(Mandatory)]
-    [string]$SolutionDir
+    [string]$SolutionDir,
+
+    [Parameter()]
+    [string[]]
+    $Dependency = 'PSFramework'
 )
 
 Push-Location
@@ -75,3 +79,79 @@ $newContentCommonCore = Get-ChildItem -File -Filter *.dll -Path $commonDllCorePa
 Microsoft.PowerShell.Utility\Write-Host "Creating backup of file product.wxs"
 Copy-Item -Path $SolutionDir\Installer\product.wxs -Destination $SolutionDir\Installer\product.wxs.original
 (Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->', ($newContentCommonCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->', ($newContentCommonFull -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8
+
+$xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
+$programFilesNode = $xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder
+$componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -eq 'Modules'
+
+# Dependent modules insertion
+foreach ($depp in $Dependency)
+{
+    $modPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $depp
+    Save-Module -Name $depp -Path ([IO.Path]::GetTempPath()) -Force -Repository PSGallery
+    $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
+
+    $nodeHash = @{}
+
+    foreach ($folder in $folders)
+    {
+        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $dirNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
+        $idAttrib =$xmlContent.CreateAttribute('Id')
+        $idAttrib.Value = (New-Guid).Guid
+        $nameAttrib = $xmlContent.CreateAttribute('Name')
+        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $null = $dirNode.Attributes.Append($idAttrib)
+        $null = $dirNode.Attributes.Append($nameAttrib)
+        
+        # Parent node lokalisieren, wenn nicht vorhanden, programFilesNode
+        $parentNode = $nodeHash[$parentNodeName].Node
+        $nodeHash.Add($nameAttrib.Value, @{Node = $dirNode; Component = $false})
+
+        if ($null -eq $parentNode)
+        {
+            $null = $programFilesNode.AppendChild($dirNode)
+            continue
+        }
+
+        $null = $parentNode.AppendChild($dirNode)
+    }
+    
+    foreach ($file in $files)
+    {
+        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $parentNode = $nodeHash[$parentNodeName].Node
+        if ($null -eq $parentNode)
+        {
+            $parentNode = $programFilesNode
+        }
+        $componentCreated = $nodeHash[$parentNodeName].Component
+
+        if (-not $componentCreated)
+        {
+            $compNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Component', 'http://schemas.microsoft.com/wix/2006/wi')
+            $idAttrib =$xmlContent.CreateAttribute('Id')
+            $idAttrib.Value = (New-Guid).Guid
+            $guidAttrib = $xmlContent.CreateAttribute('Guid')
+            $guidAttrib.Value = (New-Guid).Guid
+            $null = $compNode.Attributes.Append($idAttrib)
+            $null = $compNode.Attributes.Append($guidAttrib)
+            $null = $parentNode.AppendChild($compNode)
+
+            # add ref
+            $refNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'ComponentRef', 'http://schemas.microsoft.com/wix/2006/wi')
+            $refIdAttrib =$xmlContent.CreateAttribute('Id')
+            $refIdAttrib.Value = $idAttrib.Value
+            $null = $refNode.Attributes.Append($refIdAttrib)
+            $null = $componentRefNode.AppendChild($refNode)
+        }
+
+        $fileNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
+        $fileSource = $xmlContent.CreateAttribute('Source')
+        $fileSource.Value = $file.FullName
+        $null = $fileNode.Attributes.Append($fileSource)
+        $parentNode.AppendChild($fileNode)
+    }    
+}
+
+$xmlContent.Save("$SolutionDir\Installer\product.wxs")
