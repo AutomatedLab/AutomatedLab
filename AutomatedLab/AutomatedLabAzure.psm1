@@ -15,7 +15,7 @@ function Test-LabAzureModuleAvailability
 
     if ($availableVersion -lt $minimumAzureModuleVersion)
     {
-        Write-PSFMessage -Level Critical -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az"
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
         return $false
     }
 
