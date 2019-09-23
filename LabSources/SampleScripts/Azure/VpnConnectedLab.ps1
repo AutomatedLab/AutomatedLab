@@ -1,4 +1,4 @@
-<#
+﻿<#
 This lab script serves the purpose of showing you how to create and connect two Azure labs in different resource groups e.g. in different locations
 
 You will need an Azure subscription and both labs need to be created within the same subscription. Otherwise you can have a look at the other
@@ -35,9 +35,9 @@ foreach ($lab in $labs.GetEnumerator())
     Add-LabVirtualNetworkDefinition -Name $lab.LabName -AddressSpace $lab.AddressSpace
 
     #and the domain definition with the domain admin account
-    Add-LabDomainDefinition -Name $lab.Domain -AdminUser Install -AdminPassword Somepass1
+    Add-LabDomainDefinition -Name $lab.Domain -AdminUser Install -AdminPassword 'P@ssw0rd'
 
-    Set-LabInstallationCredential -Username Install -Password Somepass1
+    Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd'
 
     #defining default parameter values, as these ones are the same for all the machines
     $PSDefaultParameterValues = @{

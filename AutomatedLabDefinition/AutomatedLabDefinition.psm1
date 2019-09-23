@@ -723,6 +723,11 @@ function New-LabDefinition
         Write-PSFMessage -Level Host '***************************************************************************'
     }
 
+    if ($DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $null = Test-LabAzureModuleAvailability -ErrorAction Stop
+    }
+
     #settings for a new log
 
     #reset the log and its format
