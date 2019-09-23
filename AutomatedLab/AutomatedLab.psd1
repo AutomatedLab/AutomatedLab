@@ -219,7 +219,8 @@
         'Get-LabConfigurationItem',
         'Register-LabArgumentCompleters',
         'Get-LabVmSnapshot',
-        'Test-LabHostConnected'
+        'Test-LabHostConnected',
+        'Test-LabAzureModuleAvailability'
     )
     
     FileList               = @(

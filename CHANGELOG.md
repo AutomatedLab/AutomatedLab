@@ -1,6 +1,28 @@
 # Changelog
 
 ## Unreleased
+
+### Bug fixes
+- Azure module test method updated to actually locate the Az module (Fixed #671)
+
+## 5.15.0 - 2019-09-20
+
+### Enhancements
+
+- Added support for Exchange 2019 including sample scripts (Thanks to @damorris)
+- Added support for Office 2019 including sample scripts (Thanks to @damorris)
+- Included SSRS 2017 in SQL Setup
+- Updated a couple of download links
+- Calling 'Test-LabPathIsOnLabAzureLabSourcesStorage' only if the currently, improves performance
+- Improved the deployment of the ProGet custom role
+- Removing parameter 'ProductKey' as it is not used and not working
+- Performance improvements
+
+### Bug fixes
+
+- Fixed #646 Restore-LabVMSnapshot throws errors
+- Fixed #709 Bootloader did not load an operating system
+
 ## 5.13.0 - 2019-06-27
 
 ### Bug fixes
