@@ -1,4 +1,4 @@
-$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
+﻿$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
@@ -17,9 +17,9 @@ Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'P@ssw0rd'
 
-Set-LabInstallationCredential -Username Install -Password Somepass1
+Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd'
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
