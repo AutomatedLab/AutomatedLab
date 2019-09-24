@@ -25,7 +25,6 @@ Add-LabIsoImageDefinition -Name SQLServer2014 -Path $labSources\ISOs\en_sql_serv
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-    'Add-LabMachineDefinition:IsDomainJoined'= $true
     'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2016 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Memory'= 1GB
     'Add-LabMachineDefinition:Gateway' = '192.168.22.200'
