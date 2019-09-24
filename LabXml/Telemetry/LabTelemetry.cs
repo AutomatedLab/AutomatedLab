@@ -27,7 +27,7 @@ namespace AutomatedLab
             // Add our own initializer to filter out any personal information before sending telemetry data
             TelemetryConfiguration.Active.TelemetryInitializers.Add(new LabTelemetryInitializer());
             telemetryClient = new TelemetryClient();
-            TelemetryEnabled = !GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false);
+            TelemetryEnabled = GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false);
 
             // Initialize EventLog
             if (!EventLog.SourceExists("AutomatedLab")) EventLog.CreateEventSource("AutomatedLab", "Application");
@@ -76,7 +76,7 @@ namespace AutomatedLab
 
         public void LabStarted(byte[] labData, string version, string osVersion, string psVersion)
         {
-            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            if (!GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
             var lab = Lab.Import(labData);
             lab.Machines.ForEach(m => SendUsedRole(m.Roles.Select(r => r.Name.ToString()).ToList()));
             lab.Machines.ForEach(m => SendUsedRole(m.PostInstallationActivity.Where(p => p.IsCustomRole).Select(c => System.IO.Path.GetFileNameWithoutExtension(c.ScriptFileName)).ToList(), true));
@@ -122,7 +122,7 @@ namespace AutomatedLab
 
         public void LabFinished(byte[] labData)
         {
-            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            if (!GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
             var lab = Lab.Import(labData);
 
             var labDuration = DateTime.Now - labStarted;
@@ -158,7 +158,7 @@ namespace AutomatedLab
 
         public void LabRemoved(byte[] labData)
         {
-            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            if (!GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
             var lab = Lab.Import(labData);
             var f = new System.IO.FileInfo(lab.LabFilePath);
             var duration = DateTime.Now - f.CreationTime;
@@ -189,7 +189,7 @@ namespace AutomatedLab
 
         private void SendUsedRole(List<string> roleName, bool isCustomRole = false)
         {
-            if (GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
+            if (!GetEnvironmentVariableAsBool(_telemetryOptoutEnvVar, false)) return;
             var eventMessage = "Sending role infos - Transmitting the following:";
 
             roleName.ForEach(name =>
