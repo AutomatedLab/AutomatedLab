@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Enhancements
+
+- Changed user interaction when asking user for telemetry permission
+- Disabling .net optimization scheduled tasks on all 2012R2+ machines
+- Updated Sql2017ManagementStudio link to version 18.2
+
 ### Bug fixes
 - Azure module test method updated to actually locate the Az module (Fixed #671)
 
