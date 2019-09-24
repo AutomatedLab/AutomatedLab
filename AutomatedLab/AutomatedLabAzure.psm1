@@ -9,9 +9,12 @@ function Test-LabAzureModuleAvailability
     [CmdletBinding()]
     param ()
 
-    $minimumAzureModuleVersion = [version] (Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    $moduleManifest = Get-ChildItem -Path (Join-Path ($env:PSModulePath -split ';') -ChildPath Az) -File -Filter *.psd1 -Recurse -Force | Sort-Object {Split-Path $_.DirectoryName -Leaf} -Descending | Select-Object -First 1
-    $availableVersion = [version](Split-Path -Leaf ($moduleManifest).DirectoryName)
+    $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
+    $paths = Join-Path -Path ($env:PSModulePath -split ';') -ChildPath Az
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
+    Select-Object -First 1
+    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
 
     if ($availableVersion -lt $minimumAzureModuleVersion)
     {
