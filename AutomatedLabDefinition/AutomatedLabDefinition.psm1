@@ -116,6 +116,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
+		<RunSynchronousCommand wcm:action="add">
+            <Description>Enable Remote Desktop firewall rules</Description>
+            <Order>16</Order>
+            <Path>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</Path>
+        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -172,6 +177,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Description>Bring all additional disks online</Description>
             <Order>4</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Disable .net optimization tasks</Description>
+            <Order>5</Order>
+            <CommandLine>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
