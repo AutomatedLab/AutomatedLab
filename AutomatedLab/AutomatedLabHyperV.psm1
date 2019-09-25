@@ -28,7 +28,7 @@ function Install-LabHyperV
 
     if ($clients)
     {
-        $jobs += Install-LabWindowsFeature -ComputerName $clients -FeatureName Microsoft-Hyper-V-All -NoDisplay -AsJob
+        $jobs += Install-LabWindowsFeature -ComputerName $clients -FeatureName Microsoft-Hyper-V-All -NoDisplay -AsJob -PassThru
     }
     
     if ($servers)
