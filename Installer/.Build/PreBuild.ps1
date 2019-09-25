@@ -70,6 +70,8 @@ Pop-Location
 
 Microsoft.PowerShell.Utility\Write-Host "Dynamically adding modules to product.wxs"
 $xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
+$scratch = Join-Path -Path $SolutionDir -ChildPath scratch
+$null = mkdir -Force -Path $scratch
 $programFilesNode = ($xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder).Directory.Directory | Where-Object Name -eq 'Modules'
 $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -eq 'Modules'
 
@@ -78,19 +80,19 @@ $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -e
 foreach ($mod in $internalModules)
 {
     $modP = Join-Path $SolutionDir $mod
-    $destination = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$(($mod -split '\\')[-1])$alDllVersion"
+    $destination = Join-Path -Path $scratch -ChildPath "$(($mod -split '\\')[-1])$alDllVersion"
     $null = robocopy $modP $destination /MIR
 }
 
 # Save external modules to tmp
-Save-Module -Name $ExternalDependency -Path ([IO.Path]::GetTempPath()) -Force -Repository PSGallery
+Save-Module -Name $ExternalDependency -Path $scratch -Force -Repository PSGallery
 
 # Dependent modules insertion
 foreach ($depp in ($ExternalDependency + $internalModules))
 {
     $depp = ($depp -split '\\')[-1]
     Microsoft.PowerShell.Utility\Write-Host "Dynamically adding $depp to product.wxs"
-    $modPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $depp
+    $modPath = Join-Path -Path $scratch -ChildPath $depp
     $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
     $nodeHash = @{}
 
@@ -105,10 +107,10 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
     foreach ($folder in $folders)
     {
-        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
+        $parentNodeName = ($folder.Parent.FullName).Replace($scratch, '') -replace '\W'
         $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
         $idAttrib =$xmlContent.CreateAttribute('Id')
-        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
+        $idAttrib.Value = $folder.FullName.Replace($scratch, '') -replace '\W'
         $nameAttrib = $xmlContent.CreateAttribute('Name')
         $nameAttrib.Value = $folder.Name
         $null = $dirNode.Attributes.Append($idAttrib)
@@ -131,7 +133,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     
     foreach ($file in $files)
     {
-        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
+        $parentNodeName = ($file.DirectoryName).Replace($scratch, '') -replace '\W'
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {

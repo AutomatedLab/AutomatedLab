@@ -11,12 +11,7 @@
     $InternalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
 )
 
-$pathsToRemove = foreach ($mod in ($ExternalDependency + $InternalModules))
-{
-    Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $mod -Resolve -ErrorAction SilentlyContinue
-}
-
-Remove-Item -Path $pathsToRemove -Recurse -Force -ErrorAction SilentlyContinue
+Remove-Item -Path (Join-Path $SolutionDir scratch) -Recurse -Force -ErrorAction SilentlyContinue
 
 Push-Location
 
