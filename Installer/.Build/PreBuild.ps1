@@ -77,11 +77,11 @@ $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -e
 
 # Copy internal modules to tmp
 
-foreach ($mod in $internalModules)
+foreach ($mod in $InternalModules)
 {
     $modP = Join-Path $SolutionDir $mod
-    $destination = Join-Path -Path $scratch -ChildPath "$(($mod -split '\\')[-1])$alDllVersion"
-    $null = robocopy $modP $destination /MIR
+    $destination = Join-Path -Path $scratch -ChildPath "$(($mod -split '\\')[-1])\$($alDllVersion.FileVersion)"
+    robocopy "`"$modP`"" "`"$destination`"" /MIR
 }
 
 # Save external modules to tmp
