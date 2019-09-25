@@ -115,12 +115,12 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
     foreach ($folder in $folders)
     {
-        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
+        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
         $idAttrib =$xmlContent.CreateAttribute('Id')
-        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
+        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $nameAttrib = $xmlContent.CreateAttribute('Name')
-        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
+        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $null = $dirNode.Attributes.Append($idAttrib)
         $null = $dirNode.Attributes.Append($nameAttrib)
         
@@ -141,7 +141,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     
     foreach ($file in $files)
     {
-        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
+        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {
@@ -180,7 +180,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
         $fileId = $xmlContent.CreateAttribute('Id')
-        $fileId.Value = $file.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
+        $fileId.Value = $file.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $null = $fileNode.Attributes.Append($fileSource)
         $null = $fileNode.Attributes.Append($fileId)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
