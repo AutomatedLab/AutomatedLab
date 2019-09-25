@@ -180,7 +180,8 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
         $fileId = $xmlContent.CreateAttribute('Id')
-        $fileId.Value = $file.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
+        $rnd = 71
+        $fileId.Value = -join [char[]]$(1..$rnd | %{Get-Random -Minimum 97 -Maximum 122})
         $null = $fileNode.Attributes.Append($fileSource)
         $null = $fileNode.Attributes.Append($fileId)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
