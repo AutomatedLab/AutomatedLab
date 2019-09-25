@@ -4,7 +4,11 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS')
+    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS'),
+
+    [Parameter()]
+    [string[]]
+    $InternalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
 )
 
 Push-Location
@@ -26,7 +30,7 @@ if (-not (Get-Module -List PlatyPs))
     Install-Module PlatyPS -Force -AllowClobber -SkipPublisherCheck
 }
 
-$null = New-ExternalHelp -Path $SolutionDir\AutomatedLab.Common\Help\en-us -OutputPath $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\en-us
+$null = New-ExternalHelp -Path $SolutionDir\AutomatedLab.Common\Help\en-us -OutputPath $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\en-us -Force
 
 foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
 {
@@ -38,7 +42,7 @@ foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
 
         $opPath = Join-Path -Path $SolutionDir -ChildPath "$($moduleName.BaseName)\$($language.BaseName)"
         Write-Host "Generating help XML in $opPath"
-        $null = New-ExternalHelp -Path $language.FullName -OutputPath $opPath
+        $null = New-ExternalHelp -Path $language.FullName -OutputPath $opPath -Force
     }
 }
 
@@ -63,33 +67,16 @@ Microsoft.PowerShell.Utility\Write-Host "Replacing version in 'AutomatedLab.Comm
 
 Pop-Location
 
-# Update installer
-$commonDllCorePath = Join-Path -Path $SolutionDir -ChildPath 'AutomatedLab.Common\AutomatedLab.Common\lib\core'
-$commonDllPath = Join-Path -Path $SolutionDir -ChildPath 'AutomatedLab.Common\AutomatedLab.Common\lib\full'
-$dllCorePath = Join-Path -Path (Resolve-Path -Path $dllPath\..).Path -ChildPath 'netcoreapp2.2'
-
-Microsoft.PowerShell.Utility\Write-Host "Locating libraries in $dllPath and $dllCorePath"
-$newContentFull = Get-ChildItem -File -Filter *.dll -Path $dllPath | ForEach-Object { '<File Source="$(var.SolutionDir)LabXml\bin\debug\net462\{0}" Id="{1}" />' -f $_.Name,"full$((New-Guid).Guid -replace '-')" }
-$newContentCore = Get-ChildItem -File -Filter *.dll -Path $dllCorePath | ForEach-Object { '<File Source="$(var.SolutionDir)LabXml\bin\debug\netcoreapp2.2\{0}" Id="{1}" />' -f $_.Name,"core$((New-Guid).Guid -replace '-')" }
-
-Microsoft.PowerShell.Utility\Write-Host "Locating libraries in $commonDllPath and $commonDllCorePath"
-$newContentCommonFull = Get-ChildItem -File -Filter *.dll -Path $commonDllPath | ForEach-Object { '<File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\lib\full\{0}" Id="{1}" />' -f $_.Name,"full$((New-Guid).Guid -replace '-')" }
-$newContentCommonCore = Get-ChildItem -File -Filter *.dll -Path $commonDllCorePath | ForEach-Object { '<File Source="$(var.SolutionDir)AutomatedLab.Common\AutomatedLab.Common\lib\core\{0}" Id="{1}" />' -f $_.Name,"core$((New-Guid).Guid -replace '-')" }
-
-Microsoft.PowerShell.Utility\Write-Host "Creating backup of file product.wxs"
-Copy-Item -Path $SolutionDir\Installer\product.wxs -Destination $SolutionDir\Installer\product.wxs.original
-(Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->', ($newContentCommonCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->', ($newContentCommonFull -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8
-
 $xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
 $programFilesNode = ($xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder).Directory.Directory | Where-Object Name -eq 'Modules'
 $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -eq 'Modules'
 
 # Copy internal modules to tmp
-$internalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
+
 foreach ($mod in $internalModules)
 {
     $modP = Join-Path $SolutionDir $mod
-    $destination = Join-Path ([IO.Path]::GetTempPath()) ($mod -split '\\')[-1]
+    $destination = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath "$(($mod -split '\\')[-1])$alDllVersion"
     $null = robocopy $modP $destination /MIR
 }
 
