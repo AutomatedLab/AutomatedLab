@@ -18,6 +18,12 @@
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
   </ItemGroup>
 
+  <Target Name="GetTargetPath" Returns="@(_FakeOutputPath)">
+    <ItemGroup>
+      <_FakeOutputPath Include="$(MSBuildProjectDirectory)\$(PackageOutputPath)\$(AssemblyName).UNK" />
+    </ItemGroup>
+  </Target>
+
   <ItemGroup>
     <Reference Include="PSFramework">
       <HintPath>C:\Program Files\WindowsPowerShell\Modules\PSFramework\1.0.35\bin\PSFramework.dll</HintPath>
