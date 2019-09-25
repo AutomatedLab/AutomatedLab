@@ -115,12 +115,12 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
     foreach ($folder in $folders)
     {
-        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
         $idAttrib =$xmlContent.CreateAttribute('Id')
-        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $nameAttrib = $xmlContent.CreateAttribute('Name')
-        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $null = $dirNode.Attributes.Append($idAttrib)
         $null = $dirNode.Attributes.Append($nameAttrib)
         
@@ -141,7 +141,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     
     foreach ($file in $files)
     {
-        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
+        $parentNodeName = ($file.DirectoryName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {
@@ -186,7 +186,10 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     foreach ($nodeToAppend in $appendComponents.GetEnumerator())
     {
         $parentNode = $nodeHash[$nodeToAppend.Key].Node
-        $null = $parentNode.AppendChild($nodeToAppend.Value)
+        foreach ($no in $nodeToAppend.Value)
+        {
+            $null = $parentNode.AppendChild($no)
+        }
     }
     
     $null = $programFilesNode.AppendChild($rootNode)
