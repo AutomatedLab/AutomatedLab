@@ -33,7 +33,7 @@ function Install-LabHyperV
     
     if ($servers)
     {
-        $jobs += Install-LabWindowsFeature -ComputerName $servers -FeatureName Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoDisplay -AsJob
+        $jobs += Install-LabWindowsFeature -ComputerName $servers -FeatureName Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoDisplay -AsJob -PassThru
     }
 
     Wait-LWLabJob -Job $jobs
