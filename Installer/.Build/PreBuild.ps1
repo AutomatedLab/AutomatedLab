@@ -110,7 +110,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $idAttrib =$xmlContent.CreateAttribute('Id')
         $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
         $nameAttrib = $xmlContent.CreateAttribute('Name')
-        $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '') -replace '\W'
+        $nameAttrib.Value = $folder.Name
         $null = $dirNode.Attributes.Append($idAttrib)
         $null = $dirNode.Attributes.Append($nameAttrib)
         
