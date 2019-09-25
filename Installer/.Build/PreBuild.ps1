@@ -136,6 +136,8 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
         $null = $parentNode.AppendChild($dirNode)
     }
+
+    $appendComponents = @{}
     
     foreach ($file in $files)
     {
@@ -147,6 +149,11 @@ foreach ($depp in ($ExternalDependency + $internalModules))
             $parentNode = $rootNode
         }
 
+        if (-not $appendComponents.ContainsKey($parentNodeName))
+        {
+            $appendComponents.Add($parentNodeName, @())
+        }
+        
         $componentCreated = $nodeHash[$parentNodeName].Component
 
         if (-not $componentCreated)
@@ -158,7 +165,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
             $guidAttrib.Value = (New-Guid).Guid
             $null = $compNode.Attributes.Append($idAttrib)
             $null = $compNode.Attributes.Append($guidAttrib)
-            $null = $parentNode.AppendChild($compNode)
+            $appendComponents.$parentNodeName += $compNode
 
             # add ref
             $refNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'ComponentRef', 'http://schemas.microsoft.com/wix/2006/wi')
@@ -166,16 +173,22 @@ foreach ($depp in ($ExternalDependency + $internalModules))
             $refIdAttrib.Value = $idAttrib.Value
             $null = $refNode.Attributes.Append($refIdAttrib)
             $null = $componentRefNode.AppendChild($refNode)
-            $nodeHash[$parentNodeName].Component = $true
+            $nodeHash[$parentNodeName].Component = $compNode
         }
 
         $fileNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
         $null = $fileNode.Attributes.Append($fileSource)
-        $null = $parentNode.AppendChild($fileNode)
+        $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
     }
 
+    foreach ($nodeToAppend in $appendComponents.GetEnumerator())
+    {
+        $parentNode = $nodeHash[$nodeToAppend.Key].Node
+        $null = $parentNode.AppendChild($nodeToAppend.Value)
+    }
+    
     $null = $programFilesNode.AppendChild($rootNode)
 }
 
