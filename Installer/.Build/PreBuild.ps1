@@ -4,7 +4,7 @@
 
     [Parameter()]
     [string[]]
-    $Dependency = 'PSFramework'
+    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS')
 )
 
 Push-Location
@@ -81,29 +81,42 @@ Copy-Item -Path $SolutionDir\Installer\product.wxs -Destination $SolutionDir\Ins
 (Get-Content $SolutionDir\Installer\product.wxs) -replace '<!-- %%%FILEPLACEHOLDERCOMMONCORE%%% -->', ($newContentCommonCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCOMMONFULL%%% -->', ($newContentCommonFull -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERCORE%%% -->', ($newContentCore -join "`r`n") -replace '<!-- %%%FILEPLACEHOLDERFULL%%% -->', ($newContentFull -join "`r`n") | Set-Content $SolutionDir\Installer\Product.wxs -Encoding UTF8
 
 $xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
-$programFilesNode = $xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder
+$programFilesNode = ($xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder).Directory.Directory | Where-Object Name -eq 'Modules'
 $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -eq 'Modules'
 
-# Dependent modules insertion
-foreach ($depp in $Dependency)
+# Copy internal modules to tmp
+$internalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
+foreach ($mod in $internalModules)
 {
+    $modP = Join-Path $SolutionDir $mod
+    $destination = Join-Path ([IO.Path]::GetTempPath()) ($mod -split '\\')[-1]
+    $null = robocopy $modP $destination /MIR
+}
+
+# Save external modules to tmp
+Save-Module -Name $ExternalDependency -Path ([IO.Path]::GetTempPath()) -Force -Repository PSGallery
+
+# Dependent modules insertion
+foreach ($depp in ($ExternalDependency + $internalModules))
+{
+    $depp = ($depp -split '\\')[-1]
     $modPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $depp
-    Save-Module -Name $depp -Path ([IO.Path]::GetTempPath()) -Force -Repository PSGallery
     $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
     $nodeHash = @{}
 
-    $rootNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
+    $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
     $idAttrib =$xmlContent.CreateAttribute('Id')
     $idAttrib.Value = (New-Guid).Guid
     $nameAttrib = $xmlContent.CreateAttribute('Name')
-    $nameAttrib.Value = "$($depp)Root"
+    $nameAttrib.Value = "$($depp -replace '\.|\\')Root"
     $null = $rootNode.Attributes.Append($idAttrib)
     $null = $rootNode.Attributes.Append($nameAttrib)
+    $nodeHash.Add("$($depp -replace '\.|\\')Root", @{Node = $rootNode; Component = $false})
 
     foreach ($folder in $folders)
     {
         $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
-        $dirNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
+        $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
         $idAttrib =$xmlContent.CreateAttribute('Id')
         $idAttrib.Value = (New-Guid).Guid
         $nameAttrib = $xmlContent.CreateAttribute('Name')
@@ -130,6 +143,7 @@ foreach ($depp in $Dependency)
         $parentNode = $nodeHash[$parentNodeName].Node
         if ($null -eq $parentNode)
         {
+            $parentNodeName = "$($depp -replace '\.|\\')Root"
             $parentNode = $rootNode
         }
 
@@ -137,9 +151,9 @@ foreach ($depp in $Dependency)
 
         if (-not $componentCreated)
         {
-            $compNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'Component', 'http://schemas.microsoft.com/wix/2006/wi')
+            $compNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Component', 'http://schemas.microsoft.com/wix/2006/wi')
             $idAttrib =$xmlContent.CreateAttribute('Id')
-            $idAttrib.Value = (New-Guid).Guid
+            $idAttrib.Value = "$($parentNodeName)Component"
             $guidAttrib = $xmlContent.CreateAttribute('Guid')
             $guidAttrib.Value = (New-Guid).Guid
             $null = $compNode.Attributes.Append($idAttrib)
@@ -147,7 +161,7 @@ foreach ($depp in $Dependency)
             $null = $parentNode.AppendChild($compNode)
 
             # add ref
-            $refNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'ComponentRef', 'http://schemas.microsoft.com/wix/2006/wi')
+            $refNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'ComponentRef', 'http://schemas.microsoft.com/wix/2006/wi')
             $refIdAttrib =$xmlContent.CreateAttribute('Id')
             $refIdAttrib.Value = $idAttrib.Value
             $null = $refNode.Attributes.Append($refIdAttrib)
@@ -155,7 +169,7 @@ foreach ($depp in $Dependency)
             $nodeHash[$parentNodeName].Component = $true
         }
 
-        $fileNode = $xmlContent.CreateNode([Windows.Data.Xml.Dom.NodeType]::ElementNode, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
+        $fileNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
         $null = $fileNode.Attributes.Append($fileSource)
