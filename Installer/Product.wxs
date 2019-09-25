@@ -24,16 +24,6 @@
       <![CDATA[Installed OR POWERSHELLEXE]]>
     </Condition>
 
-    <!-- Define the PowerShell command invocation -->
-    <SetProperty Id="RunPowerShellScript"
-             Before ="InstallFiles"
-             Sequence="execute"
-             Value ="&quot;[POWERSHELLEXE]&quot; -NoProfile -NonInteractive -InputFormat None -ExecutionPolicy Bypass -Command &quot;&amp; Install-PackageProvider -Name nuget -Force -ea SilentlyContinue -Verbose;Install-Module PSFramework -Force -AllowClobber -ea SilentlyContinue -ErrorVariable err -Verbose;Write-Host $$err.Exception.Message; exit 0&quot;" />
-    <CustomAction Id="RunPowerShellScript" BinaryKey="WixCA" DllEntry="WixQuietExec64" Execute="deferred" Return="check" Impersonate="yes" />
-    <InstallExecuteSequence>
-      <Custom Action="RunPowerShellScript" Before="InstallFinalize"><![CDATA[NOT Installed]]></Custom>
-    </InstallExecuteSequence>
-
     <MajorUpgrade MigrateFeatures='yes' AllowSameVersionUpgrades='yes' DowngradeErrorMessage='A newer version of [ProductName] is already installed. If you are sure you want to downgrade, remove the existing installation via Programs and Features.'/>
     <Media Id='1' CompressionLevel='high' Cabinet='AutomatedLab.cab' EmbedCab='yes' />
     <Directory Id='TARGETDIR' Name='SourceDir'>
