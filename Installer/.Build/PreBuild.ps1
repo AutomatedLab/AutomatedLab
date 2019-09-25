@@ -106,7 +106,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
 
     $rootNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
     $idAttrib =$xmlContent.CreateAttribute('Id')
-    $idAttrib.Value = (New-Guid).Guid
+    $idAttrib.Value = "$($depp -replace '\.|\\')Root"
     $nameAttrib = $xmlContent.CreateAttribute('Name')
     $nameAttrib.Value = "$($depp -replace '\.|\\')Root"
     $null = $rootNode.Attributes.Append($idAttrib)
@@ -118,7 +118,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $parentNodeName = ($folder.Parent.FullName).Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
         $dirNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'Directory', 'http://schemas.microsoft.com/wix/2006/wi')
         $idAttrib =$xmlContent.CreateAttribute('Id')
-        $idAttrib.Value = (New-Guid).Guid
+        $idAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
         $nameAttrib = $xmlContent.CreateAttribute('Name')
         $nameAttrib.Value = $folder.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','')
         $null = $dirNode.Attributes.Append($idAttrib)
