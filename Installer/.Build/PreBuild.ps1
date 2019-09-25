@@ -179,6 +179,8 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileNode = $xmlContent.CreateNode([System.Xml.XmlNodeType]::Element, 'File', 'http://schemas.microsoft.com/wix/2006/wi')
         $fileSource = $xmlContent.CreateAttribute('Source')
         $fileSource.Value = $file.FullName
+        $fileId = $xmlContent.CreateAttribute('Id')
+        $fileId.Value = $file.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $null = $fileNode.Attributes.Append($fileSource)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
     }
