@@ -182,6 +182,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileId = $xmlContent.CreateAttribute('Id')
         $fileId.Value = $file.FullName.Replace(([IO.Path]::GetTempPath()), '').Replace('\','').Replace('.','').Replace('-','')
         $null = $fileNode.Attributes.Append($fileSource)
+        $null = $fileNode.Attributes.Append($fileId)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
     }
 
