@@ -50,6 +50,7 @@ Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file AutomatedLab.Co
 Copy-Item -Path $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1 -Destination $SolutionDir\AutomatedLab.Common\AutomatedLab.Common\AutomatedLab.Common.psd1.original
 Microsoft.PowerShell.Utility\Write-Host 'Creating backup of file Includes.wxi'
 Copy-Item -Path $SolutionDir\Installer\Includes.wxi -Destination $SolutionDir\Installer\Includes.wxi.original
+Copy-Item -Path $SolutionDir\Installer\Product.wxs -Destination $SolutionDir\Installer\Product.wxs.original
 
 $dllPath = Join-Path -Path $SolutionDir -ChildPath LabXml\bin\debug\net462
 $automatedLabdll = Get-Item -Path "$dllPath\AutomatedLab.dll"
@@ -67,6 +68,7 @@ Microsoft.PowerShell.Utility\Write-Host "Replacing version in 'AutomatedLab.Comm
 
 Pop-Location
 
+Microsoft.PowerShell.Utility\Write-Host "Dynamically adding modules to product.wxs"
 $xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
 $programFilesNode = ($xmlContent.Wix.Product.Directory.Directory | Where-Object Name -eq ProgramFilesFolder).Directory.Directory | Where-Object Name -eq 'Modules'
 $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -eq 'Modules'
@@ -87,6 +89,7 @@ Save-Module -Name $ExternalDependency -Path ([IO.Path]::GetTempPath()) -Force -R
 foreach ($depp in ($ExternalDependency + $internalModules))
 {
     $depp = ($depp -split '\\')[-1]
+    Microsoft.PowerShell.Utility\Write-Host "Dynamically adding $depp to product.wxs"
     $modPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath $depp
     $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
     $nodeHash = @{}
