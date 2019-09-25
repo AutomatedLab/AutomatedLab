@@ -98,7 +98,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     $idAttrib =$xmlContent.CreateAttribute('Id')
     $idAttrib.Value = "$($depp -replace '\.|\\')Root"
     $nameAttrib = $xmlContent.CreateAttribute('Name')
-    $nameAttrib.Value = "$($depp -replace '\.|\\')Root"
+    $nameAttrib.Value = $depp
     $null = $rootNode.Attributes.Append($idAttrib)
     $null = $rootNode.Attributes.Append($nameAttrib)
     $nodeHash.Add("$($depp -replace '\.|\\')Root", @{Node = $rootNode; Component = $false})
@@ -116,7 +116,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         
         # Parent node lokalisieren, wenn nicht vorhanden, programFilesNode
         $parentNode = $nodeHash[$parentNodeName].Node
-        $nodeHash.Add($nameAttrib.Value, @{Node = $dirNode; Component = $false})
+        $nodeHash.Add($idAttrib.Value, @{Node = $dirNode; Component = $false})
 
         if ($null -eq $parentNode)
         {
