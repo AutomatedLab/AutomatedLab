@@ -7,8 +7,6 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
-    
-
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -700,6 +698,7 @@ function Install-Lab
         [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$FailoverCluster,
+        [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
