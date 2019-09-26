@@ -80,6 +80,7 @@
   <ProductKey OperatingSystemName="Windows Server 2019 Datacenter (Desktop Experience)" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
   <ProductKey OperatingSystemName="Windows Server 2019 Datacenter Evaluation" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
   <ProductKey OperatingSystemName="Windows Server 2019 Datacenter Evaluation (Desktop Experience)" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.107" />
+  <ProductKey OperatingSystemName="Hyper-V Server" Key="WMDGN-G9PQG-XVVXX-R3X43-63DFG" Version="10.0.17763.557" />
 
   <ProductKey OperatingSystemName="Windows Server 2019 SERVERSTANDARDCORE" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
   <ProductKey OperatingSystemName="Windows Server 2019 SERVERSTANDARD" Key="N69G4-B89J2-4G8F4-WWYCC-J464C" Version="10.0.17763.107" />
