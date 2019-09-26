@@ -2237,7 +2237,14 @@ function Add-LabMachineDefinition
 
         if (-not $OperatingSystem.Version)
         {
-            throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
+            if ($OperatingSystemVersion)
+            {
+                $OperatingSystem.Version = $OperatingSystemVersion
+            }
+            else
+            {
+                throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
+            }
         }
 
         switch ($OperatingSystem.Version.ToString(2))
