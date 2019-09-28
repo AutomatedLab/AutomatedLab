@@ -4,11 +4,11 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS'),
+    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common'),
 
     [Parameter()]
     [string[]]
-    $InternalModules = @('AutomatedLab','AutomatedLab.Common\AutomatedLab.Common','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
+    $InternalModules = @('AutomatedLab','AutomatedLab.Recipe', 'AutomatedLab.Ships','AutomatedLabDefinition','AutomatedLabNotifications','AutomatedLabTest','AutomatedLabUnattended','AutomatedLabWorker','HostsFile','PSFileTransfer','PSLog')
 )
 
 Push-Location
@@ -80,7 +80,7 @@ $componentRefNode = $xmlContent.wix.product.Feature.Feature | Where-Object Id -e
 foreach ($mod in $InternalModules)
 {
     $modP = Join-Path $SolutionDir $mod
-    $destination = Join-Path -Path $scratch -ChildPath "$(($mod -split '\\')[-1])\$($alDllVersion.FileVersion)"
+    $destination = Join-Path -Path $scratch -ChildPath "$($mod)\$($alDllVersion.FileVersion)"
     robocopy "`"$modP`"" "`"$destination`"" /MIR
 }
 
@@ -90,7 +90,6 @@ Save-Module -Name $ExternalDependency -Path $scratch -Force -Repository PSGaller
 # Dependent modules insertion
 foreach ($depp in ($ExternalDependency + $internalModules))
 {
-    $depp = ($depp -split '\\')[-1]
     Microsoft.PowerShell.Utility\Write-Host "Dynamically adding $depp to product.wxs"
     $modPath = Join-Path -Path $scratch -ChildPath $depp
     $folders, $files = (Get-ChildItem -Path $modPath -Recurse -Force).Where({$_.PSIsContainer},'Split')
