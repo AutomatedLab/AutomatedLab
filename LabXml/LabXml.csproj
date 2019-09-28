@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;net462;netcoreapp2.2</TargetFrameworks>
+    <TargetFrameworks>net462;netcoreapp2.2</TargetFrameworks>
     <AssemblyName>AutomatedLab</AssemblyName>
     <RootNamespace>AutomatedLab</RootNamespace>
     <Version>1.0.0</Version>
@@ -11,22 +11,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include=".Build\PostBuild.ps1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.9.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="2.2.0" />
     <PackageReference Include="Microsoft.Win32.Registry" Version="4.5.0" />
     <PackageReference Include="Microsoft.Windows.Compatibility" Version="2.0.1" />
     <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
   </ItemGroup>
+
   <Target Name="GetTargetPath" Returns="@(_FakeOutputPath)">
     <ItemGroup>
       <_FakeOutputPath Include="$(MSBuildProjectDirectory)\$(PackageOutputPath)\$(AssemblyName).UNK" />
     </ItemGroup>
   </Target>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="PowerShell -NoProfile -ExecutionPolicy Unrestricted -File $(ProjectDir)\.Build\PostBuild.ps1 $(SolutionDir) $(TargetDir)" />
-  </Target>
+
+  <ItemGroup>
+    <Reference Include="PSFramework">
+      <HintPath>C:\Program Files\WindowsPowerShell\Modules\PSFramework\1.0.35\bin\PSFramework.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
 </Project>
