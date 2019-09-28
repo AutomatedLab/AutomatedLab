@@ -43,9 +43,10 @@ $automatedLabdll = Get-Item -Path "$dllPath\AutomatedLab.dll"
 Microsoft.PowerShell.Utility\Write-Host "AutomatedLab Dll path is '$($automatedLabdll.FullName)'"
 $alDllVersion = [System.Diagnostics.FileVersionInfo]::GetVersionInfo($automatedLabdll)
 Microsoft.PowerShell.Utility\Write-Host "Product Version of AutomatedLab is '$($alDllVersion.FileVersion)'"
+$alCommonVersion = (Find-Module AutomatedLab.Common -Repository PSgallery).Version
 
 Microsoft.PowerShell.Utility\Write-Host "Writing new 'Includes.wxi' file"
-('<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?><?define AutomatedLabProductVersion="{1}" ?></Include>' -f $alCommonVersion, $alDllVersion.FileVersion) | Out-File -FilePath ..\Installer\Includes.wxi -Encoding UTF8
+('<?xml version="1.0" encoding="utf-8"?><Include Id="VersionNumberInclude"><?define AutomatedLabCommonVersion="{0}" ?><?define AutomatedLabProductVersion="{1}" ?></Include>' -f $alCommonVersion, $alDllVersion.FileVersion) | Out-File -FilePath $SolutionDir\Installer\Includes.wxi -Encoding UTF8
 
 Microsoft.PowerShell.Utility\Write-Host "Dynamically adding modules to product.wxs"
 $xmlContent = [xml](Get-Content $SolutionDir\Installer\product.wxs)
