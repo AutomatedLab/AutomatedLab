@@ -19,6 +19,8 @@ init:
         Write-Host "Init task - Set version number if necessary"
         $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
         $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0,0)
+        Install-PackageProvider -Name Nuget -Force
+        Install-Module PSFramework -RequiredVersion 1.0.35 -Repo PSGallery -Force
         
         if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
         {          
@@ -66,7 +68,7 @@ before_build:
         Write-Host "Publishing AutomatedLab library"
         $projPath = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml\LabXml.csproj' -Resolve -ErrorAction Stop
         dotnet publish $projPath -f netcoreapp2.2 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\core')
-        dotnet publish $projPath -f netcoreapp462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\full')
+        dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\full')
 
         Write-Host "'before_build' block"
 
