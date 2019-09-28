@@ -19,6 +19,8 @@ init:
         Write-Host "Init task - Set version number if necessary"
         $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
         $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0,0)
+        Install-PackageProvider -Name Nuget -Force
+        Install-Module PSFramework -RequiredVersion 1.0.35 -Repo PSGallery -Force
         
         if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
         {          
