@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 5.16.0 - 2019-09-29
+
 ### Enhancements
 
 - Changed user interaction when asking user for telemetry permission
