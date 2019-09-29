@@ -81,7 +81,7 @@ namespace AutomatedLab
         {
             get
             {
-                return ((bool)(operatingSystem?.OperatingSystemName.Contains("Windows"))) ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+                return operatingSystem.OperatingSystemType;
             }
         }
 

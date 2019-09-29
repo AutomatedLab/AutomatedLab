@@ -7,8 +7,6 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
-    
-
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -700,6 +698,7 @@ function Install-Lab
         [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$FailoverCluster,
+        [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
@@ -4108,46 +4107,77 @@ function New-LabSourcesFolder
 #region Telemetry
 function Enable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'true', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'true'
 }
 
 function Disable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'false', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'false'
 }
 
 $telemetryChoice = @"
-Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
-and to bring you fancy dashboards with e.g. the community's favorite roles.
+We are collecting telemetry to improve AutomatedLab.
 
-We are collecting the following with Azure Application Insights:
-- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
-- Your number of lab machines
-- The roles you used
-- The time it took your lab to finish
-- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+To see what we collect: https://aka.ms/ALTelemetry
 
-We collect no personally identifiable information.
+We collect no personally identifiable information, ever.
 
-If you change your mind later on, you can always set the environment
-variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
-Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
-
-We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
-
-If you want to opt out, please select Yes.
+Select Yes to permanently opt-in, no to permanently opt-out
+or Ask me later to get asked later.
 "@
-
-if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT))
+if (Test-Path -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    $newValue = switch -Regex ($env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+    {
+        'yes|1|true' {0}
+        'no|0|false' {1}
+    }
 
-    # This is actually enough for the telemetry client.
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
-
-    # We cannot refresh the env drive, so we add the same variable here as well.
-    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', $newValue, 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = $newValue
+    Remove-Item -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT -Force -ErrorAction SilentlyContinue
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $null, 'Machine')
 }
+
+$type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
+$nextCheck = (Get-Date).AddDays(-1)
+
+try
+{
+    Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
+    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    $nextCheck = $timestamps.TelemetryNextCheck
+    Write-PSFMessage -Message "Next check is '$nextCheck'."
+}
+catch
+{ }
+
+if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -and (Get-Date) -ge $nextCheck)
+{
+    $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
+
+    switch ($Choice)
+    {
+        0
+        {
+            Enable-LabTelemetry
+        }
+        1
+        {
+            Disable-LabTelemetry
+        }
+        2
+        {
+            $ts = (Get-Date).AddDays((Get-Random -Minimum 30 -Maximum 90))
+            $timestamps['TelemetryNextCheck'] = $ts
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            Write-ScreenInfo -Message "Okay, asking you again after $($ts.ToString('yyyy-MM-dd'))"
+        }
+    }
+}
+
 #endregion Telemetry
 
 #region Get-LabConfigurationItem

@@ -59,6 +59,223 @@ This solution supports setting up virtual machines with the following products
 
 Starting with AutomatedLab version 5 we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you. The [full report] can be viewed at your leisure.
 
+We are collecting the following with Azure Application Insights:
+- Your country and city (IP addresses are by default set to 0.0.0.0 after the location is extracted)
+- Your number of lab machines
+- The roles you used
+- The time it took your lab to finish
+- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+- The lifetime of your lab once you remove it
+
+We collect no personally identifiable information, ever.
+
+If you change your mind later on, you can always set the environment
+variable AUTOMATEDLAB_TELEMETRY_OPTIN to no, false or 0 in order to opt out or to yes,true or 1 to opt in.
+Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
+
+We will not ask you again while $env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
+
+Take a look at the following samples to see what is transmitted. These are actual events. Notice that the IP address defaults
+to 0.0.0.0, and we overwrite any PII with 'nope'.
+
+### LabStarted event - transmitted data sample  
+
+```json
+{
+    "event":  [
+                  {
+                      "name":  "LabStarted",
+                      "count":  1
+                  }
+              ],
+    "internal":  {
+                     "data":  {
+                                  "id":  "abe26991-dd13-11e9-b08a-8102ecc783ba",
+                                  "documentVersion":  "1.61"
+                              }
+                 },
+    "context":  {
+                    "data":  {
+                                 "eventTime":  "2019-09-22T08:33:35.1951198Z",
+                                 "isSynthetic":  false,
+                                 "samplingRate":  100.0
+                             },
+                    "cloud":  {
+
+                              },
+                    "device":  {
+                                   "type":  "PC",
+                                   "roleName":  "nope",
+                                   "roleInstance":  "nope",
+                                   "screenResolution":  ""
+                               },
+                    "session":  {
+                                    "isFirst":  false
+                                },
+                    "operation":  {
+
+                                  },
+                    "location":  {
+                                     "clientip":  "0.0.0.0",
+                                     "continent":  "Europe",
+                                     "country":  "Germany"
+                                 },
+                    "custom":  {
+                                   "dimensions":  "   ",
+                                   "metrics":  ""
+                               }
+                }
+}
+```
+
+### LabFinished event - transmitted data sample  
+
+```json
+{
+    "event":  [
+                  {
+                      "name":  "LabFinished",
+                      "count":  1
+                  }
+              ],
+    "internal":  {
+                     "data":  {
+                                  "id":  "c4edb2a0-dd13-11e9-817d-49de0b58223d",
+                                  "documentVersion":  "1.61"
+                              }
+                 },
+    "context":  {
+                    "data":  {
+                                 "eventTime":  "2019-09-22T08:34:17.1963486Z",
+                                 "isSynthetic":  false,
+                                 "samplingRate":  100.0
+                             },
+                    "cloud":  {
+
+                              },
+                    "device":  {
+                                   "type":  "PC",
+                                   "roleName":  "nope",
+                                   "roleInstance":  "nope",
+                                   "screenResolution":  ""
+                               },
+                    "session":  {
+                                    "isFirst":  false
+                                },
+                    "operation":  {
+
+                                  },
+                    "location":  {
+                                     "clientip":  "0.0.0.0",
+                                     "continent":  "Europe",
+                                     "country":  "Germany"
+                                 },
+                    "custom":  {
+                                   "dimensions":  "",
+                                   "metrics":  ""
+                               }
+                }
+}
+```
+
+### LabRemoved event - transmitted data sample  
+
+```json
+{
+    "event":  [
+                  {
+                      "name":  "LabRemoved",
+                      "count":  1
+                  }
+              ],
+    "internal":  {
+                     "data":  {
+                                  "id":  "c52bcd10-dd13-11e9-b94e-bbbcc152ed38",
+                                  "documentVersion":  "1.61"
+                              }
+                 },
+    "context":  {
+                    "data":  {
+                                 "eventTime":  "2019-09-22T08:34:17.5926954Z",
+                                 "isSynthetic":  false,
+                                 "samplingRate":  100.0
+                             },
+                    "cloud":  {
+
+                              },
+                    "device":  {
+                                   "type":  "PC",
+                                   "roleName":  "nope",
+                                   "roleInstance":  "nope",
+                                   "screenResolution":  ""
+                               },
+                    "session":  {
+                                    "isFirst":  false
+                                },
+                    "operation":  {
+
+                                  },
+                    "location":  {
+                                     "clientip":  "0.0.0.0",
+                                     "continent":  "Europe",
+                                     "country":  "Germany"
+                                 },
+                    "custom":  {
+                                   "metrics":  ""
+                               }
+                }
+}
+```
+
+### Role event - transmitted data sample  
+
+```json
+{
+    "event":  [
+                  {
+                      "name":  "Role",
+                      "count":  1
+                  }
+              ],
+    "internal":  {
+                     "data":  {
+                                  "id":  "aba95830-dd13-11e9-8c80-71afcdf3720b",
+                                  "documentVersion":  "1.61"
+                              }
+                 },
+    "context":  {
+                    "data":  {
+                                 "eventTime":  "2019-09-22T08:33:34.7148692Z",
+                                 "isSynthetic":  false,
+                                 "samplingRate":  100.0
+                             },
+                    "cloud":  {
+
+                              },
+                    "device":  {
+                                   "type":  "PC",
+                                   "roleName":  "nope",
+                                   "roleInstance":  "nope",
+                                   "screenResolution":  ""
+                               },
+                    "session":  {
+                                    "isFirst":  false
+                                },
+                    "operation":  {
+
+                                  },
+                    "location":  {
+                                     "clientip":  "0.0.0.0",
+                                     "continent":  "Europe",
+                                     "country":  "Germany"
+                                 },
+                    "custom":  {
+                                   "dimensions":  ""
+                               }
+                }
+}
+```
+
 ### Facts and figures
 
 <iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection67b5abc401bbec55e899" frameborder="0" allowFullScreen="true"></iframe>
@@ -71,11 +288,13 @@ Starting with AutomatedLab version 5 we are collecting telemetry. To see what yo
 
 <iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSectionae759e8d989baffad8d4" frameborder="0" allowFullScreen="true"></iframe>
 
+### Version distribution
+
+<iframe width="100%" height="600" src="https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9&pageName=ReportSection3edbf550bbd6493af421" frameborder="0" allowFullScreen="true"></iframe>
+
 [AutomatedLab]: https://github.com/AutomatedLab/AutomatedLab
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
 [full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
-
-
 
 ### [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
 

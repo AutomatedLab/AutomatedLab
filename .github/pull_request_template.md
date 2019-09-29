@@ -26,6 +26,7 @@ Please describe your changes in detail, unless the title is already descriptive 
 - [ ] Bug fix  
 - [ ] New functionality  
 - [ ] Breaking change
+- [ ] Documentation
 
 ## How was the change tested?
 <!--

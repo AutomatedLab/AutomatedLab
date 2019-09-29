@@ -4,6 +4,27 @@ $PSDefaultParameterValues = @{
     'Import-Module:Verbose' = $false
 }
 
+function Test-LabAzureModuleAvailability
+{
+    [CmdletBinding()]
+    param ()
+
+    $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
+    $paths = Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
+    Select-Object -First 1
+    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
+
+    if ($availableVersion -lt $minimumAzureModuleVersion)
+    {
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
+        return $false
+    }
+
+    $true
+}
+
 function Update-LabAzureSettings
 {
     
@@ -60,12 +81,7 @@ function Add-LabAzureSubscription
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
 
-    #This needs to be loaded manually to import the required DLLs
-    $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-    if (-not (Get-Module -Name Az.* -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
-    {
-        throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it: Install-Module Az -Force"
-    }
+    $null = Test-LabAzureModuleAvailability -ErrorAction Stop
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
