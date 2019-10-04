@@ -58,9 +58,13 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
-    
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
+        [Parameter(ParameterSetName = 'ByName')]
         [string]$SubscriptionName,
+
+        [Parameter(ParameterSetName = 'ByName')]
+        [guid]$SubscriptionId,
 
         [string]$DefaultLocationName,
 
@@ -98,6 +102,10 @@ function Add-LabAzureSubscription
         {
             [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
         }
+        elseif ($SubscriptionId)
+        {
+            [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction Stop)
+        }
         $AzureRmProfile = Get-AzContext
 
     Update-LabAzureSettings
@@ -117,19 +125,35 @@ function Add-LabAzureSubscription
     {
         throw "A subscription named '$SubscriptionName' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription name"
     }
-
-    #select default subscription subscription
-    if (-not $SubscriptionName)
+    if ($SubscriptionId -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object Id -eq $SubscriptionId))
     {
-        $SubscriptionName = $AzureRmProfile.Subscription.Name
+        throw "A subscription with the ID '$SubscriptionId' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription ID"
     }
 
-    Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
-    $selectedSubscription = $Subscriptions | Where-Object {$_.Name -eq $SubscriptionName}
+    #select default subscription subscription
+    $selectedSubscription = if (-not $SubscriptionName -and -not $SubscriptionId)
+    {
+         $AzureRmProfile.Subscription
+    }
+    elseif ($SubscriptionName)
+    {
+        $Subscriptions | Where-Object Name -eq $SubscriptionName
+    }
+    elseif ($SubscriptionId)
+    {
+        $Subscriptions | Where-Object Id -eq $SubscriptionId
+    }
+
+    if ($selectedSubscription.Count -gt 1)
+    {
+        throw "There is more than one subscription with the name '$SubscriptionName'. Please use the subscription Id to select a specific subscription."
+    }
+
+    Write-ScreenInfo -Message "Using Azure Subscription '$($selectedSubscription.Name)' ($($selectedSubscription.Id))" -Type Info
 
     try
     {
-        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction Stop)
     }
     catch
     {
