@@ -74,6 +74,7 @@ function Send-File
     Write-Verbose -Message "PSFileTransfer: Sending file $SourceFilePath to $DestinationFolderPath on $($Session.ComputerName) ($([Math]::Round($chunkSize / 1MB, 2)) MB chunks)"
 
     $sourcePath = (Resolve-Path $SourceFilePath -ErrorAction SilentlyContinue).Path
+    $sourcePath = Convert-Path $sourcePath
     if (-not $sourcePath)
     {
         Write-Error -Message 'Source file could not be found.'
