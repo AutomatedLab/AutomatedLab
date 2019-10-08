@@ -139,6 +139,18 @@ This value is available on the roles RootDC and FirstChildDC and controls the Do
 #### SiteName
 When defined, AL creates the given site after promoting the domain controller and moves the domain controller into that site.
 
+#### DatabasePath
+Stores the AD database files in the given folder.
+
+#### LogPath
+Stores the AD log files in the given folder.
+
+#### SysvolPath
+Stores the Sysvol folder in the given folder
+
+#### DsrmPassword
+When defined, set the Directory Services Restore Mode password to something different than the lab's install user's password.
+
 #### SiteSubnet
 When defined, AL creates a new Active Directory Replication subnet and assigns it to the site creates previously. The parameter SiteSubnet requires SiteName to be defined.
 
