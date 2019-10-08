@@ -1960,7 +1960,7 @@ function Test-LabAutoLogon
 	                        ForEach-Object {
                             # For deprecated OS versions...
                             # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
-                            $null = $_ -match 'Domain="(?<Domain>\w+)",Name="(?<Name>\w+)"'
+                            $null = $_ -match 'Domain="(?<Domain>.+)",Name="(?<Name>.+)"'
                             -join ($Matches.Domain, '\', $Matches.Name)
                         } | Select-Object -Unique
 
