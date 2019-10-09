@@ -54,13 +54,12 @@ Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources fold
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 
     Import-Module -Name AutomatedLab -ErrorAction Stop
-
+    Enable-LabHostRemoting -Force
     New-LabSourcesFolder -ErrorAction Stop
 }
 
 Copy-LabFileItem -ComputerName $alServers -DestinationFolderPath "C:\LabSources\ISOs" -Path `
-$labSources\ISOs\en_windows_10_multiple_editions_version_1703_updated_march_2017_x64_dvd_10189288.iso,
-$labSources\ISOs\en_windows_server_2012_r2_with_update_x64_dvd_4065220.iso 
+$labSources\ISOs\14393.0.161119-1705.RS1_REFRESH_SERVER_EVAL_X64FRE_EN-US.ISO
 
 Invoke-LabCommand -ActivityName 'Deploy Test Lab' -ComputerName $alServers -ScriptBlock {
 
