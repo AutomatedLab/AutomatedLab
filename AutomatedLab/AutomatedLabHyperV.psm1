@@ -14,6 +14,7 @@ function Install-LabHyperV
     {
         Stop-LabVm -Wait -ComputerName $hyperVVms
         $hyperVVms | Set-VMProcessor -ExposeVirtualizationExtensions $true
+		$hyperVVms | Get-VMNetworkAdapter | Set-VMNetworkAdapter -MacAddressSpoofing On
     }
 
     Start-LabVm -Wait -ComputerName $vms # Start all, regardless of Hypervisor
