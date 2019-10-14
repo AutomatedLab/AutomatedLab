@@ -751,7 +751,7 @@ function Install-Lab
     Unblock-LabSources
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
-    
+
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
@@ -3961,8 +3961,7 @@ function Set-LabDefaultVirtualizationEngine
 
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
-{
-    
+{ 
     param
     (
         [switch]$Local
@@ -3975,7 +3974,6 @@ function Get-LabSourcesLocation
 #region Get-LabVariable
 function Get-LabVariable
 {
-    
     $pattern = 'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'
     Get-Variable -Scope Global | Where-Object Name -Match $pattern
 }
@@ -4123,9 +4121,13 @@ function New-LabSourcesFolder
     )
 
     $path = Get-LabSourcesLocation
-    if (-not $path)
+    if (-not $path -and (Get-LabConfigurationItem -Name LabSourcesLocation))
     {
-        $path = (Join-Path -Path $env:SystemDrive -ChildPath LabSources)
+        $path = Get-LabConfigurationItem -Name LabSourcesLocation
+    }
+    elseif (-not $path)
+    {
+        $path = (Join-Path -Path / -ChildPath LabSources)
     }
 
     if ($DriveLetter)
@@ -4340,11 +4342,11 @@ $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 #but when installing AL using the PowerShell Gallery, this file is missing.
 $productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
 $productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyFileName
+$productKeyFilePath = Get-LabConfigurationItem -Name ProductKeyFilePath
 
-if (-not (Test-Path -Path 'C:\ProgramData\AutomatedLab\Assets'))
+if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 {
-    New-Item -Path C:\ProgramData\AutomatedLab\Assets -ItemType Directory | Out-Null
+    New-Item -Path (Split-Path $productKeyFilePath -Parent) -ItemType Directory | Out-Null
 }
 
 if (-not (Test-Path -Path $productKeyFilePath))
@@ -4352,13 +4354,12 @@ if (-not (Test-Path -Path $productKeyFilePath))
     Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
 }
 
-$productKeyCustomFileName = 'ProductKeysCustom.xml'
-$productKeyCustomFilePath = Join-Path -Path C:\ProgramData\AutomatedLab\Assets -ChildPath $productKeyCustomFileName
+$productKeyCustomFilePath = Get-LabConfigurationItem -Name ProductKeyFilePathCustom
 
 if (-not (Test-Path -Path $productKeyCustomFilePath))
 {
     $store = New-Object 'AutomatedLab.ListXmlStore[AutomatedLab.ProductKey]'
-    
+
     $dummyProductKey = New-Object AutomatedLab.ProductKey -Property @{ Key = '123'; OperatingSystemName = 'OS'; Version = '1.0' }
     $store.Add($dummyProductKey)
     $store.Export($productKeyCustomFilePath)

@@ -84,7 +84,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
 
 #Host Settings
-Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value 'C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt' -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/LabDiskDeploymentInProgress.txt" -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
 
 #Azure
 Set-PSFConfig -Module 'AutomatedLab' -Name MinimumAzureModuleVersion -Value '2.0.0' -Initialize -Validation string -Description 'The minimum expected Azure module version'
@@ -364,6 +364,15 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
         )
     }
 } -Initialize -Description 'Validation settings for lab validation. Please do not modify unless you know what you are doing.'
+
+# Product key file path
+$fPath = Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Assets/ProductKeys.xml'
+$fcPath = Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Assets/ProductKeysCustom.xml'
+Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
+Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath -Initialize -Validation string -Description 'Destination of the ProductKeysCustom file for Windows products'
+
+# LabSourcesLocation
+# Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Validation string -Value ''
 
 #endregion
 

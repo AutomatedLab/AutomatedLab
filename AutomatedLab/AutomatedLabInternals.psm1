@@ -9,40 +9,10 @@ function Get-LabHyperVAvailableMemory
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
-    
-    Remove-Lab
+    Remove-Lab -Confirm:$false
     Remove-Module *
 }
 #endregion Reset-AutomatedLab
-
-#region Save-Hashes
-function Save-Hashes
-{
-    
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALFiles.txt',
-        $FolderName
-    )
-
-    $ModulePath = "$([environment]::getfolderpath('mydocuments'))\WindowsPowerShell\Modules"
-    $Folders = 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog'
-
-    foreach ($Folder in $Folders)
-    {
-        Get-FileHash -Path "$ModulePath\$Folder\*" | Select-Object Algorithm, Hash, @{name='Path';expression={$_.Path.Replace($ModulePath, '<MODULEPATH>')}} | Export-Csv -Path $Filename -Append
-    }
-
-    if ($FolderName)
-    {
-        foreach ($Folder in $Foldername)
-        {
-            Get-ChildItem -Path C:\LabSources\Tools\PSv4Part1 -Recurse -Exclude '*.ISO' | Get-FileHash | Export-Csv -Path $Filename -Append
-        }
-    }
-}
-#endregion Save-Hashes
 
 #region Test-FileHashes
 function Test-FileHashes
@@ -753,17 +723,26 @@ function Get-LabSourcesLocationInternal
     )
 
     $lab = $global:AL_CurrentLab
-    
+
     $defaultEngine = 'HyperV'
     $defaultEngine = if ($lab)
     {
         $lab.DefaultVirtualizationEngine
     }
-    
-    if ($defaultEngine -eq 'HyperV' -or $Local)
+
+    if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
+    {
+        if (-not (Get-LabConfigurationItem -Name LabSourcesLocation))
+        {
+            Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home\automatedlabsources -PassThru | Register-PSFConfig
+        }
+
+        Get-LabConfigurationItem -Name LabSourcesLocation
+    }
+    elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
         $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
-        
+
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -800,6 +779,7 @@ function Get-LabSourcesLocationInternal
 #region Update-LabSysinternalsTools
 function Update-LabSysinternalsTools
 {
+    if ($IsLinux -or $IsMacOs) { return }
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
 
