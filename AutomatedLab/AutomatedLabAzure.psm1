@@ -10,7 +10,15 @@ function Test-LabAzureModuleAvailability
     param ()
 
     $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    $paths = Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    $paths = if ($IsLinux -or $IsMacOs)
+    {
+        Join-Path -Path ($env:PSModulePath -split ':' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    }
+    else
+    {
+        Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    }
+    
     $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1

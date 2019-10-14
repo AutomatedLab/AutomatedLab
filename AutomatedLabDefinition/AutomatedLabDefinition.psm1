@@ -706,7 +706,7 @@ function New-LabDefinition
     if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
     {
         $osName = $(([Environment]::OSVersion).VersionString.PadRight(10))
-        $osBuild = $(([Environment]::OSVersion).Version.PadRight(11))
+        $osBuild = $(([Environment]::OSVersion).Version.ToString().PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
         Write-PSFMessage -Level Host ''
