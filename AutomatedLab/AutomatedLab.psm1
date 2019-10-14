@@ -1,6 +1,7 @@
 #region Enable-LabHostRemoting
 function Enable-LabHostRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     param(
         [switch]$Force,
 
@@ -198,13 +199,12 @@ The security setting must be relexed in order to connect to machines using CredS
 #region Undo-LabHostRemoting
 function Undo-LabHostRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     param(
         [switch]$Force,
 
         [switch]$NoDisplay
     )
-
-    
 
     Write-LogFunctionEntry
 
@@ -272,11 +272,10 @@ function Undo-LabHostRemoting
 #region Test-LabHostRemoting
 function Test-LabHostRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [CmdletBinding()]
-
     param()
 
-    
     Write-LogFunctionEntry
 
     $configOk = $true
@@ -516,7 +515,7 @@ function Import-Lab
         {
             Write-Error -Message "No machines imported from file $machineDefinitionFile" -Exception $_.Exception -ErrorAction Stop
         }
-    
+
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
         if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name Az.* -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
         {
@@ -1142,7 +1141,6 @@ function Install-Lab
 #region Remove-Lab
 function Remove-Lab
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'Path', ConfirmImpact = 'High', SupportsShouldProcess)]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByPath')]
@@ -1313,7 +1311,6 @@ function Remove-Lab
 #region Get-LabAvailableOperatingSystem
 function Get-LabAvailableOperatingSystem
 {
-    
     [cmdletBinding(DefaultParameterSetName='Local')]
     [OutputType([AutomatedLab.OperatingSystem])]
     param
@@ -1343,7 +1340,7 @@ function Get-LabAvailableOperatingSystem
     {
         throw 'This function needs to be called in an elevated PowerShell session.'
     }
-    
+
     $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
 
     if ($Azure)

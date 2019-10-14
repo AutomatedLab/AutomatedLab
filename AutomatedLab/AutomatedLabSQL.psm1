@@ -4,7 +4,7 @@ function Install-LabSqlServers
     [CmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_Sql2012Installation),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
