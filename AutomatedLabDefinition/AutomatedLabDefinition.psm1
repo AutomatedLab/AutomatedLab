@@ -702,11 +702,11 @@ function New-LabDefinition
     Write-LogFunctionEntry
     $global:PSLog_Indent = 0
 
-    $hostOSVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
+    $hostOSVersion = ([Environment]::OSVersion).Version
     if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
     {
-        $osName = $((Get-CimInstance -ClassName Win32_OperatingSystem).Caption.PadRight(10))
-        $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
+        $osName = $(([Environment]::OSVersion).VersionString.PadRight(10))
+        $osBuild = $(([Environment]::OSVersion).Version.PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
         Write-PSFMessage -Level Host ''

@@ -493,6 +493,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             [string[]]$ComputerName = 'localhost'
         )
 
+        $configurationScript = @'
         [DSCLocalConfigurationManager()]
         configuration LcmDefaultConfiguration
         {
@@ -511,7 +512,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 }
             }
         }
+'@
 
+        [scriptblock]::Create($configurationScript).Invoke()
         $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         Remove-DscConfigurationDocument -Stage Current, Pending -Force
