@@ -6,19 +6,22 @@ $PSDefaultParameterValues = @{
 
 function Test-LabAzureModuleAvailability
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ()
 
     $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    $paths = if ($IsLinux -or $IsMacOs)
+    [char]$split = if ($IsLinux -or $IsMacOs)
     {
-        Join-Path -Path ($env:PSModulePath -split ':' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+        ':'
     }
     else
     {
-        Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+        ';'
     }
-    
+
+    $paths = Join-Path -Path ($env:PSModulePath -split $split | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+
     $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1
@@ -41,6 +44,8 @@ function Test-LabAzureModuleAvailability
 
 function Update-LabAzureSettings
 {
+    [CmdletBinding()]
+    param ( )
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -93,7 +98,7 @@ function Add-LabAzureSubscription
 
         [switch]$PassThru
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
