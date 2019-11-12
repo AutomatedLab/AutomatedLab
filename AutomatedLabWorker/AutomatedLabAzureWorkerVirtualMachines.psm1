@@ -651,8 +651,8 @@ function Initialize-LWAzureVM
 
         foreach ($machine in $machineSpecific)
         {
-            Write-ScreenInfo -Type Verbose -Message "Configure shutdown of $machine daily on $($machine.AzureProperties.AutoshutdownTime) in timezone $($machine.AzureProperties.AutoshutdownTimezoneId)"
-            Enable-LWAzureAutoShutdown -ComputerName $machine -Time $machine.AzureProperties.AutoshutdownTime -TimeZone $machine.AzureProperties.AutoshutdownTimezoneId
+            Write-ScreenInfo -Type Verbose -Message "Configure shutdown of $machine daily on $($machine.AzureProperties.AutoShutdownTime) in timezone $($machine.AzureProperties.AutoShutdownTimezoneId)"
+            Enable-LWAzureAutoShutdown -ComputerName $machine -Time $machine.AzureProperties.AutoShutdownTime -TimeZone $machine.AzureProperties.AutoShutdownTimezoneId
         }
 
         if ($machineSpecific.Count -lt (Get-LabVm).Count)
