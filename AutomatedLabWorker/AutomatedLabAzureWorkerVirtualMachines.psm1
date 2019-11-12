@@ -646,7 +646,7 @@ function Initialize-LWAzureVM
     {
         Write-ScreenInfo -Message "Configuring auto-shutdown of VMs"
         $machineSpecific = Get-LabVm | Where-Object {
-            $_.AzureProperties.ContainsKey('AutoshutdownTime')
+            $_.AzureProperties.ContainsKey('AutoShutdownTime')
         }
 
         foreach ($machine in $machineSpecific)
