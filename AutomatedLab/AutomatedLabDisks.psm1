@@ -35,7 +35,7 @@ function New-LabBaseImages
         $baseDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version).vhdx"
         $os.BaseDiskPath = $baseDiskPath
 
-        $hostOsVersion = [System.Version]((Get-CimInstance -ClassName Win32_OperatingSystem).Version)
+        $hostOsVersion = [System.Environment]::OSVersion.Version
 
         if ($hostOsVersion -ge [System.Version]'6.3' -and $os.Version -ge [System.Version]'6.2')
         {

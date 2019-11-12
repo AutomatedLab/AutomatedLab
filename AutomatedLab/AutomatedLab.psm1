@@ -1567,7 +1567,15 @@ function Get-LabAvailableOperatingSystem
     {
         $osList.Timestamp = Get-Date
         $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
-        $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores'))
+        }
+        else
+        {
+            $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+        }
 
         Write-ProgressIndicatorEnd
         Write-ScreenInfo "Found $($osList.Count) OS images."

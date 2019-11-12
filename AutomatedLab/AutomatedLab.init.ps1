@@ -376,6 +376,13 @@ Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath
 
 #endregion
 
+#region Linux folder
+if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores')))
+{
+    $null = New-Item -ItemType Directory -Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores')
+}
+#endregion
+
 #region ArgumentCompleter
 Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBlock {
     (Get-PSFConfig -Module AutomatedLab -Name Notifications.NotificationProviders*).FullName | Foreach-Object { ($_ -split '\.')[3] } | Select-Object -Unique

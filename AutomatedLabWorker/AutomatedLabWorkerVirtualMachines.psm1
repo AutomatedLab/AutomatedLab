@@ -275,7 +275,7 @@ function New-LWHypervVM
     }
 
     #set the Generation for the VM depending on SupportGen2VMs, host OS version and VM OS version
-    $hostOsVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
+    $hostOsVersion = [System.Environment]::OSVersion.Version
 
     $generation = if (Get-LabConfigurationItem -Name SupportGen2VMs)
     {
