@@ -641,6 +641,26 @@ function Initialize-LWAzureVM
     Write-ScreenInfo -Message "Waiting for machines '$($Machine -join ', ')' to be accessible" -NoNewLine
     Wait-LabVM -ComputerName $Machine -ProgressIndicator 15 -DoNotUseCredSsp -ErrorAction Stop
 
+    # Configure AutoShutdown
+    if ($null -ne $lab.AzureSettings.AutoShutdown)
+    {
+        Write-ScreenInfo -Message "Configuring auto-shutdown of VMs"
+        $machineSpecific = Get-LabVm | Where-Object {
+            $_.AzureProperties.ContainsKey('AutoshutdownTime')
+        }
+
+        foreach ($machine in $machineSpecific)
+        {
+            Write-ScreenInfo -Type Verbose -Message "Configure shutdown of $machine daily on $($machine.AzureProperties.AutoshutdownTime) in timezone $($machine.AzureProperties.AutoshutdownTimezoneId)"
+            Enable-LWAzureAutoShutdown -ComputerName $machine -Time $machine.AzureProperties.AutoshutdownTime -TimeZone $machine.AzureProperties.AutoshutdownTimezoneId
+        }
+
+        if ($machineSpecific.Count -lt (Get-LabVm).Count)
+        {
+            Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $lab.AzureSettings.AutoShutdown.Key -TimeZone $lab.AzureSettings.AutoShutdown.Value
+        }
+    }
+
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
     $machineSettings = @{}
     $lab = Get-Lab
@@ -1680,5 +1700,98 @@ function Get-LWAzureVmSnapshot
     $snapshots.ForEach({
         [AutomatedLab.Snapshot]::new(($_.Name -split '_')[1], ($_.Name -split '_')[0], $_.TimeCreated)
     })
+}
+#endregion
+
+#region Autoshutdown
+function Get-LWAzureAutoShutdown
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab -ErrorAction Stop
+    $resourceGroup = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+
+    $schedules = (Get-AzResource -ResourceGroupName $resourceGroup -ResourceType Microsoft.DevTestLab/schedules -ExpandProperties -ErrorAction SilentlyContinue).Properties
+
+    foreach ($schedule in $schedules)
+    {
+        $hour, $minute = Get-StringSection -SectionSize 2 -String $schedule.dailyRecurrence.time
+
+        if ($schedule)
+        {
+            [PSCustomObject]@{
+                ComputerName = ($schedule.targetResourceId -split '/')[-1]
+                Time = New-TimeSpan -Hours $hour -Minutes $minute
+                TimeZone = Get-TimeZone -Id $schedule.timeZoneId
+            }
+        }
+    }
+}
+
+function Enable-LWAzureAutoShutdown
+{
+    param
+    (
+        [string[]]
+        $ComputerName,
+
+        [timespan]
+        $Time,
+
+        [TimeZoneInfo]
+        $TimeZone = (Get-TimeZone),
+
+        [switch]
+        $Wait
+    )
+    
+    $lab = Get-Lab -ErrorAction Stop
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
+
+    $jobs = foreach ($vm in $labVms)
+    {
+        $properties = @{
+            status = 'Enabled'
+            taskType = 'ComputeVmShutdownTask'
+            dailyRecurrence = @{time = $Time.ToString('hhmm') }
+            timeZoneId = $TimeZone.Id
+            targetResourceId = $vm.Id
+        }
+
+        New-AzResource -ResourceId ("$($resourceIdString)$($vm.Name)") -Location $vm.Location -Properties $properties -Force -ErrorAction SilentlyContinue -AsJob
+    }
+
+    if ($null -ne $jobs -and $Wait.IsPresent)
+    {
+        $null = $jobs | Wait-Job
+    }
+}
+
+function Disable-LWAzureAutoShutdown
+{
+    param
+    (
+        [string[]]
+        $ComputerName,
+
+        [switch]
+        $Wait
+    )
+    
+    $lab = Get-Lab -ErrorAction Stop
+    $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
+    $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
+
+    $jobs = foreach ($vm in $labVms)
+    {
+        Remove-AzResource -ResourceId ("$($resourceIdString)$($vm.Name)") -Force -ErrorAction SilentlyContinue -AsJob
+    }
+
+    if ($null -ne $jobs -and $Wait.IsPresent)
+    {
+        $null = $jobs | Wait-Job
+    }
 }
 #endregion

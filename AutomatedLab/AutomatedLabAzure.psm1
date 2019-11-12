@@ -72,6 +72,12 @@ function Add-LabAzureSubscription
 
         [string]$DefaultResourceGroupName,
 
+        [timespan]
+        $AutoShutdownTime,
+
+        [TimeZoneInfo]
+        $AutoShutdownTimeZone,
+
         [switch]$PassThru
     )
     
@@ -115,6 +121,16 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+
+    if ($null -ne $AutoShutdownTime)
+    {
+        if ($null -eq $AutoShutdownTimeZone)
+        {
+            $AutoShutdownTimeZone = Get-TimeZone
+        }
+
+        $script:lab.AzureSettings.AutoShutdown = [System.Collections.Generic.KeyValuePair]::new($AutoShutdownTime, $AutoShutdownTimeZone)
+    }
     
     # Select the subscription which is associated with this AzureRmProfile
     $subscriptions = Get-AzSubscription
