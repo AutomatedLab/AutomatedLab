@@ -130,6 +130,7 @@ function Add-LabAzureSubscription
         }
 
         $script:lab.AzureSettings.AutoShutdown = [System.Collections.Generic.KeyValuePair[TimeSpan,TimeZoneInfo]]::new($AutoShutdownTime, $AutoShutdownTimeZone)
+        Export-LabDefinition -Force -ExportDefaultUnattendedXml -Silent
     }
     
     # Select the subscription which is associated with this AzureRmProfile

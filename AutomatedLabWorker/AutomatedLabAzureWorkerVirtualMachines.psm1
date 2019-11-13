@@ -644,21 +644,22 @@ function Initialize-LWAzureVM
     # Configure AutoShutdown
     if ($null -ne $lab.AzureSettings.AutoShutdown)
     {
-        Write-ScreenInfo -Message "Configuring auto-shutdown of VMs"
-        $machineSpecific = Get-LabVm | Where-Object {
-            $_.AzureProperties.ContainsKey('AutoShutdownTime')
-        }
+        $time = $lab.AzureSettings.AutoShutdown.Key
+        $tz = if ($null -eq $lab.AzureSettings.AutoShutdown.Value) {Get-TimeZone} else {$lab.AzureSettings.AutoShutdown.Value}
+        Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
+        Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
+    }
 
-        foreach ($machine in $machineSpecific)
-        {
-            Write-ScreenInfo -Type Verbose -Message "Configure shutdown of $machine daily on $($machine.AzureProperties.AutoShutdownTime) in timezone $($machine.AzureProperties.AutoShutdownTimezoneId)"
-            Enable-LWAzureAutoShutdown -ComputerName $machine -Time $machine.AzureProperties.AutoShutdownTime -TimeZone $machine.AzureProperties.AutoShutdownTimezoneId
-        }
+    $machineSpecific = Get-LabVm | Where-Object {
+        $_.AzureProperties.ContainsKey('AutoShutdownTime')
+    }
 
-        if ($machineSpecific.Count -lt (Get-LabVm).Count)
-        {
-            Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $lab.AzureSettings.AutoShutdown.Key -TimeZone $lab.AzureSettings.AutoShutdown.Value
-        }
+    foreach ($machine in $machineSpecific)
+    {
+        $time = $machine.AzureProperties.AutoShutdownTime
+        $tz = if ($null -eq $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {$machine.AzureProperties.AutoShutdownTimezoneId}
+        Write-ScreenInfo -Message "Configure shutdown of $machine daily at $($time) in timezone $($tz.Id)"
+        Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz -Wait
     }
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
