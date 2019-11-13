@@ -642,10 +642,10 @@ function Initialize-LWAzureVM
     Wait-LabVM -ComputerName $Machine -ProgressIndicator 15 -DoNotUseCredSsp -ErrorAction Stop
 
     # Configure AutoShutdown
-    if ($null -ne $lab.AzureSettings.AutoShutdown)
+    if ($null -ne $lab.AzureSettings.AutoShutdownTime)
     {
-        $time = $lab.AzureSettings.AutoShutdown.Key
-        $tz = if ($null -eq $lab.AzureSettings.AutoShutdown.Value) {Get-TimeZone} else {$lab.AzureSettings.AutoShutdown.Value}
+        $time = $lab.AzureSettings.AutoShutdownTime
+        $tz = if ($null -eq $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {$lab.AzureSettings.AutoShutdownTimeZone}
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
         Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
     }

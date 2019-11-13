@@ -221,9 +221,9 @@
         'Get-LabVmSnapshot',
         'Test-LabHostConnected',
         'Test-LabAzureModuleAvailability',
-        'Get-LWAzureAutoShutdown',
-        'Enable-LWAzureAutoShutdown',
-        'Disable-LWAzureAutoShutdown'
+        'Get-LabMachineAutoShutdown',
+        'Enable-LabMachineAutoShutdown',
+        'Disable-LabMAchineAutoShutdown'
     )
     
     FileList               = @(
