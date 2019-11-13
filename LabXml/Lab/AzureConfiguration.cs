@@ -35,7 +35,7 @@ namespace AutomatedLab
         }
 
         public TimeSpan AutoShutdownTime {get; set;}
-        public TimeZoneInfo AutoShutdownTimeZone { get; set; }
+        public string AutoShutdownTimeZone { get; set; }
 
         public string LabSourcesResourceGroupName
         {

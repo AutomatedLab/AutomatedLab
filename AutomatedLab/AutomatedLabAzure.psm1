@@ -130,7 +130,7 @@ function Add-LabAzureSubscription
         }
 
         $script:lab.AzureSettings.AutoShutdownTime = $AutoShutdownTime
-        $script:lab.AzureSettings.AutoShutdownTimeZone = $AutoShutdownTimeZone
+        $script:lab.AzureSettings.AutoShutdownTimeZone = $AutoShutdownTimeZone.Id
     }
     
     # Select the subscription which is associated with this AzureRmProfile
