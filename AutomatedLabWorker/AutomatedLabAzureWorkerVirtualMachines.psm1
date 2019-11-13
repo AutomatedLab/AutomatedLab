@@ -645,7 +645,7 @@ function Initialize-LWAzureVM
     if ($null -ne $lab.AzureSettings.AutoShutdownTime)
     {
         $time = $lab.AzureSettings.AutoShutdownTime
-        $tz = if ($null -eq $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {$lab.AzureSettings.AutoShutdownTimeZone}
+        $tz = if ($null -eq $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone}
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
         Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
     }
@@ -657,7 +657,7 @@ function Initialize-LWAzureVM
     foreach ($machine in $machineSpecific)
     {
         $time = $machine.AzureProperties.AutoShutdownTime
-        $tz = if ($null -eq $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {$machine.AzureProperties.AutoShutdownTimezoneId}
+        $tz = if ($null -eq $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {Get-TimeZone -Id $machine.AzureProperties.AutoShutdownTimezoneId}
         Write-ScreenInfo -Message "Configure shutdown of $machine daily at $($time) in timezone $($tz.Id)"
         Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz -Wait
     }
