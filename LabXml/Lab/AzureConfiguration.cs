@@ -34,7 +34,7 @@ namespace AutomatedLab
             set { loadBalancerPortCounter = value; }
         }
 
-        public TimeSpan AutoShutdownTime {get; set;}
+        public string AutoShutdownTime {get; set;}
         public string AutoShutdownTimeZone { get; set; }
 
         public string LabSourcesResourceGroupName
