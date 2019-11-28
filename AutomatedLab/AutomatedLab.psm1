@@ -273,6 +273,7 @@ function Undo-LabHostRemoting
 function Test-LabHostRemoting
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param()
 
@@ -351,8 +352,6 @@ function Test-LabHostRemoting
 #region Import-Lab
 function Import-Lab
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByPath', Position = 1)]
@@ -575,7 +574,7 @@ function Import-Lab
     Write-ScreenInfo ("Lab '{0}' hosted on '{1}' imported with {2} machines" -f $Script:data.Name, $Script:data.DefaultVirtualizationEngine ,$Script:data.Machines.Count) -Type Info
 
     Register-LabArgumentCompleters
-    
+
     Write-LogFunctionExit -ReturnValue $true
 }
 #endregion Import-Lab
@@ -583,7 +582,6 @@ function Import-Lab
 #region Export-Lab
 function Export-Lab
 {
-    
     [cmdletBinding()]
 
     param ()
@@ -613,7 +611,6 @@ function Export-Lab
 #region Get-Lab
 function Get-Lab
 {
-    
     [CmdletBinding()]
     [OutputType([AutomatedLab.Lab])]
 
@@ -651,7 +648,6 @@ function Get-Lab
 #region Clear-Lab
 function Clear-Lab
 {
-    
     [cmdletBinding()]
 
     param ()
@@ -671,8 +667,6 @@ function Clear-Lab
 #region Install-Lab
 function Install-Lab
 {
-    
-
     [cmdletBinding()]
     param (
         [switch]$NetworkSwitches,
@@ -858,7 +852,7 @@ function Install-Lab
     if (($Domains -or $performAll) -and (Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
-        
+
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
 
@@ -887,7 +881,7 @@ function Install-Lab
     if (($Domains -or $performAll) -and (Get-LabVM -Role FirstChildDC | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Child Domain Controllers' -TaskStart
-        
+
         Write-ScreenInfo -Message "Machines with FirstChildDC role to be installed: '$((Get-LabVM -Role FirstChildDC).Name -join ', ')'"
         Install-LabFirstChildDcs -CreateCheckPoints:$CreateCheckPoints
 
@@ -1087,7 +1081,7 @@ function Install-Lab
         {
             Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         }
-        
+
         Install-LabTeamFoundationEnvironment
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
@@ -1131,9 +1125,9 @@ function Install-Lab
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
         Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
-    
+
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
-    
+
     Write-LogFunctionExit
 }
 #endregion Install-Lab
@@ -1244,7 +1238,7 @@ function Remove-Lab
                     foreach ($disk in $disks)
                     {
                         Write-PSFMessage "Removing disk '($disk.Name)'"
-                        
+
                         if (Test-Path -Path $disk.Path)
                         {
                             Remove-Item -Path $disk.Path
@@ -1408,7 +1402,6 @@ function Get-LabAvailableOperatingSystem
         Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
-    $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
     $osList = New-Object $type
     if ($singleFile)
     {
@@ -1423,137 +1416,26 @@ function Get-LabAvailableOperatingSystem
     {
         Write-ProgressIndicator
         Write-PSFMessage "Mounting ISO image '$($isoFile.FullName)'"
-        $drive = Mount-DiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
+        $drive = Mount-LabDiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
 
         Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
 
-        Write-PSFMessage 'Getting disk image of the ISO'
-        $letter = ($drive | Get-Volume).DriveLetter
-        Write-PSFMessage "Got disk image '$letter'"
-        Write-PSFMessage "OS ISO mounted on drive letter '$letter'"
-
-        $standardImagePath = "$letter`:\Sources\Install.wim"
-        if (Test-Path -Path $standardImagePath)
+        $opSystems = if ($IsLinux)
         {
-            $dismOutput = Dism.exe /English /Get-WimInfo /WimFile:$standardImagePath
-            $dismOutput = $dismOutput -join "`n"
-            $dismMatches = $dismOutput | Select-String -Pattern $dismPattern -AllMatches
-            Write-PSFMessage "The Windows Image list contains $($dismMatches.Matches.Count) items"
-
-            foreach ($dismMatch in $dismMatches.Matches)
-            {
-                Write-ProgressIndicator
-                $index = $dismMatch.Groups['Index'].Value
-                $imageInfo = Get-WindowsImage -ImagePath $standardImagePath -Index $index
-
-                if (($imageInfo.Languages -notlike '*en-us*') -and -not $doNotSkipNonNonEnglishIso)
-                {
-                    Write-ScreenInfo "The windows image '$($imageInfo.ImageName)' in the ISO '$($isoFile.Name)' has the language(s) '$($imageInfo.Languages -join ', ')'. AutomatedLab does only support images with the language 'en-us' hence this image will be skipped." -Type Warning
-                    continue
-                }
-
-                $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-                $os.OperatingSystemImageName = $dismMatch.Groups['Name'].Value
-                $os.OperatingSystemName = $dismMatch.Groups['Name'].Value
-                $os.Size = $imageInfo.Imagesize
-                $os.Version = $imageInfo.Version
-                $os.PublishedDate = $imageInfo.CreatedTime
-                $os.Edition = $imageInfo.EditionId
-                $os.Installation = $imageInfo.InstallationType
-                $os.ImageIndex = $imageInfo.ImageIndex
-
-                $osList.Add($os)
-            }
+            Get-LabImageOnLinux -MountPoint $drive.DriveLetter -IsoFile $isoFile
+        }
+        else
+        {
+            Get-LabImageOnWindows -DriveLetter $drive.DriveLetter -IsoFile $isoFile
         }
 
-        # SuSE, openSuSE et al
-        $susePath = "$letter`:\content"
-        if (Test-Path -Path $susePath -PathType Leaf)
+        foreach ($os in $opSystems)
         {
-            $content = Get-Content -Path $susePath -Raw
-            [void] ($content -match 'DISTRO\s+.+,(?<Distro>[a-zA-Z 0-9.]+)\n.*LINGUAS\s+(?<Lang>.*)\n(?:REGISTERPRODUCT.+\n){0,1}REPOID\s+.+((?<CreationTime>\d{8})|(?<Version>\d{2}\.\d{1}))\/(?<Edition>\w+)\/.*\nVENDOR\s+(?<Vendor>[a-zA-z ]+)')
-
-            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-            $os.OperatingSystemImageName = $Matches.Distro
-            $os.OperatingSystemName = $Matches.Distro
-            $os.Size = $isoFile.Length
-            if($Matches.Version -like '*.*')
-            {
-                $os.Version = $Matches.Version
-            }
-            elseif ($Matches.Version)
-            {
-                $os.Version = [AutomatedLab.Version]::new($Matches.Version,0)
-            }
-            else
-            {
-                $os.Version = [AutomatedLab.Version]::new(0,0)
-            }
-
-            $os.PublishedDate = if($Matches.CreationTime) { [datetime]::ParseExact($Matches.CreationTime, 'yyyyMMdd', ([cultureinfo]'en-us')) } else {(Get-Item -Path $susePath).CreationTime}
-            $os.Edition = $Matches.Edition
-
-            $packages = Get-ChildItem "$letter`:\suse" -Filter pattern*.rpm -File -Recurse | Foreach-Object {
-                if ( $_.Name -match '.*patterns-(openSUSE|SLE|sles)-(?<name>.*(32bit)?)-\d*-\d*\.\d*\.x86')
-                {
-                    $Matches.name
-                }
-            }
-
-            $os.LinuxPackageGroup = $packages
-
-            $osList.Add($os)
-        }
-
-        # RHEL, CentOS, Fedora et al
-        $rhelPath = "$letter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
-        $rhelDiscinfo = "$letter`:\.discinfo"
-        $rhelPackageInfo = "$letter`:\repodata"
-        if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
-        {
-            [void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
-            $discInfoContent = Get-Content -Path $rhelDiscinfo
-            $versionInfo = ($discInfoContent[1] -split " ")[-1]
-            $content = $Matches[0] -split '\n' | Where-Object -FilterScript {$_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
-
-            $os = New-Object -TypeName AutomatedLab.OperatingSystem($Name, $isoFile.FullName)
-            $os.OperatingSystemImageName = $content.Name
-            $os.Size = $isoFile.Length
-
-            $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml | Select-Object -First 1).FullName
-            if (-not $packageXml)
-            {
-                # CentOS ISO for some reason contained only GUIDs
-                $packageXml = Get-ChildItem -Path $rhelPackageInfo -PipelineVariable file -File |
-                Get-Content -TotalCount 10 |
-                Where-Object { $_ -like "*<comps>*" } |
-                Foreach-Object { $file.FullName } |
-                Select-Object -First 1
-            }
-
-            [xml]$packageInfo = Get-Content -Path $packageXml -Raw
-            $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
-
-            if ($versionInfo -match '\.')
-            {
-                $os.Version = $versionInfo
-            }
-            else
-            {
-                $os.Version = [AutomatedLab.Version]::new($versionInfo,0)
-            }
-
-            $os.OperatingSystemName = '{0} {1}' -f $content.Family,$os.Version
-
-            # Unix time stamp...
-            $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
-            $os.Edition = if($content.Variant) {$content.Variant}else{'Server'}
-
             $osList.Add($os)
         }
 
         Write-PSFMessage 'Dismounting ISO'
-        [void] (Dismount-DiskImage -ImagePath $isoFile.FullName)
+        [void] (Dismount-LabDiskImage -ImagePath $isoFile.FullName)
         Write-ProgressIndicator
     }
 
@@ -1587,7 +1469,6 @@ function Get-LabAvailableOperatingSystem
 #region Enable-LabVMRemoting
 function Enable-LabVMRemoting
 {
-    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
@@ -1639,7 +1520,6 @@ function Enable-LabVMRemoting
 #region Install-LabWebServers
 function Install-LabWebServers
 {
-    
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 
@@ -1749,7 +1629,6 @@ function Install-LabFileServers
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
 {
-    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1842,7 +1721,6 @@ function Install-LabWindowsFeature
 #region Get-LabWindowsFeature
 function Get-LabWindowsFeature
 {
-    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1929,7 +1807,6 @@ function Get-LabWindowsFeature
 #region Uninstall-LabWindowsFeature
 function Uninstall-LabWindowsFeature
 {
-    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -2009,7 +1886,6 @@ function Uninstall-LabWindowsFeature
 #region Install-VisualStudio2013
 function Install-VisualStudio2013
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2013Installation)
@@ -2128,7 +2004,6 @@ function Install-VisualStudio2013
 #region Install-VisualStudio2015
 function Install-VisualStudio2015
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_VisualStudio2015Installation)
@@ -2252,7 +2127,6 @@ function Install-VisualStudio2015
 #region Install-LabOrchestrator2012
 function Install-LabOrchestrator2012
 {
-    
     [cmdletBinding()]
     param ()
 
@@ -2415,7 +2289,6 @@ function Install-LabOrchestrator2012
 #region Install-LabSoftwarePackage
 function Install-LabSoftwarePackage
 {
-    
     param (
         [Parameter(Mandatory, ParameterSetName = 'SinglePackage')]
         [ValidateNotNullOrEmpty()]
@@ -2486,7 +2359,10 @@ function Install-LabSoftwarePackage
             return
         }
 
-        Unblock-File -Path $Path
+        if (Get-Command -Name Unblock-File -ErrorAction SilentlyContinue)
+        {
+            Unblock-File -Path $Path
+        }
     }
 
     if ($parameterSetName -like 'Single*')
@@ -2583,7 +2459,7 @@ function Install-LabSoftwarePackage
 
     # Transfer ALCommon library
     $childPath = foreach ($vm in $ComputerName)
-    {        
+    {
         Invoke-LabCommand -ComputerName $vm -NoDisplay -PassThru { if ($PSEdition -eq 'Core'){'core'} else {'full'} } |
         Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
     }
@@ -2591,7 +2467,7 @@ function Install-LabSoftwarePackage
     $coreChild = @($childPath) -eq 'core'
     $fullChild = @($childPath) -eq 'full'
     $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
-    
+
     if ($coreChild -and @(Invoke-LabCommand -ComputerName $coreChild.ComputerName -NoDisplay -PassThru {Get-Item '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue}).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
@@ -2613,7 +2489,7 @@ function Install-LabSoftwarePackage
         {
             Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
-        
+
         Install-SoftwarePackage @installParams
     }
 
@@ -2652,7 +2528,6 @@ function Install-LabSoftwarePackage
 #region Get-LabSoftwarePackage
 function Get-LabSoftwarePackage
 {
-    
     param (
         [Parameter(Mandatory)]
         [ValidateScript({
@@ -2683,7 +2558,6 @@ function Get-LabSoftwarePackage
 #region Install-LabSoftwarePackages
 function Install-LabSoftwarePackages
 {
-    
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [AutomatedLab.Machine[]]$Machine,
@@ -2749,7 +2623,6 @@ function Install-LabSoftwarePackages
 #region New-LabPSSession
 function New-LabPSSession
 {
-    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
@@ -2996,7 +2869,6 @@ function New-LabPSSession
 #region Get-LabPSSession
 function Get-LabPSSession
 {
-    
     [cmdletBinding()]
     [OutputType([System.Management.Automation.Runspaces.PSSession])]
 
@@ -3050,7 +2922,6 @@ function Get-LabPSSession
 #region Remove-LabPSSession
 function Remove-LabPSSession
 {
-    
     [cmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -3111,7 +2982,6 @@ function Remove-LabPSSession
 #region Enter-LabPSSession
 function Enter-LabPSSession
 {
-    
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string]$ComputerName,
@@ -3145,7 +3015,6 @@ function Enter-LabPSSession
 #region Invoke-LabCommand
 function Invoke-LabCommand
 {
-    
     [cmdletBinding()]
     param (
         [string]$ActivityName = '<unnamed>',
@@ -3247,7 +3116,7 @@ function Invoke-LabCommand
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
     }
-    
+
     if ($FilePath)
     {
         $isLabPathIsOnLabAzureLabSourcesStorage = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
@@ -3455,7 +3324,7 @@ function Invoke-LabCommand
 
         if ($ScriptBlock)            { $param.Add('ScriptBlock', $ScriptBlock) }
         if ($Retries)                { $param.Add('Retries', $Retries) }
-        if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }        
+        if ($RetryIntervalInSeconds) { $param.Add('RetryIntervalInSeconds', $RetryIntervalInSeconds) }
         if ($FileName)               { $param.Add('ScriptFileName', $FileName) }
         if ($ActivityName)           { $param.Add('ActivityName', $ActivityName) }
         if ($ArgumentList)           { $param.Add('ArgumentList', $ArgumentList) }
@@ -3490,7 +3359,8 @@ function Invoke-LabCommand
 #region Update-LabMemorySettings
 function Update-LabMemorySettings
 {
-    
+    # Cmdlet is not called on Linux systems
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [Cmdletbinding()]
     Param ()
 
@@ -3651,18 +3521,6 @@ function Update-LabMemorySettings
                 Write-ScreenInfo -Message "Machine '$($machine.Name)' is now auto-configured with $($memoryCalculated / 1GB)GB of memory. This might give unsatisfactory performance. Consider adding memory to the host, raising the available memory for this lab or use fewer machines in this lab" -Type Warning
             }
         }
-
-        <#
-                $plannedMaxMemoryUsage = (Get-LabVM -All).MaxMemory | Measure-Object -Sum | Select-Object -ExpandProperty Sum
-                if ($plannedMaxMemoryUsage -le ($totalMemory/3))
-                {
-                foreach ($machine in (Get-LabVM))
-                {
-                (Get-LabVM -ComputerName $machine).Memory *= 2
-                (Get-LabVM -ComputerName $machine).MaxMemory *= 2
-                }
-                }
-        #>
     }
 
     Write-LogFunctionExit
@@ -3672,7 +3530,7 @@ function Update-LabMemorySettings
 #region Set-LabInstallationCredential
 function Set-LabInstallationCredential
 {
-    
+    [OutputType([System.Int32])]
     [CmdletBinding(DefaultParameterSetName = 'All')]
     Param (
         [Parameter(Mandatory, ParameterSetName = 'All')]
@@ -3706,14 +3564,14 @@ function Set-LabInstallationCredential
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabInstallationCredential.'
     }
-    
+
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure')
     {
         if ($null -ne $Password -and $azurePasswordBlacklist -contains $Password)
         {
             throw "Password '$Password' is in the list of forbidden passwords for Azure VMs: $($azurePasswordBlacklist -join ', ')"
         }
-        
+
         if ($Username -eq 'Administrator')
         {
             throw 'Username may not be Administrator for Azure VMs.'
@@ -3807,7 +3665,6 @@ function Set-LabInstallationCredential
 #region Show-LabDeploymentSummary
 function Show-LabDeploymentSummary
 {
-    
     [OutputType([System.TimeSpan])]
     [Cmdletbinding()]
     param (
@@ -3878,7 +3735,6 @@ function Show-LabDeploymentSummary
 #region Set-LabGlobalNamePrefix
 function Set-LabGlobalNamePrefix
 {
-    
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory = $false)]
@@ -3893,7 +3749,6 @@ function Set-LabGlobalNamePrefix
 #region Set-LabToolsPath
 function Set-LabDefaultToolsPath
 {
-    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3907,7 +3762,6 @@ function Set-LabDefaultToolsPath
 #region Set-LabDefaultOperatingSYstem
 function Set-LabDefaultOperatingSystem
 {
-    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3948,7 +3802,6 @@ function Set-LabDefaultOperatingSystem
 #region Set-LabDefaultVirtualization
 function Set-LabDefaultVirtualizationEngine
 {
-    
     [Cmdletbinding()]
     Param(
         [Parameter(Mandatory)]
@@ -3969,7 +3822,7 @@ function Set-LabDefaultVirtualizationEngine
 
 #region Get-LabSourcesLocation
 function Get-LabSourcesLocation
-{ 
+{
     param
     (
         [switch]$Local
@@ -3990,7 +3843,6 @@ function Get-LabVariable
 #region Remove-LabVariable
 function Remove-LabVariable
 {
-    
     $pattern = 'AL_([a-zA-Z0-9]{8})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{4})+[-.]+([a-zA-Z0-9]{12})'
     Get-LabVariable | Remove-Variable -Scope Global
 }
@@ -3999,7 +3851,6 @@ function Remove-LabVariable
 #region Clear-LabCache
 function Clear-LabCache
 {
-    
     [cmdletBinding()]
 
     param()
@@ -4042,7 +3893,6 @@ function Get-LabCache
 #region function Add-LabVMUserRight
 function Add-LabVMUserRight
 {
-    
     param
     (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByMachine')]
@@ -4305,6 +4155,8 @@ function Get-LabConfigurationItem
 #region Test-LabHostConnected
 function Test-LabHostConnected
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingComputerNameHardcoded", "")]
     [CmdletBinding()]
     param
     (

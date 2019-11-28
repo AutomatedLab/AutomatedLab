@@ -1,7 +1,7 @@
 ﻿if ($PSEdition -eq 'Core')
 {
     Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
-    
+
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
     $requiredModules = @('Dism', 'International')

@@ -46,7 +46,9 @@
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabTfs.psm1',
-        'AutomatedLabHyperV.psm1'
+        'AutomatedLabHyperV.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1'
     )
 
     RequiredModules        = @(
@@ -67,7 +69,7 @@
     )
 
     CmdletsToExport        = @()
-    
+
     FunctionsToExport      = @(
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
@@ -234,7 +236,7 @@
         'Get-LabTfsFeed',
         'New-LabTfsFeed'
     )
-    
+
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
@@ -256,6 +258,8 @@
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabVMWare.psm1'
+        'AutomatedLabVMWare.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1'
     )
 }
