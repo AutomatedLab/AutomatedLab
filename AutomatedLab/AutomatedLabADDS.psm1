@@ -1,4 +1,4 @@
-#region DC Install Scripts
+﻿#region DC Install Scripts
 $adInstallRootDcScriptPre2012 = {
     param (
         [string]$DomainName,
@@ -36,7 +36,7 @@ $adInstallRootDcScriptPre2012 = {
 "@
 
     $VerbosePreference = $using:VerbosePreference
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -287,7 +287,7 @@ $adInstallFirstChildDcPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -598,7 +598,7 @@ $adInstallDcPre2012 = {
     $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -748,9 +748,9 @@ function Install-LabRootDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1080,9 +1080,9 @@ function Install-LabFirstChildDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1374,9 +1374,9 @@ function Install-LabDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -2164,7 +2164,7 @@ function Move-LabDomainController
         Write-PSFMessage "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
-    
+
     $machine = Get-LabVM -ComputerName $ComputerName
     $lab = Get-Lab
 

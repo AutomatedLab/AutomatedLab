@@ -1,4 +1,4 @@
-#Lab for working with the Advanced Group Policy Manaement Console (AGMP)
+﻿#Lab for working with the Advanced Group Policy Manaement Console (AGMP)
 #The following files are required:
 # - agpm_403_server_amd64.exe
 # - agpm_403_client_amd64.exe
@@ -55,7 +55,7 @@ Invoke-LabCommand -ComputerName (Get-LabVM -Role RootDC) -ScriptBlock {
     $users = @()
     $users += New-ADUser -Name AgpmUser1 -Path $ou -AccountPassword $agpmSettings.Password -Enabled $true -PassThru
     $users += New-ADUser -Name AgpmUser2 -Path $ou -AccountPassword $agpmSettings.Password -Enabled $true -PassThru
-    $group = New-ADGroup -Name $agpmSettings.UsersGroupName -Path $ou -GroupScope Global -PassThru | Add-ADGroupMember -Members $users   
+    $group = New-ADGroup -Name $agpmSettings.UsersGroupName -Path $ou -GroupScope Global -PassThru | Add-ADGroupMember -Members $users
 
 } -Variable (Get-Variable -Name agpmSettings)
 

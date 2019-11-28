@@ -20,7 +20,7 @@ New-PolarisPostRoute -Path /Lab -ScriptBlock {
     {
         [void] (New-Item -Path C:\Polaris\LabJobs -ItemType Directory)
     }
-    
+
     New-Item -ItemType File -Path C:\Polaris\LabJobs\$labGuid
     $t = New-JobTrigger -Once -At (Get-Date).AddSeconds(5)
     $job = Register-ScheduledJob -ScriptBlock $labScriptBlock -Name $labGuid -Trigger $t
@@ -41,7 +41,7 @@ New-PolarisGetRoute -Force -Verbose -Path /Lab -ScriptBlock {
         }
 
         $lab = Import-Lab -Name $labName -PassThru
-        
+
         if ($lab)
         {
             $response.Json(($lab | ConvertTo-Json))

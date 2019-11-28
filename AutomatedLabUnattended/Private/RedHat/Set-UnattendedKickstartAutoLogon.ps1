@@ -1,12 +1,12 @@
-function Set-UnattendedKickstartAutoLogon
+﻿function Set-UnattendedKickstartAutoLogon
 {
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$DomainName,
-		
+
 		[Parameter(Mandatory = $true)]
 		[string]$Username,
-		
+
 		[Parameter(Mandatory = $true)]
 		[string]$Password
     )

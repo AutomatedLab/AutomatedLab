@@ -1,4 +1,4 @@
-#region New-LWAzureVM
+﻿#region New-LWAzureVM
 function New-LWAzureVM
 {
     [Cmdletbinding()]
@@ -13,7 +13,7 @@ function New-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $lab = Get-Lab
 
     $resourceGroupName = $lab.Name
@@ -332,8 +332,8 @@ function New-LWAzureVM
     Write-PSFMessage "Skus: $SkusName"
     Write-PSFMessage '-------------------------------------------------------'
 
-    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
-            Get-AzVirtualNetworkSubnetConfig | 
+    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName |
+            Get-AzVirtualNetworkSubnetConfig |
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $machine.IpAddress[0].IpAddress.ToString()
             }
@@ -415,8 +415,8 @@ function New-LWAzureVM
     $niccount = 1
     foreach ($adapter in ($Machine.NetworkAdapters | Where-Object {$_.Ipv4Address.IPAddress.ToString() -ne $defaultIPv4Address}))
     {
-        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
-            Get-AzVirtualNetworkSubnetConfig | 
+        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName |
+            Get-AzVirtualNetworkSubnetConfig |
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $adapter.Ipv4Address[0].IpAddress.ToString()
             }
@@ -781,7 +781,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
@@ -869,7 +869,7 @@ function Stop-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
 
     $lab = Get-Lab
@@ -960,7 +960,7 @@ function Wait-LWAzureRestartVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $start = $MonitoringStartTime.ToUniversalTime()
 
     Write-PSFMessage -Message "Starting monitoring the servers at '$start'"
@@ -1046,7 +1046,7 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $result = @{ }
     $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
@@ -1324,7 +1324,7 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'CredSsp' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
     {
         return
@@ -1446,11 +1446,11 @@ function Dismount-LWAzureIsoImage
 function Checkpoint-LWAzureVM
 {
     [Cmdletbinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
@@ -1458,7 +1458,7 @@ function Checkpoint-LWAzureVM
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
-    
+
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
@@ -1471,7 +1471,7 @@ function Checkpoint-LWAzureVM
     $jobs = foreach ($machine in $ComputerName)
     {
         $vm = Get-AzVM -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
-        if (-not $vm) 
+        if (-not $vm)
         {
             Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
             continue
@@ -1496,8 +1496,8 @@ function Checkpoint-LWAzureVM
         $skipRemove = $true
     }
 
-    if ($jobs) 
-    { 
+    if ($jobs)
+    {
         $null = $jobs | Wait-Job
         $jobs | Remove-Job
     }
@@ -1520,7 +1520,7 @@ function Restore-LWAzureVmSnapshot
     (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
@@ -1528,10 +1528,10 @@ function Restore-LWAzureVmSnapshot
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
-    
+
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
-    
+
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
     if ($runningMachines)
     {
@@ -1547,7 +1547,7 @@ function Restore-LWAzureVmSnapshot
     {
         $vm = $vms | Where-Object Name -eq $machine
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
-        if (-not $vm) 
+        if (-not $vm)
         {
             Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
             continue
@@ -1559,13 +1559,13 @@ function Restore-LWAzureVmSnapshot
             Write-ScreenInfo -Message "No snapshot named $vmSnapshotName found for $machine. Skipping restore." -Type Warning
             continue
         }
-        
+
         $osDiskName = $vm.StorageProfile.OsDisk.name
         $oldOsDisk = Get-AzDisk -Name $osDiskName -ResourceGroupName $resourceGroupName
         $disksToRemove += $oldOsDisk.Name
         $storageType = $oldOsDisk.sku.name
         $diskconf = New-AzDiskConfig -AccountType $storagetype -Location $oldOsdisk.Location -SourceResourceId $snapshot.Id -CreateOption Copy
-        
+
         $machineStatus[$machine].Stage1 = @{
             VM      = $vm
             OldDisk = $oldOsDisk.Name
@@ -1587,7 +1587,7 @@ function Restore-LWAzureVmSnapshot
         $null = Set-AzVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
         $machineStatus[$machine].Stage2 = @{
             Job = Update-AzVM -ResourceGroupName $resourceGroupName -VM $vm -AsJob
-        }        
+        }
     }
 
     $null = $machineStatus.Values.Stage2.Job | Wait-Job
@@ -1635,15 +1635,15 @@ function Restore-LWAzureVmSnapshot
 function Remove-LWAzureVmSnapshot
 {
     [Cmdletbinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [Parameter(Mandatory, ParameterSetName = 'AllSnapshots')]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [string]$SnapshotName,
-        
+
         [Parameter(ParameterSetName = 'AllSnapshots')]
         [switch]$All
     )

@@ -1,4 +1,4 @@
-# Use settings.psd1 from build to check all settings
+﻿# Use settings.psd1 from build to check all settings
 return # skipping tests for now
 
 $rootpath = $PSScriptRoot
@@ -13,7 +13,7 @@ if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
     $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
 }
 
-$reqdModules = @(    
+$reqdModules = @(
     'AutomatedLabUnattended'
     'PSLog',
     'PSFileTransfer',
@@ -37,7 +37,7 @@ Describe 'Get-LabConfigurationItem' {
     It 'Should contain all settings' {
         Get-LabConfigurationItem  | Should -Not -Be $null
     }
-    
+
     foreach ($call in $functionCalls)
     {
         $m = $call -match '-Name\s(?<Name>[\w\.-]+)'

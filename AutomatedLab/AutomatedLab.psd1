@@ -1,32 +1,32 @@
-@{
+﻿@{
     RootModule             = 'AutomatedLab.psm1'
-    
+
     ModuleVersion          = '1.0.0'
-	
+
     CompatiblePSEditions   = 'Core', 'Desktop'
-    
+
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
-    
+
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
-    
+
     CompanyName            = 'AutomatedLab Team'
-    
+
     Copyright              = '2019'
-    
+
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
-    
+
     PowerShellVersion      = '5.1'
-    
+
     DotNetFrameworkVersion = '4.0'
-    
+
     CLRVersion             = '4.0'
 
     ModuleList             = @('AutomatedLab')
-    
+
     ScriptsToProcess       = @('AutomatedLab.init.ps1')
-    
+
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
-    
+
     NestedModules          = @(
         'AutomatedLabAzureServices.psm1',
         'AutomatedLabADDS.psm1',
@@ -240,7 +240,7 @@
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
-        'AutomatedLab.psd1', 
+        'AutomatedLab.psd1',
         'AutomatedLab.psm1',
         'AutomatedLabADCS.psm1',
         'AutomatedLabADDS.psm1',

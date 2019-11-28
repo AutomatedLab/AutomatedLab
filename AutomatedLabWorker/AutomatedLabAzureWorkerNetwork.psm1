@@ -1,4 +1,4 @@
-$PSDefaultParameterValues = @{
+﻿$PSDefaultParameterValues = @{
     '*-Azure*:Verbose'      = $false
     '*-Azure*:Warning'      = $false
     'Import-Module:Verbose' = $false
@@ -44,9 +44,9 @@ function New-LWAzureNetworkSwitch
                 CreationTime = Get-Date
             }
         }
-         
+
         $azureSubnets = @()
-        
+
         foreach ($subnet in $network.Subnets)
         {
             $azureSubnets += New-AzVirtualNetworkSubnetConfig -Name $subnet.Name -AddressPrefix $subnet.AddressSpace.ToString()
@@ -139,15 +139,15 @@ function Remove-LWAzureNetworkSwitch
     $lab = Get-Lab
     $resourceGroupName = Get-LabAzureDefaultResourceGroup
 
-    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning    
+    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning
 
-    
+
     $jobs = foreach ($network in $VirtualNetwork)
     {
         Write-PSFMessage "Start removal of virtual network '$($network.name)'"
         Remove-AzVirtualNetwork -Name $network.Name -ResourceGroupName $resourceGroupName -AsJob -Force
     }
-    
+
     Write-PSFMessage "Waiting on the removal of $($jobs.Count)"
     Wait-LWLabJob -Job $jobs
 
@@ -421,7 +421,7 @@ function Get-LWAzureLoadBalancedPort
 
         return $filteredRules
     }
-    
+
     if ($DestinationPort)
     {
         return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$ComputerName*"})

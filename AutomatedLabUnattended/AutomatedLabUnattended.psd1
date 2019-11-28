@@ -2,13 +2,13 @@
     RootModule             = 'AutomatedLabUnattended.psm1'
 
     ModuleVersion          = '1.0.0'
-	
+
     CompatiblePSEditions   = 'Core', 'Desktop'
 
     GUID                   = 'b20c8df3-3f74-4537-a40b-b53186084dd5'
 
     Author                 = 'Raimund Andree, Per Pedersen'
-	
+
     CompanyName            = 'AutomatedLab Team'
 
     Copyright              = '2019'

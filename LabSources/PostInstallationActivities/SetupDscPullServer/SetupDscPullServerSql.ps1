@@ -1,4 +1,4 @@
-﻿param  
+﻿param
 (
     [string]$ComputerName,
 
@@ -18,9 +18,9 @@ Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
 Configuration SetupDscPullServer
 {
-    param  
-    ( 
-        [string[]]$NodeName = 'localhost', 
+    param
+    (
+        [string[]]$NodeName = 'localhost',
 
         [string]$CertificateThumbPrint = 'AllowUnencryptedTraffic',
 
@@ -36,7 +36,7 @@ Configuration SetupDscPullServer
 
     Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration, xWebAdministration
 
-    Node $NodeName 
+    Node $NodeName
     {
         LocalConfigurationManager
         {
@@ -45,17 +45,17 @@ Configuration SetupDscPullServer
             ConfigurationMode = 'ApplyAndAutoCorrect'
             RefreshMode = 'PUSH'
         }
-     
+
         WindowsFeature DSCServiceFeature
-        { 
+        {
             Ensure = 'Present'
             Name   = 'DSC-Service'
         }
 
         $sqlConnectionString = "Provider=SQLOLEDB.1;Integrated Security=SSPI;Persist Security Info=False;Initial Catalog=$DatabaseName;Data Source=$SqlServer"
 
-        xDscWebService PSDSCPullServer 
-        { 
+        xDscWebService PSDSCPullServer
+        {
             Ensure                       = 'Present'
             EndpointName                 = 'PSDSCPullServer'
             Port                         = 8080
@@ -69,7 +69,7 @@ Configuration SetupDscPullServer
             SqlProvider                  = $true
             SqlConnectionString          = $sqlConnectionString
             DependsOn                    = '[WindowsFeature]DSCServiceFeature'
-        } 
+        }
 
         File RegistrationKeyFile
         {
@@ -80,7 +80,7 @@ Configuration SetupDscPullServer
         }
 
         xWebConfigKeyValue CorrectDBProvider
-        { 
+        {
             ConfigSection = 'AppSettings'
             Key = 'dbprovider'
             Value = 'System.Data.OleDb'

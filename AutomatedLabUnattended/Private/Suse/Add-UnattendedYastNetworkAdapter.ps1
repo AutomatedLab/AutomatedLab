@@ -1,12 +1,12 @@
-function Add-UnattendedYastNetworkAdapter
+﻿function Add-UnattendedYastNetworkAdapter
 {
     param (
         [string]$Interfacename,
 
         [AutomatedLab.IPNetwork[]]$IpAddresses,
-		
+
         [AutomatedLab.IPAddress[]]$Gateways,
-		
+
         [AutomatedLab.IPAddress[]]$DnsServers,
 
         [string]$ConnectionSpecificDNSSuffix,
@@ -27,7 +27,7 @@ function Add-UnattendedYastNetworkAdapter
     }
 
     if ($DnsDomain)
-    {    
+    {
         $domain = $script:un.CreateElement('domain', $script:nsm.LookupNamespace('un'))
         $domain.InnerText = $DnsDomain
         $null = $dns.AppendChild($domain)
@@ -80,7 +80,7 @@ function Add-UnattendedYastNetworkAdapter
     $deviceNode.InnerText = $interface
     $firewallnode = $script:un.CreateElement('firewall', $script:nsm.LookupNamespace('un'))
     $firewallnode.InnerText = 'no'
-    
+
     $ipaddr = $script:un.CreateElement('ipaddr', $script:nsm.LookupNamespace('un'))
     $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
     $network = $script:un.CreateElement('network', $script:nsm.LookupNamespace('un'))
@@ -142,7 +142,7 @@ function Add-UnattendedYastNetworkAdapter
             $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
 
             $destinationNode.InnerText = 'default' # should work for both IPV4 and IPV6 routes
-            
+
             $devicenode.InnerText = $interface
             $gatewayNode.InnerText = $gateway.AddressAsString
             $netmask.InnerText = '-'

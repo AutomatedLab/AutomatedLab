@@ -58,7 +58,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -96,7 +96,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -113,7 +113,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -130,7 +130,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -300,7 +300,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
-    
+
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path C:\unattend.xml
@@ -314,7 +314,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -352,7 +352,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -390,7 +390,7 @@ function Disable-LabVMFirewallGroup
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
-    
+
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -415,7 +415,7 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
-            
+
             [string]$FileName,
 
             [bool]$NoDisplay,
@@ -560,7 +560,7 @@ function Get-LabInternetFile
 
     #TODO: This needs to go into config
     $offlineNode = $true
-    
+
     if (-not $FileName)
     {
         $internalUri = New-Object System.Uri($Uri)
@@ -571,9 +571,9 @@ function Get-LabInternetFile
             $PSBoundParameters.FileName = $FileName
         }
     }
-    
+
     $lab = Get-Lab -ErrorAction SilentlyContinue
-    
+
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
@@ -585,7 +585,7 @@ function Get-LabInternetFile
 
             $argumentList += if ($NoDisplay) {$true} else {$false}
             $argumentList += if ($Force) {$true} else {$false}
-        
+
             $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
         else
@@ -630,7 +630,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
-    
+
     param(
         [string]$Path = $global:labSources
     )
@@ -688,7 +688,7 @@ function Unblock-LabSources
 #region Set-LabVMDescription
 function Set-LabVMDescription
 {
-    
+
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,
@@ -821,10 +821,10 @@ function Update-LabSysinternalsTools
     if ((Get-Date) -gt $lastChecked)
     {
         Write-PSFMessage -Message 'Last check time is more then a week ago. Check web site for update.'
-        
+
         $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
         $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
-    
+
         try
         {
             Write-PSFMessage -Message 'Web page downloaded'

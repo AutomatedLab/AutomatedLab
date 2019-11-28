@@ -1,10 +1,10 @@
-# The is similar to the '05 SQL Server and client, domain joined.ps1' but installs an Exchange 2019 server instead
+﻿# The is similar to the '05 SQL Server and client, domain joined.ps1' but installs an Exchange 2019 server instead
 # of a SQL Server.
 
 # IMPORTANT NOTE: You must have Exchange 2019 ISO or CU already available. Microsoft has limited Exchange 2019 access to VL & MSDN
 # so it is not publicly available for download. Also note Exchange 2019 will only run on Windows 2019 Core or Desktop but not Nano
 
-New-LabDefinition -Name LabEx2019 -DefaultVirtualizationEngine HyperV 
+New-LabDefinition -Name LabEx2019 -DefaultVirtualizationEngine HyperV
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -18,7 +18,7 @@ $role = Get-LabPostInstallationActivity -CustomRole Exchange2019 -Properties @{ 
 Add-LabMachineDefinition -Name E1Ex1 -Memory 6GB -PostInstallationActivity $role
 
 Add-LabMachineDefinition -Name E1Client -Memory 2GB -OperatingSystem 'Windows 10 Enterprise'
-    
+
 Install-Lab
 
 Show-LabDeploymentSummary -Detailed

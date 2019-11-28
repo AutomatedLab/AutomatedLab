@@ -1,4 +1,4 @@
-<#
+﻿<#
         In this scenario AutomatedLab builds a lab inside a lab. Thanks to nested virtualization in Hyper-V and Azure,
         this can be done on a Windows Server 2016 or Windows 10 host machine.
         This lab contains:
@@ -36,7 +36,7 @@ $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name ALDC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
 
-Add-LabMachineDefinition -Name AL1 -Memory 12GB -Roles HyperV #-OperatingSystem 'Windows Server Standard' 
+Add-LabMachineDefinition -Name AL1 -Memory 12GB -Roles HyperV #-OperatingSystem 'Windows Server Standard'
 
 Add-LabMachineDefinition -Name ALServer1
 

@@ -1,4 +1,4 @@
-function Remove-LabRecipe
+﻿function Remove-LabRecipe
 {
     [CmdletBinding(SupportsShouldProcess)]
     param
@@ -18,12 +18,12 @@ function Remove-LabRecipe
     }
 
     process
-    {        
+    {
         if (-not $Name)
         {
             $Name = $Recipe.Name
         }
-        
+
         Get-ChildItem -File -Filter *.json -Path $recipePath | Where-Object -Property BaseName -eq $Name | Remove-Item
     }
 }

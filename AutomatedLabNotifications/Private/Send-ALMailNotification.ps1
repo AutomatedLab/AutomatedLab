@@ -1,4 +1,4 @@
-function Send-ALMailNotification
+﻿function Send-ALMailNotification
 {
     param
     (
@@ -32,6 +32,6 @@ function Send-ALMailNotification
         Subject = "AutomatedLab notification: $($lab.Name) $Activity"
     }
 
-    
+
     Send-MailMessage @mailParameters
 }

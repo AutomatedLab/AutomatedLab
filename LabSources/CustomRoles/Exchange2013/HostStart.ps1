@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
@@ -43,11 +43,11 @@ function Copy-ExchangeSources
         $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
         Write-ScreenInfo 'Done' -TaskEnd
     }
-    
+
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'" -TaskStart
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
     Write-ScreenInfo -Message 'Done' -TaskEnd
-   
+
     Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'" -TaskStart
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
     Write-ScreenInfo 'Done' -TaskEnd
@@ -59,11 +59,11 @@ function Copy-ExchangeSources
     }
     $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     Write-ScreenInfo 'Done' -TaskEnd
-    
+
     #distribute the sources to all exchange servers and the RootDC
     foreach ($vm in $vms)
     {
-        Write-ScreenInfo "Copying sources to VM '$vm'" -TaskStart    
+        Write-ScreenInfo "Copying sources to VM '$vm'" -TaskStart
         if ($vm.HostType -eq 'HyperV')
         {
             if (-not $script:useISO)
@@ -73,11 +73,11 @@ function Copy-ExchangeSources
 
             Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
             Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
-            Copy-LabFileItem -Path $vcredistInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm        
+            Copy-LabFileItem -Path $vcredistInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
         }
         Write-ScreenInfo 'Done' -TaskEnd
     }
-    
+
     if (-not $script:useISO)
     {
         Write-ScreenInfo 'Extracting Exchange Installation files on all machines' -TaskStart -NoNewLine
@@ -153,7 +153,7 @@ function Install-ExchangeRequirements
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
         if ($dotnetFrameworkVersion.Version -notcontains '4.7.2')
-        { 
+        {
             Write-ScreenInfo "Installing .net Framework 4.7.2 on '$machine'" -Type Verbose
             $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet471.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
@@ -169,9 +169,9 @@ function Install-ExchangeRequirements
         if (-not ($InstalledApps | Where-Object {$_.DisplayName -match [regex]::Escape("Microsoft Visual C++ 2013 Redistributable (x64)")}))
         {
             Write-ScreenInfo -Message "Installing Visual C++ 2013 Redistributables on machine '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:vcredistInstallFile.FileName)" -CommandLine '/Q' -AsJob -NoDisplay -AsScheduledJob -PassThru    
-        } 
-        else 
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:vcredistInstallFile.FileName)" -CommandLine '/Q' -AsJob -NoDisplay -AsScheduledJob -PassThru
+        }
+        else
         {
             Write-ScreenInfo "Microsoft Visual C++ 2013 Redistributable (x64) is already installed on '$machine'" -Type Verbose
         }
@@ -179,7 +179,7 @@ function Install-ExchangeRequirements
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     Write-ScreenInfo "Done"
-        
+
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
     Restart-LabVM -ComputerName $vms -Wait -ProgressIndicator 10 -NoDisplay
 
@@ -191,14 +191,14 @@ function Start-ExchangeInstallSequence
     param(
         [Parameter(Mandatory)]
         [string]$Activity,
-        
+
         [Parameter(Mandatory)]
         [string]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$CommandLine
     )
-    
+
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message "Starting activity '$Activity'" -TaskStart -NoNewLine
@@ -236,7 +236,7 @@ function Start-ExchangeInstallSequence
             Restart-LabVM -ComputerName $ComputerName -Wait -NoNewLine
             Start-Sleep -Seconds 30 #as the feature installation can trigger a 2nd reboot, wait for the machine after 30 seconds again
             Wait-LabVM -ComputerName $ComputerName
-            
+
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
@@ -286,9 +286,9 @@ function Start-ExchangeInstallSequence
     Write-ProgressIndicatorEnd
 
     Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
-    
+
     $result
-    
+
     Write-LogFunctionExit
 }
 
@@ -296,13 +296,13 @@ function Start-ExchangeInstallation
 {
     param (
         [switch]$All,
-        
+
         [switch]$AddAdRightsInRootDomain,
         [switch]$PrepareSchema,
         [switch]$PrepareAD,
         [switch]$PrepareAllDomains,
         [switch]$InstallExchange,
-        
+
         [switch]$CreateCheckPoints
     )
     if ($vm.DomainName -ne $schemaPrepVm.DomainName)
@@ -329,7 +329,7 @@ function Start-ExchangeInstallation
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
     }
-   
+
     #prepare all domains
     if ($PrepareAllDomains -or $All)
     {
@@ -344,7 +344,7 @@ function Start-ExchangeInstallation
         Get-LabVM -Role RootDC | ForEach-Object {
             Sync-LabActiveDirectory -ComputerName $_
         }
-    
+
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
         Restart-LabVM -ComputerName $schemaPrepVm -Wait -ProgressIndicator 10 -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 10 -NoNewLine
@@ -354,7 +354,7 @@ function Start-ExchangeInstallation
     if ($InstallExchange -or $All)
     {
         Write-ScreenInfo -Message "Installing Exchange Server 2013 on machine '$vm'" -TaskStart
-        
+
         #Actual Exchange Installation
         $commandLine = '/Mode:Install /Roles:ca,mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
 
@@ -368,10 +368,10 @@ function Start-ExchangeInstallation
         }
 
         $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
-        Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global 
-        
+        Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
+
         Write-ScreenInfo -Message "Finished installing Exchange Server 2013 on machine '$vm'" -TaskEnd
-    
+
         Write-ScreenInfo -Message "Restarting machines '$vm'" -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 15
         Write-ScreenInfo -Message 'Done'
@@ -387,10 +387,10 @@ Function Test-MailboxPath {
         [Parameter(Mandatory)]
         [ValidateSet('Mailbox','Log')]$Type
     )
-    
+
     <#
             Check that the mailbox path is valid (supports both log file paths and mailbox database paths).
-    
+
             Requirements:
             Database must be local to machine, no UNC paths - Both types
             File path must be fully qualified (include drive letter) - Mailbox only

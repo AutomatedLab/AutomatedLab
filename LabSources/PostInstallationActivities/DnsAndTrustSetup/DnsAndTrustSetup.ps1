@@ -5,13 +5,13 @@ function Get-Type
 	param(
     	[Parameter(Position=0,Mandatory=$true)]
 		[string] $GenericType,
-		
+
 		[Parameter(Position=1,Mandatory=$true)]
 		[string[]] $T
     )
 
 	$T = $T -as [type[]]
-	
+
 	try
 	{
 		$generic = [type]($GenericType + '`' + $T.Count)
@@ -154,7 +154,7 @@ foreach ($forwarder in $forwarders)
 {
     $targetMachine = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq $forwarder.Source }
     $masterServers = Get-LabVM -Role DC,RootDC,FirstChildDC | Where-Object { $_.DomainName -eq $forwarder.Destination }
-    
+
     $cmd = @"
         `$VerbosePreference = 'Continue'
         Write-Verbose "Creating a DNS forwarder on server '$(hostname)'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
@@ -203,7 +203,7 @@ foreach ($rootDc in $rootDcs)
 
             Write-Verbose 'Forest trust created'
 "@
-        
+
         Invoke-LabCommand -ComputerName $rootDc -ScriptBlock ([scriptblock]::Create($cmd))
     }
 }

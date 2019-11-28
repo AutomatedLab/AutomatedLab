@@ -1,4 +1,4 @@
-function Add-UnattendedRenameNetworkAdapters
+﻿function Add-UnattendedRenameNetworkAdapters
 {
     param
     (
@@ -10,7 +10,7 @@ function Add-UnattendedRenameNetworkAdapters
 		Write-Error 'No unattended file imported. Please use Import-UnattendedFile first'
 		return
 	}
-	
+
     if ($IsKickstart)
     {
         Add-UnattendedKickstartRenameNetworkAdapters
@@ -22,5 +22,5 @@ function Add-UnattendedRenameNetworkAdapters
     else
     {
         Add-UnattendedWindowsRenameNetworkAdapters
-    }    
+    }
 }

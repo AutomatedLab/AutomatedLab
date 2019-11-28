@@ -1,4 +1,4 @@
-#region Install-LWLabCAServers
+﻿#region Install-LWLabCAServers
 function Install-LWLabCAServers
 {
     param (
@@ -147,7 +147,7 @@ function Install-LWLabCAServers
     $caScriptBlock = {
 
         param ($param)
-        
+
         $param | Export-Clixml C:\DeployDebug\CaParams.xml
 
         #Make semi-sure that each install of CA server is not done at the same time
@@ -163,7 +163,7 @@ function Install-LWLabCAServers
         }
         #endregion
 
-        #region - Create CAPolicy file        
+        #region - Create CAPolicy file
         $caPolicyFileName = "$Env:Windir\CAPolicy.inf"
         if (-not (Test-Path -Path $caPolicyFileName))
         {

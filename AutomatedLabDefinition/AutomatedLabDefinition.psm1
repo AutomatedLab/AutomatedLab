@@ -894,7 +894,7 @@ function New-LabDefinition
     }
 
     $global:AL_CurrentLab = $script:lab
-    
+
     Register-LabArgumentCompleters
 
     Write-LogFunctionExit
@@ -1718,7 +1718,7 @@ function Add-LabDiskDefinition
 
     Write-LogFunctionEntry
 
-    if ($script:disks -eq $null)
+    if ($null -eq $script:disks)
     {
         $errorMessage = "Create a new lab first using 'New-LabDefinition' before adding disks"
         Write-Error $errorMessage
@@ -2024,7 +2024,7 @@ function Add-LabMachineDefinition
 
         if ($global:labNamePrefix) { $Name = "$global:labNamePrefix$Name" }
 
-        if ($script:machines -eq $null)
+        if ($null -eq $script:machines)
         {
             $errorMessage = "Create a new lab first using 'New-LabDefinition' before adding machines"
             Write-Error $errorMessage
@@ -2434,7 +2434,7 @@ function Add-LabMachineDefinition
                                     Write-PSFMessage -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
                                 }
                             }
-                            else 
+                            else
                             {
                                 if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
                                 {

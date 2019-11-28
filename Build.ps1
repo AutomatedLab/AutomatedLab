@@ -13,19 +13,19 @@
         {
             $module = Get-Module -Name $moduleName -ListAvailable
             Write-Verbose -Message "Resolving Module $($moduleName)"
-            
-            if ($module) 
-            {                
+
+            if ($module)
+            {
                 $version = $module | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
                 $galleryVersion = Find-Module -Name $moduleName -Repository PSGallery | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
 
                 if ($version -lt $galleryVersion)
                 {
-                    
+
                     if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') { Set-PSRepository -Name PSGallery -InstallationPolicy Trusted }
-                    
+
                     Write-Verbose -Message "$($moduleName) Installed Version [$($version.ToString())] is outdated. Installing Gallery Version [$($galleryVersion.ToString())]"
-                    
+
                     Install-Module -Name $moduleName -Force -SkipPublisherCheck -AllowClobber
                     Import-Module -Name $moduleName -Force -RequiredVersion $galleryVersion
                 }
@@ -75,7 +75,7 @@ if (-not ($lastestVersion.Version -ge '1.6.0'))
     Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
     $m = Import-Module -Name PowerShellGet -PassThru
     Write-Host "New version of 'PowerShellGet' is not $($m.Version)"
-    
+
 }
 
 Invoke-psake .\psake.ps1
