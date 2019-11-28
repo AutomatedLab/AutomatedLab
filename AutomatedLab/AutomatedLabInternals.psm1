@@ -22,6 +22,7 @@ function Reset-AutomatedLab
 #region Test-FileHashes
 function Test-FileHashes
 {
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (
@@ -37,14 +38,14 @@ function Test-FileHashes
     {
         if (-not (Test-Path $File.path.replace('<MODULEPATH>', $ModulePath)))
         {
-            "'$File' is missing"
+            Write-PSFMessage -Level Host -Message "'$File' is missing"
             $Issues = $True
         }
         else
         {
             if ((Get-FileHash -Path $File.path.replace('<MODULEPATH>', $ModulePath)).hash -ne $File.Hash)
             {
-                "'$File.Path' has wrong hash and is thereby not the file you think it is"
+                Write-PSFMessage -Level Host -Message "'$File.Path' has wrong hash and is thereby not the file you think it is"
                 $Issues = $True
             }
         }
@@ -71,7 +72,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
-    
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (

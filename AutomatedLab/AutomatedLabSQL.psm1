@@ -330,7 +330,7 @@ GO
                 if ($installBatch -lt $totalBatches -and ($machinesBatch | Where-Object HostType -eq 'HyperV'))
                 {
                     Write-ScreenInfo -Message "Saving machines '$($machinesBatch -join ', ')' as these are not needed right now" -Type Warning
-                    Save-VM -Name $machinesBatch
+                    Save-LabVM -Name $machinesBatch
                 }
             }
 
@@ -706,68 +706,7 @@ function New-LabSqlAccount
 
     if ($RoleProperties.ContainsKey('ConfigurationFile'))
     {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
-
-        if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq SQLSvcAccount).Value
-            $password = ($config | Where-Object Key -eq SQLSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq AgtSvcAccount) -and ($config | Where-Object Key -eq AgtSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq AgtSvcAccount).Value
-            $password = ($config | Where-Object Key -eq AgtSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq RsSvcAccount) -and ($config | Where-Object Key -eq RsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq RsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq RsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq AsSvcAccount) -and ($config | Where-Object Key -eq AsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq AsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq AsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq IsSvcAccount) -and ($config | Where-Object Key -eq IsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq IsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq IsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq SqlSysAdminAccounts))
-        {
-            $group = ($config | Where-Object Key -eq SqlSysAdminAccounts).Value
-            $groups += $group.Substring(1, $group.Length - 2)
-        }
-    }
-
-    if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))
-    {
-        $groups += $RoleProperties['SqlSysAdminAccounts']
-    }
-
-    if ($RoleProperties.ContainsKey('ConfigurationFile'))
-    {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')} | ConvertFrom-StringData
 
         if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
         {

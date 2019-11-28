@@ -23,7 +23,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment } 
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -47,7 +47,7 @@ function New-LabVM
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
         }
-        
+
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
 
         if ($machine.HostType -eq 'HyperV')
@@ -159,7 +159,7 @@ function Start-LabVM
         [switch]$NoNewline,
 
         [int]$DelayBetweenComputers = 0,
-        
+
         [int]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StartLabMachine_Online),
 
         [int]$StartNextMachines,
@@ -427,7 +427,7 @@ function Restart-LabVM
         [string[]]$ComputerName,
 
         [switch]$Wait,
-        
+
         [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown),
 
         [ValidateRange(0, 300)]
@@ -477,7 +477,7 @@ function Stop-LabVM
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown),
 
         [Parameter(ParameterSetName = 'All')]
@@ -594,7 +594,7 @@ function Stop-LabVM2
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-        
+
         [int]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown)
     )
 
@@ -635,14 +635,14 @@ function Wait-LabVM
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
@@ -834,12 +834,12 @@ function Wait-LabVMRestart
         [string[]]$ComputerName,
 
         [switch]$DoNotUseCredSsp,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
-        
+
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
 
         [switch]$NoNewLine,
@@ -905,12 +905,12 @@ function Wait-LabVMShutdown
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [switch]$NoNewLine
     )
 
@@ -1593,7 +1593,7 @@ function Set-VMUacStatus
 
 function Get-VMUacStatus
 {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
     )
@@ -1947,6 +1947,7 @@ function Disable-LabAutoLogon
 #region Test-LabAutoLogon
 function Test-LabAutoLogon
 {
+    [OutputType([System.Collections.Hashtable])]
     [CmdletBinding()]
     param
     (
@@ -2130,7 +2131,7 @@ function Checkpoint-LabVM
         'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
         'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
-    }    
+    }
 
     Write-LogFunctionExit
 }
@@ -2251,7 +2252,7 @@ function Remove-LabVMSnapshot
     $parameters = @{
         ComputerName = $machines
     }
-    
+
     if ($SnapshotName)
     {
         $parameters.SnapshotName = $SnapshotName
@@ -2317,7 +2318,7 @@ function Get-LabVMSnapshot
         VMName = $machines
         ErrorAction = 'SilentlyContinue'
     }
-    
+
     if ($SnapshotName)
     {
         $parameters.Name = $SnapshotName

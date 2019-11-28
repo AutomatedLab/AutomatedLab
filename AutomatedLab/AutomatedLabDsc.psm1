@@ -1,7 +1,6 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -267,7 +266,6 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -470,7 +468,7 @@ function Invoke-LabDscConfiguration
 
         } -ArgumentList $Wait
     }
-    
+
     Remove-Item -Path $outputPath -Recurse -Force
 
     Write-LogFunctionExit

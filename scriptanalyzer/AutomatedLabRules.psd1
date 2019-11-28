@@ -1,6 +1,6 @@
 @{
     #Severity       = @('Error', 'Warning')
-    'ExcludeRules' = @('PSUseDeclaredVarsMoreThanAssignments', 'PSAvoidGlobalVars', 'PSAvoidUsingUsernameAndPasswordParams', 'PSAvoidUsingWMICmdlet', 'PSAvoidUsingPlainTextForPassword', 'PSAvoidUsingEmptyCatchBlock')
+    'ExcludeRules' = @('PSUseDeclaredVarsMoreThanAssignments', 'PSAvoidGlobalVars', 'PSAvoidUsingUsernameAndPasswordParams', 'PSAvoidUsingWMICmdlet', 'PSAvoidUsingPlainTextForPassword', 'PSAvoidUsingEmptyCatchBlock', 'PSUseShouldProcessForStateChangingFunctions', 'PSAvoidUsingInvokeExpression')
     'Rules'        = @{
         PSUseCompatibleCommmands = @{
             Enable = $true

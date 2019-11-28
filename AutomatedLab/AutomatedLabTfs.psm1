@@ -60,7 +60,7 @@ function Install-LabTeamFoundationEnvironment
             throw "No logon session available for $($machine.InstallationUser.UserName). Cannot continue with TFS setup for $machine"
         }
 
-        Mount-LabIsoImage -ComputerName $machine -IsoPath $isoPath -SupressOutput      
+        Mount-LabIsoImage -ComputerName $machine -IsoPath $isoPath -SupressOutput
 
         $jobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $startTime = (Get-Date)
@@ -74,7 +74,7 @@ function Install-LabTeamFoundationEnvironment
             {
                 $executable = (Get-ChildItem -Path $dvdDrive -Filter *.exe).FullName
                 $installation = Start-Process -FilePath $executable -ArgumentList '/quiet' -Wait -LoadUserProfile -PassThru
-                      
+
                 if ($installation.ExitCode -notin 0, 3010)
                 {
                     throw "TFS Setup failed with exit code $($installation.ExitCode)"
@@ -93,7 +93,7 @@ function Install-LabTeamFoundationEnvironment
     try { [ServerCertificateValidationCallback]::Ignore() } catch { }
 
     if ($tfsMachines)
-    {        
+    {
         Wait-LWLabJob -Job $jobs
         Restart-LabVm -ComputerName $tfsMachines -Wait
         Install-LabTeamFoundationServer
@@ -110,14 +110,13 @@ function Install-LabTeamFoundationServer
 
     $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object SkipDeployment -eq $false | Sort-Object { ($_.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps').Name } -Descending
     if (-not $tfsMachines) { return }
-    
-  
+
     # Assign unassigned build workers to our most current TFS machine
     Get-LabVm -Role TfsBuildWorker | Where-Object {
         -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
     } | ForEach-Object {
         ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.Add('TfsServer', $tfsMachines[0].Name)
-    }  
+    }
 
     $jobs = Install-LabWindowsFeature -ComputerName $tfsMachines -FeatureName Web-Mgmt-Tools -AsJob
     Write-ScreenInfo -Message 'Waiting for installation of IIS web admin tools to complete' -NoNewline
@@ -149,7 +148,7 @@ function Install-LabTeamFoundationServer
         $databaseLabel = "TFS$count" # Increment database label in case we deploy multiple TFS
         [string]$machineName = $machine
         $count++
-  
+
         if ($role.Properties.ContainsKey('InitialCollection'))
         {
             $initialCollection = $role.Properties['InitialCollection']
@@ -206,10 +205,10 @@ function Install-LabTeamFoundationServer
 
             # Create unattend file with fitting parameters and replace all we can find
             [void] (Start-Process -FilePath $tfsConfigPath -ArgumentList 'unattend /create /type:Standard /unattendfile:C:\DeployDebug\TfsConfig.ini' -NoNewWindow -Wait)
-          
+
             $config = (Get-Item -Path C:\DeployDebug\TfsConfig.ini -ErrorAction Stop).FullName
             $content = [System.IO.File]::ReadAllText($config)
-         
+
             $content = $content -replace 'SqlInstance=.+', ('SqlInstance={0}' -f $sqlServer)
             $content = $content -replace 'DatabaseLabel=.+', ('DatabaseLabel={0}' -f $databaseLabel)
             $content = $content -replace 'UrlHostNameAlias=.+', ('UrlHostNameAlias={0}' -f $machineName)
@@ -232,13 +231,13 @@ function Install-LabTeamFoundationServer
                 $binding = Get-Website -Name 'Team Foundation Server' | Get-WebBinding
                 $binding.AddSslCertificate($cert.Thumbprint, "my")
             }
-          
+
             $content = $content -replace 'webSiteVDirName=.+', 'webSiteVDirName='
             $content = $content -replace 'CollectionName=.+', ('CollectionName={0}' -f $initialCollection)
             $content = $content -replace 'CollectionDescription=.+', 'CollectionDescription=Built by AutomatedLab, your friendly lab automation solution'
             $content = $content -replace 'WebSitePort=.+', ('WebSitePort={0}' -f $tfsPort) # Plain TFS 2015
             $content = $content -replace 'UrlHostNameAlias=.+', ('UrlHostNameAlias={0}' -f $machineName) # Plain TFS 2015
-          
+
             [System.IO.File]::WriteAllText($config, $content)
 
             $command = "unattend /unattendfile:`"$config`" /continue"
@@ -257,11 +256,11 @@ function Install-LabTeamFoundationServer
     }
 
     Write-ScreenInfo -Type Verbose -Message "Waiting for the installation of TFS on $tfsMachines to finish."
-    
+
     Wait-LWLabJob -Job $installationJobs
 
     foreach ($job in $installationJobs)
-    {        
+    {
         $resultVariable = New-Variable -Name ("AL_TFSServer_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
         $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
@@ -336,7 +335,7 @@ function Install-LabBuildWorker
         {
             $tfsPort = (Get-LabAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsServer -ErrorAction SilentlyContinue).Port
             $machineName = $tfsServer.AzureConnectionInfo.DnsName
-            
+
             if (-not $tfsPort)
             {
                 Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue installing build worker.'
@@ -352,7 +351,7 @@ function Install-LabBuildWorker
         else
         {
             [string]::Empty
-        }        
+        }
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
@@ -417,7 +416,7 @@ function Install-LabBuildWorker
     Wait-LWLabJob -Job $installationJobs
 
     foreach ($job in $installationJobs)
-    {        
+    {
         $resultVariable = New-Variable -Name ("AL_TFSBuildWorker_$([guid]::NewGuid().Guid)") -Scope Global -PassThru
         Write-ScreenInfo -Type Verbose -Message "The job output of $job can be retrieved with `${$($resultVariable.Name)}"
         $resultVariable.Value = $job | Receive-Job -AutoRemoveJob -Wait
@@ -442,7 +441,7 @@ function New-LabReleasePipeline
         [Parameter(Mandatory, ParameterSetName = 'LocalSource')]
         [string]
         $SourcePath,
-      
+
         [ValidateSet('Git', 'FileCopy')]
         [string]$CodeUploadMethod = 'Git',
 
@@ -455,12 +454,12 @@ function New-LabReleasePipeline
         [hashtable[]]
         $ReleaseSteps
     )
-  
+
     if (-not (Get-Lab -ErrorAction SilentlyContinue))
     {
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
-  
+
     if ($CodeUploadMethod -eq 'Git' -and -not $SourceRepository)
     {
         throw "Using the code upload method 'Git' requires a source repository to be defined."
@@ -478,12 +477,12 @@ function New-LabReleasePipeline
     if (-not $tfsVm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
 
     $localLabSources = Get-LabSourcesLocationInternal -Local
-  
+
     $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = $originalPort = 8080
     $tfsInstance = $tfsVm.FQDN
-  
+
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
@@ -516,7 +515,7 @@ function New-LabReleasePipeline
 
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
-  
+
     $gitBinary = if (Get-Command git) { (Get-Command git).Source } elseif (Test-Path -Path $localLabSources\Tools\git.exe) { "$localLabSources\Tools\git.exe" }
     if (-not $gitBinary)
     {
@@ -558,7 +557,7 @@ function New-LabReleasePipeline
     $project = New-TfsProject @defaultParam -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
     $repository = Get-TfsGitRepository @defaultParam
     $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $tfsPort
-  
+
     if ($SourceRepository)
     {
         if (-not $gitBinary)
@@ -566,7 +565,7 @@ function New-LabReleasePipeline
             Write-Error "Git.exe could not be located, cannot clone repository from '$SourceRepository'"
             return
         }
-      
+
         $repoUrl = $repository.remoteUrl.Insert($repository.remoteUrl.IndexOf('/') + 2, '{0}:{1}@')
         $repoUrl = $repoUrl -f $credential.GetNetworkCredential().UserName.ToLower(), $credential.GetNetworkCredential().Password
         Write-ScreenInfo -Type Verbose -Message "Generated repo url $repoUrl"
@@ -609,7 +608,7 @@ function New-LabReleasePipeline
             {
                 Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
             }
-        }      
+        }
         else
         {
             Write-ScreenInfo -Type Verbose -Message ('Cloning {0} in {1}.' -f $SourceRepository, $repositoryPath)
@@ -617,7 +616,7 @@ function New-LabReleasePipeline
             {
                 $retries = 3
                 $errorFile = [System.IO.Path]::GetTempFileName()
-              
+
                 $cloneResult = Start-Process -FilePath $gitBinary -ArgumentList @('clone', $SourceRepository, $repositoryPath, '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
                 while ($cloneResult.ExitCode -ne 0 -and $retries -gt 0)
                 {
@@ -640,12 +639,12 @@ function New-LabReleasePipeline
 
         Pop-Location
     }
-  
+
     if ($CodeUploadMethod -eq 'Git')
     {
         Push-Location
         Set-Location -Path $repositoryPath
-      
+
         try
         {
             $errorFile = [System.IO.Path]::GetTempFileName()
@@ -673,7 +672,7 @@ function New-LabReleasePipeline
                 {
                     $retries = 3
                     $errorFile = [System.IO.Path]::GetTempFileName()
-          
+
                     $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
                     while ($pushResult.ExitCode -ne 0 -and $retries -gt 0)
                     {
@@ -682,7 +681,7 @@ function New-LabReleasePipeline
                         $pushResult = Start-Process -FilePath $gitBinary -ArgumentList @('-c', 'http.sslVerify=false', 'push', 'tfs', '--all', '--quiet') -Wait -NoNewWindow -PassThru -RedirectStandardError $errorFile
                         $retries--
                     }
-              
+
                     if ($pushResult.ExitCode -ne 0)
                     {
                         Write-Error "Could not push to $repoUrl. Git returned: $(Get-Content -Path $errorFile)"
@@ -694,25 +693,25 @@ function New-LabReleasePipeline
         {
             Remove-Item -Path $errorFile -Force -ErrorAction SilentlyContinue
         }
-      
+
         Pop-Location
-      
+
         Write-ScreenInfo -Type Verbose -Message ('Pushed code from {0} to remote {1}' -f $SourceRepository, $repoUrl)
     }
     else
     {
         $remoteGitBinary = Invoke-LabCommand -ActivityName 'Test Git availibility' -ComputerName $tfsVm -ScriptBlock {
-        
+
             if (Get-Command git) { (Get-Command git).Source } elseif (Test-Path -Path $localLabSources\Tools\git.exe) { "$localLabSources\Tools\git.exe" }
-            
+
         } -PassThru
-        
+
         if (-not $remoteGitBinary)
         {
             Write-ScreenInfo -Message "Git is not installed on '$tfsVm'. We are not be able to push any code to the remote repository and cannot proceed. Please install Git on '$tfsVm'"
             return
         }
-      
+
         if ($repositoryPath)
         {
             Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
@@ -721,16 +720,16 @@ function New-LabReleasePipeline
         {
             Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
         }
-      
+
         Invoke-LabCommand -ActivityName 'Push code to TFS/AZDevOps' -ComputerName $tfsVm -ScriptBlock {
 
             Set-Location -Path "C:\$ProjectName.temp\$ProjectName"
-          
+
             git remote add tfs $repository.remoteUrl
- 
+
             $pattern = '(?>remotes\/origin\/)(?<BranchName>[\w\/]+)'
             $branches = git branch -a | Where-Object { $_ -cnotlike '*HEAD*' -and -not $_.StartsWith('*') }
- 
+
             foreach ($branch in $branches)
             {
                 if ($branch -match $pattern)
@@ -744,23 +743,23 @@ function New-LabReleasePipeline
                     }
                 }
             }
- 
+
             Set-Location -Path C:\
             Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
         } -Variable (Get-Variable -Name repository, ProjectName)
     }
-    
+
     if (-not ($role.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         Invoke-LabCommand -ActivityName 'Clone local repo from TFS' -ComputerName $tfsVm -ScriptBlock {
-        
+
             if (-not (Test-Path -Path C:\Git))
             {
                 New-Item -ItemType Directory -Path C:\Git | Out-Null
             }
             Set-Location -Path C:\Git
             git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
-            
+
         } -Variable (Get-Variable -Name repository, ProjectName)
     }
 
@@ -771,7 +770,7 @@ function New-LabReleasePipeline
         $buildParameters.BuildTasks = $BuildSteps
         New-TfsBuildDefinition @buildParameters
     }
-  
+
     if ($ReleaseSteps.Count -gt 0)
     {
         $releaseParameters = $defaultParam.Clone()
@@ -803,12 +802,12 @@ function Get-LabBuildStep
     }
 
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
-  
+
     $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
-  
+
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
@@ -870,7 +869,7 @@ function Get-LabBuildStep
         Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
         return
     }
-  
+
     return (Get-TfsBuildStep @defaultParam)
 }
 
@@ -896,12 +895,12 @@ function Get-LabReleaseStep
     }
 
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
-  
+
     $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
-  
+
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
@@ -964,7 +963,7 @@ function Get-LabReleaseStep
         Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
         return
     }
-  
+
     return (Get-TfsReleaseStep @defaultParam)
 }
 
@@ -992,13 +991,13 @@ function Get-LabTfsUri
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
 
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
-  
+
     $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
     $tfsInstance = $tfsvm.FQDN
     $credential = $tfsVm.GetCredential((Get-Lab))
-  
+
     if ($role.Properties.ContainsKey('Port'))
     {
         $tfsPort = $role.Properties['Port']
@@ -1013,7 +1012,7 @@ function Get-LabTfsUri
             Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot open TFS site.'
             return
         }
-      
+
         $tfsPort = $loadbalancedPort
         $tfsInstance = $tfsvm.AzureConnectionInfo.DnsName
     }
@@ -1053,14 +1052,14 @@ function Test-LabTfsEnvironment
     $lab = Get-Lab -ErrorAction Stop
     $machine = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object -Property Name -eq $ComputerName
     $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where-Object Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
-    
+
     if (-not $machine) { return }
 
     if (-not $script:tfsDeploymentStatus)
     {
         $script:tfsDeploymentStatus = @{ }
     }
-    
+
     if (-not $script:tfsDeploymentStatus.ContainsKey($ComputerName))
     {
         $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $false; BuildWorker = @{ } }
@@ -1081,7 +1080,7 @@ function Test-LabTfsEnvironment
         $tfsInstance = $machine.FQDN
         $credential = $machine.GetCredential((Get-Lab))
         $useSsl = $machine.InternalNotes.ContainsKey('CertificateThumbprint')
-  
+
         if ($role.Properties.ContainsKey('Port'))
         {
             $tfsPort = $role.Properties['Port']
@@ -1113,7 +1112,7 @@ function Test-LabTfsEnvironment
             ErrorAction    = 'Stop'
             ErrorVariable  = 'apiErr'
         }
-    
+
         $defaultParam.ApiVersion = switch ($role.Name)
         {
             'Tfs2015' { '2.0'; break }
@@ -1121,7 +1120,7 @@ function Test-LabTfsEnvironment
             { $_ -match '2018|AzDevOps' } { '4.0'; break }
             default { '2.0' }
         }
-    
+
         if ($accessToken)
         {
             $defaultParam.PersonalAccessToken = $accessToken

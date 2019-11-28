@@ -20,9 +20,9 @@ function Test-LabAzureModuleAvailability
         ';'
     }
 
-    $paths = Join-Path -Path ($env:PSModulePath -split $split | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    $paths = Join-Path -Path ($env:PSModulePath -split $split | Where-Object -FilterScript {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
 
-    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue |
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1
 
@@ -461,6 +461,9 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
 function Get-LabAzureSubscription
 {
+    [CmdletBinding()]
+    param ()
+
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
@@ -492,7 +495,7 @@ function Get-LabAzureLocation
 
         [switch]$List
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -518,7 +521,7 @@ function Get-LabAzureLocation
         }
 
         $locationUrls = Get-LabConfigurationItem -Name AzureLocationsUrls
-        
+
         foreach ($location in $azureLocations)
         {
             if ($locationUrls."$($location.DisplayName)")
@@ -596,7 +599,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
-    
+
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -668,7 +671,7 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -735,7 +738,7 @@ function Import-LabAzureCertificate
 {
     [CmdletBinding()]
     param ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     throw New-Object System.NotImplementedException
@@ -836,7 +839,7 @@ function New-LabAzureRmResourceGroup
 
         [switch]$PassThru
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -933,7 +936,7 @@ function Get-LabAzureResourceGroup
         [Parameter(Position = 0, ParameterSetName = 'ByLab')]
         [switch]$CurrentLab
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -955,7 +958,6 @@ function Get-LabAzureResourceGroup
         {
             $result = $script:lab.AzureSettings.DefaultResourceGroup
         }
-        
         $result
     }
     else
@@ -977,7 +979,7 @@ function New-LabAzureLabSourcesStorage
 
         [switch]$NoDisplay
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -1036,7 +1038,7 @@ function Get-LabAzureLabSourcesStorage
     [CmdletBinding()]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -1063,9 +1065,10 @@ function Get-LabAzureLabSourcesStorage
 
 function Test-LabAzureLabSourcesStorage
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
@@ -1088,7 +1091,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [Parameter(Mandatory)]
         [string]$Path
     )
-    
+
     if (-not (Test-LabHostConnected)) { return $false }
 
     try
@@ -1111,7 +1114,7 @@ function Remove-LabAzureLabSourcesStorage
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1148,7 +1151,7 @@ function Sync-LabAzureLabSources
         [string]
         $Filter
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1289,7 +1292,7 @@ function Get-LabAzureLabSourcesContent
         [switch]
         $Directory
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureShare = Get-AzStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
@@ -1325,7 +1328,7 @@ function Get-LabAzureLabSourcesContentRecursive
     (
         $StorageContext
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $content = @()
@@ -1355,7 +1358,7 @@ function Test-LabAzureSubscription
 {
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     try
@@ -1375,7 +1378,7 @@ function Get-LabAzureAvailableRoleSize
         [Parameter(Mandatory)]
         [string]$Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
@@ -1401,7 +1404,7 @@ function Get-LabAzureAvailableSku
         [string]
         $Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     # Server
