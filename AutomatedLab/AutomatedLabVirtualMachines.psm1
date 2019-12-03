@@ -2287,3 +2287,65 @@ function Get-LabVMSnapshot
     Write-LogFunctionExit
 }
 #endregion
+
+#region Auto-shutdown
+function Enable-LabMachineAutoShutdown
+{
+    [CmdletBinding()]
+    param
+    (
+        [AutomatedLab.Machine]
+        $ComputerName,
+
+        [TimeSpan]
+        $Time
+    )
+
+    $lab = Get-Lab -ErrorAction Stop
+
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'Azure' {Enable-LWAzureAutoShutdown @PSBoundParameters -Wait}
+        'HyperV' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on HyperV"}
+        'VMWare' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on VMWare"}
+    }
+}
+
+function Disable-LabMachineAutoShutdown
+{
+    [CmdletBinding()]
+    param
+    (
+        [AutomatedLab.Machine]
+        $ComputerName,
+
+        [TimeSpan]
+        $Time
+    )
+
+    $lab = Get-Lab -ErrorAction Stop
+
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'Azure' {Disable-LWAzureAutoShutdown @PSBoundParameters -Wait}
+        'HyperV' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on HyperV"}
+        'VMWare' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on VMWare"}
+    }
+}
+
+function Get-LabMachineAutoShutdown
+{
+    [CmdletBinding()]
+    param
+    ( )
+
+    $lab = Get-Lab -ErrorAction Stop
+
+    switch ($lab.DefaultVirtualizationEngine)
+    {
+        'Azure' {Get-LWAzureAutoShutdown}
+        'HyperV' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on HyperV"}
+        'VMWare' {Write-ScreenInfo -Type Warning -Message "No auto-shutdown on VMWare"}
+    }
+}
+#endregion
