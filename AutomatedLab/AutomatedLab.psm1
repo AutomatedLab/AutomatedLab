@@ -1138,7 +1138,9 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name
+        [string]$Name,
+        
+        [switch]$RemoveExternalSwitches
     )
 
     Write-LogFunctionEntry
@@ -1263,7 +1265,7 @@ function Remove-Lab
         }
 
         Write-ScreenInfo -Message 'Removing virtual networks'
-        Remove-LabNetworkSwitches
+        Remove-LabNetworkSwitches -RemoveExternalSwitches:$RemoveExternalSwitches
 
         if ($Script:data.LabPath)
         {
