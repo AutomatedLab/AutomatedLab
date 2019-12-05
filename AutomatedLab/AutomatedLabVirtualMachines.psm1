@@ -1867,31 +1867,31 @@ function Enable-LabAutoLogon
 
     Write-PSFMessage -Message "Enabling autologon on $($ComputerName.Count) machines"
 
-    $Machines = Get-LabVm @PSBoundParameters
+    $machines = Get-LabVm @PSBoundParameters
 
-    foreach ( $Machine in $Machines)
+    foreach ($machine in $machines)
     {
-        $InvokeParameters = @{
-            Username = $Machine.InstallationUser.UserName
-            Password = $Machine.InstallationUser.Password
+        $invokeParameters = @{
+            Username = $machine.InstallationUser.UserName
+            Password = $machine.InstallationUser.Password
         }
 
-        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        if ($machine.IsDomainJoined -and $machine.Roles.Name -in 'RootDC', 'FirstChildDC', 'DC')
         {
-            $invokeParameters['DomainName'] = $Machine.DomainName
+            $invokeParameters['DomainName'] = $machine.DomainName
         }
         else
         {
-            $invokeParameters['DomainName'] = $Machine.Name
+            $invokeParameters['DomainName'] = $machine.Name
         }
 
-        Invoke-LabCommand -ActivityName "Enabling AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+        Invoke-LabCommand -ActivityName "Enabling AutoLogon on $($machine.Name)" -ComputerName $machine.Name -ScriptBlock {
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 1 -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoLogonCount -Value 9999 -Type DWORD -Force
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $InvokeParameters.DomainName -Type String -Force
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $InvokeParameters.UserName -Type String -Force
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $InvokeParameters.Password -Type String -Force
-        } -Variable (Get-Variable InvokeParameters) -NoDisplay
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $invokeParameters.DomainName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $invokeParameters.UserName -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $invokeParameters.Password -Type String -Force
+        } -Variable (Get-Variable invokeParameters) -NoDisplay
     }
 }
 #endregion
@@ -1931,26 +1931,26 @@ function Test-LabAutoLogon
 
     Write-PSFMessage -Message "Testing autologon on $($ComputerName.Count) machines"
 
-    $Machines = Get-LabVM @PSBoundParameters
+    $machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
 
-    foreach ($Machine in $Machines)
+    foreach ($machine in $machines)
     {
         $parameters = @{
-            Username = $Machine.InstallationUser.UserName
-            Password = $Machine.InstallationUser.Password
+            Username = $machine.InstallationUser.UserName
+            Password = $machine.InstallationUser.Password
         }
 
-        if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
+        if ($machine.IsDomainJoined -and $machine.Roles.Name -in 'RootDC', 'FirstChildDC', 'DC')
         {
-            $parameters['DomainName'] = $Machine.DomainName
+            $parameters['DomainName'] = $machine.DomainName
         }
         else
         {
-            $parameters['DomainName'] = $Machine.Name
+            $parameters['DomainName'] = $machine.Name
         }
 
-        $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($Machine.Name)" -ComputerName $Machine.Name -ScriptBlock {
+        $settings = Invoke-LabCommand -ActivityName "Testing AutoLogon on $($machine.Name)" -ComputerName $machine.Name -ScriptBlock {
             $values = @{}
             $values['AutoAdminLogon'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).AutoAdminLogon } catch { }
             $values['DefaultDomainName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultDomainName } catch { }
@@ -1967,26 +1967,20 @@ function Test-LabAutoLogon
             $values
         } -PassThru -NoDisplay
 
-        Write-PSFMessage -Message ('Encountered the following values on {0}:{1}' -f $Machine.Name, ($settings | Out-String))
+        Write-PSFMessage -Message ('Encountered the following values on {0}:{1}' -f $machine.Name, ($settings | Out-String))
 
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
             $settings.DefaultUserName -ne $parameters.Username -or
-        $settings.DefaultPassword -ne $parameters.Password)
+            $settings.DefaultPassword -ne $parameters.Password)
         {
-            $returnValues[$Machine.Name] = $false
+            $returnValues[$machine.Name] = $false
             continue
         }
 
         $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
 
-        if ( $settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
-        {
-            $returnValues[$Machine.Name] = $false
-            continue
-        }
-
-        $returnValues[$Machine.Name] = $true
+        $returnValues[$machine.Name] = $true
     }
 
     return $returnValues
