@@ -698,6 +698,7 @@ function Install-Lab
         [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$FailoverCluster,
+        [switch]$FileServer,
         [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
@@ -932,6 +933,14 @@ function Install-Lab
         Write-ScreenInfo -Message 'Configuring DNS forwarding and AD trusts' -TaskStart
         Install-LabDnsForwarder
         Install-LabADDSTrust
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+    
+    if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
+    {
+        Write-ScreenInfo -Message 'Installing File Servers' -TaskStart
+        Install-LabFileServers -CreateCheckPoints:$CreateCheckPoints
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1665,6 +1674,58 @@ function Install-LabWebServers
     Write-LogFunctionExit
 }
 #endregion Install-LabWebServers
+
+#region Install-LabFileServers
+function Install-LabFileServers
+{
+    
+    [cmdletBinding()]
+    param ([switch]$CreateCheckPoints)
+
+    Write-LogFunctionEntry
+
+    $roleName = [AutomatedLab.Roles]::FileServer
+
+    if (-not (Get-LabVM))
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+
+    $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
+    if (-not $machines)
+    {
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
+        Write-LogFunctionExit
+        return
+    }
+
+    Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
+    Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 30
+
+    Write-ScreenInfo -Message 'Waiting for Web Server role to complete installation' -NoNewLine
+
+    $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
+    
+    $jobs = @()
+    $jobs += Install-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -IncludeManagementTools -AsJob -PassThru -NoDisplay
+
+    Start-LabVM -StartNextMachines 1 -NoNewline
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
+    
+    Write-ScreenInfo -Message "Restarting $roleName machines..." -NoNewLine
+    Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+    Write-ScreenInfo -Message done.
+
+    if ($CreateCheckPoints)
+    {
+        Checkpoint-LabVM -ComputerName $machines -SnapshotName "Post '$roleName' Installation"
+    }
+
+    Write-LogFunctionExit
+}
+#endregion Install-LabFileServers
 
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
@@ -3648,11 +3709,11 @@ function Set-LabInstallationCredential
         if ($null -ne $Password -and $checks -contains $false)
         {
             throw "Passwords for Azure VM administrator have to:
-            Be at least 8 characters long
-            Have lower characters
-            Have upper characters
-            Have a digit
-            Have a special character (Regex match [\W_])
+                Be at least 8 characters long
+                Have lower characters
+                Have upper characters
+                Have a digit
+                Have a special character (Regex match [\W_])
             "
         }
     }
