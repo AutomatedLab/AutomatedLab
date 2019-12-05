@@ -53,11 +53,11 @@ function Copy-ExchangeSources
     Write-ScreenInfo 'Done' -TaskEnd
 
     Write-ScreenInfo -Message "Downloading Visual C++ Redistributables from '$vcRedistDownloadLink'" -TaskStart
-    if (-not (Test-Path -LiteralPath "$downloadTargetFolder\VC2013Redist"))
+    if (-not (Test-Path -LiteralPath $downloadTargetFolder))
     {
-        New-Item -Path "$downloadTargetFolder\VC2013Redist" -ItemType Directory
+        New-Item -Path $downloadTargetFolder -ItemType Directory
     }
-    $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path "$downloadTargetFolder\VC2013Redist" -PassThru -ErrorAction Stop
+    $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     Write-ScreenInfo 'Done' -TaskEnd
     
     #distribute the sources to all exchange servers and the RootDC
