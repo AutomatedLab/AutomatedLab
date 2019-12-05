@@ -1824,6 +1824,11 @@ function Sync-LabActiveDirectory
 
             ipconfig.exe -flushdns
 
+            if (-not -(Test-Path -Path C:\DeployDebug))
+            {
+                New-Item C:\DeployDebug -Force -ItemType Directory | Out-Null
+            }
+
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
             Write-Verbose -Message "List: '$($dcs -join ', ')'"
