@@ -1028,6 +1028,12 @@ function Install-LabRootDcs
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
         }
+        
+        foreach ($machine in $machines)
+        {
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+        }
 
         if ($CreateCheckPoints)
         {
@@ -1311,6 +1317,12 @@ function Install-LabFirstChildDcs
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
+        
+        foreach ($machine in $machines)
+        {
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+        }
 
         if ($CreateCheckPoints)
         {
@@ -2225,7 +2237,7 @@ function Install-LabDnsForwarder
         }
     }
 }
-#region Install-LabDnsForwarder
+#endregion Install-LabDnsForwarder
 
 #region Install-LabADDSTrust
 function Install-LabADDSTrust
@@ -2313,4 +2325,38 @@ function Install-LabADDSTrust
         }
     }
 }
-#region Install-LabADDSTrust
+#endregion Install-LabADDSTrust
+
+#region Reset-LabAdPassword
+function Reset-LabAdPassword
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$DomainName
+    )
+    
+    $lab = Get-Lab
+    $domain = $lab.Domains | Where-Object Name -eq $DomainName
+    $vm = Get-LabVM -Role RootDC | Where-Object DomainName -eq $DomainName
+    
+    Invoke-LabCommand -ActivityName 'Reset Administrator password in AD' -ScriptBlock {
+        Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+        $ctx = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Domain')
+        $i = 0
+        while (-not $u -and $i -lt 25)
+        {
+            try
+            {
+                $u = [System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($ctx, $args[0])
+                $u.SetPassword($args[1])
+            }
+            catch
+            {
+                Start-Sleep -Seconds 10
+                $i++
+            }
+        }
+        
+    } -ComputerName $vm -ArgumentList $domain.Administrator.UserName, $domain.Administrator.Password -NoDisplay
+}
+#endregion Reset-LabAdPassword

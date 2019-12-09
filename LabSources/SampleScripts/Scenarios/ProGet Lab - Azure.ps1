@@ -1,4 +1,5 @@
-$labName = 'ProGet'
+$labName = "ProGet_$((1..6 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+$azureLocation = 'West Europe'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -7,10 +8,10 @@ $labName = 'ProGet'
 #--------------------------------------------------------------------------------------------------------------------
 
 
-New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
+New-LabDefinition -Name $labName -DefaultVirtualizationEngine Azure
+Add-LabAzureSubscription -DefaultLocationName $azureLocation
 
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.110.0/24
-Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Wi-Fi' }
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -24,10 +25,7 @@ $PSDefaultParameterValues = @{
 
 #DC
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
-$netAdapter = @()
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.110.10
-$netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
-Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC, Routing -NetworkAdapter $netAdapter -PostInstallationActivity $postInstallActivity
+Add-LabMachineDefinition -Name PGDC1 -Memory 1GB -Roles RootDC -IpAddress 192.168.110.10 -PostInstallationActivity $postInstallActivity
 
 #web server
 $role = Get-LabPostInstallationActivity -CustomRole ProGet5 -Properties @{

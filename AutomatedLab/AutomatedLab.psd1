@@ -220,7 +220,10 @@
         'Register-LabArgumentCompleters',
         'Get-LabVmSnapshot',
         'Test-LabHostConnected',
-        'Test-LabAzureModuleAvailability'
+        'Test-LabAzureModuleAvailability',
+        'Get-LabMachineAutoShutdown',
+        'Enable-LabMachineAutoShutdown',
+        'Disable-LabMAchineAutoShutdown'
     )
     
     FileList               = @(
