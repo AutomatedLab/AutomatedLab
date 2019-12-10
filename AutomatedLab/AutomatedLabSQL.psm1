@@ -37,7 +37,7 @@ function Install-LabSqlServers
         return
     }
 
-    $machines = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
+    $machines = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 , SQLServer2019
 
     #The default SQL installation in Azure does not give the standard buildin administrators group access.
     #This section adds the rights. As only the renamed Builtin Admin account has permissions, Invoke-LabCommand cannot be used.
@@ -155,6 +155,13 @@ GO
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
 
                 if ( $global:setupArguments -match '/Features=.*RS' -and $role.Name -eq 'SQLServer2017')
+                {
+                    $global:setupArguments = $global:setupArguments -replace ',?RS'
+
+                    if (-not $script:externalSsrs) { $script:externalSsrs = @() }
+                    $script:externalSsrs += $machine
+                }
+                if ( $global:setupArguments -match '/Features=.*RS' -and $role.Name -eq 'SQLServer2019')
                 {
                     $global:setupArguments = $global:setupArguments -replace ',?RS'
 
@@ -290,14 +297,14 @@ GO
 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
-                $additionalMachinesToInstall = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
+                $additionalMachinesToInstall = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 ,SQLServer2019|
                 Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-PSFMessage -Message 'Preparing more machines while waiting for installation to finish'
 
-                    $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 |
+                    $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017,SQLServer2019 |
                     Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
                     Select-Object -First 2
 
@@ -311,7 +318,7 @@ GO
                         Write-PSFMessage -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
 
-                        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
+                        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
                     }
                     Write-PSFMessage -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
@@ -333,7 +340,7 @@ GO
         }
         until ($machineIndex -ge $onPremisesMachines.Count)
 
-        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017
+        $machinesToPrepare = Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019
         $machinesToPrepare = $machinesToPrepare | Where-Object { (Get-LabVMStatus -ComputerName $_) -ne 'Started' }
         if ($machinesToPrepare)
         {
@@ -348,18 +355,52 @@ GO
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
 
-        if ($script:externalSsrs)
+        #region install SSRS
+        $servers = Get-LabVm |
+        Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016' -and $_.Roles.Properties.Item('Features').contains('RS') }|
+        Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {
+            $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
+        $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force |
+        Add-Member -Name 'SsRsUri' -Value {
+            Get-LabConfigurationItem -Name "Sql$($this.SQLVersion)SSRS"
+        } -MemberType ScriptProperty -PassThru -Force
+
+        if ($servers)
         {
-            Write-ScreenInfo -Message "Installing SSRS on $($script:externalSsrs.Count) machines"
-            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
-            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Ssrs2017) -Path $labSources\SoftwarePackages\SQLServerReportingServices.exe
-            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $script:externalSsrs
-            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $script:externalSsrs
-            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $script:externalSsrs -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1            
+            Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
         }
 
+        $jobs = @()
+
+        foreach ($server in $servers)
+        {
+            Write-ScreenInfo 'Installing Server Reporting Services on $server' -NoNewLine
+            if (-not $server.SsRsUri)
+            {
+                Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+                continue
+            }
+            $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath $server.SqlVersion
+
+            if (-not (Test-Path $downloadFolder))
+            {
+                [void] (New-Item -ItemType Directory -Path $downloadFolder)
+            }
+
+            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
+            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Sql$($this.SQLVersion)SSRS) -Path $downloadFolder\SQLServerReportingServices.exe
+
+            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $server
+            Install-LabSoftwarePackage -Path $downloadFolder\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $server
+            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $server -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1  
+
+        }
+
+        #endregion
+
+        #region Install Tools
         $servers = Get-LabVm |
-        Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016'} |
+        Where-Object {$_.Roles.Name -like "SQL*" -and $_.Roles.Name -ge 'SQLServer2016' -and $_.Roles.Properties.Item('Features').contains('Tools') }|
         Add-Member -Name SqlVersion -MemberType ScriptProperty -Value {
             $roleName = ($this.Roles | Where-Object Name -like "SQL*")[0].Name.ToString()
         $roleName.Substring($roleName.Length - 4, 4)} -PassThru -Force |
@@ -400,6 +441,7 @@ GO
             Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish' -NoNewLine
             Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
         }
+        #endregion
 
         if ($CreateCheckPoints)
         {
@@ -558,6 +600,29 @@ function Install-LabSqlSampleDatabases
         {
             Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
                 $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2017
+                $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
+                $query = @"
+        USE master
+        RESTORE DATABASE WideWorldImporters
+        FROM disk =
+        '$($backupFile.FullName)'
+        WITH MOVE 'WWI_Primary' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+        MOVE 'WWI_UserData' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+        MOVE 'WWI_Log' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+        MOVE 'WWI_InMemory_Data_1' TO
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+        REPLACE
+"@
+                Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query
+            } -DependencyFolderPath $dependencyFolder -Variable (Get-Variable roleInstance)
+        }
+        'SQLServer2019'
+        {
+            Invoke-LabCommand -ActivityName "$roleName Sample DBs" -ComputerName $Machine -ScriptBlock {
+                $backupFile = Get-ChildItem -Filter *.bak -Path C:\SQLServer2019
                 $connectionInstance = if ($roleInstance -ne 'MSSQLSERVER') { "localhost\$roleInstance" } else { "localhost" }
                 $query = @"
         USE master
