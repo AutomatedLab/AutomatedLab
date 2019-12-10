@@ -591,6 +591,8 @@ $autoyastContent = @"
 
 function Get-LabVolumesOnPhysicalDisks
 {
+    [CmdletBinding()]
+
     $physicalDisks = Get-PhysicalDisk
     $disks = Get-CimInstance -Class Win32_DiskDrive
 
@@ -3319,7 +3321,7 @@ function Get-LabVirtualNetwork
 
     $virtualnetworks = @()
 
-    $switches = Get-VMSwitch
+    $switches = if ($IsLinux) {  } else { Get-VMSwitch }
 
     foreach ($switch in $switches)
     {
@@ -3377,13 +3379,30 @@ function Get-LabAvailableAddresseSpace
             continue
         }
 
-        if ($addressSpace.IpAddress -in (Get-NetIPAddress -AddressFamily IPv4).IPAddress)
+        $localAddresses = if ($IsLinux) {
+            (ip -4 addr) | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+        }
+        else
+        {
+            (Get-NetIPAddress -AddressFamily IPv4).IPAddress
+        }
+
+        if ($addressSpace.IpAddress -in $localAddresses)
         {
             Write-PSFMessage -Message "Network '$addressSpace' is in use locally"
             continue
         }
 
-        if (Get-NetRoute -DestinationPrefix $addressSpace.ToString() -ErrorAction SilentlyContinue)
+        $route = if ($IsLinux)
+        {
+            (route | Select-Object -First 5 -Skip 2 | ForEach-Object {'{0}/{1}' -f ($_ -split '\s+')[0],(ConvertTo-MaskLength ($_ -split '\s+')[2])})
+        }
+        else
+        {
+            Get-NetRoute -DestinationPrefix $addressSpace.ToString() -ErrorAction SilentlyContinue
+        }
+
+        if ($null -ne $route)
         {
             Write-PSFMessage -Message "Network '$addressSpace' is routable"
             continue
