@@ -82,7 +82,7 @@ function Install-LabSharePoint
 
     if (-not $machines)
     {
-        Write-ScreenInfo -Message "There is SharePoint server in the lab" -Type Warning
+        Write-ScreenInfo -Message "There is no SharePoint server in the lab" -Type Warning
         Write-LogFunctionExit
         return
     }
@@ -100,11 +100,11 @@ function Install-LabSharePoint
         Install-LabWindowsFeature -ComputerName $oldMachines -FeatureName Application-Server, AS-Web-Support, AS-TCP-Port-Sharing, AS-WAS-Support, AS-HTTP-Activation, AS-TCP-Activation, AS-Named-Pipes, AS-Net-Framework -IncludeManagementTools -IncludeAllSubFeature
     }
 
-    Write-ScreenInfo -Message "Restaring server to complete Windows Features installation"
+    Write-ScreenInfo -Message "Restarting server to complete Windows Features installation"
     Restart-LabVM $machines
 
     # Mount SharePoint ISO
-    $versionGroups = $machines | Group-Object { $null = $_.Roles.RoleName -match 'SharePoint\d{4}'; $Matches.0 }
+    $versionGroups = $machines | Group-Object { $null = $_.Roles.Name -match 'SharePoint\d{4}'; $Matches.0 }
     Dismount-LabIsoImage -ComputerName $machines -SupressOutput
 
     foreach ($group in $versionGroups)
@@ -112,12 +112,11 @@ function Install-LabSharePoint
         Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }) -SupressOutput
     }
 
-    Write-ScreenInfo -Message "Copying installation files for SharePoint to server"
+    Write-ScreenInfo -Message "Copying SharePoint installation files to $($machines.Count) machines"
     Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
         Copy-Item -Path "D:\" -Destination "C:\SPInstall\" -Recurse
     }
 
-    # Install VCPP for good measure
     Write-ScreenInfo -Message "Downloading all the VC Redistributables..."
     foreach ($thing in @('cppredist32_2012', 'cppredist64_2012', 'cppredist32_2015', 'cppredist64_2015', 'cppredist32_2017', 'cppredist64_2017'))
     {
@@ -155,15 +154,23 @@ function Install-LabSharePoint
     # Install SharePoint 2013 binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
 
-    foreach ($group in $versionGroups)
+    $jobs = foreach ($group in $versionGroups)
     {
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
         $configFile = $setupConfigFileContent -f $productKey
         Invoke-LabCommand -ComputerName $machines -ActivityName "Install SharePoint" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
-            Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"          
-        } -Variable (Get-Variable -Name configFile)
+            $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
+            Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
+        } -Variable (Get-Variable -Name configFile) -AsJob
     }
+
     Write-ScreenInfo -Message "Waiting for SharePoint role to complete installation" -NoNewLine
+    Wait-LWLabJob -Job $jobs -NoDisplay
+    
+    foreach ($jobResult in (Receive-Job -Job $jobs -Wait -AutoRemoveJob))
+    {
+        Write-ScreenInfo -Type Verbose -Message "Installation result $jobResult"
+    }
 }
 #endregion Install-LabSharePoint
