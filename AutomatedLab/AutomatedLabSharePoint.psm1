@@ -78,7 +78,9 @@ function Install-LabSharePoint
         return
     }
   
-    $machines = Get-LabVM -Role SharePoint2013, SharePoint2016, SharePoint2019
+    $machines = Get-LabVM -Role SharePoint2013, SharePoint2016, SharePoint2019 |
+        Where-Object {-not (Invoke-LabCommand -PassThru -ComputerName $_ -NoDisplay -ScriptBlock {Get-Service blabla -ErrorAction SilentlyContinue}) }
+    $versionGroups = $machines | Group-Object { $null = $_.Roles.Name -match 'SharePoint\d{4}'; $Matches[0] }
 
     if (-not $machines)
     {
@@ -86,38 +88,44 @@ function Install-LabSharePoint
         Write-LogFunctionExit
         return
     }
+
+    foreach ($group in $versionGroups)
+    {
+        if ($null -eq ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }))
+        {
+            Write-ScreenInfo -Message "No ISO was added for $($Group.Name). Please use Add-LabIsoImageDefinition to add it before installing a lab."
+            return
+        }
+    }
 	
     Write-ScreenInfo -Message 'Waiting for machines with SharePoint role to start up' -NoNewline
     Start-LabVM -ComputerName $machines -Wait -ProgressIndicator 15
       
     # Mount OS ISO for Windows Feature Installation
-    Install-LabWindowsFeature -ComputerName $machines -FeatureName Net-Framework-Features, Web-Server, Web-WebServer, Web-Common-Http, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-App-Dev, Web-Asp-Net, Web-Net-Ext, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Health, Web-Http-Logging, Web-Log-Libraries, Web-Request-Monitor, Web-Http-Tracing, Web-Security, Web-Basic-Auth, Web-Windows-Auth, Web-Filtering, Web-Digest-Auth, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, WAS, WAS-Process-Model, WAS-NET-Environment, WAS-Config-APIs, Web-Lgcy-Scripting, Windows-Identity-Foundation, Server-Media-Foundation, Xps-Viewer -IncludeAllSubFeature -IncludeManagementTools
+    Write-ScreenInfo -Message 'Installing required features'
+    Install-LabWindowsFeature -ComputerName $machines -FeatureName Net-Framework-Features, Web-Server, Web-WebServer, Web-Common-Http, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-App-Dev, Web-Asp-Net, Web-Net-Ext, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Health, Web-Http-Logging, Web-Log-Libraries, Web-Request-Monitor, Web-Http-Tracing, Web-Security, Web-Basic-Auth, Web-Windows-Auth, Web-Filtering, Web-Digest-Auth, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, WAS, WAS-Process-Model, WAS-NET-Environment, WAS-Config-APIs, Web-Lgcy-Scripting, Windows-Identity-Foundation, Server-Media-Foundation, Xps-Viewer -IncludeAllSubFeature -IncludeManagementTools -NoDisplay
 
     $oldMachines = $machines | Where-Object { $_.OperatingSystem.Version -lt 10 }
     if ($Null -ne $oldMachines)
     {
         # Application Server is deprecated in 2016+, despite the SharePoint documentation stating otherwise
-        Install-LabWindowsFeature -ComputerName $oldMachines -FeatureName Application-Server, AS-Web-Support, AS-TCP-Port-Sharing, AS-WAS-Support, AS-HTTP-Activation, AS-TCP-Activation, AS-Named-Pipes, AS-Net-Framework -IncludeManagementTools -IncludeAllSubFeature
+        Install-LabWindowsFeature -ComputerName $oldMachines -FeatureName Application-Server, AS-Web-Support, AS-TCP-Port-Sharing, AS-WAS-Support, AS-HTTP-Activation, AS-TCP-Activation, AS-Named-Pipes, AS-Net-Framework -IncludeManagementTools -IncludeAllSubFeature -NoDisplay
     }
 
-    Write-ScreenInfo -Message "Restarting server to complete Windows Features installation"
-    Restart-LabVM $machines
+    Restart-LabVM -ComputerName $machines -Wait
 
     # Mount SharePoint ISO
-    $versionGroups = $machines | Group-Object { $null = $_.Roles.Name -match 'SharePoint\d{4}'; $Matches.0 }
     Dismount-LabIsoImage -ComputerName $machines -SupressOutput
 
     foreach ($group in $versionGroups)
     {
-        Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }) -SupressOutput
+        Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -SupressOutput
     }
 
-    Write-ScreenInfo -Message "Copying SharePoint installation files to $($machines.Count) machines"
     Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
         Copy-Item -Path "D:\" -Destination "C:\SPInstall\" -Recurse
     }
 
-    Write-ScreenInfo -Message "Downloading all the VC Redistributables..."
     foreach ($thing in @('cppredist32_2012', 'cppredist64_2012', 'cppredist32_2015', 'cppredist64_2015', 'cppredist32_2017', 'cppredist64_2017'))
     {
         $fName = $thing -replace '(cppredist)(\d\d)_(\d{4})', 'vcredist_$2_$3.exe'
@@ -127,9 +135,9 @@ function Install-LabSharePoint
     Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
     # Download and copy Prerequisite Files to server
-    foreach ($group in $versionGroups)
-    {
-        Write-ScreenInfo -Message "Downloading and copying prerequisite files for $($group.Name) to server"
+    Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
+    $jobs = foreach ($group in $versionGroups)
+    {        
         if (-not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
         {
             $null = New-Item -ItemType Directory -Path $labsources\SoftwarePackages\$($group.Name)
@@ -137,19 +145,29 @@ function Install-LabSharePoint
         
         foreach ($prereqUri in (Get-LabConfigurationItem -Name "$($group.Name)Prerequisites"))
         {
-            Get-LabInternetFile -Uri $prereqUri -Path $labsources\SoftwarePackages\$($group.Name)
+            $params = @{
+                Uri  = $prereqUri
+                Path = "$labsources\SoftwarePackages\$($group.Name)"
+            }
+
+            if ($prereqUri -match '1CAA41C7' -and $group.Name -eq 'SharePoint2013')
+            {
+                # This little snowflake would like both packages, pretty please
+                $params.FileName = 'WcfDataServices56.exe'
+            }
+
+            Get-LabInternetFile @params
         }
 
-        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name) -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
-    
+        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
-        Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server"
-        Invoke-LabCommand -PassThru -ComputerName $group.Group -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock (Get-Variable -Name "$($Group.Name)InstallScript").Value
+        Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
+        Invoke-LabCommand -PassThru -ComputerName $group.Group -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock (Get-Variable -Name "$($Group.Name)InstallScript").Value -AsJob
     }
 
-    Write-ScreenInfo -Message "Restarting server to complete prerequisites installation"
-    Restart-LabVM $machines
+    Wait-LWLabJob -Job $jobs
+    Restart-LabVM -ComputerName $machines -Wait
 
     # Install SharePoint 2013 binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
@@ -158,11 +176,11 @@ function Install-LabSharePoint
     {
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
         $configFile = $setupConfigFileContent -f $productKey
-        Invoke-LabCommand -ComputerName $machines -ActivityName "Install SharePoint" -ScriptBlock {
+        Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
             $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
             Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
-        } -Variable (Get-Variable -Name configFile) -AsJob
+        } -Variable (Get-Variable -Name configFile) -AsJob -PassThru
     }
 
     Write-ScreenInfo -Message "Waiting for SharePoint role to complete installation" -NoNewLine
