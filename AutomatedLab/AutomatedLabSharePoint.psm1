@@ -66,6 +66,11 @@ function Install-LabSharePoint
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {
+        Write-ScreenInfo -Message 'SharePoint on Azure is deployed through the SKU - no work needs to be done' -Type Verbose
+        Write-LogFunctionExit
+    }
   
     if (-not (Get-LabVM))
     {
