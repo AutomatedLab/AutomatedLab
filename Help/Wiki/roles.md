@@ -36,15 +36,17 @@ The list of available roles in AutomatedLab is below. Of course, there are many 
 - Routing
 - CaRoot
 - CaSubordinate
-- SQLServer2008
-- SQLServer2008R2
-- SQLServer2012
-- SQLServer2014
-- SQLServer2016
+- SQL Server2008
+- SQL Server2008 R2
+- SQL Server2012
+- SQL Server2014
+- SQL Server2016
+- SQL Server 2019
 - VisualStudio2013
 - VisualStudio2015
 - SharePoint2013
 - SharePoint2016
+- SharePoint2019
 - Orchestrator2012
 - Exchange2013
 - Exchange2016

@@ -69,7 +69,9 @@ namespace AutomatedLab
         Tfs2018 = 8589934592,
         SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017 | SQLServer2019,
         HyperV = 17179869184,
-        AzDevOps = 34359738368
+        AzDevOps = 34359738368,
+        SharePoint2019 = 68719476736,
+        SharePoint = SharePoint2013 | SharePoint2016 | SharePoint2019,
     }
 
     public enum ActiveDirectoryFunctionalLevel
