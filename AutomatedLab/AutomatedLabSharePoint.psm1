@@ -8,7 +8,7 @@
     </Package>
 
     <Logging Type="verbose" Path="%temp%" Template="SharePoint Server Setup(*).log"/>
-    <PIDKEY Value="N3MDM-DXR3H-JD7QH-QKKCR-BY2Y7" />
+    <PIDKEY Value="{0}" />
     <Display Level="none" CompletionNotice="no" />
     <Setting Id="SERVERROLE" Value="APPLICATION"/>
     <Setting Id="USINGUIINSTALLMODE" Value="0"/>
@@ -53,7 +53,7 @@ $SharePoint2019InstallScript = {
     /MSVCRT141:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2017.exe"
 }
 
-#region Install-LabSharePoint2013
+#region Install-LabSharePoint
 function Install-LabSharePoint
 {
     [CmdletBinding()]
@@ -150,11 +150,15 @@ function Install-LabSharePoint
     # Install SharePoint 2013 binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
 
-    Invoke-LabCommand -ComputerName $machines -ActivityName "Install SharePoint" -ScriptBlock {
-        Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $setupConfigFileContent
-        Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"          
-    } -Variable (Get-Variable -Name setupConfigFileContent)
-    
+    foreach ($group in $versionGroups)
+    {
+        $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
+        $configFile = $setupConfigFileContent -f $productKey
+        Invoke-LabCommand -ComputerName $machines -ActivityName "Install SharePoint" -ScriptBlock {
+            Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
+            Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"          
+        } -Variable (Get-Variable -Name configFile)
+    }
     Write-ScreenInfo -Message "Waiting for SharePoint role to complete installation" -NoNewLine
 }
-#endregion Install-LabSharePoint2013
+#endregion Install-LabSharePoint
