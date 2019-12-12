@@ -112,15 +112,21 @@ GO
             Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
             Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
 
-            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ redist on machine '$($machinesBatch -join ', ')'" -Type Verbose
-            $cppRedist64_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist64_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x64_2017.exe -PassThru
-            $cppredist32_2017 = Get-LabInternetFile -Uri $(Get-LabConfigurationItem -Name cppredist32_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x86_2017.exe -PassThru
-            $cppJobs = @()
-            $cppJobs += Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
-            $cppJobs += Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -AsJob -ExpectedReturnCodes 0,3010 -PassThru
+            $cppRedist64_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x64_2017.exe -PassThru
+            $cppredist32_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2017) -Path $labsources\SoftwarePackages -FileName vcredist_x86_2017.exe -PassThru
+            $cppRedist64_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2015) -Path $labsources\SoftwarePackages -FileName vcredist_x64_2015.exe -PassThru
+            $cppredist32_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2015) -Path $labsources\SoftwarePackages -FileName vcredist_x86_2015.exe -PassThru
 
-            Write-ScreenInfo -Message "Waiting for pre-requisite Visual C++ redistributable to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
-            Wait-LWLabJob -Job $cppJobs -Timeout 10 -NoNewLine -ProgressIndicator 5 -NoDisplay
+            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2015 redist on machine '$($machinesBatch -join ', ')'" -Type Verbose -NoNewLine
+            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
+            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
+            Restart-LabVM -ComputerName $machinesBatch -Wait -NoDisplay
+            Write-ScreenInfo -Message "done"
+
+            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -Type Verbose -NoNewLine
+            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
+            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
+            Write-ScreenInfo -Message "done"
 
             foreach ($machine in $machinesBatch)
             {
