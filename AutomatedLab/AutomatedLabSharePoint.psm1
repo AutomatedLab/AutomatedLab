@@ -43,7 +43,7 @@ $SharePoint2016InstallScript = {
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
     /KB3092423:C:\SPInstall\PrerequisiteInstallerFiles\AppFabric-KB3092423-x64-ENU.exe  `
-    /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
+    /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.exe  `
     /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
     /DotNetFx:C:\SPInstall\PrerequisiteInstallerFiles\NDP462-KB3151800-x86-x64-AllOS-ENU.exe  `
     /ODBC:C:\SPInstall\PrerequisiteInstallerFiles\msodbcsql.msi  `
@@ -61,7 +61,7 @@ $SharePoint2019InstallScript = {
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
     /KB3092423:C:\SPInstall\PrerequisiteInstallerFiles\AppFabric-KB3092423-x64-ENU.exe  `
-    /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
+    /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.exe  `
     /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
     /DotNet472:C:\SPInstall\PrerequisiteInstallerFiles\NDP472-KB4054530-x86-x64-AllOS-ENU.exe  `
     /MSVCRT11:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2012.exe  `
