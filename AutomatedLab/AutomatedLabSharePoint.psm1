@@ -17,7 +17,12 @@
 </Configuration>'
 
 $SharePoint2013InstallScript = {
-    Start-Process -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "/unattended /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    param
+    (
+        [string]
+        $Mode = '/unattended'
+    )
+    (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
                /IDFX:C:\SPInstall\PrerequisiteInstallerFiles\Windows6.1-KB974405-x64.msu  `
                /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
                /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
@@ -25,10 +30,15 @@ $SharePoint2013InstallScript = {
                /KB2671763:C:\SPInstall\PrerequisiteInstallerFiles\AppFabric1.1-RTM-KB2671763-x64-ENU.exe  `
                /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
                /WCFDataServices:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
-               /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices56.exe"
+               /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices56.exe").ExitCode
 }
 $SharePoint2016InstallScript = {
-    Start-Process -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "/unattended /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    param
+    (
+        [string]
+        $Mode = '/unattended'
+    )
+    (Start-Process -PassThru -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
     /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
@@ -38,19 +48,24 @@ $SharePoint2016InstallScript = {
     /DotNetFx:C:\SPInstall\PrerequisiteInstallerFiles\NDP462-KB3151800-x86-x64-AllOS-ENU.exe  `
     /ODBC:C:\SPInstall\PrerequisiteInstallerFiles\msodbcsql.msi  `
     /MSVCRT11:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2012.exe  `
-    /MSVCRT14:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2015.exe"
+    /MSVCRT14:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2015.exe").ExitCode
 }
 $SharePoint2019InstallScript = {
-    Start-Process -Wait "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "/unattended /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
+    param
+    (
+        [string]
+        $Mode = '/unattended'
+    )
+    (Start-Process -Wait -PassThru "C:\SPInstall\PrerequisiteInstaller.exe" –ArgumentList "$Mode /SQLNCli:C:\SPInstall\PrerequisiteInstallerFiles\sqlncli.msi `
     /IDFX11:C:\SPInstall\PrerequisiteInstallerFiles\MicrosoftIdentityExtensions-64.msi `
     /Sync:C:\SPInstall\PrerequisiteInstallerFiles\Synchronization.msi  `
     /AppFabric:C:\SPInstall\PrerequisiteInstallerFiles\WindowsServerAppFabricSetup_x64.exe  `
     /KB3092423:C:\SPInstall\PrerequisiteInstallerFiles\AppFabric-KB3092423-x64-ENU.exe  `
     /MSIPCClient:C:\SPInstall\PrerequisiteInstallerFiles\setup_msipc_x64.msi  `
     /WCFDataServices56:C:\SPInstall\PrerequisiteInstallerFiles\WcfDataServices.exe  `
-    /DotNetFx:C:\SPInstall\PrerequisiteInstallerFiles\NDP472-KB4054530-x86-x64-AllOS-ENU.exe  `
+    /DotNet472:C:\SPInstall\PrerequisiteInstallerFiles\NDP472-KB4054530-x86-x64-AllOS-ENU.exe  `
     /MSVCRT11:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2012.exe  `
-    /MSVCRT141:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2017.exe"
+    /MSVCRT141:C:\SPInstall\PrerequisiteInstallerFiles\vcredist_64_2017.exe").ExitCode
 }
 
 #region Install-LabSharePoint
@@ -78,8 +93,7 @@ function Install-LabSharePoint
         return
     }
   
-    $machines = Get-LabVM -Role SharePoint2013, SharePoint2016, SharePoint2019 |
-        Where-Object {-not (Invoke-LabCommand -PassThru -ComputerName $_ -NoDisplay -ScriptBlock {Get-Service blabla -ErrorAction SilentlyContinue}) }
+    $machines = Get-LabVM -Role SharePoint2013, SharePoint2016, SharePoint2019
     $versionGroups = $machines | Group-Object { $null = $_.Roles.Name -match 'SharePoint\d{4}'; $Matches[0] }
 
     if (-not $machines)
@@ -136,7 +150,7 @@ function Install-LabSharePoint
 
     # Download and copy Prerequisite Files to server
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
-    $jobs = foreach ($group in $versionGroups)
+    foreach ($group in $versionGroups)
     {        
         if (-not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
         {
@@ -146,8 +160,9 @@ function Install-LabSharePoint
         foreach ($prereqUri in (Get-LabConfigurationItem -Name "$($group.Name)Prerequisites"))
         {
             $params = @{
-                Uri  = $prereqUri
-                Path = "$labsources\SoftwarePackages\$($group.Name)"
+                Uri      = $prereqUri
+                Path     = "$labsources\SoftwarePackages\$($group.Name)"
+                PassThru = $true
             }
 
             if ($prereqUri -match '1CAA41C7' -and $group.Name -eq 'SharePoint2013')
@@ -156,18 +171,48 @@ function Install-LabSharePoint
                 $params.FileName = 'WcfDataServices56.exe'
             }
 
-            Get-LabInternetFile @params
+            $download = Get-LabInternetFile @params
+            if ($download.FullName.EndsWith('.zip'))
+            {
+                # Sync client...
+                Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)"
+                Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+            }
         }
 
         Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
-        Invoke-LabCommand -PassThru -ComputerName $group.Group -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock (Get-Variable -Name "$($Group.Name)InstallScript").Value -AsJob
+        Invoke-LabCommand -ComputerName $group.Group -NoDisplay -ScriptBlock {
+            param ([string] $Script )
+            Set-Content C:\DeployDebug\SPPrereq.ps1 -Value $Script
+                
+        } -ArgumentList (Get-Variable -Name "$($Group.Name)InstallScript").Value.ToString()
     }
 
-    Wait-LWLabJob -Job $jobs
-    Restart-LabVM -ComputerName $machines -Wait
+    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
+    $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
+    if ($null -ne $failed)
+    {
+        Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
+        return
+    }
+
+    $rebootRequired = $instResult | Where-Object { $_ -eq 3010 }
+    while ($null -ne $rebootRequired)
+    {
+        Write-ScreenInfo -Type Verbose -Message "Some machines require a second pass at installing prerequisites: $($rebootRequired.PSComputerName -join ',')"
+        Restart-LabVM -ComputerName $rebootRequired.PSComputerName -Wait
+        $instResult = Invoke-LabCommand -PassThru -ComputerName $rebootRequired.PSComputerName -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended /continue' } | Where-Object { $_ -eq 3010 }
+        $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
+        if ($null -ne $failed)
+        {
+            Write-ScreenInfo -Type Error -Message "The following SharePoint servers failed installing prerequisites $($failed.PSComputerName)"
+        }
+
+        $rebootRequired = $instResult | Where-Object { $_ -eq 3010 }
+    }
 
     # Install SharePoint 2013 binaries
     Write-ScreenInfo -Message "Installing SharePoint binaries on server"
@@ -179,6 +224,7 @@ function Install-LabSharePoint
         Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
             $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
+            Set-Content C:\DeployDebug\SPInst.cmd -Value 'C:\SPInstall\setup.exe /config C:\SPInstall\files\al-config.xml'
             Get-ChildItem -Path (Join-Path ([IO.Path]::GetTempPath()) 'SharePoint Server Setup*') | Get-Content
         } -Variable (Get-Variable -Name configFile) -AsJob -PassThru
     }
@@ -186,8 +232,9 @@ function Install-LabSharePoint
     Write-ScreenInfo -Message "Waiting for SharePoint role to complete installation" -NoNewLine
     Wait-LWLabJob -Job $jobs -NoDisplay
     
-    foreach ($jobResult in (Receive-Job -Job $jobs -Wait -AutoRemoveJob))
+    foreach ($job in $jobs)
     {
+        $jobResult = (Receive-Job -Job $job -Wait -AutoRemoveJob)
         Write-ScreenInfo -Type Verbose -Message "Installation result $jobResult"
     }
 }
