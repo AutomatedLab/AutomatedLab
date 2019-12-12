@@ -179,7 +179,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AzureRetryCount -Value 3 -Initialize 
 # SharePoint
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Key -Value 'N3MDM-DXR3H-JD7QH-QKKCR-BY2Y7' -Validation String -Initialize -Description 'SP 2013 trial key'
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Key -Value 'NQGJR-63HC8-XCRQH-MYVCH-3J3QR' -Validation String -Initialize -Description 'SP 2016 trial key'
-Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Key -Value 'M692G-8N2JP-GG8B2-2W2P7-YY7J6' -Validation String -Initialize -Description 'SP 2019 trial key'
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Key -Value 'M692G-8N2JP-GG8B2-2W2P7-YY7J6' -Validation String -Initialize -Description 'SP 2019 trial key'
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Prerequisites -Value @(
     "http://download.microsoft.com/download/9/1/3/9138773A-505D-43E2-AC08-9A77E1E0490B/1033/x64/sqlncli.msi",
