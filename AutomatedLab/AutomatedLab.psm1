@@ -687,7 +687,8 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Sharepoint2013,
+        [Alias('Sharepoint2013')]
+        [switch]$SharepointServer,
         [switch]$CA,
         [switch]$ADFS,
         [switch]$DSCPullServer,
@@ -1028,11 +1029,11 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SharePoint2013 -or $performAll) -and (Get-LabVM -Role SharePoint2013))
+    if (($SharepointServer -or $performAll) -and (Get-LabVM -Role SharePoint))
     {
-        Write-ScreenInfo -Message 'Installing SharePoint 2013 Servers' -TaskStart
+        Write-ScreenInfo -Message 'Installing SharePoint Servers' -TaskStart
 
-        Install-LabSharePoint2013
+        Install-LabSharePoint
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

@@ -14,7 +14,7 @@ Starts the process of lab deployment
 
 ```
 Install-Lab [-NetworkSwitches] [-BaseImages] [-VMs] [-Domains] [-AdTrusts] [-DHCP] [-Routing]
- [-PostInstallations] [-SQLServers] [-Orchestrator2012] [-WebServers] [-Sharepoint2013] [-CA] [-ADFS]
+ [-PostInstallations] [-SQLServers] [-Orchestrator2012] [-WebServers] [-SharepointServer] [-CA] [-ADFS]
  [-DSCPullServer] [-ConfigManager2012R2] [-VisualStudio] [-Office2013] [-Office2016] [-AzureServices]
  [-TeamFoundation] [-FailoverCluster] [-StartRemainingMachines] [-CreateCheckPoints]
  [[-DelayBetweenComputers] <Int32>] [-NoValidation] [<CommonParameters>]
@@ -65,7 +65,7 @@ Deploy and configure all machines defined in the lab in following order:
             Web servers
             Orchestrator servers 2012
             Exchange servers 2013
-            Sharepoint servers 2013
+            Sharepoint servers
             Visual Studio
             Office 2013
             Start any machines without any AutomatedLab roles
@@ -296,8 +296,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Sharepoint2013
-Start installation of all Sharepoint 2013 servers
+### -SharepointServer
+Start installation of all Sharepoint servers
 
 ```yaml
 Type: SwitchParameter
