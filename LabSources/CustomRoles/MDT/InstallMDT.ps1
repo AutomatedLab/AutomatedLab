@@ -1,15 +1,24 @@
 <#
-    Author: Glenn Corbett @glennjc
-    Contributors: @randree
-    Updated: 23/12/2018
+        Author: Glenn Corbett @glennjc
+        Contributors: @randree
+        Updated: 23/12/2018
 #>
 
 param(
-    [string]$DeploymentFolderLocation = 'C:\DeploymentShare',
+    [Parameter(Mandatory)]
+    [string]$DeploymentFolder,
 
-    [string]$InstallUserID = 'MdtService',
+    [Parameter(Mandatory)]
+    [string]$DeploymentShare,
+
+    [Parameter(Mandatory)]
+    [string]$InstallUserID,
     
-    [string]$InstallPassword = 'Somepass1',
+    [Parameter(Mandatory)]
+    [string]$InstallPassword,
+
+    [Parameter(Mandatory)]
+    [string]$MdtDownloadUrl,
 
     [Parameter(Mandatory)]
     [string]$ComputerName,
@@ -254,7 +263,7 @@ function Import-MDTApplications {
         [string]$DeploymentFolder
     )
 
-    [XML]$MDTApps = Get-Content $XMLFilePath
+    [xml]$MDTApps = Get-Content $XMLFilePath
     
     foreach ($App in $MDTApps.Applications.Application)
     {
@@ -264,7 +273,7 @@ function Import-MDTApplications {
             $downloadTargetFolder = Join-Path -Path $downloadTargetFolder -ChildPath $App.AppPath
             $downloadTargetFolder = Join-Path -Path $downloadTargetFolder -ChildPath $App.Name
 
-            if (-not ([string]::IsNullOrEmpty($App.DownloadPath)))
+            if ($App.DownloadPath)
             {
                 New-Item -Path $downloadTargetFolder -ItemType Directory -Force -ErrorAction SilentlyContinue | Out-Null
                 try {
@@ -294,8 +303,8 @@ function Import-MDTApplications {
                     $Folder
                 )
        
-                $SourcePath = Join-Path -Path C:\Install -ChildPath $App.AppPath
-                $SourcePath = Join-Path -Path $SourcePath -ChildPath $App.Name
+                $sourcePath = Join-Path -Path C:\Install -ChildPath $App.AppPath
+                $sourcePath = Join-Path -Path $sourcePath -ChildPath $App.Name
             
                 Import-Module "C:\Program Files\Microsoft Deployment Toolkit\bin\MicrosoftDeploymentToolkit.psd1"
             
@@ -303,12 +312,25 @@ function Import-MDTApplications {
                     New-PSDrive -Name DS001 -PSProvider MDTProvider -Root $Folder | Out-Null
                 }
             
-                $AppWorkingDirectory = ".\Applications\$($App.AppPath)\$($App.Name)"
-                $AppDestinationFolder = "$($App.AppPath)\$($App.Name)"
+                $appWorkingDirectory = ".\Applications\$($App.AppPath)\$($App.Name)"
+                $appDestinationFolder = "$($App.AppPath)\$($App.Name)"
  
                 New-Item -path DS001:\Applications -enable True -Name $($App.AppPath) -Comments '' -ItemType 'folder' -ErrorAction SilentlyContinue | Out-Null
 
-                Import-MDTApplication -path "DS001:\Applications\$($App.AppPath)" -enable True -Name $($App.Name) -ShortName $($App.ShortName) -Version $($App.AppVersion) -Publisher $($App.Publisher) -Language $($App.Language) -CommandLine $($App.CommandLine) -WorkingDirectory $AppWorkingDirectory -ApplicationSourcePath $SourcePath -DestinationFolder $AppDestinationFolder | Out-Null
+                $importParam = @{
+                    Path                     = "DS001:\Applications\$($App.AppPath)"
+                    Enable                   = 'True'
+                    Name                     = $App.Name
+                    ShortName                = $App.ShortName
+                    Version                  = $App.AppVersion
+                    Publisher                = $App.Publisher
+                    Language                 = $App.Language
+                    CommandLine              = $App.CommandLine
+                    WorkingDirectory         = $appWorkingDirectory
+                    ApplicationSourcePath    = $sourcePath
+                    DestinationFolder        = $appDestinationFolder
+                }
+                Import-MDTApplication @importParam | Out-Null
 
                 #Sleep between importing applications, otherwise apps dont get written to the Applications.XML file correctly
                 Start-Sleep -Seconds 10
@@ -341,7 +363,7 @@ function Install-MDT {
             9. Initialises WDS in standalone server mode
             10. Imports MDT boot images into WDS 
             .EXAMPLE
-            Install-MDT -ComputerName 'MDTServer' -DeploymentFolder $DeploymentFolderLocation -DeploymentShare 'C:\DeploymentShare' -AdminUserID 'Administrator' -AdminPassword 'Somepass1'
+            Install-MDT -ComputerName 'MDTServer' -DeploymentFolder $DeploymentFolder -DeploymentShare 'C:\DeploymentShare' -AdminUserID 'Administrator' -AdminPassword 'Somepass1'
             Installs MDT and ADK onto the server called 'MDTServer', and configures the deployment share to be in 'C:\DeploymentShare' with a share name of 'DeploymentShare$'
             Admin password to allow Windows PE to autoconnect to the MDT Share is Administrator, SomePass1
             .INPUTS
@@ -360,6 +382,9 @@ function Install-MDT {
     param(
         [Parameter(Mandatory)]
         [string]$ComputerName,
+        
+        [Parameter(Mandatory)]
+        [string]$MdtDownloadUrl,
            
         [Parameter(Mandatory)]
         [string]$DeploymentFolder,
@@ -375,8 +400,6 @@ function Install-MDT {
         [ValidateNotNullOrEmpty()]
         [string]$InstallPassword
     )
-   
-    $mdtDownloadLocation = 'https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi'
    
     Invoke-LabCommand -ActivityName 'Bring Disks Online' -ComputerName $ComputerName -ScriptBlock {
         $dataVolume = Get-Disk | Where-Object -Property OperationalStatus -eq Offline
@@ -396,14 +419,11 @@ function Install-MDT {
         return
     }
        
-    Write-ScreenInfo -Message "Downloading MDT Installation Files from '$mdtDownloadLocation'"
-    Get-LabInternetFile -Uri $mdtDownloadLocation -Path $downloadTargetFolder -ErrorAction Stop
-   
-    $mdtDownloadURL = New-Object System.Uri($mdtDownloadLocation)
-    $mdtInstallFileName = $mdtDownloadURL.Segments[$mdtDownloadURL.Segments.Count-1]
+    Write-ScreenInfo -Message "Downloading MDT Installation Files from '$MdtDownloadUrl'"
+    $mdtInstallFile = Get-LabInternetFile -Uri $MdtDownloadUrl -Path $downloadTargetFolder -PassThru -ErrorAction Stop
    
     Write-ScreenInfo "Copying MDT Install Files to server '$ComputerName'..."
-    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $mdtInstallFileName) -DestinationFolderPath C:\Install -ComputerName $ComputerName
+    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $mdtInstallFile.FileName) -DestinationFolderPath C:\Install -ComputerName $ComputerName
    
     Write-ScreenInfo "Copying ADK Install Files to server '$ComputerName'..."
     Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADK') -DestinationFolderPath C:\Install -ComputerName $ComputerName -Recurse
@@ -421,7 +441,7 @@ function Install-MDT {
     Install-LabWindowsFeature -ComputerName $ComputerName -FeatureName WDS
    
     Write-ScreenInfo "Installing 'MDT' on server '$ComputerName'..."
-    Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "C:\Install\$mdtInstallFileName" -CommandLine '/qb'
+    Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath "C:\Install\$($mdtInstallFile.FileName)" -CommandLine '/qb'
    
     Invoke-LabCommand -ActivityName 'Configure MDT' -ComputerName $ComputerName -ScriptBlock {
         param  
@@ -430,7 +450,7 @@ function Install-MDT {
             [string]$DeploymentFolder,
    
             [Parameter(Mandatory)]
-            [string]$Share,
+            [string]$DeploymentShare,
 
             [Parameter(Mandatory)]
             [string]$InstallUserID,
@@ -449,8 +469,8 @@ function Install-MDT {
             New-Item -Path $DeploymentFolder -Type Directory | Out-Null
         }
 
-        if (-not (Get-SmbShare -Name $Share -ErrorAction SilentlyContinue)) {
-            New-SmbShare -Name $Share -Path $DeploymentFolder -ChangeAccess EVERYONE | Out-Null
+        if (-not (Get-SmbShare -Name $DeploymentShare -ErrorAction SilentlyContinue)) {
+            New-SmbShare -Name $DeploymentShare -Path $DeploymentFolder -ChangeAccess EVERYONE | Out-Null
         }
 
         Import-Module "C:\Program Files\Microsoft Deployment Toolkit\bin\MicrosoftDeploymentToolkit.psd1"
@@ -471,7 +491,7 @@ function Install-MDT {
         #Discussion of available bootstrap.ini settings is located in the MDT toolkit reference at:
         # https://technet.microsoft.com/en-us/library/dn781091.aspx
         $file = Get-Content -Path "$DeploymentFolder\Control\BootStrap.ini"
-        $file += "DeployRoot=\\$ENV:COMPUTERNAME\$Share"
+        $file += "DeployRoot=\\$ENV:COMPUTERNAME\$DeploymentShare"
         $file += $("UserDomain=$ENV:COMPUTERNAME")
         $file += $("UserID=$InstallUserID")
         $file += $("UserPassword=$InstallPassword")
@@ -544,11 +564,12 @@ function Import-MDTTaskSequences {
 
 Import-Lab -Name $data.Name -NoDisplay
 
-Install-MDT -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -DeploymentShare DeploymentShare$ -InstallUserID $InstallUserID -InstallPassword $InstallPassword
+$param = Sync-Parameter -Command (Get-Command -Name Install-MDT) -Parameters $PSBoundParameters
+Install-MDT @param
 #At this stage, MDT and WDS are installed and configured, however there are NO Operating Systems or applications available, plus DHCP still needs to be installed and configured
 
 #Import applications into MDT (optional step). The example below uses an XML file containg the app information
-Import-MDTApplications -XMLFilePath (Join-Path -Path $PSScriptRoot -ChildPath MDTApplications.xml) -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation
+Import-MDTApplications -XMLFilePath (Join-Path -Path $PSScriptRoot -ChildPath MDTApplications.xml) -ComputerName $ComputerName -DeploymentFolder $DeploymentFolder
 
 $availableOperatingSystems = Get-LabAvailableOperatingSystem -Path $global:labSources
 foreach ($operatingSystem in $OperatingSystems)
@@ -558,7 +579,7 @@ foreach ($operatingSystem in $OperatingSystems)
     if ($os)
     {
         $osFriendlyName = $operatingSystem -replace '[ \(\)]', ''
-        Import-MDTOperatingSystem -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -OperatingSystem $os -AlOsFriendlyName $osFriendlyName
+        Import-MDTOperatingSystem -ComputerName $ComputerName -DeploymentFolder $DeploymentFolder -OperatingSystem $os -AlOsFriendlyName $osFriendlyName
     }
     else
     {
@@ -566,7 +587,7 @@ foreach ($operatingSystem in $OperatingSystems)
     }
 }
 
-Import-MDTTaskSequences -ComputerName $ComputerName -DeploymentFolder $DeploymentFolderLocation -AdminPassword $InstallPassword
+Import-MDTTaskSequences -ComputerName $ComputerName -DeploymentFolder $DeploymentFolder -AdminPassword $InstallPassword
 
 #This version of the routine assumes that DHCP needs to be installed and configured on the MDT server, along with fixing up WDS to listen correctly on a machine with DHCP.
 #Note: No checking currently if the supplied DHCP scope ranges fall correctly within the AL network definition.
