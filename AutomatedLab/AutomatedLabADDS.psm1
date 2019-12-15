@@ -1715,7 +1715,7 @@ function Test-LabADReady
 
     $adReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -ScriptBlock {
 
-        if ((Get-Service -Name ADWS).Status -eq 'Running')
+        if ((Get-Service -Name ADWS -ErrorAction SilentlyContinue).Status -eq 'Running')
         {
             try
             {
@@ -1823,6 +1823,11 @@ function Sync-LabActiveDirectory
             $VerbosePreference = $using:VerbosePreference
 
             ipconfig.exe -flushdns
+
+            if (-not -(Test-Path -Path C:\DeployDebug))
+            {
+                New-Item C:\DeployDebug -Force -ItemType Directory | Out-Null
+            }
 
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
