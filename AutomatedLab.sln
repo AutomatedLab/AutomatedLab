@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2048
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29411.108
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "Installer", "Installer\Installer.wixproj", "{F9ED990E-1D1D-4F11-B1A7-6ACC8D3C40C2}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -726,6 +726,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Office2019", "Office2019", 
 		LabSources\CustomRoles\Office2019\HostStart.ps1 = LabSources\CustomRoles\Office2019\HostStart.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1 = LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -841,6 +846,7 @@ Global
 		{176FD7BD-6CB9-4FCA-8EDD-A02C68938657} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{E931A24D-E1CF-4A0E-A225-364B8CB85D52} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
 		{CFBA7C26-FD09-4636-A867-E80BA6FE1DB6} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}

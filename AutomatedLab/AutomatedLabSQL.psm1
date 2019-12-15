@@ -409,7 +409,7 @@ GO
 
             Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $server
             Install-LabSoftwarePackage -Path $downloadFolder\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $server
-            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $server -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1
+            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $server -FilePath $labSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
         }
 
         #endregion

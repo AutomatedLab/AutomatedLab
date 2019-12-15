@@ -1297,8 +1297,8 @@
       <Component Id="cmpB3EF7A92492F44029D4B8C1E55123D8D" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="a8b0ef18-d142-487b-91fd-d7e3cda088e0">
         <File Id="filA66AB3CD20094F17811461E2914765DC" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupDscPullServerSql.ps1" />
       </Component>
-      <Component Id="cmpDE17B245EA354D77BC40DB5B0F43CDDA" Directory="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Guid="e38f28c3-3de3-42a2-81ff-afe83e6f85aa">
-        <File Id="fil1492CDCF9CBB34982996FAA477019FB10" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SetupDscPullServer\SetupSqlServerReportingServices.ps1" />
+      <Component Id="cmpDE17B245EA354D77BC40DB5B0F43CDDA" Directory="dir00729354D694424EA958809C47C9B720" Guid="e38f28c3-3de3-42a2-81ff-afe83e6f85aa">
+        <File Id="fil1492CDCF9CBB34982996FAA477019FB10" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1" />
       </Component>
       <Component Id="cmp409218040CF648ED926382E690CB15C8" Directory="dirE842539784E045D999747314891FC4E7" Guid="82a26abf-2b33-415b-90fb-fdc06501a1db">
         <File Id="filF716E14FD1EA46BDA54D9A76E3EEA053" KeyPath="yes" Source="$(var.SolutionDir)LabSources\PostInstallationActivities\WebSiteDefaultContent\Default.html" />
@@ -1341,6 +1341,11 @@
   <Fragment>
     <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
       <Directory Id="dir643614AA5DD514F0CDE7FCAD4C22D6D2" Name="SetupDscPullServer" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
+      <Directory Id="dir00729354D694424EA958809C47C9B720" Name="SqlServer" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
