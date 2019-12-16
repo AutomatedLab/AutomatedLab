@@ -121,13 +121,13 @@ GO
             Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
             Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
             Restart-LabVM -ComputerName $machinesBatch -Wait -NoDisplay
-            Write-ScreenInfo -Message "done"
+            Write-ScreenInfo -Message 'done'
 
             Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -Type Verbose -NoNewLine
             Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
             Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
-            Write-ScreenInfo -Message "done"
-            
+            Write-ScreenInfo -Message 'done'
+
             foreach ($machine in $machinesBatch)
             {
                 $role = $machine.Roles | Where-Object Name -like SQLServer*
@@ -152,7 +152,7 @@ GO
                 }
                 Write-ScreenInfo 'Done'
 
-                Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -SupressOutput
+                $dvdDrive = Mount-LabIsoImage -ComputerName $machine -IsoPath ($lab.Sources.ISOs | Where-Object Name -eq $role.Name).Path -PassThru -SupressOutput
 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
 
@@ -248,50 +248,15 @@ GO
 
                 New-LabSqlAccount -Machine $machine -RoleProperties $role.Properties
 
-                $scriptBlock = {
-                    Write-Verbose 'Installing SQL Server...'
-
-                    $dvdDrive = ''
-                    $startTime = (Get-Date)
-                    while (-not $dvdDrive -and (($startTime).AddSeconds(120) -gt (Get-Date)))
-                    {
-                        Start-Sleep -Seconds 2
-                        $dvdDrive = (Get-WmiObject -Class Win32_CDRomDrive | Where-Object MediaLoaded).Drive
-                    }
-
-                    if ($dvdDrive)
-                    {
-                        #Configure App Compatibility for SQL Server 2008. Otherwise a warning pop-up will stop the installation
-                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{f2d3ae3a-bfcc-45e2-bf63-178d1db34294}' -Value 4 -PropertyType 'DWORD' -ErrorAction SilentlyContinue
-                        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\AppCompatFlags' -Name '{45da5a8b-67b5-4896-86b7-a2e838aee035}' -Value 4 -PropertyType 'DWORD' -ErrorAction SilentlyContinue
-
-                        $installation = Start-Process -FilePath "$dvdDrive\Setup.exe" -ArgumentList $setupArguments -Wait -LoadUserProfile -PassThru
-
-                        if ($installation.ExitCode -notin 0,3010)
-                        {
-                            throw "SQL Setup failed with exit code $($installation.ExitCode)"
-                        }
-
-                        Write-Verbose 'SQL Installation finished. Restarting machine.'
-
-                        Restart-Computer -Force
-                    }
-                    else
-                    {
-                        Write-Error -Message 'Setup.exe in ISO file could not be found (or ISO was not successfully mounted)'
-                    }
-                }
-
                 $param = @{}
                 $param.Add('ComputerName', $machine)
-                $param.Add('ActivityName', 'Install SQL Server')
+                $param.Add('LocalPath', "$($dvdDrive.DriveLetter)\Setup.exe")
                 $param.Add('AsJob', $true)
                 $param.Add('PassThru', $true)
                 $param.Add('NoDisplay', $true)
-                $param.Add('Scriptblock', $scriptBlock)
-                $param.Add('Variable', (Get-Variable -Name setupArguments))
-
-                $jobs += Invoke-LabCommand @param
+                $param.Add('CommandLine', $setupArguments)
+                $param.Add('ExpectedReturnCodes', (0,3010))
+                $jobs += Install-LabSoftwarePackage @param -UseShellExecute
 
                 $machineIndex++
             }
@@ -303,14 +268,13 @@ GO
 
                 #Start other machines while waiting for SQL server to install
                 $startTime = Get-Date
-                $additionalMachinesToInstall = Get-LabVM -Role SQLServer
-                Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
+                $additionalMachinesToInstall = Get-LabVM -Role SQLServer | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' }
 
                 if ($additionalMachinesToInstall)
                 {
                     Write-PSFMessage -Message 'Preparing more machines while waiting for installation to finish'
 
-                    $machinesToPrepare = Get-LabVM -Role SQLServer
+                    $machinesToPrepare = Get-LabVM -Role SQLServer |
                     Where-Object { (Get-LabVMStatus -ComputerName $_) -eq 'Stopped' } |
                     Select-Object -First 2
 
@@ -320,21 +284,23 @@ GO
                         Start-LabVM -ComputerName $machinesToPrepare -Wait -NoNewline
 
                         Write-PSFMessage -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesToPrepare -join ', ')'"
-                        $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $machinesBatch -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
+                        $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $machinesToPrepare -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
                         Write-PSFMessage -Message "Waiting for machines '$($machinesToPrepare -join ', ')' to be finish installation of pre-requisite .Net 3.5 Framework"
                         Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 120 -NoNewLine
 
-                        $machinesToPrepare = Get-LabVM -Role SQLServer | Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } | Select-Object -First 2
+                        $machinesToPrepare = Get-LabVM -Role SQLServer |
+                        Where-Object { (Get-LabVMStatus -ComputerName $_.Name) -eq 'Stopped' } |
+                        Select-Object -First 2
                     }
                     Write-PSFMessage -Message "Resuming waiting for SQL Servers batch ($($machinesBatch -join ', ')) to complete installation and restart"
                 }
 
                 $installMachines = $machinesBatch | Where-Object { -not $_.SqlAlreadyInstalled }
-                Wait-LabVMRestart -ComputerName $installMachines -TimeoutInMinutes $InstallationTimeout -ProgressIndicator 30 -NoNewLine
+                Wait-LWLabJob -Job $jobs -Timeout 20 -NoDisplay -ProgressIndicator 15 -NoNewLine
+                Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
+                Restart-LabVM -ComputerName $installMachines -NoDisplay
 
                 Wait-LabVM -ComputerName $installMachines -PostDelaySeconds 30 -NoNewLine
-
-                Dismount-LabIsoImage -ComputerName $machinesBatch -SupressOutput
 
                 if ($installBatch -lt $totalBatches -and ($machinesBatch | Where-Object HostType -eq 'HyperV'))
                 {
