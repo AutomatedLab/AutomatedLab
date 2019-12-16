@@ -1951,6 +1951,7 @@ function Test-LabAutoLogon
 
     Write-PSFMessage -Message "Testing autologon on $($ComputerName.Count) machines"
 
+    [void]$PSBoundParameters.Remove('TestInteractiveLogonSession')
     $machines = Get-LabVM @PSBoundParameters
     $returnValues = @{}
 
