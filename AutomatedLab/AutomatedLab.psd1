@@ -191,6 +191,7 @@
         'Test-FileList',
         'Test-FolderExist',
         'Test-FolderNotExist',
+        'Test-LabADReady',
         'Test-LabAutoLogon',
         'Test-LabAzureLabSourcesStorage',
         'Test-LabCATemplate',

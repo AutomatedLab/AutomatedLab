@@ -1033,6 +1033,7 @@ function Install-LabRootDcs
         {
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
         }
 
         if ($CreateCheckPoints)
@@ -1322,6 +1323,7 @@ function Install-LabFirstChildDcs
         {
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
         }
 
         if ($CreateCheckPoints)
@@ -1554,6 +1556,7 @@ function Install-LabDcs
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
 
         Enable-LabVMRemoting -ComputerName $machines
+        Enable-LabAutoLogon -ComputerName $machines
 
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
@@ -2342,7 +2345,7 @@ function Reset-LabAdPassword
     
     $lab = Get-Lab
     $domain = $lab.Domains | Where-Object Name -eq $DomainName
-    $vm = Get-LabVM -Role RootDC | Where-Object DomainName -eq $DomainName
+    $vm = Get-LabVM -Role RootDC, FirstChildDC | Where-Object DomainName -eq $DomainName
     
     Invoke-LabCommand -ActivityName 'Reset Administrator password in AD' -ScriptBlock {
         Add-Type -AssemblyName System.DirectoryServices.AccountManagement
