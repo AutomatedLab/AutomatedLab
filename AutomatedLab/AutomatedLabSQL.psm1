@@ -95,6 +95,7 @@ GO
         $machineIndex = 0
         $installBatch = 0
         $totalBatches = [System.Math]::Ceiling($onPremisesMachines.count / $parallelInstalls)
+        
         do
         {
             $jobs = @()
@@ -159,20 +160,23 @@ GO
                 ?? { $role.Properties.ContainsKey('Features') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
-
-                if ($global:setupArguments -match '/Features=.*RS' -and $role.Name -eq 'SQLServer2017')
+                
+                #Check the usage of SQL Configuration File
+                if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
-                    $global:setupArguments = $global:setupArguments -replace ',?RS'
+                    $global:setupArguments = ''
+                    $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
+                    $configurationFileContent = Get-Content D:\SqlConfig.ini | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
 
-                    if (-not $script:externalSsrs) { $script:externalSsrs = @() }
-                    $script:externalSsrs += $machine
-                }
-                if ($global:setupArguments -match '/Features=.*RS' -and $role.Name -eq 'SQLServer2019')
-                {
-                    $global:setupArguments = $global:setupArguments -replace ',?RS'
-
-                    if (-not $script:externalSsrs) { $script:externalSsrs = @() }
-                    $script:externalSsrs += $machine
+                    try
+                    {
+                        Copy-LabFileItem -Path $role.Properties.ConfigurationFile -ComputerName $machine -ErrorAction Stop
+                        $global:setupArguments += Write-ArgumentVerbose -Argument (" /ConfigurationFile=`"$fileName`"")
+                    }
+                    catch
+                    {
+                        Write-PSFMessage -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
+                    }
                 }
 
                 ?? { $role.Properties.ContainsKey('InstanceName') } `
@@ -213,31 +217,6 @@ GO
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcAccount')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('IsSvcPassword')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } { }
                 Invoke-Ternary -Decider {$role.Properties.ContainsKey('SQLSysAdminAccounts')} { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
-
-                if ($role.Properties.ContainsKey('UseOnlyConfigurationFile'))
-                {
-                    $global:setupArguments = ''
-                }
-
-                if ($role.Properties.ContainsKey('ConfigurationFile'))
-                {
-                    $global:setupArguments = ''
-                }
-
-                if ($role.Properties.ContainsKey('ConfigurationFile'))
-                {
-                    $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
-
-                    try
-                    {
-                        Copy-LabFileItem -Path $role.Properties.ConfigurationFile -ComputerName $machine -ErrorAction Stop
-                        $global:setupArguments += Write-ArgumentVerbose -Argument (" /ConfigurationFile=`"$fileName`"")
-                    }
-                    catch
-                    {
-                        Write-PSFMessage -Message ('Could not copy "{0}" to {1}. Skipping configuration file' -f $role.Properties.ConfigurationFile, $machine)
-                    }
-                }
 
                 Invoke-Ternary -Decider {$machine.Roles.Name -notcontains 'SQLServer2008'} { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
 
@@ -334,12 +313,14 @@ GO
             $sqlRole.Name -match '(?<Version>\d+)' | Out-Null
             $server | Add-Member -Name SqlVersion -MemberType NoteProperty -Value $Matches.Version -Force
 
-            if (-not $sqlRole.Properties.Features -or ($sqlRole.Properties.Features -split ',') -contains 'RS')
+            if (($sqlRole.Properties.Features -split ',') -contains 'RS' -or
+            (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'RS')
             {
                 $server | Add-Member -Name SsRsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)SSRS") -Force
             }
             
-            if (-not $sqlRole.Properties.Features -or ($sqlRole.Properties.Features -split ',') -contains 'Tools')
+            if (($sqlRole.Properties.Features -split ',') -contains 'Tools' -or
+            (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'Tools')
             {
                 $server | Add-Member -Name SsmsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)ManagementStudio") -Force
             }
@@ -854,11 +835,14 @@ function New-LabSqlAccount
             $domain = ($group -split "\\")[0]
             $groupName = ($group -split "\\")[1]
         }
-
-        if ($group.Contains("@"))
+        elseif ($group.Contains("@"))
         {
             $domain = ($group -split "@")[1]
             $groupName = ($group -split "@")[0]
+        }
+        else
+        {
+            $groupName = $group
         }
 
         if ($domain -match 'NT Authority|BUILTIN')
@@ -894,12 +878,12 @@ function New-LabSqlAccount
         }
         else
         {
-            Invoke-LabCommand $Machine -ActivityName ('Creating local user {0}' -f $user) -ScriptBlock {
-                if (-not (Get-LocalUser $user -ErrorAction SilentlyContinue))
+            Invoke-LabCommand $Machine -ActivityName "Creating local group '$groupName'" -ScriptBlock {
+                if (-not (Get-LocalGroup -Name $groupName -ErrorAction SilentlyContinue))
                 {
-                    New-LocalUser -Name $user -AccountNeverExpires -PasswordNeverExpires -UserMayNotChangePassword -Password ($password | ConvertTo-SecureString -AsPlainText -Force)
+                    New-LocalGroup -Name $groupName -ErrorAction SilentlyContinue
                 }
-            } -Variable (Get-Variable -Name user, password)
+            } -Variable (Get-Variable -Name groupName)
         }
     }
 }
