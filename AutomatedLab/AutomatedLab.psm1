@@ -3046,8 +3046,7 @@ function Remove-LabPSSession
     )
 
     Write-LogFunctionEntry
-    $lab = Get-Lab
-    $removedSessionCount = 0
+
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
         $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
@@ -3057,7 +3056,7 @@ function Remove-LabPSSession
         $Machine = Get-LabVM -All -IncludeLinux
     }
 
-    foreach ($m in $Machine)
+    $sessions = foreach ($m in $Machine)
     {
         $param = @{}
         if ($m.HostType -eq 'Azure')
@@ -3078,16 +3077,15 @@ function Remove-LabPSSession
             $param.Add('Port', 5985)
         }
 
-        $sessions = Get-PSSession | Where-Object {
+        Get-PSSession | Where-Object {
             $_.ComputerName -eq $param.ComputerName -and
             $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
         $_.Name -like "$($m)_*" }
-
-        $sessions | Remove-PSSession -ErrorAction SilentlyContinue
-        $removedSessionCount += $sessions.Count
     }
 
-    Write-PSFMessage "Removed $removedSessionCount PSSessions..."
+    $sessions | Remove-PSSession -ErrorAction SilentlyContinue
+
+    Write-PSFMessage "Removed $($sessions.Count) PSSessions..."
     Write-LogFunctionExit
 }
 #endregion Remove-LabPSSession
