@@ -932,8 +932,10 @@ function Wait-LabVMShutdown
             {
                 $vm.HasShutdown = $true
             }
-
-            Start-Sleep -Seconds 5
+            else
+            {
+                Start-Sleep -Seconds 5
+            }
         }
         if (((Get-Date) - $ProgressIndicatorTimer).TotalSeconds -ge $ProgressIndicator)
         {

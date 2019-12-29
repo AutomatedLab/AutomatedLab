@@ -1,6 +1,19 @@
 function Get-ConfigSet
 {
-    return Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14\Admin' -Class MSReportServer_ConfigurationSetting
+    $class = Get-WmiObject -List -Namespace root\microsoft -Class MSReportServer_ConfigurationSetting -Recurse
+    Get-CimInstance -Namespace $class.__NAMESPACE -Class $class.Name
+
+    if ($class.__NAMESPACE -match '\\v(?<version>\d\d)\\*.')
+    {
+        $version = $Matches.version
+        Write-Host "Installed SSRS version is $version"
+    }
+}
+
+function Get-Instance
+{
+    $class = Get-WmiObject -List -Namespace root\microsoft -Class MSReportServer_Instance -Recurse
+    $instance = Get-CimInstance -Namespace $class.__NAMESPACE -Class $class.Name
 }
 
 $configSet = Get-ConfigSet
@@ -58,14 +71,13 @@ if (-not $configSet.IsInitialized)
 
     # Update the current configuration
     $configSet = Get-ConfigSet
-
     $configSet | Invoke-CimMethod -MethodName ListReportServersInDatabase | Out-Null
     $configSet | Invoke-CimMethod -MethodName ListReservedUrls | Out-Null
 
-    $inst = Get-CimInstance -Namespace 'root\Microsoft\SqlServer\ReportServer\RS_SSRS\v14' -Class MSReportServer_Instance -ComputerName localhost
+    $instance = Get-Instance
 
     Write-Verbose 'Reporting Services are now configured. The URLs to access the reporting services are:'
-    foreach ($url in ($inst | Invoke-CimMethod -Method GetReportServerUrls).URLs)
+    foreach ($url in ($instance | Invoke-CimMethod -Method GetReportServerUrls).URLs)
     {
         Write-Verbose "`t$url"
     }
