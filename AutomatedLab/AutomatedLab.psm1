@@ -1217,7 +1217,11 @@ function Remove-Lab
             {
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
                 $vm = Get-VM -Name $machine -ErrorAction SilentlyContinue
-                if ($machineMetadata.LabName -ne $labName -and $vm)
+                if (-not $machineMetadata)
+                {
+                    Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
+                }
+                elseif ($machineMetadata.LabName -ne $labName -and $vm)
                 {
                     Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
                 }
