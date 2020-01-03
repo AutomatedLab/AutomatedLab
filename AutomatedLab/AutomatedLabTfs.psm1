@@ -1280,7 +1280,7 @@ function New-LabTfsFeed
     
     if ($PassThru)
     {
-        Get-LabTfsFeed @defaultParam
+        Get-LabTfsFeed -ComputerName $ComputerName -FeedName $FeedName
     }
 }
 
