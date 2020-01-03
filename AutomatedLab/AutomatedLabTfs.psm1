@@ -1280,7 +1280,7 @@ function New-LabTfsFeed
     
     if ($PassThru)
     {
-        Get-TfsFeed @defaultParam
+        Get-LabTfsFeed @defaultParam
     }
 }
 
