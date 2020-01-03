@@ -1270,7 +1270,7 @@ function New-LabTfsFeed
         
         if ($FeedPermissions)
         {
-            Set-TfsFeedPermission @defaultParam -Permissions $p
+            Set-TfsFeedPermission @defaultParam -Permissions $FeedPermissions
         }
     }
     catch
