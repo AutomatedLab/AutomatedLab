@@ -18,14 +18,14 @@ function Install-LabTeamFoundationEnvironment
         if (-not $role.Properties.ContainsKey('PAT'))
         {
             Write-ScreenInfo -Type Error -Message "No Personal Access Token available for Azure DevOps connection to $svcConnection.
-            You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
+                You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
             Consider adding the key PAT to your role properties hashtable."
         }
 
         if (-not $role.Properties.ContainsKey('Organisation'))
         {
             Write-ScreenInfo -Type Error -Message "No Organisation name available for Azure DevOps connection to $svcConnection.
-            You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
+                You will be unable to deploy build workers and you will not be able to use the cmdlets New-LabReleasePipeline, Get-LabBuildStep, Get-LabReleaseStep.
             Consider adding the key Organisation to your role properties hashtable where Organisation = dev.azure.com/<Organisation>"
         }
     }
@@ -445,11 +445,13 @@ function New-LabReleasePipeline
         throw "Using the code upload method 'Git' requires a source repository to be defined."
     }
 
-    $tfsVm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
-
-    if ($ComputerName)
+    $tfsVm = if ($ComputerName)
     {
-        $tfsVm = Get-LabVm -ComputerName $ComputerName
+        Get-LabVM -ComputerName $ComputerName
+    }
+    else
+    {
+        Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
     }
 
     if (-not $tfsVm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
@@ -1178,5 +1180,198 @@ function Open-LabTfsSite
     )
 
     Start-Process -FilePath (Get-LabTfsUri @PSBoundParameters)
+}
+
+function New-LabTfsFeed
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $ComputerName,
+        
+        [Parameter(Mandatory)]
+        [string]
+        $FeedName,
+        
+        [object[]]
+        $FeedPermissions,
+        
+        [switch]
+        $PassThru
+    )
+    
+    $tfsVm = Get-LabVM -ComputerName $computerName
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = $originalPort = 8080
+    $tfsInstance = $tfsVm.FQDN
+
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
+    {
+        $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
+
+        if (-not $tfsPort)
+        {
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue rolling out release pipeline'
+            return
+        }
+
+        $tfsInstance = $tfsVm.AzureConnectionInfo.DnsName
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+        $accessToken = $role.Properties['PAT']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+    
+    $defaultParam = @{
+        InstanceName         = $tfsInstance
+        Port                 = $tfsPort
+        CollectionName       = $initialCollection
+        FeedName             = $FeedName
+        UseSsl               = $useSsl
+        SkipCertificateCheck = $true
+        ApiVersion           = '5.0-preview.1'
+    }
+
+    if ($accessToken)
+    {
+        $defaultParam.PersonalAccessToken = $accessToken
+    }
+    elseif ($credential)
+    {
+        $defaultParam.Credential = $credential
+    }
+    else
+    {
+        Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
+        return
+    }
+    
+    try
+    {
+        New-TfsFeed @defaultParam -ErrorAction Stop
+        
+        if ($FeedPermissions)
+        {
+            Set-TfsFeedPermission @defaultParam -Permissions $FeedPermissions
+        }
+    }
+    catch
+    {
+        Write-Error $_
+    }
+    
+    if ($PassThru)
+    {
+        Get-LabTfsFeed -ComputerName $ComputerName -FeedName $FeedName
+    }
+}
+
+function Get-LabTfsFeed
+{
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $ComputerName,
+
+        [string]
+        $FeedName
+    )
+    
+    $lab = Get-Lab
+    $tfsVm = Get-LabVM -ComputerName $computerName
+    $role = $tfsVm.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
+    $initialCollection = 'AutomatedLab'
+    $tfsPort = $originalPort = 8080
+    $tfsInstance = $tfsVm.FQDN
+
+    if ($role.Properties.ContainsKey('Port'))
+    {
+        $tfsPort = $role.Properties['Port']
+    }
+
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
+    {
+        $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
+
+        if (-not $tfsPort)
+        {
+            Write-Error -Message 'There has been an error setting the Azure port during TFS installation. Cannot continue rolling out release pipeline'
+            return
+        }
+
+        $tfsInstance = $tfsVm.AzureConnectionInfo.DnsName
+    }
+
+    if ($role.Properties.ContainsKey('InitialCollection'))
+    {
+        $initialCollection = $role.Properties['InitialCollection']
+    }
+
+    if ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment)
+    {
+        $tfsInstance = 'dev.azure.com'
+        $initialCollection = $role.Properties['Organisation']
+        $accessToken = $role.Properties['PAT']
+    }
+
+    $credential = $tfsVm.GetCredential((Get-Lab))
+    $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint')
+    
+    $defaultParam = @{
+        InstanceName         = $tfsInstance
+        Port                 = $tfsPort
+        CollectionName       = $initialCollection
+        FeedName             = $FeedName
+        UseSsl               = $useSsl
+        SkipCertificateCheck = $true
+        ApiVersion           = '5.0-preview.1'
+    }
+
+    if ($accessToken)
+    {
+        $defaultParam.PersonalAccessToken = $accessToken
+    }
+    elseif ($credential)
+    {
+        $defaultParam.Credential = $credential
+    }
+    else
+    {
+        Write-ScreenInfo -Type Error -Message 'Neither Credential nor AccessToken are available. Unable to continue'
+        return
+    }
+    
+    $feed = Get-TfsFeed @defaultParam
+    if ($feed.url -match '(?<url>http.*)\/_apis')
+    {
+        $nugetV2Url = '{0}/_packaging/{1}/nuget/v2' -f $Matches.url, $feed.name
+        $feed | Add-Member -Name NugetV2Url -MemberType NoteProperty $nugetV2Url
+        
+        $feed | Add-Member -Name NugetCredential -MemberType NoteProperty ($tfsVm.GetCredential($lab))
+        
+        $nugetApiKey = '{0}@{1}:{2}' -f $feed.NugetCredential.GetNetworkCredential().UserName, $feed.NugetCredential.GetNetworkCredential().Domain, $feed.NugetCredential.GetNetworkCredential().Password
+        $feed | Add-Member -Name NugetApiKey -MemberType NoteProperty -Value $nugetApiKey
+    }
+    
+    $feed
 }
 #endregion
