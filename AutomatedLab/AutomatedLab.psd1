@@ -224,7 +224,9 @@
         'Test-LabAzureModuleAvailability',
         'Get-LabMachineAutoShutdown',
         'Enable-LabMachineAutoShutdown',
-        'Disable-LabMAchineAutoShutdown'
+        'Disable-LabMAchineAutoShutdown',
+        'Get-LabTfsFeed',
+        'New-LabTfsFeed'
     )
     
     FileList               = @(
