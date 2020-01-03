@@ -1217,7 +1217,11 @@ function Remove-Lab
             {
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
                 $vm = Get-VM -Name $machine -ErrorAction SilentlyContinue
-                if ($machineMetadata.LabName -ne $labName -and $vm)
+                if (-not $machineMetadata)
+                {
+                    Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
+                }
+                elseif ($machineMetadata.LabName -ne $labName -and $vm)
                 {
                     Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
                 }
@@ -2899,12 +2903,13 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip $(Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
+                    $sessionsToRemove = $internalSession | Select-Object -Skip (Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
                     Write-PSFMessage "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
 
                     Write-PSFMessage "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
+                    #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+                    ($sessions += $internalSession | Where-Object State -eq 'Opened')[0] #| Select-Object -First 1
                 }
             }
 
@@ -3224,7 +3229,7 @@ function Invoke-LabCommand
     #required to suppress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (-not (Get-LabVm -IncludeLinux))
+    if (-not (Get-LabVM -IncludeLinux))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return

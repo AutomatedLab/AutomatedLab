@@ -14,8 +14,14 @@ function Test-LabAzureModuleAvailability
     $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1
-    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
 
+    if (-not $moduleManifest)
+    {
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
+        return $false
+    }
+    
+    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
     if ($availableVersion -lt $minimumAzureModuleVersion)
     {
         Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
