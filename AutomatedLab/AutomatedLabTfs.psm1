@@ -1366,7 +1366,7 @@ function Get-LabTfsFeed
         $nugetV2Url = '{0}/_packaging/{1}/nuget/v2' -f $Matches.url, $feed.name
         $feed | Add-Member -Name NugetV2Url -MemberType NoteProperty $nugetV2Url
         
-        $feed | Add-Member -Name NugetCredential -MemberType NoteProperty ($vm.GetCredential($lab))
+        $feed | Add-Member -Name NugetCredential -MemberType NoteProperty ($tfsVm.GetCredential($lab))
         
         $nugetApiKey = '{0}@{1}:{2}' -f $feed.NugetCredential.GetNetworkCredential().UserName, $feed.NugetCredential.GetNetworkCredential().Domain, $feed.NugetCredential.GetNetworkCredential().Password
         $feed | Add-Member -Name NugetApiKey -MemberType NoteProperty -Value $nugetApiKey
