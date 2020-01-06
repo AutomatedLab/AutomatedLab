@@ -187,10 +187,10 @@ function Set-CMCustomisations {
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install SupportCenter ({0})" -f $ReceiveJobErr.Message) -Type "Warning"
+        Write-ScreenInfo -Message ("Failed to install SupportCenter ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Warning"
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
@@ -220,10 +220,10 @@ function Set-CMCustomisations {
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to create file associations and desktop shortcut for log files ({0})" -f $ReceiveJobErr.Message) -Type "Warning"
+        Write-ScreenInfo -Message ("Failed to create file associations and desktop shortcut for log files ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Warning"
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion

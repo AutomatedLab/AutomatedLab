@@ -21,7 +21,7 @@ try {
     $CMExeObj = Get-LabInternetFile -Uri $CMURL -Path (Split-Path -Path $CMExePath -Parent) -FileName (Split-Path -Path $CMExePath -Leaf) -PassThru -ErrorAction "Stop" -ErrorVariable "GetLabInternetFileErr"
 }
 catch {
-    $Message = "Failed to download CM binaries archive from '{0}' ({1})" -f $CMURL, $GetLabInternetFileErr.Message
+    $Message = "Failed to download CM binaries archive from '{0}' ({1})" -f $CMURL, $GetLabInternetFileErr.ErrorRecord.Exception.Message
     Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
     throw $Message
 }
@@ -39,7 +39,7 @@ if (-not (Test-Path -Path $SccmBinariesDirectory))
         $p = Start-Process -FilePath $CMExeObj.FullName -ArgumentList $pArgs -PassThru -ErrorAction "Stop" -ErrorVariable "StartProcessErr"
     }
     catch {
-        $Message = "Failed to initiate extraction to '{0}' ({1})" -f $SccmBinariesDirectory, $StartProcessErr.Message
+        $Message = "Failed to initiate extraction to '{0}' ({1})" -f $SccmBinariesDirectory, $StartProcessErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
@@ -66,7 +66,7 @@ if (-not (Test-Path -Path $SccmPreReqsDirectory))
         $p = Start-Process -FilePath $SccmBinariesDirectory\SMSSETUP\BIN\X64\setupdl.exe -ArgumentList $SccmPreReqsDirectory -PassThru -ErrorAction "Stop" -ErrorVariable "StartProcessErr"
     }
     catch {
-        $Message = "Failed to initiate download of CM pre-req files to '{0}' ({1})" -f $SccmPreReqsDirectory, $StartProcessErr.Message
+        $Message = "Failed to initiate download of CM pre-req files to '{0}' ({1})" -f $SccmPreReqsDirectory, $StartProcessErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }

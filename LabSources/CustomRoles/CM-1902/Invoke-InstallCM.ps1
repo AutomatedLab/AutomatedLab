@@ -347,7 +347,7 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $InstalledSite = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $InstalledSite = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
         switch -Regex ($ReceiveJobErr.Message) {
@@ -355,7 +355,7 @@ UseProxy=0
                 Write-ScreenInfo -Message "No site found, continuing"
             }
             default {
-                Write-ScreenInfo -Message ("Could not query SMS_Site to check if site is already installed ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+                Write-ScreenInfo -Message ("Could not query SMS_Site to check if site is already installed ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
                 throw $ReceiveJobErr
             }
         }
@@ -417,10 +417,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to bring disks online ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to bring disks online ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -434,10 +434,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to create NO_SMS_ON_DRIVE.SMS ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to create NO_SMS_ON_DRIVE.SMS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -451,10 +451,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to create folders for SQL db ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to create folders for SQL db ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -504,10 +504,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $InstalledSite = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $InstalledSite = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to extend the AD Schema ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to extend the AD Schema ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -560,10 +560,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to configure the Systems Management Container" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to configure the Systems Management Container" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -575,10 +575,10 @@ UseProxy=0
     $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install ADK ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to install ADK ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -590,10 +590,10 @@ UseProxy=0
     $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install WinPE ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to install WinPE ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -604,10 +604,10 @@ UseProxy=0
     $job = Install-LabWindowsFeature -FeatureName NET-Framework-Core
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install .NET 3.5 ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to install .NET 3.5 ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -618,10 +618,10 @@ UseProxy=0
     $job = Install-LabWindowsFeature -ComputerName $SccmServerName -FeatureName WDS
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install WDS ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to install WDS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -631,14 +631,14 @@ UseProxy=0
     # Sometimes, not always, I noticed WDS state was "InstallPending" and reboot resolved.
     Write-ScreenInfo -Message "Verifying WDS is installed" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Verifying WDS is installed" -ScriptBlock {
-        Get-WindowsFeature -Name "WDS-Deployment" -ErrorAction Stop
+        Get-WindowsFeature -Name "WDS-Deployment" -ErrorAction "Stop"
     }
     Wait-LWLabJob -Job $job
     try {
-        $WDS = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $WDS = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to verify WDS is installed ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to verify WDS is installed ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     switch ($WDS.InstallState) {
@@ -671,10 +671,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to configure WDS ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to configure WDS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -685,10 +685,10 @@ UseProxy=0
     $job = Install-LabWindowsFeature -FeatureName "FS-FileServer,Web-Mgmt-Tools,Web-Mgmt-Console,Web-Mgmt-Compat,Web-Metabase,Web-WMI,Web-WebServer,Web-Common-Http,Web-Default-Doc,Web-Dir-Browsing,Web-Http-Errors,Web-Static-Content,Web-Http-Redirect,Web-Health,Web-Http-Logging,Web-Log-Libraries,Web-Request-Monitor,Web-Http-Tracing,Web-Performance,Web-Stat-Compression,Web-Dyn-Compression,Web-Security,Web-Filtering,Web-Windows-Auth,Web-App-Dev,Web-Net-Ext,Web-Net-Ext45,Web-Asp-Net,Web-Asp-Net45,Web-ISAPI-Ext,Web-ISAPI-Filter"
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed installing additional features (1/2) ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed installing additional features (1/2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -697,10 +697,10 @@ UseProxy=0
     $job = Install-LabWindowsFeature -FeatureName "NET-HTTP-Activation,NET-Non-HTTP-Activ,NET-Framework-45-ASPNET,NET-WCF-HTTP-Activation45,BITS,RDC"
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed installing additional features (2/2) ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed installing additional features (2/2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -724,10 +724,10 @@ UseProxy=0
         }
         Wait-LWLabJob -Job $job
         try {
-            $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
         }
         catch {
-            Write-ScreenInfo -Message ("Failed to add CM system account to '{0}' ({1})" -f $sqlServerFqdn, $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+            Write-ScreenInfo -Message ("Failed to add CM system account to '{0}' ({1})" -f $sqlServerFqdn, $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
             throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -742,10 +742,10 @@ UseProxy=0
     $job = Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Failed to install Configuration Manager ({0})" -f $ReceiveJobErr.Message) -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Failed to install Configuration Manager ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -759,10 +759,10 @@ UseProxy=0
     }
     Wait-LWLabJob -Job $job
     try {
-        $InstalledSite = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $InstalledSite = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $SccmSiteCode, $ReceiveJobErr.Message
+        $Message = "Failed to validate install, could not find site code '{0}' in SMS_Site class ({1})" -f $SccmSiteCode, $ReceiveJobErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }

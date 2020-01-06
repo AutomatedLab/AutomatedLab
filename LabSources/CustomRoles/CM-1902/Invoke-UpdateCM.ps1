@@ -265,15 +265,15 @@ function Update-CMSite {
     $job = Invoke-LabCommand -ActivityName "Ensuring CONFIGURATION_MANAGER_UPDATE service is running" -ScriptBlock {
         $service = "CONFIGURATION_MANAGER_UPDATE"
         if ((Get-Service $service | Select-Object -ExpandProperty Status) -ne "Running") {
-            Start-Service "CONFIGURATION_MANAGER_UPDATE" -ErrorAction Stop
+            Start-Service "CONFIGURATION_MANAGER_UPDATE" -ErrorAction "Stop"
         }
     }
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Could not start CONFIGURATION_MANAGER_UPDATE service ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error" -TaskEnd
+        Write-ScreenInfo -Message ("Could not start CONFIGURATION_MANAGER_UPDATE service ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error" -TaskEnd
         throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -294,14 +294,14 @@ function Update-CMSite {
     } -ScriptBlock {
         $job = Invoke-LabCommand -ActivityName "Waiting for updates to appear in console" -Variable (Get-Variable -Name "SccmSiteCode") -ScriptBlock {
             $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE Impact = '31'"
-            Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction Stop | Sort-object -Property FullVersion -Descending
+            Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop" | Sort-object -Property FullVersion -Descending
         }
         Wait-LWLabJob -Job $job -NoNewLine
         try {
-            $Update = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+            $Update = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
         }
         catch {
-            Write-ScreenInfo -Message ("Could not query SMS_CM_UpdatePackages to find latest update ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+            Write-ScreenInfo -Message ("Could not query SMS_CM_UpdatePackages to find latest update ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
             throw $ReceiveJobErr
         }
     }
@@ -325,14 +325,14 @@ function Update-CMSite {
         Write-ScreenInfo -Message "Initiating download" -TaskStart
         if ($Update.State -eq [SMS_CM_UpdatePackages_State]::AvailableToDownload) {
             $job = Invoke-LabCommand -ActivityName "Initiating download" -Variable (Get-Variable -Name "Update") -ScriptBlock {
-                Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded" -ErrorAction Stop
+                Invoke-CimMethod -InputObject $Update -MethodName "SetPackageToBeDownloaded" -ErrorAction "Stop"
             }
             Wait-LWLabJob -Job $job
             try {
-                $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+                $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
             }
             catch {
-                Write-ScreenInfo -Message ("Failed to initiate download ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+                Write-ScreenInfo -Message ("Failed to initiate download ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
                 throw $ReceiveJobErr
             }
         }
@@ -358,10 +358,10 @@ function Update-CMSite {
                 Write-ScreenInfo -Message "."
                 Write-ScreenInfo -Message "Download did not start, restarting SMS_EXECUTIVE" -TaskStart -Type "Warning"
                 try {
-                    Restart-ServiceResilient -ComputerName $SccmServerName -ServiceName "SMS_EXECUTIVE" -ErrorAction Stop -ErrorVariable RestartServiceResilientErr
+                    Restart-ServiceResilient -ComputerName $SccmServerName -ServiceName "SMS_EXECUTIVE" -ErrorAction "Stop" -ErrorVariable "RestartServiceResilientErr"
                 }
                 catch {
-                    $Message = "Could not restart SMS_EXECUTIVE ({0})" -f $RestartServiceResilientErr.Exception.Message
+                    $Message = "Could not restart SMS_EXECUTIVE ({0})" -f $RestartServiceResilientErr.ErrorRecord.Exception.Message
                     Write-ScreenInfo -Message $Message -TaskEnd -Type "Error"
                     throw $Message
                 }
@@ -369,14 +369,14 @@ function Update-CMSite {
             } -ScriptBlock {
                 $job = Invoke-LabCommand -ActivityName "Verifying update download initiated OK" -Variable (Get-Variable -Name "Update", "SccmSiteCode") -ScriptBlock {
                     $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
-                    Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction Stop
+                    Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop"
                 }
                 Wait-LWLabJob -Job $job -NoNewLine
                 try {
-                    $Update = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+                    $Update = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
                 }
                 catch {
-                    Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages after initiating download (2) ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+                    Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages after initiating download (2) ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
                     throw $ReceiveJobErr
                 }
             }
@@ -408,14 +408,14 @@ function Update-CMSite {
         } -ScriptBlock {
             $job = Invoke-LabCommand -ActivityName "Querying update download status" -Variable (Get-Variable -Name "Update", "SccmSiteCode") -ScriptBlock {
                 $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
-                Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction Stop
+                Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop"
             }
             Wait-LWLabJob -Job $job -NoNewLine
             try {
-                $Update = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+                $Update = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
             }
             catch {
-                Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages waiting for download to complete ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+                Write-ScreenInfo -Message ("Failed to query SMS_CM_UpdatePackages waiting for download to complete ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
                 throw $ReceiveJobErr
             }
         }
@@ -434,10 +434,10 @@ function Update-CMSite {
         }
         Wait-LWLabJob -Job $job
         try {
-            $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
         }
         catch {
-            Write-ScreenInfo -Message ("Could not initiate update ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+            Write-ScreenInfo -Message ("Could not initiate update ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
             throw $ReceiveJobErr
         }
         Write-ScreenInfo -Message "Activity done" -TaskEnd
@@ -477,10 +477,10 @@ function Update-CMSite {
     }
     Wait-LWLabJob -Job $job
     try {
-        $InstalledSite = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $InstalledSite = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Could not query SMS_Site to validate update install ({0})" -f $ReceiveJobErr.Message) -TaskEnd -Type "Error"
+        Write-ScreenInfo -Message ("Could not query SMS_Site to validate update install ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
         throw $ReceiveJobErr
     }
     if ($InstalledSite.Version -eq $Update.FullVersion) {
@@ -500,10 +500,10 @@ function Update-CMSite {
     $job = Install-LabSoftwarePackage -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd -ExpectedReturnCodes 0 -ErrorAction "Stop" -ErrorVariable "InstallLabSoftwarePackageErr"
     Wait-LWLabJob -Job $job
     try {
-        $result = $job | Receive-Job -ErrorAction Stop -ErrorVariable ReceiveJobErr
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
     }
     catch {
-        Write-ScreenInfo -Message ("Console update failed ({0}) " -f $ReceiveJobErr.Message) -Type "Warning"
+        Write-ScreenInfo -Message ("Console update failed ({0}) " -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Warning"
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion

@@ -18,10 +18,10 @@ if (Test-Path -Path $ADKExePath) {
 
 $ADKURL = 'https://go.microsoft.com/fwlink/?linkid=2086042'
 try {
-    $ADKExeObj = Get-LabInternetFile -Uri $ADKURL -Path (Split-Path -Path $ADKExePath -Parent) -FileName (Split-Path -Path $ADKExePath -Leaf) -PassThru -ErrorAction Stop -ErrorVariable GetLabInternetFileErr
+    $ADKExeObj = Get-LabInternetFile -Uri $ADKURL -Path (Split-Path -Path $ADKExePath -Parent) -FileName (Split-Path -Path $ADKExePath -Leaf) -PassThru -ErrorAction "Stop" -ErrorVariable "GetLabInternetFileErr"
 }
 catch {
-    $Message = "Failed to download ADK installer from '{0}' ({1})" -f $ADKURL, $GetLabInternetFileErr.Message
+    $Message = "Failed to download ADK installer from '{0}' ({1})" -f $ADKURL, $GetLabInternetFileErr.ErrorRecord.Exception.Message
     Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
     throw $Message
 }
@@ -36,10 +36,10 @@ if (-not (Test-Path -Path $AdkDownloadPath))
 {
     $pArgs = "/quiet /layout {0}" -f $AdkDownloadPath
     try {
-        $p = Start-Process -FilePath $ADKExeObj.FullName -ArgumentList $pArgs -PassThru -ErrorAction "Stop" -ErrorVariable StartProcessErr
+        $p = Start-Process -FilePath $ADKExeObj.FullName -ArgumentList $pArgs -PassThru -ErrorAction "Stop" -ErrorVariable "StartProcessErr"
     }
     catch {
-        $Message = "Failed to initiate download of ADK files to '{0}' ({1})" -f $AdkDownloadPath, $StartProcessErr.Message
+        $Message = "Failed to initiate download of ADK files to '{0}' ({1})" -f $AdkDownloadPath, $StartProcessErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
@@ -68,10 +68,10 @@ if (Test-Path -Path $WinPEExePath) {
 
 $WinPEUrl = 'https://go.microsoft.com/fwlink/?linkid=2087112'
 try {
-    $WinPESetup = Get-LabInternetFile -Uri $WinPEUrl -Path (Split-Path -Path $WinPEExePath -Parent) -FileName (Split-Path -Path $WinPEExePath -Leaf) -PassThru -ErrorAction Stop -ErrorVariable GetLabInternetFileErr
+    $WinPESetup = Get-LabInternetFile -Uri $WinPEUrl -Path (Split-Path -Path $WinPEExePath -Parent) -FileName (Split-Path -Path $WinPEExePath -Leaf) -PassThru -ErrorAction "Stop" -ErrorVariable "GetLabInternetFileErr"
 }
 catch {
-    $Message = "Failed to download WinPE installer from '{0}' ({1})" -f $WinPEUrl, $GetLabInternetFileErr.Message
+    $Message = "Failed to download WinPE installer from '{0}' ({1})" -f $WinPEUrl, $GetLabInternetFileErr.ErrorRecord.Exception.Message
     Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
     throw $Message
 }
@@ -85,10 +85,10 @@ Write-ScreenInfo -Message "Downloading WinPE files" -TaskStart
 if (-not (Test-Path -Path $WinPEDownloadPath))
 {
     try {
-        $p = Start-Process -FilePath $WinPESetup.FullName -ArgumentList "/quiet /layout $WinPEDownloadPath" -PassThru -ErrorAction "Stop" -ErrorVariable StartProcessErr
+        $p = Start-Process -FilePath $WinPESetup.FullName -ArgumentList "/quiet /layout $WinPEDownloadPath" -PassThru -ErrorAction "Stop" -ErrorVariable "StartProcessErr"
     }
     catch {
-        $Message = "Failed to initiate download of WinPE files to '{0}' ({1})" -f $WinPEDownloadPath, $StartProcessErr.Message
+        $Message = "Failed to initiate download of WinPE files to '{0}' ({1})" -f $WinPEDownloadPath, $StartProcessErr.ErrorRecord.Exception.Message
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }

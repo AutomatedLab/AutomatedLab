@@ -342,7 +342,7 @@ if (-not $DoNotDownloadWMIEv2.IsPresent) {
             Get-LabInternetFile -Uri "https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip" -Path $WMIv2Zip -ErrorAction Stop -ErrorVariable GetLabInternetFileErr
         }
         catch {
-            Write-ScreenInfo -Message ("Could not download WmiExplorer ({0})" -f $GetLabInternetFileErr.Exception.Message) -Type "Warning"
+            Write-ScreenInfo -Message ("Could not download WmiExplorer ({0})" -f $GetLabInternetFileErr.ErrorRecord.Exception.Message) -Type "Warning"
         }
         if (Test-Path -Path $WMIv2Zip) {
             Expand-Archive -Path $WMIv2Zip -DestinationPath $labSources\Tools -ErrorAction Stop
@@ -350,7 +350,7 @@ if (-not $DoNotDownloadWMIEv2.IsPresent) {
                 Remove-Item -Path $WMIv2Zip -Force -ErrorAction Stop -ErrorVariable RemoveItemErr
             }
             catch {
-                Write-ScreenInfo -Message ("Failed to delete '{0}' ({1})" -f $WMIZip, $RemoveItemErr.Exception.Message) -Type "Warning"
+                Write-ScreenInfo -Message ("Failed to delete '{0}' ({1})" -f $WMIZip, $RemoveItemErr.ErrorRecord.Exception.Message) -Type "Warning"
             }
         } 
         Write-ScreenInfo -Message "Activity done" -TaskEnd
