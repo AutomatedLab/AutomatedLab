@@ -17,9 +17,16 @@
 
 	#this is for getting the input locale strings like '0409:00000409'
 	$component.UserLocale = $UserLocale
-	$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
-	$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
 
+	if ($IsLinux)
+	{
+		$inputLocale = '0409:00000409'
+	}
+	else
+	{
+		$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
+		$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
+	}
 	if ($inputLocale)
 	{
 		$component.InputLocale = ($inputLocale -join ';')

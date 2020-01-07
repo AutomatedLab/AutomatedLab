@@ -17,6 +17,7 @@
 #region New-LWHypervVM
 function New-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -698,16 +699,10 @@ Stop-Transcript
 }
 #endregion New-LWHypervVM
 
-#region New-LWHypervLinuxVm
-function New-LWHypervLinuxVm
-{
-
-}
-#endregion
-
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     Param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -745,6 +740,7 @@ function Remove-LWHypervVM
 #region Wait-LWHypervVMRestart
 function Wait-LWHypervVMRestart
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -909,6 +905,7 @@ function Wait-LWHypervVMRestart
 #region Start-LWHypervVM
 function Start-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -978,6 +975,7 @@ function Start-LWHypervVM
 #region Stop-LWHypervVM
 function Stop-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1070,6 +1068,7 @@ function Stop-LWHypervVM
 #region Save-LWHypervVM
 function Save-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -1101,6 +1100,7 @@ function Save-LWHypervVM
 #region Checkpoint-LWHypervVM
 function Checkpoint-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -1179,6 +1179,7 @@ function Checkpoint-LWHypervVM
 #region Remove-LWHypervVMSnapshot
 function Remove-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
@@ -1232,6 +1233,7 @@ function Remove-LWHypervVMSnapshot
 #region Restore-LWHypervVMSnapshot
 function Restore-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -1333,6 +1335,7 @@ function Restore-LWHypervVMSnapshot
 #region Get-LWHypervVMSnapshot
 function Get-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param
     (
@@ -1354,6 +1357,7 @@ function Get-LWHypervVMSnapshot
 #region Get-LWHypervVMStatus
 function Get-LWHypervVMStatus
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -1389,6 +1393,7 @@ function Get-LWHypervVMStatus
 #region Enable-LWHypervVMRemoting
 function Enable-LWHypervVMRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName
@@ -1430,6 +1435,7 @@ function Enable-LWHypervVMRemoting
 #region Mount-LWIsoImage
 function Mount-LWIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1519,6 +1525,7 @@ function Mount-LWIsoImage
 #region Dismount-LWIsoImage
 function Dismount-LWIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName
@@ -1545,6 +1552,7 @@ function Dismount-LWIsoImage
 #region Repair-LWHypervNetworkConfig
 function Repair-LWHypervNetworkConfig
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1640,6 +1648,7 @@ function Repair-LWHypervNetworkConfig
 #region Get / Set-LWHypervVMDescription
 function Set-LWHypervVMDescription
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1668,6 +1677,7 @@ function Set-LWHypervVMDescription
 
 function Get-LWHypervVMDescription
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1687,7 +1697,7 @@ function Get-LWHypervVMDescription
     try
     {
         $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)   
+        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
         $dictionary
     }
     catch

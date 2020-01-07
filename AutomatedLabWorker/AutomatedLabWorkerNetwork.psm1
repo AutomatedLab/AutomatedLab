@@ -1,6 +1,7 @@
 ﻿#region New-LWNetworkSwitch
 function New-LWHypervNetworkSwitch
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [AutomatedLab.VirtualNetwork[]]$VirtualNetwork,
@@ -160,6 +161,7 @@ function New-LWHypervNetworkSwitch
 #region Remove-LWNetworkSwitch
 function Remove-LWNetworkSwitch
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string]$Name

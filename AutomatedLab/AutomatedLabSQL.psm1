@@ -86,14 +86,14 @@ GO
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles |
             Where-Object Name -like 'SQL*').Properties.Keys |
     Where-Object {$_ -ne 'InstallSampleDatabase'})}
-    
+
     $downloadTargetFolder = "$labSources\SoftwarePackages"
     $cppRedist64_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2017) -Path $downloadTargetFolder -FileName vcredist_x64_2017.exe -PassThru
     $cppredist32_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2017) -Path $downloadTargetFolder -FileName vcredist_x86_2017.exe -PassThru
     $cppRedist64_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2015) -Path $downloadTargetFolder -FileName vcredist_x64_2015.exe -PassThru
     $cppredist32_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2015) -Path $downloadTargetFolder -FileName vcredist_x86_2015.exe -PassThru
     $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
-    
+
     Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
     $dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
@@ -104,7 +104,7 @@ GO
         $machineIndex = 0
         $installBatch = 0
         $totalBatches = [System.Math]::Ceiling($onPremisesMachines.count / $parallelInstalls)
-        
+
         do
         {
             $jobs = @()
@@ -163,10 +163,10 @@ GO
 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
 
-                ?? { $role.Properties.ContainsKey('Features') } `
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Features') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
-                
+
                 #Check the usage of SQL Configuration File
                 if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
@@ -364,7 +364,7 @@ GO
             {
                 $server | Add-Member -Name SsRsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)SSRS") -Force
             }
-            
+
             if (($sqlRole.Properties.Features -split ',') -contains 'Tools' -or
                 (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'Tools' -or
                 (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
@@ -372,11 +372,11 @@ GO
                 $server | Add-Member -Name SsmsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)ManagementStudio") -Force
             }
         }
-                
-        #region install SSRS        
+
+        #region install SSRS
         $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
         Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
-        
+
         if ($servers)
         {
             Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
@@ -400,7 +400,7 @@ GO
             {
                 $null = New-Item -ItemType Directory -Path $downloadFolder
             }
-            
+
             Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
             Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Sql$($server.SqlVersion)SSRS) -Path $downloadFolder\SQLServerReportingServices.exe
 

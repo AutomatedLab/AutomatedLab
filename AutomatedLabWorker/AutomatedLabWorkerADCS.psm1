@@ -1,6 +1,8 @@
 ﻿#region Install-LWLabCAServers
 function Install-LWLabCAServers
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification="Historic cmdlet, will not be updated")]
     param (
         [Parameter(Mandatory = $true)][string]$ComputerName,
         [Parameter(Mandatory = $true)][AllowEmptyString()][string]$DomainName,
@@ -560,6 +562,8 @@ function Install-LWLabCAServers
 #region Install-LWLabCAServers2008
 function Install-LWLabCAServers2008
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingWriteHost", "", Justification="Historic cmdlet, will not be updated")]
     [Cmdletbinding()]
     param (
         [Parameter(Mandatory)]

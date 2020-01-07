@@ -22,8 +22,8 @@
     if (-not $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm))
     {
         $dns = $script:un.CreateElement('dns', $script:nsm.LookupNamespace('un'))
-        $host = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
-        $null = $dns.AppendChild($host)
+        $hostName = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
+        $null = $dns.AppendChild($hostName)
     }
 
     if ($DnsDomain)
