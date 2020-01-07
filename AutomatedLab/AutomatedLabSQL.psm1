@@ -185,8 +185,7 @@ GO
                     }
                 }
 
-                ?? { $role.Properties.ContainsKey('InstanceName') } `
-                {
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('InstanceName') } {
                     $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)"
                     $script:instanceName = $role.Properties.InstanceName
                 } `

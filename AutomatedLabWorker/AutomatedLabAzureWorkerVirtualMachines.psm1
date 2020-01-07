@@ -1154,7 +1154,9 @@ function Get-LWAzureVMConnectionInfo
 #region Enable-LWAzureVMRemoting
 function Enable-LWAzureVMRemoting
 {
-    param(
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not enabling CredSSP a third time on Linux")]
+    param
+    (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
 
@@ -1207,6 +1209,11 @@ function Enable-LWAzureVMRemoting
         }
         catch
         {
+            if ($IsLinux)
+            {
+                return
+            }
+
             if ($UseSSL)
             {
                 Connect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName -Credential $cred -Port $machine.AzureConnectionInfo.Port -UseSSL -SessionOption (New-WSManSessionOption -SkipCACheck -SkipCNCheck)
@@ -1215,6 +1222,7 @@ function Enable-LWAzureVMRemoting
             {
                 Connect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName -Credential $cred -Port $machine.AzureConnectionInfo.Port
             }
+
             Set-Item -Path "WSMan:\$($machine.AzureConnectionInfo.DnsName)\Service\Auth\CredSSP" -Value $true
             Disconnect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName
         }
@@ -1375,6 +1383,7 @@ function Connect-LWAzureLabSourcesDrive
 #region Mount-LWAzureIsoImage
 function Mount-LWAzureIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant, used in Invoke-LabCommand")]
     [CmdletBinding()]
     param
     (
@@ -1415,6 +1424,7 @@ function Mount-LWAzureIsoImage
 #region Dismount-LWAzureIsoImage
 function Dismount-LWAzureIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant, used in Invoke-LabCommand")]
     param
     (
         [Parameter(Mandatory, Position = 0)]
@@ -1746,7 +1756,7 @@ function Enable-LWAzureAutoShutdown
         [switch]
         $Wait
     )
-    
+
     $lab = Get-Lab -ErrorAction Stop
     $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
@@ -1780,7 +1790,7 @@ function Disable-LWAzureAutoShutdown
         [switch]
         $Wait
     )
-    
+
     $lab = Get-Lab -ErrorAction Stop
     $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId

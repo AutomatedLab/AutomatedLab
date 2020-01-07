@@ -1,5 +1,6 @@
 function Install-LabHyperV
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param
     ( )
