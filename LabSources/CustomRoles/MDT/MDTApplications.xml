@@ -1,6 +1,6 @@
 <Applications>
     <Application Name="Microsoft Visual C++ 2005 Redistributable (x86)">
-        <DownloadPath>https://download.microsoft.com/download/e/1/c/e1c773de-73ba-494a-a5ba-f24906ecf088/vcredist_x86.exe</DownloadPath>
+        <DownloadPath>https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x86.EXE</DownloadPath>
         <AppPath>Frameworks</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
@@ -12,7 +12,7 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Microsoft Visual C++ 2005 Redistributable (x64)">
-        <DownloadPath>https://download.microsoft.com/download/d/4/1/d41aca8a-faa5-49a7-a5f2-ea0aa4587da0/vcredist_x64.exe</DownloadPath>
+        <DownloadPath>https://download.microsoft.com/download/8/B/4/8B42259F-5D70-43F4-AC2E-4B208FD8D66A/vcredist_x64.EXE</DownloadPath>
         <AppPath>Frameworks</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
@@ -24,7 +24,7 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Microsoft Visual C++ 2008 Redistributable (x86)">
-        <DownloadPath>https://download.microsoft.com/download/d/d/9/dd9a82d0-52ef-40db-8dab-795376989c03/vcredist_x86.exe</DownloadPath>
+        <DownloadPath>https://download.microsoft.com/download/1/1/1/1116b75a-9ec3-481a-a3c8-1777b5381140/vcredist_x86.exe</DownloadPath>
         <AppPath>Frameworks</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
@@ -36,7 +36,7 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Microsoft Visual C++ 2008 Redistributable (x64)">
-        <DownloadPath>https://download.microsoft.com/download/2/d/6/2d61c766-107b-409d-8fba-c39e61ca08e8/vcredist_x64.exe</DownloadPath>
+        <DownloadPath>https://download.microsoft.com/download/d/2/4/d242c3fb-da5a-4542-ad66-f9661d0a8d19/vcredist_x64.exe</DownloadPath>
         <AppPath>Frameworks</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
@@ -144,12 +144,12 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Adobe Acrobat Reader">
-        <DownloadPath>http://ardownload.adobe.com/pub/adobe/reader/win/AcrobatDC/1800920044/AcroRdrDC1800920044_en_US.exe</DownloadPath>
+        <DownloadPath>http://ardownload.adobe.com/pub/adobe/reader/win/AcrobatDC/1902120058/AcroRdrDC1902120058_en_US.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Adobe Acrobat Reader</ShortName>
-        <AppVersion>2018.009.20044</AppVersion>
+        <AppVersion>2019.021.20058</AppVersion>
         <Publisher>Adobe</Publisher>
         <Langauge>English</Langauge>
         <CommandLine>AcroRdrDC1800920044_en_US.exe /sAll /rs /l /msi /qb- /norestart EULA_ACCEPT=YES</CommandLine>
@@ -168,15 +168,15 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Notepad Plus Plus">
-        <DownloadPath>https://notepad-plus-plus.org/repository/7.x/7.6.1/npp.7.6.1.Installer.x64.exe</DownloadPath>
+        <DownloadPath>https://github.com/notepad-plus-plus/notepad-plus-plus/releases/download/v7.8.2/npp.7.8.2.Installer.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>Notepad Plus Plus</ShortName>
-        <AppVersion>7.6.1</AppVersion>
+        <AppVersion>7.8.2</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>npp.7.6.1.Installer.x64.exe /S</CommandLine>
+        <CommandLine>npp.7.8.2.Installer.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="WinPcap">
@@ -192,27 +192,27 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Wireshark x64">
-        <DownloadPath>https://1.as.dl.wireshark.org/win64/Wireshark-win64-2.6.5.exe</DownloadPath>
+        <DownloadPath>https://2.na.dl.wireshark.org/win64/Wireshark-win64-3.0.7.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>WireShark x64</ShortName>
-        <AppVersion>2.6.5</AppVersion>
+        <AppVersion>3.0.7</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>Wireshark-win64-2.6.5.exe /S</CommandLine>
+        <CommandLine>Wireshark-win64-3.0.7.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Wireshark x86">
-        <DownloadPath>https://1.as.dl.wireshark.org/win32/Wireshark-win32-2.6.5.exe</DownloadPath>
+        <DownloadPath>https://2.na.dl.wireshark.org/win32/Wireshark-win32-3.0.7.exe</DownloadPath>
         <AppPath>Utilities</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>
         <ShortName>WireShark x86</ShortName>
-        <AppVersion>2.6.5</AppVersion>
+        <AppVersion>3.0.7</AppVersion>
         <Publisher></Publisher>
         <Langauge>English</Langauge>
-        <CommandLine>Wireshark-win32-2.6.5.exe /S</CommandLine>
+        <CommandLine>Wireshark-win32-3.0.7.exe /S</CommandLine>
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Nmap">
@@ -228,7 +228,7 @@
         <WorkingDirectory></WorkingDirectory>
     </Application>
     <Application Name="Palemoon x64">
-        <DownloadPath>http://rm-eu.palemoon.org/release/palemoon-28.2.2.win64.installer.exe</DownloadPath>
+        <DownloadPath>https://rm-eu.palemoon.org/release/palemoon-28.8.0.win64.installer.exe</DownloadPath>
         <AppPath>Applications</AppPath>
         <ImportApp>True</ImportApp>
         <Enabled>True</Enabled>

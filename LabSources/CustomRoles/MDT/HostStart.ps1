@@ -1,9 +1,15 @@
 param(
-    [string]$DeploymentFolderLocation = 'C:\DeploymentShare',
+    [Parameter(Mandatory)]
+    [string]$DeploymentFolder,
 
-    [string]$InstallUserID = 'MdtService',
+    [Parameter(Mandatory)]
+    [string]$DeploymentShare,
+
+    [Parameter(Mandatory)]
+    [string]$InstallUserID,
     
-    [string]$InstallPassword = 'Somepass1',
+    [Parameter(Mandatory)]
+    [string]$InstallPassword,
 
     [Parameter(Mandatory)]
     [string]$ComputerName,
@@ -11,10 +17,20 @@ param(
     [Parameter(Mandatory)]
     [string[]]$OperatingSystems,
 
-    [string]$AdkDownloadPath = "$labSources\SoftwarePackages\ADK",
-    
-    [string]$AdkWinPEDownloadPath = "$labSources\SoftwarePackages\ADKWinPEAddons"
+    [Parameter(Mandatory)]
+    [string]$AdkDownloadUrl,
 
+    [Parameter(Mandatory)]
+    [string]$AdkDownloadPath,
+
+    [Parameter(Mandatory)]
+    [string]$AdkWinPeDownloadUrl,
+    
+    [Parameter(Mandatory)]
+    [string]$AdkWinPeDownloadPath,
+
+    [Parameter(Mandatory)]
+    [string]$MdtDownloadUrl
 )
 
 Import-Lab -Name $data.Name

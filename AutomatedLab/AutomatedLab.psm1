@@ -687,7 +687,8 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Sharepoint2013,
+        [Alias('Sharepoint2013')]
+        [switch]$SharepointServer,
         [switch]$CA,
         [switch]$ADFS,
         [switch]$DSCPullServer,
@@ -698,6 +699,7 @@ function Install-Lab
         [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$FailoverCluster,
+        [switch]$FileServer,
         [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
@@ -934,6 +936,14 @@ function Install-Lab
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+    
+    if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
+    {
+        Write-ScreenInfo -Message 'Installing File Servers' -TaskStart
+        Install-LabFileServers -CreateCheckPoints:$CreateCheckPoints
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
 
     if (($CA -or $performAll) -and (Get-LabVM -Role CaRoot, CaSubordinate))
     {
@@ -972,7 +982,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { -not $_.SkipDeployment }))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
@@ -981,6 +991,7 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabVM -Role SQLServer2014).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1018,11 +1029,11 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SharePoint2013 -or $performAll) -and (Get-LabVM -Role SharePoint2013))
+    if (($SharepointServer -or $performAll) -and (Get-LabVM -Role SharePoint))
     {
-        Write-ScreenInfo -Message 'Installing SharePoint 2013 Servers' -TaskStart
+        Write-ScreenInfo -Message 'Installing SharePoint Servers' -TaskStart
 
-        Install-LabSharePoint2013
+        Install-LabSharePoint
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1138,7 +1149,9 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name
+        [string]$Name,
+        
+        [switch]$RemoveExternalSwitches
     )
 
     Write-LogFunctionEntry
@@ -1204,7 +1217,11 @@ function Remove-Lab
             {
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
                 $vm = Get-VM -Name $machine -ErrorAction SilentlyContinue
-                if ($machineMetadata.LabName -ne $labName -and $vm)
+                if (-not $machineMetadata)
+                {
+                    Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
+                }
+                elseif ($machineMetadata.LabName -ne $labName -and $vm)
                 {
                     Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
                 }
@@ -1263,7 +1280,7 @@ function Remove-Lab
         }
 
         Write-ScreenInfo -Message 'Removing virtual networks'
-        Remove-LabNetworkSwitches
+        Remove-LabNetworkSwitches -RemoveExternalSwitches:$RemoveExternalSwitches
 
         if ($Script:data.LabPath)
         {
@@ -1663,6 +1680,58 @@ function Install-LabWebServers
     Write-LogFunctionExit
 }
 #endregion Install-LabWebServers
+
+#region Install-LabFileServers
+function Install-LabFileServers
+{
+    
+    [cmdletBinding()]
+    param ([switch]$CreateCheckPoints)
+
+    Write-LogFunctionEntry
+
+    $roleName = [AutomatedLab.Roles]::FileServer
+
+    if (-not (Get-LabVM))
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+
+    $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
+    if (-not $machines)
+    {
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
+        Write-LogFunctionExit
+        return
+    }
+
+    Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
+    Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 30
+
+    Write-ScreenInfo -Message 'Waiting for Web Server role to complete installation' -NoNewLine
+
+    $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
+    
+    $jobs = @()
+    $jobs += Install-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -IncludeManagementTools -AsJob -PassThru -NoDisplay
+
+    Start-LabVM -StartNextMachines 1 -NoNewline
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
+    
+    Write-ScreenInfo -Message "Restarting $roleName machines..." -NoNewLine
+    Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+    Write-ScreenInfo -Message done.
+
+    if ($CreateCheckPoints)
+    {
+        Checkpoint-LabVM -ComputerName $machines -SnapshotName "Post '$roleName' Installation"
+    }
+
+    Write-LogFunctionExit
+}
+#endregion Install-LabFileServers
 
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
@@ -2834,12 +2903,13 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip $(Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
+                    $sessionsToRemove = $internalSession | Select-Object -Skip (Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
                     Write-PSFMessage "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
 
                     Write-PSFMessage "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
+                    #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+                    ($sessions += $internalSession | Where-Object State -eq 'Opened')[0] #| Select-Object -First 1
                 }
             }
 
@@ -2981,8 +3051,7 @@ function Remove-LabPSSession
     )
 
     Write-LogFunctionEntry
-    $lab = Get-Lab
-    $removedSessionCount = 0
+
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
         $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
@@ -2992,7 +3061,7 @@ function Remove-LabPSSession
         $Machine = Get-LabVM -All -IncludeLinux
     }
 
-    foreach ($m in $Machine)
+    $sessions = foreach ($m in $Machine)
     {
         $param = @{}
         if ($m.HostType -eq 'Azure')
@@ -3013,16 +3082,15 @@ function Remove-LabPSSession
             $param.Add('Port', 5985)
         }
 
-        $sessions = Get-PSSession | Where-Object {
+        Get-PSSession | Where-Object {
             $_.ComputerName -eq $param.ComputerName -and
             $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
         $_.Name -like "$($m)_*" }
-
-        $sessions | Remove-PSSession -ErrorAction SilentlyContinue
-        $removedSessionCount += $sessions.Count
     }
 
-    Write-PSFMessage "Removed $removedSessionCount PSSessions..."
+    $sessions | Remove-PSSession -ErrorAction SilentlyContinue
+
+    Write-PSFMessage "Removed $($sessions.Count) PSSessions..."
     Write-LogFunctionExit
 }
 #endregion Remove-LabPSSession
@@ -3161,7 +3229,7 @@ function Invoke-LabCommand
     #required to suppress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (-not (Get-LabVm -IncludeLinux))
+    if (-not (Get-LabVM -IncludeLinux))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -3646,11 +3714,11 @@ function Set-LabInstallationCredential
         if ($null -ne $Password -and $checks -contains $false)
         {
             throw "Passwords for Azure VM administrator have to:
-            Be at least 8 characters long
-            Have lower characters
-            Have upper characters
-            Have a digit
-            Have a special character (Regex match [\W_])
+                Be at least 8 characters long
+                Have lower characters
+                Have upper characters
+                Have a digit
+                Have a special character (Regex match [\W_])
             "
         }
     }

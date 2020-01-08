@@ -109,17 +109,25 @@ Set-PSFConfig -Module 'AutomatedLab' -Name dotnet48DownloadLink -Value 'https://
 # C++ redist
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2017 -Value 'https://aka.ms/vs/15/release/vc_redist.x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2017 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2017 -Value 'https://aka.ms/vs/15/release/vc_redist.x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2017 (x86)'
+
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x64)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2015 -Value 'https://download.microsoft.com/download/6/A/A/6AA4EDFF-645B-48C5-81CC-ED5963AEAD48/vc_redist.x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2015 (x86)'
+
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://download.microsoft.com/download/2/E/6/2E61CFA4-993B-4DD4-91DA-3737CD5CD6E3/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2013 (x86)'
+
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x86)'
 
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=2099720' -Initialize -Validation string -Description 'Link to SSMS 2017 18.2'
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019ManagementStudio -Value 'https://aka.ms/ssmsfullsetup' -Initialize -Validation string -Description 'Link to SSMS latest'
 
 # SSRS
 Set-PSFConfig -Module 'AutomatedLab' -Name SqlServerReportBuilder -Value https://download.microsoft.com/download/5/E/B/5EB40744-DC0A-47C0-8B0A-1830E74D3C23/ReportBuilder.msi
-Set-PSFConfig -Module 'AutomatedLab' -Name Ssrs2017 -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017SSRS -Value https://download.microsoft.com/download/E/6/4/E6477A2A-9B58-40F7-8AD6-62BB8491EA78/SQLServerReportingServices.exe
+Set-PSFConfig -Module 'AutomatedLab' -Name Sql2019SSRS -Value https://download.microsoft.com/download/1/a/a/1aaa9177-3578-4931-b8f3-373b24f63342/SQLServerReportingServices.exe
 
 #SQL Server sample database contents
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2008 -Value 'http://download-codeplex.sec.s-msft.com/Download/Release?ProjectName=msftdbprodsamples&DownloadId=478218&FileTime=129906742909030000&Build=21063' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2008'
@@ -128,6 +136,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2012 -Value 'https://github.
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2014 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/adventureworks/AdventureWorks2014.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2014'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2016 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2017 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2017'
+Set-PSFConfig -Module 'AutomatedLab' -Name SQLServer2019 -Value 'https://github.com/Microsoft/sql-server-samples/releases/download/wide-world-importers-v1.0/WideWorldImporters-Full.bak' -Initialize -Validation string -Description 'Link to SQL sample DB for SQL 2019'
 
 #Access Database Engine
 Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'https://download.microsoft.com/download/3/5/C/35C84C36-661A-44E6-9324-8786B8DBE231/AccessDatabaseEngine.exe' -Initialize -Validation string -Description 'Link to Access Database Engine (required for DSC Pull)'
@@ -169,6 +178,47 @@ Set-PSFConfig -Module 'AutomatedLab' -Name 'AzureLocationsUrls' -Value @{
 
 Set-PSFConfig -Module 'AutomatedLab' -Name SupportGen2VMs -Value $true -Initialize -Validation bool -Description 'Indicates that Gen2 VMs are supported'
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureRetryCount -Value 3 -Initialize -Validation integer -Description 'The number of retries for Azure actions like creating a virtual network'
+
+# SharePoint
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Key -Value 'N3MDM-DXR3H-JD7QH-QKKCR-BY2Y7' -Validation String -Initialize -Description 'SP 2013 trial key'
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Key -Value 'NQGJR-63HC8-XCRQH-MYVCH-3J3QR' -Validation String -Initialize -Description 'SP 2016 trial key'
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Key -Value 'M692G-8N2JP-GG8B2-2W2P7-YY7J6' -Validation String -Initialize -Description 'SP 2019 trial key'
+
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Prerequisites -Value @(
+    "http://download.microsoft.com/download/9/1/3/9138773A-505D-43E2-AC08-9A77E1E0490B/1033/x64/sqlncli.msi",
+    "http://download.microsoft.com/download/8/F/9/8F93DBBD-896B-4760-AC81-646F61363A6D/WcfDataServices.exe",
+    "http://download.microsoft.com/download/9/1/D/91DA8796-BE1D-46AF-8489-663AB7811517/setup_msipc_x64.msi",
+    "http://download.microsoft.com/download/E/0/0/E0060D8F-2354-4871-9596-DC78538799CC/Synchronization.msi",
+    "http://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
+    "http://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/r2/MicrosoftIdentityExtensions-64.msi",
+    "http://download.microsoft.com/download/D/7/2/D72FD747-69B6-40B7-875B-C2B40A6B2BDD/Windows6.1-KB974405-x64.msu",
+    "http://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
+    "http://download.microsoft.com/download/7/B/5/7B51D8D1-20FD-4BF0-87C7-4714F5A1C313/AppFabric1.1-RTM-KB2671763-x64-ENU.exe"
+    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
+    "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
+    "https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe",
+    "https://download.microsoft.com/download/B/9/D/B9D6E014-C949-4A1E-BA6B-2E0DEBA23E54/SyncSetup_en.x64.zip",
+    "https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
+    "https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi",
+    "https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
+    "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
+    'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
+    'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
+    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+
+Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
+    "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
+    "https://download.microsoft.com/download/3/C/F/3CF781F5-7D29-4035-9265-C34FF2369FA2/setup_msipc_x64.exe",
+    "https://download.microsoft.com/download/B/9/D/B9D6E014-C949-4A1E-BA6B-2E0DEBA23E54/SyncSetup_en.x64.zip",
+    "https://download.microsoft.com/download/1/C/A/1CAA41C7-88B9-42D6-9E11-3C655656DAB1/WcfDataServices.exe",
+    "https://download.microsoft.com/download/0/1/D/01D06854-CA0C-46F1-ADBA-EBF86010DCC6/rtm/MicrosoftIdentityExtensions-64.msi",
+    "https://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
+    "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
+    'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
+    'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
+    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{

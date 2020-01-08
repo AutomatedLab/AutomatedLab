@@ -1684,10 +1684,16 @@ function Get-LWHypervVMDescription
     
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
     
-    $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-    $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
-        
-    $dictionary
+    try
+    {
+        $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
+        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)   
+        $dictionary
+    }
+    catch
+    {
+        Write-ScreenInfo -Message "The notes field of the virtual machine '$ComputerName' could not be read as XML" -Type Warning
+    }
         
     Write-LogFunctionExit
 }

@@ -494,7 +494,8 @@ function Write-ScreenInfo
 
         $newSize = ($Global:taskStart).Length - 1
         if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length - 1)
+        #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+        $Global:taskStart = $Global:taskStart[0..(($Global:taskStart).Length - 1)] #$Global:taskStart | Select-Object -First (($Global:taskStart).Length - 1)
     }
 
 

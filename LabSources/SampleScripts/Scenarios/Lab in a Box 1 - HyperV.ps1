@@ -1,19 +1,19 @@
 <#
-In this scenario AutomatedLab builds a lab inside a lab. Thanks to nested virtualization in Hyper-V and Azure,
-this can be done on a Windows Server 2016 or Windows 10 host machine.
-This lab contains:
-    -	ADDC1 with the role root domain controller. This machine also has the routing role to enable
+        In this scenario AutomatedLab builds a lab inside a lab. Thanks to nested virtualization in Hyper-V and Azure,
+        this can be done on a Windows Server 2016 or Windows 10 host machine.
+        This lab contains:
+        -	ADDC1 with the role root domain controller. This machine also has the routing role to enable
         internet access for the whole lab.
-    -	AL1, the virtualized host machine on Windows Server Core 1709.
-    -	ADClient1 gives you graphical management access to the virtualized host.
+        -	AL1, the virtualized host machine on Windows Server 2019, which ideally runs on a server core.
+        -	ADServer1 gives you graphical management access to the virtualized host if running on server core.
 
-Note: The domain controller and client are not required. These machines are just add another level of comfort to have
-graphical management of the virtual host machine and the lab inside.
+        Note: The domain controller and client are not required. These machines are just add another level of comfort to have
+        graphical management of the virtual host machine and the lab inside.
 
-After AutomatedLab has created the machines, it enables nested virtualization on machine AL1 and installs the Hyper-V roles
-on AL1 and ALClient1. Then the AutomatedLab PowerShell modules are downloaded and installed on AL1. The only part missing are the
-ISOs on AL1 in order to deploy a lab on the virtualized host so AL copied some files to the virtual host. Finally, the
-deployment script calls the sample script "04 Single domain-joined server.ps1" on AL1 and deploys a lab in a lab.
+        After AutomatedLab has created the machines, it enables nested virtualization on machine AL1 and installs the Hyper-V roles
+        on AL1 and ADServer1. Then the AutomatedLab PowerShell modules are downloaded and installed on AL1. The only part missing are the
+        ISOs on AL1 in order to deploy a lab on the virtualized host so AL copied some files to the virtual host. Finally, the
+        deployment script calls the sample script "04 Single domain-joined server.ps1" on AL1 and deploys a lab in a lab.
 #>
 
 $labName = 'ALTestLab1'
@@ -26,7 +26,7 @@ Add-LabVirtualNetworkDefinition -Name 'Default Switch' -HyperVProperties @{ Swit
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2016 Datacenter (Desktop Experience)'
+    'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2019 Datacenter (Desktop Experience)'
     'Add-LabMachineDefinition:Memory'= 1GB
     'Add-LabMachineDefinition:DomainName'= 'contoso.com'
 }
@@ -36,13 +36,11 @@ $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name ALDC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
 
-Add-LabMachineDefinition -Name AL1 -Memory 12GB -OperatingSystem 'Windows Server Standard' -Roles HyperV
+Add-LabMachineDefinition -Name AL1 -Memory 12GB -Roles HyperV #-OperatingSystem 'Windows Server Standard' 
 
-Add-LabMachineDefinition -Name ALClient1 -OperatingSystem 'Windows 10 Pro'
+Add-LabMachineDefinition -Name ALServer1
 
 Install-Lab
-
-Checkpoint-LabVM -All -SnapshotName 1
 
 $alServers = Get-LabVM -ComputerName AL1
 
@@ -54,13 +52,12 @@ Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources fold
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 
     Import-Module -Name AutomatedLab -ErrorAction Stop
-
+    Enable-LabHostRemoting -Force
     New-LabSourcesFolder -ErrorAction Stop
 }
 
 Copy-LabFileItem -ComputerName $alServers -DestinationFolderPath "C:\LabSources\ISOs" -Path `
-$labSources\ISOs\en_windows_10_multiple_editions_version_1703_updated_march_2017_x64_dvd_10189288.iso,
-$labSources\ISOs\en_windows_server_2012_r2_with_update_x64_dvd_4065220.iso 
+$labSources\ISOs\14393.0.161119-1705.RS1_REFRESH_SERVER_EVAL_X64FRE_EN-US.ISO
 
 Invoke-LabCommand -ActivityName 'Deploy Test Lab' -ComputerName $alServers -ScriptBlock {
 

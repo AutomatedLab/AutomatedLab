@@ -257,6 +257,10 @@ The sample database for SQL Server 2016
 
 The sample database for SQL Server 2017
 
+### SQLServer2019
+
+The sample database for SQL Server 2019
+
 
 ### SubscribedProviders
 

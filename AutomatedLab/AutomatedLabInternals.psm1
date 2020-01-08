@@ -522,7 +522,7 @@ function Get-LabInternetFile
                         Write-Verbose 'Responce received'
                         $remoteStream = $response.GetResponseStream()
                         $parent = Split-Path -Path $Path
-                        if (-not (Test-Path -Path $Path))
+                        if (-not (Test-Path -Path $Path) -and -not ([System.IO.Path]::GetPathRoot($parent) -eq $parent))
                         {
                             New-Item -Path $parent -ItemType Directory -Force | Out-Null
                         }

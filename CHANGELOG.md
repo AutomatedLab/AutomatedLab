@@ -6,6 +6,40 @@
 
 ### Enhancements
 
+### Bug Fixes
+
+## 5.17.0 - 2020-01-08
+
+### Enhancements
+
+- Happy New Year.
+- Sample scripts updated
+  - to at least Server 2016
+  - Links to WMF
+- Mac Address Spoofing enabled on Hyper-V
+- Azure Auto-Shutdown implemented
+- Added parameter to include the removal of external switches
+- Implemented SQL Server 2019, thanks @SQLDBAWithABeard !
+- Implemented SharePoint 2019, updated 2013 and 2016
+- MDT custom role updated
+- Added TFS/Azure DevOps artifact feeds (nuget feeds)
+
+### Bug fixes
+
+- Fixed issue with Write-PSFMessage, thanks @awickham10 !
+- Fixed typos, thanks @wikijm !
+- Fixed issue with LabAutoLogon, thanks @astavitsky !
+- Links fixed, thanks @adilio !
+- Fixed Azure subscription handling when multiple subscriptions with the same name existed
+- Fixed issue with Exchange custom roles
+- Fixed unhandled exceptions in case the Hyper-V VM notes are not readable as XML
+- Improved error handling if no Az module is available
+- Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon’
+
+## 5.16.0 - 2019-09-29
+
+### Enhancements
+
 - Changed user interaction when asking user for telemetry permission
 - Disabling .net optimization scheduled tasks on all 2012R2+ machines
 - Updated Sql2017ManagementStudio link to version 18.2

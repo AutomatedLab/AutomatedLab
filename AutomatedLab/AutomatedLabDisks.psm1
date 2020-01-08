@@ -98,12 +98,12 @@ function Stop-ShellHWDetectionService
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
     if (-not $service)
     {
-        Write-PSFMessage "The service 'ShellHWDetection' is not installed, exiting."
+        Write-PSFMessage -Message "The service 'ShellHWDetection' is not installed, exiting."
         Write-LogFunctionExit
         return
     }
 
-    Write-PSFMessage 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
+    Write-PSFMessage -Message 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
 
     $retries = 5
     while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Stopped'))
@@ -132,7 +132,7 @@ function Start-ShellHWDetectionService
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
     if (-not $service)
     {
-        Write-PSFMessage "The service 'ShellHWDetection' is not installed, exiting."
+        Write-PSFMessage -Message "The service 'ShellHWDetection' is not installed, exiting."
         Write-LogFunctionExit
         return
     }
@@ -144,7 +144,7 @@ function Start-ShellHWDetectionService
         return
     }
 
-    Write-PSFMessage 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+    Write-PSFMessage -Message 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
 
     $retries = 5
     while ($retries -gt 0 -and ((Get-Service -Name ShellHWDetection).Status -ne 'Running'))
@@ -186,7 +186,7 @@ function New-LabVHDX
         return
     }
 
-    Write-PSFMessage 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
+    Write-PSFMessage -Message 'Stopping the ShellHWDetection service (Shell Hardware Detection) to prevent the OS from responding to the new disks.'
     Stop-ShellHWDetectionService
 
     if ($Name)
@@ -200,7 +200,7 @@ function New-LabVHDX
 
     if (-not $disks)
     {
-        Write-PSFMessage 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
+        Write-PSFMessage -Message 'No disks found to create. Either the given name is wrong or there is no disk defined yet'
         Write-LogFunctionExit
         return
     }
@@ -234,7 +234,7 @@ function New-LabVHDX
         }
     }
 
-    Write-PSFMessage 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
+    Write-PSFMessage -Message 'Starting the ShellHWDetection service (Shell Hardware Detection) again.'
     Start-ShellHWDetectionService
 
     Write-LogFunctionExit
@@ -355,10 +355,10 @@ function Update-LabIsoImage
             $volume = Get-DiskImage -ImagePath $image.ImagePath | Get-Volume
             $source = $volume.DriveLetter + ':\*'
 
-            Write-PSFMessage "Extracting ISO image '$source' to '$OutputPath'"
+            Write-PSFMessage -Message "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
             [void] (Dismount-DiskImage -ImagePath $SourceIsoImagePath)
-            Write-PSFMessage 'Copy complete'
+            Write-PSFMessage -Message 'Copy complete'
         }
         else
         {
@@ -417,65 +417,65 @@ function Update-LabIsoImage
         return
     }
 
-    Write-PSFMessage -Level Host 'Creating an updated ISO from'
-    Write-PSFMessage -Level Host "Target path             $TargetIsoImagePath"
-    Write-PSFMessage -Level Host "Source path             $SourceIsoImagePath"
-    Write-PSFMessage -Level Host "with updates from path  $UpdateFolderPath"    
-    Write-PSFMessage -Level Host "This process can take a long time, depending on the number of updates"
+    Write-PSFMessage -Level Host -Message 'Creating an updated ISO from'
+    Write-PSFMessage -Level Host -Message "Target path             $TargetIsoImagePath"
+    Write-PSFMessage -Level Host -Message "Source path             $SourceIsoImagePath"
+    Write-PSFMessage -Level Host -Message "with updates from path  $UpdateFolderPath"    
+    Write-PSFMessage -Level Host -Message "This process can take a long time, depending on the number of updates"
     $start = Get-Date
-    Write-PSFMessage -Level Host "Start time: $start"
+    Write-PSFMessage -Level Host -Message "Start time: $start"
 
     $extractTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
     $mountTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
 
     $isoImageName = Get-IsoImageName -IsoImagePath $SourceIsoImagePath
 
-    Write-PSFMessage -Level Host "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
+    Write-PSFMessage -Level Host -Message "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
     Extract-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
 
     $installWim = Get-ChildItem -Path $extractTempFolder -Filter install.wim -Recurse
-    Write-PSFMessage -Level Host "Working with '$installWim'"
-    Write-PSFMessage -Level Host "Exporting install.wim to $labSources"
+    Write-PSFMessage -Level Host -Message "Working with '$installWim'"
+    Write-PSFMessage -Level Host -Message "Exporting install.wim to $labSources"
     Export-WindowsImage -SourceImagePath $installWim.FullName -DestinationImagePath $labSources\install.wim -SourceIndex $SourceImageIndex
 
     $windowsImage = Get-WindowsImage -ImagePath $labSources\install.wim
-    Write-PSFMessage -Level Host "The Windows Image exported is named '$($windowsImage.ImageName)'"
+    Write-PSFMessage -Level Host -Message "The Windows Image exported is named '$($windowsImage.ImageName)'"
 
     $patches = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu, *.cab
-    Write-PSFMessage -Level Host "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
+    Write-PSFMessage -Level Host -Message "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
 
-    Write-PSFMessage -Level Host "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
+    Write-PSFMessage -Level Host -Message "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $windowsImage.ImagePath -Index 1
 
-    Write-PSFMessage -Level Host "Adding patches to the mounted Windows Image. This can take quite some time..."
+    Write-PSFMessage -Level Host -Message "Adding patches to the mounted Windows Image. This can take quite some time..."
     foreach ($patch in $patches)
     {
-        Write-PSFMessage -Level Host "Adding patch '$($patch.Name)'..." -NoNewline
+        Write-PSFMessage -Level Host -Message "Adding patch '$($patch.Name)'..."
         Add-WindowsPackage -PackagePath $patch.FullName -Path $mountTempFolder | Out-Null
-        Write-PSFMessage -Level Host 'finished'
+        Write-PSFMessage -Level Host -Message 'finished'
     }
 
-    Write-PSFMessage -Level Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
+    Write-PSFMessage -Level Host -Message "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..."
     Dismount-WindowsImage -Path $mountTempFolder -Save
-    Write-PSFMessage -Level Host 'finished'
+    Write-PSFMessage -Level Host -Message 'finished'
 
-    Write-PSFMessage -Level Host "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
+    Write-PSFMessage -Level Host -Message "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
     Move-Item -Path $labsources\install.wim -Destination $extractTempFolder\sources -Force
 
-    Write-PSFMessage -Level Host "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..." -NoNewline
+    Write-PSFMessage -Level Host -Message "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..."
     $cmd = "$labSources\Tools\oscdimg.exe -m -o -u2 -l$isoImageName -udfver102 -bootdata:2#p0,e,b$extractTempFolder\boot\etfsboot.com#pEF,e,b$extractTempFolder\efi\microsoft\boot\efisys.bin $extractTempFolder $TargetIsoImagePath"
-    Write-PSFMessage $cmd
+    Write-PSFMessage -Message $cmd
     $global:oscdimgResult = Invoke-Expression -Command $cmd 2>&1
-    Write-PSFMessage -Level Host 'finished'
+    Write-PSFMessage -Level Host -Message 'finished'
 
-    Write-PSFMessage -Level Host "Deleting temp folder '$extractTempFolder'"
+    Write-PSFMessage -Level Host -Message "Deleting temp folder '$extractTempFolder'"
     Remove-Item -Path $extractTempFolder -Recurse -Force
 
-    Write-PSFMessage -Level Host "Deleting temp folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host -Message "Deleting temp folder '$mountTempFolder'"
     Remove-Item -Path $mountTempFolder -Recurse -Force
 
     $end = Get-Date
-    Write-PSFMessage -Level Host "finished at $end. Runtime: $($end - $start)"
+    Write-PSFMessage -Level Host -Message "finished at $end. Runtime: $($end - $start)"
 }
 #endregion Update-LabIsoImage
 
@@ -512,30 +512,30 @@ function Update-LabBaseImage
         return
     }
 
-    Write-PSFMessage -Level Host 'Updating base image'
-    Write-PSFMessage -Level Host $BaseImagePath
-    Write-PSFMessage -Level Host "with $($patchesCab.Count + $patchesMsu.Count) updates from"
-    Write-PSFMessage -Level Host $UpdateFolderPath
-    Write-PSFMessage -Level Host 'This process can take a long time, depending on the number of updates'
+    Write-PSFMessage -Level Host -Message 'Updating base image'
+    Write-PSFMessage -Level Host -Message $BaseImagePath
+    Write-PSFMessage -Level Host -Message "with $($patchesCab.Count + $patchesMsu.Count) updates from"
+    Write-PSFMessage -Level Host -Message $UpdateFolderPath
+    Write-PSFMessage -Level Host -Message 'This process can take a long time, depending on the number of updates'
 
     $start = Get-Date
-    Write-PSFMessage -Level Host "Start time: $start"
+    Write-PSFMessage -Level Host -Message "Start time: $start"
 
-    Write-PSFMessage -Level Host 'Creating temp folder (mount point)'
+    Write-PSFMessage -Level Host -Message 'Creating temp folder (mount point)'
     $mountTempFolder = New-Item -ItemType Directory -Path $labSources -Name ([guid]::NewGuid())
 
-    Write-PSFMessage -Level Host "Mounting Windows Image '$BaseImagePath'"
-    Write-PSFMessage -Level Host "to folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host -Message "Mounting Windows Image '$BaseImagePath'"
+    Write-PSFMessage -Level Host -Message "to folder '$mountTempFolder'"
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $BaseImagePath -Index 1
 
-    Write-PSFMessage -Level Host 'Adding patches to the mounted Windows Image.'
+    Write-PSFMessage -Level Host -Message 'Adding patches to the mounted Windows Image.'
     $patchesCab | ForEach-Object {
 
         $UpdateReady = Get-WindowsPackage -PackagePath $_ -Path $mountTempFolder | Select-Object -Property PackageState, PackageName, Applicable
 
         if ($UpdateReady.PackageState -eq 'Installed')
         {
-            Write-PSFMessage -Level Host "$($UpdateReady.PackageName) is already installed"
+            Write-PSFMessage -Level Host -Message "$($UpdateReady.PackageName) is already installed"
         }
         elseif ($UpdateReady.Applicable -eq $true)
         {
@@ -547,14 +547,14 @@ function Update-LabBaseImage
         Add-WindowsPackage -PackagePath $_.FullName -Path $mountTempFolder
     }
 
-    Write-PSFMessage -Level Host "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..." -NoNewline
+    Write-PSFMessage -Level Host -Message "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..."
     Dismount-WindowsImage -Path $mountTempFolder -Save
-    Write-PSFMessage -Level Host 'finished'
+    Write-PSFMessage -Level Host -Message 'finished'
 
-    Write-PSFMessage -Level Host "Deleting temp folder '$mountTempFolder'"
+    Write-PSFMessage -Level Host -Message "Deleting temp folder '$mountTempFolder'"
     Remove-Item -Path $mountTempFolder -Recurse -Force
 
     $end = Get-Date
-    Write-PSFMessage -Level Host "finished at $end. Runtime: $($end - $start)"
+    Write-PSFMessage -Level Host -Message "finished at $end. Runtime: $($end - $start)"
 }
 #endregion Update-LabBaseImage

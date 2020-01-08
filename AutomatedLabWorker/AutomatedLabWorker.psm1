@@ -222,7 +222,7 @@ function Invoke-LWCommand
 
     if ($AsJob)
     {
-        $job = Invoke-Command @parameters -ErrorAction SilentlyContinue -ErrorVariable invokeError
+        $job = Invoke-Command @parameters -ErrorAction SilentlyContinue
     }
     else
     {

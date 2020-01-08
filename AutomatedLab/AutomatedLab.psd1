@@ -191,6 +191,7 @@
         'Test-FileList',
         'Test-FolderExist',
         'Test-FolderNotExist',
+        'Test-LabADReady',
         'Test-LabAutoLogon',
         'Test-LabAzureLabSourcesStorage',
         'Test-LabCATemplate',
@@ -220,7 +221,12 @@
         'Register-LabArgumentCompleters',
         'Get-LabVmSnapshot',
         'Test-LabHostConnected',
-        'Test-LabAzureModuleAvailability'
+        'Test-LabAzureModuleAvailability',
+        'Get-LabMachineAutoShutdown',
+        'Enable-LabMachineAutoShutdown',
+        'Disable-LabMAchineAutoShutdown',
+        'Get-LabTfsFeed',
+        'New-LabTfsFeed'
     )
     
     FileList               = @(
