@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- New customer role for Configuration Manager (1902)
+
 ## 5.16.0 - 2019-09-29
 
 ### Enhancements
