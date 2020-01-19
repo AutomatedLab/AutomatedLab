@@ -1,25 +1,10 @@
-<#
-.SYNOPSIS
-    Install a functional SCCM Primary Site using the Automated-Lab tookit with SCCM being installed using the "CustomRoles" approach
-.DESCRIPTION
-    Long description
-.EXAMPLE
-    PS C:\> <example usage>
-    Explanation of what the example does
-.INPUTS
-    Inputs (if any)
-.OUTPUTS
-    Output (if any)
-.NOTES
-#>
-[CmdletBinding()]
 Param (
 
     [Parameter(Mandatory)]
     [String]$ComputerName,
 
     [Parameter(Mandatory)]
-    [String]$SccmSiteCode,
+    [String]$CMSiteCode,
 
     [Parameter(Mandatory)]
     [String]$Version
@@ -217,26 +202,26 @@ function Update-CMSite {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory)]
-        [String]$SccmSiteCode,
+        [String]$CMSiteCode,
 
         [Parameter(Mandatory)]
-        [String]$SccmServerName,
+        [String]$CMServerName,
 
         [Parameter(Mandatory)]
         [String]$Version
     )
 
     #region Initialise
-    $sccmServer = Get-LabVM -ComputerName $SccmServerName
-    $sccmServerFqdn = $sccmServer.FQDN
+    $CMServer = Get-LabVM -ComputerName $CMServerName
+    $CMServerFqdn = $CMServer.FQDN
 
     $PSDefaultParameterValues = @{
-        "Invoke-LabCommand:ComputerName"            = $SccmServerName
+        "Invoke-LabCommand:ComputerName"            = $CMServerName
         "Invoke-LabCommand:AsJob"                   = $true
         "Invoke-LabCommand:PassThru"                = $true
         "Invoke-LabCommand:NoDisplay"               = $true
         "Invoke-LabCommand:Retries"                 = 1
-        "Install-LabSoftwarePackage:ComputerName"   = $SccmServerName
+        "Install-LabSoftwarePackage:ComputerName"   = $CMServerName
         "Install-LabSoftwarePackage:AsJob"          = $true
         "Install-LabSoftwarePackage:PassThru"       = $true
         "Install-LabSoftwarePackage:NoDisplay"      = $true
@@ -292,9 +277,9 @@ function Update-CMSite {
     } -IfSucceedScript {
         return $Update
     } -ScriptBlock {
-        $job = Invoke-LabCommand -ActivityName "Waiting for updates to appear in console" -Variable (Get-Variable -Name "SccmSiteCode") -ScriptBlock {
+        $job = Invoke-LabCommand -ActivityName "Waiting for updates to appear in console" -Variable (Get-Variable -Name "CMSiteCode") -ScriptBlock {
             $Query = "SELECT * FROM SMS_CM_UpdatePackages WHERE Impact = '31'"
-            Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop" | Sort-object -Property FullVersion -Descending
+            Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop" | Sort-object -Property FullVersion -Descending
         }
         Wait-LWLabJob -Job $job -NoNewLine
         try {
@@ -358,7 +343,7 @@ function Update-CMSite {
                 Write-ScreenInfo -Message "."
                 Write-ScreenInfo -Message "Download did not start, restarting SMS_EXECUTIVE" -TaskStart -Type "Warning"
                 try {
-                    Restart-ServiceResilient -ComputerName $SccmServerName -ServiceName "SMS_EXECUTIVE" -ErrorAction "Stop" -ErrorVariable "RestartServiceResilientErr"
+                    Restart-ServiceResilient -ComputerName $CMServerName -ServiceName "SMS_EXECUTIVE" -ErrorAction "Stop" -ErrorVariable "RestartServiceResilientErr"
                 }
                 catch {
                     $Message = "Could not restart SMS_EXECUTIVE ({0})" -f $RestartServiceResilientErr.ErrorRecord.Exception.Message
@@ -367,9 +352,9 @@ function Update-CMSite {
                 }
                 Write-ScreenInfo -Message "Activity done" -TaskEnd
             } -ScriptBlock {
-                $job = Invoke-LabCommand -ActivityName "Verifying update download initiated OK" -Variable (Get-Variable -Name "Update", "SccmSiteCode") -ScriptBlock {
+                $job = Invoke-LabCommand -ActivityName "Verifying update download initiated OK" -Variable (Get-Variable -Name "Update", "CMSiteCode") -ScriptBlock {
                     $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
-                    Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop"
+                    Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop"
                 }
                 Wait-LWLabJob -Job $job -NoNewLine
                 try {
@@ -383,7 +368,6 @@ function Update-CMSite {
         }
         # Writing dot because of -NoNewLine in Wait-LWLabJob
         Write-ScreenInfo -Message "."
-        Write-ScreenInfo -Message "Download started"
         Write-ScreenInfo -Message "Activity done" -TaskEnd
 
     }
@@ -406,9 +390,9 @@ function Update-CMSite {
             Write-ScreenInfo -Message "."
             return $Update
         } -ScriptBlock {
-            $job = Invoke-LabCommand -ActivityName "Querying update download status" -Variable (Get-Variable -Name "Update", "SccmSiteCode") -ScriptBlock {
+            $job = Invoke-LabCommand -ActivityName "Querying update download status" -Variable (Get-Variable -Name "Update", "CMSiteCode") -ScriptBlock {
                 $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $Update.PackageGuid
-                Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction "Stop"
+                Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction "Stop"
             }
             Wait-LWLabJob -Job $job -NoNewLine
             try {
@@ -419,7 +403,6 @@ function Update-CMSite {
                 throw $ReceiveJobErr
             }
         }
-        Write-ScreenInfo -Message "Download complete"
         Write-ScreenInfo -Message "Activity done" -TaskEnd
 
     }
@@ -455,16 +438,15 @@ function Update-CMSite {
             return $Update
         } -ScriptBlock {
             # No error handling since WMI can become unavailabile with "generic error" exception multiple times throughout the update. Not ideal
-            $job = Invoke-LabCommand -ComputerName $SccmServerName -ActivityName "Querying update install state" -Variable (Get-Variable -Name "UpdatePackageGuid", "SccmSiteCode") -PassThru -ScriptBlock {
+            $job = Invoke-LabCommand -ComputerName $CMServerName -ActivityName "Querying update install state" -Variable (Get-Variable -Name "UpdatePackageGuid", "CMSiteCode") -ScriptBlock {
                 $Query = "SELECT * FROM SMS_CM_UPDATEPACKAGES WHERE PACKAGEGUID = '{0}'" -f $UpdatePackageGuid
-                Get-CimInstance -Namespace "ROOT/SMS/site_$SccmSiteCode" -Query $Query -ErrorAction SilentlyContinue
+                Get-CimInstance -Namespace "ROOT/SMS/site_$CMSiteCode" -Query $Query -ErrorAction SilentlyContinue
             }
             Wait-LWLabJob -Job $job -NoNewLine
             $Update = $job | Receive-Job -ErrorAction SilentlyContinue
         }
         # Writing dot because of -NoNewLine in Wait-LWLabJob
         Write-ScreenInfo -Message "."
-        Write-ScreenInfo -Message "Update installed"
         Write-ScreenInfo -Message "Activity done" -TaskEnd
         
     }
@@ -472,8 +454,8 @@ function Update-CMSite {
 
     #region Validate update
     Write-ScreenInfo -Message "Validating update" -TaskStart
-    $job = Invoke-LabCommand -ActivityName "Validating update" -Variable (Get-Variable -Name "SccmSiteCode") -ScriptBlock {
-        Get-CimInstance -Namespace "ROOT/SMS/site_$($SccmSiteCode)" -ClassName "SMS_Site" -ErrorAction "Stop"
+    $job = Invoke-LabCommand -ActivityName "Validating update" -Variable (Get-Variable -Name "CMSiteCode") -ScriptBlock {
+        Get-CimInstance -Namespace "ROOT/SMS/site_$($CMSiteCode)" -ClassName "SMS_Site" -ErrorAction "Stop"
     }
     Wait-LWLabJob -Job $job
     try {
@@ -483,10 +465,7 @@ function Update-CMSite {
         Write-ScreenInfo -Message ("Could not query SMS_Site to validate update install ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -TaskEnd -Type "Error"
         throw $ReceiveJobErr
     }
-    if ($InstalledSite.Version -eq $Update.FullVersion) {
-        Write-ScreenInfo -Message "Update successfully validated"
-    }
-    else {
+    if ($InstalledSite.Version -ne $Update.FullVersion) {
         $Message = "Update validation failed, installed version is '{0}' and the expected version is '{1}'" -f $InstalledSite.Version, $Update.FullVersion
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
@@ -496,7 +475,7 @@ function Update-CMSite {
 
     #region Update console
     Write-ScreenInfo -Message "Updating console" -TaskStart
-    $cmd = "/q TargetDir=`"C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole`" DefaultSiteServerName={0}" -f $sccmServerFqdn
+    $cmd = "/q TargetDir=`"C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole`" DefaultSiteServerName={0}" -f $CMServerFqdn
     $job = Install-LabSoftwarePackage -LocalPath "C:\Program Files\Microsoft Configuration Manager\tools\ConsoleSetup\ConsoleSetup.exe" -CommandLine $cmd -ExpectedReturnCodes 0 -ErrorAction "Stop" -ErrorVariable "InstallLabSoftwarePackageErr"
     Wait-LWLabJob -Job $job
     try {
@@ -514,5 +493,5 @@ function Update-CMSite {
 Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Write-ScreenInfo -Message "Starting site update process" -TaskStart
-Update-CMSite -SccmServerName $ComputerName -SccmSiteCode $SccmSiteCode -Version $Version
+Update-CMSite -CMServerName $ComputerName -CMSiteCode $CMSiteCode -Version $Version
 Write-ScreenInfo -Message "Finished site update process" -TaskEnd

@@ -8,31 +8,34 @@
 
     Builds a lab with the following properties:
         - 1x AutomatedLab:
-            Name: "CMLab01"
-            VMPath: <drive>:\AutomatedLab-VMs where <drive> is the fastest drive available
+            - Name: "CMLab01"
+            - VMPath: \<drive\>:\AutomatedLab-VMs where \<drive\> is the fastest drive available
         - 1x Active Directory domain:
-            Domain: "winadmins.lab"
-            Username: "Administrator"
-            Password: "Somepass1"
-            AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
-            ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
+            - Domain: "winadmins.lab"
+            - Username: "Administrator"
+            - Password: "Somepass1"
+            - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
+            - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
         - 2x virtual machines:
-            Operating System: Windows Server 2019 (Desktop Experience)
-            1x Domain Controller:
-                Name: "DC01"
-                vCPU: 2
-                Max memory: 2GB
-                Roles: "RootDC", "Routing"
-            1x Configuration Manager:
-                Name: "CM01"
-                vCPU: 4
-                Max memory: 8GB
-                Roles: "SQLServer2017"
-                CustomRoles: "CM-1902"
-                SiteCode: "P01"
-                SiteName: "CMLab01"
-                Version: "Latest"
-                LogViewer: "OneTrace"
+            - Operating System: Windows Server 2019 (Desktop Experience)
+            - 1x Domain Controller:
+                - Name: "DC01"
+                - vCPU: 2
+                - Max memory: 2GB
+                - Disks: 1 x 100GB (OS, dynamic)
+                - Roles: "RootDC", "Routing"
+            - 1x Configuration Manager primary site server:
+                - Name: "CM01"
+                - vCPU: 4
+                - Max memory: 8GB
+                - Disks: 1 x 100GB (OS, dynamic), 1x 30GB (SQL, dynamic), 1x 50GB (DATA, dynamic)
+                - Roles: "SQLServer2017"
+                - CustomRoles: "CM-1902"
+                - SiteCode: "P01"
+                - SiteName: "CMLab01"
+                - Version: "Latest"
+                - LogViewer: "OneTrace"
+                - Site system roles: MP, DP, SUP (inc WSUS), RSP, EP
 
     The following customsations are applied to the ConfigMgr server post install:
         - The ConfigMgr console is updated
@@ -250,6 +253,39 @@ Param (
     [Switch]$AutoLogon
 )
 
+#region New-LabDefinition
+$NewLabDefinitionSplat = @{
+    Name                        = $LabName
+    DefaultVirtualizationEngine = "HyperV"
+    ReferenceDiskSizeInGB       = 100
+    ErrorAction                 = "Stop"
+}
+if ($PSBoundParameters.ContainsKey("VMPath")) { 
+    $Path = Join-Path -Path $VMPath -ChildPath $LabName
+    $NewLabDefinitionSplat.Add("VMPath",$Path)
+}
+New-LabDefinition @NewLabDefinitionSplat
+#endregion
+
+#region Initialise
+$PSDefaultParameterValues = @{
+    'Add-LabMachineDefinition:OperatingSystem' = "Windows Server $OSVersion Standard (Desktop Experience)"
+    'Add-LabMachineDefinition:DomainName'      = $Domain
+    'Add-LabMachineDefinition:Network'         = $LabName
+    'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
+    'Add-LabMachineDefinition:MinMemory'       = 1GB
+    'Add-LabMachineDefinition:Memory'          = 1GB
+}
+
+if ($AutoLogon.IsPresent) {
+    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonDomainName'] = $Domain
+    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonUserName']   = $AdminUser
+    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonPassword']   = $AdminPass
+}
+
+$SQLConfigurationFile = Join-Path -Path $labSources -ChildPath "CustomRoles\CM-1902\ConfigurationFile-SQL.ini"
+#endregion
+
 #region Preflight checks
 switch ($true) {
     (-not $SkipLabNameCheck.IsPresent) {
@@ -290,75 +326,15 @@ switch ($true) {
     ((Get-VMSwitch -Name $ExternalVMSwitchName).SwitchType -ne "External") { 
         throw ("Hyper-V virtual switch '{0}' is not of External type" -f $ExternalVMSwitchName)
     }
+    (-not(Test-Path $SQLConfigurationFile)) {
+        throw ("Can't find '{0}'" -f $SQLConfigurationFile)
+    }
 }
-#endregion
-
-#region Initialise
-$PSDefaultParameterValues = @{
-    'Add-LabMachineDefinition:OperatingSystem' = "Windows Server $OSVersion Standard (Desktop Experience)"
-    'Add-LabMachineDefinition:DomainName'      = $Domain
-    'Add-LabMachineDefinition:Network'         = $LabName
-    'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
-    'Add-LabMachineDefinition:MinMemory'       = 1GB
-    'Add-LabMachineDefinition:Memory'          = 1GB
-}
-
-if ($AutoLogon.IsPresent) {
-    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonDomainName'] = $Domain
-    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonUserName']   = $AdminUser
-    $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonPassword']   = $AdminPass
-}
-
-# Changing the below doesn't actually do anything at the moment. One day I will test vmware.
-$Engine = "HyperV"
-#endregion
-
-#region New-LabDefinition
-$NewLabDefinitionSplat = @{
-    Name                        = $LabName
-    DefaultVirtualizationEngine = $Engine
-    ReferenceDiskSizeInGB       = 100
-    ErrorAction                 = "Stop"
-}
-if ($PSBoundParameters.ContainsKey("VMPath")) { 
-    $Path = Join-Path -Path $VMPath -ChildPath $LabName
-    $NewLabDefinitionSplat.Add("VMPath",$Path)
-}
-New-LabDefinition @NewLabDefinitionSplat
 #endregion
 
 #region Set credentials
 Add-LabDomainDefinition -Name $domain -AdminUser $AdminUser -AdminPassword $AdminPass
 Set-LabInstallationCredential -Username $AdminUser -Password $AdminPass
-#endregion
-
-#region Download WMIExplorer v2
-if (-not $DoNotDownloadWMIEv2.IsPresent) {
-    $WMIv2Zip = Join-Path -Path $labSources -ChildPath "Tools\WmiExplorer_2.0.0.2.zip"
-    $WMIv2Exe = Join-Path -Path $labSources -ChildPath "Tools\WmiExplorer.exe"
-    if (-not (Test-Path $WMIv2Zip) -And (-not (Test-Path $WMIv2Exe))) {
-        Write-ScreenInfo -Message "Downloading WMIExplorer v2" -TaskStart
-        try {
-            Get-LabInternetFile -Uri "https://github.com/vinaypamnani/wmie2/releases/download/v2.0.0.2/WmiExplorer_2.0.0.2.zip" -Path $WMIv2Zip -ErrorAction Stop -ErrorVariable GetLabInternetFileErr
-        }
-        catch {
-            Write-ScreenInfo -Message ("Could not download WmiExplorer ({0})" -f $GetLabInternetFileErr.ErrorRecord.Exception.Message) -Type "Warning"
-        }
-        if (Test-Path -Path $WMIv2Zip) {
-            Expand-Archive -Path $WMIv2Zip -DestinationPath $labSources\Tools -ErrorAction Stop
-            try {
-                Remove-Item -Path $WMIv2Zip -Force -ErrorAction Stop -ErrorVariable RemoveItemErr
-            }
-            catch {
-                Write-ScreenInfo -Message ("Failed to delete '{0}' ({1})" -f $WMIZip, $RemoveItemErr.ErrorRecord.Exception.Message) -Type "Warning"
-            }
-        } 
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-    }
-    else {
-        Write-ScreenInfo -Message "WmiExplorer.exe already exists, skipping the download. Delete the file '{0}' if you want to download again."
-    }
-}
 #endregion
 
 #region Forcing 1902 is -NoInternetAccess is passed
@@ -379,7 +355,7 @@ if ($CMVersion -eq 1902 -and $LogViewer -eq "OneTrace") {
 $netAdapter = @()
 $AddLabVirtualNetworkDefinitionSplat = @{
     Name                   = $LabName
-    VirtualizationEngine   = $Engine
+    VirtualizationEngine   = "HyperV"
 }
 $NewLabNetworkAdapterDefinitionSplat = @{
     VirtualSwitch = $LabName
@@ -392,7 +368,7 @@ Add-LabVirtualNetworkDefinition @AddLabVirtualNetworkDefinitionSplat
 $netAdapter += New-LabNetworkAdapterDefinition @NewLabNetworkAdapterDefinitionSplat
 
 if (-not $NoInternetAccess.IsPresent) {
-    Add-LabVirtualNetworkDefinition -Name "Internet" -VirtualizationEngine $Engine -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Internet' }
+    Add-LabVirtualNetworkDefinition -Name "Internet" -VirtualizationEngine "HyperV" -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Internet' }
     $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch "Internet" -UseDhcp
 }
 
@@ -401,7 +377,8 @@ Add-LabMachineDefinition -Name $DCHostname -Processors $DCCPU -Roles RootDC,Rout
 Add-LabIsoImageDefinition -Name SQLServer2017 -Path "$labSources\ISOs\en_sql_server_2017_standard_x64_dvd_11294407.iso"
 
 $sqlRole = Get-LabMachineRoleDefinition -Role SQLServer2017 -Properties @{ 
-    Collation = 'SQL_Latin1_General_CP1_CI_AS'
+    ConfigurationFile = [String]$SQLConfigurationFile
+    Collation = "SQL_Latin1_General_CP1_CI_AS"
 }
 
 Add-LabDiskDefinition -Name "CM01-DATA-01" -DiskSizeInGb 50 -Label "DATA01" -DriveLetter "G"
@@ -411,19 +388,22 @@ if ($ExcludePostInstallations.IsPresent) {
     Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName "CM01-DATA-01","CM01-SQL-01"
 }
 else {
-    $sccmRole = Get-LabPostInstallationActivity -CustomRole "CM-1902" -Properties @{
-        SccmSiteCode            = $SiteCode
-        SccmSiteName            = $SiteName
-        SccmBinariesDirectory   = "$labSources\SoftwarePackages\CM1902"
-        SccmPreReqsDirectory    = "$labSources\SoftwarePackages\CMPreReqs"
-        SccmProductId           = "Eval" # Can be "Eval" or a product key
+    $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-1902" -Properties @{
+        CMSiteCode            = $SiteCode
+        CMSiteName            = $SiteName
+        CMBinariesDirectory   = "$labSources\SoftwarePackages\CM1902"
+        CMPreReqsDirectory    = "$labSources\SoftwarePackages\CMPreReqs"
+        CMProductId           = "Eval" # Can be "Eval" or a product key
         Version                 = $CMVersion
         AdkDownloadPath         = "$labSources\SoftwarePackages\ADK"
         WinPEDownloadPath       = "$labSources\SoftwarePackages\WinPE"
         LogViewer               = $LogViewer
         SqlServerName           = $CMHostname
+        DoNotDownloadWMIEv2     = $DoNotDownloadWMIEv2.IsPresent.ToString()
+        AdminUser               = $AdminUser
+        AdminPass               = $AdminPass
     }
-    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MinMemory 2GB -MaxMemory 8GB -Memory 4GB -DiskName "CM01-DATA-01","CM01-SQL-01" -PostInstallationActivity $sccmRole
+    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MinMemory 2GB -MaxMemory 8GB -Memory 4GB -DiskName "CM01-DATA-01","CM01-SQL-01" -PostInstallationActivity $CMRole
 }
 #endregion
 

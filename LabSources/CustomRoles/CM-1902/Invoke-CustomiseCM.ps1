@@ -1,18 +1,3 @@
-<#
-.SYNOPSIS
-    Install a functional SCCM Primary Site using the Automated-Lab tookit with SCCM being installed using the "CustomRoles" approach
-.DESCRIPTION
-    Long description
-.EXAMPLE
-    PS C:\> <example usage>
-    Explanation of what the example does
-.INPUTS
-    Inputs (if any)
-.OUTPUTS
-    Output (if any)
-.NOTES
-#>
-[CmdletBinding()]
 Param (
 
     [Parameter(Mandatory)]
@@ -161,7 +146,7 @@ function Set-CMCustomisations {
     [CmdletBinding()]
     Param (
         [Parameter(Mandatory)]
-        [String]$SccmServerName,
+        [String]$CMServerName,
 
         [Parameter(Mandatory)]
         [String]$LogViewer
@@ -169,7 +154,7 @@ function Set-CMCustomisations {
 
     #region Initialise
     $PSDefaultParameterValues = @{
-        "Invoke-LabCommand:ComputerName"            = $SccmServerName
+        "Invoke-LabCommand:ComputerName"            = $CMServerName
         "Invoke-LabCommand:AsJob"                   = $true
         "Invoke-LabCommand:PassThru"                = $true
         "Invoke-LabCommand:NoDisplay"               = $true
@@ -233,5 +218,5 @@ function Set-CMCustomisations {
 Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Write-ScreenInfo -Message "Applying customisations" -TaskStart
-Set-CMCustomisations -SccmServerName $ComputerName -LogViewer $LogViewer
+Set-CMCustomisations -CMServerName $ComputerName -LogViewer $LogViewer
 Write-ScreenInfo -Message "Finished applying customisations" -TaskEnd
