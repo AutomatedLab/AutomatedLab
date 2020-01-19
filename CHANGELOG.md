@@ -2,8 +2,6 @@
 
 ## Unreleased
 
-- New customer role for Configuration Manager (1902)
-
 ### Enhancements
 
 ### Bug Fixes
