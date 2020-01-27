@@ -172,7 +172,7 @@ GO
                     $global:setupArguments = ''
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
                     $configurationFileContent = Get-Content $role.Properties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
-
+                    Write-PSFMessage -Message ($configurationFileContent | Out-String)
                     try
                     {
                         Copy-LabFileItem -Path $role.Properties.ConfigurationFile -ComputerName $machine -ErrorAction Stop
@@ -190,8 +190,15 @@ GO
                     $script:instanceName = $role.Properties.InstanceName
                 } `
                 {
-                    $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER'
-                    $script:instanceName = 'MSSQLSERVER'
+                    if ($null -eq $configurationFileContent.Where({$_.Key -eq 'INSTANCENAME'}).Value)
+                    {
+                        $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER'
+                        $script:instanceName = 'MSSQLSERVER'
+                    }
+                    else
+                    {
+                        $script:instanceName = $configurationFileContent.Where({$_.Key -eq 'INSTANCENAME'}).Value -replace "'|`""
+                    }
                 }
 
                 $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
@@ -206,24 +213,57 @@ GO
                     continue
                 }
 
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Collation')}              { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" + "$($role.Properties.Collation)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" + """$($role.Properties.SQLSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcPassword')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" + """$($role.Properties.SQLSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType')}      { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType')}  { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType')}       { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts')}     { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcPassword=" + "$($role.Properties.AsSvcPassword)") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSysAdminAccounts')}    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
-
-                Invoke-Ternary -Decider {$machine.Roles.Name -notcontains 'SQLServer2008'}        { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Collation') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" + "$($role.Properties.Collation)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLCollation'}).Value) {$global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS'} else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" + """$($role.Properties.SQLSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" + """$($role.Properties.SQLSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'BrowserSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcPassword=" + "$($role.Properties.AsSvcPassword)") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'IsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSysAdminAccounts') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' } else {} }
+                Invoke-Ternary -Decider { $machine.Roles.Name -notcontains 'SQLServer2008' } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } `
+                { }
 
                 if ($role.Name -notin 'SQLServer2008R2', 'SQLServer2008')
                 {
