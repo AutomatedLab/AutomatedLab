@@ -565,7 +565,7 @@ function Stop-LabVM
     if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
     if ($azureErrors) { $remainingTargets += $azureErrors.TargetObject }
     if ($vmwareErrors) { $remainingTargets += $vmwareErrors.TargetObject }
-    if ($null -ne $remainingTargets) { Stop-LabVM2 -ComputerName $remainingTargets }
+    if ($remainingTargets.Count -gt 0) { Stop-LabVM2 -ComputerName $remainingTargets }
 
     if ($Wait)
     {
