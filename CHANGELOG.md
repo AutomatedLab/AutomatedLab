@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile`
+
 ### Enhancements
 
 ### Bug Fixes

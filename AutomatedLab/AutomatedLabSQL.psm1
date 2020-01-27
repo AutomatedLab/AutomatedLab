@@ -171,7 +171,7 @@ GO
                 {
                     $global:setupArguments = ''
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
-                    $configurationFileContent = Get-Content D:\SqlConfig.ini | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+                    $configurationFileContent = Get-Content $role.Properties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
 
                     try
                     {
