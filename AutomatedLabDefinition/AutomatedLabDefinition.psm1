@@ -2022,7 +2022,17 @@ function Add-LabMachineDefinition
 
         if (-not $OperatingSystem)
         {
-            throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
+            $os = Get-LabAvailableOperatingSystem -UseOnlyCache -NoDisplay | Where-Object -Property OperatingSystemType -eq 'Windows' | Sort-Object Version | Select-Object -Last 1
+
+            if ($null -ne $os)
+            {
+                Write-ScreenInfo -Message "No operating system specified. Assuming you want $os ($(Split-Path -Leaf -Path $os.IsoPath))."
+                $OperatingSystem = $os
+            }
+            else
+            {
+                throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
+            }
         }
 
         if ($AzureProperties)
