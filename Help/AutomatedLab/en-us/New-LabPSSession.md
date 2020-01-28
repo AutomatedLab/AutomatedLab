@@ -37,10 +37,17 @@ Creates or repurposes sessions to one or more machines with the ability to use S
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> New-LabPSSession -ComputerName DC1, FS1 -UseLocalCredential
 ```
 
-{{ Add example description here }}
+Connects up to two new sessions using a local credential
+
+### Example 2
+```powershell
+PS C:\> New-LabPSSession -ComputerName CENTOS1,UBU1 -UseSsl
+```
+
+Connects up to two new sessions to Linux machines, using SSL and Basic auth
 
 ## PARAMETERS
 

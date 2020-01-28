@@ -23,10 +23,10 @@ Returns the selected default location on Azure for the current lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureDefaultLocation
 ```
 
-{{ Add example description here }}
+Returns the selected default location on Azure for the current lab
 
 ## PARAMETERS
 

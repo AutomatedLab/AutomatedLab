@@ -24,10 +24,10 @@ Waits for the lab Active Directory to be ready by waiting for the Active Directo
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LabADReady -ComputerName DC01
 ```
 
-{{ Add example description here }}
+Wait for the Active Directory Web Services to respond on DC01
 
 ## PARAMETERS
 

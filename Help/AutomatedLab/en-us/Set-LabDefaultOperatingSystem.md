@@ -23,10 +23,10 @@ Sets the default operating system for all lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabDefaultOperatingSystem -OperatingSystem Centos7.4
 ```
 
-{{ Add example description here }}
+Sets the default operating system for all lab machines to Centos7.4. Can be overruled for individual machines.
 
 ## PARAMETERS
 

@@ -23,10 +23,10 @@ Sets the default virtualization engine for the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabDefaultVirtualizationEngine -VirtualizationEngine Azure
 ```
 
-{{ Add example description here }}
+Sets the lab's virtualization engine to Azure
 
 ## PARAMETERS
 

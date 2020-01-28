@@ -23,10 +23,10 @@ Dismounts the mounted ISO image file from one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Dismount-LabIsoImage -ComputerName SQL01
 ```
 
-{{ Add example description here }}
+Unmount all ISO files on SQL01, making room for new ones...
 
 ## PARAMETERS
 

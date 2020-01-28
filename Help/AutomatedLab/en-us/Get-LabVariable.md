@@ -23,10 +23,10 @@ Gets all defined variables in the global scope matching the name pattern 'AL_(\[
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVariable
 ```
 
-{{ Add example description here }}
+Returns all runtime variables starting with AL_
 
 ## PARAMETERS
 

@@ -23,10 +23,12 @@ Removes the automated lab cache from the Windows registry: HKEY_CURRENT_USER\Sof
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Clear-LabCache
 ```
 
-{{ Add example description here }}
+Clears all of AutomatedLab's caches, meaning that all timestamps and the cached ISOs will be removed. During
+the next lab installation, the caches will be updated again. Useful when running into issues with the available
+operating systems.
 
 ## PARAMETERS
 
