@@ -225,9 +225,9 @@ function Write-LogError
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
 
-    if ($Excpetion)
+    if ($Exception)
     {
-        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Excpetion.Message)
+        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Exception.Message)
     }
     else
     {
