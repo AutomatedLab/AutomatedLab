@@ -2,11 +2,15 @@
 
 ## Unreleased
 
-- Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile`
-
 ### Enhancements
+- SQL setup now does not override custom configuration file any longer when no other parameters are specified
+- Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified
+- Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
+- Lab Sources folder is automatically updated now, too
+  - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 
 ### Bug Fixes
+- Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
 
 ## 5.17.0 - 2020-01-08
 

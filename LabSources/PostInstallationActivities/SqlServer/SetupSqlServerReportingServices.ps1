@@ -6,7 +6,7 @@ function Get-ConfigSet
     if ($class.__NAMESPACE -match '\\v(?<version>\d\d)\\*.')
     {
         $version = $Matches.version
-        Write-Host "Installed SSRS version is $version"
+        Write-Verbose "Installed SSRS version is $version"
     }
 }
 

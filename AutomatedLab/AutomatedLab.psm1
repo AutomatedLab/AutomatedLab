@@ -4107,7 +4107,11 @@ function New-LabSourcesFolder
         $DriveLetter,
 
         [switch]
-        $Force
+        $Force,
+
+        [ValidateSet('master','develop')]
+        [string]
+        $Branch = 'master'
     )
 
     $path = Get-LabSourcesLocation
@@ -4140,7 +4144,10 @@ function New-LabSourcesFolder
         return $Path
     }
 
-    Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+    if (-not $Force.IsPresent)
+    {
+        Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+    }
 
     if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
     {
@@ -4150,7 +4157,7 @@ function New-LabSourcesFolder
 
         try
         {
-            Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+            Get-LabInternetFile -Uri ('https://github.com/AutomatedLab/AutomatedLab/archive/{0}.zip' -f $Branch) -Path $archivePath -ErrorAction Stop
         }
         catch
         {
