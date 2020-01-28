@@ -857,7 +857,7 @@ function Update-LabSysinternalsTools
                 if ($null -ne $labSources)
                 {
                     $drive = ($labSources -split ':')[0]
-                    New-LabSourcesFolder -DriveLetter $drive -Force -ErrorAction SilentlyContinue
+                    $null = New-LabSourcesFolder -DriveLetter $drive -Force -ErrorAction SilentlyContinue
                 }
 
                 # Download SysInternals suite

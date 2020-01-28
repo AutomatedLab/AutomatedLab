@@ -46,7 +46,7 @@
       </Directory>
       <Directory Id="LABSOURCESVOLUME">
         <Directory Id="LABSOURCESDIR" Name="LabSources">
-          <Directory Id="SAMPLESDIR" Name="Sample Scripts">
+          <Directory Id="SAMPLESDIR" Name="SampleScripts">
             <Component Id='SamplesComponent' Guid='bd0eb8dc-b958-4b43-b767-53010f4aa713'>
               <RegistryValue Root="HKLM" Key="Software\[Manufacturer]\[ProductName]" Type="string" Value="SamplesComponent" />
               <RemoveFolder Id="RemoveFolderSamplesDir" Directory="SAMPLESDIR" On="both"/>
@@ -165,7 +165,7 @@
         <Component Id="LabSourcesFolderRegistry" Directory='LABSOURCESDIR'>
           <RegistryValue Root='HKLM' Key='SOFTWARE\[Manufacturer]\[ProductName]' Name='LabSourcesFolder' Value='[LABSOURCESDIR]' Type='string' KeyPath="yes" />
         </Component>
-        <Feature Id='Samples' Title='Sample Scripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
+        <Feature Id='Samples' Title='SampleScripts' Description='A list of sample scripts.' Level='1' ConfigurableDirectory='SAMPLESDIR'>
           <ComponentRef Id='SamplesComponent' />
           <ComponentRef Id='SamplesHypervComponent' />
           <ComponentRef Id='SamplesAzureComponent' />

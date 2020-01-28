@@ -4144,7 +4144,10 @@ function New-LabSourcesFolder
         return $Path
     }
 
-    Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+    if (-not $Force.IsPresent)
+    {
+        Write-ScreenInfo -Message 'Downloading LabSources from GitHub. This only happens once if no LabSources folder can be found.' -Type Warning
+    }
 
     if ($PSCmdlet.ShouldProcess('Downloading module and creating new LabSources', $Path))
     {
