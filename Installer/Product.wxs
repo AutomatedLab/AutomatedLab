@@ -1201,7 +1201,7 @@
         <File Id="fil68d33fed4c7f4f8b83f5fc86d924600e" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini" />
         <File Id="fil18ace1a31c3d4837877053c2cb91a694" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\HostStart.ps1" />
         <File Id="fil5d8467bd9d3c4ca69b64092c4d6b1948" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1" />
-        <File Id="fil760c2c67fe0b4206acf78daa3b8f3879" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.xml" />
+        <File Id="fil760c2c67fe0b4206acf78daa3b8f3879" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.ps1" />
         <File Id="fil3e9ca7e859044c879b62d400366f630e" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-DownloadCM.ps1" />
         <File Id="fila209b4ed5af743b196c755331f316841" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1" />
         <File Id="fil3ad4c4c495024d66ae7101748c8ddfe4" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1" />
