@@ -71,7 +71,7 @@ function Write-LogFunctionEntry
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     $Message = ($Message -split ';')[2..3] -join ' '
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 
@@ -115,7 +115,7 @@ function Write-LogFunctionExit
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, ("(Time elapsed: {0:hh}:{0:mm}:{0:ss}:{0:fff})" -f $ts)
     $Message = -join ($Message -split ';')[2..4]
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 

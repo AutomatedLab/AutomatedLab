@@ -4107,7 +4107,11 @@ function New-LabSourcesFolder
         $DriveLetter,
 
         [switch]
-        $Force
+        $Force,
+
+        [ValidateSet('master','develop')]
+        [string]
+        $Branch = 'master'
     )
 
     $path = Get-LabSourcesLocation
@@ -4150,7 +4154,7 @@ function New-LabSourcesFolder
 
         try
         {
-            Get-LabInternetFile -Uri 'https://github.com/AutomatedLab/AutomatedLab/archive/master.zip' -Path $archivePath -ErrorAction Stop
+            Get-LabInternetFile -Uri ('https://github.com/AutomatedLab/AutomatedLab/archive/{0}.zip' -f $Branch) -Path $archivePath -ErrorAction Stop
         }
         catch
         {
