@@ -11,6 +11,7 @@
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
+- Fixes timing issues with ADDS on Azure by skipping the wait period for guest reboots on Azure.
 
 ## 5.17.0 - 2020-01-08
 

@@ -29,10 +29,10 @@ Restores a named snapshot on one or more machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restore-LabVMSnapshot -SnapshotName BeforeDestroyingTheWorld -All
 ```
 
-{{ Add example description here }}
+Restore the snapshot from before destroying the world.
 
 ## PARAMETERS
 

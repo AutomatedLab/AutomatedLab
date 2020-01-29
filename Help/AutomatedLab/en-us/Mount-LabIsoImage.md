@@ -24,10 +24,10 @@ Mounts a disk image on one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> $location = Mount-LabIsoImage -ComputerName DC01 -IsoPath $labSources\ISOs\mimikatz.iso -PassThru
 ```
 
-{{ Add example description here }}
+Mounts mimikatz on DC01 and returns the drive letter
 
 ## PARAMETERS
 

@@ -25,10 +25,10 @@ Waits for the restart of a lab machine
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Wait-LabVMRestart SQL1
 ```
 
-{{ Add example description here }}
+Waits for the restart of SQL1
 
 ## PARAMETERS
 

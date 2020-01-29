@@ -24,10 +24,14 @@ The function takes in a scriptblock meant as a custom progress checking script w
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+$packs = @()
+$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
+$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
+
+Install-LabSoftwarePackages -Machine (Get-LabVM -All) -SoftwarePackage $packs
 ```
 
-{{ Add example description here }}
+Prepare a list of packages to install on all machines, utilizing the built-in variable labSources
 
 ## PARAMETERS
 

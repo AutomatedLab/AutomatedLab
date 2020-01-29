@@ -1216,15 +1216,24 @@ function Connect-LabVM
 #region Get-LabVMRdpFile
 function Get-LabVMRdpFile
 {
-    
-    param (
+    [CmdletBinding()]
+    param
+    (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
-        [string[]]$ComputerName,
+        [string[]]
+        $ComputerName,
 
-        [switch]$UseLocalCredential,
+        [Parameter()]
+        [switch]
+        $UseLocalCredential,
 
         [Parameter(ParameterSetName = 'All')]
-        [switch]$All
+        [switch]
+        $All,
+
+        [Parameter()]
+        [string]
+        $Path
     )
 
     if ($ComputerName)
@@ -1237,6 +1246,10 @@ function Get-LabVMRdpFile
     }
 
     $lab = Get-Lab
+    if ([string]::IsNullOrWhiteSpace($Path))
+    {
+        $Path = $lab.LabPath
+    }
 
     foreach ($machine in $machines)
     {
@@ -1253,7 +1266,7 @@ function Get-LabVMRdpFile
             $cred = $machine.GetCredential($lab)
         }
 
-        if ($machine.HostType = 'Azure')
+        if ($machine.HostType -eq 'Azure')
         {
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine.Name
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
@@ -1293,9 +1306,10 @@ use redirection server name:i:1
 username:s:$($cred.UserName)
 authentication level:i:0
 "@
-        $path = Join-Path -Path $lab.LabPath -ChildPath ($machine.Name + '.rdp')
-        $rdpContent | Out-File -FilePath $path
-        Write-PSFMessage "RDP file saved to '$path'"
+        $filePath = Join-Path -Path $Path -ChildPath ($machine.Name + '.rdp')
+        $rdpContent | Set-Content -Path $filePath
+        Get-Item $filePath
+        Write-PSFMessage "RDP file saved to '$filePath'"
     }
 }
 #endregion Get-LabVMRdpFile

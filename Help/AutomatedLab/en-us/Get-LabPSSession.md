@@ -23,10 +23,17 @@ Get all open PowerShell sessions to one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabPSSession
 ```
 
-{{ Add example description here }}
+List all open lab PSSession objects
+
+### Example 2
+```powershell
+PS C:\> Get-LabPSSession -ComputerName DC1
+```
+
+Gets available session to DC1
 
 ## PARAMETERS
 

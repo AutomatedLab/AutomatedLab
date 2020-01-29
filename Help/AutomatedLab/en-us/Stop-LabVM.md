@@ -31,10 +31,10 @@ Stops one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Stop-LabVm -All -Wait -KeepAzureVmProvisioned
 ```
 
-{{ Add example description here }}
+Shutdown all lab VMs but keep Azure resources provisioned, incurring costs.
 
 ## PARAMETERS
 

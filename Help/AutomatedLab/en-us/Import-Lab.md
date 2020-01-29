@@ -45,7 +45,7 @@ Import the lab "MyLab" from XML, skipping the validation
 ## PARAMETERS
 
 ### -Path
-ooasdfosadf
+The parent path of your exported lab XML files
 
 ```yaml
 Type: String
@@ -90,7 +90,7 @@ Accept wildcard characters: False
 ```
 
 ### -Name
-Which lab should be imported
+Which lab should be imported from ProgramData\AutomatedLab\Labs
 
 ```yaml
 Type: String
