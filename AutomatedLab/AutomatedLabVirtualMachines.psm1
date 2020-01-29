@@ -1307,7 +1307,7 @@ username:s:$($cred.UserName)
 authentication level:i:0
 "@
         $filePath = Join-Path -Path $Path -ChildPath ($machine.Name + '.rdp')
-        $rdpContent | Set-Content -FilePath $filePath
+        $rdpContent | Set-Content -Path $filePath
         Get-Item $filePath
         Write-PSFMessage "RDP file saved to '$filePath'"
     }
