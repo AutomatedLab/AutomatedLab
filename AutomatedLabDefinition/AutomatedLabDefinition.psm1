@@ -694,8 +694,6 @@ function New-LabDefinition
         [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
 
-        [switch]$NoAzurePublishSettingsFile,
-
         [string]$AzureSubscriptionName,
 
         [switch]$Passthru

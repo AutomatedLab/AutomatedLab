@@ -233,22 +233,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoAzurePublishSettingsFile
-
-???
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -AzureSubscriptionName
 
 Specifying what Azure subscription to use as default.
