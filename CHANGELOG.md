@@ -2,6 +2,8 @@
 
 ## Unreleased
 - Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
+- Removed parameter 'Path' from 'New-LabDefinition' and help
+- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified
