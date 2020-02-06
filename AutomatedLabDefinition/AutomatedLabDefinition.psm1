@@ -116,11 +116,6 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
-		<RunSynchronousCommand wcm:action="add">
-            <Description>Enable Remote Desktop firewall rules</Description>
-            <Order>16</Order>
-            <Path>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</Path>
-        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -178,10 +173,10 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>4</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
-        <SynchronousCommand wcm:action="add">
-            <Description>Disable .net optimization tasks</Description>
+		<SynchronousCommand wcm:action="add">
+            <Description>Disable .net Optimization</Description>
             <Order>5</Order>
-            <CommandLine>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</CommandLine>
+            <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -411,6 +406,11 @@ $unattendedXmlDefaultContent2008 = @'
             <Order>6</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
+		<SynchronousCommand wcm:action="add">
+            <Description>Disable .net Optimization</Description>
+            <Order>7</Order>
+            <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
+        </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
         <AdministratorPassword>
@@ -591,8 +591,6 @@ $autoyastContent = @"
 
 function Get-LabVolumesOnPhysicalDisks
 {
-    
-
     $physicalDisks = Get-PhysicalDisk
     $disks = Get-CimInstance -Class Win32_DiskDrive
 
@@ -677,8 +675,6 @@ namespace AutomatedLab
 #region New-LabDefinition
 function New-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [string]$Name,
@@ -919,8 +915,6 @@ function New-LabDefinition
 #region Get-LabDefinition
 function Get-LabDefinition
 {
-    
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.Lab])]
     param ()
@@ -975,8 +969,6 @@ function Set-LabDefinition
 #region Export-LabDefinition
 function Export-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [switch]
@@ -1260,8 +1252,6 @@ function Export-LabDefinition
 #region Test-LabDefinition
 function Test-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [string]$Path,
@@ -1397,8 +1387,6 @@ function Test-LabDefinition
 #region Add-LabDomainDefinition
 function Add-LabDomainDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1447,8 +1435,6 @@ function Add-LabDomainDefinition
 #region Get-LabDomainDefinition
 function Get-LabDomainDefinition
 {
-    
-
     Write-LogFunctionEntry
 
     return $script:lab.Domains
@@ -1460,8 +1446,6 @@ function Get-LabDomainDefinition
 #region Remove-LabDomainDefinition
 function Remove-LabDomainDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1491,8 +1475,6 @@ function Remove-LabDomainDefinition
 #region Add-LabIsoImageDefinition
 function Add-LabIsoImageDefinition
 {
-    
-
     [CmdletBinding()]
     param (
 
@@ -1664,8 +1646,6 @@ function Add-LabIsoImageDefinition
 #region Get-LabIsoImageDefinition
 function Get-LabIsoImageDefinition
 {
-    
-
     Write-LogFunctionEntry
 
     $script:lab.Sources.ISOs
@@ -1677,8 +1657,6 @@ function Get-LabIsoImageDefinition
 #region Remove-LabIsoImageDefinition
 function Remove-LabIsoImageDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1710,8 +1688,6 @@ function Remove-LabIsoImageDefinition
 #region Add-LabDiskDefinition
 function Add-LabDiskDefinition
 {
-    
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.Disk])]
     param (
@@ -1761,10 +1737,9 @@ function Add-LabDiskDefinition
 
     if ($Name)
     {
-        if ($script:disks | Where-Object { $_.Name -eq $Name }
-        )
+        if ($script:disks | Where-Object Name -eq $Name)
         {
-            $errorMessage = "A disk with the name '$Path ' does already exist"
+            $errorMessage = "A disk with the name '$Name' does already exist"
             Write-Error $errorMessage
             Write-LogFunctionExitWithError -Message $errorMessage
             return
@@ -1803,8 +1778,6 @@ function Add-LabDiskDefinition
 #region Add-LabMachineDefinition
 function Add-LabMachineDefinition
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'Network')]
     [OutputType([AutomatedLab.Machine])]
     param
@@ -2833,8 +2806,6 @@ function Add-LabMachineDefinition
 #region Get-LabMachineDefinition
 function Get-LabMachineDefinition
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
 
@@ -2911,8 +2882,6 @@ function Get-LabMachineDefinition
 #region Remove-LabMachineDefinition
 function Remove-LabMachineDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -2940,8 +2909,6 @@ function Remove-LabMachineDefinition
 #region Get-LabMachineRoleDefinition
 function Get-LabMachineRoleDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -2972,8 +2939,6 @@ function Get-LabMachineRoleDefinition
 #region Get-LabPostInstallationActivity
 function Get-LabPostInstallationActivity
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -3167,8 +3132,6 @@ function Get-LabPostInstallationActivity
 #region Get-DiskSpeed
 function Get-DiskSpeed
 {
-    
-
     [CmdletBinding()]
     param (
         [ValidatePattern('[a-zA-Z]')]
@@ -3223,7 +3186,6 @@ function Get-DiskSpeed
 #region Set-LabLocalVirtualMachineDiskAuto
 function Set-LabLocalVirtualMachineDiskAuto
 {
-    
     [cmdletBinding()]
     param
     (
@@ -3362,8 +3324,6 @@ function Set-LabLocalVirtualMachineDiskAuto
 #region Get-LabVirtualNetwork
 function Get-LabVirtualNetwork
 {
-    
-
     [cmdletBinding()]
 
     $virtualnetworks = @()
@@ -3394,7 +3354,6 @@ function Get-LabVirtualNetwork
 #region Get-LabAvailableAddresseSpace
 function Get-LabAvailableAddresseSpace
 {
-    
     $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
 
     if (-not $defaultAddressSpace)
@@ -3450,8 +3409,7 @@ function Get-LabAvailableAddresseSpace
 
 #region Internal
 function Repair-LabDuplicateIpAddresses
-{
-    
+{    
     foreach ($machine in (Get-LabMachineDefinition))
     {
         foreach ($adapter in $machine.NetworkAdapters)
