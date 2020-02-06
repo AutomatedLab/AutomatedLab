@@ -13,7 +13,7 @@ Creates a new lab definition
 ## SYNTAX
 
 ```
-New-LabDefinition [[-Name] <String>] [[-Path] <String>] [[-VmPath] <String>] [[-ReferenceDiskSizeInGB] <Int32>]
+New-LabDefinition [[-Name] <String>] [[-VmPath] <String>] [[-ReferenceDiskSizeInGB] <Int32>]
  [[-MaxMemory] <Int32>] [[-Notes] <Hashtable>] [-UseAllMemory] [-UseStaticMemory]
  [[-DefaultVirtualizationEngine] <String>] [-NoAzurePublishSettingsFile] [[-AzureSubscriptionName] <String>]
  [-Passthru] [<CommonParameters>]
@@ -36,7 +36,6 @@ Creates a new lab definition with the name MyTestLab1
 
 ### EXAMPLE 2
 
-
 ```powershell
 New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV
 ```
@@ -46,9 +45,8 @@ is to be Hyper-V based machines unless anything else is specified using the -Vir
 
 ### EXAMPLE 3
 
-
 ```powershell
-New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine Azure -Path C:\MyLabs
+New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine Azure
 ```
 
 Creates a new lab definition with the name MyTestLab1 and instructs AutomatedLab that all machines being added to the lab,
@@ -56,16 +54,14 @@ is to be Azure based machines unless anything else is specified using the -Virtu
 
 ### EXAMPLE 4
 
-
 ```powershell
-New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV -Path C:\MyLabs -vmPath D:\VMs
+New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV -VmPath D:\VMs
 ```
 
 Creates a new lab definition with the name MyTestLab1 and instructs AutomatedLab that all machines being added to the lab,
 is to be Hyper-V based machines unless anything else is specified using the -VirtualizationHost parameter on Add-LabMachineDefinition.
 
 ### EXAMPLE 5
-
 
 ```powershell
 New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV -MaxMemory 8GB
@@ -81,7 +77,6 @@ when defining machine using Add-LabMachineDefinition.
 
 ### EXAMPLE 6
 
-
 ```powershell
 New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV -UseAllMemory
 ```
@@ -95,7 +90,6 @@ This is only true if the memory is NOT specified when defining machine using Add
 
 ### EXAMPLE 7
 
-
 ```powershell
 New-LabDefinition -Name MyTestLab1 -DefaultVirtualizationEngine HyperV -UseStaticMemory
 ```
@@ -108,6 +102,7 @@ All machines will be using static memory as opposed the default dynamic memory.
 ## PARAMETERS
 
 ### -Name
+
 Name of lab.
 Name must only contain character a-z, A-Z and 0-9.
 
@@ -123,22 +118,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Path
-Path of placement of lab XML files containing the lab configuration
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: 1
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -VmPath
+
 Path of placement of Hyper-V based machines
 
 ```yaml
@@ -154,6 +135,7 @@ Accept wildcard characters: False
 ```
 
 ### -ReferenceDiskSizeInGB
+
 Specifies the size of the base disk to create for each used Operating System
 
 ```yaml
@@ -169,6 +151,7 @@ Accept wildcard characters: False
 ```
 
 ### -MaxMemory
+
 Maximum memory to use for lab if using automatic configuration of memory for each machine (by not specifying the memory at all)
 
 ```yaml
@@ -184,6 +167,7 @@ Accept wildcard characters: False
 ```
 
 ### -Notes
+
 Notes to add to the lab
 
 ```yaml
@@ -199,6 +183,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseAllMemory
+
 Instructs AutomatedLab to use 80% of all available memory for the lab where the machines will split this memory in a weighted approach
 based on what role(s) the machines are to have.
 This is only true if the memory is NOT specified when defining machine using Add-LabMachineDefinition.
@@ -216,6 +201,7 @@ Accept wildcard characters: False
 ```
 
 ### -UseStaticMemory
+
 Instructs AutomatedLab to only configure static memory for all machines if using automatic configuration of memory for each machine (by not specifying the memory at all).
 
 ```yaml
@@ -231,6 +217,7 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultVirtualizationEngine
+
 Virtualization engine to use as default for the lab.
 When not specifying the -VirtualizationHost parameter
 
@@ -246,22 +233,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoAzurePublishSettingsFile
-???
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -AzureSubscriptionName
+
 Specifying what Azure subscription to use as default.
 This could be needed if having more than one Azure subscription to make sure a specific subscription is used.
 
@@ -278,6 +251,7 @@ Accept wildcard characters: False
 ```
 
 ### -Passthru
+
 Indicates that the created definition should also be returned
 
 ```yaml
@@ -293,14 +267,17 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
+
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### None
+
 ## NOTES
 
 ## RELATED LINKS

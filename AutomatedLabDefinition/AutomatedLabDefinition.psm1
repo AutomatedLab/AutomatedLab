@@ -679,8 +679,6 @@ function New-LabDefinition
     param (
         [string]$Name,
 
-        [string]$Path,
-
         [string]$VmPath,
 
         [int]$ReferenceDiskSizeInGB = 50,
@@ -695,8 +693,6 @@ function New-LabDefinition
 
         [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
-
-        [switch]$NoAzurePublishSettingsFile,
 
         [string]$AzureSubscriptionName,
 
@@ -815,14 +811,7 @@ function New-LabDefinition
 
     if ($global:labNamePrefix) { $Name = "$global:labNamePrefix$Name" }
 
-    if ($PSBoundParameters.ContainsKey('Path'))
-    {
-        $script:labPath = $Path
-    }
-    else
-    {
-        $script:labpath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
-    }
+    $script:labPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
     $script:lab = New-Object AutomatedLab.Lab
