@@ -113,24 +113,29 @@ function Add-LabAzureSubscription
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
-        # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
-        if (-not $resources)
-        {
-            Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-            $null = Connect-AzAccount -ErrorAction Stop
-        }
+    # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
+    $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
+    if (-not $resources)
+    {
+        Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
+        $null = Connect-AzAccount -ErrorAction SilentlyContinue
+    }
 
-        # Select the proper subscription before saving the profile
-        if ($SubscriptionName)
-        {
-            [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
-        }
-        elseif ($SubscriptionId)
-        {
-            [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction Stop)
-        }
-        $AzureRmProfile = Get-AzContext
+    # Select the proper subscription before saving the profile
+    if ($SubscriptionName)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction SilentlyContinue)
+    }
+    elseif ($SubscriptionId)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction SilentlyContinue)
+    }
+
+    $AzureRmProfile = Get-AzContext
+    if ($null -eq $AzureRmProfile)
+    {
+        throw 'Cannot continue without a valid Azure connection.'
+    }
 
     Update-LabAzureSettings
     if (-not $script:lab.AzureSettings)
@@ -188,7 +193,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction Stop)
+        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction SilentlyContinue)
     }
     catch
     {

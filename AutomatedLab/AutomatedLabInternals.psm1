@@ -434,7 +434,7 @@ function Get-LabInternetFile
         }
         else
         {
-            if (-not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            if (-not ($IsLinux -or $IsMacOS) -and -not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
             {
                 #machine does not have internet connectivity
                 if (-not $offlineNode)
@@ -737,12 +737,12 @@ function Get-LabSourcesLocationInternal
 
     if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
     {
-        if (-not (Get-LabConfigurationItem -Name LabSourcesLocation))
+        if (-not (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
         {
-            Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home\automatedlabsources -PassThru | Register-PSFConfig
+            Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home/automatedlabsources -PassThru | Register-PSFConfig
         }
 
-        Get-LabConfigurationItem -Name LabSourcesLocation
+        Get-PSFConfigValue AutomatedLab.LabSourcesLocation
     }
     elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {

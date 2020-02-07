@@ -705,7 +705,7 @@ function New-LabDefinition
     $global:PSLog_Indent = 0
 
     $hostOSVersion = ([Environment]::OSVersion).Version
-    if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
+    if (-Not $IsLinux -and (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393'))))
     {
         $osName = $(([Environment]::OSVersion).VersionString.PadRight(10))
         $osBuild = $(([Environment]::OSVersion).Version.ToString().PadRight(11))
@@ -815,7 +815,7 @@ function New-LabDefinition
         $Name = "$global:labNamePrefix$Name" 
     }
 
-    $script:labPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
+    $script:labPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs/$Name"
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
     $script:lab = New-Object AutomatedLab.Lab

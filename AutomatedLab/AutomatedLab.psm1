@@ -34,7 +34,7 @@ function Enable-LabHostRemoting
 
     # force English language output for Get-WSManCredSSP call
     [Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'; $WSManCredSSP = Get-WSManCredSSP
-    if ((-not $WSManCredSSP[0].Contains('The machine is configured to') -and -not $WSManCredSSP[0].Contains('WSMAN/*')) -or (Get-Item -Path WSMan:\localhost\Client\Auth\CredSSP).Value -eq $false)
+    if ((-not $WSManCredSSP[0].Contains('The machine is configured to') -and -not $WSManCredSSP[0].Contains('WSMAN/*')) -or (Get-Item -Path WSMan:/localhost/Client/Auth/CredSSP).Value -eq $false)
     {
         $message = "AutomatedLab needs to enable CredSsp on the host in order to delegate credentials to the lab VMs.`nAre you OK with enabling CredSsp?"
         if (-not $Force)
@@ -55,7 +55,7 @@ function Enable-LabHostRemoting
         Write-PSFMessage 'Remoting is enabled on the host machine'
     }
 
-    $trustedHostsList = @((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts).Value -split ',' |
+    $trustedHostsList = @((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost/Client/TrustedHosts).Value -split ',' |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ }
     )
@@ -74,7 +74,7 @@ function Enable-LabHostRemoting
             }
         }
 
-        Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
+        Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost/Client/TrustedHosts -Value '*' -Force
     }
     else
     {
@@ -620,7 +620,7 @@ function Get-Lab
 
     if ($List)
     {
-        $labsPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+        $labsPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs"
 
         foreach ($path in Get-ChildItem -Path $labsPath -Directory)
         {
@@ -1151,7 +1151,7 @@ function Remove-Lab
 
     if ($Name)
     {
-        $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
+        $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs/$Name"
         $labName = $Name
     }
     else
@@ -1277,14 +1277,14 @@ function Remove-Lab
         if ($Script:data.LabPath)
         {
             Write-ScreenInfo -Message 'Removing Lab XML files'
-            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name LabFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Lab.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Disks.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)\Machines.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)\Unattended*.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)\ks.cfg" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)\autoinst.xml" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)\AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)\Certificates") { Remove-Item -Path "$($Script:data.LabPath)\Certificates" -Recurse -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name LabFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Lab.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Disks.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks.cfg" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
 
             #Only remove lab path folder if empty
             if ((Test-Path "$($Script:data.LabPath)") -and (-not (Get-ChildItem -Path $Script:data.LabPath)))
@@ -1327,7 +1327,7 @@ function Get-LabAvailableOperatingSystem
 
     if (-not $Path)
     {
-        $Path = "$(Get-LabSourcesLocationInternal -Local)\ISOs"
+        $Path = "$(Get-LabSourcesLocationInternal -Local)/ISOs"
     }
 
     if (-not (Test-IsAdministrator))
@@ -1452,7 +1452,7 @@ function Get-LabAvailableOperatingSystem
 
         if ($IsLinux -or $IsMacOS)
         {
-            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores'))
+            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores'))
         }
         else
         {
@@ -4038,7 +4038,7 @@ function New-LabSourcesFolder
             $Path = (New-Item -ItemType Directory -Path $Path).FullName
         }
 
-        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master\LabSources\*) -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master/LabSources/*) -Destination $Path -Recurse -Force:$Force
 
         Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 
@@ -4167,18 +4167,19 @@ function Test-LabHostConnected
         $Quiet
     )
 
-    $connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+    $script:connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
     {
         $null -ne (Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
     }
 
-    if ($null -eq $connected)
+    if ($null -eq $script:connected)
     {
         # If Get-NetConnectionProfile is missing, try pinging Google's public DNS
-        $connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue
+        # since this takes forever, cache the reply
+        $script:connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
     }
 
-    if ($Throw.IsPresent -and -not $connected)
+    if ($Throw.IsPresent -and -not $script:connected)
     {
         throw "$env:COMPUTERNAME does not seem to be connected to the internet. All internet-related tasks will fail."
     }
@@ -4188,7 +4189,7 @@ function Test-LabHostConnected
         return
     }
 
-    $connected
+    $script:connected
 }
 #endregion
 
@@ -4202,7 +4203,7 @@ $executioncontext.SessionState.PSVariable.Set($dynamicLabSources)
 #but when installing AL using the PowerShell Gallery, this file is missing.
 $productKeyFileLink = 'https://raw.githubusercontent.com/AutomatedLab/AutomatedLab/master/Assets/ProductKeys.xml'
 $productKeyFileName = 'ProductKeys.xml'
-$productKeyFilePath = Get-LabConfigurationItem -Name ProductKeyFilePath
+$productKeyFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePath
 
 if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 {
@@ -4214,7 +4215,7 @@ if (-not (Test-Path -Path $productKeyFilePath))
     Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
 }
 
-$productKeyCustomFilePath = Get-LabConfigurationItem -Name ProductKeyFilePathCustom
+$productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
 
 if (-not (Test-Path -Path $productKeyCustomFilePath))
 {

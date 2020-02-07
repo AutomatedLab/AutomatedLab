@@ -1,11 +1,12 @@
 ﻿if ($PSEdition -eq 'Core')
 {
-    Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
+    Add-Type -Path $PSScriptRoot/lib/core/AutomatedLab.dll
 
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
     $requiredModules = @('Dism', 'International')
 
+    $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     foreach ($module in $requiredModules)
     {
         Import-Module -SkipEditionCheck -Name $module -ErrorAction SilentlyContinue -ErrorVariable +ipmoErr
@@ -18,7 +19,7 @@
 }
 else
 {
-    Add-Type -Path $PSScriptRoot\lib\full\AutomatedLab.dll
+    Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
 }
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
@@ -377,9 +378,9 @@ Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath
 #endregion
 
 #region Linux folder
-if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores')))
+if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores')))
 {
-    $null = New-Item -ItemType Directory -Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab\Stores')
+    $null = New-Item -ItemType Directory -Path (Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores')
 }
 #endregion
 
@@ -391,14 +392,14 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBl
 Register-PSFTeppScriptblock -Name 'AutomatedLab-OperatingSystem' -ScriptBlock {
     if (-not $global:AL_OperatingSystems)
     {
-        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache -NoDisplay
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources/ISOs -UseOnlyCache -NoDisplay
     }
 
     $global:AL_OperatingSystems.OperatingSystemName
 }
 
 Register-PSFTeppscriptblock -Name 'AutomatedLab-Labs' -ScriptBlock {
-    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs"
     (Get-ChildItem -Path $path -Directory).Name
 }
 
