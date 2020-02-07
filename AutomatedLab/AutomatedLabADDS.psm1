@@ -1001,9 +1001,6 @@ function Install-LabRootDcs
             }
         }
 
-        Restart-LabVM -ComputerName $machines -Wait -NoNewLine
-        Wait-LabADReady -ComputerName $machines -NoNewLine
-
         Enable-LabVMRemoting -ComputerName $machines
 
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
@@ -1030,6 +1027,13 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
+        }
+        
+        foreach ($machine in $machines)
+        {
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
         }
 
         if ($CreateCheckPoints)
@@ -1314,6 +1318,13 @@ function Install-LabFirstChildDcs
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
+        
+        foreach ($machine in $machines)
+        {
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
+        }
 
         if ($CreateCheckPoints)
         {
@@ -1545,6 +1556,7 @@ function Install-LabDcs
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
 
         Enable-LabVMRemoting -ComputerName $machines
+        Enable-LabAutoLogon -ComputerName $machines
 
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
@@ -1706,7 +1718,7 @@ function Test-LabADReady
 
     $adReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -ScriptBlock {
 
-        if ((Get-Service -Name ADWS).Status -eq 'Running')
+        if ((Get-Service -Name ADWS -ErrorAction SilentlyContinue).Status -eq 'Running')
         {
             try
             {
@@ -1756,7 +1768,7 @@ function Reset-DNSConfiguration
             (
                 $DnsServers
             )
-            $AdapterNames = (Get-CimInstance -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
+            $AdapterNames = (Get-WmiObject -Namespace Root\CIMv2 -Class Win32_NetworkAdapter | Where-Object {$_.PhysicalAdapter}).NetConnectionID
             foreach ($AdapterName in $AdapterNames)
             {
                 netsh.exe interface ipv4 set dnsservers "$AdapterName" static $DnsServers primary
@@ -1814,6 +1826,11 @@ function Sync-LabActiveDirectory
             $VerbosePreference = $using:VerbosePreference
 
             ipconfig.exe -flushdns
+
+            if (-not -(Test-Path -Path C:\DeployDebug))
+            {
+                New-Item C:\DeployDebug -Force -ItemType Directory | Out-Null
+            }
 
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
@@ -2228,7 +2245,7 @@ function Install-LabDnsForwarder
         }
     }
 }
-#region Install-LabDnsForwarder
+#endregion Install-LabDnsForwarder
 
 #region Install-LabADDSTrust
 function Install-LabADDSTrust
@@ -2316,4 +2333,38 @@ function Install-LabADDSTrust
         }
     }
 }
-#region Install-LabADDSTrust
+#endregion Install-LabADDSTrust
+
+#region Reset-LabAdPassword
+function Reset-LabAdPassword
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$DomainName
+    )
+    
+    $lab = Get-Lab
+    $domain = $lab.Domains | Where-Object Name -eq $DomainName
+    $vm = Get-LabVM -Role RootDC, FirstChildDC | Where-Object DomainName -eq $DomainName
+    
+    Invoke-LabCommand -ActivityName 'Reset Administrator password in AD' -ScriptBlock {
+        Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+        $ctx = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Domain')
+        $i = 0
+        while (-not $u -and $i -lt 25)
+        {
+            try
+            {
+                $u = [System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($ctx, $args[0])
+                $u.SetPassword($args[1])
+            }
+            catch
+            {
+                Start-Sleep -Seconds 10
+                $i++
+            }
+        }
+        
+    } -ComputerName $vm -ArgumentList $domain.Administrator.UserName, $domain.Administrator.Password -NoDisplay
+}
+#endregion Reset-LabAdPassword

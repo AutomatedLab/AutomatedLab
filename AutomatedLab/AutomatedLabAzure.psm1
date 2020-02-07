@@ -4,6 +4,33 @@ $PSDefaultParameterValues = @{
     'Import-Module:Verbose' = $false
 }
 
+function Test-LabAzureModuleAvailability
+{
+    [CmdletBinding()]
+    param ()
+
+    $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
+    $paths = Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
+    Select-Object -First 1
+
+    if (-not $moduleManifest)
+    {
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
+        return $false
+    }
+    
+    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
+    if ($availableVersion -lt $minimumAzureModuleVersion)
+    {
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
+        return $false
+    }
+
+    $true
+}
+
 function Update-LabAzureSettings
 {
     
@@ -37,15 +64,25 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
-    
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
+        [Parameter(ParameterSetName = 'ByName')]
         [string]$SubscriptionName,
+
+        [Parameter(ParameterSetName = 'ByName')]
+        [guid]$SubscriptionId,
 
         [string]$DefaultLocationName,
 
         [string]$DefaultStorageAccountName,
 
         [string]$DefaultResourceGroupName,
+
+        [timespan]
+        $AutoShutdownTime,
+
+        [TimeZoneInfo]
+        $AutoShutdownTimeZone,
 
         [switch]$PassThru
     )
@@ -60,12 +97,7 @@ function Add-LabAzureSubscription
         throw 'No lab defined. Please call New-LabDefinition first before calling Set-LabDefaultOperatingSystem.'
     }
 
-    #This needs to be loaded manually to import the required DLLs
-    $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-    if (-not (Get-Module -Name Az.* -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
-    {
-        throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it: Install-Module Az -Force"
-    }
+    $null = Test-LabAzureModuleAvailability -ErrorAction Stop
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
@@ -82,6 +114,10 @@ function Add-LabAzureSubscription
         {
             [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
         }
+        elseif ($SubscriptionId)
+        {
+            [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction Stop)
+        }
         $AzureRmProfile = Get-AzContext
 
     Update-LabAzureSettings
@@ -91,6 +127,17 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+
+    if ($null -ne $AutoShutdownTime)
+    {
+        if ($null -eq $AutoShutdownTimeZone)
+        {
+            $AutoShutdownTimeZone = Get-TimeZone
+        }
+
+        $script:lab.AzureSettings.AutoShutdownTime = $AutoShutdownTime
+        $script:lab.AzureSettings.AutoShutdownTimeZone = $AutoShutdownTimeZone.Id
+    }
     
     # Select the subscription which is associated with this AzureRmProfile
     $subscriptions = Get-AzSubscription
@@ -101,19 +148,35 @@ function Add-LabAzureSubscription
     {
         throw "A subscription named '$SubscriptionName' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription name"
     }
-
-    #select default subscription subscription
-    if (-not $SubscriptionName)
+    if ($SubscriptionId -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object Id -eq $SubscriptionId))
     {
-        $SubscriptionName = $AzureRmProfile.Subscription.Name
+        throw "A subscription with the ID '$SubscriptionId' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription ID"
     }
 
-    Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
-    $selectedSubscription = $Subscriptions | Where-Object {$_.Name -eq $SubscriptionName}
+    #select default subscription subscription
+    $selectedSubscription = if (-not $SubscriptionName -and -not $SubscriptionId)
+    {
+         $AzureRmProfile.Subscription
+    }
+    elseif ($SubscriptionName)
+    {
+        $Subscriptions | Where-Object Name -eq $SubscriptionName
+    }
+    elseif ($SubscriptionId)
+    {
+        $Subscriptions | Where-Object Id -eq $SubscriptionId
+    }
+
+    if ($selectedSubscription.Count -gt 1)
+    {
+        throw "There is more than one subscription with the name '$SubscriptionName'. Please use the subscription Id to select a specific subscription."
+    }
+
+    Write-ScreenInfo -Message "Using Azure Subscription '$($selectedSubscription.Name)' ($($selectedSubscription.Id))" -Type Info
 
     try
     {
-        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction Stop)
     }
     catch
     {

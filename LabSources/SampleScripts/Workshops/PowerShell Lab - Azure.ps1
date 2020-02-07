@@ -1,4 +1,4 @@
-$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
+﻿$labName = 'POSH<SOME UNIQUE DATA>' #THIS NAME MUST BE GLOBALLY UNIQUE
 
 $azureDefaultLocation = 'West Europe' #COMMENT OUT -DefaultLocationName BELOW TO USE THE FASTEST LOCATION
 
@@ -17,9 +17,9 @@ Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'P@ssw0rd'
 
-Set-LabInstallationCredential -Username Install -Password Somepass1
+Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd'
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -76,10 +76,9 @@ Add-LabMachineDefinition -Name POSHClient1 -Memory 1GB -IpAddress 192.168.30.54
 
 Install-Lab
 
-<# REMOVE THE COMMENT TO INSTALL CLASSIC SHELL, NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
+<# REMOVE THE COMMENT TO INSTALL NOTEPAD++ AND WINRAR ON ALL LAB MACHINES
 #Install software to all lab machines
 $machines = Get-LabVM
-Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu' -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S -AsJob
 Install-LabSoftwarePackage -ComputerName $machines -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S -AsJob
 Get-Job -Name 'Installation of*' | Wait-Job | Out-Null

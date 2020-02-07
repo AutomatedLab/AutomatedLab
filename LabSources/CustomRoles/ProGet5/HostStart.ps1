@@ -50,8 +50,10 @@ Invoke-LabCommand -ActivityName 'Removing Default Web Page' -ScriptBlock {
 #download ProGet
 $proGetSetupFile = Get-LabInternetFile -Uri $ProGetDownloadLink -Path $labSources\SoftwarePackages -PassThru
 
-$installArgs = '/Edition=Trial /EmailAddress=AutomatedLab@test.com /FullName=AutomatedLab /ConnectionString="Data Source={0}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
-$installArgs = $installArgs -f $SqlServer
+$emailAddressPart1 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$emailAddressPart2 = (1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join ''
+$installArgs = '/Edition=Trial /EmailAddress={0}@{1}.com /FullName={0} /ConnectionString="Data Source={2}; Initial Catalog=ProGet; Integrated Security=True;" /UseIntegratedWebServer=false /ConfigureIIS /Port=80 /LogFile=C:\ProGetInstallation.log /S'
+$installArgs = $installArgs -f $emailAddressPart1, $emailAddressPart2, $SqlServer
 
 Write-ScreenInfo "Installing ProGet on server '$proGetServer'"
 Write-Verbose "Installation Agrs are: '$installArgs'"
@@ -103,9 +105,6 @@ INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
 
---INSERT INTO [ProGet].[dbo].[Configuration] 
---VALUES ('Web.InvalidatePrivilegesCachedBeforeDate', '2016-05-31T12:37:00.7751728Z')
-
 -- Change user directory to 'Active Directory with Multiple Domains user directory'
 UPDATE [ProGet].[dbo].[Configuration]
     SET [Value_Text] = 3
@@ -113,8 +112,8 @@ UPDATE [ProGet].[dbo].[Configuration]
 GO
 
 -- add a internal PowerShell feed
-INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [SyncToken_Bytes], [SyncTarget_Url], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
-VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
+INSERT INTO [dbo].[Feeds] ([Feed_Name], [Feed_Description], [Active_Indicator], [Cache_Connectors_Indicator], [DropPath_Text], [FeedPathOverride_Text], [FeedType_Name], [PackageStoreConfiguration_Xml], [LastSync_Date], [AllowUnknownLicenses_Indicator], [FeedConfiguration_Xml])
+VALUES('PowerShell', 'Internal Feed', 'Y', 'Y', NULL, NULL, 'PowerShell', NULL, NULL, 'Y', '<Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig Assembly="ProGetCoreEx"><Properties SymbolServerEnabled="False" StripSymbolFiles="False" StripSourceCodeInvert="False" UseLegacyVersioning="False" /></Inedo.ProGet.Feeds.NuGet.NuGetFeedConfig>')
 
 GO
 '@ -f $ComputerName, $proGetServer.DomainName, $flatDomainName

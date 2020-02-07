@@ -4,7 +4,7 @@ AutomatedLab can handle everything about networking and IP addresses automatical
 
 AutomatedLab tries to make defining and deploying labs as easy as possible. Quite often you need some machines that can talk to each other but you are not interested in the IP configuration. In this case you do not have to care about networking and IP addresses at all. AL defines the virtual switch for you and also finds a free subnet for you.
 
-If you take a look at the introduction script [03 Single domain-joined server.ps1](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/03%20Single%20domain-joined%20server.ps1) you will not find anything that defines a network. When deploying the lab AL tells you the subnet that was chosen.
+If you take a look at the introduction script [[04 Single domain-joined server.ps1](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/04%20Single%20domain-joined%20server.ps1) you will not find anything that defines a network. When deploying the lab AL tells you the subnet that was chosen.
 
 AL tries to find new subnets by simply increasing 192.168.1.0 until a free network is found. Free means that there is no virtual network switch with an IP address in the range of the subnet and the subnet is not routable. If these conditions are not met, the subnet is incremented again. 
 

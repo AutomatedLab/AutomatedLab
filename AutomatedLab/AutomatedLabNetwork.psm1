@@ -54,9 +54,10 @@ function New-LabNetworkSwitches
 #region Remove-LabNetworkSwitches
 function Remove-LabNetworkSwitches
 {
-    
     [cmdletBinding()]
-    param ()
+    param (
+        [switch]$RemoveExternalSwitches
+    )
 
     $Script:data = Get-Lab
     if (-not $Script:data)
@@ -79,7 +80,7 @@ function Remove-LabNetworkSwitches
     {
         Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.Name)'..."
 
-        if ($virtualNetwork.SwitchType -eq 'External')
+        if ($virtualNetwork.SwitchType -eq 'External' -and -not $RemoveExternalSwitches)
         {
             Write-ScreenInfo "The virtual switch '$($virtualNetwork.Name)' is of type external and will not be removed as it may also be used by other labs"
             continue

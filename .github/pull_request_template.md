@@ -17,6 +17,7 @@
 Please describe your changes in detail, unless the title is already descriptive enough.
 
 - [ ] - I have tested my changes.  
+- [ ] - I have updated CHANGELOG.md and added my change to the Unreleased section
 - [ ] - The PR has a meaningful title.  
 - [ ] - I updated my fork/branch and have integrated all changes from AutomatedLab/develop before creating the PR.
 
@@ -26,6 +27,7 @@ Please describe your changes in detail, unless the title is already descriptive 
 - [ ] Bug fix  
 - [ ] New functionality  
 - [ ] Breaking change
+- [ ] Documentation
 
 ## How was the change tested?
 <!--

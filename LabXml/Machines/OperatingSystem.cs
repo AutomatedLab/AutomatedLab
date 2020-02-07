@@ -342,7 +342,18 @@ namespace AutomatedLab
         {
             get
             {
-                return OperatingSystemName.Contains("Windows") ? OperatingSystemType.Windows : OperatingSystemType.Linux;
+                if (OperatingSystemName.Contains("Windows"))
+                {
+                    return OperatingSystemType.Windows;
+                }
+                else if (OperatingSystemName.Contains("Hyper-V"))
+                {
+                    return OperatingSystemType.Windows;
+                }
+                else
+                {
+                    return OperatingSystemType.Linux;
+                }
             }
         }
         public string OperatingSystemImageName

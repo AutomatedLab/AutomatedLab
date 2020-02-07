@@ -356,6 +356,7 @@ function Invoke-LabDscConfiguration
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+    $localLabSoures = Get-LabSourcesLocation -Local
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
@@ -372,7 +373,7 @@ function Invoke-LabDscConfiguration
 
     if ($PSCmdlet.ParameterSetName -eq 'New')
     {
-        $outputPath = "$($global:labSources)\$(Get-LabConfigurationItem -Name DscMofPath)\$(New-Guid)"
+        $outputPath = "$localLabSoures\$(Get-LabConfigurationItem -Name DscMofPath)\$(New-Guid)"
 
         if (Test-Path -Path $outputPath)
         {

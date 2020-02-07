@@ -14,13 +14,13 @@ Add-LabDomainDefinition -Name test1.net -AdminUser Install -AdminPassword Somepa
 #the first machine is the root domain controller. Everything in $labSources\Tools get copied to the machine's Windows folder
 Add-LabMachineDefinition -Name E1DC1 -Memory 512MB -Network $labName -IpAddress 192.168.84.10 `
     -DnsServer1 192.168.84.10 -DomainName test1.net -Roles RootDC `
-    -IsDomainJoined -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 #the second the Exchange 2013 server with the role assigned
 $role = Get-LabPostInstallationActivity -CustomRole Exchange2013 -Properties @{ OrganizationName = 'ExOrg' }
 Add-LabMachineDefinition -Name E1Ex1 -Memory 4GB -Network $labName -IpAddress 192.168.84.20 `
     -DnsServer1 192.168.84.10 -DomainName test1.net -PostInstallationActivity $role `
-    -IsDomainJoined -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
+    -ToolsPath $labSources\Tools -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 
 Install-Lab
 

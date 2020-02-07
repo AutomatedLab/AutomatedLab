@@ -54,6 +54,7 @@ namespace AutomatedLab
         SharePoint2016 = 131072,
         Orchestrator2012 = 262144,
         SQLServer2017 = 524288,
+        SQLServer2019 = 67108864,
         DSCPullServer = 1048576,
         Office2013 = 2097152,
         Office2016 = 4194304,
@@ -66,9 +67,11 @@ namespace AutomatedLab
         Tfs2017 = 2147483648,
         TfsBuildWorker = 4294967296,
         Tfs2018 = 8589934592,
-        SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017,
+        SQLServer = SQLServer2008 | SQLServer2008R2 | SQLServer2012 | SQLServer2014 | SQLServer2016 | SQLServer2017 | SQLServer2019,
         HyperV = 17179869184,
-        AzDevOps = 34359738368
+        AzDevOps = 34359738368,
+        SharePoint2019 = 68719476736,
+        SharePoint = SharePoint2013 | SharePoint2016 | SharePoint2019,
     }
 
     public enum ActiveDirectoryFunctionalLevel

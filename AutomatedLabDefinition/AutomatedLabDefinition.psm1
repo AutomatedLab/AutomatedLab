@@ -116,6 +116,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
+		<RunSynchronousCommand wcm:action="add">
+            <Description>Enable Remote Desktop firewall rules</Description>
+            <Order>16</Order>
+            <Path>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</Path>
+        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -172,6 +177,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Description>Bring all additional disks online</Description>
             <Order>4</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Disable .net optimization tasks</Description>
+            <Order>5</Order>
+            <CommandLine>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -707,13 +717,13 @@ function New-LabDefinition
         $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host '   Operating System detected as:'
         Write-PSFMessage -Level Host "     Name:  $osName"
         Write-PSFMessage -Level Host "     Build: $osBuild"
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' AutomatedLab is supported on the following virtualization platforms'
-        Write-PSFMessage -Level Host
+        Write-PSFMessage -Level Host ''
         Write-PSFMessage -Level Host ' - Microsoft Azure'
         Write-PSFMessage -Level Host ' - Windows 2016 1607 or newer'
         Write-PSFMessage -Level Host ' - Windows 10 1607 or newer'
@@ -721,6 +731,11 @@ function New-LabDefinition
         Write-PSFMessage -Level Host ' - Windows 2012 R2'
 
         Write-PSFMessage -Level Host '***************************************************************************'
+    }
+
+    if ($DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $null = Test-LabAzureModuleAvailability -ErrorAction Stop
     }
 
     #settings for a new log
@@ -1854,8 +1869,6 @@ function Add-LabMachineDefinition
 
         [AutomatedLab.Role[]]$Roles,
 
-        [string]$ProductKey,
-
         #Created ValidateSet using: "'" + ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name -join "', '") + "'" | clip
         [ValidateScript({ $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name)})]
         [string]$UserLocale,
@@ -1964,7 +1977,7 @@ function Add-LabMachineDefinition
         $machineRoles = ''
         if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId'
         $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
@@ -2224,7 +2237,14 @@ function Add-LabMachineDefinition
 
         if (-not $OperatingSystem.Version)
         {
-            throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
+            if ($OperatingSystemVersion)
+            {
+                $OperatingSystem.Version = $OperatingSystemVersion
+            }
+            else
+            {
+                throw "Could not identify the version of operating system '$($OperatingSystem.OperatingSystemName)' assigned to machine '$Name'. The version is required to continue."
+            }
         }
 
         switch ($OperatingSystem.Version.ToString(2))
@@ -2734,7 +2754,6 @@ function Add-LabMachineDefinition
         if (-not $UserLocale) { $UserLocale = (Get-Culture).Name }
         $machine.UserLocale = $UserLocale
 
-        $machine.ProductKey = $ProductKey
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
 

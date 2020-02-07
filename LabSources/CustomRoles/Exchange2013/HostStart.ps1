@@ -53,11 +53,11 @@ function Copy-ExchangeSources
     Write-ScreenInfo 'Done' -TaskEnd
 
     Write-ScreenInfo -Message "Downloading Visual C++ Redistributables from '$vcRedistDownloadLink'" -TaskStart
-    if (-not (Test-Path -LiteralPath "$downloadTargetFolder\VC2013Redist"))
+    if (-not (Test-Path -LiteralPath $downloadTargetFolder))
     {
-        New-Item -Path "$downloadTargetFolder\VC2013Redist" -ItemType Directory
+        New-Item -Path $downloadTargetFolder -ItemType Directory
     }
-    $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path "$downloadTargetFolder\VC2013Redist" -PassThru -ErrorAction Stop
+    $script:vcredistInstallFile = Get-LabInternetFile -Uri $vcRedistDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     Write-ScreenInfo 'Done' -TaskEnd
     
     #distribute the sources to all exchange servers and the RootDC
@@ -81,7 +81,7 @@ function Copy-ExchangeSources
     if (-not $script:useISO)
     {
         Write-ScreenInfo 'Extracting Exchange Installation files on all machines' -TaskStart -NoNewLine
-        $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '-dC:\Install\ExchangeInstall -s' -ComputerName $vms -AsJob -PassThru -NoDisplay
+        $jobs = Install-LabSoftwarePackage -LocalPath "C:\Install\$($exchangeInstallFile.FileName)" -CommandLine '/extract:"C:\Install\ExchangeInstall" /q' -ComputerName $vms -AsJob -PassThru -NoDisplay
         Wait-LWLabJob -Job $jobs -ProgressIndicator 10 -NoNewLine
         Write-ScreenInfo 'Done' -TaskEnd
     }
@@ -152,14 +152,14 @@ function Install-ExchangeRequirements
     foreach ($machine in $vms)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -notcontains '4.7.1')
+        if ($dotnetFrameworkVersion.Version -notcontains '4.7.2')
         { 
-            Write-ScreenInfo "Installing .net Framework 4.7.1 on '$machine'" -Type Verbose
+            Write-ScreenInfo "Installing .net Framework 4.7.2 on '$machine'" -Type Verbose
             $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet471.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
-            Write-ScreenInfo ".net Framework 4.7.1 or later is already installed on '$machine'" -Type Verbose
+            Write-ScreenInfo ".net Framework 4.7.2 or later is already installed on '$machine'" -Type Verbose
         }
 
         $InstalledApps = Invoke-LabCommand -ActivityName 'Get Installed Applications' -ComputerName $machine -ScriptBlock {
@@ -425,9 +425,9 @@ Function Test-MailboxPath {
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/9/4/1/94166586-5D17-414A-97DA-CCD069BC11A2/Exchange2013-x64-cu21.exe'
+$exchangeDownloadLink = 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
 $vcRedistDownloadLink = 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe'
-$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet471DownloadLink
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet472DownloadLink
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

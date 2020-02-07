@@ -20,6 +20,12 @@ of Install-Lab -Verbose will also be helpful in a code block.
 
 ## Environment details
 
+<!--
+To help us even more, you can generate a package containing ALL logs generated during your lab as well as your
+system details, console buffer and history with New-PsfSupportPackage. Only do this if you are comfortable sharing this
+information!
+-->
+
 PowerShell Version
 ```code
 Please paste the output of $PSVersionTable in this code field

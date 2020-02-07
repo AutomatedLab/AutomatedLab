@@ -48,13 +48,13 @@ This solution supports setting up virtual machines with the following products
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
 - SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
 - Visual Studio 2012, 2013, 2015
-- Team Foundation Services 2018, Azure DevOps
-- Exchange 2013, Exchange 2016
+- Team Foundation Services 2018, Azure DevOps Server
+- Exchange 2013, 2016, 2019
 - System Center Orchestrator 2012
 - System Center Configuration Manager 1809
 - MDT
 - ProGet (Private PowerShell Gallery)
-- Office 2013, 2016
+- Office 2013, 2016, 2019
 - DSC Pull Server (with SQL Reporting)
 
 ### Feature List
@@ -66,9 +66,10 @@ This solution supports setting up virtual machines with the following products
 - Install Windows Features on one, some or all lab machines with one line of code (Install-LabWindowsFeature).
 - Install software to a bunch of lab machines with just one cmdlet (Install-LabSoftwarePackages). You only need to know the argument to make the MSI or EXE go into silent installation mode. This can also work in parallel thanks to PowerShell workflows.
 - Run any custom activity (Script or ScriptBlock) on a number of lab machines (Invoke-LabCommand). You do not have to care about credentials or double-hop authentication issues as CredSsp is always enabled and can be used with the UseCredSsp switch.
-- Creating a [virtual environment that is connected to the internet](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1) was never easier. The only requirements are defining an external facing virtual switch and a machine with two network cards that acts as the router. AL takes care about all the configuration details like setting the getaway on all machines and also the DNS settings (see introduction script [05 Single domain-joined server (internet facing).ps1](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)).
+- Creating a [virtual environment that is connected to the internet](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1) was never easier. The only requirements are defining an external facing virtual switch and a machine with two network cards that acts as the router. AL takes care about all the configuration details like setting the gateway on all machines and also the DNS settings (see introduction script [05 Single domain-joined server (internet facing).ps1](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)).
 - AL offers offline patching with a single command. As all machines a based on one disk per OS, it is much more efficient to patch the ISO files that are used to create the base images (Update-LabIsoImage). See script [11 ISO Offline Patching.ps1](/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1) for more details.
 - If a lab is no longer required, one command is enough to remove everything to be ready to start from scratch (Remove-Lab)
 
 ## Project Management Dashboard
+
 [![Throughput Graph](https://graphs.waffle.io/AutomatedLab/AutomatedLab/throughput.svg)](https://waffle.io/AutomatedLab/AutomatedLab/metrics/throughput)

@@ -36,15 +36,17 @@ The list of available roles in AutomatedLab is below. Of course, there are many 
 - Routing
 - CaRoot
 - CaSubordinate
-- SQLServer2008
-- SQLServer2008R2
-- SQLServer2012
-- SQLServer2014
-- SQLServer2016
+- SQL Server2008
+- SQL Server2008 R2
+- SQL Server2012
+- SQL Server2014
+- SQL Server2016
+- SQL Server 2019
 - VisualStudio2013
 - VisualStudio2015
 - SharePoint2013
 - SharePoint2016
+- SharePoint2019
 - Orchestrator2012
 - Exchange2013
 - Exchange2016
@@ -139,6 +141,18 @@ This value is available on the roles RootDC and FirstChildDC and controls the Do
 #### SiteName
 When defined, AL creates the given site after promoting the domain controller and moves the domain controller into that site.
 
+#### DatabasePath
+Stores the AD database files in the given folder.
+
+#### LogPath
+Stores the AD log files in the given folder.
+
+#### SysvolPath
+Stores the Sysvol folder in the given folder
+
+#### DsrmPassword
+When defined, set the Directory Services Restore Mode password to something different than the lab's install user's password.
+
 #### SiteSubnet
 When defined, AL creates a new Active Directory Replication subnet and assigns it to the site creates previously. The parameter SiteSubnet requires SiteName to be defined.
 
@@ -230,6 +244,20 @@ Add-LabMachineDefinition -Name focln11 -Roles $cluster1
 Add-LabMachineDefinition -Name focln12 -Roles $cluster1
 Add-LabMachineDefinition -Name focln13 -Roles $cluster1
 ```
+
+## SharePoint Server
+
+The roles SharePoint2013, SharePoint2016 and SharePoint2019 enable you to install SharePoint in a single server configuration.
+All preqrequisites are downloaded automatically, but can be prepared easily in an offline scenario.
+
+In order to really deploy SharePoint according to your needs, consider using [SharePointDsc](https://github.com/dsccommunity/SharePointDsc) with ```Invoke-LabDscConfiguration```.
+
+### Prerequisites
+
+We store a list of prerequisites with PSFramework, which means that you can customize this setting or use it to download
+and prepare the prerequisites! To do that, you can find a list of URIs with ```Get-LabConfigurationItem SharePoint2016Prerequisites # Adjust to your version```.
+
+Simply store the downloaded files without renaming them in ```$labsources\SoftwarePackages\SharePoint2016 # Adjust to your version```. All files are picked up automatically even when no connection is available.
 
 ## CI/CD Pipeline
 

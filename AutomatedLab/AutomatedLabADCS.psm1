@@ -171,7 +171,7 @@ namespace Pki.CATemplate
         RequireUserInteraction = 256, // This flag instructs the client to obtain user consent before attempting to enroll for a certificate that is based on the specified template.
         RemoveInvalidFromStore = 1024, // This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
         AllowEnrollOnBehalfOf = 2048, //This flag instructs the server to allow enroll on behalf of(EOBO) functionality.
-        IncludeOcspRevNoCheck = 4096, // This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section ï¿½4.2.2.2.1, to the certificate that is issued.    Windows Server 2003 - this flag is not supported.
+        IncludeOcspRevNoCheck = 4096, // This flag instructs the server to not include revocation information and add the id-pkix-ocsp-nocheck extension, as specified in RFC2560 section 4.2.2.2.1, to the certificate that is issued. Windows Server 2003 - this flag is not supported.
         ReuseKeyTokenFull = 8192, //This flag instructs the client to reuse the private key for a smart card-based certificate renewal if it is unable to create a new private key on the card.Windows XP, Windows Server 2003 - this flag is not supported. NoRevocationInformation 16384 This flag instructs the server to not include revocation information in the issued certificate. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         BasicConstraintsInEndEntityCerts = 32768, //This flag instructs the server to include Basic Constraints extension in the end entity certificates. Windows Server 2003, Windows Server 2008 - this flag is not supported.
         IgnoreEnrollOnReenrollment = 65536, //This flag instructs the CA to ignore the requirement for Enroll permissions on the template when processing renewal requests. Windows Server 2003, Windows Server 2008, Windows Server 2008 R2 - this flag is not supported.
@@ -1919,9 +1919,15 @@ function Install-LabCAMachine
     if (!($role.Properties.ContainsKey('OCSPHTTPURL02'))) { $param.Add('OCSPHTTPURL02', '<auto>') }
     else { $param.Add('OCSPHTTPURL02', $role.Properties.OCSPHTTPURL02) }
 
-    if (!($role.Properties.ContainsKey('DoNotLoadDefaultTemplates'))) { $param.Add('DoNotLoadDefaultTemplates', '<auto>') }
-    else { $param.Add('DoNotLoadDefaultTemplates', $role.Properties.DoNotLoadDefaultTemplates) }
-
+    if (-not $role.Properties.ContainsKey('DoNotLoadDefaultTemplates'))
+    {
+        $param.Add('DoNotLoadDefaultTemplates', '<auto>')
+    }
+    else
+    {
+        $value = if ($role.Properties.DoNotLoadDefaultTemplates -eq 'Yes') { $true } else { $false }
+        $param.Add('DoNotLoadDefaultTemplates', $value)
+    }
 
     #region - Check if any unknown parameter name was passed
     $knownParameters = @()
@@ -2136,7 +2142,7 @@ function Install-LabCAMachine
 
     if (($role.Name -eq 'CaRoot') -and ($param.DoNotLoadDefaultTemplates -ne '<auto>') -and ($param.DoNotLoadDefaultTemplates -notin ('Yes', 'No')))
     {
-        Write-Error -Message "DoNotLoadDefaultTemplates needs to be 'Yes' or 'no'. Specified value is: '$($param.DoNotLoadDefaultTemplates)'"; return
+        Write-Error -Message "DoNotLoadDefaultTemplates needs to be 'Yes' or 'No'. Specified value is: '$($param.DoNotLoadDefaultTemplates)'"; return
     }
 
 
@@ -2377,7 +2383,7 @@ function Install-LabCAMachine
             $DatabaseDirectoryDrive = ($param.DatabaseDirectory.split(':')[0]) + ':'
 
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
+                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$DatabaseDirectoryDrive"""
             } -Variable (Get-Variable -Name DatabaseDirectoryDrive) -PassThru
 
             if (-not $disk -or -not $disk.DriveType -eq 3)
@@ -2391,7 +2397,7 @@ function Install-LabCAMachine
         {
             $LogDirectoryDrive = ($param.LogDirectory.split(':')[0]) + ':'
             $disk = Invoke-LabCommand -ComputerName $Machine -ScriptBlock {
-                Get-CimInstance -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
+                Get-WmiObject -Namespace Root\CIMV2 -Class Win32_LogicalDisk -Filter "DeviceID = ""$LogDirectoryDrive"""
             } -Variable (Get-Variable -Name LogDirectoryDrive) -PassThru
             if (-not $disk -or -not $disk.DriveType -eq 3)
             {
@@ -2865,14 +2871,14 @@ function Install-LabCAMachine
 
 
 
-    if ($param.DoNotLoadDefaultTemplates -eq '<auto>')
+    if ('<auto>' -eq $param.DoNotLoadDefaultTemplates)
     {
         #Only for Root CA server
         if ($param.CaType -like '*Root*')
         {
             if (Get-LabVM -Role CaSubordinate -ErrorAction SilentlyContinue)
             {
-                if ($VerbosePreference -ne 'SilentlyContinue') { Write-ScreenInfo -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' -Type Warning }
+                Write-ScreenInfo -Message 'Default templates will be removed (not published) except "SubCA" template, since this is an Enterprise Root CA and Subordinate CA(s) is present in the lab' -Type Verbose
                 $param.DoNotLoadDefaultTemplates = $True
             }
             else
@@ -3003,7 +3009,7 @@ function Publish-LabCAInstallCertificates
             {
                 Write-Verbose -Message "Install certificate ($((Get-PfxCertificate $certfile.FullName).Subject)) on machine $(hostname)"
                 #If workgroup, publish to local store
-                if ((Get-CimInstance -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
+                if ((Get-WmiObject -Namespace root\cimv2 -Class Win32_ComputerSystem).DomainRole -eq 2)
                 {
                     Write-Verbose -Message '  Machine is not domain joined. Publishing certificate to local store'
 

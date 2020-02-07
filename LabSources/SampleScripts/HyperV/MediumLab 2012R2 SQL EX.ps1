@@ -20,7 +20,6 @@ Set-LabInstallationCredential -Username Install -Password Somepass1
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network' = $labName
     'Add-LabMachineDefinition:ToolsPath'= "$labSources\Tools"
-    'Add-LabMachineDefinition:IsDomainJoined'= $true
     'Add-LabMachineDefinition:DnsServer1'= '192.168.71.10'
     'Add-LabMachineDefinition:DnsServer2'= '192.168.71.11'
     'Add-LabMachineDefinition:OperatingSystem'= 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
@@ -56,7 +55,6 @@ Install-Lab
 
 #Install software to all lab machines
 $packs = @()
-$packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\ClassicShell.exe -CommandLine '/quiet ADDLOCAL=ClassicStartMenu'
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\Notepad++.exe -CommandLine /S
 $packs += Get-LabSoftwarePackage -Path $labSources\SoftwarePackages\winrar.exe -CommandLine /S
 

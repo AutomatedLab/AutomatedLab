@@ -7,8 +7,6 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
-    
-
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -689,7 +687,8 @@ function Install-Lab
         [switch]$SQLServers,
         [switch]$Orchestrator2012,
         [switch]$WebServers,
-        [switch]$Sharepoint2013,
+        [Alias('Sharepoint2013')]
+        [switch]$SharepointServer,
         [switch]$CA,
         [switch]$ADFS,
         [switch]$DSCPullServer,
@@ -700,6 +699,8 @@ function Install-Lab
         [switch]$AzureServices,
         [switch]$TeamFoundation,
         [switch]$FailoverCluster,
+        [switch]$FileServer,
+        [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [int]$DelayBetweenComputers,
@@ -935,6 +936,14 @@ function Install-Lab
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+    
+    if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
+    {
+        Write-ScreenInfo -Message 'Installing File Servers' -TaskStart
+        Install-LabFileServers -CreateCheckPoints:$CreateCheckPoints
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
 
     if (($CA -or $performAll) -and (Get-LabVM -Role CaRoot, CaSubordinate))
     {
@@ -973,7 +982,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017 | Where-Object { -not $_.SkipDeployment }))
+    if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
         if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
@@ -982,6 +991,7 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2014)   { Write-ScreenInfo -Message "Machines to have SQL Server 2014 installed: '$((Get-LabVM -Role SQLServer2014).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2016)   { Write-ScreenInfo -Message "Machines to have SQL Server 2016 installed: '$((Get-LabVM -Role SQLServer2016).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
+        if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1019,11 +1029,11 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($SharePoint2013 -or $performAll) -and (Get-LabVM -Role SharePoint2013))
+    if (($SharepointServer -or $performAll) -and (Get-LabVM -Role SharePoint))
     {
-        Write-ScreenInfo -Message 'Installing SharePoint 2013 Servers' -TaskStart
+        Write-ScreenInfo -Message 'Installing SharePoint Servers' -TaskStart
 
-        Install-LabSharePoint2013
+        Install-LabSharePoint
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1139,7 +1149,9 @@ function Remove-Lab
         [string]$Path,
 
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 1)]
-        [string]$Name
+        [string]$Name,
+        
+        [switch]$RemoveExternalSwitches
     )
 
     Write-LogFunctionEntry
@@ -1205,7 +1217,11 @@ function Remove-Lab
             {
                 $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
                 $vm = Get-VM -Name $machine -ErrorAction SilentlyContinue
-                if ($machineMetadata.LabName -ne $labName -and $vm)
+                if (-not $machineMetadata)
+                {
+                    Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
+                }
+                elseif ($machineMetadata.LabName -ne $labName -and $vm)
                 {
                     Write-Error -Message "Cannot remove machine '$machine' because it does not belong to this lab"
                 }
@@ -1264,7 +1280,7 @@ function Remove-Lab
         }
 
         Write-ScreenInfo -Message 'Removing virtual networks'
-        Remove-LabNetworkSwitches
+        Remove-LabNetworkSwitches -RemoveExternalSwitches:$RemoveExternalSwitches
 
         if ($Script:data.LabPath)
         {
@@ -1665,6 +1681,58 @@ function Install-LabWebServers
 }
 #endregion Install-LabWebServers
 
+#region Install-LabFileServers
+function Install-LabFileServers
+{
+    
+    [cmdletBinding()]
+    param ([switch]$CreateCheckPoints)
+
+    Write-LogFunctionEntry
+
+    $roleName = [AutomatedLab.Roles]::FileServer
+
+    if (-not (Get-LabVM))
+    {
+        Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
+        return
+    }
+
+    $machines = Get-LabVM | Where-Object { $roleName -in $_.Roles.Name }
+    if (-not $machines)
+    {
+        Write-ScreenInfo -Message "There is no machine with the role '$roleName'" -Type Warning
+        Write-LogFunctionExit
+        return
+    }
+
+    Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
+    Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 30
+
+    Write-ScreenInfo -Message 'Waiting for Web Server role to complete installation' -NoNewLine
+
+    $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
+    
+    $jobs = @()
+    $jobs += Install-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -IncludeManagementTools -AsJob -PassThru -NoDisplay
+
+    Start-LabVM -StartNextMachines 1 -NoNewline
+
+    Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
+    
+    Write-ScreenInfo -Message "Restarting $roleName machines..." -NoNewLine
+    Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+    Write-ScreenInfo -Message done.
+
+    if ($CreateCheckPoints)
+    {
+        Checkpoint-LabVM -ComputerName $machines -SnapshotName "Post '$roleName' Installation"
+    }
+
+    Write-LogFunctionExit
+}
+#endregion Install-LabFileServers
+
 #region Install-LabWindowsFeature
 function Install-LabWindowsFeature
 {
@@ -1976,7 +2044,7 @@ function Install-VisualStudio2013
                 Write-Verbose 'Installing Visual Studio 2013'
 
                 Push-Location
-                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -2095,7 +2163,7 @@ function Install-VisualStudio2015
                 Write-Verbose 'Installing Visual Studio 2015'
 
                 Push-Location
-                Set-Location -Path (Get-CimInstance -Class Win32_CDRomDrive).Drive
+                Set-Location -Path (Get-WmiObject -Class Win32_CDRomDrive).Drive
                 $exe = Get-ChildItem -Filter *.exe
                 if ($exe.Count -gt 1)
                 {
@@ -2528,7 +2596,7 @@ function Install-LabSoftwarePackage
         {
             Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
-        else
+        elseif ([System.Environment]::OSVersion.Version -gt '6.3')
         {
             Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
@@ -2835,12 +2903,13 @@ function New-LabPSSession
                 }
                 elseif ($internalSession.Count -ne 0)
                 {
-                    $sessionsToRemove = $internalSession | Select-Object -Skip $(Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
+                    $sessionsToRemove = $internalSession | Select-Object -Skip (Get-LabConfigurationItem -Name MaxPSSessionsPerVM)
                     Write-PSFMessage "Found orphaned sessions. Removing $($sessionsToRemove.Count) sessions: $($sessionsToRemove.Name -join ', ')"
                     $sessionsToRemove | Remove-PSSession
 
                     Write-PSFMessage "Session $($internalSession[0].Name) is available and will be reused"
-                    $sessions += $internalSession | Where-Object State -eq 'Opened' | Select-Object -First 1
+                    #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+                    ($sessions += $internalSession | Where-Object State -eq 'Opened')[0] #| Select-Object -First 1
                 }
             }
 
@@ -2982,8 +3051,7 @@ function Remove-LabPSSession
     )
 
     Write-LogFunctionEntry
-    $lab = Get-Lab
-    $removedSessionCount = 0
+
     if ($PSCmdlet.ParameterSetName -eq 'ByName')
     {
         $Machine = Get-LabVM -ComputerName $ComputerName -IncludeLinux
@@ -2993,7 +3061,7 @@ function Remove-LabPSSession
         $Machine = Get-LabVM -All -IncludeLinux
     }
 
-    foreach ($m in $Machine)
+    $sessions = foreach ($m in $Machine)
     {
         $param = @{}
         if ($m.HostType -eq 'Azure')
@@ -3014,16 +3082,15 @@ function Remove-LabPSSession
             $param.Add('Port', 5985)
         }
 
-        $sessions = Get-PSSession | Where-Object {
+        Get-PSSession | Where-Object {
             $_.ComputerName -eq $param.ComputerName -and
             $_.Runspace.ConnectionInfo.Port -eq $param.Port -and
         $_.Name -like "$($m)_*" }
-
-        $sessions | Remove-PSSession -ErrorAction SilentlyContinue
-        $removedSessionCount += $sessions.Count
     }
 
-    Write-PSFMessage "Removed $removedSessionCount PSSessions..."
+    $sessions | Remove-PSSession -ErrorAction SilentlyContinue
+
+    Write-PSFMessage "Removed $($sessions.Count) PSSessions..."
     Write-LogFunctionExit
 }
 #endregion Remove-LabPSSession
@@ -3162,7 +3229,7 @@ function Invoke-LabCommand
     #required to suppress verbose messages, warnings and errors
     Get-CallerPreference -Cmdlet $PSCmdlet -SessionState $ExecutionContext.SessionState
 
-    if (-not (Get-LabVm -IncludeLinux))
+    if (-not (Get-LabVM -IncludeLinux))
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
         return
@@ -3647,11 +3714,11 @@ function Set-LabInstallationCredential
         if ($null -ne $Password -and $checks -contains $false)
         {
             throw "Passwords for Azure VM administrator have to:
-            Be at least 8 characters long
-            Have lower characters
-            Have upper characters
-            Have a digit
-            Have a special character (Regex match [\W_])
+                Be at least 8 characters long
+                Have lower characters
+                Have upper characters
+                Have a digit
+                Have a special character (Regex match [\W_])
             "
         }
     }
@@ -4108,46 +4175,77 @@ function New-LabSourcesFolder
 #region Telemetry
 function Enable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'false', 'Machine')
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'true', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'true'
 }
 
 function Disable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', 'true', 'Machine')
+    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'false', 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'false'
 }
 
 $telemetryChoice = @"
-Starting with AutomatedLab v5 we are collecting telemetry to see how AutomatedLab is used
-and to bring you fancy dashboards with e.g. the community's favorite roles.
+We are collecting telemetry to improve AutomatedLab.
 
-We are collecting the following with Azure Application Insights:
-- Your country (IP addresses are by default set to 0.0.0.0 after the location is extracted)
-- Your number of lab machines
-- The roles you used
-- The time it took your lab to finish
-- Your AutomatedLab version, OS Version and the lab's Hypervisor type
+To see what we collect: https://aka.ms/ALTelemetry
 
-We collect no personally identifiable information.
+We collect no personally identifiable information, ever.
 
-If you change your mind later on, you can always set the environment
-variable AUTOMATEDLAB_TELEMETRY_OPTOUT to no, false or 0 in order to opt in or to yes,true or 1 to opt out.
-Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
-
-We will not ask you again while `$env:AUTOMATEDLAB_TELEMETRY_OPTOUT exists.
-
-If you want to opt out, please select Yes.
+Select Yes to permanently opt-in, no to permanently opt-out
+or Ask me later to get asked later.
 "@
-
-if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT))
+if (Test-Path -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
-    $choice = Read-Choice -ChoiceList '&No','&Yes' -Caption 'Opt out of telemetry?' -Message $telemetryChoice -Default 0
+    $newValue = switch -Regex ($env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
+    {
+        'yes|1|true' {0}
+        'no|0|false' {1}
+    }
 
-    # This is actually enough for the telemetry client.
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $choice, 'Machine')
-
-    # We cannot refresh the env drive, so we add the same variable here as well.
-    $env:AUTOMATEDLAB_TELEMETRY_OPTOUT = $choice
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', $newValue, 'Machine')
+    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = $newValue
+    Remove-Item -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT -Force -ErrorAction SilentlyContinue
+    [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', $null, 'Machine')
 }
+
+$type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
+$nextCheck = (Get-Date).AddDays(-1)
+
+try
+{
+    Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
+    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    $nextCheck = $timestamps.TelemetryNextCheck
+    Write-PSFMessage -Message "Next check is '$nextCheck'."
+}
+catch
+{ }
+
+if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -and (Get-Date) -ge $nextCheck)
+{
+    $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
+
+    switch ($Choice)
+    {
+        0
+        {
+            Enable-LabTelemetry
+        }
+        1
+        {
+            Disable-LabTelemetry
+        }
+        2
+        {
+            $ts = (Get-Date).AddDays((Get-Random -Minimum 30 -Maximum 90))
+            $timestamps['TelemetryNextCheck'] = $ts
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            Write-ScreenInfo -Message "Okay, asking you again after $($ts.ToString('yyyy-MM-dd'))"
+        }
+    }
+}
+
 #endregion Telemetry
 
 #region Get-LabConfigurationItem

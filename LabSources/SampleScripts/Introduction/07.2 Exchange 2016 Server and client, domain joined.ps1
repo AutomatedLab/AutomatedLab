@@ -13,10 +13,12 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server 2016 Datacenter (Desktop Experience)'
 }
 
-$r = Get-LabPostInstallationActivity -CustomRole Exchange2016 -Properties @{ OrganizationName = 'Test1' }
 Add-LabMachineDefinition -Name Lab2016DC1 -Roles RootDC -Memory 1GB
-Add-LabMachineDefinition -Name Lab2016EX1 -Memory 6GB -PostInstallationActivity $r
-Add-LabMachineDefinition -Name Lab2016Client1 -OperatingSystem 'Windows 10 Pro' -Memory 1GB
+
+$role = Get-LabPostInstallationActivity -CustomRole Exchange2016 -Properties @{ OrganizationName = 'Test1' }
+Add-LabMachineDefinition -Name Lab2016EX1 -Memory 6GB -PostInstallationActivity $role
+
+Add-LabMachineDefinition -Name Lab2016Client1 -OperatingSystem 'Windows 10 Pro' -Memory 2GB
 
 #Exchange 2016 required at least kb3206632. Hence before installing Exchange 2016, the update is applied
 #Alternativly, you can create an updated ISO as described in the introduction script '11 ISO Offline Patching.ps1' or download an updates image that

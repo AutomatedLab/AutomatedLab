@@ -494,7 +494,8 @@ function Write-ScreenInfo
 
         $newSize = ($Global:taskStart).Length - 1
         if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length - 1)
+        #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+        $Global:taskStart = $Global:taskStart[0..(($Global:taskStart).Length - 1)] #$Global:taskStart | Select-Object -First (($Global:taskStart).Length - 1)
     }
 
 
@@ -513,7 +514,9 @@ function Write-ScreenInfo
     $date = Get-Date
     $timeCurrent = '{0:d2}:{1:d2}:{2:d2}' -f $date.Hour, $date.Minute, $date.Second
 
-    $Message | Foreach-Object { Write-PSFMessage -Level Verbose $_ }
+    $Message | Foreach-Object {
+        Write-PSFMessage -Level Verbose $_
+    }
 
     if ($NoNewLine)
     {
