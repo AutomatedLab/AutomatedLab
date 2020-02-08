@@ -1374,7 +1374,7 @@ function Get-LabAvailableOperatingSystem
             }
             else
             {
-                $type::ImportFromRegistry(('Cache', 'LocalOperatingSystems'))
+                $type::ImportFromRegistry('Cache', 'LocalOperatingSystems')
             }
 
             Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
