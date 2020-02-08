@@ -683,7 +683,7 @@ function New-LabDefinition
 
         [int]$ReferenceDiskSizeInGB = 50,
 
-        [int]$MaxMemory = 0,
+        [long]$MaxMemory = 0,
 
         [hashtable]$Notes,
 
