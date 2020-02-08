@@ -659,19 +659,21 @@ function Unblock-LabSources
 
     try
     {
-        $cache = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'Timestamps')
+            $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
         }
-        Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
+
+        Write-PSFMessage 'Imported Cache\Timestamps from registry/file store'
     }
     catch
     {
         $cache = New-Object $type
-        Write-PSFMessage 'No entry found in the regirtry at Cache\Timestamps'
+        Write-PSFMessage 'No entry found in the registry at Cache\Timestamps'
     }
 
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
@@ -816,12 +818,13 @@ function Update-LabSysinternalsTools
     try
     {
         Write-PSFMessage -Message 'Get last check time of SysInternals suite'
-        $timestamps = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'Timestamps')
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
         }
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
@@ -869,12 +872,13 @@ function Update-LabSysinternalsTools
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
             {
-                $versions = if ($IsLinux -or $IsMacOs) {
-                    $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
+                if ($IsLinux -or $IsMacOs)
+                {
+                    $versions = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
                 }
                 else
                 {
-                    $type::ImportFromRegistry('Cache', 'Versions')
+                    $versions = $type::ImportFromRegistry('Cache', 'Versions')
                 }
             }
             catch

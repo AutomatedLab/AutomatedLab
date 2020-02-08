@@ -1496,13 +1496,14 @@ function Add-LabIsoImageDefinition
     #read the cache
     try
     {
-        $cachedIsos = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
+        if ($IsLinux -or $IsMacOs) {
+            $cachedIsos = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'LocalIsoImages')
+            $cachedIsos = $type::ImportFromRegistry('Cache', 'LocalIsoImages')
         }
+
         Write-PSFMessage "Read $($cachedIsos.Count) ISO images from the cache"
     }
     catch
@@ -3275,12 +3276,13 @@ function Set-LabLocalVirtualMachineDiskAuto
     #read the cache
     try
     {
-        $cachedDrives = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cachedDrives = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'LocalDisks')
+            $cachedDrives = $type::ImportFromRegistry('Cache', 'LocalDisks')
         }
         Write-PSFMessage "Read $($cachedDrives.Count) drive infos from the cache"
     }

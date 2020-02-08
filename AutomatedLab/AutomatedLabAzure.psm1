@@ -293,12 +293,12 @@ function Add-LabAzureSubscription
     try
     {
         Write-PSFMessage -Message 'Get last ISO update time'
-        $timestamps = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        if ($IsLinux -or $IsMacOs) {
+            $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'Timestamps')
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
         }
         $lastChecked = $timestamps.AzureIsosLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
@@ -339,13 +339,15 @@ function Add-LabAzureSubscription
     }
 
     # Check last LabSources sync timestamp
-    $timestamps = if ($IsLinux -or $IsMacOs) {
-        $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+    if ($IsLinux -or $IsMacOs)
+    {
+        $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
     }
     else
     {
-        $type::ImportFromRegistry('Cache', 'Timestamps')
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
     }
+
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     if ($null -eq $lastchecked)
@@ -409,13 +411,15 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
     try
     {
-        $global:cacheVmImages = if ($IsLinux -or $IsMacOs) {
-            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
+        if ($IsLinux -or $IsMacOs) 
+        {
+            $global:cacheVmImages = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
         }
         else
         {
-            $type::ImportFromRegistry('Cache', 'AzureOperatingSystems')
+            $global:cacheVmImages = $type::ImportFromRegistry('Cache', 'AzureOperatingSystems')
         }
+
         Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
         if ($global:cacheVmImages)

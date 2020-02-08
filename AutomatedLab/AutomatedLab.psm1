@@ -1368,13 +1368,13 @@ function Get-LabAvailableOperatingSystem
         #read the cache
         try
         {
-            $cachedOsList = if ($IsLinux -or $IsMacOS)
+            if ($IsLinux -or $IsMacOS)
             {
-                $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
+                $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
             }
             else
             {
-                $type::ImportFromRegistry('Cache', 'LocalOperatingSystems')
+                $cachedOsList = $type::ImportFromRegistry('Cache', 'LocalOperatingSystems')
             }
 
             Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
@@ -4097,12 +4097,12 @@ $nextCheck = (Get-Date).AddDays(-1)
 try
 {
     Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
-    $timestamps = if ($IsLinux -or $IsMacOs) {
-        $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+    if ($IsLinux -or $IsMacOs) {
+        $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
     }
     else
     {
-        $type::ImportFromRegistry('Cache', 'Timestamps')
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
     }
     $nextCheck = $timestamps.TelemetryNextCheck
     Write-PSFMessage -Message "Next check is '$nextCheck'."
