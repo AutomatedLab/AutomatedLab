@@ -293,7 +293,13 @@ function Add-LabAzureSubscription
     try
     {
         Write-PSFMessage -Message 'Get last ISO update time'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $timestamps = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.AzureIsosLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -319,13 +325,27 @@ function Add-LabAzureSubscription
         finally
         {
             $timestamps['AzureIsosLastChecked'] = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
+
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
     }
 
     # Check last LabSources sync timestamp
-    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    $timestamps = if ($IsLinux -or $IsMacOs) {
+        $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+    }
+    else
+    {
+        $type::ImportFromRegistry('Cache', 'Timestamps')
+    }
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     if ($null -eq $lastchecked)
@@ -344,12 +364,26 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         {
             Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
             $timestamps.LabSourcesSynced = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
         elseif ($choice -eq 1)
         {
             $timestamps.LabSourcesSynced = [datetime]::MaxValue
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
     }
     elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
@@ -357,7 +391,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
-        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        }
     }
 
     $script:lab.AzureSettings.VNetConfig = (Get-AzVirtualNetwork) | ConvertTo-Json
@@ -368,8 +409,13 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
+        $global:cacheVmImages = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'AzureOperatingSystems')
+        }
         Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
         if ($global:cacheVmImages)
@@ -411,7 +457,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         }
 
         $osImageList.Timestamp = Get-Date
-        $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osImageList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
+        }
+        else
+        {
+            $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        }
     }
 
     Write-PSFMessage "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"

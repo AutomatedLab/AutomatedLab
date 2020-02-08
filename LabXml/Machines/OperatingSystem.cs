@@ -37,12 +37,12 @@ namespace AutomatedLab
 
         private static ListXmlStore<ProductKey> productKeys = null;
         private static ListXmlStore<ProductKey> productKeysCustom = null;
-        private static string productKeysXmlFilePath = string.Format(@"{0}\{1}",
+        private static string productKeysXmlFilePath = string.Format(@"{0}/{1}",
                         System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        @"AutomatedLab\Assets\ProductKeys.xml");
-        private static string productKeysCusomXmlFilePath = string.Format(@"{0}\{1}",
+                        @"AutomatedLab/Assets/ProductKeys.xml");
+        private static string productKeysCusomXmlFilePath = string.Format(@"{0}/{1}",
                 System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                @"AutomatedLab\Assets\ProductKeysCustom.xml");
+                @"AutomatedLab/Assets/ProductKeysCustom.xml");
 
         public string OperatingSystemName
         {

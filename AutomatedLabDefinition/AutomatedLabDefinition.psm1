@@ -1496,8 +1496,13 @@ function Add-LabIsoImageDefinition
     #read the cache
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedIsos = $importMethodInfo.Invoke($null, ('Cache', 'LocalIsoImages'))
+        $cachedIsos = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'LocalIsoImages')
+        }
         Write-PSFMessage "Read $($cachedIsos.Count) ISO images from the cache"
     }
     catch
@@ -1613,7 +1618,14 @@ function Add-LabIsoImageDefinition
         ForEach-Object { Write-ScreenInfo "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" -Type Warning }
     }
 
-    $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
+    if ($IsLinux -or $IsMacOs)
+    {
+        $cachedIsos.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
+    }
+    else
+    {
+        $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
+    }
 
     foreach ($iso in $isos)
     {
@@ -3263,8 +3275,13 @@ function Set-LabLocalVirtualMachineDiskAuto
     #read the cache
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedDrives = $importMethodInfo.Invoke($null, ('Cache', 'LocalDisks'))
+        $cachedDrives = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'LocalDisks')
+        }
         Write-PSFMessage "Read $($cachedDrives.Count) drive infos from the cache"
     }
     catch
@@ -3340,7 +3357,15 @@ function Set-LabLocalVirtualMachineDiskAuto
             Write-PSFMessage -Message "Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
         }
     }
-    $drives.ExportToRegistry('Cache', 'LocalDisks')
+
+    if ($IsLinux -or $IsMacOs)
+    {
+        $drives.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
+    }
+    else
+    {
+        $drives.ExportToRegistry('Cache', 'LocalDisks')
+    }
 
     #creating a new list is required as otherwise $drives would be converted into an Object[]
     $drives = $drives | Sort-Object -Property TotalSpeed -Descending

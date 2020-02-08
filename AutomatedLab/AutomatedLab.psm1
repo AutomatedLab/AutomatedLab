@@ -1330,11 +1330,6 @@ function Get-LabAvailableOperatingSystem
         $Path = "$(Get-LabSourcesLocationInternal -Local)/ISOs"
     }
 
-    if (-not (Test-IsAdministrator))
-    {
-        throw 'This function needs to be called in an elevated PowerShell session.'
-    }
-
     $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
 
     if ($Azure)
@@ -1358,6 +1353,11 @@ function Get-LabAvailableOperatingSystem
         return $osList.ToArray()
     }
 
+    if (-not (Test-IsAdministrator))
+    {
+        throw 'This function needs to be called in an elevated PowerShell session.'
+    }
+
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
     $singleFile = Test-Path -Path $Path -PathType Leaf
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
@@ -1368,8 +1368,15 @@ function Get-LabAvailableOperatingSystem
         #read the cache
         try
         {
-            $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-            $cachedOsList = $importMethodInfo.Invoke($null, ('Cache', 'LocalOperatingSystems'))
+            $cachedOsList = if ($IsLinux -or $IsMacOS)
+            {
+                $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
+            }
+            else
+            {
+                $type::ImportFromRegistry(('Cache', 'LocalOperatingSystems'))
+            }
+
             Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
         }
         catch
@@ -1452,7 +1459,7 @@ function Get-LabAvailableOperatingSystem
 
         if ($IsLinux -or $IsMacOS)
         {
-            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores'))
+            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
         }
         else
         {
@@ -4090,7 +4097,13 @@ $nextCheck = (Get-Date).AddDays(-1)
 try
 {
     Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
-    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    $timestamps = if ($IsLinux -or $IsMacOs) {
+        $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+    }
+    else
+    {
+        $type::ImportFromRegistry('Cache', 'Timestamps')
+    }
     $nextCheck = $timestamps.TelemetryNextCheck
     Write-PSFMessage -Message "Next check is '$nextCheck'."
 }
@@ -4115,7 +4128,15 @@ if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -and (Get-Date) -ge $next
         {
             $ts = (Get-Date).AddDays((Get-Random -Minimum 30 -Maximum 90))
             $timestamps['TelemetryNextCheck'] = $ts
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
+
             Write-ScreenInfo -Message "Okay, asking you again after $($ts.ToString('yyyy-MM-dd'))"
         }
     }
@@ -4167,16 +4188,16 @@ function Test-LabHostConnected
         $Quiet
     )
 
-    $script:connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+    if (-not $script:connected)
     {
-        $null -ne (Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
-    }
-
-    if ($null -eq $script:connected)
-    {
-        # If Get-NetConnectionProfile is missing, try pinging Google's public DNS
-        # since this takes forever, cache the reply
-        $script:connected = Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
+        $script:connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
+        {
+            $null -ne (Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
+        }
+        else
+        {
+            Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
+        }
     }
 
     if ($Throw.IsPresent -and -not $script:connected)

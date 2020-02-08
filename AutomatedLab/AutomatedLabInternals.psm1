@@ -659,7 +659,13 @@ function Unblock-LabSources
 
     try
     {
-        $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $cache = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
     }
     catch
@@ -673,7 +679,15 @@ function Unblock-LabSources
         Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
         Get-ChildItem -Path $Path -Recurse | Unblock-File
         $cache['LabSourcesLastUnblock'] = Get-Date
-        $cache.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $cache.ExportToRegistry('Cache', 'Timestamps')
+        }
+
         Write-PSFMessage 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
     }
     else
@@ -802,7 +816,13 @@ function Update-LabSysinternalsTools
     try
     {
         Write-PSFMessage -Message 'Get last check time of SysInternals suite'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        $timestamps = if ($IsLinux -or $IsMacOs) {
+            $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -849,7 +869,13 @@ function Update-LabSysinternalsTools
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
             {
-                $versions = $type::ImportFromRegistry('Cache', 'Versions')
+                $versions = if ($IsLinux -or $IsMacOs) {
+                    $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
+                }
+                else
+                {
+                    $type::ImportFromRegistry('Cache', 'Versions')
+                }
             }
             catch
             {
@@ -917,10 +943,24 @@ function Update-LabSysinternalsTools
 
                     #Update registry
                     $versions['SysInternals'] = $updateStringFromWebPage
-                    $versions.ExportToRegistry('Cache', 'Versions')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $versions.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
+                    }
+                    else
+                    {
+                        $versions.ExportToRegistry('Cache', 'Versions')
+                    }
 
                     $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
-                    $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                    }
+                    else
+                    {
+                        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    }
 
                     Write-ScreenInfo -Message "SysInternals Suite has been updated and placed in '$labSources\Tools\SysInternals'" -Type Warning -TaskEnd
                 }
