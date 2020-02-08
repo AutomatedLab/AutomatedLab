@@ -2801,13 +2801,13 @@ function Add-LabMachineDefinition
 
         if (-not $TimeZone)
         {
-            $TimeZone = tzutil.exe /g 
+            $TimeZone = (Get-TimeZone).StandardName
         }
         $machine.Timezone = $TimeZone
 
         if (-not $UserLocale)
         {
-            $UserLocale = (Get-Culture).Name 
+            $UserLocale = (Get-Culture).Name -replace '-POSIX'
         }
         $machine.UserLocale = $UserLocale
 
