@@ -1851,7 +1851,7 @@ function Add-LabMachineDefinition
         [AutomatedLab.Role[]]$Roles,
 
         #Created ValidateSet using: "'" + ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name -join "', '") + "'" | clip
-        [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name) })]
+        [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name) })]
         [string]$UserLocale,
 
         [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
