@@ -4,6 +4,7 @@
 - Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
 - Removed parameter 'Path' from 'New-LabDefinition' and help
 - Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
+- 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified

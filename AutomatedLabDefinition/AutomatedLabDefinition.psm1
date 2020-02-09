@@ -683,7 +683,7 @@ function New-LabDefinition
 
         [int]$ReferenceDiskSizeInGB = 50,
 
-        [int]$MaxMemory = 0,
+        [long]$MaxMemory = 0,
 
         [hashtable]$Notes,
 
@@ -1503,21 +1503,24 @@ function Add-LabIsoImageDefinition
         $cachedIsos = New-Object $type
     }
 
-    if (Test-LabPathIsOnLabAzureLabSourcesStorage $Path)
+    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
-
-        if ( [System.IO.Path]::HasExtension($Path))
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
-            $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+            $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
 
-            if (-not $isoFiles -and $Name)
+            if ( [System.IO.Path]::HasExtension($Path))
             {
-                $filterPath = Split-Path -Path $Path -Leaf
-                Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
-                Sync-LabAzureLabSources -Filter $filterPath
+                $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
 
-                $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+                if (-not $isoFiles -and $Name)
+                {
+                    $filterPath = Split-Path -Path $Path -Leaf
+                    Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
+                    Sync-LabAzureLabSources -Filter $filterPath
+
+                    $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+                }
             }
         }
     }
