@@ -2909,7 +2909,7 @@ function New-LabPSSession
 
                     Write-PSFMessage "Session $($internalSession[0].Name) is available and will be reused"
                     #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
-                    ($sessions += $internalSession | Where-Object State -eq 'Opened')[0] #| Select-Object -First 1
+                    $sessions += ($internalSession | Where-Object State -eq 'Opened')[0] #| Select-Object -First 1
                 }
             }
 
