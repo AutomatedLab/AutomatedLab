@@ -749,9 +749,13 @@ function New-LabDefinition
     {
         lsb_release -d -s
     }
-    else
+    elseif (-not ($IsLinux -or $IsMacOs)) # easier than IsWindows, which does not exist in Windows PowerShell...
     {
         (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    }
+    else
+    {
+        'Unknown'
     }
 
     Write-ScreenInfo -Message "Host operating system version: '$hostOsName, $($hostOSVersion.ToString())'"

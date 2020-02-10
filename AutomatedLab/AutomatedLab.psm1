@@ -4108,7 +4108,7 @@ function Enable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = New-Item -ItemType File -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled"
+        $null = New-Item -ItemType File -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled" -Force
     }
     else
     {
@@ -4176,8 +4176,8 @@ catch
 { }
 
 if (-not (
-    (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or -not 
-    (Test-Path -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled")) -and 
+    (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
+    (Test-Path -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
     )
 {
