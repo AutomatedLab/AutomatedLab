@@ -1023,7 +1023,7 @@ function Stop-LWHypervVM
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
         }
 
-        $linuxFailures = foreach ($failedJob in $failedJobs)
+        $stopFailures = foreach ($failedJob in $failedJobs)
         {
             if (Get-LabVm -ComputerName $failedJob.Location)
             {
@@ -1031,10 +1031,10 @@ function Stop-LWHypervVM
             }
         }
 
-        if ($linuxFailures)
+        if ($stopFailures)
         {
-            Write-ScreenInfo -Message "Force-stopping Linux VMs: $($linuxFailures -join ',')"
-            Stop-VM -Name $linuxFailures -Force
+            Write-ScreenInfo -Message "Force-stopping VMs: $($stopFailures -join ',')"
+            Stop-VM -Name $stopFailures -Force
         }
     }
     else

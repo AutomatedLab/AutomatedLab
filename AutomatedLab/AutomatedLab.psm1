@@ -2790,6 +2790,11 @@ function New-LabPSSession
                 $param['Authentication'] = 'Basic'
             }
 
+            if ($IsLinux -or $IsMacOs)
+            {
+                $param['Authentication'] = 'Negotiate'
+            }
+
             Write-PSFMessage ("Creating a new PSSession to machine '{0}:{1}' (UserName='{2}', Password='{3}', DoNotUseCredSsp='{4}')" -f $param.ComputerName, $param.Port, $cred.UserName, $cred.GetNetworkCredential().Password, $DoNotUseCredSsp)
 
             #session reuse. If there is a session to the machine available, return it, otherwise create a new session
