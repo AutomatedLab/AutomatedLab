@@ -5,6 +5,7 @@
 - Removed parameter 'Path' from 'New-LabDefinition' and help
 - Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
 - 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
+- Fixes #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified
