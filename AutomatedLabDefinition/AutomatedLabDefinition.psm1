@@ -2699,7 +2699,15 @@ function Add-LabMachineDefinition
             $processors = 1
             if (-not $script:processors)
             {
-                $script:processors = (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors 
+                $script:processors = if ($IsLinux -or $IsMacOs)
+                {
+                    $coreInf = Get-Content /proc/cpuinfo | Select-String 'siblings\s+:\s+\d+' | Select-Object -Unique
+                    [int]($coreInf -replace 'siblings\s+:\s+')
+                }
+                else
+                {
+                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors 
+                }
             }
             if ($script:processors -ge 2)
             {

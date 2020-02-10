@@ -281,6 +281,11 @@ function Test-LabHostRemoting
 
     $configOk = $true
 
+    if ($IsLinux -or $IsMacOs)
+    {
+        return $configOk
+    }
+
     if ((Get-Service -Name WinRM).Status -ne 'Running')
     {
         Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
@@ -417,17 +422,20 @@ function Import-Lab
             throw 'This function needs to be called in an elevated PowerShell session.'
         }
 
-        if ((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Force).Value -ne '*')
+        if (-not ($IsLinux -or $IsMacOs))
         {
-            Write-ScreenInfo 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements' -Type Warning
-            Write-ScreenInfo 'After installing the lab you should undo the changes for security reasons' -Type Warning
-            throw "TrustedHosts need to be set to '*' in order to be able to connect to the new VMs. Please run the cmdlet 'Set-LabHostRemoting' to make the required changes."
-        }
+            if ((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Force).Value -ne '*')
+            {
+                Write-ScreenInfo 'The host system is not prepared yet. Call the cmdlet Set-LabHost to set the requirements' -Type Warning
+                Write-ScreenInfo 'After installing the lab you should undo the changes for security reasons' -Type Warning
+                throw "TrustedHosts need to be set to '*' in order to be able to connect to the new VMs. Please run the cmdlet 'Set-LabHostRemoting' to make the required changes."
+            }
 
-        $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
-        if ($value -ne '*' -and $value -ne 'WSMAN/*')
-        {
-            throw "Please configure the local policy for allowing credentials to be delegated. Use gpedit.msc and look at the following policy: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials. Just add '*' to the server list to be able to delegate credentials to all machines."
+            $value = [GPO.Helper]::GetGroupPolicy($true, 'SOFTWARE\Policies\Microsoft\Windows\CredentialsDelegation\AllowFreshCredentials', '1')
+            if ($value -ne '*' -and $value -ne 'WSMAN/*')
+            {
+                throw "Please configure the local policy for allowing credentials to be delegated. Use gpedit.msc and look at the following policy: Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials. Just add '*' to the server list to be able to delegate credentials to all machines."
+            }
         }
 
         if (-not $NoValidation)
@@ -556,8 +564,11 @@ function Import-Lab
             -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:data.VMWareSettings.Credential))
         }
 
-        $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
-        powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+        if (-not ($IsLinux -or $IsMacOs))
+        {
+            $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
+            powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
+        }
     }
     elseif($PSCmdlet.ParameterSetName -eq 'ByValue')
     {

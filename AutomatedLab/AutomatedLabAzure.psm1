@@ -1451,7 +1451,7 @@ function Get-LabAzureAvailableRoleSize
     $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location
 
     $availableRoleSizes = Get-AzComputeResourceSku | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location #-and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     } | Select-Object -ExpandProperty Name
 
     Get-AzVMSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
