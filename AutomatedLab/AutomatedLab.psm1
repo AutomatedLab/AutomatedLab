@@ -1352,21 +1352,30 @@ function Get-LabAvailableOperatingSystem
             throw 'Please login to Azure before trying to list Azure image SKUs'
         }
 
-        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
         if ($IsLinux -or $IsMacOS)
         {
-            $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
+            $cachedSkus = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
         }
         else
         {
-            $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+            $cachedSkus = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+        }
+
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        $cachedOsList = New-Object $type
+        foreach ($os in $cachedSkus)
+        {
+            $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus, $true)
+            if ($null -ne $cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
         if ($UseOnlyCache)
         {
             return $cachedOsList
         }
-
+        
+        $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
         $osList = New-Object $type
         $skus = (Get-LabAzureAvailableSku -Location $Location)
 
