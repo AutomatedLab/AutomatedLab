@@ -569,9 +569,9 @@ function Initialize-LWAzureVM
         netsh.exe advfirewall set private state off
         netsh.exe advfirewall set public state off
 
-        if (($MachineSettings."$computerName")[6])
+        if (($MachineSettings."$computerName")[4])
         {
-            $dnsServers = ($MachineSettings."$computerName")[6]
+            $dnsServers = ($MachineSettings."$computerName")[4]
             Write-Verbose "Configuring $($dnsServers.Count) DNS Servers"
             $idx = (Get-NetIPInterface | Where-object {$_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*"}).ifIndex
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dnsServers
@@ -674,11 +674,11 @@ function Initialize-LWAzureVM
                 $m.TimeZone,
                 [int]($m.Disks.Count),
                 (Get-LabAzureLabSourcesStorage),
-                $DnsServers,
-                $Machine.GetLocalCredential()
+                $DnsServers
             )
         )
     }
+
     $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -DoNotUseCredSsp -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Write-ScreenInfo -Message 'Finished' -TaskEnd
