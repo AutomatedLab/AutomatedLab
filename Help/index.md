@@ -17,7 +17,7 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 
 Apart from the module itself your system needs to meet the following requirements:
 
-- Windows Management Framework 5+
+- Windows Management Framework 5+ (Windows)
 - .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
 - Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
 - Recommended OS language is en-us
@@ -25,7 +25,21 @@ Apart from the module itself your system needs to meet the following requirement
 - ISO files for all operating systems and roles to be deployed
 - Intel VT-x or AMD/V capable CPU
 - A decent amount of RAM
-- An SSD for your machines is highly recommended as many issues arise from slow HDDs
+- Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
+
+### Windows
+
+- Windows Management Framework 5+
+- Windows Server 2012 R2+/Windows 8.1+
+- Recommended OS language is en-us
+
+### Linux
+
+- WSL supported
+- PowerShell 6+
+- gss-ntlmssp to enable remoting (mandatory)
+- lsb_release, ip and route commands available
+- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for Q3/2020.
 
 ## Supported products
 
@@ -33,15 +47,19 @@ This solution supports setting up virtual machines with the following products
 
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
 - SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
-- Visual Studio 2012, 2013, 2015
-- Team Foundation Services 2018, Azure DevOps
+- Visual Studio 2012, 2013, 2015, 2017
+- Team Foundation Services 2015+, Azure DevOps
 - Exchange 2013, Exchange 2016
+- SharePoint 2013, 2016, 2019
 - System Center Orchestrator 2012
 - System Center Configuration Manager 1809
+- System Center Configuration Manager 1902+
 - MDT
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016
 - DSC Pull Server (with SQL Reporting)
+- Hyper-V
+- Failover Clustering
 
 ## Feature List
 

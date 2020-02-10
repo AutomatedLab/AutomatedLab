@@ -745,7 +745,16 @@ function New-LabDefinition
 
     Write-ScreenInfo -Message 'Initialization' -TimeDelta ([timespan]0) -TimeDelta2 ([timespan]0) -TaskStart
 
-    Write-ScreenInfo -Message "Host operating system version: '$($hostOSVersion.ToString())'"
+    $hostOsName = if (($IsLinux -or $IsMacOs) -and (Get-Command -Name lsb_release -ErrorAction SilentlyContinue)) 
+    {
+        lsb_release -d -s
+    }
+    else
+    {
+        (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    }
+
+    Write-ScreenInfo -Message "Host operating system version: '$hostOsName, $($hostOSVersion.ToString())'"
 
     if (-not $Name)
     {

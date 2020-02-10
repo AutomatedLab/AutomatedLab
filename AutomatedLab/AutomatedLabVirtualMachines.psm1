@@ -1338,10 +1338,15 @@ function Join-LabVMDomain
             [string]$DomainName,
 
             [Parameter(Mandatory = $true)]
-            [System.Management.Automation.PSCredential]$Credential,
+            [string]$UserName,
+
+            [Parameter(Mandatory = $true)]
+            [string]$Password,
 
             [bool]$AlwaysReboot = $false
         )
+
+        $Credential = New-Object -TypeName PSCredential -ArgumentList $UserName, ($Password | ConvertTo-SecureString -AsPlainText -Force)
 
         try
         {
@@ -1374,12 +1379,11 @@ function Join-LabVMDomain
             }
         }
 
-        $logonName = "$DomainName\$($Credential.UserName)"
-        $password = $Credential.GetNetworkCredential().Password
+        $logonName = "$DomainName\$UserName"
 
         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name AutoAdminLogon -Value 1 -Force | Out-Null
         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultUserName -Value $logonName -Force | Out-Null
-        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultPassword -Value $password -Force | Out-Null
+        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultPassword -Value $Password -Force | Out-Null
 
         Start-Sleep -Seconds 1
 
@@ -1403,7 +1407,7 @@ function Join-LabVMDomain
             ActivityName = "DomainJoin_$m"
             ScriptBlock = (Get-Command Join-Computer).ScriptBlock
             UseLocalCredential = $true
-            ArgumentList = $domain, $cred
+            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password
             AsJob = $true
             PassThru = $true
             NoDisplay = $true

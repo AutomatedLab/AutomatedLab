@@ -4097,14 +4097,28 @@ function New-LabSourcesFolder
 #region Telemetry
 function Enable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'true', 'Machine')
-    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'true'
+    if ($IsLinux -or $IsMacOs)
+    {
+        $null = New-Item -ItemType File -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled"
+    }
+    else
+    {
+        [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'true', 'Machine')
+        $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'true'
+    }
 }
 
 function Disable-LabTelemetry
 {
-    [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'false', 'Machine')
-    $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'false'
+    if ($IsLinux -or $IsMacOs)
+    {
+        $null = Remove-Item -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled"
+    }
+    else
+    {
+        [Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN', 'false', 'Machine')
+        $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 'false'
+    }
 }
 
 $telemetryChoice = @"
@@ -4117,6 +4131,7 @@ We collect no personally identifiable information, ever.
 Select Yes to permanently opt-in, no to permanently opt-out
 or Ask me later to get asked later.
 "@
+
 if (Test-Path -Path Env:\AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
     $newValue = switch -Regex ($env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
@@ -4137,7 +4152,8 @@ $nextCheck = (Get-Date).AddDays(-1)
 try
 {
     Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
-    if ($IsLinux -or $IsMacOs) {
+    if ($IsLinux -or $IsMacOs)
+    {
         $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
     }
     else
@@ -4150,7 +4166,11 @@ try
 catch
 { }
 
-if (-not (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -and (Get-Date) -ge $nextCheck)
+if (-not (
+    (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or -not 
+    (Test-Path -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled")) -and 
+    (Get-Date) -ge $nextCheck
+    )
 {
     $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
 

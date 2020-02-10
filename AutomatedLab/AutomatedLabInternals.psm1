@@ -679,7 +679,7 @@ function Unblock-LabSources
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
     {
         Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
-        Get-ChildItem -Path $Path -Recurse | Unblock-File
+        if (-not ($IsLinux -or $IsMacOs)) { Get-ChildItem -Path $Path -Recurse | Unblock-File }
         $cache['LabSourcesLastUnblock'] = Get-Date
         if ($IsLinux -or $IsMacOs)
         {
@@ -921,7 +921,7 @@ function Update-LabSysinternalsTools
 
                 if ($fileDownloaded)
                 {
-                    Unblock-File -Path $tempFilePath
+                    if (-not ($IsLinux -or $IsMacOs)) { Unblock-File -Path $tempFilePath }
 
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
