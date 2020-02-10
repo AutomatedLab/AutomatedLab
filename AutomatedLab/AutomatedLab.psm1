@@ -55,7 +55,7 @@ function Enable-LabHostRemoting
         Write-PSFMessage 'Remoting is enabled on the host machine'
     }
 
-    $trustedHostsList = @((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost/Client/TrustedHosts).Value -split ',' |
+    $trustedHostsList = @((Get-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts).Value -split ',' |
         ForEach-Object { $_.Trim() } |
         Where-Object { $_ }
     )
@@ -1341,6 +1341,8 @@ function Get-LabAvailableOperatingSystem
         $Path = "$(Get-LabSourcesLocationInternal -Local)/ISOs"
     }
 
+    $storeLocationName = if ($Azure.IsPresent) { 'Azure' } else { 'Local' }
+
     $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
 
     if ($Azure)
@@ -1351,6 +1353,20 @@ function Get-LabAvailableOperatingSystem
         }
 
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
+        if ($IsLinux -or $IsMacOS)
+        {
+            $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
+        }
+        else
+        {
+            $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
+        }
+
+        if ($UseOnlyCache)
+        {
+            return $cachedOsList
+        }
+
         $osList = New-Object $type
         $skus = (Get-LabAzureAvailableSku -Location $Location)
 
@@ -1381,11 +1397,11 @@ function Get-LabAvailableOperatingSystem
         {
             if ($IsLinux -or $IsMacOS)
             {
-                $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
+                $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
             }
             else
             {
-                $cachedOsList = $type::ImportFromRegistry('Cache', 'LocalOperatingSystems')
+                $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
             }
 
             Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
@@ -1470,11 +1486,11 @@ function Get-LabAvailableOperatingSystem
 
         if ($IsLinux -or $IsMacOS)
         {
-            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalOperatingSystems.xml'))
+            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
         }
         else
         {
-            $osList.ExportToRegistry('Cache', 'LocalOperatingSystems')
+            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
         }
 
         Write-ProgressIndicatorEnd
@@ -2672,7 +2688,7 @@ function New-LabPSSession
         $lab = Get-Lab
 
         #Due to a problem in Windows 10 not being able to reach VMs from the host
-        netsh.exe interface ip delete arpcache | Out-Null
+        if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
         $testPortTimeout = (Get-LabConfigurationItem -Name Timeout_TestPortInSeconds) * 1000
     }
 
@@ -2819,7 +2835,7 @@ function New-LabPSSession
 
             while (-not $internalSession -and $machineRetries -gt 0)
             {
-                netsh.exe interface ip delete arpcache | Out-Null
+                if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
                 Write-PSFMessage "Testing port $($param.Port) on computer '$($param.ComputerName)'"
                 $portTest = Test-Port -ComputerName $param.ComputerName -Port $param.Port -TCP -TcpTimeout $testPortTimeout

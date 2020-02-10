@@ -1,8 +1,4 @@
-$PSDefaultParameterValues = @{
-    '*-Azure*:Verbose'      = $false
-    '*-Azure*:Warning'      = $false
-    'Import-Module:Verbose' = $false
-}
+Set-Item -Path env:SuppressAzurePowerShellBreakingChangeWarnings -Value $true -ErrorAction SilentlyContinue
 
 function Test-LabAzureModuleAvailability
 {

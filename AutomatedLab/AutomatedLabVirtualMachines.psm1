@@ -675,7 +675,7 @@ function Wait-LabVM
         #remove the existing sessions to ensure a new one is created and the existing one not reused.
         Remove-LabPSSession -ComputerName $vm
 
-        netsh.exe interface ip delete arpcache | Out-Null
+        if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
         if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
