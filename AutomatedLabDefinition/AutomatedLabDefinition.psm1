@@ -1512,7 +1512,8 @@ function Add-LabIsoImageDefinition
         $cachedIsos = New-Object $type
     }
 
-    if ($script:lab.DefaultVirtualizationEngine -eq 'Azure')
+    $lab = try { Get-Lab -ErrorAction Stop } catch { Get-LabDefinition -ErrorAction Stop }
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {

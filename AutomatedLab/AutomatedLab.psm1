@@ -3875,7 +3875,15 @@ function Clear-LabCache
 
     Write-LogFunctionEntry
 
-    Remove-Item -Path Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\AutomatedLab\Cache -Force -ErrorAction SilentlyContinue
+    if ($IsLinux -or $IsMacOs)
+    {
+        $storePath = Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores'
+        Get-ChildItem -Path $storePath -Filter *.xml | Remove-Item -Force -ErrorAction SilentlyContinue
+    }
+    else
+    {
+        Remove-Item -Path Microsoft.PowerShell.Core\Registry::HKEY_CURRENT_USER\Software\AutomatedLab\Cache -Force -ErrorAction SilentlyContinue
+    }
     Write-PSFMessage 'AutomatedLab cache removed'
 
     Write-LogFunctionExit
