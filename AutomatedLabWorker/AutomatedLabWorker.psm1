@@ -74,7 +74,11 @@ function Invoke-LWCommand
 
     if ($DependencyFolderPath)
     {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) -and -not (Test-Path -Path $DependencyFolderPath))
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' } `
+        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath } `
+        { Test-Path -Path $DependencyFolderPath }
+        
+        if (-not $result)
         {
             Write-Error "The DependencyFolderPath '$DependencyFolderPath' could not be found"
             return
@@ -83,7 +87,11 @@ function Invoke-LWCommand
 
     if ($ScriptFilePath)
     {
-        if (-not (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath) -and -not (Test-Path -Path $ScriptFilePath -PathType Leaf))
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' } `
+        { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath } `
+        { Test-Path -Path $ScriptFilePath }
+        
+        if (-not $result)
         {
             Write-Error "The ScriptFilePath '$ScriptFilePath' could not be found"
             return

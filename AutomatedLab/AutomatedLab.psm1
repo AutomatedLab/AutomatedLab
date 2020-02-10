@@ -2456,7 +2456,7 @@ function Install-LabSoftwarePackage
     Write-LogFunctionEntry
     $parameterSetName = $PSCmdlet.ParameterSetName
 
-    if ($Path)
+    if ($Path -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
@@ -3237,7 +3237,10 @@ function Invoke-LabCommand
     
     if ($FilePath)
     {
-        $isLabPathIsOnLabAzureLabSourcesStorage = Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath
+        $isLabPathIsOnLabAzureLabSourcesStorage = if ((Get-Lab).DefaultVirtualizationEngine = 'Azure')
+        {
+            Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath
+        }
         if ($isLabPathIsOnLabAzureLabSourcesStorage)
         {
             Write-PSFMessage "$FilePath is on Azure. Skipping test."
