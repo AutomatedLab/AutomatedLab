@@ -119,7 +119,7 @@ function New-LabVM
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
         Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
-        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles -notcontains 'RootDC' -and $_.Roles -notcontains 'FirstChildDc' -and $_.Roles -notcontains 'DC'}) -Wait -ProgressIndicator 10
+        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and $_.Roles.Name -notcontains 'DC'}) -Wait -ProgressIndicator 10
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
