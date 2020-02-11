@@ -1442,8 +1442,13 @@ function Join-LabVMDomain
         else
         {
             $m.HasDomainJoined = $true
+            if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+            {
+                Enable-LabAutoLogon -ComputerName $machinesToJoin
+            }
         }
     }
+
     Export-Lab
 
     Write-LogFunctionExit
