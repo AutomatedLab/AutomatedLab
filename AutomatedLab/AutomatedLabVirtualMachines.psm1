@@ -119,7 +119,7 @@ function New-LabVM
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
         Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
-        Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles -notcontains 'RootDC' -and $_.Roles -notcontains 'FirstChildDc' -and $_.Roles -notcontains 'DC'}) -Wait -ProgressIndicator 10
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
@@ -1444,7 +1444,7 @@ function Join-LabVMDomain
             $m.HasDomainJoined = $true
             if ($lab.DefaultVirtualizationEngine -eq 'Azure')
             {
-                Enable-LabAutoLogon -ComputerName $machinesToJoin
+                Enable-LabAutoLogon -ComputerName $m
             }
         }
     }
