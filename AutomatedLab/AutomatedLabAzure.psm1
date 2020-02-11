@@ -1,5 +1,3 @@
-Set-Item -Path env:SuppressAzurePowerShellBreakingChangeWarnings -Value $true -ErrorAction SilentlyContinue
-
 function Test-LabAzureModuleAvailability
 {
     [OutputType([System.Boolean])]

@@ -28,7 +28,7 @@ if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedL
     [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
 
-Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarning -Value true
+Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value true
 
 #region Register default configuration if not present
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.Key' -Value 'Your IFTTT key here' -Initialize -Validation string -Description "IFTTT Key Name"

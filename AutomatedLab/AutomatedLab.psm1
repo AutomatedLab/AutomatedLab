@@ -2735,6 +2735,10 @@ function New-LabPSSession
             {
                 $cred = $Credential
             }
+            elseif ($UseLocalCredential -and ($m.IsDomainJoined -and -not $m.HasDomainJoined))
+            {
+                $cred = $m.GetLocalCredential($true)
+            }
             elseif ($UseLocalCredential)
             {
                 $cred = $m.GetLocalCredential()
