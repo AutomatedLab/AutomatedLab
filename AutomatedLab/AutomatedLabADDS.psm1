@@ -1037,6 +1037,7 @@ function Install-LabRootDcs
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
             Enable-LabAutoLogon -ComputerName $machine
+            $machine.HasDomainJoined = $true
         }
 
         if ($CreateCheckPoints)
@@ -1330,6 +1331,7 @@ function Install-LabFirstChildDcs
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
             Enable-LabAutoLogon -ComputerName $machine
+            $machine.HasDomainJoined = $true
         }
 
         if ($CreateCheckPoints)
@@ -1589,6 +1591,11 @@ function Install-LabDcs
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
         Write-ProgressIndicatorEnd
+
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
 
         if ($CreateCheckPoints)
         {
