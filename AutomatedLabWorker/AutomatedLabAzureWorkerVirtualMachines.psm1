@@ -1331,7 +1331,7 @@ function Connect-LWAzureLabSourcesDrive
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
-    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'CredSsp' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
     {
         return
     }
