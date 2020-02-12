@@ -36,12 +36,11 @@ Apart from the module itself your system needs to meet the following requirement
 
 ### Linux
 
-- pwsh started with sudo privileges or user needs to be granted access on /usr/share/AutomatedLab
-  - mkdir /usr/share/AutomatedLab && chown -R $USER:root /usr/share/AutomatedLab
-- WSL supported
+- WSL supported, Azure Cloud Shell supported
+- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
 - PowerShell 6+
 - gss-ntlmssp to enable remoting (mandatory)
-- lsb_release, ip and route commands available
+- ip and route commands available
 - Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for Q3/2020.
 
 ## Supported products
