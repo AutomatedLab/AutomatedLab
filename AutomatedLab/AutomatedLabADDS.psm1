@@ -931,6 +931,13 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
@@ -939,13 +946,6 @@ function Install-LabRootDcs
             Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
 
             Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
-        }
-
-        # Creating sessions from a Linux host requires the correct user name.
-        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
-        foreach ($machine in $machines)
-        {
-            $machine.HasDomainJoined = $true
         }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
 
@@ -1271,6 +1271,13 @@ function Install-LabFirstChildDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
@@ -1282,13 +1289,6 @@ function Install-LabFirstChildDcs
             Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock { Start-Sleep -Seconds 60 }) -ProgressIndicator 20 -NoDisplay -NoNewLine
 
             Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
-        }
-
-        # Creating sessions from a Linux host requires the correct user name.
-        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
-        foreach ($machine in $machines)
-        {
-            $machine.HasDomainJoined = $true
         }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
@@ -1551,6 +1551,13 @@ function Install-LabDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -NoNewLine -ErrorAction Stop
@@ -1564,13 +1571,6 @@ function Install-LabDcs
             }) -ProgressIndicator 20 -NoDisplay -NoNewLine
 
             Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
-        }
-
-        # Creating sessions from a Linux host requires the correct user name.
-        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
-        foreach ($machine in $machines)
-        {
-            $machine.HasDomainJoined = $true
         }
 
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
