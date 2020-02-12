@@ -4112,7 +4112,7 @@ function Enable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = New-Item -ItemType File -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled" -Force
+        $null = New-Item -ItemType File -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled" -Force
     }
     else
     {
@@ -4125,7 +4125,7 @@ function Disable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = Remove-Item -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled"
+        $null = Remove-Item -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled"
     }
     else
     {
@@ -4167,7 +4167,7 @@ try
     Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
     if ($IsLinux -or $IsMacOs)
     {
-        $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        $timestamps = $type::Import((Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
     }
     else
     {
@@ -4181,7 +4181,7 @@ catch
 
 if (-not (
     (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
-    (Test-Path -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled")) -and `
+    (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
     )
 {
@@ -4203,7 +4203,7 @@ if (-not (
             $timestamps['TelemetryNextCheck'] = $ts
             if ($IsLinux -or $IsMacOs)
             {
-                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+                $timestamps.Export((Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
             }
             else
             {
