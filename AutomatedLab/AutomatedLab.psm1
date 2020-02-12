@@ -383,7 +383,7 @@ function Import-Lab
     {
         if ($Name)
         {
-            $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
+            $Path = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name"
         }
 
         if (Test-Path -Path $Path -PathType Container)
@@ -631,7 +631,7 @@ function Get-Lab
 
     if ($List)
     {
-        $labsPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs"
+        $labsPath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs"
 
         foreach ($path in Get-ChildItem -Path $labsPath -Directory)
         {
@@ -1162,7 +1162,7 @@ function Remove-Lab
 
     if ($Name)
     {
-        $Path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs/$Name"
+        $Path = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name"
         $labName = $Name
     }
     else
@@ -1355,7 +1355,7 @@ function Get-LabAvailableOperatingSystem
         $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.Azure.AzureOSImage
         if ($IsLinux -or $IsMacOS)
         {
-            $cachedSkus = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
+            $cachedSkus = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
         }
         else
         {
@@ -1406,7 +1406,7 @@ function Get-LabAvailableOperatingSystem
         {
             if ($IsLinux -or $IsMacOS)
             {
-                $cachedOsList = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
+                $cachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
             }
             else
             {
@@ -1495,7 +1495,7 @@ function Get-LabAvailableOperatingSystem
 
         if ($IsLinux -or $IsMacOS)
         {
-            $osList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab/Stores/$($storeLocationName)OperatingSystems.xml"))
+            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
         }
         else
         {
@@ -3911,7 +3911,7 @@ function Clear-LabCache
 
     if ($IsLinux -or $IsMacOs)
     {
-        $storePath = Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores'
+        $storePath = Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores'
         Get-ChildItem -Path $storePath -Filter *.xml | Remove-Item -Force -ErrorAction SilentlyContinue
     }
     else
@@ -4112,7 +4112,7 @@ function Enable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = New-Item -ItemType File -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled" -Force
+        $null = New-Item -ItemType File -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled" -Force
     }
     else
     {
@@ -4125,7 +4125,7 @@ function Disable-LabTelemetry
 {
     if ($IsLinux -or $IsMacOs)
     {
-        $null = Remove-Item -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled"
+        $null = Remove-Item -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled"
     }
     else
     {
@@ -4167,7 +4167,7 @@ try
     Write-PSFMessage -Message 'Trying to check if user postponed telemetry setting'
     if ($IsLinux -or $IsMacOs)
     {
-        $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
     }
     else
     {
@@ -4181,7 +4181,7 @@ catch
 
 if (-not (
     (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
-    (Test-Path -Path "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/telemetry.enabled")) -and `
+    (Test-Path -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/AutomatedLab/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
     )
 {
@@ -4203,7 +4203,7 @@ if (-not (
             $timestamps['TelemetryNextCheck'] = $ts
             if ($IsLinux -or $IsMacOs)
             {
-                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
             }
             else
             {

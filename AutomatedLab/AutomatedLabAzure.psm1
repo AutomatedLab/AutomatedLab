@@ -288,7 +288,7 @@ function Add-LabAzureSubscription
     {
         Write-PSFMessage -Message 'Get last ISO update time'
         if ($IsLinux -or $IsMacOs) {
-            $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
         {
@@ -321,7 +321,7 @@ function Add-LabAzureSubscription
             $timestamps['AzureIsosLastChecked'] = Get-Date
             if ($IsLinux -or $IsMacOs)
             {
-                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
             }
             else
             {
@@ -335,7 +335,7 @@ function Add-LabAzureSubscription
     # Check last LabSources sync timestamp
     if ($IsLinux -or $IsMacOs)
     {
-        $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+        $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
     }
     else
     {
@@ -362,7 +362,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
             $timestamps.LabSourcesSynced = Get-Date
             if ($IsLinux -or $IsMacOs)
             {
-                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
             }
             else
             {
@@ -374,7 +374,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
             $timestamps.LabSourcesSynced = [datetime]::MaxValue
             if ($IsLinux -or $IsMacOs)
             {
-                $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
             }
             else
             {
@@ -389,7 +389,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         $timestamps.LabSourcesSynced = Get-Date
         if ($IsLinux -or $IsMacOs)
         {
-            $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
         {
@@ -407,7 +407,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     {
         if ($IsLinux -or $IsMacOs) 
         {
-            $global:cacheVmImages = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
+            $global:cacheVmImages = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
         }
         else
         {
@@ -457,7 +457,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         $osImageList.Timestamp = Get-Date
         if ($IsLinux -or $IsMacOS)
         {
-            $osImageList.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/AzureOperatingSystems.xml'))
+            $osImageList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
         }
         else
         {

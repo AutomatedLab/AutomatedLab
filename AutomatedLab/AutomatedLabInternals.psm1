@@ -661,7 +661,7 @@ function Unblock-LabSources
     {
         if ($IsLinux -or $IsMacOs)
         {
-            $cache = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            $cache = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
         {
@@ -683,7 +683,7 @@ function Unblock-LabSources
         $cache['LabSourcesLastUnblock'] = Get-Date
         if ($IsLinux -or $IsMacOs)
         {
-            $cache.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            $cache.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
         {
@@ -820,7 +820,7 @@ function Update-LabSysinternalsTools
         Write-PSFMessage -Message 'Get last check time of SysInternals suite'
         if ($IsLinux -or $IsMacOs)
         {
-            $timestamps = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
         }
         else
         {
@@ -874,7 +874,7 @@ function Update-LabSysinternalsTools
             {
                 if ($IsLinux -or $IsMacOs)
                 {
-                    $versions = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
+                    $versions = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
                 }
                 else
                 {
@@ -953,7 +953,7 @@ function Update-LabSysinternalsTools
                     $versions['SysInternals'] = $updateStringFromWebPage
                     if ($IsLinux -or $IsMacOs)
                     {
-                        $versions.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Versions.xml'))
+                        $versions.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
                     }
                     else
                     {
@@ -963,7 +963,7 @@ function Update-LabSysinternalsTools
                     $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
                     if ($IsLinux -or $IsMacOs)
                     {
-                        $timestamps.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/Timestamps.xml'))
+                        $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
                     }
                     else
                     {

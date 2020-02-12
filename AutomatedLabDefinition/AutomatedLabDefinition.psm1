@@ -828,7 +828,7 @@ function New-LabDefinition
         $Name = "$global:labNamePrefix$Name" 
     }
 
-    $script:labPath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))/AutomatedLab/Labs/$Name"
+    $script:labPath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name"
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
     $script:lab = New-Object AutomatedLab.Lab
@@ -1510,7 +1510,7 @@ function Add-LabIsoImageDefinition
     try
     {
         if ($IsLinux -or $IsMacOs) {
-            $cachedIsos = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
+            $cachedIsos = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalIsoImages.xml'))
         }
         else
         {
@@ -1635,7 +1635,7 @@ function Add-LabIsoImageDefinition
 
     if ($IsLinux -or $IsMacOs)
     {
-        $cachedIsos.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalIsoImages.xml'))
+        $cachedIsos.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalIsoImages.xml'))
     }
     else
     {
@@ -3300,7 +3300,7 @@ function Set-LabLocalVirtualMachineDiskAuto
     {
         if ($IsLinux -or $IsMacOs)
         {
-            $cachedDrives = $type::Import((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
+            $cachedDrives = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalDisks.xml'))
         }
         else
         {
@@ -3384,7 +3384,7 @@ function Set-LabLocalVirtualMachineDiskAuto
 
     if ($IsLinux -or $IsMacOs)
     {
-        $drives.Export((Join-Path -Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath 'AutomatedLab/Stores/LocalDisks.xml'))
+        $drives.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalDisks.xml'))
     }
     else
     {

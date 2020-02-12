@@ -47,14 +47,14 @@ function Connect-Lab
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder ="$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
+    $sourceFolder ="$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
 
-    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
+    $destinationFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -215,14 +215,14 @@ function Restore-LabConnection
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
+    $sourceFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
 
-    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
+    $destinationFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {

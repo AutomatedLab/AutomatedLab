@@ -31,7 +31,7 @@ function Send-ALToastNotification
     # Hardcoded toaster from PowerShell - no custom Toast providers after 1709
     $toastProvider = "{1AC14E77-02E7-4E5D-B744-2EB1AE5198B7}\WindowsPowerShell\v1.0\powershell.exe"
     $imageLocation = Get-LabConfigurationItem -Name Notifications.NotificationProviders.Toast.Image
-    $imagePath = "$([System.Environment]::GetFolderPath('CommonApplicationData'))\AutomatedLab\Assets"
+    $imagePath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Assets"
     $imageFilePath = Join-Path $imagePath -ChildPath (Split-Path $imageLocation -Leaf)
 
     if (-not (Test-Path -Path $imagePath))
