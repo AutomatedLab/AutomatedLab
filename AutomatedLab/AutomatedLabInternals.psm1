@@ -412,22 +412,6 @@ function Disable-LabVMFirewallGroup
 }
 #endregion Disable-LabVMFirewallGroup
 
-#region Test-Port
-
-#endregion Test-Port
-
-#region Get-StringSection
-#endregion Get-StringSection
-
-#region Add-StringIncrement
-
-#endregion Add-StringIncrement
-
-#region Get-FullMesh
-
-
-#endregion Get-FullMesh
-
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
@@ -469,7 +453,7 @@ function Get-LabInternetFile
             $Path = Join-Path -Path $Path -ChildPath $FileName
         }
 
-        if ((Test-Path -Path $Path) -and -not $Force)
+        if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
         {
             Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
         }
@@ -519,18 +503,42 @@ function Get-LabInternetFile
                     $response = $request.GetResponse()
                     if ($response)
                     {
-                        Write-Verbose 'Responce received'
+                        Write-Verbose 'Response received'
                         $remoteStream = $response.GetResponseStream()
-                        $parent = Split-Path -Path $Path
-                        if (-not (Test-Path -Path $Path) -and -not ([System.IO.Path]::GetPathRoot($parent) -eq $parent))
+
+                        if ([System.IO.Path]::GetPathRoot($Path) -ne $Path)
+                        {
+                            $parent = Split-Path -Path $Path
+                        }
+                        if (-not (Test-Path -Path $parent -PathType Container) -and -not ([System.IO.Path]::GetPathRoot($parent) -eq $parent))
                         {
                             New-Item -Path $parent -ItemType Directory -Force | Out-Null
+                        }
+                        if ((Test-Path -Path $Path -PathType Container) -and -not $FileName)
+                        {
+                            $script:FileName = $FileName = $response.ResponseUri.Segments[-1]
+                            $Path = Join-Path -Path $Path -ChildPath $FileName
+                        }
+                        if ([System.IO.Path]::GetPathRoot($Path) -eq $Path)
+                        {
+                            Write-Error "The path '$Path' is the drive root and the file name could not be retrived using the given url. Please provide a file name using the 'FileName' parameter."
+                            return
+                        }
+                        if (-not $FileName)
+                        {
+                            $script:FileName = $FileName = Split-Path -Path $Path -Leaf
+                        }
+                        if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
+                        {
+                            Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
+                            return
                         }
 
                         $localStream = [System.IO.File]::Create($Path)
 
-                        $buffer = New-Object System.Byte[] 5MB
+                        $buffer = New-Object System.Byte[] 10MB
                         $bytesRead = 0
+                        [int]$percentageCompletedPrev = 0
 
                         do
                         {
@@ -538,18 +546,18 @@ function Get-LabInternetFile
                             $localStream.Write($buffer, 0, $bytesRead)
                             $bytesProcessed += $bytesRead
 
-                            $percentageCompleted = $bytesProcessed / $response.ContentLength
-                            if ($percentageCompleted -gt 0)
+                            [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
+                            if ($percentageCompletedPrev -ne $percentageCompleted)
                             {
+                                $percentageCompletedPrev = $percentageCompleted
                                 Write-Progress -Activity "Downloading file '$FileName'" `
-                                -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                -PercentComplete ($percentageCompleted * 100)
+                                -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                -PercentComplete ($percentageCompleted)
                             }
-                            else
-                            {
-                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
-                            }
-
+                            #else
+                            #{
+                            #    Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
+                            #}
                         } while ($bytesRead -gt 0)
                     }
 
@@ -578,8 +586,12 @@ function Get-LabInternetFile
     if (-not $FileName)
     {
         $internalUri = New-Object System.Uri($Uri)
-        $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-        $PSBoundParameters.FileName = $FileName
+        $tempFileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        if (Test-FileName -Path $tempFileName)
+        {
+            $FileName = $tempFileName
+            $PSBoundParameters.FileName = $FileName
+        }
     }
     
     $lab = Get-Lab -ErrorAction SilentlyContinue
@@ -609,21 +621,28 @@ function Get-LabInternetFile
     {
         Write-PSFMessage "Target path is local, invoking the copy job locally."
         $PSBoundParameters.Remove('PassThru') | Out-Null
-        $result = Get-LabInternetFileInternal @PSBoundParameters
-    }
+        try
+        {
+            $result = Get-LabInternetFileInternal @PSBoundParameters -ErrorAction Stop
+            
+            $end = Get-Date
+            Write-PSFMessage "Download has taken: $($end - $start)"
 
-    $end = Get-Date
-    Write-PSFMessage "Download has taken: $($end - $start)"
-
-    if ($PassThru)
-    {
-        $uri2 = New-Object System.Uri($Uri)
-        New-Object PSObject -Property @{
-            Uri = $Uri
-            Path = $Path
-            FileName = $FileName
-            FullName = Join-Path -Path $Path -ChildPath $FileName
-            Length = $result.ContentLength
+            if ($PassThru)
+            {
+                $uri2 = New-Object System.Uri($Uri)
+                New-Object PSObject -Property @{
+                    Uri = $Uri
+                    Path = $Path
+                    FileName = ?? { $FileName } { $FileName } { $script:FileName}
+                    FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName})
+                    Length = $result.ContentLength
+                }
+            }
+        }
+        catch
+        {
+            Write-Error -ErrorRecord $_
         }
     }
 }
@@ -687,7 +706,7 @@ function Unblock-LabSources
 }
 #endregion Unblock-LabSources
 
-
+#region Set-LabVMDescription
 function Set-LabVMDescription
 {
     
@@ -719,7 +738,9 @@ function Set-LabVMDescription
 
     Write-LogFunctionExit
 }
+#endregion Set-LabVMDescription
 
+#region Get-LabSourcesLocationInternal
 function Get-LabSourcesLocationInternal
 {
     param
@@ -770,6 +791,7 @@ function Get-LabSourcesLocationInternal
         Get-LabSourcesLocationInternal -Local
     }
 }
+#endregion Get-LabSourcesLocationInternal
 
 #region Update-LabSysinternalsTools
 function Update-LabSysinternalsTools
@@ -919,9 +941,34 @@ function Update-LabSysinternalsTools
 }
 #endregion Update-LabSysinternalsTools
 
+#region Register-LabArgumentCompleters
 function Register-LabArgumentCompleters
 {
     $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters -and $_.Parameters.ContainsKey('ComputerName') }
 
     Register-PSFTeppArgumentCompleter -Command $commands -Parameter ComputerName -Name 'AutomatedLab-ComputerName'
 }
+#endregion Register-LabArgumentCompleters
+
+#region Test-FileName
+function Test-FileName
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+    
+    $fi = $null
+    try {
+        $fi = New-Object System.IO.FileInfo($Path)
+    }
+    catch [ArgumentException] { }
+    catch [System.IO.PathTooLongException] { }
+    catch [NotSupportedException] { }
+    if ([object]::ReferenceEquals($fi, $null) -or $fi.Name -eq '') {
+        return $false
+    } else {
+        return $true
+    }
+}
+#endregion Test-FileName
