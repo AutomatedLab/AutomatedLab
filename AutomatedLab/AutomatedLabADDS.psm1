@@ -941,6 +941,12 @@ function Install-LabRootDcs
             Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
 
         #Create reverse lookup zone (forest scope)
@@ -1030,14 +1036,10 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
-        }
-        
-        foreach ($machine in $machines)
-        {
+
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
             Enable-LabAutoLogon -ComputerName $machine
-            $machine.HasDomainJoined = $true
         }
 
         if ($CreateCheckPoints)
@@ -1282,7 +1284,12 @@ function Install-LabFirstChildDcs
             Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         }
 
-
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
         #Make sure the specified installation user will be domain admin
@@ -1331,7 +1338,6 @@ function Install-LabFirstChildDcs
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
             Enable-LabAutoLogon -ComputerName $machine
-            $machine.HasDomainJoined = $true
         }
 
         if ($CreateCheckPoints)
@@ -1560,6 +1566,13 @@ function Install-LabDcs
             Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
         #Restart the Network Location Awareness service to ensure that Windows Firewall Profile is 'Domain'
@@ -1591,11 +1604,6 @@ function Install-LabDcs
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
         Write-ProgressIndicatorEnd
-
-        foreach ($machine in $machines)
-        {
-            $machine.HasDomainJoined = $true
-        }
 
         if ($CreateCheckPoints)
         {

@@ -22,6 +22,14 @@ else
     Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
 }
 
+$usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
+$currentRelease = ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction SilentlyContinue).tag_Name -replace 'v') -as [Version]
+
+if ($null -ne $currentRelease -and $usedRelease -lt $currentRelease)
+{
+    Write-PSFMessage -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
+}
+
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
 {
     Import-Module Ships, AutomatedLab.Ships

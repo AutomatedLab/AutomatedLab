@@ -417,9 +417,9 @@ function Import-Lab
             Enable-LabHostRemoting
         }
 
-        if (-not (Test-IsAdministrator))
+        if (-not ($IsLinux -or $IsMacOs) -and -not (Test-IsAdministrator))
         {
-            throw 'This function needs to be called in an elevated PowerShell session.'
+            throw 'Import-Lab needs to be called in an elevated PowerShell session.'
         }
 
         if (-not ($IsLinux -or $IsMacOs))

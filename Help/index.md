@@ -32,9 +32,12 @@ Apart from the module itself your system needs to meet the following requirement
 - Windows Management Framework 5+
 - Windows Server 2012 R2+/Windows 8.1+
 - Recommended OS language is en-us
+- Admin privileges are required
 
 ### Linux
 
+- pwsh started with sudo privileges or user needs to be granted access on /usr/share/AutomatedLab
+  - mkdir /usr/share/AutomatedLab && chown -R $USER:root /usr/share/AutomatedLab
 - WSL supported
 - PowerShell 6+
 - gss-ntlmssp to enable remoting (mandatory)
