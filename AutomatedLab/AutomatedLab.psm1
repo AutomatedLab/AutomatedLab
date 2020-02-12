@@ -4038,7 +4038,7 @@ function New-LabSourcesFolder
         $Branch = 'master'
     )
 
-    $path = Get-LabSourcesLocation
+    $path = Get-LabSourcesLocation -Local
     if (-not $path -and (Get-LabConfigurationItem -Name LabSourcesLocation))
     {
         $path = Get-LabConfigurationItem -Name LabSourcesLocation
