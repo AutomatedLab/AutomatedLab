@@ -4267,6 +4267,11 @@ function Test-LabHostConnected
         {
             $null -ne (Get-NetConnectionProfile | Where-Object {$_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet'})
         }
+        elseif ((Get-ChildItem -Path env:\ACC_OID,env:\ACC_VERSION,env:\ACC_TID -ErrorAction SilentlyContinue).Count -eq 3)
+        {
+            # Assuming that we are in Azure Cloud Console aka Cloud Shell which is connected but cannot send ICMP packages
+            $true
+        }
         else
         {
             Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
