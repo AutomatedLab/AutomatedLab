@@ -237,10 +237,10 @@ namespace AutomatedLab
         {
             string path = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot").FirstOrDefault().BaseObject;
 
-            string productKeysXmlFilePath = $@"{path}/AutomatedLab/Assets/ProductKeys.xml";
+            string productKeysXmlFilePath = $@"{path}/Assets\ProductKeys.xml";
             string productKeysCusomXmlFilePath = string.Format(@"{0}/{1}",
                     path,
-                    @"AutomatedLab/Assets/ProductKeysCustom.xml");
+                    @"Assets/ProductKeysCustom.xml");
             try
             {
                 productKeys = ListXmlStore<ProductKey>.Import(productKeysXmlFilePath);
