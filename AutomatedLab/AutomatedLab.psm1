@@ -4181,7 +4181,7 @@ catch
 
 if (-not (
     (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
-    (Test-Path -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/AutomatedLab/telemetry.enabled")) -and `
+    (Test-Path -Path "$((Get-LabConfigurationItem -Name LabAppDataRoot))/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
     )
 {
