@@ -9,6 +9,7 @@
 - Rewritten some of the logic in Get-LabInternetFile.
   - Improves performance of Get-LabInternetFile.
   - Makes it working with more types of URLs.
+  - Fixed a newly introduced bug.
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified
