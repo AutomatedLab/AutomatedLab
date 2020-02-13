@@ -547,17 +547,20 @@ function Get-LabInternetFile
                             $bytesProcessed += $bytesRead
 
                             [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
-                            if ($percentageCompletedPrev -ne $percentageCompleted)
+                            if ($percentageCompleted -gt 0)
                             {
-                                $percentageCompletedPrev = $percentageCompleted
-                                Write-Progress -Activity "Downloading file '$FileName'" `
-                                -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                -PercentComplete ($percentageCompleted)
+                                if ($percentageCompletedPrev -ne $percentageCompleted)
+                                {
+                                    $percentageCompletedPrev = $percentageCompleted
+                                    Write-Progress -Activity "Downloading file '$FileName'" `
+                                    -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                    -PercentComplete ($percentageCompleted)
+                                }
                             }
-                            #else
-                            #{
-                            #    Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
-                            #}
+                            else
+                            {
+                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
+                            }
                         } while ($bytesRead -gt 0)
                     }
 
@@ -623,8 +626,9 @@ function Get-LabInternetFile
         $PSBoundParameters.Remove('PassThru') | Out-Null
         try
         {
-            $result = Get-LabInternetFileInternal @PSBoundParameters -ErrorAction Stop
-            
+            $x = $PSBoundParameters
+            $result = Get-LabInternetFileInternal @PSBoundParameters
+
             $end = Get-Date
             Write-PSFMessage "Download has taken: $($end - $start)"
 
