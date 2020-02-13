@@ -806,7 +806,7 @@ function Install-LabRootDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         foreach ($machine in $machines)
         {
