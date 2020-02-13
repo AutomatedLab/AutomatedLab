@@ -1138,7 +1138,7 @@ function Install-LabFirstChildDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $jobs = @()
         foreach ($machine in $machines)
@@ -1438,7 +1438,7 @@ function Install-LabDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $rootDcs = Get-LabVM -Role RootDC
         $childDcs = Get-LabVM -Role FirstChildDC
