@@ -1488,7 +1488,6 @@ function Add-LabIsoImageDefinition
         throw 'Please create a lab before using this cmdlet. To create a new lab, call New-LabDefinition'
     }
 
-
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.IsoImage
     #read the cache
     try
@@ -1503,7 +1502,7 @@ function Add-LabIsoImageDefinition
         $cachedIsos = New-Object $type
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    if ($script:lab -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
