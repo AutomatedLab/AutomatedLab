@@ -3237,7 +3237,7 @@ function Invoke-LabCommand
     
     if ($FilePath)
     {
-        $isLabPathIsOnLabAzureLabSourcesStorage = if ((Get-Lab).DefaultVirtualizationEngine = 'Azure')
+        $isLabPathIsOnLabAzureLabSourcesStorage = if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
             Test-LabPathIsOnLabAzureLabSourcesStorage -Path $FilePath
         }
