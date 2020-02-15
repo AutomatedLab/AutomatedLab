@@ -6,7 +6,7 @@ function Install-LabTeamFoundationEnvironment
     ( )
 
     $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object { -not $_.SkipDeployment -and -not (Test-LabTfsEnvironment -ComputerName $_.Name -NoDisplay).ServerDeploymentOk }
-    $azDevOpsService = Get-LabVm -Role AzDevOps | Where-Object SkipDeployment
+    $azDevOpsService = Get-LabVM -Role AzDevOps | Where-Object SkipDeployment
 
     foreach ($svcConnection in $azDevOpsService)
     {
@@ -287,6 +287,8 @@ function Install-LabBuildWorker
     foreach ($machine in $buildWorkers)
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
+        $isOnDomainController = $machine -in (Get-LabVM -Role ADDS)
+        $cred = $machine.GetLocalCredential()
         $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
         $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
@@ -373,6 +375,11 @@ function Install-LabBuildWorker
             {
                 "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
             }
+            
+            if ($isOnDomainController)
+            {
+                $content += " --windowsLogonAccount $($cred.UserName) --windowsLogonPassword $($cred.GetNetworkCredential().Password)"
+            }
 
             $null = New-Item -ItemType Directory -Path C:\DeployDebug -ErrorAction SilentlyContinue
             Set-Content C:\DeployDebug\SetupBuildWorker.cmd -Value $content -Force
@@ -390,7 +397,7 @@ function Install-LabBuildWorker
             {
                 Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
             }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
