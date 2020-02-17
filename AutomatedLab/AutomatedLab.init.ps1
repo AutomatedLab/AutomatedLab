@@ -354,7 +354,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'DoNotLoadDefaultTemplates'
         )
         TfsBuildWorker   = @(
-            'NumberOfWorkers'
+            'NumberOfBuildWorkers'
         )
     }
     MandatoryRoleProperties = @{

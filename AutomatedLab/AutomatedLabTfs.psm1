@@ -5,7 +5,9 @@ function Install-LabTeamFoundationEnvironment
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object { -not $_.SkipDeployment -and -not (Test-LabTfsEnvironment -ComputerName $_.Name -NoDisplay).ServerDeploymentOk }
+    $tfsMachines = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object { 
+        -not $_.SkipDeployment -and 
+    -not (Test-LabTfsEnvironment -ComputerName $_.Name -NoDisplay).ServerDeploymentOk }
     $azDevOpsService = Get-LabVM -Role AzDevOps | Where-Object SkipDeployment
 
     foreach ($svcConnection in $azDevOpsService)
@@ -272,7 +274,7 @@ function Install-LabBuildWorker
     param
     ( )
 
-    $buildWorkers = Get-LabVm -Role TfsBuildWorker
+    $buildWorkers = Get-LabVM -Role TfsBuildWorker
     if (-not $buildWorkers)
     {
         return
@@ -280,23 +282,24 @@ function Install-LabBuildWorker
 
     $buildWorkerUri = Get-LabConfigurationItem -Name BuildAgentUri
     $buildWorkerPath = Join-Path -Path $labsources -ChildPath Tools\TfsBuildWorker.zip
-    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru -Force
+    $download = Get-LabInternetFile -Uri $buildWorkerUri -Path $buildWorkerPath -PassThru
     Copy-LabFileItem -ComputerName $buildWorkers -Path $download.Path
 
     $installationJobs = @()
     foreach ($machine in $buildWorkers)
     {
         $role = $machine.Roles | Where-Object Name -eq TfsBuildWorker
+        [int]$numberOfBuildWorkers = $role.Properties.NumberOfBuildWorkers
         $isOnDomainController = $machine -in (Get-LabVM -Role ADDS)
         $cred = $machine.GetLocalCredential()
-        $tfsServer = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
+        $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
         $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
         $tfsPort = 8080
 
         if ($role.Properties.ContainsKey('TfsServer'))
         {
-            $tfsServer = Get-LabVm -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
+            $tfsServer = Get-LabVM -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
@@ -354,50 +357,61 @@ function Install-LabBuildWorker
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
             if (-not (Test-Path C:\TfsBuildWorker.zip)) { throw 'Build worker installation files not available' }
-
-            Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath C:\BuildWorkerSetupFiles -Force
-            $configurationTool = Get-Item C:\BuildWorkerSetupFiles\config.cmd -ErrorAction Stop
-
-            $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
+           
+            if ($numberOfBuildWorkers)
             {
-                "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel"
-                
-            }
-            elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
-            {
-                "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --sslskipcertvalidation --gituseschannel"
-            }
-            elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
-            {
-                "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+                $numberOfBuildWorkers = 1..$numberOfBuildWorkers
             }
             else
             {
-                "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
-            }
-            
-            if ($isOnDomainController)
+                $numberOfBuildWorkers = 1
+            } 
+            foreach ($numberOfBuildWorker in $numberOfBuildWorkers)
             {
-                $content += " --windowsLogonAccount $($cred.UserName) --windowsLogonPassword $($cred.GetNetworkCredential().Password)"
-            }
+                Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath "C:\BuildWorker$numberOfBuildWorker" -Force
+                $configurationTool = Get-Item "C:\BuildWorker$numberOfBuildWorker\config.cmd" -ErrorAction Stop
 
-            $null = New-Item -ItemType Directory -Path C:\DeployDebug -ErrorAction SilentlyContinue
-            Set-Content C:\DeployDebug\SetupBuildWorker.cmd -Value $content -Force
+                $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
+                {
+                    "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                
+                }
+                elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
+                {
+                    "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                }
+                elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
+                {
+                    "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
+                }
+                else
+                {
+                    "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+                }
             
-            $configresult = & C:\DeployDebug\SetupBuildWorker.cmd
+                if ($isOnDomainController)
+                {
+                    $content += " --windowsLogonAccount $($cred.UserName) --windowsLogonPassword $($cred.GetNetworkCredential().Password)"
+                }
 
-            $log = Get-ChildItem -Path "C:\BuildWorkerSetupFiles\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+                $null = New-Item -ItemType Directory -Path C:\DeployDebug -ErrorAction SilentlyContinue
+                Set-Content -Path "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd" -Value $content -Force
+            
+                $configResult = & "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd"
 
-            [pscustomobject]@{
-                ConfigResult = $configresult
-                LogContent   = $log | Get-Content 
+                $log = Get-ChildItem -Path "C:\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
+
+                [pscustomobject]@{
+                    ConfigResult = $configResult
+                    LogContent   = $log | Get-Content 
+                }
+
+                if ($LASTEXITCODE -notin 0, 3010)
+                {
+                    Write-Warning -Message "Build worker $numberOfBuildWorker on '$env:COMPUTERNAME' failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
+                }
             }
-
-            if ($LASTEXITCODE -notin 0, 3010)
-            {
-                Write-Warning -Message "Build worker $env:COMPUTERNAME failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
-            }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -968,11 +982,11 @@ function Get-LabTfsUri
         throw 'No lab imported. Please use Import-Lab to import the target lab containing at least one TFS server'
     }
 
-    $tfsvm = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
+    $tfsvm = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
     if ($ComputerName)
     {
-        $tfsVm = Get-LabVm -ComputerName $ComputerName
+        $tfsVm = Get-LabVM -ComputerName $ComputerName
     }
 
     if (-not $tfsvm) { throw ('No TFS VM in lab or no machine found with name {0}' -f $ComputerName) }
@@ -1119,7 +1133,7 @@ function Test-LabTfsEnvironment
 
         try
         {
-            $parma = @{
+            $param = @{
                 Method      = 'Get'
                 Uri         = $uri
                 ErrorAction = 'Stop'
@@ -1127,19 +1141,19 @@ function Test-LabTfsEnvironment
 
             if ($PSEdition -eq 'Core' -and (Get-Command INvoke-RestMethod).Parameters.COntainsKey('SkipCertificateCheck'))
             {
-                $parma.SkipCertificateCheck = $true
+                $param.SkipCertificateCheck = $true
             }
 
             if ($accessToken)
             {
-                $parma.Headers = @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
+                $param.Headers = @{Authorization = Get-TfsAccessTokenString -PersonalAccessToken $accessToken }
             }
             else
             {
-                $parma.Credential = $credential
+                $param.Credential = $credential
             }
 
-            $null = Invoke-RestMethod @parma
+            $null = Invoke-RestMethod @param
         }
         catch
         {
