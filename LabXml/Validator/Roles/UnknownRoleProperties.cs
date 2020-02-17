@@ -25,7 +25,7 @@ namespace AutomatedLab
                 foreach (var role in machine.Roles.Where(r => validRoleProperties.ContainsKey(r.Name.ToString())))
                 {
                     var validKeys = new List<string>();
-                    var keysFromModule = ((object[])((PSObject)validRoleProperties[role.Name.ToString()]).BaseObject).Cast<string>().ToArray();
+                    var keysFromModule = ((object[])validRoleProperties[role.Name.ToString()]).Cast<string>().ToArray();
 
                     if (keysFromModule.GetType().IsArray)
                         validKeys.AddRange(keysFromModule);
