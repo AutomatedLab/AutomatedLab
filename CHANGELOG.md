@@ -1,26 +1,29 @@
 # Changelog
 
 ## Unreleased
-- Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
-- Removed parameter 'Path' from 'New-LabDefinition' and help.
-- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help.
-- 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
-- Fixes #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
-- Rewritten some of the logic in Get-LabInternetFile.
-  - Improves performance of Get-LabInternetFile.
-  - Makes it working with more types of URLs.
-  - Fixed a newly introduced bug.
 
 ### Enhancements
-- SQL setup now does not override custom configuration file any longer when no other parameters are specified
-- Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified
+- SQL setup now does not override custom configuration file any longer when no other parameters are specified.
+- Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified.
 - Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
-- Lab Sources folder is automatically updated now, too
+- Lab Sources folder is automatically updated now, too.
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
 - Fixes timing issues with ADDS on Azure by skipping the wait period for guest reboots on Azure.
+- Rewritten some of the logic in Get-LabInternetFile.
+  - Improves performance of Get-LabInternetFile.
+  - Makes it working with more types of URLs.
+  - Fixed a newly introduced bug.
+- Replaced 'Get-Lab' call with lab definition data already available. 'Get-Lab' does not work as the deployment hasn't yet started.
+- Fixed a bug that prevented the call of 'Stop-LabVM2'.
+- Fixed a type (= != -eq).
+- Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
+- Removed parameter 'Path' from 'New-LabDefinition' and help.
+- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help.
+- 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
+- Fixes #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
 
 ## 5.17.0 - 2020-01-08
 

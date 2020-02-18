@@ -565,7 +565,33 @@ function Stop-LabVM
     if ($hypervErrors) { $remainingTargets += $hypervErrors.TargetObject }
     if ($azureErrors) { $remainingTargets += $azureErrors.TargetObject }
     if ($vmwareErrors) { $remainingTargets += $vmwareErrors.TargetObject }
-    if ($remainingTargets.Count -gt 0) { Stop-LabVM2 -ComputerName $remainingTargets }
+    
+    $remainingTargets = if ($remainingTargets.Count -gt 0) {
+        foreach ($remainingTarget in $remainingTargets)
+        { 
+            if ($remainingTarget -is [string])
+            {
+                $remainingTarget
+            }
+            elseif ($remainingTarget -is [AutomatedLab.Machine])
+            {
+                $remainingTarget
+            }
+            elseif ($remainingTarget -is [System.Management.Automation.Runspaces.Runspace])
+            {
+                $remainingTarget.ConnectionInfo.ComputerName
+            }
+            else
+            {
+                Write-ScreenInfo "Unknown error in 'Stop-LabVM'. Cannot call 'Stop-LabVM2'" -Type Warning
+            }
+        }
+        
+    }
+
+    if ($remainingTargets.Count -gt 0) {
+        Stop-LabVM2 -ComputerName $remainingTargets
+    }
 
     if ($Wait)
     {
@@ -2010,12 +2036,12 @@ function Test-LabAutoLogon
             $values['DefaultUserName'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultUserName } catch { }
             $values['DefaultPassword'] = try { (Get-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -ErrorAction Stop).DefaultPassword } catch { }
             $values['LoggedOnUsers'] = (Get-WmiObject -Class Win32_LogonSession -Filter 'LogonType=2').GetRelationships('Win32_LoggedOnUser').Antecedent |
-                            ForEach-Object {
-                            # For deprecated OS versions...
-                            # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
-                            $null = $_ -match 'Domain="(?<Domain>.+)",Name="(?<Name>.+)"'
-                            -join ($Matches.Domain, '\', $Matches.Name)
-                        } | Select-Object -Unique
+            ForEach-Object {
+                # For deprecated OS versions...
+                # Output is convoluted vs the CimInstance variant: \\.\root\cimv2:Win32_Account.Domain="contoso",Name="Install"
+                $null = $_ -match 'Domain="(?<Domain>.+)",Name="(?<Name>.+)"'
+                -join ($Matches.Domain, '\', $Matches.Name)
+            } | Select-Object -Unique
 
             $values
         } -PassThru -NoDisplay
@@ -2025,7 +2051,7 @@ function Test-LabAutoLogon
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
             $settings.DefaultUserName -ne $parameters.Username -or
-            $settings.DefaultPassword -ne $parameters.Password)
+        $settings.DefaultPassword -ne $parameters.Password)
         {
             $returnValues[$machine.Name] = $false
             continue
