@@ -1915,7 +1915,7 @@ function Enable-LabAutoLogon
     foreach ($machine in $machines)
     {
         $parameters = @{
-            Username = $machine.InstallationUser.UserName
+            UserName = $machine.InstallationUser.UserName
             Password = $machine.InstallationUser.Password
         }
 
