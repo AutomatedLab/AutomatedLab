@@ -8,6 +8,7 @@
 - Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
 - Lab Sources folder is automatically updated now, too.
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
+- Added support for multiple 'TfsBuildWorkers' on one machine.
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
@@ -24,6 +25,7 @@
 - Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help.
 - 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
 - Fixed #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
+- Fixed a casting issue in 'UnknownRoleProperties' validator.
 - Fixed #814 (case sensitivity).
 
 ## 5.17.0 - 2020-01-08

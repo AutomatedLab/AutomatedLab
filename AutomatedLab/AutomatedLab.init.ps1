@@ -194,7 +194,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Prerequisites -Value @(
     "http://download.microsoft.com/download/D/7/2/D72FD747-69B6-40B7-875B-C2B40A6B2BDD/Windows6.1-KB974405-x64.msu",
     "http://download.microsoft.com/download/A/6/7/A678AB47-496B-4907-B3D4-0A2D280A13C0/WindowsServerAppFabricSetup_x64.exe",
     "http://download.microsoft.com/download/7/B/5/7B51D8D1-20FD-4BF0-87C7-4714F5A1C313/AppFabric1.1-RTM-KB2671763-x64-ENU.exe"
-    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
     "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
@@ -206,7 +206,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Prerequisites -Value @(
     "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
     'https://download.microsoft.com/download/F/9/4/F942F07D-F26F-4F30-B4E3-EBD54FABA377/NDP462-KB3151800-x86-x64-AllOS-ENU.exe'
-    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
     "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi",
@@ -218,7 +218,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
     "https://download.microsoft.com/download/F/1/0/F1093AF6-E797-4CA8-A9F6-FC50024B385C/AppFabric-KB3092423-x64-ENU.exe",
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
     'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
-    ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -352,6 +352,9 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'OCSPHTTPURL01'
             'OCSPHTTPURL02'
             'DoNotLoadDefaultTemplates'
+        )
+        TfsBuildWorker   = @(
+            'NumberOfBuildWorkers'
         )
     }
     MandatoryRoleProperties = @{

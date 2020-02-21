@@ -122,6 +122,7 @@
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
         'Install-LabAzureServices',
+        'Install-LabBuildWorker',
         'Install-LabDcs',
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
