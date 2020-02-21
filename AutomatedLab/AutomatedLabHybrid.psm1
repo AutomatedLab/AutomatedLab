@@ -1,6 +1,5 @@
 function Connect-Lab
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'Lab2Lab')]
     param
     (
@@ -119,7 +118,6 @@ function Connect-Lab
 
 function Disconnect-Lab
 {
-    
     [CmdletBinding()]
     param
     (
@@ -196,7 +194,6 @@ function Disconnect-Lab
 
 function Restore-LabConnection
 {
-    
     param
     (
         [Parameter(Mandatory = $true)]
@@ -853,11 +850,9 @@ function Set-VpnDnsForwarders
     )
 
     Import-Lab $SourceLab -NoValidation
-    $lab = Get-Lab
     $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     Import-Lab $DestinationLab -NoValidation
-    $lab = Get-Lab
     $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName

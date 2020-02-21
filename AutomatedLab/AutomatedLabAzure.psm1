@@ -33,7 +33,6 @@ function Test-LabAzureModuleAvailability
 
 function Update-LabAzureSettings
 {
-    
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -449,9 +448,6 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
 function Get-LabAzureSubscription
 {
-    
-    param ()
-
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
@@ -463,7 +459,7 @@ function Get-LabAzureSubscription
 
 function Get-LabAzureDefaultSubscription
 {
-    
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -477,8 +473,7 @@ function Get-LabAzureDefaultSubscription
 
 function Get-LabAzureLocation
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [string]$LocationName,
 
@@ -568,8 +563,7 @@ function Get-LabAzureLocation
 
 function Get-LabAzureDefaultLocation
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -612,7 +606,6 @@ function Set-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultStorageAccount
 {
-    
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -635,8 +628,7 @@ function Set-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultStorageAccount
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -656,8 +648,7 @@ function Get-LabAzureDefaultStorageAccount
 
 function New-LabAzureDefaultStorageAccount
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string]$LocationName,
@@ -714,8 +705,7 @@ function New-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -730,8 +720,7 @@ function Get-LabAzureDefaultResourceGroup
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
     
     Test-LabHostConnected -Throw -Quiet
@@ -764,8 +753,7 @@ function Import-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
@@ -797,10 +785,10 @@ function New-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
-    
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
+
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 
@@ -825,8 +813,7 @@ function Get-LabAzureCertificate
 
 function New-LabAzureRmResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ResourceGroupNames,
@@ -878,8 +865,7 @@ function New-LabAzureRmResourceGroup
 
 function Remove-LabAzureResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroupName,
@@ -926,8 +912,7 @@ function Remove-LabAzureResourceGroup
 
 function Get-LabAzureResourceGroup
 {
-    
-    [cmdletbinding(DefaultParameterSetName = 'ByName')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName')]
         [string[]]$ResourceGroupName,
@@ -972,7 +957,6 @@ function Get-LabAzureResourceGroup
 #region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     (
@@ -1036,7 +1020,6 @@ function New-LabAzureLabSourcesStorage
 
 function Get-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     ()
@@ -1086,7 +1069,6 @@ function Test-LabAzureLabSourcesStorage
 
 function Test-LabPathIsOnLabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     (
@@ -1113,7 +1095,6 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
 
 function Remove-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
@@ -1139,7 +1120,6 @@ function Remove-LabAzureLabSourcesStorage
 
 function Sync-LabAzureLabSources
 {
-    
     [CmdletBinding()]
     param
     (

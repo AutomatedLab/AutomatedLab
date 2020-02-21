@@ -1,8 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -38,7 +37,6 @@ function Install-LabOffice2013
 
     foreach ($machine in $machines)
     {
-        $cred = $machine.GetCredential((Get-Lab))
 
         $parameters = @{ }
         $parameters.Add('ComputerName', $machine.Name)
@@ -155,8 +153,7 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
