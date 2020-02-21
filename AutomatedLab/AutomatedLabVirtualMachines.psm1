@@ -1915,7 +1915,7 @@ function Enable-LabAutoLogon
     foreach ($machine in $machines)
     {
         $parameters = @{
-            Username = $machine.InstallationUser.UserName
+            UserName = $machine.InstallationUser.UserName
             Password = $machine.InstallationUser.Password
         }
 
@@ -2000,7 +2000,7 @@ function Test-LabAutoLogon
     foreach ($machine in $machines)
     {
         $parameters = @{
-            Username = $machine.InstallationUser.UserName
+            UserName = $machine.InstallationUser.UserName
             Password = $machine.InstallationUser.Password
         }
 
@@ -2050,7 +2050,7 @@ function Test-LabAutoLogon
 
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
-            $settings.DefaultUserName -ne $parameters.Username -or
+            $settings.DefaultUserName -ne $parameters.UserName -or
         $settings.DefaultPassword -ne $parameters.Password)
         {
             $returnValues[$machine.Name] = $false
@@ -2060,7 +2060,7 @@ function Test-LabAutoLogon
 
         if ($TestInteractiveLogonSession)
         {
-            $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
+            $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.UserName
 
             if ($settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
             {
