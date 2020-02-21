@@ -745,8 +745,7 @@ $adInstallDcPre2012 = {
 #region Install-LabRootDcs
 function Install-LabRootDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
         
@@ -1078,8 +1077,7 @@ function Install-LabRootDcs
 #region Install-LabFirstChildDcs
 function Install-LabFirstChildDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
         
@@ -1373,8 +1371,7 @@ function Install-LabFirstChildDcs
 #region Install-LabDcs
 function Install-LabDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
         
@@ -1616,7 +1613,6 @@ function Install-LabDcs
 #region Wait-LabADReady
 function Wait-LabADReady
 {
-    
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1712,7 +1708,6 @@ function Wait-LabADReady
 #region Test-LabADReady
 function Test-LabADReady
 {
-    
     param (
         [Parameter(Mandatory)]
         [string]$ComputerName
@@ -1755,8 +1750,7 @@ function Test-LabADReady
 #region Reset-DNSConfiguration
 function Reset-DNSConfiguration
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [string[]]$ComputerName,
@@ -1799,8 +1793,7 @@ function Reset-DNSConfiguration
 #region Sync-LabActiveDirectory
 function Sync-LabActiveDirectory
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -1927,7 +1920,6 @@ function Sync-LabActiveDirectory
 #region Add-LabDomainAdmin
 function Add-LabDomainAdmin
 {
-    
     param(
         [Parameter(Mandatory)]
         [string]$Name,
@@ -1971,8 +1963,7 @@ function Add-LabDomainAdmin
 #region New-LabADSubnet
 function New-LabADSubnet
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param(
         [switch]$PassThru
     )
@@ -2048,8 +2039,7 @@ function New-LabADSubnet
 #region function New-LabADSite
 function New-LabADSite
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -2088,7 +2078,7 @@ function New-LabADSite
         }
     }
 
-    $result = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
+    $null = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2154,8 +2144,7 @@ function New-LabADSite
 #region function Move-LabDomainController
 function Move-LabDomainController
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -2197,7 +2186,7 @@ function Move-LabDomainController
         $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
     
-    $result = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
+    $null = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2222,7 +2211,6 @@ function Move-LabDomainController
 #region Install-LabDnsForwarder
 function Install-LabDnsForwarder
 {
-    
     $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
@@ -2261,7 +2249,6 @@ function Install-LabDnsForwarder
 #region Install-LabADDSTrust
 function Install-LabADDSTrust
 {
-    
     $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
@@ -2301,7 +2288,7 @@ function Install-LabADDSTrust
                 {
                     $dcName = $dc.Split()[2]
                     Write-Verbose -Message "Executing 'repadmin.exe /SyncAll /Ae $dcname'"
-                    $result = repadmin.exe /SyncAll /AeP $dcName
+                    $null = repadmin.exe /SyncAll /AeP $dcName
                 }
             }
             Write-Verbose '...done'

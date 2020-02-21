@@ -1,8 +1,7 @@
 ﻿#region Install-LabRouting
 function Install-LabRouting
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$InstallationTimeout = 15,
 
@@ -123,8 +122,6 @@ function Install-LabRouting
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder
 {
-    
-
     Write-PSFMessage 'Setting DNS fowarder on all domain controllers in root domains'
 
     $rootDcs = Get-LabVM -Role RootDC

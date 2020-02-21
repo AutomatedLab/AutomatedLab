@@ -1,8 +1,7 @@
 #region New-LabBaseImages
 function New-LabBaseImages
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -91,8 +90,6 @@ function New-LabBaseImages
 
 function Stop-ShellHWDetectionService
 {
-    
-
     Write-LogFunctionEntry
 
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
@@ -125,8 +122,6 @@ function Stop-ShellHWDetectionService
 
 function Start-ShellHWDetectionService
 {
-    
-
     Write-LogFunctionEntry
 
     $service = Get-Service -Name ShellHWDetection -ErrorAction SilentlyContinue
@@ -167,8 +162,7 @@ function Start-ShellHWDetectionService
 #region New-LabVHDX
 function New-LabVHDX
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
         [string[]]$Name,
@@ -244,8 +238,7 @@ function New-LabVHDX
 #region Get-LabVHDX
 function Get-LabVHDX
 {
-    
-    [OutputType([AutomatedLab.Machine])]
+    [OutputType([AutomatedLab.Disk])]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByName')]
         [ValidateNotNullOrEmpty()]
@@ -298,7 +291,6 @@ function Get-LabVHDX
 #region Update-LabIsoImage
 function Update-LabIsoImage
 {
-    
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory)]
@@ -314,8 +306,8 @@ function Update-LabIsoImage
         [int]$SourceImageIndex
     )
 
-    #region Extract-IsoImage
-    function Extract-IsoImage
+    #region Expand-IsoImage
+    function Expand-IsoImage
     {
         param(
             [Parameter(Mandatory)]
@@ -366,7 +358,7 @@ function Update-LabIsoImage
             return
         }
     }
-    #endregion Extract-IsoImage
+    #endregion Expand-IsoImage
 
     #region Get-IsoImageName
     function Get-IsoImageName
@@ -431,7 +423,7 @@ function Update-LabIsoImage
     $isoImageName = Get-IsoImageName -IsoImagePath $SourceIsoImagePath
 
     Write-PSFMessage -Level Host -Message "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
-    Extract-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
+    Expand-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
 
     $installWim = Get-ChildItem -Path $extractTempFolder -Filter install.wim -Recurse
     Write-PSFMessage -Level Host -Message "Working with '$installWim'"
