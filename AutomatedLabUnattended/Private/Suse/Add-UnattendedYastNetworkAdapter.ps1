@@ -18,13 +18,11 @@
 
     $networking = $script:un.SelectSingleNode('/un:profile/un:networking', $script:nsm)
     $interfaceList = $script:un.SelectSingleNode('/un:profile/un:networking/un:interfaces', $script:nsm)
-
-    if (-not $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm))
-    {
-        $dns = $script:un.CreateElement('dns', $script:nsm.LookupNamespace('un'))
-        $hostName = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
-        $null = $dns.AppendChild($hostName)
-    }
+    $dns = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm)
+    $nameServers = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns/un:nameservers', $script:nsm)
+    $routes = $script:un.SelectSingleNode('/un:profile/un:networking/un:routing/un:routes', $script:nsm)
+    $hostName = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
+    $null = $dns.AppendChild($hostName)
 
     if ($DnsDomain)
     {
@@ -35,19 +33,12 @@
 
     if ($DnsServers)
     {
-        $nameservers = $script:un.CreateElement('nameservers', $script:nsm.LookupNamespace('un'))
-        $nsAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
-        $nsAttr.InnerText = 'list'
-        $null = $nameservers.Attributes.Append($nsAttr)
-
         foreach ($ns in $DnsServers)
         {
             $nameserver = $script:un.CreateElement('nameserver', $script:nsm.LookupNamespace('un'))
             $nameserver.InnerText = $ns
             $null = $nameservers.AppendChild($nameserver)
         }
-
-        $null = $dns.AppendChild($nameservers)
 
         if ($DNSSuffixSearchOrder)
         {
@@ -127,12 +118,6 @@
 
     if ($Gateways)
     {
-        $routing = $script:un.CreateElement('routing', $script:nsm.LookupNamespace('un'))
-        $routes = $script:un.CreateElement('routes', $script:nsm.LookupNamespace('un'))
-        $listAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
-        $listAttr.InnerText = 'list'
-        $null = $routes.Attributes.Append($listAttr)
-
         foreach ($gateway in $Gateways)
         {
             $routeNode = $script:un.CreateElement('route', $script:nsm.LookupNamespace('un'))
@@ -152,9 +137,6 @@
             $null = $routeNode.AppendChild($gatewayNode)
             $null = $routeNode.AppendChild($netmask)
             $null = $routes.AppendChild($routeNode)
-            $null = $routing.AppendChild($routes)
         }
-
-        $null = $networking.AppendChild($routing)
     }
 }

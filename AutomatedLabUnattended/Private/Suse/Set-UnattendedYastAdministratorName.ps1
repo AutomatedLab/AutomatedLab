@@ -17,7 +17,7 @@
 
     $encrypted.InnerText = 'false'
     $pw.InnerText = 'none'
-    $user.InnerText = $Name
+    $username.InnerText = $Name
 
     $null = $user.AppendChild($pw)
     $null = $user.AppendChild($encrypted)

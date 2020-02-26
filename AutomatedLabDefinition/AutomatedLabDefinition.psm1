@@ -542,7 +542,7 @@ $autoyastContent = @"
   <install_recommended config:type="boolean">true</install_recommended>
   <packages config:type="list">
     <package>iputils</package>
-    <package>vi</package>
+    <package>vim</package>
     <package>less</package>
   </packages>
 </software>
@@ -557,6 +557,14 @@ $autoyastContent = @"
 <networking>
 <interfaces config:type="list">
 </interfaces>
+<dns>
+    <nameservers config:type="list">
+    </nameservers>
+</dns>
+<routing>
+<routes config:type="list">
+</routes>
+</routing>
 </networking>
 <users config:type="list">
   <user>
