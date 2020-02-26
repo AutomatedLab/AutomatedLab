@@ -102,10 +102,8 @@
     $rhelPackageInfo = Join-Path -Path $MountPoint -ChildPath repodata
     if ((Test-Path -Path $rhelPath -PathType Leaf) -and (Test-Path -Path $rhelDiscinfo -PathType Leaf))
     {
-        [void] ((Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)') # Grab content of [general] section
-        $discInfoContent = Get-Content -Path $rhelDiscinfo
-        $versionInfo = ($discInfoContent[1] -split " ")[-1]
-        $content = $Matches[0] -split '\n' | Where-Object -FilterScript { $_ -match '^\w+\s*=\s*\w+' } | ConvertFrom-StringData -ErrorAction SilentlyContinue
+        $generalInfo = (Get-Content -Path $rhelPath | Select-String '\[general\]' -Context 7).Context.PostContext| Where-Object -FilterScript { $_ -match '^\w+\s*=\s*\w+' }  | ConvertFrom-StringData -ErrorAction SilentlyContinue
+        $versionInfo = if ($generalInfo.version.Contains('.')) { $generalInfo.version -as [Version] } else {[Version]::new($generalInfo.Version, 0)}
 
         $os = New-Object -TypeName AutomatedLab.OperatingSystem(('{0} {1}' -f $content.Family, $os.Version), $IsoFile.FullName)
         $os.OperatingSystemImageName = $content.Name
@@ -122,23 +120,26 @@
             Select-Object -First 1
         }
 
-        [xml]$packageInfo = Get-Content -Path $packageXml -Raw
-        $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
-
-        if ($versionInfo -match '\.')
+        if ($null -ne $packageXml)
         {
-            $os.Version = $versionInfo
+            [xml]$packageInfo = Get-Content -Path $packageXml -Raw
+            $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
+        }
+
+        if ($generalInfo.version.Contains('.'))
+        {
+            $os.Version = $generalInfo.version
         }
         else
         {
-            $os.Version = [AutomatedLab.Version]::new($versionInfo, 0)
+            $os.Version = [AutomatedLab.Version]::new($generalInfo.version, 0)
         }
 
-        $os.OperatingSystemName = '{0} {1}' -f $content.Family, $os.Version
+        $os.OperatingSystemName = $generalInfo.name
 
         # Unix time stamp...
-        $os.PublishedDate = (Get-Date 1970-01-01).AddSeconds($discInfoContent[0])
-        $os.Edition = if ($content.Variant)
+        $os.PublishedDate = (Get-Item -Path $rhelPath).CreationTime
+        $os.Edition = if ($generalInfo.Variant)
         {
             $content.Variant
         }

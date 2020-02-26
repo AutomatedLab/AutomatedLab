@@ -42,6 +42,7 @@
   - Improves performance of Get-LabInternetFile.
   - Makes it working with more types of URLs.
   - Fixed a newly introduced bug.
+- Fixed an issue with newer OpenSuSE ISOs not having a .content file
 
 ## 5.17.0 - 2020-01-08
 
