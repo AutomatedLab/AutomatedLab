@@ -11,7 +11,7 @@ Install-PackageProvider Nuget -Force
 Install-Module AutomatedLab -AllowClobber
 
 # Prepare sample content - modify to your needs
-New-LabSources -Drive C
+New-LabSourcesFolder -Drive C
 ```
 
 ## From MSI
