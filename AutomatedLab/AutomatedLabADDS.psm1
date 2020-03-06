@@ -2229,7 +2229,7 @@ function Install-LabDnsForwarder
             `$hostname = hostname.exe
             Write-Verbose "Creating a DNS forwarder on server '$hostname'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             #Add-DnsServerConditionalForwarderZone -ReplicationScope Forest -Name $($forwarder.Destination) -MasterServers $($masterServers.IpV4Address)
-            dnscmd . /zoneadd $($forwarder.Destination) /forwarder $($masterServers.IpV4Address)
+            dnscmd . /zoneadd $($forwarder.Destination) /dsforwarder $($masterServers.IpV4Address)
             Write-Verbose '...done'
 "@
 
@@ -2267,7 +2267,7 @@ function Install-LabADDSTrust
             `$hostname = hostname.exe
             Write-Verbose "Creating a DNS forwarder on server '$hostname'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             #Add-DnsServerConditionalForwarderZone -ReplicationScope Forest -Name $($forwarder.Destination) -MasterServers $($masterServers.IpV4Address)
-            dnscmd . /zoneadd $($forwarder.Destination) /forwarder $($masterServers.IpV4Address)
+            dnscmd . /zoneadd $($forwarder.Destination) /dsforwarder $($masterServers.IpV4Address)
             Write-Verbose '...done'
 "@
 
