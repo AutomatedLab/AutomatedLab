@@ -55,7 +55,6 @@
         'PSFileTransfer',
         'AutomatedLabWorker',
         'AutomatedLab.Recipe',
-        'AutomatedLab.Recipe',
         'AutomatedLab.Ships',
         'HostsFile',
         'AutomatedLabUnattended',
