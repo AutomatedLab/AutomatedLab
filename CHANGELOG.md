@@ -9,6 +9,8 @@
 - Lab Sources folder is automatically updated now, too.
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 - Added support for multiple 'TfsBuildWorkers' on one machine.
+- Change forwarders to AD integrated.
+- Adding missing files to VS solution and installer.
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
@@ -54,7 +56,7 @@
 - Fixed issue with Exchange custom roles
 - Fixed unhandled exceptions in case the Hyper-V VM notes are not readable as XML
 - Improved error handling if no Az module is available
-- Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon’
+- Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon'
 
 ## 5.16.0 - 2019-09-29
 
