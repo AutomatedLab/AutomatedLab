@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added option for specifying own SQL ISO for CM1902 example script for CM1902 custom role. If parameter is omitted it will auto download eval edition from Microsoft.
+
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified.
 - Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified.
@@ -11,6 +13,8 @@
 - Added support for multiple 'TfsBuildWorkers' on one machine.
 - Change forwarders to AD integrated.
 - Adding missing files to VS solution and installer.
+- Added additional validator for DSC Pull Server Setup to validate if a CA is present.
+- File Server Role: Installed detection.
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
