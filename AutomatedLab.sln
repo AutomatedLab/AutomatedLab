@@ -225,6 +225,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{CA050EFB-B967-4AC6-9F7B-1AC6B63895F2}"
 	ProjectSection(SolutionItems) = preProject
 		LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1 = LabSources\SampleScripts\Scenarios\AGPM Lab 1.ps1
+		LabSources\SampleScripts\Scenarios\CM-1902.ps1 = LabSources\SampleScripts\Scenarios\CM-1902.ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
@@ -731,6 +732,18 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SqlServer", "SqlServer", "{
 		LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1 = LabSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CM-1902", "CM-1902", "{530672FA-8EB4-406B-AB14-06E94B550771}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini = LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini
+		LabSources\CustomRoles\CM-1902\HostStart.ps1 = LabSources\CustomRoles\CM-1902\HostStart.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadADK.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1 = LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1
+		LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -847,6 +860,7 @@ Global
 		{E931A24D-E1CF-4A0E-A225-364B8CB85D52} = {03FEFD6A-B999-4BBA-875B-6CFA083E43CC}
 		{CFBA7C26-FD09-4636-A867-E80BA6FE1DB6} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
+		{530672FA-8EB4-406B-AB14-06E94B550771} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}

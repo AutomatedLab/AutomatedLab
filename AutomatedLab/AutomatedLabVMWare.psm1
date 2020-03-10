@@ -1,6 +1,5 @@
 ﻿function Update-LabVMWareSettings
 {
-	
 	if ((Get-PSCallStack).Command -contains 'Import-Lab')
 	{
 		$Script:lab = Get-Lab
@@ -13,7 +12,6 @@
 
 function Add-LabVMWareSettings
 {
-	
 	param (
 		[Parameter(Mandatory)]
 		[string]$DataCenterName,

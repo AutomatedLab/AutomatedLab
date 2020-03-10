@@ -1,8 +1,7 @@
 ﻿#region New-LabVM
 function New-LabVM
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
         [string[]]$Name,
@@ -142,8 +141,7 @@ function New-LabVM
 #region Start-LabVM
 function Start-LabVM
 {
-    
-    [cmdletBinding(DefaultParameterSetName = 'ByName')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
@@ -194,7 +192,6 @@ function Start-LabVM
 
     process
     {
-
         if (-not $lab.Machines)
         {
             $message = 'No machine definitions imported, please use Import-Lab first'
@@ -341,9 +338,7 @@ function Start-LabVM
 #region Save-LabVM
 function Save-LabVM
 {
-    
-
-    [cmdletBinding(DefaultParameterSetName = 'ByName')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$Name,
@@ -426,8 +421,7 @@ function Save-LabVM
 #region Restart-LabVM
 function Restart-LabVM
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -479,8 +473,7 @@ function Restart-LabVM
 #region Stop-LabVM
 function Stop-LabVM
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
@@ -546,14 +539,6 @@ function Stop-LabVM
     }
     if ($azureVms)
     {
-        $stayProvisioned = if ($KeepAzureVmProvisioned)
-        {
-            $true
-        }
-        else
-        {
-            $false
-        }
         Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
     if ($vmwareVms)
@@ -605,8 +590,7 @@ function Stop-LabVM
 #region Stop-LabVM2
 function Stop-LabVM2
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
@@ -648,7 +632,6 @@ function Stop-LabVM2
 #region Wait-LabVM
 function Wait-LabVM
 {
-    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -846,7 +829,6 @@ function Wait-LabVM
 
 function Wait-LabVMRestart
 {
-    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -920,7 +902,6 @@ function Wait-LabVMRestart
 #region Wait-LabVMShutdown
 function Wait-LabVMShutdown
 {
-    
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -988,8 +969,7 @@ function Wait-LabVMShutdown
 #region Remove-LabVM
 function Remove-LabVM
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$Name,
@@ -1074,8 +1054,7 @@ function Remove-LabVM
 #region Get-LabVMStatus
 function Get-LabVMStatus
 {
-    [cmdletBinding()]
-    
+    [CmdletBinding()]
     param (
         [string[]]$ComputerName,
 
@@ -1126,8 +1105,7 @@ function Get-LabVMStatus
 #region Get-LabVMUptime
 function Get-LabVMUptime
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -1157,7 +1135,6 @@ function Get-LabVMUptime
 #region Connect-LabVM
 function Connect-LabVM
 {
-    
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1343,9 +1320,7 @@ authentication level:i:0
 #region Join-LabVMDomain
 function Join-LabVMDomain
 {
-    
-    [cmdletBinding()]
-
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory, Position = 0)]
         [AutomatedLab.Machine[]]$Machine
@@ -1356,7 +1331,7 @@ function Join-LabVMDomain
     #region Join-Computer
     function Join-Computer
     {
-        [cmdletBinding()]
+        [CmdletBinding()]
 
         param(
             [Parameter(Mandatory = $true)]
@@ -1474,7 +1449,6 @@ function Join-LabVMDomain
 #region Mount-LabIsoImage
 function Mount-LabIsoImage
 {
-    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1530,7 +1504,6 @@ function Mount-LabIsoImage
 #region Dismount-LabIsoImage
 function Dismount-LabIsoImage
 {
-    
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1580,8 +1553,7 @@ function Dismount-LabIsoImage
 #region Get / Set-LabVMUacStatus
 function Set-VMUacStatus
 {
-    
-    [Cmdletbinding()]
+    [CmdletBinding()]
     param(
         [bool]$EnableLUA,
 
@@ -1621,7 +1593,6 @@ function Set-VMUacStatus
 
 function Get-VMUacStatus
 {
-    
     [CmdletBinding(SupportsShouldProcess = $true)]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
@@ -1647,8 +1618,7 @@ function Get-VMUacStatus
 
 function Set-LabVMUacStatus
 {
-    
-    [Cmdletbinding()]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1696,8 +1666,7 @@ function Set-LabVMUacStatus
 
 function Get-LabVMUacStatus
 {
-    
-    [Cmdletbinding()]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -1724,7 +1693,6 @@ function Get-LabVMUacStatus
 #region Test-LabMachineInternetConnectivity
 function Test-LabMachineInternetConnectivity
 {
-    
     [OutputType([bool])]
     [CmdletBinding()]
     param (
@@ -1774,7 +1742,6 @@ function Test-LabMachineInternetConnectivity
 #region Get-LabVM
 function Get-LabVM
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
     param (
@@ -1948,8 +1915,8 @@ function Enable-LabAutoLogon
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoAdminLogon -Value 1 -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name AutoLogonCount -Value 9999 -Type DWORD -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $parameters.DomainName -Type String -Force
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $parameters.UserName -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $parameters.Password -Type String -Force
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $parameters.UserName -Type String -Force
         } -Variable (Get-Variable parameters) -NoDisplay
     }
 }
@@ -2000,7 +1967,7 @@ function Test-LabAutoLogon
     foreach ($machine in $machines)
     {
         $parameters = @{
-            UserName = $machine.InstallationUser.UserName
+            Username = $machine.InstallationUser.UserName
             Password = $machine.InstallationUser.Password
         }
 
@@ -2050,7 +2017,7 @@ function Test-LabAutoLogon
 
         if ($settings.AutoAdminLogon -ne 1 -or
             $settings.DefaultDomainName -ne $parameters.DomainName -or
-            $settings.DefaultUserName -ne $parameters.UserName -or
+            $settings.DefaultUserName -ne $parameters.Username -or
         $settings.DefaultPassword -ne $parameters.Password)
         {
             $returnValues[$machine.Name] = $false
@@ -2060,7 +2027,7 @@ function Test-LabAutoLogon
 
         if ($TestInteractiveLogonSession)
         {
-            $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.UserName
+            $interactiveSessionUserName = '{0}\{1}' -f ($parameters.DomainName -split '\.')[0], $parameters.Username
 
             if ($settings.LoggedOnUsers -notcontains $interactiveSessionUserName)
             {
@@ -2079,8 +2046,7 @@ function Test-LabAutoLogon
 #region Get-LabVMDotNetFrameworkVersion
 function Get-LabVMDotNetFrameworkVersion
 {
-    
-    [Cmdletbinding()]
+    [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -2109,8 +2075,7 @@ function Get-LabVMDotNetFrameworkVersion
 #region Checkpoint-LabVM
 function Checkpoint-LabVM
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
         [string[]]$ComputerName,
@@ -2174,8 +2139,7 @@ function Checkpoint-LabVM
 #region Restore-LabVMSnapshot
 function Restore-LabVMSnapshot
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByName')]
         [string[]]$ComputerName,
@@ -2239,8 +2203,7 @@ function Restore-LabVMSnapshot
 #region Remove-LabVMSnapshot
 function Remove-LabVMSnapshot
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameAllSnapShots')]
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ParameterSetName = 'ByNameSnapshotByName')]

@@ -1,8 +1,7 @@
 ﻿#region Install-LabAdfs
 function Install-LabAdfs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -137,8 +136,7 @@ function Install-LabAdfs
 #region Install-LabAdfsProxy
 function Install-LabAdfsProxy
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -193,7 +191,7 @@ function Install-LabAdfsProxy
         $certThumbprint = $cert.Thumbprint
         $cred = ($lab.Domains | Where-Object Name -eq $adfsDomainName).GetCredential()
 
-        $result = Invoke-LabCommand -ActivityName 'Configuring ADFS Proxy Servers' -ComputerName $labAdfsProxy -ScriptBlock {
+        $null = Invoke-LabCommand -ActivityName 'Configuring ADFS Proxy Servers' -ComputerName $labAdfsProxy -ScriptBlock {
             Install-WebApplicationProxy -FederationServiceTrustCredential $cred -CertificateThumbprint $certThumbprint -FederationServiceName $adfsFullName
         } -Variable (Get-Variable -Name certThumbprint, cred, adfsFullName) -PassThru
 
