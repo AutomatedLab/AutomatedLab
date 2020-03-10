@@ -105,6 +105,8 @@
 .PARAMETER CMMemory
     Maximum memory capacity to assign the Configuration Manager server.
     Must be greater than 1GB.
+.PARAMETER SQLServer2017ISO
+    The path to a SQL Server 2017 ISO used for SQL Server 2017 installation. Omitting this parameter downloads the evaluation version of SQL Server 2017 (first downloads a small binary in to LabSources\SoftwarePackages, which the binary then downloads the ISO in to LabSources\ISOs)
 .PARAMETER LogViewer
     The default .log and .lo_ file viewer for only the Configuration Manager server.
     OneTrace was introduced in 1906 so if -LogViewer is "OneTrace" and -CMVersion is "1902" or -NoInternetAccess is specified, then -LogViewer will revert to "CMTrace".
@@ -148,7 +150,13 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if (!([System.IO.Directory]::Exists($_))) { throw "Invalid path or access denied" } elseif (!($_ | Test-Path -PathType Container)) { throw "Value must be a directory, not a file" }; return $true
+        if (!([System.IO.Directory]::Exists($_))) { 
+            throw "Invalid path or access denied" 
+        } 
+        elseif (!($_ | Test-Path -PathType Container)) { 
+            throw "Value must be a directory, not a file" 
+        }
+        return $true
     })]
     [String]$VMPath,
 
@@ -223,6 +231,18 @@ Param (
         return $true
     })]
     [Double]$CMMemory = 8GB,
+
+    [Parameter()]
+    [ValidateScript({
+        if (![System.IO.File]::Exists($_) -And ($_ -notmatch "\.iso$")) {
+            throw "File '$_' does not exist or is not of type '.iso'"
+        }
+        elseif (!$_.StartsWith($labSources)) {
+            throw "Please move SQL ISO to your Lab Sources folder '$labSources'"
+        }
+        return $true
+    })]
+    [String]$SQLServer2017ISO,
 
     [Parameter()]
     [ValidateSet("CMTrace", "OneTrace")]
@@ -337,14 +357,73 @@ Add-LabDomainDefinition -Name $domain -AdminUser $AdminUser -AdminPassword $Admi
 Set-LabInstallationCredential -Username $AdminUser -Password $AdminPass
 #endregion
 
-#region Forcing 1902 is -NoInternetAccess is passed
+#region Get SQL Server 2017 Eval if no .ISO given
+if (!$PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
+    Write-ScreenInfo -Message "Downloading SQL Server 2017 Evaluation" -TaskStart
+
+    $URL = "https://download.microsoft.com/download/5/2/2/522EE642-941E-47A6-8431-57F0C2694EDF/SQLServer2017-SSEI-Eval.exe"
+    $SQLServer2017EXE = Join-Path -Path $labSources -ChildPath "SoftwarePackages\SQLServer2017-SSEI-Eval.exe"
+    $SQLServer2017ISO = Join-Path -Path $labSources -ChildPath "ISOs\SQLServer2017-x64-ENU.iso"
+
+    if (Test-Path $SQLServer2017ISO) {
+        Write-ScreenInfo -Message ("SQL Server 2017 Evaluation ISO already exists, delete '{0}' if you want to download again" -f $SQLServer2017ISO)
+    }
+    elseif (Test-Path $SQLServer2017EXE) {
+        Write-ScreenInfo -Message ("SQL Server 2017 Evaluation downloader binary already exists, delete '{0}' if you want to download again" -f $SQLServer2017EXE)
+    }
+    else {
+        try {
+            Write-ScreenInfo -Message "Downloading the downloader" -TaskStart
+            Get-LabInternetFile -Uri $URL -Path (Split-Path $SQLServer2017EXE -Parent) -FileName (Split-Path $SQLServer2017EXE -Leaf) -ErrorAction "Stop"
+            Write-ScreenInfo -Message "Done" -TaskEnd
+        }
+        catch {
+            $Message = "Failed to download SQL Server 2017 downloader binary ({0})" -f $_.Exception.Message
+            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+            throw $Message
+        }
+    }
+
+    if (-not (Test-Path $SQLServer2017ISO)) {
+        try {
+            Write-ScreenInfo -Message "Downloading the ISO" -TaskStart
+            $pArgs = @(
+                "/c"
+                "{0}" -f $SQLServer2017EXE
+                "/ACTION=Download"
+                "/MEDIATYPE=ISO"
+                "/MEDIAPATH=`"{0}`"" -f (Split-Path $SQLServer2017ISO -Parent)
+                "/QUIET"
+            )
+            Start-Process -FilePath cmd.exe -ArgumentList $pArgs -Wait -ErrorAction "Stop"
+        }
+        catch {
+            $Message = "Failed to initiate download of SQL Server 2017 ISO using the downloader ({0})" -f $_.Exception.Message
+            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+            throw $Message
+        }
+
+        if (-not (Test-Path $SQLServer2017ISO)) {
+            $Message = "Could not find SQL Server 2017 ISO '{0}' after download supposedly complete" -f $SQLServer2017ISO
+            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+            throw $Message
+        }
+        else {
+            Write-ScreenInfo -Message "Download complete" -TaskEnd
+        }
+    }
+    Write-ScreenInfo -Message "Activity done" -TaskEnd
+}
+#endregion
+
+#region Forcing site version to be 1902 if -NoInternetAccess is passed
 if ($NoInternetAccess.IsPresent -And $CMVersion -ne "1902") {
     Write-ScreenInfo -Message "Switch -NoInternetAccess is passed therefore will not be able to update ConfigMgr, forcing target version to be '1902' to skip checking for updates later"
     $CMVersion = "1902"
 }
 #endregion
 
-#region Forcing $LogViewer = CMTrace if $CMVersion -eq 1902
+#region Forcing log viewer to be CMTrace if $CMVersion -eq 1902
 if ($CMVersion -eq 1902 -and $LogViewer -eq "OneTrace") {
     Write-ScreenInfo -Message "Setting LogViewer to 'CMTrace' as OneTrace is only availale in 1906 or newer" -Type "Warning"
     $LogViewer = "CMTrace"
@@ -374,7 +453,7 @@ if (-not $NoInternetAccess.IsPresent) {
 
 Add-LabMachineDefinition -Name $DCHostname -Processors $DCCPU -Roles RootDC,Routing -NetworkAdapter $netAdapter -MaxMemory $DCMemory
 
-Add-LabIsoImageDefinition -Name SQLServer2017 -Path "$labSources\ISOs\en_sql_server_2017_standard_x64_dvd_11294407.iso"
+Add-LabIsoImageDefinition -Name SQLServer2017 -Path $SQLServer2017ISO
 
 $sqlRole = Get-LabMachineRoleDefinition -Role SQLServer2017 -Properties @{ 
     ConfigurationFile = [String]$SQLConfigurationFile
@@ -389,11 +468,11 @@ if ($ExcludePostInstallations.IsPresent) {
 }
 else {
     $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-1902" -Properties @{
-        CMSiteCode            = $SiteCode
-        CMSiteName            = $SiteName
-        CMBinariesDirectory   = "$labSources\SoftwarePackages\CM1902"
-        CMPreReqsDirectory    = "$labSources\SoftwarePackages\CMPreReqs"
-        CMProductId           = "Eval" # Can be "Eval" or a product key
+        CMSiteCode              = $SiteCode
+        CMSiteName              = $SiteName
+        CMBinariesDirectory     = "$labSources\SoftwarePackages\CM1902"
+        CMPreReqsDirectory      = "$labSources\SoftwarePackages\CMPreReqs"
+        CMProductId             = "Eval" # Can be "Eval" or a product key
         Version                 = $CMVersion
         AdkDownloadPath         = "$labSources\SoftwarePackages\ADK"
         WinPEDownloadPath       = "$labSources\SoftwarePackages\WinPE"
