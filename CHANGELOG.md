@@ -9,6 +9,7 @@
 - Lab Sources folder is automatically updated now, too.
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 - Added support for multiple 'TfsBuildWorkers' on one machine.
+- Added additional validator for DSC Pull Server Setup to validate if a CA is present
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
