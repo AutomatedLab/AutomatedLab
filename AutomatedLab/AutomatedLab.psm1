@@ -1709,24 +1709,32 @@ function Install-LabFileServers
     Write-ScreenInfo -Message 'Waiting for machines to start up' -NoNewline
     Start-LabVM -RoleName $roleName -Wait -ProgressIndicator 30
 
-    Write-ScreenInfo -Message 'Waiting for Web Server role to complete installation' -NoNewLine
+    Write-ScreenInfo -Message 'Waiting for File Server role to complete installation' -NoNewLine
 
     $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
+    $remainingMachines = Get-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false | Select-Object -Unique -ExpandProperty PSComputerName
+
+    if ($remainingMachines.Count -eq 0)
+    {
+        Write-ScreenInfo -Message "...done."
+        Write-ScreenInfo -Message "All file servers are already installed."
+        return
+    }
     
     $jobs = @()
-    $jobs += Install-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -IncludeManagementTools -AsJob -PassThru -NoDisplay
+    $jobs += Install-LabWindowsFeature -ComputerName $remainingMachines -FeatureName $windowsFeatures -IncludeManagementTools -AsJob -PassThru -NoDisplay
 
     Start-LabVM -StartNextMachines 1 -NoNewline
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
     
     Write-ScreenInfo -Message "Restarting $roleName machines..." -NoNewLine
-    Restart-LabVM -ComputerName $machines -Wait -NoNewLine
+    Restart-LabVM -ComputerName $remainingMachines -Wait -NoNewLine
     Write-ScreenInfo -Message done.
 
     if ($CreateCheckPoints)
     {
-        Checkpoint-LabVM -ComputerName $machines -SnapshotName "Post '$roleName' Installation"
+        Checkpoint-LabVM -ComputerName $remainingMachines -SnapshotName "Post '$roleName' Installation"
     }
 
     Write-LogFunctionExit
