@@ -354,7 +354,7 @@ nav:
     - Write-ProgressIndicatorEnd: PSLog/en-us/Write-ProgressIndicatorEnd.md
     - Write-ScreenInfo: PSLog/en-us/Write-ScreenInfo.md
 site_name: AutomatedLab - Lab automation from users for users
-theme: rtd-dropdown
+theme: readthedocs
 edit_uri: edit/master/Help/
 docs_dir: Help
 site_author: Jan-Hendrik Peters, Raimund Andree
