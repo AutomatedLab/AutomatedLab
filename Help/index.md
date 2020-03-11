@@ -2,7 +2,7 @@
 
 ![Image](AutomatedLab-GIF250-whitebg-lossy25.gif)
 
-AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images and a Hyper-V host or an Azure subscription.
+AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements: You need .NET 4.7.1 (Windows PowerShell) or .NET Core 2+ (PowerShell 6+) and either DVD ISO images and a Hyper-V host or an Azure subscription.
 
 Build | Status | Last Commit | Latest Release
 --- | --- | --- | ---
@@ -18,7 +18,8 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 Apart from the module itself your system needs to meet the following requirements:
 
 - Windows Management Framework 5+
-- Windows Server 2012 R2+/Windows 8.1+
+- .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
+- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
 - Recommended OS language is en-us
 - Admin privileges are required
 - ISO files for all operating systems and roles to be deployed
