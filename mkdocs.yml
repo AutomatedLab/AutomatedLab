@@ -7,14 +7,14 @@ nav:
 - Defining your lab:
   - Creating a new lab: Wiki/createnewlab.md
   - Networks and IP Addresses: Wiki/networksandaddresses.md
-- Adding machines: Wiki/addmachines.md
+  - Adding machines: Wiki/addmachines.md
 - Roles:
   - About roles: Wiki/Roles/roles.md
-  - ActiveDirectory : Wiki/Roles/activedirectory.md
-  - Office 2013, 2016 : Wiki/Roles/office.md
-  - Sharepoint : Wiki/Roles/sharepoint.md
-  - Failover clustering : Wiki/Roles/failover.md
-  - TFS and Azure DevOps : Wiki/Roles/cicd.md
+  - ActiveDirectory: Wiki/Roles/activedirectory.md
+  - Office 2013, 2016: Wiki/Roles/office.md
+  - Sharepoint: Wiki/Roles/sharepoint.md
+  - Failover clustering: Wiki/Roles/failover.md
+  - TFS and Azure DevOps: Wiki/Roles/cicd.md
   - Hyper-V: Wiki/Roles/hyperv.md
   - SQL Server: Wiki/Roles/sql.md
   - DSC Pull Server: Wiki/Roles/dscpull.md
@@ -28,8 +28,8 @@ nav:
   - Notification system: Wiki/notifications.md
   - Connecting two labs: Wiki/connectlabs.md
 - Azure labs:
-    - Adding a subscription: Wiki/addazuresubscription.md
-    - Synchronise local lab sources: Wiki/synclabsources.md
+  - Adding a subscription: Wiki/addazuresubscription.md
+  - Synchronise local lab sources: Wiki/synclabsources.md
 - Lab telemetry: Wiki/telemetry.md
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
@@ -45,6 +45,7 @@ nav:
     - Connect-Lab: AutomatedLab/en-us/Connect-Lab.md
     - Connect-LabVM: AutomatedLab/en-us/Connect-LabVM.md
     - Disable-LabAutoLogon: AutomatedLab/en-us/Disable-LabAutoLogon.md
+    - Disable-LabMachineAutoShutdown: AutomatedLab/en-us/Disable-LabMachineAutoShutdown.md
     - Disable-LabTelemetry: AutomatedLab/en-us/Disable-LabTelemetry.md
     - Disable-LabVMFirewallGroup: AutomatedLab/en-us/Disable-LabVMFirewallGroup.md
     - Disconnect-Lab: AutomatedLab/en-us/Disconnect-Lab.md
@@ -52,6 +53,7 @@ nav:
     - Enable-LabAutoLogon: AutomatedLab/en-us/Enable-LabAutoLogon.md
     - Enable-LabCertificateAutoenrollment: AutomatedLab/en-us/Enable-LabCertificateAutoenrollment.md
     - Enable-LabHostRemoting: AutomatedLab/en-us/Enable-LabHostRemoting.md
+    - Enable-LabMachineAutoShutdown: AutomatedLab/en-us/Enable-LabMachineAutoShutdown.md
     - Enable-LabTelemetry: AutomatedLab/en-us/Enable-LabTelemetry.md
     - Enable-LabVMFirewallGroup: AutomatedLab/en-us/Enable-LabVMFirewallGroup.md
     - Enable-LabVMRemoting: AutomatedLab/en-us/Enable-LabVMRemoting.md
@@ -78,11 +80,13 @@ nav:
     - Get-LabHyperVAvailableMemory: AutomatedLab/en-us/Get-LabHyperVAvailableMemory.md
     - Get-LabInternetFile: AutomatedLab/en-us/Get-LabInternetFile.md
     - Get-LabIssuingCA: AutomatedLab/en-us/Get-LabIssuingCA.md
+    - Get-LabMachineAutoShutdown: AutomatedLab/en-us/Get-LabMachineAutoShutdown.md
     - Get-LabPSSession: AutomatedLab/en-us/Get-LabPSSession.md
     - Get-LabReleaseStep: AutomatedLab/en-us/Get-LabReleaseStep.md
     - Get-LabSoftwarePackage: AutomatedLab/en-us/Get-LabSoftwarePackage.md
     - Get-LabSourcesLocation: AutomatedLab/en-us/Get-LabSourcesLocation.md
     - Get-LabSourcesLocationInternal: AutomatedLab/en-us/Get-LabSourcesLocationInternal.md
+    - Get-LabTfsFeed: AutomatedLab/en-us/Get-LabTfsFeed.md
     - Get-LabVariable: AutomatedLab/en-us/Get-LabVariable.md
     - Get-LabVHDX: AutomatedLab/en-us/Get-LabVHDX.md
     - Get-LabVM: AutomatedLab/en-us/Get-LabVM.md
@@ -100,6 +104,7 @@ nav:
     - Install-LabAdfs: AutomatedLab/en-us/Install-LabAdfs.md
     - Install-LabAdfsProxy: AutomatedLab/en-us/Install-LabAdfsProxy.md
     - Install-LabAzureServices: AutomatedLab/en-us/Install-LabAzureServices.md
+    - Install-LabBuildWorker: AutomatedLab/en-us/Install-LabBuildWorker.md
     - Install-LabDcs: AutomatedLab/en-us/Install-LabDcs.md
     - Install-LabDnsForwarder: AutomatedLab/en-us/Install-LabDnsForwarder.md
     - Install-LabDscClient: AutomatedLab/en-us/Install-LabDscClient.md
@@ -130,6 +135,7 @@ nav:
     - New-LabPSSession: AutomatedLab/en-us/New-LabPSSession.md
     - New-LabReleasePipeline: AutomatedLab/en-us/New-LabReleasePipeline.md
     - New-LabSourcesFolder: AutomatedLab/en-us/New-LabSourcesFolder.md
+    - New-LabTfsFeed: AutomatedLab/en-us/New-LabTfsFeed.md
     - New-LabVHDX: AutomatedLab/en-us/New-LabVHDX.md
     - New-LabVM: AutomatedLab/en-us/New-LabVM.md
     - Open-LabTfsSite: AutomatedLab/en-us/Open-LabTfsSite.md
@@ -149,7 +155,6 @@ nav:
     - Restart-ServiceResilient: AutomatedLab/en-us/Restart-ServiceResilient.md
     - Restore-LabConnection: AutomatedLab/en-us/Restore-LabConnection.md
     - Restore-LabVMSnapshot: AutomatedLab/en-us/Restore-LabVMSnapshot.md
-    - Save-Hashes: AutomatedLab/en-us/Save-Hashes.md
     - Save-LabVM: AutomatedLab/en-us/Save-LabVM.md
     - Set-LabAzureDefaultLocation: AutomatedLab/en-us/Set-LabAzureDefaultLocation.md
     - Set-LabAzureDefaultStorageAccount: AutomatedLab/en-us/Set-LabAzureDefaultStorageAccount.md
@@ -171,8 +176,10 @@ nav:
     - Test-FileList: AutomatedLab/en-us/Test-FileList.md
     - Test-FolderExist: AutomatedLab/en-us/Test-FolderExist.md
     - Test-FolderNotExist: AutomatedLab/en-us/Test-FolderNotExist.md
+    - Test-LabADReady: AutomatedLab/en-us/Test-LabADReady.md
     - Test-LabAutoLogon: AutomatedLab/en-us/Test-LabAutoLogon.md
     - Test-LabAzureLabSourcesStorage: AutomatedLab/en-us/Test-LabAzureLabSourcesStorage.md
+    - Test-LabAzureModuleAvailability: AutomatedLab/en-us/Test-LabAzureModuleAvailability.md
     - Test-LabCATemplate: AutomatedLab/en-us/Test-LabCATemplate.md
     - Test-LabHostConnected: AutomatedLab/en-us/Test-LabHostConnected.md
     - Test-LabHostRemoting: AutomatedLab/en-us/Test-LabHostRemoting.md
@@ -229,6 +236,9 @@ nav:
     - Test-LabDefinition: AutomatedLabDefinition/en-us/Test-LabDefinition.md
   - AutomatedLabNotifications:
     - Send-ALNotification: AutomatedLabNotifications/en-us/Send-ALNotification.md
+  - AutomatedLabTest:
+    - Import-LabTestResult: AutomatedLabTest/en-us/Import-LabTestResult.md
+    - Test-LabDeployment: AutomatedLabTest/en-us/Test-LabDeployment.md
   - AutomatedLabUnattended:
     - Add-UnattendedNetworkAdapter: AutomatedLabUnattended/en-us/Add-UnattendedNetworkAdapter.md
     - Add-UnattendedRenameNetworkAdapters: AutomatedLabUnattended/en-us/Add-UnattendedRenameNetworkAdapters.md
@@ -256,13 +266,16 @@ nav:
     - Checkpoint-LWAzureVM: AutomatedLabWorker/en-us/Checkpoint-LWAzureVM.md
     - Checkpoint-LWHypervVM: AutomatedLabWorker/en-us/Checkpoint-LWHypervVM.md
     - Connect-LWAzureLabSourcesDrive: AutomatedLabWorker/en-us/Connect-LWAzureLabSourcesDrive.md
+    - Disable-LWAzureAutoShutdown: AutomatedLabWorker/en-us/Disable-LWAzureAutoShutdown.md
     - Dismount-LWAzureIsoImage: AutomatedLabWorker/en-us/Dismount-LWAzureIsoImage.md
     - Dismount-LWIsoImage: AutomatedLabWorker/en-us/Dismount-LWIsoImage.md
+    - Enable-LWAzureAutoShutdown: AutomatedLabWorker/en-us/Enable-LWAzureAutoShutdown.md
     - Enable-LWAzureVMRemoting: AutomatedLabWorker/en-us/Enable-LWAzureVMRemoting.md
     - Enable-LWAzureWinRm: AutomatedLabWorker/en-us/Enable-LWAzureWinRm.md
     - Enable-LWHypervVMRemoting: AutomatedLabWorker/en-us/Enable-LWHypervVMRemoting.md
     - Enable-LWVMWareVMRemoting: AutomatedLabWorker/en-us/Enable-LWVMWareVMRemoting.md
     - Get-LabAzureLoadBalancedPort: AutomatedLabWorker/en-us/Get-LabAzureLoadBalancedPort.md
+    - Get-LWAzureAutoShutdown: AutomatedLabWorker/en-us/Get-LWAzureAutoShutdown.md
     - Get-LWAzureLoadBalancedPort: AutomatedLabWorker/en-us/Get-LWAzureLoadBalancedPort.md
     - Get-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/Get-LWAzureNetworkSwitch.md
     - Get-LWAzureVMConnectionInfo: AutomatedLabWorker/en-us/Get-LWAzureVMConnectionInfo.md
@@ -286,7 +299,6 @@ nav:
     - New-LWAzureLoadBalancer: AutomatedLabWorker/en-us/New-LWAzureLoadBalancer.md
     - New-LWAzureNetworkSwitch: AutomatedLabWorker/en-us/New-LWAzureNetworkSwitch.md
     - New-LWAzureVM: AutomatedLabWorker/en-us/New-LWAzureVM.md
-    - New-LWHypervLinuxVm: AutomatedLabWorker/en-us/New-LWHypervLinuxVm.md
     - New-LWHypervNetworkSwitch: AutomatedLabWorker/en-us/New-LWHypervNetworkSwitch.md
     - New-LWHypervVM: AutomatedLabWorker/en-us/New-LWHypervVM.md
     - New-LWReferenceVHDX: AutomatedLabWorker/en-us/New-LWReferenceVHDX.md
@@ -334,12 +346,6 @@ nav:
     - Send-File: PSFileTransfer/en-us/Send-File.md
   - PSLog:
     - Get-CallerPreference: PSLog/en-us/Get-CallerPreference.md
-    - Start-Log: PSLog/en-us/Start-Log.md
-    - Stop-Log: PSLog/en-us/Stop-Log.md
-    - Write-Debug: PSLog/en-us/Write-Debug.md
-    - Write-Error: PSLog/en-us/Write-Error.md
-    - Write-Host: PSLog/en-us/Write-Host.md
-    - Write-LogEntry: PSLog/en-us/Write-LogEntry.md
     - Write-LogError: PSLog/en-us/Write-LogError.md
     - Write-LogFunctionEntry: PSLog/en-us/Write-LogFunctionEntry.md
     - Write-LogFunctionExit: PSLog/en-us/Write-LogFunctionExit.md
@@ -347,10 +353,8 @@ nav:
     - Write-ProgressIndicator: PSLog/en-us/Write-ProgressIndicator.md
     - Write-ProgressIndicatorEnd: PSLog/en-us/Write-ProgressIndicatorEnd.md
     - Write-ScreenInfo: PSLog/en-us/Write-ScreenInfo.md
-    - Write-Verbose: PSLog/en-us/Write-Verbose.md
-    - Write-Warning: PSLog/en-us/Write-Warning.md
 site_name: AutomatedLab - Lab automation from users for users
-theme: readthedocs
-site_author: Jan-Hendrik Peters, Raimund Andree
+theme: rtd-dropdown
 edit_uri: edit/master/Help/
 docs_dir: Help
+site_author: Jan-Hendrik Peters, Raimund Andree
