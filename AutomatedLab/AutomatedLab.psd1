@@ -54,10 +54,12 @@
         'PSLog',
         'PSFileTransfer',
         'AutomatedLabWorker',
+        'AutomatedLab.Recipe',
+        'AutomatedLab.Ships',
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.164'; }        
+        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.188'; }
         'PSFramework'
         'xPSDesiredStateConfiguration'
         'xDscDiagnostics'

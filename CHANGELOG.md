@@ -12,7 +12,6 @@
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 - Added support for multiple 'TfsBuildWorkers' on one machine.
 - Change forwarders to AD integrated.
-- Adding missing files to VS solution and installer.
 - Added additional validator for DSC Pull Server Setup to validate if a CA is present.
 - File Server Role: Installed detection.
 
@@ -33,6 +32,8 @@
 - Fixed #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
 - Fixed a casting issue in 'UnknownRoleProperties' validator.
 - Fixed #814 (case sensitivity).
+- Fixed #821 by adding 'AutomatedLab.Recipe' and 'AutomatedLab.Ships' to the RequiredModules.
+- Adding missing files to VS solution and installer.
 
 ## 5.17.0 - 2020-01-08
 
