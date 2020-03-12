@@ -8,6 +8,7 @@ nav:
   - Creating a new lab: Wiki/createnewlab.md
   - Networks and IP Addresses: Wiki/networksandaddresses.md
   - Adding machines: Wiki/addmachines.md
+  - Preparing a fully offline environment: Wiki/fullyoffline.md
 - Roles:
   - About roles: Wiki/Roles/roles.md
   - ActiveDirectory: Wiki/Roles/activedirectory.md
