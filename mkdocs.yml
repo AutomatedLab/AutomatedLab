@@ -3,7 +3,9 @@ repo_url: https://github.com/AutomatedLab/AutomatedLab
 nav:
 - Home: index.md
 - Installation: Wiki/install.md
-- Getting started: Wiki/gettingstarted.md
+- Getting started:
+  - First steps: Wiki/gettingstarted.md
+  - Advanced configuration : Wiki/automatedlabconfig.md
 - Defining your lab:
   - Creating a new lab: Wiki/createnewlab.md
   - Networks and IP Addresses: Wiki/networksandaddresses.md
@@ -19,6 +21,7 @@ nav:
   - Hyper-V: Wiki/Roles/hyperv.md
   - SQL Server: Wiki/Roles/sql.md
   - DSC Pull Server: Wiki/Roles/dscpull.md
+  - Lab Builder REST API : Wiki/Roles/restapi.md
 - Custom roles: Wiki/customroles.md
 - Customizing your lab:
   - Installing Windows features: Wiki/installwindowsfeatures.md
@@ -31,6 +34,7 @@ nav:
 - Azure labs:
   - Adding a subscription: Wiki/addazuresubscription.md
   - Synchronise local lab sources: Wiki/synclabsources.md
+  - Mounting ISO files : Wiki/mountazureisos.md
 - Lab telemetry: Wiki/telemetry.md
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
