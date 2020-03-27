@@ -120,7 +120,7 @@
         'Get-LabVMStatus',
         'Get-LabVMUptime',
         'Get-LabWindowsFeature',
-        'Get-LabAvailableAzureSku',
+        'Get-LabAzureAvailableSku',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
