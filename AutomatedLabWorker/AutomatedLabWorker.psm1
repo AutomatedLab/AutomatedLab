@@ -125,7 +125,7 @@ function Invoke-LWCommand
 
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath)
         {
-            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination C:\ -Recurse -Force } -ArgumentList $DependencyFolderPath
+            Invoke-Command -Session $Session -ScriptBlock { Copy-Item -Path $args[0] -Destination / -Recurse -Force } -ArgumentList $DependencyFolderPath
         }
         else
         {

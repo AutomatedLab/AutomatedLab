@@ -1,4 +1,4 @@
-trap
+﻿trap
 {
     if ((($_.Exception.Message -like '*Get-VM*') -or `
             ($_.Exception.Message -like '*Save-VM*') -or `
@@ -17,6 +17,7 @@ trap
 #region New-LWHypervVM
 function New-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -24,11 +25,11 @@ function New-LWHypervVM
     )
 
     $PSBoundParameters.Add('ProgressIndicator', 1) #enables progress indicator
-    
+
     Write-LogFunctionEntry
 
     $script:lab = Get-Lab
-    
+
     if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
@@ -40,7 +41,7 @@ function New-LWHypervVM
     if ($PSDefaultParameterValues.ContainsKey('*:IsAutoYast')) { $PSDefaultParameterValues.Remove('*:IsAutoYast') }
 
     if ($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
-    {        
+    {
         $PSDefaultParameterValues['*:IsKickstart'] = $true
     }
     if($Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'Suse')
@@ -55,9 +56,9 @@ function New-LWHypervVM
     {
         $Machine.ProductKey = $Machine.OperatingSystem.ProductKey
     }
-            
+
     Import-UnattendedContent -Content $Machine.UnattendedXmlContent
-    
+
     #region network adapter settings
     $macAddressPrefix = Get-LabConfigurationItem -Name MacAddressPrefix
     $macAddressesInUse = @(Get-VM | Get-VMNetworkAdapter | Select-Object -ExpandProperty MacAddress)
@@ -75,7 +76,7 @@ function New-LWHypervVM
     {
         #move the adapter that connects the machine to the domain to the top
         $dc = Get-LabVM -Role RootDC, FirstChildDC | Where-Object { $_.DomainName -eq $Machine.DomainName }
-        
+
         if ($dc)
         {
             #the first adapter that has an IP address in the same IP range as the RootDC or FirstChildDC in the same domain will be used on top of
@@ -83,7 +84,7 @@ function New-LWHypervVM
             $domainAdapter = $adapters | Where-Object { $_.Ipv4Address[0] } |
             Where-Object { [AutomatedLab.IPNetwork]::Contains($_.Ipv4Address[0], $dc.IpAddress[0]) } |
             Select-Object -First 1
-        
+
             if ($domainAdapter)
             {
                 $adapters.Remove($domainAdapter)
@@ -91,23 +92,23 @@ function New-LWHypervVM
             }
         }
     }
-    
+
     foreach ($adapter in $adapters)
     {
         $ipSettings = @{}
-                
+
         $mac = "$macAddressPrefix{0:X6}" -f $macIdx++
-                
+
         $ipSettings.Add('MacAddress', $mac)
         $adapter.MacAddress = $mac
-                
+
         $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f $mac.Substring(0, 2),
         $mac.Substring(2, 2),
         $mac.Substring(4, 2),
         $mac.Substring(6, 2),
         $mac.Substring(8, 2),
         $mac.Substring(10, 2)
-                
+
         $ipSettings.Add('InterfaceName', $macWithDash)
         $ipSettings.Add('IpAddresses', @())
         if ($adapter.Ipv4Address.Count -ge 1)
@@ -127,19 +128,19 @@ function New-LWHypervVM
 
         $ipSettings.Add('Gateways', ($adapter.Ipv4Gateway + $adapter.Ipv6Gateway))
         $ipSettings.Add('DNSServers', ($adapter.Ipv4DnsServers + $adapter.Ipv6DnsServers))
-                
+
         if (-not $Machine.IsDomainJoined -and (-not $adapter.ConnectionSpecificDNSSuffix))
         {
             $rootDomainName = Get-LabVM -Role RootDC | Select-Object -First 1 | Select-Object -ExpandProperty DomainName
             $ipSettings.Add('DnsDomain', $rootDomainName)
         }
-                
+
         if ($adapter.ConnectionSpecificDNSSuffix) { $ipSettings.Add('DnsDomain', $adapter.ConnectionSpecificDNSSuffix) }
         $ipSettings.Add('UseDomainNameDevolution', (([string]($adapter.AppendParentSuffixes)) = 'true'))
         if ($adapter.AppendDNSSuffixes)           { $ipSettings.Add('DNSSuffixSearchOrder', $adapter.AppendDNSSuffixes -join ',') }
         $ipSettings.Add('EnableAdapterDomainNameRegistration', ([string]($adapter.DnsSuffixInDnsRegistration)).ToLower())
         $ipSettings.Add('DisableDynamicUpdate', ([string](-not $adapter.RegisterInDNS)).ToLower())
-        
+
         if ($machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxType -eq 'RedHat')
         {
             $ipSettings.Add('IsKickstart', $true)
@@ -150,34 +151,34 @@ function New-LWHypervVM
         }
 
         switch ($Adapter.NetbiosOptions)
-        {                
+        {
             'Default'  { $ipSettings.Add('NetBIOSOptions', '0') }
             'Enabled'  { $ipSettings.Add('NetBIOSOptions', '1') }
             'Disabled' { $ipSettings.Add('NetBIOSOptions', '2') }
-        }                
-                
+        }
+
         Add-UnattendedNetworkAdapter @ipSettings
     }
 
     $Machine.NetworkAdapters = $adapters
-            
+
     if ($Machine.OperatingSystemType -eq 'Windows') {Add-UnattendedRenameNetworkAdapters}
     #endregion network adapter settings
-            
+
     Set-UnattendedComputerName -ComputerName $Machine.Name
     Set-UnattendedAdministratorName -Name $Machine.InstallationUser.UserName
-    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password    
-            
+    Set-UnattendedAdministratorPassword -Password $Machine.InstallationUser.Password
+
     if ($Machine.ProductKey)
     {
         Set-UnattendedProductKey -ProductKey $Machine.ProductKey
     }
-            
+
     if ($Machine.UserLocale)
     {
         Set-UnattendedUserLocale -UserLocale $Machine.UserLocale
     }
-            
+
     #if the time zone is specified we use it, otherwise we take the timezone from the host machine
     if ($Machine.TimeZone)
     {
@@ -187,7 +188,7 @@ function New-LWHypervVM
     {
         Set-UnattendedTimeZone -TimeZone ([System.TimeZoneInfo]::Local.Id)
     }
-            
+
     #if domain-joined and not a DC
     if ($Machine.IsDomainJoined -eq $true -and -not ($Machine.Roles.Name -contains 'RootDC' -or $Machine.Roles.Name -contains 'FirstChildDC' -or $Machine.Roles.Name -contains 'DC'))
     {
@@ -205,7 +206,7 @@ function New-LWHypervVM
     }
 
     $setLocalIntranetSites = Get-LabConfigurationItem -Name SetLocalIntranetSites
-    if ($setLocalIntranetSites -ne 'None' -or $setLocalIntranetSites -ne $null)
+    if ($setLocalIntranetSites -ne 'None' -or $null -ne $setLocalIntranetSites)
     {
         if ($setLocalIntranetSites -eq 'All')
         {
@@ -232,8 +233,8 @@ function New-LWHypervVM
 
     Set-UnattendedFirewallState -State $Machine.EnableWindowsFirewall
 
-    if ($Machine.Roles.Name -contains 'RootDC' -or 
-        $Machine.Roles.Name -contains 'FirstChildDC' -or 
+    if ($Machine.Roles.Name -contains 'RootDC' -or
+        $Machine.Roles.Name -contains 'FirstChildDC' -or
     $Machine.Roles.Name -contains 'DC')
     {
         #machine will not be added to domain or workgroup
@@ -244,38 +245,38 @@ function New-LWHypervVM
         {
             Set-UnattendedWorkgroup -WorkgroupName $Machine.WorkgroupName
         }
-                
+
         if (-not [string]::IsNullOrEmpty($Machine.DomainName))
         {
             $domain = $lab.Domains | Where-Object Name -eq $Machine.DomainName
 
             $parameters = @{
                 DomainName = $Machine.DomainName
-                Username = $domain.Administrator.UserName 
+                Username = $domain.Administrator.UserName
                 Password = $domain.Administrator.Password
             }
             if ($Machine.OperatingSystemType -eq 'Linux')
             {
                 $parameters['IsKickstart'] = $Machine.LinuxType -eq 'RedHat'
-                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'             
+                $parameters['IsAutoYast'] = $Machine.LinuxType -eq 'Suse'
             }
-            
-            Set-UnattendedDomain @parameters
-            
-            if ($Machine.OperatingSystemType -eq 'Linux')	
-            {	
-                $sudoParam = @{	
-                    Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"	
-                    Description = 'Enable domain admin as sudoer without password'	
-                }	
 
-                Add-UnattendedSynchronousCommand @sudoParam	
+            Set-UnattendedDomain @parameters
+
+            if ($Machine.OperatingSystemType -eq 'Linux')
+            {
+                $sudoParam = @{
+                    Command = "sed -i '/^%wheel.*/a %$($Machine.DomainName.ToUpper())\\\\domain\\ admins ALL=(ALL) NOPASSWD: ALL' /etc/sudoers"
+                    Description = 'Enable domain admin as sudoer without password'
+                }
+
+                Add-UnattendedSynchronousCommand @sudoParam
             }
         }
     }
 
     #set the Generation for the VM depending on SupportGen2VMs, host OS version and VM OS version
-    $hostOsVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
+    $hostOsVersion = [System.Environment]::OSVersion.Version
 
     $generation = if (Get-LabConfigurationItem -Name SupportGen2VMs)
     {
@@ -292,24 +293,24 @@ function New-LWHypervVM
     {
         1
     }
-    
+
     $vmPath = $lab.GetMachineTargetPath($Machine.Name)
     $path = "$vmPath\$($Machine.Name).vhdx"
     Write-PSFMessage "`tVM Disk path is '$path'"
-    
+
     if (Test-Path -Path $path)
     {
         Write-ScreenInfo -Message "The disk $path does already exist. Disk cannot be created" -Type Warning
         return $false
     }
-    
+
     Write-ProgressIndicator
-    
+
     if ($Machine.OperatingSystemType -eq 'Linux')
     {
-        $nextDriveLetter = [char[]](67..90) | 
-        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 
-        Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 
+        $nextDriveLetter = [char[]](67..90) |
+        Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
+        Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
         Select-Object -First 1
         $systemDisk = New-Vhd -Path $path -SizeBytes ($lab.Target.ReferenceDiskSizeInGB * 1GB) -BlockSizeBytes 1MB
         $mountedOsDisk = $systemDisk | Mount-VHD -Passthru
@@ -341,7 +342,7 @@ function New-LWHypervVM
 
         # Copy Unattend-Stuff here
         if ($Machine.LinuxType -eq 'RedHat')
-        {            
+        {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
         }
         else
@@ -351,7 +352,7 @@ function New-LWHypervVM
             $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
             $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
             # Copy data
-            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru | 
+            Copy-Item -Path "$($isoDrive.RootDirectory.FullName)*" -Destination $drive.RootDirectory.FullName -Recurse -Force -PassThru |
             Where-Object IsReadOnly | Set-ItemProperty -name IsReadOnly -Value $false
 
             # Unmount ISO
@@ -383,12 +384,12 @@ function New-LWHypervVM
             }
 
             # AutoYast XML file is not picked up properly without modifying bootloader config
-            # Change grub and isolinux configuration            
+            # Change grub and isolinux configuration
             $grubFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'grub.cfg'
             $isolinuxFile = Get-ChildItem -Recurse -Path $drive.RootDirectory.FullName -Filter 'isolinux.cfg'
 
             ($grubFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $grubFile.FullName
-            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName        
+            ($isolinuxFile | Get-Content -Raw) -replace "splash=silent", "splash=silent textmode=1 autoyast=device:///autoinst.xml" | Set-Content -Path $isolinuxFile.FullName
         }
 
         $mountedOsDisk | Dismount-VHD
@@ -415,7 +416,7 @@ function New-LWHypervVM
     }
 
     $vm = New-VM @vmParameter
-    
+
     Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
@@ -429,34 +430,34 @@ function New-LWHypervVM
     #    Get-SecureBootUEFI -Name SetupMode
     #}
     #catch { }
-    
+
     if ($vm.Generation -ge 2)
-    {        	        
-        $secureBootTemplate = if ($Machine.HypervProperties.SecureBootTemplate)	
-        {	
-            $Machine.HypervProperties.SecureBootTemplate	
-        }	
-        else	
-        {	
-            if ($Machine.LinuxType -eq 'unknown')	
-            {	
-                'MicrosoftWindows'	
-            }	
-            else	
-            {	
-                'MicrosoftUEFICertificateAuthority'	
-            }	
-        }	
-        if ($Machine.HypervProperties.EnableSecureBoot)	
-        {	
-            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate	
-        }	
-        else	
-        {	
-            $vm | Set-VMFirmware -EnableSecureBoot Off	
-        }        	
+    {
+        $secureBootTemplate = if ($Machine.HypervProperties.SecureBootTemplate)
+        {
+            $Machine.HypervProperties.SecureBootTemplate
+        }
+        else
+        {
+            if ($Machine.LinuxType -eq 'unknown')
+            {
+                'MicrosoftWindows'
+            }
+            else
+            {
+                'MicrosoftUEFICertificateAuthority'
+            }
+        }
+        if ($Machine.HypervProperties.EnableSecureBoot)
+        {
+            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate
+        }
+        else
+        {
+            $vm | Set-VMFirmware -EnableSecureBoot Off
+        }
     }
-    
+
     #remove the unconnected default network adapter
     $vm | Remove-VMNetworkAdapter
     foreach ($adapter in $adapters)
@@ -470,7 +471,7 @@ function New-LWHypervVM
         # {
         #     $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
         # }
-        
+
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
         $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
 
@@ -480,31 +481,31 @@ function New-LWHypervVM
             Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
         }
     }
-    
+
     Write-PSFMessage "`tMachine '$Name' created"
-    
+
     $automaticStartAction = 'Nothing'
     $automaticStartDelay  = 0
     $automaticStopAction  = 'ShutDown'
-    
+
     if ($Machine.HypervProperties.AutomaticStartAction) { $automaticStartAction = $Machine.HypervProperties.AutomaticStartAction }
     if ($Machine.HypervProperties.AutomaticStartDelay)  { $automaticStartDelay  = $Machine.HypervProperties.AutomaticStartDelay  }
     if ($Machine.HypervProperties.AutomaticStopAction)  { $automaticStopAction  = $Machine.HypervProperties.AutomaticStopAction  }
     $vm | Set-VM -AutomaticStartAction $automaticStartAction -AutomaticStartDelay $automaticStartDelay -AutomaticStopAction $automaticStopAction
-    
+
     Write-ProgressIndicator
 
     if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
         $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
     }
-    
+
     if ( $Machine.OperatingSystemType -eq 'Windows')
     {
         [void] (Mount-DiskImage -ImagePath $path)
         $VhdDisk = Get-DiskImage -ImagePath $path | Get-Disk
         $VhdPartition = Get-Partition -DiskNumber $VhdDisk.Number
-    
+
         if ($VhdPartition.Count -gt 1)
         {
             #for Generation 2 VMs
@@ -516,16 +517,16 @@ function New-LWHypervVM
             #for Generation 1 VMs
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
-    
+
         Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
 
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
-    
+
         $unattendXmlContent = Get-UnattendedContent
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
         Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
-    
+
         #copy AL tools to lab machine and optionally the tools folder
         $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
 
@@ -544,7 +545,7 @@ function New-LWHypervVM
         Copy-Item -Path "$tempPath\*" -Destination "$vhdVolume\Windows" -Recurse
 
         Remove-Item -Path $tempPath -Recurse
-    
+
         Write-PSFMessage '...done'
 
         if ($Machine.ToolsPath.Value)
@@ -558,7 +559,7 @@ function New-LWHypervVM
             Copy-Item -Path $Machine.ToolsPath -Destination $toolsDestination -Recurse
             Write-PSFMessage '...done'
         }
-    
+
         $enableWSManRegDump = @'
 Windows Registry Editor Version 5.00
 
@@ -590,55 +591,55 @@ Windows Registry Editor Version 5.00
 '@
         #Using the .net class as the PowerShell provider usually does not recognize the new drive
         [System.IO.File]::WriteAllText("$vhdVolume\WSManRegKey.reg", $enableWSManRegDump)
-    
+
         $additionalDisksOnline = @'
-Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log	
-$diskpartCmd = 'LIST DISK'	
-$disks = $diskpartCmd | diskpart.exe	
- foreach ($line in $disks)	
-{	
-    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')	
-    {	
-        #$nextDriveLetter = [char[]](67..90) | 	
-        #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk | 	
-        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} | 	
-        #Select-Object -First 1	
-         $diskNumber = $Matches.DiskNumber	
-         if ($Matches.State -eq 'Offline')	
-        {	
-            $diskpartCmd = "@	
-                SELECT DISK $diskNumber	
-                ATTRIBUTES DISK CLEAR READONLY	
-                ONLINE DISK	
-                EXIT	
-            @"	
-            $diskpartCmd | diskpart.exe | Out-Null	
-        }	
-    }	
-}	
- foreach ($volume in (Get-WmiObject -Class Win32_Volume))	
-{	
-    if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')	
-    {	
-        continue	
-    }	
-     if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")	
-    {            	
-        $volume.DriveLetter = "$($Matches.DriveLetter):"	
-    }	
-     $volume.Label = $Matches.Label	
-    $volume.Put()	
-}	
-Stop-Transcript	
-'@	
-        [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)	
+Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
+$diskpartCmd = 'LIST DISK'
+$disks = $diskpartCmd | diskpart.exe
+ foreach ($line in $disks)
+{
+    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+    {
+        #$nextDriveLetter = [char[]](67..90) |
+        #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
+        #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
+        #Select-Object -First 1
+         $diskNumber = $Matches.DiskNumber
+         if ($Matches.State -eq 'Offline')
+        {
+            $diskpartCmd = "@
+                SELECT DISK $diskNumber
+                ATTRIBUTES DISK CLEAR READONLY
+                ONLINE DISK
+                EXIT
+            @"
+            $diskpartCmd | diskpart.exe | Out-Null
+        }
+    }
+}
+ foreach ($volume in (Get-WmiObject -Class Win32_Volume))
+{
+    if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    {
+        continue
+    }
+     if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
+    {
+        $volume.DriveLetter = "$($Matches.DriveLetter):"
+    }
+     $volume.Label = $Matches.Label
+    $volume.Put()
+}
+Stop-Transcript
+'@
+        [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
 
         [void] (Dismount-DiskImage -ImagePath $path)
         Write-PSFMessage "`tdisk image dismounted"
-    
+
         Write-ProgressIndicator
     }
-    
+
     Write-PSFMessage "`tSettings RAM, start and stop actions"
     $param = @{}
     $param.Add('MemoryStartupBytes', $Machine.Memory)
@@ -647,9 +648,9 @@ Stop-Transcript
 
     if ($Machine.MaxMemory) { $param.Add('MemoryMaximumBytes', $Machine.MaxMemory) }
     if ($Machine.MinMemory) { $param.Add('MemoryMinimumBytes', $Machine.MinMemory) }
-    
+
     if ($Machine.MaxMemory -or $Machine.MinMemory)
-    { 
+    {
         $param.Add('DynamicMemory', $true)
         Write-PSFMessage "`tSettings dynamic memory to MemoryStartupBytes $($Machine.Memory), minimum $($Machine.MinMemory), maximum $($Machine.MaxMemory)"
     }
@@ -662,9 +663,9 @@ Stop-Transcript
     $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
     Set-VM -Name $Machine.Name @param
-    
+
     Set-VM -Name $Machine.Name -ProcessorCount $Machine.Processors
-    
+
     if ($DisableIntegrationServices)
     {
         Disable-VMIntegrationService -VMName $Machine.Name -Name 'Time Synchronization'
@@ -674,7 +675,7 @@ Stop-Transcript
     {
         Set-VMBios -VMName $Machine.Name -EnableNumLock
     }
-    
+
     Write-PSFMessage "Creating snapshot named '$($Machine.Name) - post OS Installation'"
     if ($CreateCheckPoints)
     {
@@ -691,35 +692,29 @@ Stop-Transcript
     }
 
     Write-ProgressIndicatorEnd
-            
+
     Write-LogFunctionExit
-    
+
     return $true
 }
 #endregion New-LWHypervVM
 
-#region New-LWHypervLinuxVm
-function New-LWHypervLinuxVm
-{
-
-}
-#endregion
-
 #region Remove-LWHypervVM
 function Remove-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     Param (
         [Parameter(Mandatory)]
         [string]$Name
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $vm = Get-VM -Name $Name -ErrorAction SilentlyContinue
     if ($vm)
     {
         $vmPath = Split-Path -Path $vm.HardDrives[0].Path -Parent
-    
+
         if ($vm.State -eq 'Saved')
         {
             Write-PSFMessage "Deleting saved state of VM '$($Name)'"
@@ -730,14 +725,14 @@ function Remove-LWHypervVM
             Write-PSFMessage "Stopping VM '$($Name)'"
             Stop-VM -TurnOff -Name $Name -Force -WarningAction SilentlyContinue
         }
-    
+
         Write-PSFMessage "Removing VM '$($Name)'"
         Remove-VM -Name $Name -Force
 
         Write-PSFMessage "Removing VM files for '$($Name)'"
         Remove-Item -Path $vmPath -Force -Confirm:$false -Recurse
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVM
@@ -745,10 +740,11 @@ function Remove-LWHypervVM
 #region Wait-LWHypervVMRestart
 function Wait-LWHypervVMRestart
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [double]$TimeoutInMinutes = 15,
 
         [ValidateRange(1, 300)]
@@ -760,9 +756,9 @@ function Wait-LWHypervVMRestart
 
         [switch]$NoNewLine
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $machines = Get-LabVM -ComputerName $ComputerName
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
@@ -770,16 +766,16 @@ function Wait-LWHypervVMRestart
     {
         $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
     }
-    
+
     $vmDrive = ((Get-Lab).Target.Path)[0]
     $start = (Get-Date)
     $progressIndicatorStart = (Get-Date)
     $diskTime = @()
     $lastMachineStart = (Get-Date).AddSeconds(-5)
     $delayedStart = @()
-    
+
     #$lastMonitorJob = (Get-Date)
-    
+
     do
     {
         if (((Get-Date) - $progressIndicatorStart).TotalSeconds -gt $ProgressIndicator)
@@ -787,15 +783,15 @@ function Wait-LWHypervVMRestart
             Write-ProgressIndicator
             $progressIndicatorStart = (Get-Date)
         }
-                
+
         $diskTime += 100-([int](((Get-Counter -counter "\\$(hostname.exe)\PhysicalDisk(*)\% Idle Time" -SampleInterval 1).CounterSamples | Where-Object {$_.InstanceName -like "*$vmDrive`:*"}).CookedValue))
-                
+
         if ($StartMachinesWhileWaiting)
         {
             if ($StartMachinesWhileWaiting[0].NetworkAdapters.Count -gt 1)
             {
                 $StartMachinesWhileWaiting = $StartMachinesWhileWaiting | Where-Object { $_ -ne $StartMachinesWhileWaiting[0] }
-                $delayedStart += $StartMachinesWhileWaiting[0]                
+                $delayedStart += $StartMachinesWhileWaiting[0]
             }
             else
             {
@@ -840,7 +836,7 @@ function Wait-LWHypervVMRestart
                 }
                 }
         #>
-        
+
         foreach ($machine in $machines)
         {
             $currentMachineUptime = (Get-VM -Name $machine).Uptime.TotalSeconds
@@ -859,7 +855,7 @@ function Wait-LWHypervVMRestart
             foreach ($job in $MonitorJob)
             {
                 if ($job.State -eq 'Failed')
-                {   
+                {
                     $result = $job | Receive-Job -ErrorVariable jobError
 
                     $criticalError = $jobError | Where-Object { $_.Exception.Message -like 'AL_CRITICAL*' }
@@ -874,13 +870,13 @@ function Wait-LWHypervVMRestart
             }
         }
     }
-    until (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0 -or (Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)    
+    until (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0 -or (Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)
 
     if (($machines.Uptime | Measure-Object -Maximum).Maximum -eq 0)
     {
         Write-PSFMessage -Message "All machines have stopped: ($($machines.name -join ', '))"
     }
-    
+
     if ((Get-Date).AddMinutes(-$TimeoutInMinutes) -gt $start)
     {
         foreach ($Computer in $ComputerName)
@@ -894,14 +890,14 @@ function Wait-LWHypervVMRestart
 
     $remainingMinutes = $TimeoutInMinutes - ((Get-Date) - $start).TotalMinutes
     Wait-LabVM -ComputerName $ComputerName -ProgressIndicator $ProgressIndicator -TimeoutInMinutes $remainingMinutes -NoNewLine:$NoNewLine
-    
+
     if ($delayedStart)
     {
         Start-LabVM -ComputerName $delayedStart -NoNewline:$NoNewLine
     }
-    
+
     Write-ProgressIndicatorEnd
-    
+
     Write-LogFunctionExit
 }
 #endregion Wait-LWHypervVMRestart
@@ -909,26 +905,27 @@ function Wait-LWHypervVMRestart
 #region Start-LWHypervVM
 function Start-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [int]$DelayBetweenComputers = 0,
-        
+
         [int]$PreDelaySeconds = 0,
-        
+
         [int]$PostDelaySeconds = 0,
-        
+
         [int]$ProgressIndicator,
-        
+
         [switch]$NoNewLine
     )
-        
+
     if ($PreDelay) {
         $job = Start-Job -Name 'Start-LWHypervVM - Pre Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PreDelaySeconds }
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
-    
+
     foreach ($Name in $ComputerName)
     {
         $machine = Get-LabVM -ComputerName $Name
@@ -940,18 +937,18 @@ function Start-LWHypervVM
         }
 
         $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
-            
+
         try
         {
             Start-VM -Name $Name -ErrorAction Stop
 
-            if ($machine.NetworkAdapters.Count -gt 1 -and 
+            if ($machine.NetworkAdapters.Count -gt 1 -and
             ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
-            {            
+            {
                 Repair-LWHypervNetworkConfig -ComputerName $Name
                 $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
                 Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
-            }            
+            }
         }
         catch
         {
@@ -964,13 +961,13 @@ function Start-LWHypervVM
             Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
         }
     }
-    
+
     if ($PostDelay)
     {
         $job = Start-Job -Name 'Start-LWHypervVM - Post Delay' -ScriptBlock { Start-Sleep -Seconds $Using:PostDelaySeconds }
-        Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay 
+        Wait-LWLabJob -Job $job -NoNewLine:$NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Start-LWHypervVM
@@ -978,6 +975,7 @@ function Start-LWHypervVM
 #region Stop-LWHypervVM
 function Stop-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -992,9 +990,9 @@ function Stop-LWHypervVM
     )
 
     Write-LogFunctionEntry
-    
+
     $start = Get-Date
-    
+
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
@@ -1002,17 +1000,17 @@ function Stop-LWHypervVM
 
         if ($windows)
         {
-            $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {            	
-                Stop-Computer -Force -ErrorAction Stop	
+            $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {
+                Stop-Computer -Force -ErrorAction Stop
             }
-        }	
+        }
 
         if ($linux)
         {
-            $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {                  	
-                #Sleep as background process so that job does not fail.	
-                [void] (Start-Job -ScriptBlock {	
-                        Start-Sleep -Seconds 5	
+            $jobs += Invoke-LabCommand -UseLocalCredential -ComputerName $linux -NoDisplay -AsJob -PassThru -ScriptBlock {
+                #Sleep as background process so that job does not fail.
+                [void] (Start-Job -ScriptBlock {
+                        Start-Sleep -Seconds 5
                         shutdown -P now
                 })
             }
@@ -1025,18 +1023,18 @@ function Stop-LWHypervVM
             Write-ScreenInfo -Message "Could not stop Hyper-V VM(s): '$($failedJobs.Location)'" -Type Error
         }
 
-        $linuxFailures = foreach ($failedJob in $failedJobs)	
-        {	
-            if (Get-LabVm -ComputerName $failedJob.Location)	
-            {	
-                $failedJob.Location	
-            }	
-        }	
+        $stopFailures = foreach ($failedJob in $failedJobs)
+        {
+            if (Get-LabVm -ComputerName $failedJob.Location)
+            {
+                $failedJob.Location
+            }
+        }
 
-        if ($linuxFailures)	
-        {	
-            Write-ScreenInfo -Message "Force-stopping Linux VMs: $($linuxFailures -join ',')"	
-            Stop-VM -Name $linuxFailures -Force	
+        if ($stopFailures)
+        {
+            Write-ScreenInfo -Message "Force-stopping VMs: $($stopFailures -join ',')"
+            Stop-VM -Name $stopFailures -Force
         }
     }
     else
@@ -1058,11 +1056,11 @@ function Stop-LWHypervVM
             $jobs += $job
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -NoNewLine:$NoNewLine -NoDisplay
-    
+
         #receive the result of all finished jobs. The result should be null except if an error occured. The error will be returned to the caller
         $jobs | Where-Object State -eq completed | Receive-Job
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Stop-LWHypervVM
@@ -1070,13 +1068,14 @@ function Stop-LWHypervVM
 #region Save-LWHypervVM
 function Save-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-    
+
     $runspaceScript = {
-        param 
+        param
         (
             [string]$Name
         )
@@ -1101,15 +1100,16 @@ function Save-LWHypervVM
 #region Checkpoint-LWHypervVM
 function Checkpoint-LWHypervVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
-    
+
     Write-LogFunctionEntry
 
     $step1 = {
@@ -1118,7 +1118,7 @@ function Checkpoint-LWHypervVM
         {
             Suspend-VM -Name $Name -ErrorAction SilentlyContinue
             Save-VM -Name $Name -ErrorAction SilentlyContinue
-                    
+
             Write-Verbose -Message "'$Name' was running"
             $Name
         }
@@ -1164,7 +1164,7 @@ function Checkpoint-LWHypervVM
     [void] ($jobsStep2 | Wait-RunspaceJob)
 
     $jobsStep3 = foreach ($Name in $ComputerName)
-    {        
+    {
         Start-RunspaceJob -RunspacePool $pool -ScriptBlock $step3 -Argument $Name, $runningMachines
     }
 
@@ -1179,22 +1179,23 @@ function Checkpoint-LWHypervVM
 #region Remove-LWHypervVMSnapshot
 function Remove-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [Parameter(Mandatory, ParameterSetName = 'AllSnapshots')]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [string]$SnapshotName,
-        
+
         [Parameter(ParameterSetName = 'AllSnapshots')]
         [switch]$All
     )
-    
+
     Write-LogFunctionEntry
     $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable -Name SnapshotName,All -ErrorAction SilentlyContinue)
-    
+
     $jobs = foreach ($n in $ComputerName)
     {
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
@@ -1209,7 +1210,7 @@ function Remove-LWHypervVMSnapshot
             {
                 $snapshot = Get-VMSnapshot -VMName $n
             }
-        
+
             if (-not $snapshot)
             {
                 Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
@@ -1224,7 +1225,7 @@ function Remove-LWHypervVMSnapshot
     $jobs | Receive-RunspaceJob
 
     $pool | Remove-RunspacePool
-    
+
     Write-LogFunctionExit
 }
 #endregion Remove-LWHypervVMSnapshot
@@ -1232,11 +1233,12 @@ function Remove-LWHypervVMSnapshot
 #region Restore-LWHypervVMSnapshot
 function Restore-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
@@ -1244,7 +1246,7 @@ function Restore-LWHypervVMSnapshot
     Write-LogFunctionEntry
 
     $pool = New-RunspacePool -ThrottleLimit 20 -Variable (Get-Variable SnapshotName)
-                
+
     Write-PSFMessage -Message 'Remembering all running machines'
     $jobs = foreach ($n in $ComputerName)
     {
@@ -1260,7 +1262,7 @@ function Restore-LWHypervVMSnapshot
     }
 
     $runningMachines = $jobs | Receive-RunspaceJob
-        
+
     $jobs = foreach ($n in $ComputerName)
     {
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
@@ -1270,9 +1272,9 @@ function Restore-LWHypervVMSnapshot
             Start-Sleep -Seconds 5
         }
     }
-        
+
     $jobs | Wait-RunspaceJob
-        
+
     $jobs = foreach  ($n in $ComputerName)
     {
         Start-RunspaceJob -RunspacePool $pool -Argument $n -ScriptBlock {
@@ -1281,7 +1283,7 @@ function Restore-LWHypervVMSnapshot
             )
 
             $snapshot = Get-VMSnapshot -VMName $n | Where-Object Name -eq $SnapshotName
-                
+
             if (-not $snapshot)
             {
                 Write-Error -Message "The machine '$n' does not have a snapshot named '$SnapshotName'"
@@ -1295,7 +1297,7 @@ function Restore-LWHypervVMSnapshot
             }
         }
     }
-        
+
     $result = $jobs | Wait-RunspaceJob -PassThru
     if ($result.Shell.HadErrors)
     {
@@ -1306,9 +1308,9 @@ function Restore-LWHypervVMSnapshot
     }
 
     Write-PSFMessage -Message "Restore finished, starting the machines that were running previously ($($runningMachines.Count))"
-                    
+
     $jobs = foreach ($n in $ComputerName)
-    {            
+    {
         Start-RunspaceJob -RunspacePool $pool -Argument $n,$runningMachines -ScriptBlock {
             param ($n, [string[]]$runningMachines)
             if ($n -in $runningMachines)
@@ -1322,7 +1324,7 @@ function Restore-LWHypervVMSnapshot
             }
         }
     }
-        
+
     [void] ($jobs | Wait-RunspaceJob)
 
     $pool | Remove-RunspacePool
@@ -1333,14 +1335,15 @@ function Restore-LWHypervVMSnapshot
 #region Get-LWHypervVMSnapshot
 function Get-LWHypervVMSnapshot
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param
     (
         [string[]]$VMName,
-        
+
         [string]$Name
     )
-    
+
     Write-LogFunctionEntry
 
     (Hyper-V\Get-VMSnapshot @PSBoundParameters).ForEach({
@@ -1354,16 +1357,17 @@ function Get-LWHypervVMSnapshot
 #region Get-LWHypervVMStatus
 function Get-LWHypervVMStatus
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $result = @{ }
     $vms = Get-VM -Name $ComputerName
-    
+
     foreach ($vm in $vms)
     {
         if ($vm.State -eq 'Running')
@@ -1379,9 +1383,9 @@ function Get-LWHypervVMStatus
             $result.Add($vm.Name, 'Unknown')
         }
     }
-    
+
     $result
-    
+
     Write-LogFunctionExit
 }
 #endregion Get-LWHypervVMStatus
@@ -1389,26 +1393,27 @@ function Get-LWHypervVMStatus
 #region Enable-LWHypervVMRemoting
 function Enable-LWHypervVMRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName
     )
 
     $machines = Get-LabVM -ComputerName $ComputerName
-    
+
     $script = {
         param ($DomainName, $UserName, $Password)
-        
+
         $RegPath = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon'
-        
+
         Set-ItemProperty -Path $RegPath -Name AutoAdminLogon -Value 1 -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultUserName -Value $UserName -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultPassword -Value $Password -ErrorAction SilentlyContinue
         Set-ItemProperty -Path $RegPath -Name DefaultDomainName -Value $DomainName -ErrorAction SilentlyContinue
-        
+
         Enable-WSManCredSSP -Role Server -Force | Out-Null
     }
-    
+
     foreach ($machine in $machines)
     {
         $cred = $machine.GetCredential((Get-Lab))
@@ -1430,6 +1435,7 @@ function Enable-LWHypervVMRemoting
 #region Mount-LWIsoImage
 function Mount-LWIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
@@ -1479,9 +1485,9 @@ function Mount-LWIsoImage
                     }
                     $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
                 }
-                
+
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
-                    
+
                 if ((Get-VMDvdDrive -VMName $machine).Path -contains $IsoPath)
                 {
                     $done = $true
@@ -1498,7 +1504,7 @@ function Mount-LWIsoImage
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
             }
         }
-        
+
         $dvdDrivesAfter = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             Get-WmiObject -Class Win32_LogicalDisk -Filter 'DriveType = 5 AND FileSystem LIKE "%"' | Select-Object -ExpandProperty DeviceID
         } -PassThru -NoDisplay
@@ -1519,6 +1525,7 @@ function Mount-LWIsoImage
 #region Dismount-LWIsoImage
 function Dismount-LWIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName
@@ -1545,6 +1552,7 @@ function Dismount-LWIsoImage
 #region Repair-LWHypervNetworkConfig
 function Repair-LWHypervNetworkConfig
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1565,7 +1573,7 @@ function Repair-LWHypervNetworkConfig
 
         Write-Verbose "Renaming network adapters"
         #rename the adapters as defined in the lab
-        
+
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
@@ -1576,14 +1584,14 @@ function Repair-LWHypervNetworkConfig
             }
             $newNames += $newName
             $adapterInfo.VirtualSwitch.Name = $newName
-                
+
             if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
             {
                 $mac = (Get-StringSection -String $adapterInfo.MacAddress -SectionSize 2) -join ':'
                 $filter = 'MACAddress = "{0}"' -f $mac
                 Write-Verbose "Looking for network adapter with using filter '$filter'"
                 $adapter = Get-CimInstance -Class Win32_NetworkAdapter -Filter $filter
-    
+
                 Write-Verbose "Renaming adapter '$($adapter.NetConnectionID)' -> '$newName'"
                 $adapter.NetConnectionID = $newName
                 $adapter.Put()
@@ -1606,7 +1614,7 @@ function Repair-LWHypervNetworkConfig
             $sortedAdapters = New-Object System.Collections.ArrayList
             $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -ne 'Internal' }))
             $sortedAdapters.AddRange(@($machine.NetworkAdapters | Where-Object { $_.VirtualSwitch.SwitchType.Value -eq 'Internal' }))
-             
+
             Write-Verbose "Setting the network order"
             [array]::Reverse($machine.NetworkAdapters)
             foreach ($adapterInfo in $sortedAdapters)
@@ -1620,19 +1628,19 @@ function Repair-LWHypervNetworkConfig
                 }  until ($LASTEXITCODE -eq 14)
             }
         }
-    
+
     } -Function (Get-Command -Name Get-StringSection, Add-StringIncrement) -Variable (Get-Variable -Name machineStream) -NoDisplay
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
         $vmAdapter = Get-VMNetworkAdapter -VMName $machine -Name $adapterInfo.VirtualSwitch.Name
-        
+
         if ($adapterInfo.VirtualSwitch.Name -ne $vmAdapter.SwitchName)
         {
             $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
         }
     }
-    
+
     Write-LogFunctionExit
 }
 #endregion Repair-LWHypervNetworkConfig
@@ -1640,61 +1648,63 @@ function Repair-LWHypervNetworkConfig
 #region Get / Set-LWHypervVMDescription
 function Set-LWHypervVMDescription
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [hashtable]$Hashtable,
-        
+
         [Parameter(Mandatory)]
         [string]$ComputerName
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
     $disctionary = New-Object $type
-    
+
     foreach ($kvp in $Hashtable.GetEnumerator())
     {
         $disctionary.Add($kvp.Key, $kvp.Value)
     }
-    
-    $notes = $disctionary.ExportToString()    
-    
+
+    $notes = $disctionary.ExportToString()
+
     Set-VM -Name $ComputerName -Notes $notes
-    
+
     Write-LogFunctionExit
 }
 
 function Get-LWHypervVMDescription
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string]$ComputerName
     )
-    
+
     Write-LogFunctionEntry
-    
+
     $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         return
     }
-    
+
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-    
+
     try
     {
         $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)   
+        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
         $dictionary
     }
     catch
     {
         Write-ScreenInfo -Message "The notes field of the virtual machine '$ComputerName' could not be read as XML" -Type Warning
     }
-        
+
     Write-LogFunctionExit
 }
 #endregion Get / Set-LWHypervVMDescription

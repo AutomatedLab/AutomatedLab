@@ -1,10 +1,10 @@
-function Set-UnattendedYastUserLocale
+﻿function Set-UnattendedYastUserLocale
 {
     param (
         [Parameter(Mandatory = $true)]
         [string]$UserLocale
     )
-	
+
     $language = $script:un.SelectSingleNode('/un:profile/un:language', $script:nsm)
     $languageNode = $script:un.SelectSingleNode('/un:profile/un:language/un:language', $script:nsm)
     $keyboard = $script:un.SelectSingleNode('/un:profile/un:keyboard/un:keymap', $script:nsm)
@@ -14,10 +14,10 @@ function Set-UnattendedYastUserLocale
         $ci = [cultureinfo]::new($UserLocale)
     }
     catch
-    { 
+    {
         $ci = [cultureinfo]::new('en-us')
     }
-	
+
     # Primary language
     $languageNode.InnerText = $ci.IetfLanguageTag -replace '-', '_'
 

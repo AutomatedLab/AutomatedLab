@@ -1,4 +1,4 @@
-param (
+﻿param (
     [Parameter(Mandatory)]
     [string]$DomainAndComputerName
 )
@@ -6,9 +6,9 @@ param (
 $creatreDbQuery = @'
 CREATE DATABASE [DSC]
  CONTAINMENT = NONE
- ON  PRIMARY 
+ ON  PRIMARY
 ( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
- LOG ON 
+ LOG ON
 ( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
 GO
 
@@ -24,94 +24,94 @@ EXEC [DSC].[dbo].[sp_fulltext_database] @action = 'enable'
 end
 GO
 
-ALTER DATABASE [DSC] SET ANSI_NULL_DEFAULT OFF 
+ALTER DATABASE [DSC] SET ANSI_NULL_DEFAULT OFF
 GO
 
-ALTER DATABASE [DSC] SET ANSI_NULLS OFF 
+ALTER DATABASE [DSC] SET ANSI_NULLS OFF
 GO
 
-ALTER DATABASE [DSC] SET ANSI_PADDING OFF 
+ALTER DATABASE [DSC] SET ANSI_PADDING OFF
 GO
 
-ALTER DATABASE [DSC] SET ANSI_WARNINGS OFF 
+ALTER DATABASE [DSC] SET ANSI_WARNINGS OFF
 GO
 
-ALTER DATABASE [DSC] SET ARITHABORT OFF 
+ALTER DATABASE [DSC] SET ARITHABORT OFF
 GO
 
-ALTER DATABASE [DSC] SET AUTO_CLOSE OFF 
+ALTER DATABASE [DSC] SET AUTO_CLOSE OFF
 GO
 
-ALTER DATABASE [DSC] SET AUTO_SHRINK OFF 
+ALTER DATABASE [DSC] SET AUTO_SHRINK OFF
 GO
 
-ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS ON 
+ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS ON
 GO
 
-ALTER DATABASE [DSC] SET CURSOR_CLOSE_ON_COMMIT OFF 
+ALTER DATABASE [DSC] SET CURSOR_CLOSE_ON_COMMIT OFF
 GO
 
-ALTER DATABASE [DSC] SET CURSOR_DEFAULT  GLOBAL 
+ALTER DATABASE [DSC] SET CURSOR_DEFAULT  GLOBAL
 GO
 
-ALTER DATABASE [DSC] SET CONCAT_NULL_YIELDS_NULL OFF 
+ALTER DATABASE [DSC] SET CONCAT_NULL_YIELDS_NULL OFF
 GO
 
-ALTER DATABASE [DSC] SET NUMERIC_ROUNDABORT OFF 
+ALTER DATABASE [DSC] SET NUMERIC_ROUNDABORT OFF
 GO
 
-ALTER DATABASE [DSC] SET QUOTED_IDENTIFIER OFF 
+ALTER DATABASE [DSC] SET QUOTED_IDENTIFIER OFF
 GO
 
-ALTER DATABASE [DSC] SET RECURSIVE_TRIGGERS OFF 
+ALTER DATABASE [DSC] SET RECURSIVE_TRIGGERS OFF
 GO
 
-ALTER DATABASE [DSC] SET  DISABLE_BROKER 
+ALTER DATABASE [DSC] SET  DISABLE_BROKER
 GO
 
-ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
+ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
 GO
 
-ALTER DATABASE [DSC] SET DATE_CORRELATION_OPTIMIZATION OFF 
+ALTER DATABASE [DSC] SET DATE_CORRELATION_OPTIMIZATION OFF
 GO
 
-ALTER DATABASE [DSC] SET TRUSTWORTHY OFF 
+ALTER DATABASE [DSC] SET TRUSTWORTHY OFF
 GO
 
-ALTER DATABASE [DSC] SET ALLOW_SNAPSHOT_ISOLATION OFF 
+ALTER DATABASE [DSC] SET ALLOW_SNAPSHOT_ISOLATION OFF
 GO
 
-ALTER DATABASE [DSC] SET PARAMETERIZATION SIMPLE 
+ALTER DATABASE [DSC] SET PARAMETERIZATION SIMPLE
 GO
 
-ALTER DATABASE [DSC] SET READ_COMMITTED_SNAPSHOT OFF 
+ALTER DATABASE [DSC] SET READ_COMMITTED_SNAPSHOT OFF
 GO
 
-ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF 
+ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF
 GO
 
-ALTER DATABASE [DSC] SET RECOVERY SIMPLE 
+ALTER DATABASE [DSC] SET RECOVERY SIMPLE
 GO
 
-ALTER DATABASE [DSC] SET  MULTI_USER 
+ALTER DATABASE [DSC] SET  MULTI_USER
 GO
 
-ALTER DATABASE [DSC] SET PAGE_VERIFY CHECKSUM  
+ALTER DATABASE [DSC] SET PAGE_VERIFY CHECKSUM
 GO
 
-ALTER DATABASE [DSC] SET DB_CHAINING OFF 
+ALTER DATABASE [DSC] SET DB_CHAINING OFF
 GO
 
-ALTER DATABASE [DSC] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
+ALTER DATABASE [DSC] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF )
 GO
 
-ALTER DATABASE [DSC] SET TARGET_RECOVERY_TIME = 0 SECONDS 
+ALTER DATABASE [DSC] SET TARGET_RECOVERY_TIME = 0 SECONDS
 GO
 
-ALTER DATABASE [DSC] SET DELAYED_DURABILITY = DISABLED 
+ALTER DATABASE [DSC] SET DELAYED_DURABILITY = DISABLED
 GO
 
-ALTER DATABASE [DSC] SET  READ_WRITE 
+ALTER DATABASE [DSC] SET  READ_WRITE
 GO
 
 USE [DSC]
@@ -131,28 +131,28 @@ CREATE TABLE [dbo].[Devices](
     [LastHeartbeatTime] [datetime] NULL,
     [Dirty] [bit] NOT NULL,
     [StatusCode] [int] NULL,
- CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED
 (
     [TargetName] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
 
 GO
- 
+
 CREATE TABLE [dbo].[RegistrationData](
     [AgentId] [nvarchar](255) NOT NULL,
     [LCMVersion] [nvarchar](255) NULL,
     [NodeName] [nvarchar](255) NULL,
     [IPAddress] [nvarchar](255) NULL,
     [ConfigurationNames] [nvarchar](max) NULL,
- CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED
 (
     [AgentId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 
 GO
- 
+
 CREATE TABLE [dbo].[StatusReport](
     [JobId] [nvarchar](50) NOT NULL,
     [Id] [nvarchar](50) NOT NULL,
@@ -170,7 +170,7 @@ CREATE TABLE [dbo].[StatusReport](
     [StatusData] [nvarchar](max) NULL,
     [RebootRequested] [nvarchar](255) NULL,
     [AdditionalData] [nvarchar](max) NULL,
- CONSTRAINT [PK_StatusReport] PRIMARY KEY CLUSTERED 
+ CONSTRAINT [PK_StatusReport] PRIMARY KEY CLUSTERED
 (
     [JobId] ASC
 )WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
@@ -193,7 +193,7 @@ CREATE TABLE [dbo].[StatusReportMetaData](
 
 GO
 
-CREATE TRIGGER [dbo].[InsertCreationTimeRDMD] 
+CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
 ON [dbo].[RegistrationData]
 AFTER INSERT
 AS
@@ -209,12 +209,12 @@ BEGIN
 
   -- Insert statements for trigger here
   INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
-  VALUES(@AgentId,GETDATE()) 
+  VALUES(@AgentId,GETDATE())
 
 END
 GO
 
-CREATE TRIGGER [dbo].[InsertCreationTimeSRMD] 
+CREATE TRIGGER [dbo].[InsertCreationTimeSRMD]
 ON [dbo].[StatusReport]
 AFTER INSERT
 AS
@@ -230,7 +230,7 @@ BEGIN
 
   -- Insert statements for trigger here
   INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
-  VALUES(@JobId,GETDATE()) 
+  VALUES(@JobId,GETDATE())
 
 END
 GO
@@ -261,13 +261,13 @@ SELECT RegistrationData.NodeName
 			ErrorCode nvarchar(20) '$.ErrorCode',
 			ResourceId nvarchar(200) '$.ResourceId'
 		) FOR XML PATH ('')) AS ErrorMessage
-	FROM StatusReport 
+	FROM StatusReport
 	INNER JOIN RegistrationData ON StatusReport.Id = RegistrationData.AgentId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 )
 SELECT TOP 5000 * FROM CTE WHERE
 ErrorMessage IS NOT NULL
---ErrorMessage LIKE '%cannot find module%' 
+--ErrorMessage LIKE '%cannot find module%'
 --OR ErrorMessage LIKE '%The assigned configuration%is not found%'
 --OR ErrorMessage LIKE '%Checksum file not located for%'
 --OR ErrorMessage LIKE '%Checksum for module%'
@@ -330,8 +330,8 @@ SELECT StatusReport.JobId
 	INNER JOIN StatusReportMetaData AS SRMD ON StatusReport.JobId = SRMD.JobId
 	)
 	SELECT * FROM CTE
-	WHERE 
-		ErrorMessage NOT LIKE '%cannot find module%' 
+	WHERE
+		ErrorMessage NOT LIKE '%cannot find module%'
 		AND ErrorMessage NOT LIKE '%The assigned configuration%is not found%'
 		AND ErrorMessage NOT LIKE '%Checksum file not located for%'
 		AND ErrorMessage NOT LIKE '%Checksum for module%'
@@ -420,53 +420,53 @@ RETURN
 	SELECT [HostName] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (HostName nvarchar(200) '$.HostName')) AS HostName
-	
+
 	,(
-	SELECT [ResourceId] + ',' AS [text()] 
+	SELECT [ResourceId] + ',' AS [text()]
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
 	)
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesInDesiredState
-	
+
 	,(
-	SELECT [ResourceId] + ',' AS [text()] 
+	SELECT [ResourceId] + ',' AS [text()]
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
 	)
 	WITH (
 		ResourceId nvarchar(200) '$.ResourceId'
 	) FOR XML PATH ('')) AS ResourcesNotInDesiredState
-	
+
 	,(
 	SELECT SUM(CAST(REPLACE(DurationInSeconds, ',', '.') AS float)) AS Duration
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
 	)
-	WITH (   
+	WITH (
 			DurationInSeconds nvarchar(50) '$.DurationInSeconds',
 			InDesiredState bit '$.InDesiredState'
 		)
 	) AS Duration
-	
+
 	,(
 	SELECT [DurationInSeconds] FROM OPENJSON(
 		(SELECT [value] FROM OPENJSON([StatusData]))
 	) WITH (DurationInSeconds nvarchar(200) '$.DurationInSeconds')) AS DurationWithOverhead
-	
+
 	,(
 	SELECT COUNT(*)
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesInDesiredState')
 	)) AS ResourceCountInDesiredState
-	
+
 	,(
 	SELECT COUNT(*)
 	FROM OPENJSON(
 	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
 	)) AS ResourceCountNotInDesiredState
-	
+
 	,(
 	SELECT [ResourceId] + ':' + ' (' + [ErrorCode] + ') ' + [ErrorMessage] + ',' AS [text()]
 	FROM OPENJSON(
@@ -486,14 +486,14 @@ RETURN
 	SELECT [value] FROM OPENJSON([Errors]) FOR JSON PATH
 	) AS RawErrors
 
-	FROM dbo.vBaseNodeLocalStatus 
+	FROM dbo.vBaseNodeLocalStatus
 	INNER JOIN (
 		SELECT NodeName
 		,MAX(CreationTime) AS MaxEndTime
 		FROM dbo.vBaseNodeLocalStatus
 		WHERE OperationType <> 'LocalConfigurationManager'
 		GROUP BY NodeName
-		
+
 	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
 GO
@@ -516,7 +516,7 @@ FROM dbo.StatusReport INNER JOIN
     GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
        WHERE dbo.StatusReport.Status IS NOT NULL
 ) as nss
-RIGHT OUTER JOIN dbo.RegistrationData AS rd 
+RIGHT OUTER JOIN dbo.RegistrationData AS rd
 ON nss.NodeName = rd.NodeName
 
 GO
@@ -538,7 +538,7 @@ GO
 
 CREATE VIEW [dbo].[vStatusReportDataNewest]
 AS
-SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime, 
+SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime,
 dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
 FROM dbo.StatusReport
 INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId

@@ -1,7 +1,7 @@
-function Invoke-LabRecipe
+﻿function Invoke-LabRecipe
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param 
+    param
     (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName, ValueFromPipeline, ParameterSetName = 'ByName')]
         [string]
@@ -72,7 +72,7 @@ function Invoke-LabRecipe
                 'CI_CD' {$isoPattern = 'team_foundation'; $isoName = 'Tfs2017'}
                 'SQL' {$isoPattern = 'sql_server_2017'; $isoName = 'SQLServer2017'}
             }
-            
+
             $isoFile = Get-ChildItem -Path "$(Get-LabSourcesLocationInternal -Local)\ISOs\*$isoPattern*" | Sort-Object -Property CreationTime | Select-Object -Last 1 -ExpandProperty FullName
             if (-not $isoFile)
             {
@@ -88,7 +88,7 @@ function Invoke-LabRecipe
         }
 
         $null = $scriptContent.AppendLine("Set-LabInstallationCredential -UserName $($Credential.UserName) -Password $($Credential.GetNetworkCredential().Password)")
-        
+
         if ($Recipe.DeployRole -contains 'Domain' -or $Recipe.DeployRole -contains 'Exchange')
         {
             $null = $scriptContent.AppendLine("Add-LabDomainDefinition -Name $($Recipe.DefaultDomainName) -AdminUser $($Credential.UserName) -AdminPassword $($Credential.GetNetworkCredential().Password)")
@@ -134,7 +134,7 @@ function Invoke-LabRecipe
         }
 
         if ($PassThru) {$labBlock}
-        if ($NoDeploy) { return }        
+        if ($NoDeploy) { return }
 
         if ($PSCmdlet.ShouldProcess($Recipe.Name, "Deploying lab"))
         {

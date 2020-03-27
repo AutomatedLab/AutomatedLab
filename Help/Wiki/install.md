@@ -3,15 +3,25 @@
 There are two options installing AutomatedLab:
 
 - You can use the [MSI installer](https://github.com/AutomatedLab/AutomatedLab/releases) published on GitHub.
-- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module.
+- Or you install from the [PowerShell Gallery](https://www.powershellgallery.com/packages/AutomatedLab/) using the cmdlet Install-Module.  
+    **Please note that this is the ONLY way to install AutomatedLab and its dependencies in PowerShell Core/PowerShell 7 on both Windows and Linux/Azure Cloud Shell**
 
 ## From gallery
 ```powershell
 Install-PackageProvider Nuget -Force
 Install-Module AutomatedLab -AllowClobber
 
+# If you are on Linux and are not starting pwsh with sudo
+# This needs to executed only once per user - adjust according to your needs!
+Set-PSFConfig -Module AutomatedLab -Name LabAppDataRoot -Value /home/youruser/.alConfig -PassThru | Register-PSFConfig
+
 # Prepare sample content - modify to your needs
-New-LabSources -Drive C
+# Windows
+New-LabSourcesFolder -Drive C
+
+# Linux
+Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Value /home/youruser/labsources -PassThru | Register-PSFConfig
+New-LabSourcesFolder # Linux
 ```
 
 ## From MSI

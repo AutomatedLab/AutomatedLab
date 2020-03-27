@@ -1,4 +1,4 @@
-function Export-UnattendedFile
+﻿function Export-UnattendedFile
 {
     param (
         [Parameter(Mandatory = $true)]
@@ -8,9 +8,9 @@ function Export-UnattendedFile
 
         [switch]$IsAutoYast
     )
-    
+
     if ( $IsKickstart) { Export-UnattendedKickstartFile -Path $Path; return }
     if ( $IsAutoYast) { Export-UnattendedYastFile -Path $Path; return }
-    
+
     Export-UnattendedWindowsFile -Path $Path
 }

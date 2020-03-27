@@ -1,16 +1,16 @@
-function Set-UnattendedYastDomain
+﻿function Set-UnattendedYastDomain
 {
 	param (
 		[Parameter(Mandatory = $true)]
 		[string]$DomainName,
-		
+
 		[Parameter(Mandatory = $true)]
 		[string]$Username,
-		
+
 		[Parameter(Mandatory = $true)]
 		[string]$Password
     )
-	
+
 	$smbClientNode = $script:un.CreateElement('samba-client', $script:nsm.LookupNamespace('un'))
 	$boolAttrib = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
     $boolAttrib.InnerText = 'boolean'
@@ -33,14 +33,14 @@ function Set-UnattendedYastDomain
 	$null = $winbindNode.Attributes.Append($boolAttrib)
 
 	$kdc.InnerText = $DomainName
-		
+
 	$disableDhcp.InnerText = 'true'
 	$securityNode.InnerText = 'ADS'
 	$shellNode.InnerText = '/bin/bash'
 	$guestNode.InnerText = 'no'
 	$domainNode.InnerText = $DomainName
 	$joinUserNode.InnerText = $Username
-	$joinPasswordNode.InnerText = $Password	
+	$joinPasswordNode.InnerText = $Password
 	$homedirNode.InnerText = 'true'
 	$winbindNode.InnerText = 'false'
 
@@ -94,7 +94,7 @@ function Set-UnattendedYastDomain
 	$sssdConfNode.AppendChild($sssdConfServices)
 	$sssdConfNode.AppendChild($sssdConfDomains)
 	$sssdConf.AppendChild($sssdConfNode)
-	
+
 	$authClientNode.AppendChild($authClientSssd)
 	$authClientNode.AppendChild($authClientLdaps)
 	$authClientNode.AppendChild($sssdConf)

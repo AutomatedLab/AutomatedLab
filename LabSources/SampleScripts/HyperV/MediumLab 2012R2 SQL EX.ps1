@@ -1,4 +1,4 @@
-$labName = 'Test5'
+﻿$labName = 'Test5'
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
@@ -33,7 +33,7 @@ $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRo
 Add-LabMachineDefinition -Name T2DC1 -Memory 512MB -IpAddress 192.168.71.10 -DomainName test2.net -Roles $role -PostInstallationActivity $postInstallActivity
 
 #this is the first domain controller of the child domain 'child1' defined above
-#The PostInstallationActivity is filling the domain with some life. 
+#The PostInstallationActivity is filling the domain with some life.
 #At the end about 6000 users are available with OU and manager hierarchy as well as a bunch of groups
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'test2.net'; NewDomain = 'child1'; DomainFunctionalLevel = 'Win2012R2' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
@@ -49,7 +49,7 @@ Add-LabMachineDefinition -Name T2Sql1 -Memory 1GB -Processors 2 -IpAddress 192.1
 
 #Client with Visual Studio 2015
 $role = Get-LabMachineRoleDefinition -Role VisualStudio2015
-Add-LabMachineDefinition -Name T2Client1 -Memory 2GB -Processors 2 -IpAddress 192.168.71.55 -Roles $role 
+Add-LabMachineDefinition -Name T2Client1 -Memory 2GB -Processors 2 -IpAddress 192.168.71.55 -Roles $role
 
 Install-Lab
 

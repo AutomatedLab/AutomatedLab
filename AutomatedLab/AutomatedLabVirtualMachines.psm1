@@ -23,7 +23,7 @@ function New-LabVM
         return
     }
 
-    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment } 
+    $machines = Get-LabVM -ComputerName $Name -IncludeLinux -ErrorAction Stop | Where-Object { -not $_.SkipDeployment }
 
     if (-not $machines)
     {
@@ -47,7 +47,7 @@ function New-LabVM
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value 0
         }
-        
+
         Write-ScreenInfo -Message "Creating $($machine.HostType) machine '$machine'" -TaskStart -NoNewLine
 
         if ($machine.HostType -eq 'HyperV')
@@ -119,7 +119,7 @@ function New-LabVM
         Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
 
         Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
-        Restart-LabVM -ComputerName $azureVMs -Wait -ProgressIndicator 10
+        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and $_.Roles.Name -notcontains 'DC'}) -Wait -ProgressIndicator 10
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
@@ -159,7 +159,7 @@ function Start-LabVM
         [switch]$NoNewline,
 
         [int]$DelayBetweenComputers = 0,
-        
+
         [int]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StartLabMachine_Online),
 
         [int]$StartNextMachines,
@@ -427,7 +427,7 @@ function Restart-LabVM
         [string[]]$ComputerName,
 
         [switch]$Wait,
-        
+
         [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_RestartLabMachine_Shutdown),
 
         [ValidateRange(0, 300)]
@@ -477,7 +477,7 @@ function Stop-LabVM
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown),
 
         [Parameter(ParameterSetName = 'All')]
@@ -594,7 +594,7 @@ function Stop-LabVM2
     param (
         [Parameter(Mandatory, ParameterSetName = 'ByName', Position = 0)]
         [string[]]$ComputerName,
-        
+
         [int]$ShutdownTimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_StopLabMachine_Shutdown)
     )
 
@@ -635,14 +635,14 @@ function Wait-LabVM
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [int]$PostDelaySeconds = 0,
 
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [switch]$DoNotUseCredSsp,
 
         [switch]$NoNewLine
@@ -675,7 +675,7 @@ function Wait-LabVM
         #remove the existing sessions to ensure a new one is created and the existing one not reused.
         Remove-LabPSSession -ComputerName $vm
 
-        netsh.exe interface ip delete arpcache | Out-Null
+        if (-not ($IsLinux -or $IsMacOs)) { netsh.exe interface ip delete arpcache | Out-Null }
 
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
         if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
@@ -717,7 +717,7 @@ function Wait-LabVM
 
                 $VerbosePreference = $using:VerbosePreference
 
-                Import-Module -Name Azure* -ErrorAction SilentlyContinue
+                Import-Module -Name Az* -ErrorAction SilentlyContinue
                 Import-Module -Name AutomatedLab.Common -ErrorAction Stop
                 Write-Verbose "Importing Lab from $($LabBytes.Count) bytes"
                 Import-Lab -LabBytes $LabBytes -NoValidation -NoDisplay
@@ -834,12 +834,12 @@ function Wait-LabVMRestart
         [string[]]$ComputerName,
 
         [switch]$DoNotUseCredSsp,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
-        
+
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [AutomatedLab.Machine[]]$StartMachinesWhileWaiting,
 
         [switch]$NoNewLine,
@@ -905,12 +905,12 @@ function Wait-LabVMShutdown
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
-        
+
         [double]$TimeoutInMinutes = (Get-LabConfigurationItem -Name Timeout_WaitLabMachine_Online),
 
         [ValidateRange(0, 300)]
         [int]$ProgressIndicator = (Get-LabConfigurationItem -Name DefaultProgressIndicator),
-        
+
         [switch]$NoNewLine
     )
 
@@ -1338,10 +1338,15 @@ function Join-LabVMDomain
             [string]$DomainName,
 
             [Parameter(Mandatory = $true)]
-            [System.Management.Automation.PSCredential]$Credential,
+            [string]$UserName,
+
+            [Parameter(Mandatory = $true)]
+            [string]$Password,
 
             [bool]$AlwaysReboot = $false
         )
+
+        $Credential = New-Object -TypeName PSCredential -ArgumentList $UserName, ($Password | ConvertTo-SecureString -AsPlainText -Force)
 
         try
         {
@@ -1374,12 +1379,11 @@ function Join-LabVMDomain
             }
         }
 
-        $logonName = "$DomainName\$($Credential.UserName)"
-        $password = $Credential.GetNetworkCredential().Password
+        $logonName = "$DomainName\$UserName"
 
         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name AutoAdminLogon -Value 1 -Force | Out-Null
         New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultUserName -Value $logonName -Force | Out-Null
-        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultPassword -Value $password -Force | Out-Null
+        New-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon' -Name DefaultPassword -Value $Password -Force | Out-Null
 
         Start-Sleep -Seconds 1
 
@@ -1403,7 +1407,7 @@ function Join-LabVMDomain
             ActivityName = "DomainJoin_$m"
             ScriptBlock = (Get-Command Join-Computer).ScriptBlock
             UseLocalCredential = $true
-            ArgumentList = $domain, $cred
+            ArgumentList = $domain, $cred.UserName, $cred.GetNetworkCredential().Password
             AsJob = $true
             PassThru = $true
             NoDisplay = $true
@@ -1438,8 +1442,13 @@ function Join-LabVMDomain
         else
         {
             $m.HasDomainJoined = $true
+            if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+            {
+                Enable-LabAutoLogon -ComputerName $m
+            }
         }
     }
+
     Export-Lab
 
     Write-LogFunctionExit
@@ -1593,7 +1602,7 @@ function Set-VMUacStatus
 
 function Get-VMUacStatus
 {
-    [CmdletBinding(SupportsShouldProcess = $true)]
+    [CmdletBinding()]
     param(
         [string]$ComputerName = $env:COMPUTERNAME
     )
@@ -1947,6 +1956,7 @@ function Disable-LabAutoLogon
 #region Test-LabAutoLogon
 function Test-LabAutoLogon
 {
+    [OutputType([System.Collections.Hashtable])]
     [CmdletBinding()]
     param
     (
@@ -2130,7 +2140,7 @@ function Checkpoint-LabVM
         'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
         'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
-    }    
+    }
 
     Write-LogFunctionExit
 }
@@ -2251,7 +2261,7 @@ function Remove-LabVMSnapshot
     $parameters = @{
         ComputerName = $machines
     }
-    
+
     if ($SnapshotName)
     {
         $parameters.SnapshotName = $SnapshotName
@@ -2317,7 +2327,7 @@ function Get-LabVMSnapshot
         VMName = $machines
         ErrorAction = 'SilentlyContinue'
     }
-    
+
     if ($SnapshotName)
     {
         $parameters.Name = $SnapshotName

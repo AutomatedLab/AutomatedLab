@@ -1,4 +1,4 @@
-<#
+﻿<#
 In this scenario AutomatedLab builds a lab inside a lab. Thanks to nested virtualization in Hyper-V and Azure,
 this can be done on a Windows Server 2016 or Windows 10 host machine.
 This lab contains:
@@ -14,7 +14,7 @@ graphical management of the virtual host machine and the lab inside.
 After AutomatedLab has created the machines, it installs the Hyper-V roles on AL1 (and AL2) and ALClient1. Then the AutomatedLab
 PowerShell modules are downloaded and installed on the virtual hosts. The ISO files are downloaded from the Azure LabSources folder
 to the virtual hosts. If you have not synces it with your local LabSources folder, just call
-"Sync-LabAzureLabSources -DoNotSkipOsIsos" to have your OS ISO images on Azure as well. ISOs on AL1 in order to deploy a lab 
+"Sync-LabAzureLabSources -DoNotSkipOsIsos" to have your OS ISO images on Azure as well. ISOs on AL1 in order to deploy a lab
 on the virtualized host so AL copied some files to the virtual host. Finally, the deployment script calls the sample script
 "04 Single domain-joined server.ps1" on AL1 and deploys a lab in a lab.
 #>
@@ -55,7 +55,7 @@ Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources fold
 
     #Add the AutomatedLab Telemetry setting to default to allow collection, otherwise will prompt during installation
     [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', '0')
-    
+
     Install-PackageProvider -Name Nuget -ForceBootstrap -Force -ErrorAction Stop | Out-Null
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 

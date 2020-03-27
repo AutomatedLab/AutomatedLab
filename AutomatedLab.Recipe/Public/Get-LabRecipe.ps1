@@ -1,4 +1,4 @@
-function Get-LabRecipe
+﻿function Get-LabRecipe
 {
     [CmdletBinding()]
     param
@@ -27,17 +27,17 @@ function Get-LabRecipe
             'DeployRole'
         )
         $allowedKeys = @(
-            'Name'                       
-            'Description'                
-            'RequiredProductIsos'        
-            'DeployRole'              
+            'Name'
+            'Description'
+            'RequiredProductIsos'
+            'DeployRole'
             'DefaultVirtualizationEngine'
-            'DefaultDomainName'          
-            'DefaultAddressSpace'        
-            'DefaultOperatingSystem'     
-            'VmPrefix'                   
+            'DefaultDomainName'
+            'DefaultAddressSpace'
+            'DefaultOperatingSystem'
+            'VmPrefix'
         )
-        
+
         $table.Name = $Name[0]
         $allowedKeys.ForEach({if (-not $table.ContainsKey($_)){$table.Add($_, $null)}})
         [bool] $shouldAlsoDeploySql = ($table.DeployRole -match 'CI_CD|DSCPull').Count -gt 0

@@ -1,11 +1,12 @@
 ﻿if ($PSEdition -eq 'Core')
 {
-    Add-Type -Path $PSScriptRoot\lib\core\AutomatedLab.dll
-    
+    Add-Type -Path $PSScriptRoot/lib/core/AutomatedLab.dll
+
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
     $requiredModules = @('Dism', 'International')
 
+    $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     foreach ($module in $requiredModules)
     {
         Import-Module -SkipEditionCheck -Name $module -ErrorAction SilentlyContinue -ErrorVariable +ipmoErr
@@ -18,7 +19,15 @@
 }
 else
 {
-    Add-Type -Path $PSScriptRoot\lib\full\AutomatedLab.dll
+    Add-Type -Path $PSScriptRoot/lib/full/AutomatedLab.dll
+}
+
+$usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
+$currentRelease = ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction SilentlyContinue).tag_Name -replace 'v') -as [Version]
+
+if ($null -ne $currentRelease -and $usedRelease -lt $currentRelease)
+{
+    Write-PSFMessage -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
 }
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
@@ -27,9 +36,11 @@ if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedL
     [void] (New-PSDrive -PSProvider SHiPS -Name Labs -Root "AutomatedLab.Ships#LabHost" -WarningAction SilentlyContinue -ErrorAction SilentlyContinue)
 }
 
-Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarning -Value true
+Set-Item -Path Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value true
 
 #region Register default configuration if not present
+Set-PSFConfig -Module 'AutomatedLab' -Name LabAppDataRoot -Value (Join-Path ([System.Environment]::GetFolderPath('CommonApplicationData')) -ChildPath "AutomatedLab") -Initialize -Validation string -Description "Root folder to Labs, Assets and Stores"
+
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.Key' -Value 'Your IFTTT key here' -Initialize -Validation string -Description "IFTTT Key Name"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Ifttt.EventName' -Value 'The name of your IFTTT event' -Initialize -Validation String -Description "IFTTT Event Name"
 Set-PSFConfig -Module 'AutomatedLab' -Name 'Notifications.NotificationProviders.Mail.Port' -Value 25 -Initialize -Validation integer -Description "Port of your SMTP Server"
@@ -84,7 +95,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
 
 #Host Settings
-Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value 'C:\ProgramData\AutomatedLab\LabDiskDeploymentInProgress.txt' -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
 
 #Azure
 Set-PSFConfig -Module 'AutomatedLab' -Name MinimumAzureModuleVersion -Value '2.0.0' -Initialize -Validation string -Description 'The minimum expected Azure module version'
@@ -365,6 +376,22 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
     }
 } -Initialize -Description 'Validation settings for lab validation. Please do not modify unless you know what you are doing.'
 
+# Product key file path
+$fPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeys.xml'
+$fcPath = Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Assets/ProductKeysCustom.xml'
+Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePath -Value $fPath -Initialize -Validation string -Description 'Destination of the ProductKeys file for Windows products'
+Set-PSFConfig -Module AutomatedLab -Name ProductKeyFilePathCustom -Value $fcPath -Initialize -Validation string -Description 'Destination of the ProductKeysCustom file for Windows products'
+
+# LabSourcesLocation
+# Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Validation string -Value ''
+
+#endregion
+
+#region Linux folder
+if ($IsLinux -or $IsMacOs -and -not (Test-Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')))
+{
+    $null = New-Item -ItemType Directory -Path (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath 'Stores')
+}
 #endregion
 
 #region ArgumentCompleter
@@ -375,14 +402,14 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-NotificationProviders' -ScriptBl
 Register-PSFTeppScriptblock -Name 'AutomatedLab-OperatingSystem' -ScriptBlock {
     if (-not $global:AL_OperatingSystems)
     {
-        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources\ISOs -UseOnlyCache -NoDisplay
+        $global:AL_OperatingSystems = Get-LabAvailableOperatingSystem -Path $labSources/ISOs -UseOnlyCache -NoDisplay
     }
 
     $global:AL_OperatingSystems.OperatingSystemName
 }
 
 Register-PSFTeppscriptblock -Name 'AutomatedLab-Labs' -ScriptBlock {
-    $path = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs"
+    $path = "$(Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot)/Labs"
     (Get-ChildItem -Path $path -Directory).Name
 }
 

@@ -1,4 +1,4 @@
-#region DC Install Scripts
+﻿#region DC Install Scripts
 $adInstallRootDcScriptPre2012 = {
     param (
         [string]$DomainName,
@@ -36,7 +36,7 @@ $adInstallRootDcScriptPre2012 = {
 "@
 
     $VerbosePreference = $using:VerbosePreference
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -287,7 +287,7 @@ $adInstallFirstChildDcPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -598,7 +598,7 @@ $adInstallDcPre2012 = {
     $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -748,9 +748,9 @@ function Install-LabRootDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -806,7 +806,7 @@ function Install-LabRootDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         foreach ($machine in $machines)
         {
@@ -931,6 +931,13 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
@@ -940,7 +947,6 @@ function Install-LabRootDcs
 
             Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
         }
-
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
 
         #Create reverse lookup zone (forest scope)
@@ -1030,10 +1036,7 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
-        }
-        
-        foreach ($machine in $machines)
-        {
+
             Reset-LabAdPassword -DomainName $machine.DomainName
             Remove-LabPSSession -ComputerName $machine
             Enable-LabAutoLogon -ComputerName $machine
@@ -1080,9 +1083,9 @@ function Install-LabFirstChildDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1135,7 +1138,7 @@ function Install-LabFirstChildDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $jobs = @()
         foreach ($machine in $machines)
@@ -1268,6 +1271,13 @@ function Install-LabFirstChildDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
 
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
+
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
         {
             Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
@@ -1280,8 +1290,6 @@ function Install-LabFirstChildDcs
 
             Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
         }
-
-
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
         #Make sure the specified installation user will be domain admin
@@ -1374,9 +1382,9 @@ function Install-LabDcs
     [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1430,7 +1438,7 @@ function Install-LabDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $rootDcs = Get-LabVM -Role RootDC
         $childDcs = Get-LabVM -Role FirstChildDC
@@ -1541,6 +1549,13 @@ function Install-LabDcs
         {
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
             $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
+        }
+
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
         }
 
         if ($lab.DefaultVirtualizationEngine -ne 'Azure')
@@ -2164,7 +2179,7 @@ function Move-LabDomainController
         Write-PSFMessage "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
-    
+
     $machine = Get-LabVM -ComputerName $ComputerName
     $lab = Get-Lab
 

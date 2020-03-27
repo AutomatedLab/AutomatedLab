@@ -1,8 +1,7 @@
 # Changelog
 
 ## Unreleased
-
-- Added option for specifying own SQL ISO for CM1902 example script for CM1902 custom role. If parameter is omitted it will auto download eval edition from Microsoft.
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->  
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified.
@@ -11,9 +10,13 @@
 - Lab Sources folder is automatically updated now, too.
   - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
 - Added support for multiple 'TfsBuildWorkers' on one machine.
+- Added option for specifying own SQL ISO for CM1902 example script for CM1902 custom role. If parameter is omitted it will auto download eval edition from Microsoft.
 - Change forwarders to AD integrated.
 - Added additional validator for DSC Pull Server Setup to validate if a CA is present.
 - File Server Role: Installed detection.
+- Removed parameter 'Path' from 'New-LabDefinition' and help
+- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
+- Linux is now a supported host operating system for Azure-based lab environments
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
@@ -34,6 +37,12 @@
 - Fixed #814 (case sensitivity).
 - Fixed #821 by adding 'AutomatedLab.Recipe' and 'AutomatedLab.Ships' to the RequiredModules.
 - Adding missing files to VS solution and installer.
+- Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
+- Rewritten some of the logic in Get-LabInternetFile.
+  - Improves performance of Get-LabInternetFile.
+  - Makes it working with more types of URLs.
+  - Fixed a newly introduced bug.
+- Fixed an issue with newer OpenSuSE ISOs not having a .content file
 
 ## 5.17.0 - 2020-01-08
 

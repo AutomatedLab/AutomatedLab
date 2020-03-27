@@ -1,4 +1,4 @@
-$labName = 'POSH'
+﻿$labName = 'POSH'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -38,7 +38,7 @@ Add-LabMachineDefinition -Name POSHDC1 -Memory 512MB -Roles RootDC -IpAddress 19
 Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles DC -IpAddress 192.168.30.11
 
 #file server
-Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer -IpAddress 192.168.30.50 
+Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles FileServer -IpAddress 192.168.30.50
 
 #web server
 Add-LabMachineDefinition -Name POSHWeb1 -Memory 512MB -Roles WebServer -IpAddress 192.168.30.51

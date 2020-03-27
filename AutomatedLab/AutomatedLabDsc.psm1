@@ -1,7 +1,6 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -267,7 +266,6 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -470,7 +468,7 @@ function Invoke-LabDscConfiguration
 
         } -ArgumentList $Wait
     }
-    
+
     Remove-Item -Path $outputPath -Recurse -Force
 
     Write-LogFunctionExit
@@ -493,6 +491,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             [string[]]$ComputerName = 'localhost'
         )
 
+        $configurationScript = @'
         [DSCLocalConfigurationManager()]
         configuration LcmDefaultConfiguration
         {
@@ -511,7 +510,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 }
             }
         }
+'@
 
+        [scriptblock]::Create($configurationScript).Invoke()
         $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         Remove-DscConfigurationDocument -Stage Current, Pending -Force

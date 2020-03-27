@@ -2,6 +2,11 @@
 function Get-LabHyperVAvailableMemory
 {
     # .ExternalHelp AutomatedLab.Help.xml
+    if ($IsLinux -or $IsMacOS)
+    {
+        return [int]((Get-Content -Path /proc/meminfo) -replace ':','=' -replace '\skB' | ConvertFrom-StringData).MemTotal
+    }
+
     [int](((Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
@@ -9,45 +14,15 @@ function Get-LabHyperVAvailableMemory
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
-    
-    Remove-Lab
+    Remove-Lab -Confirm:$false
     Remove-Module *
 }
 #endregion Reset-AutomatedLab
 
-#region Save-Hashes
-function Save-Hashes
-{
-    
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALFiles.txt',
-        $FolderName
-    )
-
-    $ModulePath = "$([environment]::getfolderpath('mydocuments'))\WindowsPowerShell\Modules"
-    $Folders = 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog'
-
-    foreach ($Folder in $Folders)
-    {
-        Get-FileHash -Path "$ModulePath\$Folder\*" | Select-Object Algorithm, Hash, @{name='Path';expression={$_.Path.Replace($ModulePath, '<MODULEPATH>')}} | Export-Csv -Path $Filename -Append
-    }
-
-    if ($FolderName)
-    {
-        foreach ($Folder in $Foldername)
-        {
-            Get-ChildItem -Path C:\LabSources\Tools\PSv4Part1 -Recurse -Exclude '*.ISO' | Get-FileHash | Export-Csv -Path $Filename -Append
-        }
-    }
-}
-#endregion Save-Hashes
-
 #region Test-FileHashes
 function Test-FileHashes
 {
-    
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (
@@ -63,14 +38,14 @@ function Test-FileHashes
     {
         if (-not (Test-Path $File.path.replace('<MODULEPATH>', $ModulePath)))
         {
-            "'$File' is missing"
+            Write-PSFMessage -Level Host -Message "'$File' is missing"
             $Issues = $True
         }
         else
         {
             if ((Get-FileHash -Path $File.path.replace('<MODULEPATH>', $ModulePath)).hash -ne $File.Hash)
             {
-                "'$File.Path' has wrong hash and is thereby not the file you think it is"
+                Write-PSFMessage -Level Host -Message "'$File.Path' has wrong hash and is thereby not the file you think it is"
                 $Issues = $True
             }
         }
@@ -83,7 +58,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -97,7 +72,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
-    
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (
@@ -121,7 +96,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -138,7 +113,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -155,7 +130,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -325,7 +300,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
-    
+
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path C:\unattend.xml
@@ -339,7 +314,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -377,7 +352,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -415,7 +390,7 @@ function Disable-LabVMFirewallGroup
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
-    
+
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -440,7 +415,7 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
-            
+
             [string]$FileName,
 
             [bool]$NoDisplay,
@@ -459,7 +434,7 @@ function Get-LabInternetFile
         }
         else
         {
-            if (-not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            if (-not ($IsLinux -or $IsMacOS) -and -not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
             {
                 #machine does not have internet connectivity
                 if (-not $offlineNode)
@@ -585,7 +560,7 @@ function Get-LabInternetFile
 
     #TODO: This needs to go into config
     $offlineNode = $true
-    
+
     if (-not $FileName)
     {
         $internalUri = New-Object System.Uri($Uri)
@@ -596,9 +571,9 @@ function Get-LabInternetFile
             $PSBoundParameters.FileName = $FileName
         }
     }
-    
+
     $lab = Get-Lab -ErrorAction SilentlyContinue
-    
+
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
@@ -610,7 +585,7 @@ function Get-LabInternetFile
 
             $argumentList += if ($NoDisplay) {$true} else {$false}
             $argumentList += if ($Force) {$true} else {$false}
-        
+
             $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
         else
@@ -655,7 +630,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
-    
+
     param(
         [string]$Path = $global:labSources
     )
@@ -684,21 +659,37 @@ function Unblock-LabSources
 
     try
     {
-        $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
-        Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
+
+        Write-PSFMessage 'Imported Cache\Timestamps from registry/file store'
     }
     catch
     {
         $cache = New-Object $type
-        Write-PSFMessage 'No entry found in the regirtry at Cache\Timestamps'
+        Write-PSFMessage 'No entry found in the registry at Cache\Timestamps'
     }
 
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
     {
         Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
-        Get-ChildItem -Path $Path -Recurse | Unblock-File
+        if (-not ($IsLinux -or $IsMacOs)) { Get-ChildItem -Path $Path -Recurse | Unblock-File }
         $cache['LabSourcesLastUnblock'] = Get-Date
-        $cache.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $cache.ExportToRegistry('Cache', 'Timestamps')
+        }
+
         Write-PSFMessage 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
     }
     else
@@ -713,7 +704,7 @@ function Unblock-LabSources
 #region Set-LabVMDescription
 function Set-LabVMDescription
 {
-    
+
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,
@@ -753,17 +744,26 @@ function Get-LabSourcesLocationInternal
     )
 
     $lab = $global:AL_CurrentLab
-    
+
     $defaultEngine = 'HyperV'
     $defaultEngine = if ($lab)
     {
         $lab.DefaultVirtualizationEngine
     }
-    
-    if ($defaultEngine -eq 'HyperV' -or $Local)
+
+    if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
+    {
+        if (-not (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+        {
+            Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home/automatedlabsources -PassThru | Register-PSFConfig
+        }
+
+        Get-PSFConfigValue AutomatedLab.LabSourcesLocation
+    }
+    elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
         $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
-        
+
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -800,6 +800,7 @@ function Get-LabSourcesLocationInternal
 #region Update-LabSysinternalsTools
 function Update-LabSysinternalsTools
 {
+    if ($IsLinux -or $IsMacOs) { return }
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
 
@@ -817,7 +818,14 @@ function Update-LabSysinternalsTools
     try
     {
         Write-PSFMessage -Message 'Get last check time of SysInternals suite'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -836,10 +844,10 @@ function Update-LabSysinternalsTools
     if ((Get-Date) -gt $lastChecked)
     {
         Write-PSFMessage -Message 'Last check time is more then a week ago. Check web site for update.'
-        
+
         $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
         $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
-    
+
         try
         {
             Write-PSFMessage -Message 'Web page downloaded'
@@ -864,7 +872,14 @@ function Update-LabSysinternalsTools
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
             {
-                $versions = $type::ImportFromRegistry('Cache', 'Versions')
+                if ($IsLinux -or $IsMacOs)
+                {
+                    $versions = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
+                }
+                else
+                {
+                    $versions = $type::ImportFromRegistry('Cache', 'Versions')
+                }
             }
             catch
             {
@@ -880,10 +895,14 @@ function Update-LabSysinternalsTools
                 
                 # Download Lab Sources
                 $labSources = Get-LabSourcesLocation -Local
-                if ($null -ne $labSources)
+                if ($null -ne $labSources -and -not $($IsLinux -or $IsMacOs))
                 {
                     $drive = ($labSources -split ':')[0]
                     $null = New-LabSourcesFolder -DriveLetter $drive -Force -ErrorAction SilentlyContinue
+                }
+                elseif ($null -ne $labSources -and ($IsLinux -or $IsMacOs))
+                {
+                    $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
                 }
 
                 # Download SysInternals suite
@@ -906,7 +925,7 @@ function Update-LabSysinternalsTools
 
                 if ($fileDownloaded)
                 {
-                    Unblock-File -Path $tempFilePath
+                    if (-not ($IsLinux -or $IsMacOs)) { Unblock-File -Path $tempFilePath }
 
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
@@ -932,10 +951,24 @@ function Update-LabSysinternalsTools
 
                     #Update registry
                     $versions['SysInternals'] = $updateStringFromWebPage
-                    $versions.ExportToRegistry('Cache', 'Versions')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $versions.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
+                    }
+                    else
+                    {
+                        $versions.ExportToRegistry('Cache', 'Versions')
+                    }
 
                     $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
-                    $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+                    }
+                    else
+                    {
+                        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    }
 
                     Write-ScreenInfo -Message "SysInternals Suite has been updated and placed in '$labSources\Tools\SysInternals'" -Type Warning -TaskEnd
                 }

@@ -1,17 +1,22 @@
-$PSDefaultParameterValues = @{
-    '*-Azure*:Verbose'      = $false
-    '*-Azure*:Warning'      = $false
-    'Import-Module:Verbose' = $false
-}
-
 function Test-LabAzureModuleAvailability
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ()
 
     $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    $paths = Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
-    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    [char]$split = if ($IsLinux -or $IsMacOs)
+    {
+        ':'
+    }
+    else
+    {
+        ';'
+    }
+
+    $paths = Join-Path -Path ($env:PSModulePath -split $split | Where-Object -FilterScript {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue |
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1
 
@@ -33,6 +38,8 @@ function Test-LabAzureModuleAvailability
 
 function Update-LabAzureSettings
 {
+    [CmdletBinding()]
+    param ( )
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -85,7 +92,7 @@ function Add-LabAzureSubscription
 
         [switch]$PassThru
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -100,24 +107,29 @@ function Add-LabAzureSubscription
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
-        # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
-        if (-not $resources)
-        {
-            Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-            $null = Connect-AzAccount -ErrorAction Stop
-        }
+    # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
+    $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
+    if (-not $resources)
+    {
+        Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
+        $null = Connect-AzAccount -ErrorAction SilentlyContinue
+    }
 
-        # Select the proper subscription before saving the profile
-        if ($SubscriptionName)
-        {
-            [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
-        }
-        elseif ($SubscriptionId)
-        {
-            [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction Stop)
-        }
-        $AzureRmProfile = Get-AzContext
+    # Select the proper subscription before saving the profile
+    if ($SubscriptionName)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction SilentlyContinue)
+    }
+    elseif ($SubscriptionId)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction SilentlyContinue)
+    }
+
+    $AzureRmProfile = Get-AzContext
+    if ($null -eq $AzureRmProfile)
+    {
+        throw 'Cannot continue without a valid Azure connection.'
+    }
 
     Update-LabAzureSettings
     if (-not $script:lab.AzureSettings)
@@ -175,7 +187,7 @@ function Add-LabAzureSubscription
 
     try
     {
-        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction Stop)
+        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction SilentlyContinue)
     }
     catch
     {
@@ -275,7 +287,13 @@ function Add-LabAzureSubscription
     try
     {
         Write-PSFMessage -Message 'Get last ISO update time'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs) {
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.AzureIsosLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -301,13 +319,29 @@ function Add-LabAzureSubscription
         finally
         {
             $timestamps['AzureIsosLastChecked'] = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
+
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
     }
 
     # Check last LabSources sync timestamp
-    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    if ($IsLinux -or $IsMacOs)
+    {
+        $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+    }
+    else
+    {
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    }
+
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
     if ($null -eq $lastchecked)
@@ -326,12 +360,26 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         {
             Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
             $timestamps.LabSourcesSynced = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
         elseif ($choice -eq 1)
         {
             $timestamps.LabSourcesSynced = [datetime]::MaxValue
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
     }
     elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
@@ -339,7 +387,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
-        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        }
     }
 
     $script:lab.AzureSettings.VNetConfig = (Get-AzVirtualNetwork) | ConvertTo-Json
@@ -350,8 +405,15 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
+        if ($IsLinux -or $IsMacOs) 
+        {
+            $global:cacheVmImages = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
+        }
+        else
+        {
+            $global:cacheVmImages = $type::ImportFromRegistry('Cache', 'AzureOperatingSystems')
+        }
+
         Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
         if ($global:cacheVmImages)
@@ -393,7 +455,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         }
 
         $osImageList.Timestamp = Get-Date
-        $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osImageList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
+        }
+        else
+        {
+            $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        }
     }
 
     Write-PSFMessage "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
@@ -448,6 +517,9 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
 function Get-LabAzureSubscription
 {
+    [CmdletBinding()]
+    param ()
+
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
@@ -479,7 +551,7 @@ function Get-LabAzureLocation
 
         [switch]$List
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -505,7 +577,7 @@ function Get-LabAzureLocation
         }
 
         $locationUrls = Get-LabConfigurationItem -Name AzureLocationsUrls
-        
+
         foreach ($location in $azureLocations)
         {
             if ($locationUrls."$($location.DisplayName)")
@@ -583,7 +655,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
-    
+
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -655,7 +727,7 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -722,7 +794,7 @@ function Import-LabAzureCertificate
 {
     [CmdletBinding()]
     param ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     throw New-Object System.NotImplementedException
@@ -823,7 +895,7 @@ function New-LabAzureRmResourceGroup
 
         [switch]$PassThru
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -920,7 +992,7 @@ function Get-LabAzureResourceGroup
         [Parameter(Position = 0, ParameterSetName = 'ByLab')]
         [switch]$CurrentLab
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -942,7 +1014,6 @@ function Get-LabAzureResourceGroup
         {
             $result = $script:lab.AzureSettings.DefaultResourceGroup
         }
-        
         $result
     }
     else
@@ -964,7 +1035,7 @@ function New-LabAzureLabSourcesStorage
 
         [switch]$NoDisplay
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -1023,7 +1094,7 @@ function Get-LabAzureLabSourcesStorage
     [CmdletBinding()]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -1050,9 +1121,10 @@ function Get-LabAzureLabSourcesStorage
 
 function Test-LabAzureLabSourcesStorage
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
@@ -1075,7 +1147,7 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
         [Parameter(Mandatory)]
         [string]$Path
     )
-    
+
     if (-not (Test-LabHostConnected)) { return $false }
 
     try
@@ -1098,7 +1170,7 @@ function Remove-LabAzureLabSourcesStorage
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1135,7 +1207,7 @@ function Sync-LabAzureLabSources
         [string]
         $Filter
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1276,7 +1348,7 @@ function Get-LabAzureLabSourcesContent
         [switch]
         $Directory
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureShare = Get-AzStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
@@ -1312,7 +1384,7 @@ function Get-LabAzureLabSourcesContentRecursive
     (
         $StorageContext
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $content = @()
@@ -1342,7 +1414,7 @@ function Test-LabAzureSubscription
 {
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     try
@@ -1362,7 +1434,7 @@ function Get-LabAzureAvailableRoleSize
         [Parameter(Mandatory)]
         [string]$Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
@@ -1373,7 +1445,7 @@ function Get-LabAzureAvailableRoleSize
     $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location
 
     $availableRoleSizes = Get-AzComputeResourceSku | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location #-and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     } | Select-Object -ExpandProperty Name
 
     Get-AzVMSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
@@ -1388,7 +1460,7 @@ function Get-LabAzureAvailableSku
         [string]
         $Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     # Server

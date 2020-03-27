@@ -1,32 +1,32 @@
-@{
+﻿@{
     RootModule             = 'AutomatedLab.psm1'
-    
+
     ModuleVersion          = '1.0.0'
-	
+
     CompatiblePSEditions   = 'Core', 'Desktop'
-    
+
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
-    
+
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
-    
+
     CompanyName            = 'AutomatedLab Team'
-    
+
     Copyright              = '2019'
-    
+
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
-    
+
     PowerShellVersion      = '5.1'
-    
+
     DotNetFrameworkVersion = '4.0'
-    
+
     CLRVersion             = '4.0'
 
     ModuleList             = @('AutomatedLab')
-    
+
     ScriptsToProcess       = @('AutomatedLab.init.ps1')
-    
+
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
-    
+
     NestedModules          = @(
         'AutomatedLabAzureServices.psm1',
         'AutomatedLabADDS.psm1',
@@ -46,7 +46,9 @@
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabTfs.psm1',
-        'AutomatedLabHyperV.psm1'
+        'AutomatedLabHyperV.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1'
     )
 
     RequiredModules        = @(
@@ -54,7 +56,6 @@
         'PSLog',
         'PSFileTransfer',
         'AutomatedLabWorker',
-        'AutomatedLab.Recipe',
         'AutomatedLab.Ships',
         'HostsFile',
         'AutomatedLabUnattended',
@@ -67,7 +68,7 @@
     )
 
     CmdletsToExport        = @()
-    
+
     FunctionsToExport      = @(
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
@@ -119,7 +120,7 @@
         'Get-LabVMStatus',
         'Get-LabVMUptime',
         'Get-LabWindowsFeature',
-        'Get-LabAvailableAzureSku',
+        'Get-LabAzureAvailableSku',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
@@ -234,11 +235,11 @@
         'Get-LabTfsFeed',
         'New-LabTfsFeed'
     )
-    
+
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
-        'AutomatedLab.psd1', 
+        'AutomatedLab.psd1',
         'AutomatedLab.psm1',
         'AutomatedLabADCS.psm1',
         'AutomatedLabADDS.psm1',
@@ -256,6 +257,8 @@
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabVMWare.psm1'
+        'AutomatedLabVMWare.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1'
     )
 }

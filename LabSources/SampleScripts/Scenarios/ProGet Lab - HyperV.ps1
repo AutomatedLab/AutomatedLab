@@ -1,4 +1,4 @@
-$labName = 'ProGet'
+﻿$labName = 'ProGet'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -66,8 +66,9 @@ Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName PGClient1 -Sc
     $sourceNugetExe = 'http://nuget.org/NuGet.exe'
     $targetNugetExe = Join-Path -Path $targetPath -ChildPath NuGet.exe
     Invoke-WebRequest $sourceNugetExe -OutFile $targetNugetExe
-    
-    Register-PSRepository -Name Internal -SourceLocation $progetUrl -PublishLocation $progetUrl -InstallationPolicy Trusted
+
+    $path = "http://PGWeb1.contoso.com:80/nuget/PowerShell"
+    Register-PSRepository -Name Internal -SourceLocation $path -PublishLocation $path -InstallationPolicy Trusted
 
     #--------------------------------------------------------------------------------
 

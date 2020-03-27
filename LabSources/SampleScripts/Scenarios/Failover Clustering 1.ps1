@@ -1,4 +1,4 @@
-$labname = 'FailOverLab1'
+﻿$labname = 'FailOverLab1'
 New-LabDefinition -Name $labname -DefaultVirtualizationEngine HyperV
 
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
@@ -40,7 +40,7 @@ foreach ( $i in 1..10 )
     {
         Add-LabMachineDefinition -name foCLN$i -Roles $cluster3
     }
-    
+
 }
 
 Install-Lab

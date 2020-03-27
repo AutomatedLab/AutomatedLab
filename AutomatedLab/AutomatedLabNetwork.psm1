@@ -1,7 +1,6 @@
 #region New-LabNetworkSwitches
 function New-LabNetworkSwitches
 {
-    
     [cmdletBinding()]
     param ()
 
