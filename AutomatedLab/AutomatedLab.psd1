@@ -48,7 +48,8 @@
         'AutomatedLabTfs.psm1',
         'AutomatedLabHyperV.psm1',
         'AutomatedLabDiskImageLinux.psm1',
-        'AutomatedLabDiskImageWindows.psm1'
+        'AutomatedLabDiskImageWindows.psm1',
+        'AutomatedLabRemoting.psm1'
     )
 
     RequiredModules        = @(
@@ -233,7 +234,10 @@
         'Enable-LabMachineAutoShutdown',
         'Disable-LabMAchineAutoShutdown',
         'Get-LabTfsFeed',
-        'New-LabTfsFeed'
+        'New-LabTfsFeed',
+        'New-LabCimSession',
+        'Get-LabCimSession',
+        'Remove-LabCimSession'
     )
 
     FileList               = @(
