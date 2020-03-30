@@ -17,6 +17,7 @@
 - Removed parameter 'Path' from 'New-LabDefinition' and help
 - Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
 - Linux is now a supported host operating system for Azure-based lab environments
+- CIM Cmdlets Get/New/Remove-LabCimSession
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
@@ -43,6 +44,7 @@
   - Makes it working with more types of URLs.
   - Fixed a newly introduced bug.
 - Fixed an issue with newer OpenSuSE ISOs not having a .content file
+- Fixed an issue where Wait-LabVm timed out on an existing domain controller
 
 ## 5.17.0 - 2020-01-08
 
