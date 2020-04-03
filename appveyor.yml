@@ -1,4 +1,4 @@
-version: 5.18.{build}
+version: 5.19.{build}
 image:
 - Visual Studio 2017
 
@@ -138,6 +138,8 @@ after_deploy:
             robocopy /S /E $sourceLibraryPathCore (Split-Path $mainModuleCore)
         }
 
+        $env:PSModulePath += ";$env:APPVEYOR_BUILD_FOLDER"
+        Write-Host "Module Path updated to $env:PSModulePath in order to have AutomatedLab.Ships as the unnecessary dependency it is"
         foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
         {
             if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
