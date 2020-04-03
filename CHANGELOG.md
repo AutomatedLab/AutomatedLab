@@ -7,7 +7,7 @@
 
 ### Bug Fixes
 
-## 5.18.0 - 2020-04-03
+## 5.19.0 - 2020-04-03
 
 ### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified.
