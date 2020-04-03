@@ -27,7 +27,7 @@ $currentRelease = try {((Invoke-RestMethod -Method Get -Uri https://api.github.c
 
 if ($null -ne $currentRelease -and $usedRelease -lt $currentRelease)
 {
-    Write-PSFMessage -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
+    Write-PSFMessage -Level Host -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
 }
 
 if ((Get-Module -ListAvailable Ships) -and (Get-Module -ListAvailable AutomatedLab.Ships))
@@ -364,8 +364,13 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'OCSPHTTPURL02'
             'DoNotLoadDefaultTemplates'
         )
+        Tfs2015 = @('Port','InitialCollection', 'DbServer')
+        Tfs2017 = @('Port','InitialCollection', 'DbServer')
+        Tfs2018 = @('Port','InitialCollection', 'DbServer')
+        AzDevOps = @('Port','InitialCollection', 'DbServer','PAT','Organisation')
         TfsBuildWorker   = @(
             'NumberOfBuildWorkers'
+            'TfsServer'
         )
     }
     MandatoryRoleProperties = @{
