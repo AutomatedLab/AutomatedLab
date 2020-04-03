@@ -7,6 +7,8 @@
 
 ### Bug Fixes
 
+- TFS Build Worker Role was undeployable when parameter TfsServer was used (#852)
+
 ## 5.19.0 - 2020-04-03
 
 ### Enhancements
