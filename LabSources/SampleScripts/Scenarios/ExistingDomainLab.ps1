@@ -8,12 +8,12 @@ param
     [pscredential]
     $DomainJoinCredential,
 
-    [ValidateSet('Azure','HyperV')]
+    # The name of the adapter that can be used for the external VSwitch
     [string]
-    $VirtualizationEngine = 'HyperV'
+    $ExternalAdapterName = 'Ethernet'
 )
 
-New-LabDefinition -Name ExDomLab -DefaultVirtualizationEngine $VirtualizationEngine
+New-LabDefinition -Name ExDomLab -DefaultVirtualizationEngine HyperV
 
 Write-ScreenInfo -Message "Locating writeable domain controller for $DomainName"
 $ctx = [System.DirectoryServices.ActiveDirectory.DirectoryContext]::new('Domain', $DomainName)
@@ -37,8 +37,10 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:DomainName' = $DomainName
     'Add-LabMachineDefinition:OperatingSystem' = 'Windows Server Datacenter'
     'Add-LabMachineDefinition:Memory' = 4GB
+    'Add-LabMachineDefinition:Network' = "Network$DomainName"
 }
 
+Add-LabVirtualNetworkDefinition -Name "Network$DomainName" -HyperVProperties @{AdapterName = $ExternalAdapterName; SwitchType = 'External'}
 Add-LabMachineDefinition -Name $dcName -Roles RootDc -SkipDeployment -IpAddress $dcIp
 Add-LabMachineDefinition -Name POSHFS01
 Add-LabMachineDefinition -Name POSHWEB01
