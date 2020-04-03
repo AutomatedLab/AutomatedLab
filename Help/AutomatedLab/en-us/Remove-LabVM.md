@@ -30,10 +30,10 @@ All existing sessions are removed as well as the existing entries in the hosts f
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabVm -Name SQL01
 ```
 
-{{ Add example description here }}
+Removes one machine from the running lab so that Install-Lab can recreate it.
 
 ## PARAMETERS
 

@@ -1,6 +1,6 @@
-function Set-UnattendedKickstartFirewallState
+﻿function Set-UnattendedKickstartFirewallState
 {
-    param 
+    param
     (
         [Parameter(Mandatory = $true)]
         [boolean]$State

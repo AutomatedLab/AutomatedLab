@@ -1,8 +1,7 @@
 #region New-LabBaseImages
 function New-LabBaseImages
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -36,7 +35,7 @@ function New-LabBaseImages
         $baseDiskPath = Join-Path -Path $lab.Target.Path -ChildPath "BASE_$($os.OperatingSystemName.Replace(' ', ''))_$($os.Version).vhdx"
         $os.BaseDiskPath = $baseDiskPath
 
-        $hostOsVersion = [System.Version]((Get-CimInstance -ClassName Win32_OperatingSystem).Version)
+        $hostOsVersion = [System.Environment]::OSVersion.Version
 
         if ($hostOsVersion -ge [System.Version]'6.3' -and $os.Version -ge [System.Version]'6.2')
         {
@@ -91,7 +90,9 @@ function New-LabBaseImages
 
 function Stop-ShellHWDetectionService
 {
-    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [CmdletBinding()]
+    param ( )
 
     Write-LogFunctionEntry
 
@@ -125,7 +126,9 @@ function Stop-ShellHWDetectionService
 
 function Start-ShellHWDetectionService
 {
-    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [CmdletBinding()]
+    param ( )
 
     Write-LogFunctionEntry
 
@@ -167,8 +170,7 @@ function Start-ShellHWDetectionService
 #region New-LabVHDX
 function New-LabVHDX
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByName')]
         [string[]]$Name,
@@ -244,8 +246,7 @@ function New-LabVHDX
 #region Get-LabVHDX
 function Get-LabVHDX
 {
-    
-    [OutputType([AutomatedLab.Machine])]
+    [OutputType([AutomatedLab.Disk])]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'ByName')]
         [ValidateNotNullOrEmpty()]
@@ -298,7 +299,7 @@ function Get-LabVHDX
 #region Update-LabIsoImage
 function Update-LabIsoImage
 {
-    
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory)]
@@ -314,8 +315,13 @@ function Update-LabIsoImage
         [int]$SourceImageIndex
     )
 
-    #region Extract-IsoImage
-    function Extract-IsoImage
+    if ($IsLinux)
+    {
+        throw 'Sorry - not implemented on Linux yet.'
+    }
+
+    #region Expand-IsoImage
+    function Expand-IsoImage
     {
         param(
             [Parameter(Mandatory)]
@@ -346,18 +352,16 @@ function Update-LabIsoImage
         New-Item -ItemType Directory -Path $OutputPath | Out-Null
 
 
-        $image = Mount-DiskImage -ImagePath $SourceIsoImagePath -PassThru
+        $image = Mount-LabDiskImage -ImagePath $SourceIsoImagePath -PassThru
         Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
 
         if($image)
         {
-
-            $volume = Get-DiskImage -ImagePath $image.ImagePath | Get-Volume
-            $source = $volume.DriveLetter + ':\*'
+            $source = Join-Path -Path ([IO.DriveInfo]$image.DriveLetter).Name -ChildPath '*'
 
             Write-PSFMessage -Message "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
-            [void] (Dismount-DiskImage -ImagePath $SourceIsoImagePath)
+            [void] (Dismount-LabDiskImage -ImagePath $SourceIsoImagePath)
             Write-PSFMessage -Message 'Copy complete'
         }
         else
@@ -366,7 +370,7 @@ function Update-LabIsoImage
             return
         }
     }
-    #endregion Extract-IsoImage
+    #endregion Expand-IsoImage
 
     #region Get-IsoImageName
     function Get-IsoImageName
@@ -420,7 +424,7 @@ function Update-LabIsoImage
     Write-PSFMessage -Level Host -Message 'Creating an updated ISO from'
     Write-PSFMessage -Level Host -Message "Target path             $TargetIsoImagePath"
     Write-PSFMessage -Level Host -Message "Source path             $SourceIsoImagePath"
-    Write-PSFMessage -Level Host -Message "with updates from path  $UpdateFolderPath"    
+    Write-PSFMessage -Level Host -Message "with updates from path  $UpdateFolderPath"
     Write-PSFMessage -Level Host -Message "This process can take a long time, depending on the number of updates"
     $start = Get-Date
     Write-PSFMessage -Level Host -Message "Start time: $start"
@@ -431,7 +435,7 @@ function Update-LabIsoImage
     $isoImageName = Get-IsoImageName -IsoImagePath $SourceIsoImagePath
 
     Write-PSFMessage -Level Host -Message "Extracting ISO image '$SourceIsoImagePath' to '$extractTempFolder'"
-    Extract-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
+    Expand-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
 
     $installWim = Get-ChildItem -Path $extractTempFolder -Filter install.wim -Recurse
     Write-PSFMessage -Level Host -Message "Working with '$installWim'"
@@ -482,6 +486,7 @@ function Update-LabIsoImage
 #region Update-LabBaseImage
 function Update-LabBaseImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [CmdletBinding(PositionalBinding = $false)]
     param(
         [Parameter(Mandatory)]
@@ -490,6 +495,11 @@ function Update-LabBaseImage
         [Parameter(Mandatory)]
         [string]$UpdateFolderPath
     )
+
+    if ($IsLinux)
+    {
+        throw 'Sorry - not implemented on Linux yet.'
+    }
 
     if (-not (Test-Path -Path $BaseImagePath -PathType Leaf))
     {
@@ -506,7 +516,7 @@ function Update-LabBaseImage
     $patchesCab = Get-ChildItem -Path $UpdateFolderPath\* -Include *.cab -ErrorAction SilentlyContinue
     $patchesMsu = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu -ErrorAction SilentlyContinue
 
-    if (($patchesCab -eq $null) -and ($patchesMsu -eq $null))
+    if (($null -eq $patchesCab) -and ($null -eq $patchesMsu))
     {
         Write-Error "No .cab and .msu files found in '$UpdateFolderPath'"
         return
@@ -558,3 +568,82 @@ function Update-LabBaseImage
     Write-PSFMessage -Level Host -Message "finished at $end. Runtime: $($end - $start)"
 }
 #endregion Update-LabBaseImage
+
+#region Mount-LabDiskImage
+function Mount-LabDiskImage
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingCmdletAliases", "")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $ImagePath,
+
+        [ValidateSet('ISO','VHD','VHDSet','VHDx','Unknown')]
+        $StorageType,
+
+        [switch]
+        $PassThru
+    )
+
+    if (Get-Command -Name Mount-DiskImage -ErrorAction SilentlyContinue)
+    {
+        $diskImage = Mount-DiskImage -ImagePath $ImagePath -StorageType $StorageType -PassThru
+
+        if ($PassThru.IsPresent)
+        {
+            $diskImage | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($diskImage | Get-Volume).DriveLetter -PassThru
+        }
+    }
+    elseif ($IsLinux)
+    {
+        if (-not (Test-Path -Path /mnt/automatedlab))
+        {
+            $null = New-Item -Path /mnt/automatedlab -Force -ItemType Directory
+        }
+
+        $image = Get-Item -Path $ImagePath
+        $null = mount -o loop $ImagePath /mnt/automatedlab/$($image.BaseName)
+        [PSCustomObject]@{
+            ImagePath   = $ImagePath
+            FileSize    = $image.Length
+            Size        = $image.Length
+            DriveLetter = "/mnt/automatedlab/$($image.BaseName)"
+        }
+    }
+    else
+    {
+        throw 'Neither Mount-DiskImage exists, nor is this a Linux system.'
+    }
+}
+#endregion
+
+#region Dismount-LabDiskImage
+function Dismount-LabDiskImage
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [string]
+        $ImagePath
+    )
+
+    if (Get-Command -Name Dismount-DiskImage -ErrorAction SilentlyContinue)
+    {
+        Dismount-DiskImage -ImagePath $ImagePath
+    }
+    elseif ($IsLinux)
+    {
+        $image = Get-Item -Path $ImagePath
+        $null = umount /mnt/automatedlab/$($image.BaseName)
+    }
+    else
+    {
+        throw 'Neither Dismount-DiskImage exists, nor is this a Linux system.'
+    }
+}
+#endregion

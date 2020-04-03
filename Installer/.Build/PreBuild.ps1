@@ -4,7 +4,7 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common'),
+    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'AutomatedLab.Common','xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
 
     [Parameter()]
     [string[]]
@@ -94,7 +94,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $nameAttrib.Value = $folder.Name
         $null = $dirNode.Attributes.Append($idAttrib)
         $null = $dirNode.Attributes.Append($nameAttrib)
-        
+
         # Parent node lokalisieren, wenn nicht vorhanden, programFilesNode
         $parentNode = $nodeHash[$parentNodeName].Node
         $nodeHash.Add($idAttrib.Value, @{Node = $dirNode; Component = $false})
@@ -109,7 +109,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
     }
 
     $appendComponents = @{}
-    
+
     foreach ($file in $files)
     {
         $parentNodeName = ($file.DirectoryName).Replace($scratch, '') -replace '\W'
@@ -124,7 +124,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         {
             $appendComponents.Add($parentNodeName, @())
         }
-        
+
         $componentCreated = $nodeHash[$parentNodeName].Component
 
         if (-not $componentCreated)
@@ -152,7 +152,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
         $fileSource.Value = $file.FullName
         $fileId = $xmlContent.CreateAttribute('Id')
         $rnd = 71
-        $fileId.Value = -join [char[]]$(1..$rnd | %{Get-Random -Minimum 97 -Maximum 122})
+        $fileId.Value = -join [char[]]$(1..$rnd | ForEach-Object {Get-Random -Minimum 97 -Maximum 122})
         $null = $fileNode.Attributes.Append($fileSource)
         $null = $fileNode.Attributes.Append($fileId)
         $null = $nodeHash[$parentNodeName].Component.AppendChild($fileNode)
@@ -166,7 +166,7 @@ foreach ($depp in ($ExternalDependency + $internalModules))
             $null = $parentNode.AppendChild($no)
         }
     }
-    
+
     $null = $programFilesNode.AppendChild($rootNode)
 }
 

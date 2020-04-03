@@ -23,10 +23,10 @@ Exports a lab including all machine and disk definitions to local XML stores acc
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Export-Lab
 ```
 
-{{ Add example description here }}
+Saves the currently created lab definition to the lab path. Default: $env:PROGRAMDATA\AutomatedLab\Labs
 
 ## PARAMETERS
 

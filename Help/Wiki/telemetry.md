@@ -1,4 +1,6 @@
-AutomatedLab will start to collect telemetry starting with version 5.0. This is an opt-out collection and you will be asked once to specify whether or not you want to send us telemetry data. It is important for us to stress that we of course do not collect any personally identifiable data. We simply want to know what you do with AutomatedLabs.
+# Telemetry
+
+AutomatedLab has started to collect telemetry starting with version 5.0. This is an opt-in collection and you will be asked once to specify whether or not you want to send us telemetry data. It is important for us to stress that we of course do not collect any personally identifiable data. We simply want to know what you do with AutomatedLab to be able to decide what we want to develop.
 
 If at any time you want to disable telemetry, simply use `Disable-LabTelemtry`.
 
@@ -17,6 +19,21 @@ We are collecting the following metrics with Azure Application Insights:
 - Coarse Geolocation (Country you are coming from) - Your IP address is NOT recorded.  
 You can find all code that is used to provide telemetry here to inspect it yourself: https://github.com/AutomatedLab/AutomatedLab/blob/master/LabXml/Telemetry/LabTelemetry.cs  
 If you are not connected to the internet, telemetry will silently fail. If no data can be sent, it will silently fail as well. There is no noticeable impact, and telemetry is sent only twice. Once at the beginning and once at the end of Install-Lab.  
+
+## Why collect data at all?
+
+We are collecting this data to get an insight where and how AutomatedLab is used. We would like to see which roles are popular, how big the average lab is and how long it takes to deploy. We hope to gain valuable insights into how popular (or unpopular) the module is and which roles are used.
+
+We are also keen on knowing how many different (and possibly old) versions there are in the field. This for example can show us that we need to announce new releases better.
+
+## I want to opt out!
+
+Sure thing. We've got you covered: By default you are not even opted in. Should you want to opt out or in at a later stage,either of the following works:
+- Create an environmental variable called `AUTOMATEDLAB_TELEMETRY_OPTIN` which contains 0, false, or no to opt out or 1, true or yes to opt in
+- Use the cmdlet `Disable-LabTelemetry` to opt out or `Enable-LabTelemetry` to opt in
+
+## What data to I give away? How do I know you don't transmit my darkest secrets?
+
 The following JSON data is live data that we used during testing - this is what will actually be collected:
 ```JSON
 {
@@ -344,12 +361,6 @@ The following JSON data is live data that we used during testing - this is what 
     }
 }
 ```  
-In case you are wondering about RoleInstance (which would by default be your computer name): We intentionally set this to "nope" to strip away any identifiable information - we don't care about this stuff at all!  
-## Why collect data at all?
-We are collecting this data to get an insight where and how AutomatedLab is used. We would like to see which roles are popular, how big the average lab is and how long it takes to deploy.
-We plan to release this info as a nice Power BI dashboard so that all of you can see the fruits of your labor.
-## I want to opt out!
-Sure thing. Either of the following works:
-- Create an environmental variable called AUTOMATEDLAB_TELEMETRY_OPTOUT which contains 1, true, or yes
-- Use the cmdlet ```Disable-LabTelemetry```  
-If at any time you want to re-enable telemetry, set the variable to 0, false or no or call ```Enable-LabTelemetry```
+
+
+In case you are wondering about RoleInstance (which would by default be your computer name): We intentionally set this to "nope" to strip away any identifiable information - we don't care about this stuff at all!

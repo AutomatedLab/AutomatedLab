@@ -34,10 +34,10 @@ Removes one or more PowerShell sessions currently active
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabPSSession -ComputerName DC01
 ```
 
-{{ Add example description here }}
+Explicitly remove a session in order to create a new one.
 
 ## PARAMETERS
 

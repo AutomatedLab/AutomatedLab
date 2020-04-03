@@ -1,4 +1,4 @@
-function Send-ALIftttNotification
+﻿function Send-ALIftttNotification
 {
     param
     (
@@ -22,17 +22,17 @@ function Send-ALIftttNotification
         value3 = $Message
     }
 
-    try 
+    try
     {
         $request = Invoke-WebRequest -Method Post -Uri https://maker.ifttt.com/trigger/$($eventName)/with/key/$($key) -ContentType "application/json" -Body ($messageBody | ConvertTo-Json -Compress) -ErrorAction Stop
-        
+
         if (-not $request.StatusCode -eq 200)
         {
             Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName. Status code was $($request.StatusCode)"
         }
     }
-    catch 
+    catch
     {
         Write-PSFMessage -Message "Notification to IFTTT could not be sent with event $eventName."
-    }    
+    }
 }

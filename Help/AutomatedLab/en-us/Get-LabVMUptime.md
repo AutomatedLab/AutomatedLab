@@ -23,10 +23,10 @@ Gets the VMs uptime by checking the last boot time remotely via WMI
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMUptime -ComputerName FS1
 ```
 
-{{ Add example description here }}
+Get the uptime of FS1
 
 ## PARAMETERS
 

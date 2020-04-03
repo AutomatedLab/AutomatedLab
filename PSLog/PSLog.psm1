@@ -71,7 +71,7 @@ function Write-LogFunctionEntry
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     $Message = ($Message -split ';')[2..3] -join ' '
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 
@@ -115,7 +115,7 @@ function Write-LogFunctionExit
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, ("(Time elapsed: {0:hh}:{0:mm}:{0:ss}:{0:fff})" -f $ts)
     $Message = -join ($Message -split ';')[2..4]
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 
@@ -178,7 +178,7 @@ function Write-LogFunctionExitWithError
     {
         $Message += ';' + $Details
     }
-    
+
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)
@@ -225,9 +225,9 @@ function Write-LogError
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
 
-    if ($Excpetion)
+    if ($Exception)
     {
-        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Excpetion.Message)
+        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Exception.Message)
     }
     else
     {
@@ -238,7 +238,7 @@ function Write-LogError
     {
         $Message += ';' + $Details
     }
-    
+
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)
@@ -414,7 +414,7 @@ function Get-CallerPreference
 #region Write-ProgressIndicator
 function Write-ProgressIndicator
 {
-    
+
 
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
@@ -427,7 +427,7 @@ function Write-ProgressIndicator
 #region Write-ProgressIndicatorEnd
 function Write-ProgressIndicatorEnd
 {
-    
+
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
@@ -444,7 +444,7 @@ function Write-ProgressIndicatorEnd
 #region Write-ScreenInfo
 function Write-ScreenInfo
 {
-    
+
     param
     (
         [Parameter(Position = 1)]
@@ -529,7 +529,7 @@ function Write-ScreenInfo
                 Info { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
                 Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
                 Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
-            }            
+            }
         }
         else
         {

@@ -23,10 +23,10 @@ Gets the default resource group for the current lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureDefaultResourceGroup
 ```
 
-{{ Add example description here }}
+Gets the default resource group for the current lab
 
 ## PARAMETERS
 

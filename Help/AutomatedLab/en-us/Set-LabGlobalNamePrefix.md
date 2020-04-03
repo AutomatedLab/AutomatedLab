@@ -23,10 +23,10 @@ Sets a prefix to prepend to all machine names
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabGlobalNamePrefix -Name LB
 ```
 
-{{ Add example description here }}
+Prepends LB to all VMs, e.g. LBDC01
 
 ## PARAMETERS
 

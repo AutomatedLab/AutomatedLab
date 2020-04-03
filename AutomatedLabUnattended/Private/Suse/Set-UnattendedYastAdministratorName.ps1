@@ -1,4 +1,4 @@
-function Set-UnattendedYastAdministratorName
+﻿function Set-UnattendedYastAdministratorName
 {
     param
     (
@@ -14,14 +14,14 @@ function Set-UnattendedYastAdministratorName
     $listAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
     $listAttr.InnerText = 'boolean'
     $null = $encrypted.Attributes.Append($listAttr)
-    
+
     $encrypted.InnerText = 'false'
     $pw.InnerText = 'none'
-    $user.InnerText = $Name
+    $username.InnerText = $Name
 
     $null = $user.AppendChild($pw)
     $null = $user.AppendChild($encrypted)
     $null = $user.AppendChild($username)
 
-    $null = $userNode.AppendChild($user)    
+    $null = $userNode.AppendChild($user)
 }

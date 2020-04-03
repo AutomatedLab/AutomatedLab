@@ -1,5 +1,6 @@
 function Install-LabHyperV
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [CmdletBinding()]
     param
     ( )
@@ -31,7 +32,7 @@ function Install-LabHyperV
     {
         $jobs += Install-LabWindowsFeature -ComputerName $clients -FeatureName Microsoft-Hyper-V-All -NoDisplay -AsJob -PassThru
     }
-    
+
     if ($servers)
     {
         $jobs += Install-LabWindowsFeature -ComputerName $servers -FeatureName Hyper-V -IncludeAllSubFeature -IncludeManagementTools -NoDisplay -AsJob -PassThru
@@ -45,7 +46,7 @@ function Install-LabHyperV
 
     #Configure
     $settingsTable = @{ }
-    
+
     # Correct data types for individual settings
     $parametersAndTypes = @{
         MaximumStorageMigrations                  = [uint32]
@@ -67,7 +68,7 @@ function Install-LabHyperV
         foreach ($parameter in $parameters.Clone().GetEnumerator())
         {
             $type = $parametersAndTypes[$parameter.Key]
-    
+
             if ($type -eq [bool])
             {
                 $parameters[$parameter.Key] = [Convert]::ToBoolean($parameter.Value)
@@ -77,7 +78,7 @@ function Install-LabHyperV
                 $parameters[$parameter.Key] = $parameter.Value -as $type
             }
         }
-        
+
         $settingsTable.Add($vm.Name, $parameters)
     }
 
@@ -85,7 +86,7 @@ function Install-LabHyperV
     {
         return
     }
-    
+
     Invoke-LabCommand -ActivityName 'Configuring VM Host settings' -ComputerName $settingsTable.Keys -Variable (Get-Variable -Name settingsTable) -ScriptBlock {
         $vmParameters = $settingsTable[$env:COMPUTERNAME]
 

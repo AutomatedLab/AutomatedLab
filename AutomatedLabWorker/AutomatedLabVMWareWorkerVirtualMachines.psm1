@@ -59,6 +59,7 @@ trap
 #region New-LWVMWareVM
 function New-LWVMWareVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory)]
@@ -194,6 +195,7 @@ function New-LWVMWareVM
 #region Remove-LWVMWareVM
 function Remove-LWVMWareVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     Param (
         [Parameter(Mandatory)]
         [string]$ComputerName,
@@ -252,6 +254,7 @@ function Remove-LWVMWareVM
 #region Start-LWVMWareVM
 function Start-LWVMWareVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory = $true)]
         [string[]]$ComputerName,
@@ -284,6 +287,7 @@ function Start-LWVMWareVM
 #region Save-LWVMWareVM
 function Save-LWVMWareVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -300,6 +304,7 @@ function Save-LWVMWareVM
 #region Stop-LWVMWareVM
 function Stop-LWVMWareVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -330,6 +335,7 @@ function Stop-LWVMWareVM
 #region Wait-LWVMWareRestartVM
 function Wait-LWVMWareRestartVM
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -394,6 +400,7 @@ function Wait-LWVMWareRestartVM
 #region Get-LWVMWareVMStatus
 function Get-LWVMWareVMStatus
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName
@@ -432,6 +439,7 @@ function Get-LWVMWareVMStatus
 #region Enable-LWVMWareVMRemoting
 function Enable-LWVMWareVMRemoting
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     param(
         [Parameter(Mandatory, Position = 0)]
         $ComputerName

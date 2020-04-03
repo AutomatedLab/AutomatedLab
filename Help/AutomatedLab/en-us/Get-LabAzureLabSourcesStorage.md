@@ -24,10 +24,11 @@ To be able to use the cmdlet, you need to Add-LabAzureSubscription before.
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureLabSourcesStorage
 ```
 
-{{ Add example description here }}
+Gets the ResourceGroupName, StorageAccountName, StorageAccountKey and Path of the lab sources file storage.
+There should be one for each used subscription.
 
 ## PARAMETERS
 

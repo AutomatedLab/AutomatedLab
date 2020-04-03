@@ -24,10 +24,10 @@ Gets the status of one or more Windows features on one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabWindowsFeature DC01,FS01 -FeatureName RSAT-AD-Tools
 ```
 
-{{ Add example description here }}
+Get the installation status of the optional feature RSAT-AD-Tools on DC01 and FS01
 
 ## PARAMETERS
 

@@ -45,7 +45,7 @@ $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLa
 Add-LabMachineDefinition -Name F1ADC1 -IpAddress 192.168.41.11 -Network Forest1 -DomainName a.forest1.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
 $roles = Get-LabMachineRoleDefinition -Role FirstChildDC
-Add-LabMachineDefinition -Name F1BDC1 -IpAddress 192.168.41.12 -Network Forest1 -DomainName b.forest1.net -Roles $roles 
+Add-LabMachineDefinition -Name F1BDC1 -IpAddress 192.168.41.12 -Network Forest1 -DomainName b.forest1.net -Roles $roles
 
 #--------------------------------------------------------------------------------------------------------------------
 Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd2'

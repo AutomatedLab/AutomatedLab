@@ -23,10 +23,10 @@ Retrieves the status of the User Account Control of one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMUacStatus -ComputerName DC01,DC02
 ```
 
-{{ Add example description here }}
+Retrieves the status of the User Account Control on DC01 and DC02
 
 ## PARAMETERS
 

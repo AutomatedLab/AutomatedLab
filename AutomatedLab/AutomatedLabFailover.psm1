@@ -20,7 +20,7 @@ function Install-LabFailoverCluster
         $useDiskWitness = $true
     }
 
-    Write-Screeninfo -Message 'Waiting for failover nodes to complete installation'
+    Write-ScreenInfo -Message 'Waiting for failover nodes to complete installation'
 
     foreach ($cluster in $clusters)
     {

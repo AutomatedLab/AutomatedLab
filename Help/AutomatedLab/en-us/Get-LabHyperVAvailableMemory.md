@@ -23,10 +23,10 @@ Gets the available of the amount of RAM the local HyperV manages (TotalVisibleMe
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabHyperVAvailableMemory
 ```
 
-{{ Add example description here }}
+Gets the available of the amount of RAM the local HyperV manages (TotalVisibleMemorySize of the Win32_OperatingSystem WMI class)
 
 ## PARAMETERS
 

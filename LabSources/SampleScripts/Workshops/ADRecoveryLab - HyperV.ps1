@@ -44,7 +44,7 @@ Add-LabMachineDefinition -Name ContosoDC1 -IpAddress 192.168.41.10 `
 $role = Get-LabMachineRoleDefinition -Role DC
 Add-LabMachineDefinition -Name ContosoDC2 -DiskName BackupRoot -IpAddress 192.168.41.11 `
     -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com  -Roles DC
-    
+
 if ($addMemberServer)
 {
     Add-LabMachineDefinition -Name ContosoMember1 -IpAddress 192.168.41.12 -DnsServer1 192.168.41.10 -DnsServer2 192.168.41.11 -DomainName contoso.com

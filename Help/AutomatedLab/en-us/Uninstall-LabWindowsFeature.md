@@ -24,10 +24,10 @@ Uninstalls a Windowsfeature of one or more Lab Machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Uninstall-LabWindowsFeature -ComputerName FS1,FS2 -FeatureName FS-DFS-Replication -IncludeManagementTools
 ```
 
-{{ Add example description here }}
+Removes DFSR from FS1 and FS2
 
 ## PARAMETERS
 

@@ -23,10 +23,10 @@ Gets the lab's default storage account in the lab resource group/lab location
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureDefaultStorageAccount
 ```
 
-{{ Add example description here }}
+Gets the lab's default storage account in the lab resource group/lab location
 
 ## PARAMETERS
 
