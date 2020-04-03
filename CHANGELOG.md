@@ -18,6 +18,7 @@
 - Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
 - Linux is now a supported host operating system for Azure-based lab environments
 - CIM Cmdlets Get/New/Remove-LabCimSession
+- Lab with Domain Join added (Fixes #194)
 
 ### Bug Fixes
 - Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
