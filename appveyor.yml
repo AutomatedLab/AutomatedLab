@@ -1,4 +1,4 @@
-version: 5.17.{build}
+version: 5.18.{build}
 image:
 - Visual Studio 2017
 

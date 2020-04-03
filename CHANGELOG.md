@@ -4,6 +4,12 @@
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->  
 
 ### Enhancements
+
+### Bug Fixes
+
+## 5.18.0 - 2020-04-03
+
+### Enhancements
 - SQL setup now does not override custom configuration file any longer when no other parameters are specified.
 - Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified.
 - Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
