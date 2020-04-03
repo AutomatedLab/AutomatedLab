@@ -74,7 +74,7 @@ function Enable-LabHostRemoting
             }
         }
 
-        Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost/Client/TrustedHosts -Value '*' -Force
+        Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '*' -Force
     }
     else
     {
