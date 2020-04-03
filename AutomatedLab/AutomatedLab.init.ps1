@@ -23,7 +23,7 @@ else
 }
 
 $usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
-$currentRelease = ((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction SilentlyContinue).tag_Name -replace 'v') -as [Version]
+$currentRelease = try {((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
 
 if ($null -ne $currentRelease -and $usedRelease -lt $currentRelease)
 {
