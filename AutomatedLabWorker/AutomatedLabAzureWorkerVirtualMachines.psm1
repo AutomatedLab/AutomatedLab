@@ -393,6 +393,14 @@ function New-LWAzureVM
 
     if ($Disks)
     {
+        $diskSku = if ($Machine.AzureProperties.Contains('StorageSku'))
+        {
+            $Machine.AzureProperties.Contains('StorageSku')
+        }
+        else
+        {
+            'Premium_LRS'
+        }
         Write-PSFMessage "Adding $($Disks.Count) data disks"
         $lun = 0
 
@@ -402,7 +410,7 @@ function New-LWAzureVM
             $diskSize = $Disk.Value
 
             Write-PSFMessage -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
-            $diskConfig = New-AzDiskConfig -SkuName Standard_LRS -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
+            $diskConfig = New-AzDiskConfig -SkuName $diskSku -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
             $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $dataDiskName -Disk $diskConfig
             $vm = $vm | Add-AzVMDataDisk -Name $dataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $diskSize -Lun $lun -CreateOption Attach
             $lun++
