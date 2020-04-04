@@ -2047,7 +2047,7 @@ function Add-LabMachineDefinition
             Where-Object SideIndicator -eq '=>' |
             Select-Object -ExpandProperty InputObject
 
-            if ($AzureProperties.Contains('StorageSku') -and ($AzureProperties['StorageSku'] -notin (Get-LabConfigurationItem -Name AzureDiskSkus)))
+            if ($AzureProperties.ContainsKey('StorageSku') -and ($AzureProperties['StorageSku'] -notin (Get-LabConfigurationItem -Name AzureDiskSkus)))
             {
                 throw "$($AzureProperties['StorageSku']) is not in $(Get-LabConfigurationItem -Name AzureDiskSkus)"
             }

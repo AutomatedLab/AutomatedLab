@@ -352,8 +352,14 @@ function New-LWAzureVM
         $machineAvailabilitySet = New-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop -Sku aligned -PlatformUpdateDomainCount 2 -PlatformFaultDomainCount 2
     }
 
-    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop
-    $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
+    $useULTRA = $false
+    if ($Machine.AzureProperties.ContainsKey('StorageSku'))
+    {
+        $useULTRA = $Machine.AzureProperties['StorageSku'] -eq 'UltraSSD_LRS'
+    }
+
+    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -EnableUltraSSD:$useULTRA
+    $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp -TimeZone $Machine.TimeZone
 
     Write-PSFMessage "Choosing latest source image for $SkusName in $OfferName"
     $vm = Set-AzVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
@@ -393,9 +399,9 @@ function New-LWAzureVM
 
     if ($Disks)
     {
-        $diskSku = if ($Machine.AzureProperties.Contains('StorageSku'))
+        $diskSku = if ($Machine.AzureProperties.ContainsKey('StorageSku'))
         {
-            $Machine.AzureProperties.Contains('StorageSku')
+            $Machine.AzureProperties['StorageSku']
         }
         else
         {
