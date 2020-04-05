@@ -705,7 +705,8 @@ function New-LabSqlAccount
 
     if ($RoleProperties.ContainsKey('ConfigurationFile'))
     {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')} | ConvertFrom-StringData
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')}
+        $config = $config -replace '\\', '\\' | ConvertFrom-StringData
 
         if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
         {
