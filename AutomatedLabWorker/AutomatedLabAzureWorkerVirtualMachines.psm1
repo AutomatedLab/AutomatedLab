@@ -352,7 +352,13 @@ function New-LWAzureVM
         $machineAvailabilitySet = New-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop -Sku aligned -PlatformUpdateDomainCount 2 -PlatformFaultDomainCount 2
     }
 
-    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop
+    $useULTRA = $false
+    if ($Machine.AzureProperties.ContainsKey('StorageSku'))
+    {
+        $useULTRA = $Machine.AzureProperties['StorageSku'] -eq 'UltraSSD_LRS'
+    }
+
+    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -EnableUltraSSD:$useULTRA
     $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
 
     Write-PSFMessage "Choosing latest source image for $SkusName in $OfferName"
@@ -393,6 +399,14 @@ function New-LWAzureVM
 
     if ($Disks)
     {
+        $diskSku = if ($Machine.AzureProperties.ContainsKey('StorageSku'))
+        {
+            $Machine.AzureProperties['StorageSku']
+        }
+        else
+        {
+            'Premium_LRS'
+        }
         Write-PSFMessage "Adding $($Disks.Count) data disks"
         $lun = 0
 
@@ -402,7 +416,7 @@ function New-LWAzureVM
             $diskSize = $Disk.Value
 
             Write-PSFMessage -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
-            $diskConfig = New-AzDiskConfig -SkuName Standard_LRS -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
+            $diskConfig = New-AzDiskConfig -SkuName $diskSku -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
             $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $dataDiskName -Disk $diskConfig
             $vm = $vm | Add-AzVMDataDisk -Name $dataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $diskSize -Lun $lun -CreateOption Attach
             $lun++

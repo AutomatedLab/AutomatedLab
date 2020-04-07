@@ -101,6 +101,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (
 Set-PSFConfig -Module 'AutomatedLab' -Name MinimumAzureModuleVersion -Value '2.0.0' -Initialize -Validation string -Description 'The minimum expected Azure module version'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultAzureRoleSize -Value 'D' -Initialize -Validation string -Description 'The default Azure role size, e.g. from Get-LabAzureAvailableRoleSize'
 Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -Initialize -Validation integer -Description 'The default file size for Sync-LabAzureLabSources'
+Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
 
 #Office
 Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_11107-33602.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'

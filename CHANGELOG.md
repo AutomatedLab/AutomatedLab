@@ -5,6 +5,8 @@
 
 ### Enhancements
 
+- AL can now use SSDs and UltraSSD skus (Fixes #763)
+
 ### Bug Fixes
 
 - TFS Build Worker Role was undeployable when parameter TfsServer was used (#852)

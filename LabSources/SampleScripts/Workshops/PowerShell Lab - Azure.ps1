@@ -17,9 +17,9 @@ Add-LabAzureSubscription -DefaultLocationName $azureDefaultLocation
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
 
 #and the domain definition with the domain admin account
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'P@ssw0rd'
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'P@ssw0rd!1'
 
-Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd'
+Set-LabInstallationCredential -Username Install -Password 'P@ssw0rd!1'
 
 #defining default parameter values, as these ones are the same for all the machines
 $PSDefaultParameterValues = @{
@@ -45,7 +45,10 @@ Add-LabMachineDefinition -Name POSHDC2 -Memory 512MB -Roles $roles -IpAddress 19
 
 #file server
 $roles = Get-LabMachineRoleDefinition -Role FileServer
-Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -Roles $roles -IpAddress 192.168.30.50
+Add-LabDiskDefinition -Name premium1 -DiskSizeInGb 128
+Add-LabDiskDefinition -Name premium2 -DiskSizeInGb 128
+# Using SSD storage for the additional disks
+Add-LabMachineDefinition -Name POSHFS1 -Memory 512MB -DiskName premium1,premium2 -Roles $roles -IpAddress 192.168.30.50 -AzureProperties @{StorageSku = 'StandardSSD_LRS'}
 
 #web server
 $roles = Get-LabMachineRoleDefinition -Role WebServer
