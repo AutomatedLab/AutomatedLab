@@ -11,11 +11,12 @@ function Install-LabHyperV
 
     Write-ScreenInfo -Message 'Exposing virtualization extensions...' -NoNewLine
     $hyperVVms = $vms | Where-Object -Property HostType -eq HyperV
-    if ($null -ne $hyperVVms)
+    $enableVirt = $vms | Where-Object {-not ($_ | Get-VmProcessor).ExposeVirtualizationExtensions}
+    if ($null -ne $enableVirt)
     {
-        Stop-LabVm -Wait -ComputerName $hyperVVms
-        $hyperVVms | Set-VMProcessor -ExposeVirtualizationExtensions $true
-		$hyperVVms | Get-VMNetworkAdapter | Set-VMNetworkAdapter -MacAddressSpoofing On
+        Stop-LabVm -Wait -ComputerName $enableVirt
+        $enableVirt | Set-VMProcessor -ExposeVirtualizationExtensions $true
+		$enableVirt | Get-VMNetworkAdapter | Set-VMNetworkAdapter -MacAddressSpoofing On
     }
 
     Start-LabVm -Wait -ComputerName $vms # Start all, regardless of Hypervisor
