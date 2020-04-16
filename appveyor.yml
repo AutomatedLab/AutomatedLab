@@ -15,7 +15,7 @@ branches:
 skip_tags: true
 
 init:
-  - ps: ./.build/init.ps1
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/init.ps1'
 
 install:
   - git submodule -q update --init --recursive
@@ -38,13 +38,13 @@ assembly_info:
 
 before_build:
   - nuget restore
-  - ps: ./.build/beforebuild.ps1
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1'
         
 build:
   project: AutomatedLab.sln
 
 after_build:
-  - ps: ./.build/afterbuild.ps1
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
         
 
 deploy:
@@ -61,7 +61,7 @@ deploy:
       branch: master                 # release from master branch only
 
 after_deploy:
-  ps: ./.build/afterdeploy.ps1
+  ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1'
 
 on_finish:
-  - ps: ./.build/onfinish.ps1
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1'
