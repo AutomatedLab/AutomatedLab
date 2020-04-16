@@ -47,7 +47,7 @@ for:
   - matrix:
       only:
         - image: Ubuntu
-    build-script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
+    build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
 
 after_build:
   - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
