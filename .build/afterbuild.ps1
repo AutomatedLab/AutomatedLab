@@ -5,7 +5,7 @@ Write-Host "'after_build' block"
 if (-not $IsLinux)
 {
     $Params = @{
-        Path    = $env:APPVEYOR_BUILD_FOLDER
+        Path    = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath '.build'
         Force   = $true
         Recurse = $false
         Verbose = $true
