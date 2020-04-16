@@ -8,12 +8,18 @@ $Params = @{
     Verbose = $true
 }
 Invoke-PSDeploy @Params # Create nuget package artifacts
-Write-Host "Locating installer to push as artifact"
+Write-Host "Locating installer and deb package to push as artifact"
 
-Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
-$msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
-Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
+if (-not $IsLinux)
+{
+    Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
+    $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
+    Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
+}
 
-Add-AppveyorMessage "Locating debian package to push as artifact" -Category Information
-$debFile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter automatedlab.deb | Select-Object -First 1
-Push-AppVeyorArtifact $debFile.FullName -FileName $debFile.Name -DeploymentName aldebianpackage
+if ($IsLinux)
+{
+    Add-AppveyorMessage "Locating debian package to push as artifact" -Category Information
+    $debFile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter automatedlab*.deb | Select-Object -First 1
+    Push-AppVeyorArtifact $debFile.FullName -FileName $debFile.Name -DeploymentName aldebianpackage
+}

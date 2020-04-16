@@ -1,5 +1,6 @@
 version: 5.19.{build}
 image:
+- Visual Studio 2017
 - Ubuntu
 
 environment:
@@ -37,8 +38,16 @@ before_build:
   - nuget restore
   - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1'
         
-build:
-  project: AutomatedLab.sln
+for:
+  - matrix:
+      only:
+        - image: Ubuntu
+    build:
+      project: AutomatedLab.sln
+  - matrix:
+      only:
+        - image: Ubuntu
+    build-script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
 
 after_build:
   - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
