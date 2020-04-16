@@ -17,6 +17,8 @@ skip_tags: true
 init:
   - ps: |
       ls $env:APPVEYOR_BUILD_FOLDER
+      write-host '----'
+      ls -force
       & $env:APPVEYOR_BUILD_FOLDER/.build/init.ps1
 
 install:
