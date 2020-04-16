@@ -15,7 +15,9 @@ branches:
 skip_tags: true
 
 init:
-  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/init.ps1'
+  - ps: |
+      ls $env:APPVEYOR_BUILD_FOLDER
+      & $env:APPVEYOR_BUILD_FOLDER/.build/init.ps1
 
 install:
   - git submodule -q update --init --recursive
