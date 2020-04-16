@@ -49,9 +49,8 @@
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 # Resolve Module will fail since AL requests interactivity, importing module fails without LabSources folder
-[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
-$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
-$f = New-Item -ItemType Directory -Path C:\LabSources\CustomRoles -Force
+[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN',0, 'Machine')
+$env:AUTOMATEDLAB_TELEMETRY_OPTIN = 0
 
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
@@ -78,5 +77,5 @@ if (-not ($lastestVersion.Version -ge '1.6.0'))
 
 }
 
-Invoke-psake .\psake.ps1
+Invoke-psake ./psake.ps1
 exit ( [int]( -not $psake.build_success ) )
