@@ -41,7 +41,7 @@ before_build:
 for:
   - matrix:
       only:
-        - image: Ubuntu
+        - image: Visual Studio 2017
     build:
       project: AutomatedLab.sln
   - matrix:
