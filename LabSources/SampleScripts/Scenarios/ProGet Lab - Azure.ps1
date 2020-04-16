@@ -53,6 +53,19 @@ $progetUrl = "http://$($progetServer.FQDN)/nuget/PowerShell"
 $firstDomain = (Get-Lab).Domains[0]
 $nuGetApiKey = "$($firstDomain.Administrator.UserName)@$($firstDomain.Name):$($firstDomain.Administrator.Password)"
 Invoke-LabCommand -ActivityName RegisterPSRepository -ComputerName PGClient1 -ScriptBlock {
+    try
+    {
+        #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+        if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+        {
+            Write-Verbose -Message 'Adding support for TLS 1.2'
+            [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+        }
+    }
+    catch
+    {
+        Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+    }
     Install-PackageProvider -Name NuGet -Force
 
     $targetPath = 'C:\ProgramData\Microsoft\Windows\PowerShell\PowerShellGet'
