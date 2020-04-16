@@ -1,4 +1,6 @@
-﻿Write-Host "Init task - Set version number if necessary"
+﻿git submodule -q update --init --recursive
+
+Write-Host "Init task - Set version number if necessary"
 $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
 $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0, 0)
 try

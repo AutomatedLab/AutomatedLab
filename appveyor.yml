@@ -14,15 +14,8 @@ branches:
 
 skip_tags: true
 
-init:
-  - ps: |
-      ls $env:APPVEYOR_BUILD_FOLDER
-      write-host '----'
-      ls -force
-      & $env:APPVEYOR_BUILD_FOLDER/.build/init.ps1
-
 install:
-  - git submodule -q update --init --recursive
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/install.ps1'
 
 dotnet_csproj:
   patch: true
