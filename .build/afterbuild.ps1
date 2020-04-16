@@ -1,17 +1,16 @@
 ﻿Write-Host "Calling build script"
 & (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER './.build/Build.ps1')
 Write-Host "'after_build' block"
-$Params = @{
-    Path    = $env:APPVEYOR_BUILD_FOLDER
-    Force   = $true
-    Recurse = $false
-    Verbose = $true
-}
-Invoke-PSDeploy @Params # Create nuget package artifacts
-Write-Host "Locating installer and deb package to push as artifact"
 
 if (-not $IsLinux)
 {
+    $Params = @{
+        Path    = $env:APPVEYOR_BUILD_FOLDER
+        Force   = $true
+        Recurse = $false
+        Verbose = $true
+    }
+    Invoke-PSDeploy @Params # Create nuget package artifacts on Windows only, we only need one set
     Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
     $msifile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
     Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller

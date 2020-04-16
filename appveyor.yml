@@ -44,30 +44,39 @@ for:
         - image: Visual Studio 2017
     build:
       project: AutomatedLab.sln
+    deploy:
+      - provider: GitHub
+        release: AutomatedLab-v$(appveyor_build_version)
+        tag: v$(appveyor_build_version)
+        description: 'This is an automated deployment'
+        auth_token:
+          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+        artifact: alinstaller
+        draft: false
+        prerelease: false
+        on:
+          branch: master
+    after_deploy:
+      ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1'
   - matrix:
       only:
         - image: Ubuntu
     build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
+    deploy:
+      - provider: GitHub
+        release: AutomatedLab-v$(appveyor_build_version)
+        tag: v$(appveyor_build_version)
+        description: 'This is an automated deployment'
+        auth_token:
+          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+        artifact: aldebianpackage
+        draft: false
+        prerelease: false
+        on:
+          branch: master
 
 after_build:
   - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
-        
-
-deploy:
-  - provider: GitHub
-    release: AutomatedLab-v$(appveyor_build_version)
-    tag: v$(appveyor_build_version)
-    description: 'This is an automated deployment'
-    auth_token:
-      secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
-    artifact: alinstaller, aldebianpackage            # upload all NuGet packages to release assets
-    draft: false
-    prerelease: false
-    on:
-      branch: master                 # release from master branch only
-
-after_deploy:
-  ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1'
 
 on_finish:
   - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1'
