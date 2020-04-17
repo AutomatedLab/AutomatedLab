@@ -65,6 +65,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     chmod -R 775 ./deb/automatedlab/usr/share/AutomatedLab
 
     # Build debian package and convert it to RPM
+    gem install --no-ri --no-rdoc fpm
     dpkg-deb --build ./deb/automatedlab
     fpm -t rpm -s deb automatedlab.deb
 
