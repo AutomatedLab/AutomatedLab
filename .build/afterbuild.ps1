@@ -18,7 +18,11 @@ if (-not $IsLinux)
 
 if ($IsLinux)
 {
-    Add-AppveyorMessage "Locating debian package to push as artifact" -Category Information
+    Add-AppveyorMessage "Locating deb package to push as artifact" -Category Information
     $debFile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter automatedlab*.deb | Select-Object -First 1
     Push-AppVeyorArtifact $debFile.FullName -FileName $debFile.Name -DeploymentName aldebianpackage
+
+    Add-AppveyorMessage "Locating rpm package to push as artifact" -Category Information
+    $debFile = Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Recurse -Filter automatedlab*.rpm | Select-Object -First 1
+    Push-AppVeyorArtifact $debFile.FullName -FileName $debFile.Name -DeploymentName alrpmpackage
 }

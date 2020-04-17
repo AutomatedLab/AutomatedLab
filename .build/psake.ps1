@@ -2,7 +2,7 @@
 # Init some things
 Properties {
     $ProjectRoot = $env:APPVEYOR_BUILD_FOLDER
-    $Timestamp = Get-date -uformat "%Y%m%d-%H%M%S"
+    $Timestamp = Get-Date -uformat "%Y%m%d-%H%M%S"
     $PSVersion = $PSVersionTable.PSVersion.Major
     $TestFile = "TestResults_PS$PSVersion`_$TimeStamp.xml"
     $lines = '----------------------------------------------------------------------'
@@ -17,13 +17,17 @@ Task Init {
 }
 
 Task BuildDebianPackage -Depends Test {
-    if (-not $IsLinux) { return }
+    if (-not $IsLinux)
+    {
+        return 
+    }
 
     # Build debian package structure
     $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/local/share/powershell/Modules -Force
     $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
     $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/share/AutomatedLab/Stores -Force
     $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/share/AutomatedLab/Labs -Force
+    $null = New-Item -ItemType Directory -Path ./deb/automatedlab/usr/share/AutomatedLab/LabSources -Force
     $null = New-Item -ItemType Directory -Path ./deb/automatedlab/DEBIAN -Force
 
     # Create control file
@@ -41,29 +45,31 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
 "@ | Set-Content -Path ./deb/automatedlab/DEBIAN/control -Encoding UTF8
 
     # Copy content
-    Copy-Item -Path @(
-        './AutomatedLab'
-        './AutomatedLab.Recipe'
-        './AutomatedLab.Ships'
-        './AutomatedLabDefinition'
-        './AutomatedLabNotifications'
-        './AutomatedLabTest'
-        './AutomatedLabUnattended'
-        './AutomatedLabWorker'
-        './HostsFile'
-        './PSLog'
-        './PSFileTransfer'
-    ) -Destination ./deb/automatedlab/usr/local/share/powershell/Modules -Force -Recurse
+    foreach ($source in [IO.DirectoryInfo[]]@('./AutomatedLab', './AutomatedLab.Recipe', './AutomatedLab.Ships', './AutomatedLabDefinition', './AutomatedLabNotifications', './AutomatedLabTest', './AutomatedLabUnattended', './AutomatedLabWorker', './HostsFile', './PSLog', './PSFileTransfer'))
+    {
+        $sourcePath = Join-Path -Path $source -ChildPath '/*'
+        $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($env:APPVEYOR_BUILD_VERSION)/$($source.Name)"
+        Copy-Item -Path $source -Destination $modulePath -Force -Recurse
+    }
 
     Save-Module -Name AutomatedLab.Common, newtonsoft.json, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
 
-    Copy-Item -Path ./Assets/* -Destination ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
+    # Pre-configure LabSources for the user
+    $confPath = "./deb/automatedlab/usr/local/share/powershell/Modules/$($env:APPVEYOR_BUILD_VERSION)/AutomatedLab/AutomatedLab.init.ps1"
+    Add-Content -Path $confPath -Value 'Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description "Location of lab sources folder" -Validation string -Value "/usr/share/AutomatedLab/LabSources"'
 
+    Copy-Item -Path ./Assets/* -Recurse -Destination ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
+    Copy-Item -Path ./LabSources/* -Recurse -Destination ./deb/automatedlab/usr/share/AutomatedLab/LabSources -Force
+
+    # Update permissions on AL folder to allow non-root access to configs
+    chmod -R 775 ./deb/automatedlab/usr/share/AutomatedLab
+
+    # Build debian package and convert it to RPM
     dpkg-deb --build ./deb/automatedlab
     fpm -t rpm -s deb automatedlab.deb
 
-    Rename-Item -Path ./deb/automatedlab.rpm -NewName automatedlab_$($env:APPVEYOR_BUILD_VERSION)_amd64.rpm
-    Rename-Item -Path ./deb/automatedlab.deb -NewName automatedlab_$($env:APPVEYOR_BUILD_VERSION)_amd64.deb
+    Rename-Item -Path ./deb/automatedlab.rpm -NewName automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_amd64.rpm
+    Rename-Item -Path ./deb/automatedlab.deb -NewName automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_amd64.deb
 }
 
 Task Test -Depends Init {
