@@ -8,7 +8,7 @@ Properties {
     $lines = '----------------------------------------------------------------------'
 }
 
-Task Default -Depends Test
+Task Default -Depends BuildDebianPackage
 
 Task Init {
     $lines
@@ -16,7 +16,7 @@ Task Init {
     "`n"
 }
 
-Task BuildDebianPackage -Depends Init {
+Task BuildDebianPackage -Depends Test {
     if (-not $IsLinux) { return }
 
     # Build debian package structure
