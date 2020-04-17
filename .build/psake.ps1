@@ -49,6 +49,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     {
         $sourcePath = Join-Path -Path $source -ChildPath '/*'
         $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($source.Name)/$($env:APPVEYOR_BUILD_VERSION)"
+        $null = New-Item -ItemType Directory -Path $modulePath -Force
         Copy-Item -Path $source -Destination $modulePath -Force -Recurse
     }
 
@@ -65,9 +66,10 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     chmod -R 775 ./deb/automatedlab/usr/share/AutomatedLab
 
     # Build debian package and convert it to RPM
+    sudo gem update --system
     sudo gem install --no-ri --no-rdoc fpm
     dpkg-deb --build ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
-    fpm -t rpm -s dir ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.rpm
+    fpm -t rpm -n automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.rpm -s dir ./deb/automatedlab 
 }
 
 Task Test -Depends Init {
