@@ -67,7 +67,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
 
     # Build debian package and convert it to RPM
     dpkg-deb --build ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
-    alien -r automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
+    sudo alien -r automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
 }
 
 Task Test -Depends Init {
