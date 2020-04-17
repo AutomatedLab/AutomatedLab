@@ -48,7 +48,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     foreach ($source in [IO.DirectoryInfo[]]@('./AutomatedLab', './AutomatedLab.Recipe', './AutomatedLab.Ships', './AutomatedLabDefinition', './AutomatedLabNotifications', './AutomatedLabTest', './AutomatedLabUnattended', './AutomatedLabWorker', './HostsFile', './PSLog', './PSFileTransfer'))
     {
         $sourcePath = Join-Path -Path $source -ChildPath '/*'
-        $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($source.Name)-$($env:APPVEYOR_BUILD_VERSION)"
+        $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($source.Name)/$($env:APPVEYOR_BUILD_VERSION)"
         Copy-Item -Path $source -Destination $modulePath -Force -Recurse
     }
 
