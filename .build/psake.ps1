@@ -66,10 +66,8 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     chmod -R 775 ./deb/automatedlab/usr/share/AutomatedLab
 
     # Build debian package and convert it to RPM
-    sudo gem update --system
-    sudo gem install --no-ri --no-rdoc fpm
     dpkg-deb --build ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
-    fpm -t rpm -n automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.rpm -s dir ./deb/automatedlab 
+    alien -r automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
 }
 
 Task Test -Depends Init {
