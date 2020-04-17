@@ -5,19 +5,28 @@ $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
 $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0, 0)
 try
 {
-    #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
-    if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
-    {
-        Write-Verbose -Message 'Adding support for TLS 1.2'
-        [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
-    }
+  #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+  if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+  {
+    Write-Verbose -Message 'Adding support for TLS 1.2'
+    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+  }
 }
 catch
 {
-    Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+  Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
 }
-Install-PackageProvider -Name Nuget -Force
-Install-Module PSFramework -RequiredVersion 1.0.35 -Repo PSGallery -Force
+
+if (-not $IsLinux)
+{
+  Install-PackageProvider -Name Nuget -Force
+}
+else
+{
+  # Ruby tool FPM can build packages for multiple distributions
+  sudo gem install --no-ri --no-rdoc fpm
+}
+Install-Module PSFramework -Repo PSGallery -Force
 
 if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
 {

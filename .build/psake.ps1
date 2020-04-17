@@ -60,6 +60,9 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     Copy-Item -Path ./Assets/* -Destination ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
 
     dpkg-deb --build ./deb/automatedlab
+    fpm -t rpm -s deb automatedlab.deb
+
+    Rename-Item -Path ./deb/automatedlab.rpm -NewName automatedlab_$($env:APPVEYOR_BUILD_VERSION)_amd64.rpm
     Rename-Item -Path ./deb/automatedlab.deb -NewName automatedlab_$($env:APPVEYOR_BUILD_VERSION)_amd64.deb
 }
 
