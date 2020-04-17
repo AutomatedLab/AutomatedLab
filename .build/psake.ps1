@@ -48,14 +48,14 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     foreach ($source in [IO.DirectoryInfo[]]@('./AutomatedLab', './AutomatedLab.Recipe', './AutomatedLab.Ships', './AutomatedLabDefinition', './AutomatedLabNotifications', './AutomatedLabTest', './AutomatedLabUnattended', './AutomatedLabWorker', './HostsFile', './PSLog', './PSFileTransfer'))
     {
         $sourcePath = Join-Path -Path $source -ChildPath '/*'
-        $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($env:APPVEYOR_BUILD_VERSION)/$($source.Name)"
+        $modulepath = Join-Path -Path ./deb/automatedlab/usr/local/share/powershell/Modules -ChildPath "$($source.Name)-$($env:APPVEYOR_BUILD_VERSION)"
         Copy-Item -Path $source -Destination $modulePath -Force -Recurse
     }
 
     Save-Module -Name AutomatedLab.Common, newtonsoft.json, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
 
     # Pre-configure LabSources for the user
-    $confPath = "./deb/automatedlab/usr/local/share/powershell/Modules/$($env:APPVEYOR_BUILD_VERSION)/AutomatedLab/AutomatedLab.init.ps1"
+    $confPath = "./deb/automatedlab/usr/local/share/powershell/Modules/AutomatedLab/$($env:APPVEYOR_BUILD_VERSION)/AutomatedLab.init.ps1"
     Add-Content -Path $confPath -Value 'Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description "Location of lab sources folder" -Validation string -Value "/usr/share/AutomatedLab/LabSources"'
 
     Copy-Item -Path ./Assets/* -Recurse -Destination ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
@@ -66,11 +66,8 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
 
     # Build debian package and convert it to RPM
     sudo gem install --no-ri --no-rdoc fpm
-    dpkg-deb --build ./deb/automatedlab
-    fpm -t rpm -s deb automatedlab.deb
-
-    Rename-Item -Path ./deb/automatedlab.rpm -NewName automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_amd64.rpm
-    Rename-Item -Path ./deb/automatedlab.deb -NewName automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_amd64.deb
+    dpkg-deb --build ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.deb
+    fpm -t rpm -s dir ./deb/automatedlab automatedlab_NONSTABLEBETA_$($env:APPVEYOR_BUILD_VERSION)_x86_64.rpm
 }
 
 Task Test -Depends Init {
