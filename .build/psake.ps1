@@ -47,7 +47,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
         './AutomatedLab.Recipe'
         './AutomatedLab.Ships'
         './AutomatedLabDefinition'
-        './AutomatedLabNotifictions'
+        './AutomatedLabNotifications'
         './AutomatedLabTest'
         './AutomatedLabUnattended'
         './AutomatedLabWorker'
