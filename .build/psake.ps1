@@ -43,7 +43,6 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
     # Copy content
     Copy-Item -Path @(
         './AutomatedLab'
-        './AutomatedLab.Common/AutomatedLab.Common'
         './AutomatedLab.Recipe'
         './AutomatedLab.Ships'
         './AutomatedLabDefinition'
@@ -56,7 +55,7 @@ Installed-Size: $('{0:0}' -f ((Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -E
         './PSFileTransfer'
     ) -Destination ./deb/automatedlab/usr/local/share/powershell/Modules -Force -Recurse
 
-    Save-Module -Name newtonsoft.json, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
+    Save-Module -Name AutomatedLab.Common, newtonsoft.json, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration -Path ./deb/automatedlab/usr/local/share/powershell/Modules
 
     Copy-Item -Path ./Assets/* -Destination ./deb/automatedlab/usr/share/AutomatedLab/assets -Force
 
