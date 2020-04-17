@@ -77,5 +77,5 @@ if (-not ($lastestVersion.Version -ge '1.6.0'))
 
 }
 
-Invoke-psake ./psake.ps1
+Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )
