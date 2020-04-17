@@ -24,7 +24,7 @@ if (-not $IsLinux)
 else
 {
   # Ruby tool FPM can build packages for multiple distributions
-  sudo apt install ruby ruby-dev rubygems build-essential
+  sudo apt install ruby ruby-dev rubygems build-essential -y
   sudo gem install --no-document fpm
 }
 Install-Module PSFramework -Repo PSGallery -Force
