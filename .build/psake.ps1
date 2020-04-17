@@ -1,7 +1,7 @@
 # PSake makes variables declared here available in other scriptblocks
 # Init some things
 Properties {
-    $ProjectRoot = $PSScriptRoot
+    $ProjectRoot = $env:APPVEYOR_BUILD_FOLDER
     $Timestamp = Get-date -uformat "%Y%m%d-%H%M%S"
     $PSVersion = $PSVersionTable.PSVersion.Major
     $TestFile = "TestResults_PS$PSVersion`_$TimeStamp.xml"
