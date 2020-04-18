@@ -6,6 +6,7 @@
 ### Enhancements
 
 - AL can now use SSDs and UltraSSD skus (Fixes #763)
+- AL is now packaged as deb and rpm packages (kindly be reminded that this is still a beta feature :smirk: )
 
 ### Bug Fixes
 
