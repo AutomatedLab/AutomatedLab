@@ -8,12 +8,14 @@
 - AL can now use SSDs and UltraSSD skus (Fixes #763)
 - Agent Pool assignment on build worker now possible
 - Build workers can now be added without adding an AzDevOps lab machine
+- AL is now packaged as deb and rpm packages (kindly be reminded that this is still a beta feature :smirk: )
 
 ### Bug Fixes
 
 - TFS Build Worker Role was undeployable when parameter TfsServer was used (#852).
 - Resolves a terminating error thrown by ConvertFrom-StringData if strings contained a non-escaped backslash.
 - Fixed an issue installing .net 4.8 in SQL server issue.
+- Fixed an issue with the new dependencies and moved them to offline installer
 
 ## 5.19.0 - 2020-04-03
 
