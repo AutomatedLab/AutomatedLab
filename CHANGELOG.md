@@ -6,6 +6,8 @@
 ### Enhancements
 
 - AL can now use SSDs and UltraSSD skus (Fixes #763)
+- Agent Pool assignment on build worker now possible
+- Build workers can now be added without adding an AzDevOps lab machine
 - AL is now packaged as deb and rpm packages (kindly be reminded that this is still a beta feature :smirk: )
 
 ### Bug Fixes

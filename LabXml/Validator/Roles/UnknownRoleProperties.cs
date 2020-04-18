@@ -43,7 +43,7 @@ namespace AutomatedLab
                     {
                         yield return new ValidationMessage
                         {
-                            Message = string.Format("The property '{0}' is unknwon for role '{1}'. Please use one of the following properties: {2}",
+                            Message = string.Format("The property '{0}' is unknown for role '{1}'. Please use one of the following properties: {2}",
                                 unknownProperty, role.Name, validKeysString),
                             Type = MessageType.Error,
                             TargetObject = machine.Name
