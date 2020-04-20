@@ -10,7 +10,8 @@
         'PSUseShouldProcessForStateChangingFunctions',
         'PSAvoidUsingInvokeExpression',
         'PSAvoidUsingConvertToSecureStringWithPlainText',
-        'PSAvoidUsingComputerNameHardcoded'
+        'PSAvoidUsingComputerNameHardcoded',
+        'PSPossibleIncorrectComparisonWithNull'
         )
     'Rules'        = @{
         PSUseCompatibleCommmands = @{
@@ -31,4 +32,5 @@
             )
         }
     }
+    CustomRulePath = '.\scriptanalyzer\ALCustomRules.psm1'
 }
