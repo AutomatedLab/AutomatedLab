@@ -5,9 +5,9 @@ function Install-LabTeamFoundationEnvironment
     param
     ( )
 
-    $tfsMachines = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object { 
-        -not $_.SkipDeployment -and 
-    -not (Test-LabTfsEnvironment -ComputerName $_.Name -NoDisplay).ServerDeploymentOk }
+    $tfsMachines = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object {
+        -not $_.SkipDeployment -and -not (Test-LabTfsEnvironment -ComputerName $_.Name -NoDisplay).ServerDeploymentOk
+    }
     $azDevOpsService = Get-LabVM -Role AzDevOps | Where-Object SkipDeployment
 
     foreach ($svcConnection in $azDevOpsService)
@@ -293,16 +293,25 @@ function Install-LabBuildWorker
         $cred = $machine.GetLocalCredential()
         $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
 
-        $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
         $tfsPort = 8080
+        $skipServerDuringTest = $false # We want to skip testing public Azure DevOps endpoints
 
-        if ($role.Properties.ContainsKey('TfsServer'))
+        if ($role.Properties.ContainsKey('Organisation') -and $role.Properties.ContainsKey('PAT'))
+        {
+            Write-ScreenInfo -Message "Deploying agent to Azure DevOps agent pool" -NoNewLine
+            $tfsServer = 'dev.azure.com'
+            $useSsl = $true
+            $tfsPort = 443
+            $skipServerDuringTest = $true
+        }
+        elseif ($role.Properties.ContainsKey('TfsServer'))
         {
             $tfsServer = Get-LabVM -ComputerName $role.Properties['TfsServer'] -ErrorAction SilentlyContinue
             if (-not $tfsServer)
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
                 $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
+                $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
                 $role.Properties['TfsServer'] = $tfsServer.Name
                 $shouldExport = $true
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
@@ -310,13 +319,14 @@ function Install-LabBuildWorker
         }
         else
         {
+            $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
             $role.Properties.Add('TfsServer', $tfsServer.Name)
             $shouldExport = $true
         }
 
         if ($shouldExport) { Export-Lab }
 
-        $tfsTest = Test-LabTfsEnvironment -ComputerName $tfsServer -NoDisplay
+        $tfsTest = Test-LabTfsEnvironment -ComputerName $tfsServer -NoDisplay -SkipServer:$skipServerDuringTest
         if ($tfsTest.ServerDeploymentOk -and $tfsTest.BuildWorker[$machine.Name].WorkerDeploymentOk)
         {
             Write-ScreenInfo -Message "Build worker $machine assigned to $tfsServer appears to be configured. Skipping..."
@@ -324,7 +334,7 @@ function Install-LabBuildWorker
         }
 
         $tfsRole = $tfsServer.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
-        if ($tfsRole.Properties.ContainsKey('Port'))
+        if ($null -ne $tfsRole -and $tfsRole.Properties.ContainsKey('Port'))
         {
             $tfsPort = $tfsRole.Properties['Port']
         }
@@ -343,20 +353,34 @@ function Install-LabBuildWorker
             }
         }
 
-        $pat = if ($tfsRole.Properties.ContainsKey('PAT'))
+        $pat = if ($role.Properties.ContainsKey('PAT'))
+        {
+            $role.Properties['PAT']
+            $machineName = "dev.azure.com/$($role.Properties['Organisation'])"
+        }
+        elseif ($tfsRole.Properties.ContainsKey('PAT'))
         {
             $tfsRole.Properties['PAT']
-            $machineName = "dev.azure.com/$($tfsRole['Organisation'])"
+            $machineName = "dev.azure.com/$($tfsRole.Properties['Organisation'])"
         }
         else
         {
             [string]::Empty
         }
 
+        $agentPool = if ($role.Properties.ContainsKey('AgentPool'))
+        {
+            $role.Properties['AgentPool']
+        }
+        else
+        {
+            'default'
+        }
+
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
 
             if (-not (Test-Path C:\TfsBuildWorker.zip)) { throw 'Build worker installation files not available' }
-           
+
             if ($numberOfBuildWorkers)
             {
                 $numberOfBuildWorkers = 1..$numberOfBuildWorkers
@@ -364,7 +388,7 @@ function Install-LabBuildWorker
             else
             {
                 $numberOfBuildWorkers = 1
-            } 
+            }
             foreach ($numberOfBuildWorker in $numberOfBuildWorkers)
             {
                 Microsoft.PowerShell.Archive\Expand-Archive -Path C:\TfsBuildWorker.zip -DestinationPath "C:\BuildWorker$numberOfBuildWorker" -Force
@@ -372,22 +396,22 @@ function Install-LabBuildWorker
 
                 $content = if ($useSsl -and [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
-                
+                    "$configurationTool --unattended --url https://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+
                 }
                 elseif ($useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
+                    "$configurationTool --unattended --url https://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --sslskipcertvalidation --gituseschannel"
                 }
                 elseif (-not $useSsl -and -not [string]::IsNullOrEmpty($pat))
                 {
-                    "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool default --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
+                    "$configurationTool --unattended --url http://$($machineName) --auth pat --token $pat --pool $agentPool --agent $($env:COMPUTERNAME)-$numberOfBuildWorker --runasservice --gituseschannel"
                 }
                 else
                 {
-                    "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool default --agent $env:COMPUTERNAME --runasservice --gituseschannel"
+                    "$configurationTool --unattended --url http://$($machineName):$($tfsPort) --auth Integrated --pool $agentPool --agent $env:COMPUTERNAME --runasservice --gituseschannel"
                 }
-            
+
                 if ($isOnDomainController)
                 {
                     $content += " --windowsLogonAccount $($cred.UserName) --windowsLogonPassword $($cred.GetNetworkCredential().Password)"
@@ -395,7 +419,7 @@ function Install-LabBuildWorker
 
                 $null = New-Item -ItemType Directory -Path C:\DeployDebug -ErrorAction SilentlyContinue
                 Set-Content -Path "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd" -Value $content -Force
-            
+
                 $configResult = & "C:\DeployDebug\SetupBuildWorker$numberOfBuildWorker.cmd"
 
                 $log = Get-ChildItem -Path "C:\BuildWorker$numberOfBuildWorker\_diag" -Filter *.log | Sort-Object -Property CreationTime | Select-Object -Last 1
@@ -410,7 +434,7 @@ function Install-LabBuildWorker
                     Write-Warning -Message "Build worker $numberOfBuildWorker on '$env:COMPUTERNAME' failed to install. Exit code was $($LASTEXITCODE). Log is $($Log.FullName)"
                 }
             }
-        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
+        } -AsJob -Variable (Get-Variable machineName, tfsPort, useSsl, pat, isOnDomainController, cred, numberOfBuildWorkers, agentPool) -ActivityName "Setting up build agent $machine" -PassThru -NoDisplay
     }
 
     Wait-LWLabJob -Job $installationJobs
@@ -1046,14 +1070,23 @@ function Test-LabTfsEnvironment
         $ComputerName,
 
         [switch]
+        $SkipServer,
+
+        [switch]
+        $SkipWorker,
+
+        [switch]
         $NoDisplay
     )
 
     $lab = Get-Lab -ErrorAction Stop
     $machine = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object -Property Name -eq $ComputerName
-    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object { ($_.Roles | Where-Object Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name }
+    $assignedBuildWorkers = Get-LabVm -Role TfsBuildWorker | Where-Object {
+        ($_.Roles | Where-Object Name -eq TfsBuildWorker)[0].Properties['TfsServer'] -eq $machine.Name -or `
+        ($_.Roles | Where-Object Name -eq TfsBuildWorker)[0].Properties.ContainsKey('PAT')
+    }
 
-    if (-not $machine) { return }
+    if (-not $machine -and -not $SkipServer.IsPresent) { return }
 
     if (-not $script:tfsDeploymentStatus)
     {
@@ -1062,7 +1095,7 @@ function Test-LabTfsEnvironment
 
     if (-not $script:tfsDeploymentStatus.ContainsKey($ComputerName))
     {
-        $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $false; BuildWorker = @{ } }
+        $script:tfsDeploymentStatus[$ComputerName] = @{ServerDeploymentOk = $SkipServer.IsPresent; BuildWorker = @{ } }
     }
 
     if (-not $script:tfsDeploymentStatus[$ComputerName].ServerDeploymentOk)
@@ -1181,7 +1214,12 @@ function Test-LabTfsEnvironment
         }
         if (-not $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name])
         {
-            $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{ }
+            $script:tfsDeploymentStatus[$ComputerName].BuildWorker[$worker.Name] = @{WorkerDeploymentOk = $SkipWorker.IsPresent }
+        }
+
+        if ($SkipWorker.IsPresent)
+        {
+            continue
         }
 
         $svcRunning = Invoke-LabCommand -PassThru -ComputerName $worker -ScriptBlock { Get-Service -Name *vsts* } -NoDisplay

@@ -17,7 +17,7 @@ if ($env:APPVEYOR_BUILD_VERSION)
     {
         Deploy DeveloperBuild {
             By AppVeyorModule {
-                FromSource (Join-Path $PSScriptRoot $moduleName)
+                FromSource (Join-Path $env:APPVEYOR_BUILD_FOLDER $moduleName)
                 To AppVeyor
                 WithOptions @{
                     Version = $env:APPVEYOR_BUILD_VERSION
