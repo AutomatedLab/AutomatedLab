@@ -15,6 +15,7 @@
 - TFS Build Worker Role was undeployable when parameter TfsServer was used (#852).
 - Resolves a terminating error thrown by ConvertFrom-StringData if strings contained a non-escaped backslash.
 - Fixed an issue installing .net 4.8 in SQL server issue.
+- 'doNotSkipNonNonEnglishIso' did not work as there as a scoping issue with the variable (#860).
 - Fixed an issue with the new dependencies and moved them to offline installer
 
 ## 5.19.0 - 2020-04-03
