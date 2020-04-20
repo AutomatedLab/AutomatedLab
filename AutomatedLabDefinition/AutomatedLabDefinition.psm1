@@ -13,9 +13,6 @@ $unattendedXmlDefaultContent2012 = @'
     </component>
   </settings>
   <settings pass="specialize">
-    <component name="Security-Malware-Windows-Defender" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <DisableAntiSpyware>true</DisableAntiSpyware>
-    </component>
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
         <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
@@ -1983,7 +1980,7 @@ function Add-LabMachineDefinition
             $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
         }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
         $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
@@ -2046,6 +2043,11 @@ function Add-LabMachineDefinition
             $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
             Where-Object SideIndicator -eq '=>' |
             Select-Object -ExpandProperty InputObject
+
+            if ($AzureProperties.ContainsKey('StorageSku') -and ($AzureProperties['StorageSku'] -notin (Get-LabConfigurationItem -Name AzureDiskSkus)))
+            {
+                throw "$($AzureProperties['StorageSku']) is not in $(Get-LabConfigurationItem -Name AzureDiskSkus)"
+            }
 
             if ($illegalKeys)
             {

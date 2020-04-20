@@ -32,3 +32,19 @@ Add-LabMachineDefinition -RhelPackage domain-client -Name LINCN1 -OperatingSyste
 ```  
 You can find all available packages with ```Get-LabAvailableOperatingSystem | Select-Object -Expand LinuxPackageGroup```. However, the basics should be fine for most cases.  
 At them moment, your Linux-based labs need an internet connection (i.e. a routing VM) so that the PowerShell and omi-psrp-server can be downloaded during setup. Without omid running on the Linux machines, your lab will run into a timeout during installation. While this will not break things, it will certainly cause a long wait.
+
+## Azure-specific properties
+
+There are several properties that can be used with the `AzureProperties` parameter of the `Add-LabMachineDefinition` cmdlet.
+
+- ResourceGroupName - Resource group this machine is deployed into, if it should be different
+- UseAllRoleSizes - Use a random role size of the available role sizes
+- RoleSize - Use specific role size like Standard_D2_v2
+- LoadBalancerRdpPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
+- LoadBalancerWinRmHttpPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
+- LoadBalancerWinRmHttpsPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
+- SubnetName - The subnet name this machine is deployed into
+- UseByolImage - Boolean as string indicating that BYOL licensing is used
+- AutoshutdownTime - The timespan as string when the machines shut be shut down
+- AutoshutdownTimezoneId - The time zone ID as string for the auto shutdown time
+- StorageSku - The storage SKU for additional disks. OS disks are managed disks. Either 'Standard_LRS', 'Premium_LRS' or 'StandardSSD_LRS'

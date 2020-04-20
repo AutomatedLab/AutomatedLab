@@ -380,7 +380,7 @@ GO
         if ($servers)
         {
             Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
-            Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
+            Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
             Restart-LabVM -ComputerName $servers -Wait
         }
 
@@ -705,7 +705,8 @@ function New-LabSqlAccount
 
     if ($RoleProperties.ContainsKey('ConfigurationFile'))
     {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')} | ConvertFrom-StringData
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')}
+        $config = $config -replace '\\', '\\' | ConvertFrom-StringData
 
         if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
         {

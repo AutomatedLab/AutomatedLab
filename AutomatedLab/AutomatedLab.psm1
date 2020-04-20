@@ -1343,8 +1343,6 @@ function Get-LabAvailableOperatingSystem
 
     $storeLocationName = if ($Azure.IsPresent) { 'Azure' } else { 'Local' }
 
-    $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
-
     if ($Azure)
     {
         if (-not (Get-AzContext -ErrorAction SilentlyContinue).Subscription)
