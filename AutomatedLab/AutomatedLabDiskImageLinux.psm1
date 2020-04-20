@@ -13,7 +13,8 @@
 
     $dismPattern = 'Index:\s+(?<Index>\d{1,2})(\r)?\nName:\s+(?<Name>.+)'
     $standardImagePath = Join-Path -Path $MountPoint -ChildPath /sources/install.wim
-
+    $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
+    
     if (-not (Get-Command wiminfo))
     {
         throw 'wiminfo is not installed. Please use your package manager to install wimtools'

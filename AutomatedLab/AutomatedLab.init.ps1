@@ -372,6 +372,9 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
         TfsBuildWorker   = @(
             'NumberOfBuildWorkers'
             'TfsServer'
+            'AgentPool'
+            'PAT'
+            'Organisation'
         )
     }
     MandatoryRoleProperties = @{

@@ -13,6 +13,8 @@
 
     $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
     $standardImagePath = "$DriveLetter`:\Sources\Install.wim"
+    $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
+    
     if (Test-Path -Path $standardImagePath)
     {
         $dismOutput = Dism.exe /English /Get-WimInfo /WimFile:$standardImagePath

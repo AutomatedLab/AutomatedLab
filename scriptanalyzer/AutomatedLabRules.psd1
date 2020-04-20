@@ -9,7 +9,9 @@
         'PSAvoidUsingEmptyCatchBlock',
         'PSUseShouldProcessForStateChangingFunctions',
         'PSAvoidUsingInvokeExpression',
-        'PSAvoidUsingConvertToSecureStringWithPlainText')
+        'PSAvoidUsingConvertToSecureStringWithPlainText',
+        'PSAvoidUsingComputerNameHardcoded'
+        )
     'Rules'        = @{
         PSUseCompatibleCommmands = @{
             Enable = $true
