@@ -5,6 +5,12 @@
 
 ### Enhancements
 
+### Bug Fixes
+
+## 5.20.0 - 2020-04-20
+
+### Enhancements
+
 - AL can now use SSDs and UltraSSD skus (Fixes #763)
 - Agent Pool assignment on build worker now possible
 - Build workers can now be added without adding an AzDevOps lab machine
