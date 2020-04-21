@@ -3564,7 +3564,7 @@ if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 
 if (-not (Test-Path -Path $productKeyFilePath))
 {
-    Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
+    Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath
 }
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
