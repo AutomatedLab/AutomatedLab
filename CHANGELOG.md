@@ -7,6 +7,8 @@
 
 ### Bug Fixes
 
+- Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
+
 ## 5.20.0 - 2020-04-20
 
 ### Enhancements
