@@ -7,6 +7,9 @@
 
 ### Bug Fixes
 
+- Fixed module import loop (Fixes #869)
+- Release tagging updated
+
 ## 5.20.0 - 2020-04-20
 
 ### Enhancements
