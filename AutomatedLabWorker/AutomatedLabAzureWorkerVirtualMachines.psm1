@@ -402,9 +402,9 @@
         Force             = $true
     }
 
-    $template | ConvertTo-JsonNewtonsoft | Set-Content (Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$Name/armtemplate.json")
+    $template | ConvertTo-JsonNewtonsoft | Set-Content (Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$($Lab.Name)/armtemplate.json")
 
-    Write-ScreenInfo -Message "Deploying new resource group with template $((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name/armtemplate.json"
+    Write-ScreenInfo -Message "Deploying new resource group with template $((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$($Lab.Name)/armtemplate.json"
     $deployment = if ($Wait.IsPresent)
     {
         New-AzResourceGroupDeployment @rgDeplParam
