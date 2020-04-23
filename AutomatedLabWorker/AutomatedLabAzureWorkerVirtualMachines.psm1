@@ -1,5 +1,427 @@
-﻿#region New-LWAzureVM
-function New-LWAzureVM
+﻿function New-LabAzureResourceGroupDeployment
+{
+    [CmdletBinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [AutomatedLab.Lab]
+        $Lab,
+
+        [Parameter()]
+        [switch]
+        $PassThru,
+
+        [Parameter()]
+        [switch]
+        $Wait
+    )
+
+    $template = @{
+        '$schema'      = "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
+        contentVersion = '1.0.0.0'  
+        parameters     = @{
+            adminUsername = @{
+                type     = "string"
+                metadata = @{
+                    description = "The name of the administrator account of the new VM"
+                }
+            }
+            adminPassword = @{
+                type     = "securestring"
+                metadata = @{
+                    description = "The password for the administrator account of the new VM and domain"
+                }
+            }
+        }
+        resources      = @()
+    }
+    
+    foreach ($network in $Lab.VirtualNetworks)
+    {
+        #region VNet
+        $vNet = @{
+            type       = "Microsoft.Network/virtualNetworks"
+            apiVersion = "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]"
+            name       = $network.Name
+            location   = "[resourceGroup().location]"
+            properties = @{
+                addressSpace = @{
+                    addressPrefixes = @(
+                        $network.AddressSpace.ToString()
+                    )
+                }
+                subnets      = @()
+                dhcpOptions = @{
+                    dnsServers = @()
+                }
+            }
+        }
+
+        if ($network.DnsServers)
+        {
+            $vNet.properties.dhcpOptions.dnsServers = $network.DnsServers.AddressAsString
+        }
+
+        if (-not $network.Subnets)
+        {
+            $vnet.properties.subnets += @{
+                name       = "default"
+                properties = @{
+                    addressPrefix = $network.AddressSpace.ToString()
+                }
+            }
+        }
+        foreach ($subnet in $network.Subnets)
+        {
+            $vnet.properties.subnets += @{
+                name       = $subnet.Name
+                properties = @{
+                    addressPrefix = $network.AddressSpace.ToString()
+                }
+            }
+        }
+
+        $template.resources += $vNet
+        #endregion
+
+        #region Peering
+        foreach ($peer in $network.ConnectToVnets)
+        {
+            $template.Resources += @{
+                apiVersion = "[providers('Microsoft.Network','virtualNetworks', 'virtualNetworkPeerings').apiVersions[0]]"
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
+                )
+                type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
+                name       = "$($network.Name)/$($network.Name)To$($peer)"
+                location   = "[resourceGroup().location]"
+                properties = @{
+                    allowVirtualNetworkAccess = $true
+                    allowForwardedTraffic     = $false
+                    allowGatewayTransit       = $false
+                    useRemoteGateways         = $false
+                    remoteVirtualNetwork      = @{
+                        id = "[resourceId('Microsoft.Network/virtualNetworks', '$peer')]"
+                    }
+                }
+            }
+        }
+        #endregion
+
+        #region Public Ip
+        $dnsLabel = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+
+        if ($network.AzureDnsLabel)
+        {
+            $dnsLabel = $network.AzureDnsLabel
+        }
+
+        $template.resources +=
+        @{
+            apiVersion = "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]"
+            type       = "Microsoft.Network/publicIPAddresses"
+            name       = "$($Lab.Name)$($network.Name)lbfrontendip"
+            location   = "[resourceGroup().location]"
+            properties = @{
+                publicIPAllocationMethod = "static"
+                dnsSettings              = @{
+                    domainNameLabel = $dnsLabel
+                }
+            }
+            sku        = @{
+                name = 'Standard'
+            }
+        }
+        #endregion
+
+        #region Load balancer
+        $loadBalancer = @{
+            type       = "Microsoft.Network/loadBalancers"
+            apiVersion = "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]"
+            name       = "$($resourceGroup)$($vNet.Name)loadbalancer"
+            location   = "[resourceGroup().location]"
+            sku        = @{
+                name = "Standard"
+            }
+            dependsOn  = @(
+                "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)lbfrontendip')]"
+            )
+            properties = @{
+                frontendIPConfigurations = @(
+                    @{
+                        name       = "$($resourceGroup)$($vNet.Name)lbfrontendconfig"
+                        properties = @{
+                            publicIPAddress = @{
+                                id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)lbfrontendip')]"
+                            }
+                        }
+                    }
+                )
+                backendAddressPools      = @(
+                    @{
+                        name = "$($resourceGroup)$($vNet.Name)backendpoolconfig"
+                    }
+                )
+            }
+        }
+
+        $rules = foreach ($machine in ($Lab.Machines | Where-Object -Property Network -EQ $vNet.Name))
+        {
+            @{
+                name       = "$($machine.Name.ToLower())rdpin"
+                properties = @{
+                    frontendIPConfiguration = @{
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                    }
+                    frontendPort            = $machine.LoadBalancerRdpPort
+                    backendPort             = 3389
+                    enableFloatingIP        = $false
+                    protocol                = "Tcp"
+                }
+            }
+            @{
+                name       = "$($machine.Name.ToLower())winrmin"
+                properties = @{
+                    frontendIPConfiguration = @{
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                    }
+                    frontendPort            = $machine.LoadBalancerWinRmHttpPort
+                    backendPort             = 5985
+                    enableFloatingIP        = $false
+                    protocol                = "Tcp"
+                }
+            }
+            @{
+                name       = "$($machine.Name.ToLower())winrmhttpsin"
+                properties = @{
+                    frontendIPConfiguration = @{
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                    }
+                    frontendPort            = $machine.LoadBalancerWinrmHttpsPort
+                    backendPort             = 5986
+                    enableFloatingIP        = $false
+                    protocol                = "Tcp"
+                }
+            }
+        }
+
+        $loadBalancer.properties.inboundNatRules = $rules
+        $template.resources += $loadBalancer
+        #endregion
+
+        #region AvailabilitySet
+        $template.resources += @{
+            type       = "Microsoft.Compute/availabilitySets"
+            apiVersion = "[providers('Microsoft.Compute','availabilitySets').apiVersions[0]]"
+            name       = "$($network.Name)"
+            location   = "[resourceGroup().location]"
+            sku        = @{
+                name = "Aligned"
+            }
+            properties = @{
+                platformUpdateDomainCount = 2
+                platformFaultDomainCount  = 2
+            }
+        }
+        #endregion
+    }
+
+    #region Disks
+    foreach ($disk in $Lab.Disks)
+    {
+        $vm = $lab.Machines | Where-Object { $_.Disks.Name -contains $disk.Name }
+        $template.resources += @{
+            type       = "Microsoft.Compute/disks"
+            apiVersion = "[providers('Microsoft.Compute','disks').apiVersions[0]]"
+            name       = $disk.Name
+            location   = "[resourceGroup().location]"
+            sku        = @{
+                name = if ($vm.AzureProperties.ContainsKey('StorageSku'))
+                {
+                    $vm.AzureProperties['StorageSku'] 
+                }
+                else
+                {
+                    "Standard_LRS"
+                }
+            }
+            properties = @{
+                creationData = @{
+                    createOption = "Empty"
+                }
+                diskSizeGB   = $disk.DiskSize
+            }
+        }
+    }
+    #endregion
+
+    foreach ($machine in $Lab.Machines)
+    {
+        $niccount = 0
+        foreach ($nic in $machine.NetworkAdapters)
+        {
+            $subnetName = 'default'
+            if (($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name)
+            {
+                $subnetName = ($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name
+            }
+            $template.resources += 
+            @{
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.Name)')]"
+                    "[resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer')]"
+                                )
+                properties = @{
+                    enableAcceleratedNetworking = $false
+                    dnsSettings                 = @{
+                        dnsServers = $nic.Ipv4DnsServers.AddressAsString
+                    }
+                    ipConfigurations            = @(
+                        @{
+                            properties = @{
+                                subnet                          = @{
+                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($nic.VirtualSwitch.Name)', '$subnetName')]"
+                                }
+                                primary                         = $true
+                                privateIPAllocationMethod       = "Static"
+                                privateIPAddress                = $nic.Ipv4Address[0].IpAddress.AddressAsString
+                                privateIPAddressVersion         = "IPv4"                                
+                                loadBalancerBackendAddressPools = @(
+                                    @{
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($nic.VirtualSwitch.Name)backendpoolconfig')]"
+                                    }
+                                )
+                                loadBalancerInboundNatRules     = @(
+                                    @{
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())rdpin')]"
+                                    }
+                                    @{
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())winrmin')]"
+                                    }
+                                    @{
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())winrmhttpsin')]"
+                                    }
+                                )
+                            }
+                            name       = "ipconfig1"
+                        }
+                    )
+                    enableIPForwarding          = $false
+                }
+                name       = "$($machine.Name)nic$($niccount)"
+                apiVersion = "[providers('Microsoft.Network','networkInterfaces').apiVersions[0]]"
+                type       = "Microsoft.Network/networkInterfaces"
+                location   = "[resourceGroup().location]"
+            }
+            $niccount++
+        }
+
+        $machTemplate = @{
+            name       = $machine.Name
+            dependsOn  = @(
+                "[resourceId('Microsoft.Compute/availabilitySets', '$($machine.Network[0])')]"
+            )
+            properties = @{
+                availabilitySet = @{
+                    id = "[resourceId('Microsoft.Compute/availabilitySets', '$($machine.Network[0])')]"
+                }
+                storageProfile  = @{
+                    osDisk         = @{
+                        createOption = "FromImage"
+                        osType       = "Windows"
+                        caching      = "ReadWrite"
+                    }
+                    imageReference = Get-LWAzureSku -Machine $machine
+                    dataDisks      = @()
+                }
+                networkProfile  = @{
+                    networkInterfaces = @()
+                }
+                osProfile       = @{
+                    adminPassword            = "[parameters('adminPassword')]"
+                    computerName             = $machine.Name
+                    allowExtensionOperations = $true
+                    adminUsername            = "[parameters('adminUsername')]"
+                    windowsConfiguration     = @{
+                        enableAutomaticUpdates = $true
+                        provisionVMAgent       = $true
+                        winRM                  = @{
+                            listeners = @(
+                                @{
+                                    protocol = "Http"
+                                }
+                            )
+                        }
+                    }
+                }
+                hardwareProfile = @{
+                    vmSize = (Get-LWAzureVmSize -Machine $Machine).Name
+                }
+            }
+            type       = "Microsoft.Compute/virtualMachines"
+            apiVersion = "[providers('Microsoft.Compute','virtualMachines').apiVersions[0]]"
+            location   = "[resourceGroup().location]"
+        }
+
+        $luncount = 0
+        foreach ($disk in $machine.Disks)
+        {
+            $machTemplate.properties.storageProfile.dataDisks += @{
+                lun          = $luncount
+                name         = $disk.Name
+                createOption = "attach"
+                managedDisk  = @{
+                    id = "[resourceId('Microsoft.Compute/disks/', '$($disk.Name)')]"
+                }
+            }
+            $luncount++
+        }
+
+        $niccount = 0
+        foreach ($nic in $machine.NetworkAdapters)
+        {
+            $machtemplate.dependsOn += "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.Name)nic$($niccount)')]"
+            $machTemplate.properties.networkProfile.networkInterfaces += @{
+                id         = "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.name)nic$($niccount)')]"
+                properties = @{
+                    primary = $niccount -eq 0
+                }
+            }
+            $niccount++
+        }
+        
+        $template.resources += $machTemplate
+    }
+
+    $rgDeplParam = @{
+        adminUsername     = $Lab.DefaultInstallationCredential.Username
+        adminPassword     = $Lab.DefaultInstallationCredential.Password | ConvertTo-SecureString -AsPlainText -Force
+        TemplateObject    = $template
+        ResourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
+        Force             = $true
+    }
+
+    $template | ConvertTo-JsonNewtonsoft | Set-Content (Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$Name/armtemplate.json")
+
+    Write-ScreenInfo -Message "Deploying new resource group with template $((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name/armtemplate.json"
+    $deployment = if ($Wait.IsPresent)
+    {
+        New-AzResourceGroupDeployment @rgDeplParam
+    }
+    else
+    {
+        New-AzResourceGroupDeployment @rgDeplParam -AsJob # Splatting AsJob did not work
+    }
+    
+
+    if ($PassThru.IsPresent)
+    {
+        $deployment
+    }
+}
+
+function Get-LWAzureVmSize
 {
     [Cmdletbinding()]
     param
@@ -8,74 +430,58 @@ function New-LWAzureVM
         [AutomatedLab.Machine]$Machine
     )
 
-    Test-LabHostConnected -Throw -Quiet
-
-    Write-LogFunctionEntry
-
-    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-
     $lab = Get-Lab
 
-    $resourceGroupName = $lab.Name
-    if ($machine.AzureProperties)
+    if ($machine.AzureProperties.RoleSize)
     {
-        if ($machine.AzureProperties.ContainsKey('ResourceGroupName'))
+        $roleSize = $lab.AzureSettings.RoleSizes |
+            Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)'"
+    }
+    elseif ($machine.AzureProperties.UseAllRoleSizes)
+    {
+        $DefaultAzureRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+        $roleSize = $lab.AzureSettings.RoleSizes |
+            Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
+            Sort-Object -Property MemoryInMB, NumberOfCores |
+            Select-Object -First 1
+
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
+    }
+    else
+    {
+        switch ($lab.AzureSettings.DefaultRoleSize)
         {
-            #if the resource group name is provided for the machine, it replaces the default
-            $resourceGroupName = $machine.AzureProperties.ResourceGroupName
+            'A' { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
+            'D' { $pattern = '^Standard_D\d{1,2}' }
+            'DS' { $pattern = '^Standard_DS\d{1,2}' }
+            'G' { $pattern = '^Standard_G\d{1,2}' }
+            'F' { $pattern = '^Standard_F\d{1,2}' }
+            default { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
         }
+
+        $roleSize = $lab.AzureSettings.RoleSizes |
+            Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
+            Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
+            Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
+            Select-Object -First 1
+
+        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
     }
 
-    $machineResourceGroup = $Machine.AzureProperties.ResourceGroupName
-    if (-not $machineResourceGroup)
-    {
-        $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-    }
+    $roleSize
+}
 
-    if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
-    {
-        Write-PSFMessage -Message "Target machine $($Machine.Name) already exists. Skipping..."
-        return
-    }
+function Get-LWAzureSku
+{
+    [Cmdletbinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [AutomatedLab.Machine]$Machine
+    )
 
-    Write-PSFMessage -Message "Target resource group for machine: '$machineResourceGroup'"
-
-    if (-not $global:cacheVMs)
-    {
-        $global:cacheVMs = Get-AzVM
-    }
-
-    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
-    {
-        Write-ProgressIndicatorEnd
-        Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
-        return
-    }
-
-    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
-    $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
-
-    if (-not $storageContext)
-    {
-        $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction Stop).Context
-    }
-
-    $container = Get-AzStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
-    if (-not $container)
-    {
-        $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
-    }
-
-    Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
-
-    #random number in the path to prevent conflicts
-    $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
-    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
-    $lab.AzureSettings.VmDisks.Add($osVhdLocation)
-    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
-
-    $adminUserName = $Machine.InstallationUser.UserName
-    $adminPassword = $Machine.InstallationUser.Password
+    $lab = Get-Lab
 
     #if this machine has a SQL Server role
     foreach ($role in $Machine.Roles)
@@ -180,9 +586,9 @@ function New-LWAzureVM
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $visualStudioImages | Where-Object { $_.Version -eq $visualStudioVersion -and $_.OS.Version.Major -eq $machineOs.Version.Major } |
             Sort-Object -Property Update -Descending | Select-Object -First 1
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = ($vmImage).Offer
+        $publisherName = ($vmImage).PublisherName
+        $skusName = ($vmImage).Skus
 
         if (-not $vmImageName)
         {
@@ -223,9 +629,9 @@ function New-LWAzureVM
         $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
             Sort-Object -Property Update -Descending | Select-Object -First 1
 
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = ($vmImage).Offer
+        $publisherName = ($vmImage).PublisherName
+        $skusName = ($vmImage).Skus
 
         if (-not $vmImageName)
         {
@@ -250,50 +656,107 @@ function New-LWAzureVM
             Where-Object Skus -eq $vmImageName  |
             Select-Object -First 1
 
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = ($vmImage).Offer
+        $publisherName = ($vmImage).PublisherName
+        $skusName = ($vmImage).Skus
     }
+
     Write-PSFMessage -Message "We selected the SKUs $skusName from offer $offerName by publisher $publisherName"
+    @{
+        offer = $offerName
+        publisher = $publisherName
+        sku = $skusName
+        version = 'latest'
+    }
+}
+
+#region New-LWAzureVM
+function New-LWAzureVM
+{
+    [Cmdletbinding()]
+    param
+    (
+        [Parameter(Mandatory)]
+        [AutomatedLab.Machine]$Machine
+    )
+
+    Test-LabHostConnected -Throw -Quiet
+
+    Write-LogFunctionEntry
+
+    $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+
+    $lab = Get-Lab
+
+    $resourceGroupName = $lab.Name
+    if ($machine.AzureProperties)
+    {
+        if ($machine.AzureProperties.ContainsKey('ResourceGroupName'))
+        {
+            #if the resource group name is provided for the machine, it replaces the default
+            $resourceGroupName = $machine.AzureProperties.ResourceGroupName
+        }
+    }
+
+    $machineResourceGroup = $Machine.AzureProperties.ResourceGroupName
+    if (-not $machineResourceGroup)
+    {
+        $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
+    }
+
+    if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
+    {
+        Write-PSFMessage -Message "Target machine $($Machine.Name) already exists. Skipping..."
+        return
+    }
+
+    Write-PSFMessage -Message "Target resource group for machine: '$machineResourceGroup'"
+
+    if (-not $global:cacheVMs)
+    {
+        $global:cacheVMs = Get-AzVM
+    }
+
+    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
+    {
+        Write-ProgressIndicatorEnd
+        Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
+        return
+    }
+
+    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
+    $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
+
+    if (-not $storageContext)
+    {
+        $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction Stop).Context
+    }
+
+    $container = Get-AzStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
+    if (-not $container)
+    {
+        $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
+    }
+
+    Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
+
+    #random number in the path to prevent conflicts
+    $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
+    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
+    $lab.AzureSettings.VmDisks.Add($osVhdLocation)
+    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
+
+    $adminUserName = $Machine.InstallationUser.UserName
+    $adminPassword = $Machine.InstallationUser.Password
+
+    $skuOffer = Get-LWAzureSku -Machine $Machine
+    $offerName = $skuOffer.offer
+    $publisherName = $skuOffer.publisher
+    $skusName = $skuOffer.sku
 
     Write-ProgressIndicator
 
-    if ($machine.AzureProperties.RoleSize)
-    {
-        $roleSize = $lab.AzureSettings.RoleSizes |
-            Where-Object { $_.Name -eq $machine.AzureProperties.RoleSize }
-        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)'"
-    }
-    elseif ($machine.AzureProperties.UseAllRoleSizes)
-    {
-        $DefaultAzureRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
-        $roleSize = $lab.AzureSettings.RoleSizes |
-            Where-Object { $_.MemoryInMB -ge $machine.Memory -and $_.NumberOfCores -ge $machine.Processors -and $machine.Disks.Count -le $_.MaxDataDiskCount } |
-            Sort-Object -Property MemoryInMB, NumberOfCores |
-            Select-Object -First 1
-
-        Write-PSFMessage -Message "Using specified role size of '$($roleSize.InstanceSize)'. VM was configured to all role sizes but constrained to role size '$DefaultAzureRoleSize' by psd1 file"
-    }
-    else
-    {
-        switch ($lab.AzureSettings.DefaultRoleSize)
-        {
-            'A' { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})' }
-            'D' { $pattern = '^Standard_D\d{1,2}' }
-            'DS' { $pattern = '^Standard_DS\d{1,2}' }
-            'G' { $pattern = '^Standard_G\d{1,2}' }
-            'F' { $pattern = '^Standard_F\d{1,2}' }
-            default { $pattern = '^(Standard_A\d{1,2}|Basic_A\d{1,2})'}
-        }
-
-        $roleSize = $lab.AzureSettings.RoleSizes |
-            Where-Object { $_.Name -Match $pattern -and $_.Name -notlike '*promo*'} |
-            Where-Object { $_.MemoryInMB -ge ($machine.Memory / 1MB) -and $_.NumberOfCores -ge $machine.Processors } |
-            Sort-Object -Property MemoryInMB, NumberOfCores, @{ Expression = { if ($_.Name -match '.+_v(?<Version>\d{1,2})') { $Matches.Version } }; Ascending = $false } |
-            Select-Object -First 1
-
-        Write-PSFMessage -Message "Using specified role size of '$($roleSize.Name)' out of role sizes '$pattern'"
-    }
+    $roleSize = Get-LWAzureVmSize -Machine $Machine
 
     if (-not $roleSize)
     {
@@ -633,12 +1096,13 @@ function Initialize-LWAzureVM
 
     $lab = Get-Lab
 
-    Write-ScreenInfo -Message 'Waiting for all machines to be visible in Azure'
+    Write-ScreenInfo -Message 'Testing Azure VM availability'
     while ((Get-AzVM -ResourceGroupName $lab.Name | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
     {
         Start-Sleep -Seconds 10
         Write-PSFMessage 'Still waiting for all machines to be visible in Azure'
     }
+
     Write-ScreenInfo -Message "$($Machine.Count) new machine(s) has been created and now visible in Azure"
     Write-ScreenInfo -Message 'Waiting until all machines have a DNS name in Azure'
     while ((Get-LabVM).AzureConnectionInfo.DnsName.Count -ne (Get-LabVM).Count)
@@ -656,10 +1120,10 @@ function Initialize-LWAzureVM
     Wait-LabVM -ComputerName $Machine -ProgressIndicator 15 -DoNotUseCredSsp -ErrorAction Stop
 
     # Configure AutoShutdown
-    if ($null -ne $lab.AzureSettings.AutoShutdownTime)
+    if ($lab.AzureSettings.AutoShutdownTime)
     {
         $time = $lab.AzureSettings.AutoShutdownTime
-        $tz = if ($null -eq $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone}
+        $tz = if (-not $lab.AzureSettings.AutoShutdownTimeZone) {Get-TimeZone} else {Get-TimeZone -Id $lab.AzureSettings.AutoShutdownTimeZone}
         Write-ScreenInfo -Message "Configuring auto-shutdown of all VMs daily at $($time) in timezone $($tz.Id)"
         Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
     }
@@ -671,7 +1135,7 @@ function Initialize-LWAzureVM
     foreach ($machine in $machineSpecific)
     {
         $time = $machine.AzureProperties.AutoShutdownTime
-        $tz = if ($null -eq $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {Get-TimeZone -Id $machine.AzureProperties.AutoShutdownTimezoneId}
+        $tz = if (-not $machine.AzureProperties.AutoShutdownTimezoneId) {Get-TimeZone} else {Get-TimeZone -Id $machine.AzureProperties.AutoShutdownTimezoneId}
         Write-ScreenInfo -Message "Configure shutdown of $machine daily at $($time) in timezone $($tz.Id)"
         Enable-LWAzureAutoShutdown -ComputerName $machine -Time $time -TimeZone $tz -Wait
     }
@@ -1786,7 +2250,7 @@ function Enable-LWAzureAutoShutdown
         New-AzResource -ResourceId ("$($resourceIdString)$($vm.Name)") -Location $vm.Location -Properties $properties -Force -ErrorAction SilentlyContinue -AsJob
     }
 
-    if ($null -ne $jobs -and $Wait.IsPresent)
+    if ($jobs -and $Wait.IsPresent)
     {
         $null = $jobs | Wait-Job
     }
@@ -1812,7 +2276,7 @@ function Disable-LWAzureAutoShutdown
         Remove-AzResource -ResourceId ("$($resourceIdString)$($vm.Name)") -Force -ErrorAction SilentlyContinue -AsJob
     }
 
-    if ($null -ne $jobs -and $Wait.IsPresent)
+    if ($jobs -and $Wait.IsPresent)
     {
         $null = $jobs | Wait-Job
     }

@@ -756,13 +756,14 @@ function Install-Lab
     Unblock-LabSources
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
+    $engine = $Script:data.DefaultVirtualizationEngine
 
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
 
-    if ($NetworkSwitches -or $performAll)
+    if ($engine -ne 'Azure' -and ($NetworkSwitches -or $performAll))
     {
         Write-ScreenInfo -Message 'Creating virtual networks' -TaskStart
 
