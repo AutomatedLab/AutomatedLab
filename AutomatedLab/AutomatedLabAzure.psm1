@@ -126,7 +126,7 @@ function Add-LabAzureSubscription
     }
 
     $AzureRmProfile = Get-AzContext
-    if ($null -eq $AzureRmProfile)
+    if (-not $AzureRmProfile)
     {
         throw 'Cannot continue without a valid Azure connection.'
     }
@@ -139,9 +139,9 @@ function Add-LabAzureSubscription
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
 
-    if ($null -ne $AutoShutdownTime)
+    if ($AutoShutdownTime)
     {
-        if ($null -eq $AutoShutdownTimeZone)
+        if (-not $AutoShutdownTimeZone)
         {
             $AutoShutdownTimeZone = Get-TimeZone
         }
@@ -344,7 +344,7 @@ function Add-LabAzureSubscription
 
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
-    if ($null -eq $lastchecked)
+    if (-not $lastchecked)
     {
         $syncText = @"
 Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to your Azure file share $($global:labsources)?
@@ -354,7 +354,14 @@ execute Sync-LabAzureLabSources manually. The maximum file size for the automati
 be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
 "@
-        $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
+        $choice = if ([Environment]::UserInteractive)
+        {
+            Read-Choice -ChoiceList '&Yes', '&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
+        }
+        else
+        {
+            2
+        }
 
         if ($choice -eq 0)
         {
@@ -382,7 +389,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
             }
         }
     }
-    elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
+    elseif ($lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
     {
         Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
@@ -1010,7 +1017,7 @@ function Get-LabAzureResourceGroup
     {
         $result = $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
 
-        if ($null -eq $result)
+        if (-not $result)
         {
             $result = $script:lab.AzureSettings.DefaultResourceGroup
         }
