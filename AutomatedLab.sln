@@ -744,6 +744,50 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CM-1902", "CM-1902", "{5306
 		LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1 = LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NuGetServer", "NuGetServer", "{1EEC9672-7D53-4564-AFAF-34A8036BE3C3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\HostStart.ps1 = LabSources\CustomRoles\NuGetServer\HostStart.ps1
+		LabSources\CustomRoles\NuGetServer\README.md = LabSources\CustomRoles\NuGetServer\README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".build", ".build", "{409D0A98-C97A-4580-BF45-280752DE4F7F}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\.build\build.ps1 = LabSources\CustomRoles\NuGetServer\.build\build.ps1
+		LabSources\CustomRoles\NuGetServer\.build\deploy.ps1 = LabSources\CustomRoles\NuGetServer\.build\deploy.ps1
+		LabSources\CustomRoles\NuGetServer\.build\test.ps1 = LabSources\CustomRoles\NuGetServer\.build\test.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Feed", "AutomatedLab.Feed", "{E7B6646D-9FAF-4AE5-B670-A2F741E85DB1}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed.sln = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed.sln
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AutomatedLab.Feed", "AutomatedLab.Feed", "{47CCA009-5AFB-48F3-984C-431EB80BFAB1}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\AutomatedLab.Feed.csproj = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\AutomatedLab.Feed.csproj
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Default.aspx = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Default.aspx
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\favicon.ico = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\favicon.ico
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\packages.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\packages.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Debug.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Debug.config
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Release.config = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Release.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "App_Start", "App_Start", "{411B5A16-8587-4ED3-8B4A-4AD53710B4B3}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\App_Start\NuGetODataConfig.cs = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\App_Start\NuGetODataConfig.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Properties", "Properties", "{4933BEF3-43BA-4C13-99D4-C1F8163F4620}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\AssemblyInfo.cs = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\AssemblyInfo.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishProfiles", "PublishProfiles", "{16B5F4A5-7B37-45A4-ACBF-474C32D308FD}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -861,6 +905,13 @@ Global
 		{CFBA7C26-FD09-4636-A867-E80BA6FE1DB6} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 		{2E1EFB85-C5E9-43C0-9698-98F05DBE40A3} = {1130E19B-F91C-493B-AC50-8B7862716FB6}
 		{530672FA-8EB4-406B-AB14-06E94B550771} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{1EEC9672-7D53-4564-AFAF-34A8036BE3C3} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{409D0A98-C97A-4580-BF45-280752DE4F7F} = {1EEC9672-7D53-4564-AFAF-34A8036BE3C3}
+		{E7B6646D-9FAF-4AE5-B670-A2F741E85DB1} = {1EEC9672-7D53-4564-AFAF-34A8036BE3C3}
+		{47CCA009-5AFB-48F3-984C-431EB80BFAB1} = {E7B6646D-9FAF-4AE5-B670-A2F741E85DB1}
+		{411B5A16-8587-4ED3-8B4A-4AD53710B4B3} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
+		{4933BEF3-43BA-4C13-99D4-C1F8163F4620} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
+		{16B5F4A5-7B37-45A4-ACBF-474C32D308FD} = {4933BEF3-43BA-4C13-99D4-C1F8163F4620}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
