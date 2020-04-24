@@ -743,6 +743,7 @@ function New-LabDefinition
     $Global:AL_DeploymentStart = $null
     $Global:taskStart = @()
     $Global:indent = 0
+    $global:AL_CurrentLab = $null
 
     $Global:labDeploymentNoNewLine = $false
 
