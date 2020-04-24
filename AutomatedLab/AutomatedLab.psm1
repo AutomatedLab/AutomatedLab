@@ -936,8 +936,7 @@ function Install-Lab
 
     if (($AdTrusts -or $performAll) -and ((Get-LabVM -Role RootDC | Measure-Object).Count -gt 1))
     {
-        Write-ScreenInfo -Message 'Configuring DNS forwarding and AD trusts' -TaskStart
-        Install-LabDnsForwarder
+        Write-ScreenInfo -Message 'Configuring AD trusts' -TaskStart
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }

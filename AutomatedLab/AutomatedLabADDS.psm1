@@ -994,6 +994,9 @@ function Install-LabRootDcs
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
         } -ArgumentList $machines -NoDisplay
 
+        # Configure DNS forwarders for Azure machines to be able to mount LabSoures
+        Install-LabDnsForwarder
+
         $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
 
         if ($linuxMachines)

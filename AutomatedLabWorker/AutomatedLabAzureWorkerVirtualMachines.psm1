@@ -16,6 +16,8 @@
         $Wait
     )
 
+    Write-LogFunctionEntry
+
     $template = @{
         '$schema'      = "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
         contentVersion = '1.0.0.0'  
@@ -36,12 +38,50 @@
         resources      = @()
     }
     
+    #region Network Security Group
+    Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
+    $template.resources += @{
+        type       = "Microsoft.Network/networkSecurityGroups"
+        apiVersion = "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]"
+        name       = "$($Lab.Name)nsg"
+        location   = "[resourceGroup().location]"
+        properties = @{
+            securityRules = @(
+                @{
+                    name       = "NecessaryPorts"
+                    properties = @{
+                        protocol                   = "TCP"
+                        sourcePortRange            = "*"
+                        sourceAddressPrefix        = "*"
+                        destinationAddressPrefix   = "VirtualNetwork"
+                        access                     = "Allow"
+                        priority                   = 100
+                        direction                  = "Inbound"
+                        sourcePortRanges           = @()
+                        destinationPortRanges      = @(
+                            "3389"
+                            "5985"
+                            "5986"
+                        )
+                        sourceAddressPrefixes      = @()
+                        destinationAddressPrefixes = @()
+                    }
+                }
+            )
+        }
+    }
+    #endregion
+
     foreach ($network in $Lab.VirtualNetworks)
     {
         #region VNet
+        Write-ScreenInfo -Type Verbose -Message ('Adding vnet {0} ({1}) to template' -f $network.Name, $network.AddressSpace)
         $vNet = @{
             type       = "Microsoft.Network/virtualNetworks"
             apiVersion = "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]"
+            dependsOn  = @(
+                "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+            )
             name       = $network.Name
             location   = "[resourceGroup().location]"
             properties = @{
@@ -51,7 +91,7 @@
                     )
                 }
                 subnets      = @()
-                dhcpOptions = @{
+                dhcpOptions  = @{
                     dnsServers = @()
                 }
             }
@@ -59,24 +99,33 @@
 
         if ($network.DnsServers)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding DNS Servers to VNet template: {0}' -f $network.DnsServers)
             $vNet.properties.dhcpOptions.dnsServers = $network.DnsServers.AddressAsString
         }
 
         if (-not $network.Subnets)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding default subnet ({0}) to VNet' -f $network.AddressSpace)
             $vnet.properties.subnets += @{
-                name       = "default"
-                properties = @{
+                name                 = "default"
+                properties           = @{
                     addressPrefix = $network.AddressSpace.ToString()
+                    networkSecurityGroup = @{
+                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                    }
                 }
             }
         }
         foreach ($subnet in $network.Subnets)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding subnet {0} ({1}) to VNet' -f $subnet.Name, $subnet.AddressSpace)
             $vnet.properties.subnets += @{
                 name       = $subnet.Name
                 properties = @{
-                    addressPrefix = $network.AddressSpace.ToString()
+                    addressPrefix = $subnet.AddressSpace.ToString()
+                    networkSecurityGroup = @{
+                        id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                    }
                 }
             }
         }
@@ -87,6 +136,7 @@
         #region Peering
         foreach ($peer in $network.ConnectToVnets)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.Name, $peer)
             $template.Resources += @{
                 apiVersion = "[providers('Microsoft.Network','virtualNetworks', 'virtualNetworkPeerings').apiVersions[0]]"
                 dependsOn  = @(
@@ -117,6 +167,7 @@
             $dnsLabel = $network.AzureDnsLabel
         }
 
+        Write-ScreenInfo -Type Verbose -Message ('Adding public static IP with DNS label {0} to template' -f $dnsLabel)
         $template.resources +=
         @{
             apiVersion = "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]"
@@ -136,6 +187,7 @@
         #endregion
 
         #region Load balancer
+        Write-ScreenInfo -Type Verbose -Message ('Adding load balancer to template')
         $loadBalancer = @{
             type       = "Microsoft.Network/loadBalancers"
             apiVersion = "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]"
@@ -168,6 +220,7 @@
 
         $rules = foreach ($machine in ($Lab.Machines | Where-Object -Property Network -EQ $vNet.Name))
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
             @{
                 name       = "$($machine.Name.ToLower())rdpin"
                 properties = @{
@@ -211,6 +264,7 @@
         #endregion
 
         #region AvailabilitySet
+        Write-ScreenInfo -Type Verbose -Message ('Adding availability set to template')
         $template.resources += @{
             type       = "Microsoft.Compute/availabilitySets"
             apiVersion = "[providers('Microsoft.Compute','availabilitySets').apiVersions[0]]"
@@ -230,6 +284,7 @@
     #region Disks
     foreach ($disk in $Lab.Disks)
     {
+        Write-ScreenInfo -Type Verbose -Message ('Creating managed data disk {0} ({1} GB)' -f $disk.Name, $disk.DiskSize)
         $vm = $lab.Machines | Where-Object { $_.Disks.Name -contains $disk.Name }
         $template.resources += @{
             type       = "Microsoft.Compute/disks"
@@ -261,6 +316,7 @@
         $niccount = 0
         foreach ($nic in $machine.NetworkAdapters)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Creating NIC {0}' -f $nic.InterfaceName)
             $subnetName = 'default'
             if (($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name)
             {
@@ -271,7 +327,7 @@
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.Name)')]"
                     "[resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer')]"
-                                )
+                )
                 properties = @{
                     enableAcceleratedNetworking = $false
                     dnsSettings                 = @{
@@ -317,6 +373,7 @@
             $niccount++
         }
 
+        Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $machTemplate = @{
             name       = $machine.Name
             dependsOn  = @(
@@ -367,6 +424,7 @@
         $luncount = 0
         foreach ($disk in $machine.Disks)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding disk {0} to machine template' -f $disk.Name)
             $machTemplate.properties.storageProfile.dataDisks += @{
                 lun          = $luncount
                 name         = $disk.Name
@@ -381,6 +439,7 @@
         $niccount = 0
         foreach ($nic in $machine.NetworkAdapters)
         {
+            Write-ScreenInfo -Type Verbose -Message ('Adding NIC {0} to template' -f $nic.InterfaceName)
             $machtemplate.dependsOn += "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.Name)nic$($niccount)')]"
             $machTemplate.properties.networkProfile.networkInterfaces += @{
                 id         = "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.name)nic$($niccount)')]"
@@ -402,9 +461,10 @@
         Force             = $true
     }
 
-    $template | ConvertTo-JsonNewtonsoft | Set-Content (Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$($Lab.Name)/armtemplate.json")
+    $templatePath = Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Labs/$($Lab.Name)/armtemplate.json"
+    $template | ConvertTo-JsonNewtonsoft | Set-Content -Path $templatePath
 
-    Write-ScreenInfo -Message "Deploying new resource group with template $((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$($Lab.Name)/armtemplate.json"
+    Write-ScreenInfo -Message "Deploying new resource group with template $templatePath"
     $deployment = if ($Wait.IsPresent)
     {
         New-AzResourceGroupDeployment @rgDeplParam
@@ -419,6 +479,8 @@
     {
         $deployment
     }
+
+    Write-LogFunctionExit
 }
 
 function Get-LWAzureVmSize
@@ -957,7 +1019,13 @@ function Initialize-LWAzureVM
             $DiskCount,
 
             [string]
-            $LabSourcesStorage,
+            $LabSourcesPath,
+
+            [string]
+            $StorageAccountName,
+
+            [string]
+            $StorageAccountKey,
 
             [string[]]
             $DnsServers
@@ -1037,10 +1105,14 @@ function Initialize-LWAzureVM
     net.exe use * {0} /u:{2} {3}
 '@
 
-        $cmdkeyTarget = ($LabSourcesStorage.Path -split '\\')[2]
-        $script = $script -f $LabSourcesStorage.Path, $cmdkeyTarget, $LabSourcesStorage.StorageAccountName, $LabSourcesStorage.StorageAccountKey
+        $cmdkeyTarget = ($LabSourcesPath -split '\\')[2]
+        $script = $script -f $LabSourcesPath, $cmdkeyTarget, $StorageAccountName, $StorageAccountKey
 
-        $LabSourcesStorage | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
+        [pscustomobject]@{
+            Path               = $LabSourcesPath
+            StorageAccountName = $StorageAccountName
+            StorageAccountKey  = $StorageAccountKey
+        } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
         $script | Out-File C:\AL\AzureLabSources.ps1 -Force
 
         SCHTASKS /Create /SC ONCE /ST 00:00 /TN ALLabSourcesCmdKey /TR "powershell.exe -File C:\AL\AzureLabSources.ps1" /RU "NT AUTHORITY\SYSTEM"
@@ -1138,11 +1210,13 @@ function Initialize-LWAzureVM
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
         $scriptParam = @{
-            UserLocale        = $m.UserLocale
-            TimeZoneId        = $m.TimeZone
-            DiskCount         = $m.Disks.Count
-            LabSourcesStorage = $labsourcesStorage
-            DnsServers        = $DnsServers
+            UserLocale         = $m.UserLocale
+            TimeZoneId         = $m.TimeZone
+            DiskCount          = $m.Disks.Count
+            LabSourcesPath     = $labsourcesStorage.Path
+            StorageAccountName = $labsourcesStorage.StorageAccountName
+            StorageAccountKey  = $labsourcesStorage.StorageAccountKey
+            DnsServers         = $DnsServers
         }
 
         Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.Name -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
