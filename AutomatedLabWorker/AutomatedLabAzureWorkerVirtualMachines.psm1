@@ -940,13 +940,27 @@ function Initialize-LWAzureVM
     )
 
     Test-LabHostConnected -Throw -Quiet
+    Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $lab = Get-Lab
 
     $initScript = {
         param(
-            [Parameter(Mandatory = $true)]
-            $MachineSettings
+            [string]
+            $UserLocale,
+
+            [string]
+            $TimeZoneId,
+
+            [int]
+            $DiskCount,
+
+            [string]
+            $LabSourcesStorage,
+
+            [string[]]
+            $DnsServers
         )
 
         #region Region Settings Xml
@@ -975,17 +989,25 @@ function Initialize-LWAzureVM
 '@
         #endregion
 
-        $geoId = 94 #default is US
+        try
+        {
+            $geoId = [System.Globalization.RegionInfo]::new($UserLocale).GeoId
+        }
+        catch
+        {
+            $geoId = 244 #default is US
+        }
 
-        $computerName = ($env:ComputerName).ToUpper()
-        $tempFile = [System.IO.Path]::GetTempFileName()
-        $regsettings = ($MachineSettings."$computerName")[1]
-        Write-Verbose -Message "Regional Settings for $computerName`: $regsettings"
-        $regionSettings -f ($MachineSettings."$computerName")[0], $geoId | Out-File -FilePath $tempFile
+        if (-not (Test-Path 'C:\AL'))
+        {
+            $alDir = New-Item -ItemType Directory -Path C:\AL -Force
+        }
+
+        $tempFile = Join-Path -Path $alDir -ChildPath RegionalSettings
+        $regionSettings -f $UserLocale, $geoId | Out-File -FilePath $tempFile
         $argument = 'intl.cpl,,/f:"{0}"' -f $tempFile
         control.exe $argument
         Start-Sleep -Seconds 1
-        Remove-Item -Path $tempFile
 
         Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope LocalMachine -Force
 
@@ -993,8 +1015,6 @@ function Initialize-LWAzureVM
         powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
 
         #Create a scheduled tasks that maps the Azure lab sources drive during each logon
-        $labSourcesStorageAccount = ($MachineSettings."$computerName")[3]
-
         $script = @'
     $labSourcesPath = '{0}'
 
@@ -1017,19 +1037,16 @@ function Initialize-LWAzureVM
     net.exe use * {0} /u:{2} {3}
 '@
 
-        $cmdkeyTarget = ($labSourcesStorageAccount.Path -split '\\')[2]
-        $script = $script -f $labSourcesStorageAccount.Path, $cmdkeyTarget, $labSourcesStorageAccount.StorageAccountName, $labSourcesStorageAccount.StorageAccountKey
+        $cmdkeyTarget = ($LabSourcesStorage.Path -split '\\')[2]
+        $script = $script -f $LabSourcesStorage.Path, $cmdkeyTarget, $LabSourcesStorage.StorageAccountName, $LabSourcesStorage.StorageAccountKey
 
-        New-Item -ItemType Directory -Path C:\AL -Force
-        $labSourcesStorageAccount | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
+        $LabSourcesStorage | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
         $script | Out-File C:\AL\AzureLabSources.ps1 -Force
 
         SCHTASKS /Create /SC ONCE /ST 00:00 /TN ALLabSourcesCmdKey /TR "powershell.exe -File C:\AL\AzureLabSources.ps1" /RU "NT AUTHORITY\SYSTEM"
 
         #set the time zone
-        $timezone = ($MachineSettings."$computerName")[1]
-        Write-Verbose -Message "Time zone for $computerName`: $regsettings"
-        tzutil.exe /s $regsettings
+        Set-TimeZone -Name $TimeZoneId
 
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v ALLabSourcesCmdKey /d 'powershell.exe -File C:\AL\AzureLabSources.ps1' /t REG_SZ /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\ServerManager\oobe' /v DoNotOpenInitialConfigurationTasksAtLogon /d 1 /t REG_DWORD /f
@@ -1042,21 +1059,19 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
 
         #turn off the Windows firewall
-        netsh.exe advfirewall set domain state off
-        netsh.exe advfirewall set private state off
-        netsh.exe advfirewall set public state off
+        Set-NetFirewallProfile -Name Domain -Enabled False
+        Set-NetFirewallProfile -Name Private -Enabled False
+        Set-NetFirewallProfile -Name Public -Enabled False
 
-        if (($MachineSettings."$computerName")[4])
+        if ($DnsServers.Count -gt 0)
         {
-            $dnsServers = ($MachineSettings."$computerName")[4]
-            Write-Verbose "Configuring $($dnsServers.Count) DNS Servers"
+            Write-Verbose "Configuring $($DnsServers.Count) DNS Servers"
             $idx = (Get-NetIPInterface | Where-object {$_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*"}).ifIndex
-            Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dnsServers
+            Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $DnsServers
         }
 
-        $disks = ($MachineSettings."$computerName")[2]
-        Write-Verbose -Message "Disk count for $computerName`: $disks"
-        if ([int]$disks -gt 0)
+        Write-Verbose -Message "Disk count for $computerName`: $DiskCount"
+        if ($DiskCount -gt 0)
         {
             $diskpartCmd = 'LIST DISK'
 
@@ -1092,32 +1107,9 @@ function Initialize-LWAzureVM
         }
     }
 
-    Write-LogFunctionEntry
+    $initScriptFile = New-TemporaryFile
+    $initScript.ToString() | Set-Content -Path $initScriptFile -Force
 
-    $lab = Get-Lab
-
-    Write-ScreenInfo -Message 'Testing Azure VM availability'
-    while ((Get-AzVM -ResourceGroupName $lab.Name | Where-Object Name -in $Machine.Name).Count -ne $Machine.Count)
-    {
-        Start-Sleep -Seconds 10
-        Write-PSFMessage 'Still waiting for all machines to be visible in Azure'
-    }
-
-    Write-ScreenInfo -Message "$($Machine.Count) new machine(s) has been created and now visible in Azure"
-    Write-ScreenInfo -Message 'Waiting until all machines have a DNS name in Azure'
-    while ((Get-LabVM).AzureConnectionInfo.DnsName.Count -ne (Get-LabVM).Count)
-    {
-        Start-Sleep -Seconds 10
-        Write-ScreenInfo -Message 'Still waiting until all machines have a DNS name in Azure'
-    }
-    Write-ScreenInfo -Message "DNS names found: $((Get-LabVM).AzureConnectionInfo.DnsName.Count)"
-
-    #refresh the machine list to make sure Azure connection info is available
-    $Machine = Get-LabVM -ComputerName $Machine
-
-    #copy AL tools to lab machine and optionally the tools folder
-    Write-ScreenInfo -Message "Waiting for machines '$($Machine -join ', ')' to be accessible" -NoNewLine
-    Wait-LabVM -ComputerName $Machine -ProgressIndicator 15 -DoNotUseCredSsp -ErrorAction Stop
 
     # Configure AutoShutdown
     if ($lab.AzureSettings.AutoShutdownTime)
@@ -1128,7 +1120,7 @@ function Initialize-LWAzureVM
         Enable-LWAzureAutoShutdown -ComputerName (Get-LabVm | Where-Object Name -notin $machineSpecific.Name) -Time $time -TimeZone $tz -Wait
     }
 
-    $machineSpecific = Get-LabVm | Where-Object {
+    $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
         $_.AzureProperties.ContainsKey('AutoShutdownTime')
     }
 
@@ -1141,27 +1133,23 @@ function Initialize-LWAzureVM
     }
 
     Write-ScreenInfo -Message 'Configuring localization and additional disks' -TaskStart -NoNewLine
-    $machineSettings = @{}
-    $lab = Get-Lab
-    foreach ($m in $Machine)
+    $labsourcesStorage = Get-LabAzureLabSourcesStorage
+    $jobs = foreach ($m in $Machine)
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
-        $machineSettings.Add($m.Name.ToUpper(),
-            @(
-                $m.UserLocale,
-                $m.TimeZone,
-                [int]($m.Disks.Count),
-                (Get-LabAzureLabSourcesStorage),
-                $DnsServers
-            )
-        )
+        $scriptParam = @{
+            UserLocale        = $m.UserLocale
+            TimeZoneId        = $m.TimeZone
+            DiskCount         = $m.Disks.Count
+            LabSourcesStorage = $labsourcesStorage
+            DnsServers        = $DnsServers
+        }
+
+        Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.Name -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
     }
 
-    $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -DoNotUseCredSsp -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Write-ScreenInfo -Message 'Finished' -TaskEnd
-
-    Enable-LabVMRemoting -ComputerName $Machine
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
     $machinesToStop = $Machine | Where-Object { $_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDC' -and $_.Roles.Name -notcontains 'DC' -and $_.IsDomainJoined }
