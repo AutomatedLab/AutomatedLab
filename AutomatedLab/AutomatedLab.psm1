@@ -1,4 +1,4 @@
-#region Enable-LabHostRemoting
+﻿#region Enable-LabHostRemoting
 function Enable-LabHostRemoting
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
@@ -1365,7 +1365,7 @@ function Get-LabAvailableOperatingSystem
         foreach ($os in $cachedSkus)
         {
             $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus, $true)
-            if ($null -ne $cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
+            if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
         if ($UseOnlyCache)
@@ -2872,7 +2872,7 @@ function Set-LabInstallationCredential
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if ($null -ne $Password -and $azurePasswordBlacklist -contains $Password)
+        if ($Password -and $azurePasswordBlacklist -contains $Password)
         {
             throw "Password '$Password' is in the list of forbidden passwords for Azure VMs: $($azurePasswordBlacklist -join ', ')"
         }
@@ -2890,7 +2890,7 @@ function Set-LabInstallationCredential
             $Password.Length -ge 8
         )
 
-        if ($null -ne $Password -and $checks -contains $false)
+        if ($Password -and $checks -contains $false)
         {
             throw "Passwords for Azure VM administrator have to:
                 Be at least 8 characters long
@@ -3487,7 +3487,7 @@ function Get-LabConfigurationItem
     if ($Name)
     {
         $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name).Value
-        if ($null -eq $setting -and $null -ne $Default)
+        if (-not $setting -and $Default)
         {
             return $Default
         }
@@ -3504,6 +3504,7 @@ function Test-LabHostConnected
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingComputerNameHardcoded", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("ALSimpleNullComparison", "", Justification="We want a boolean")]
     [CmdletBinding()]
     param
     (
@@ -3525,9 +3526,14 @@ function Test-LabHostConnected
             # Assuming that we are in Azure Cloud Console aka Cloud Shell which is connected but cannot send ICMP packages
             $true
         }
+        elseif ($IsLinux)
+        {
+            # Due to an unadressed issue with Test-Connection on Linux
+            [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+        }
         else
         {
-            Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
+            Test-Connection -ComputerName automatedlab.org -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
         }
     }
 
