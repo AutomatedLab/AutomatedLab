@@ -129,6 +129,7 @@
                 <File Id='Sample_MDTLab2' Name='MDT Lab 2, DC and MDT Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1' />
                 <File Id='Sample_SCCMLab1' Name='SCCM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1' />
                 <File Id='Sample_CM1902Lab1' Name='CM-1902.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\CM-1902.ps1' />
+                <File Id='Sample_NuGetServerLab1' Name='NuGetServer.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\NuGetServer.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>
@@ -1250,6 +1251,36 @@
       <Component Id="cmpCFDA434FE2294C39A01B1A9F6DC59529" Directory="dirA53F69F85E224F84873C47FAFD3B88BB" Guid="015a25fd-f85e-4185-8fe7-09b05cb32d9b">
         <File Id="filDC4663A87BBC486D96836D3BB0F4F246" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\HostStart.ps1" />
       </Component>
+      <Component Id="cmpD43AC3ADCAC343318238CE837A8511FD" Directory="dirC36E8B7EEDBFAC7EC8246E888318E976" Guid="8f1d61d4-524e-480a-bced-3808ee1464d7">
+        <File Id="fil322C12274D5FA443820293B774FB33F8" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\HostStart.ps1" />
+        <File Id="filF77493252C6F22FB641A5F9F46E6B2B9" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\README.md" />
+      </Component>
+      <Component Id="cmpD872D51591D5FB0B8C3BBB4DA137154C" Directory="dirE0E05B89294CA38FA97EE7238D9CEFB1" Guid="97dedffc-f055-4f9a-9ceb-002343c051e2">
+        <File Id="fil5AF4A22C0693A040E9DE14A3EBED7B0E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed.sln" />
+      </Component>
+      <Component Id="cmp327619CD4BA2431DB598B336998F1D12" Directory="dirCDCBE3521717CF93DD16CF0E85E9CA95" Guid="a3c6cf44-a3c9-4796-a47f-c498debcf613">
+        <File Id="filF82C6BB38D2FCC6CF1C0338C789B766E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\AutomatedLab.Feed.csproj" />
+        <File Id="fil14F979CCDFC9B2BD6BBBD1641AB73646" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Default.aspx" />
+        <File Id="fil41659F25C700C70685B10C8D56CC33A0" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\favicon.ico" />
+        <File Id="filFFEECD18D40560A08082A3F38E812EC9" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\packages.config" />
+        <File Id="filA19C280B694FB4CF37D9905A1E4057EC" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.config" />
+        <File Id="filA03A5C9A7ECE6C135C8CD75EE5827868" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Debug.config" />
+        <File Id="filDAEDF51BE5B607EF4EABD7183016AA3B" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Web.Release.config" />
+      </Component>
+      <Component Id="cmp4C0668DF823CF3E5E6F46753AE2BE3AE" Directory="dir85107A923E48585C84908A44D8030BDA" Guid="89b0502c-57f9-48b2-96b1-2a2802c4d679">
+        <File Id="filA687D3B6D178462463BD5E9B48258B5E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\App_Start\NuGetODataConfig.cs" />
+      </Component>
+      <Component Id="cmpE1D1F7B6655F9C8D9AC0C78E4E3F1F4E" Directory="dir37A7CF04B48DB69F87A6514A85648236" Guid="e4b17625-38a8-4872-9579-722da696a184">
+        <File Id="fil9AE92A7EF2B1A3E06965B6A4D663E339" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\AssemblyInfo.cs" />
+      </Component>
+      <Component Id="cmp55A4B4849ADAD1E107A71AE5AD5EEDA4" Directory="dir28B0084D421216FE92CC8481619C69AA" Guid="1fd6b425-5ba1-4e7e-8a49-fb551c6aad0c">
+        <File Id="filA102335A502A3E7D04406D84B6DF446A" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml" />
+      </Component>
+      <Component Id="cmp20B7D2D236DBF09970560D12CAFA69FD" Directory="dirC68FB245828A689F597C7A6D695D1CF4" Guid="9644f8fe-4a96-4118-8bc3-32153a6f0cf3">
+        <File Id="filA597349DB2E9214D7D33BF7FFBAAE6AD" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\.build\build.ps1" />
+        <File Id="filE5D833DE08B62A029E5E9084F9247DF6" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\.build\deploy.ps1" />
+        <File Id="fil98F247E6FBA601F10470F2113A138274" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\.build\test.ps1" />
+      </Component>
       <Component Id="cmp671B69F8154634FF36C34DD79C618D70" Directory="dir0C2344C28DDF2BE515A2EB1362D4BFC7" Guid="d3bc68d7-829e-42b5-a824-5835344c665a">
         <File Id="filA3AE6B6873238B3E226A641C43640923" KeyPath="yes" Source="$(var.SolutionDir)LabSources\ISOs\README.md" />
       </Component>
@@ -1459,6 +1490,41 @@
   <Fragment>
     <DirectoryRef Id="dirB2ACA9410CDB950E0A607387A4CEAC01">
       <Directory Id="dirFB8F46DAE95D4FEE6AAF25E7B7E68B1D" Name="DotNet35Client" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirC36E8B7EEDBFAC7EC8246E888318E976" Name="NuGetServer" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dir37A7CF04B48DB69F87A6514A85648236">
+      <Directory Id="dir28B0084D421216FE92CC8481619C69AA" Name="PublishProfiles" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirCDCBE3521717CF93DD16CF0E85E9CA95">
+      <Directory Id="dir37A7CF04B48DB69F87A6514A85648236" Name="Properties" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirCDCBE3521717CF93DD16CF0E85E9CA95">
+      <Directory Id="dir85107A923E48585C84908A44D8030BDA" Name="App_Start" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirC36E8B7EEDBFAC7EC8246E888318E976">
+      <Directory Id="dirC68FB245828A689F597C7A6D695D1CF4" Name=".build" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE0E05B89294CA38FA97EE7238D9CEFB1">
+      <Directory Id="dirCDCBE3521717CF93DD16CF0E85E9CA95" Name="AutomatedLab.Feed" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirC36E8B7EEDBFAC7EC8246E888318E976">
+      <Directory Id="dirE0E05B89294CA38FA97EE7238D9CEFB1" Name="AutomatedLab.Feed" />
     </DirectoryRef>
   </Fragment>
 </Wix>
