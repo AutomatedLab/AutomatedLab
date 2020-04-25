@@ -32,7 +32,15 @@ Save-Module -Name PackageManagement, PowerShellGet, Pester, VoiceCommands -Path 
 Invoke-WebRequest -Uri 'https://dist.nuget.org/win-x86-commandline/v4.9.4/nuget.exe' -OutFile (Join-Path -Path $publishTarget -ChildPath nuget.exe) -ErrorAction Stop
 
 Write-Host -ForegroundColor Cyan "Cleaning out $packagePath"
-Get-ChildItem -Path $packagePath | Remove-Item -Force
+if (Test-Path -Path $packagePath)
+{
+    Get-ChildItem -Path $packagePath | Remove-Item -Force
+}
+else
+{
+    $null = New-Item -ItemType Directory -Path $packagePath
+}
+
 $count = $Packages.Count
 
 if ($PackageSourcePath)
