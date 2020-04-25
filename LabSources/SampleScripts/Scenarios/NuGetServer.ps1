@@ -12,8 +12,8 @@
 
 New-LabDefinition -Name $LabName -DefaultVirtualizationEngine $Engine
 Add-LabVirtualNetworkDefinition -Name $labName -AddressSpace 192.168.30.0/24
-Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword 'M3g4SecUr3!'
-Set-LabInstallationCredential -Username Install -Password 'M3g4SecUr3!'
+Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1
+Set-LabInstallationCredential -Username Install -Password Somepass1
 
 $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:Network'         = $labName
