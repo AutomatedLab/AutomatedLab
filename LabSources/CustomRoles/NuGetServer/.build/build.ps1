@@ -23,13 +23,14 @@ $projectFilePath = Join-Path -Path $ProjectPath -ChildPath 'AutomatedLab.Feed\Au
 $publishTarget = New-Item -Path (Join-Path -Path $ProjectPath -ChildPath 'publish') -Force -ItemType Directory
 $modulePath = New-Item -Path (Join-Path -Path $publishTarget -ChildPath 'Modules') -Force -ItemType Directory
 $packagePath = Join-Path -Path $publishTarget -ChildPath 'Packages'
+Invoke-WebRequest -Uri 'https://dist.nuget.org/win-x86-commandline/v4.9.4/nuget.exe' -OutFile (Join-Path -Path $publishTarget -ChildPath nuget.exe) -ErrorAction Stop
 
+& (Join-Path -Path $publishTarget -ChildPath nuget.exe) restore $projectFilePath
 msbuild $projectFilePath /p:PublishProfile=FolderProfile /p:DeployOnBuild=true
 
 # Download nuget
 # Old version is downloaded because latest version requires .NET 4.8
 Save-Module -Name PackageManagement, PowerShellGet, Pester, VoiceCommands -Path $modulePath.FullName -Repository $Repository
-Invoke-WebRequest -Uri 'https://dist.nuget.org/win-x86-commandline/v4.9.4/nuget.exe' -OutFile (Join-Path -Path $publishTarget -ChildPath nuget.exe) -ErrorAction Stop
 
 Write-Host -ForegroundColor Cyan "Cleaning out $packagePath"
 if (Test-Path -Path $packagePath)
