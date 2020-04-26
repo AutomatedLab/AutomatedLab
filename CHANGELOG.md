@@ -5,6 +5,8 @@
 
 ### Enhancements
 
+- Added NuGet custom role that uses open source NuGet server package
+
 ### Bug Fixes
 
 - Fixed module import loop (Fixes #869)
