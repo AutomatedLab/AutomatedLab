@@ -21,20 +21,7 @@
     $template = @{
         '$schema'      = "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#"
         contentVersion = '1.0.0.0'  
-        parameters     = @{
-            adminUsername = @{
-                type     = "string"
-                metadata = @{
-                    description = "The name of the administrator account of the new VM"
-                }
-            }
-            adminPassword = @{
-                type     = "securestring"
-                metadata = @{
-                    description = "The password for the administrator account of the new VM and domain"
-                }
-            }
-        }
+        parameters     = @{ }
         resources      = @()
     }
     
@@ -138,7 +125,7 @@
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.Name, $peer)
             $template.Resources += @{
-                apiVersion = "[providers('Microsoft.Network','virtualNetworks', 'virtualNetworkPeerings').apiVersions[0]]"
+                apiVersion = "[providers('Microsoft.Network', 'virtualNetworks').apiVersions[0]]"
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
@@ -284,6 +271,7 @@
     #region Disks
     foreach ($disk in $Lab.Disks)
     {
+        if (-not $disk) { continue } # Due to an issue with the disk collection being enumerated even if it is empty
         Write-ScreenInfo -Type Verbose -Message ('Creating managed data disk {0} ({1} GB)' -f $disk.Name, $disk.DiskSize)
         $vm = $lab.Machines | Where-Object { $_.Disks.Name -contains $disk.Name }
         $template.resources += @{
@@ -396,10 +384,10 @@
                     networkInterfaces = @()
                 }
                 osProfile       = @{
-                    adminPassword            = "[parameters('adminPassword')]"
+                    adminPassword            = $machine.GetLocalCredential($true).GetNetworkCredential().Password
                     computerName             = $machine.Name
                     allowExtensionOperations = $true
-                    adminUsername            = "[parameters('adminUsername')]"
+                    adminUsername            = ($machine.GetLocalCredential($true).UserName -split '\\')[-1]
                     windowsConfiguration     = @{
                         enableAutomaticUpdates = $true
                         provisionVMAgent       = $true
@@ -424,6 +412,7 @@
         $luncount = 0
         foreach ($disk in $machine.Disks)
         {
+            if (-not $disk) { continue } # Due to an issue with the disk collection being enumerated even if it is empty
             Write-ScreenInfo -Type Verbose -Message ('Adding disk {0} to machine template' -f $disk.Name)
             $machTemplate.properties.storageProfile.dataDisks += @{
                 lun          = $luncount
@@ -454,8 +443,6 @@
     }
 
     $rgDeplParam = @{
-        adminUsername     = $Lab.DefaultInstallationCredential.Username
-        adminPassword     = $Lab.DefaultInstallationCredential.Password | ConvertTo-SecureString -AsPlainText -Force
         TemplateObject    = $template
         ResourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
         Force             = $true
