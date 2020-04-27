@@ -738,11 +738,11 @@ function New-LabReleasePipeline
 
         if ($repositoryPath)
         {
-            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
+            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "/$ProjectName.temp" -Recurse
         }
         else
         {
-            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "C:\$ProjectName.temp" -Recurse
+            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "/$ProjectName.temp" -Recurse
         }
 
         Invoke-LabCommand -ActivityName 'Push code to TFS/AZDevOps' -ComputerName $tfsVm -ScriptBlock {

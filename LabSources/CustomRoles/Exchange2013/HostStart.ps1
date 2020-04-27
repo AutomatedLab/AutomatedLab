@@ -68,12 +68,12 @@ function Copy-ExchangeSources
         {
             if (-not $script:useISO)
             {
-                Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
+                Copy-LabFileItem -Path $exchangeInstallFile.FullName -DestinationFolderPath /Install -ComputerName $vm
             }
 
-            Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
-            Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
-            Copy-LabFileItem -Path $vcredistInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $vm
+            Copy-LabFileItem -Path $ucmaInstallFile.FullName -DestinationFolderPath /Install -ComputerName $vm
+            Copy-LabFileItem -Path $dotnetInstallFile.FullName -DestinationFolderPath /Install -ComputerName $vm
+            Copy-LabFileItem -Path $vcredistInstallFile.FullName -DestinationFolderPath /Install -ComputerName $vm
         }
         Write-ScreenInfo 'Done' -TaskEnd
     }

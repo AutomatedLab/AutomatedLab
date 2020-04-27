@@ -3001,7 +3001,7 @@ function Publish-LabCAInstallCertificates
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-PSFMessage -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
-            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath C:\Windows -Session $machineSession
+            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath /Windows -Session $machineSession
         }
 
         $scriptBlock = {

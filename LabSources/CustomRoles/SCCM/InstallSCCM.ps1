@@ -92,9 +92,9 @@ function Install-SCCM {
     }
 
     #Copy the SCCM Binaries
-    Copy-LabFileItem -Path $SccmBinariesDirectory -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
+    Copy-LabFileItem -Path $SccmBinariesDirectory -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
     #Copy the SCCM Prereqs (must have been previously downloaded)
-    Copy-LabFileItem -Path $SccmPreReqsDirectory -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
+    Copy-LabFileItem -Path $SccmPreReqsDirectory -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
 
     #Extend the AD Schema
     Invoke-LabCommand -ActivityName 'Extend AD Schema' -ComputerName $SccmServerName -ScriptBlock {
@@ -151,10 +151,10 @@ function Install-SCCM {
     $mdtInstallFile = Get-LabInternetFile -Uri $mdtDownloadLocation -Path $downloadTargetFolder -ErrorAction Stop -PassThru
 
     Write-ScreenInfo "Copying MDT Install Files to server '$SccmServerName'..."
-    Copy-LabFileItem -Path $mdtInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $SccmServerName
+    Copy-LabFileItem -Path $mdtInstallFile.FullName -DestinationFolderPath /Install -ComputerName $SccmServerName
 
     Write-ScreenInfo "Copying ADK Install Files to server '$SccmServerName'..."
-    Copy-LabFileItem -Path "$downloadTargetFolder\ADK" -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
+    Copy-LabFileItem -Path "$downloadTargetFolder\ADK" -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
 
     Write-ScreenInfo "Installing ADK on server '$SccmServerName'..." -NoNewLine
     $job = Install-LabSoftwarePackage -LocalPath C:\Install\ADK\adksetup.exe -CommandLine "/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner" `
@@ -237,7 +237,7 @@ UseProxy=0
     #Save the config file to disk, and copy it to the SCCM Server
     $setupConfigFileContent | Out-File -FilePath "$($lab.LabPath)\ConfigMgrUnattend.ini" -Encoding ascii
 
-    Copy-LabFileItem -Path "$($lab.LabPath)\ConfigMgrUnattend.ini" -DestinationFolderPath C:\Install -ComputerName $SccmServerName
+    Copy-LabFileItem -Path "$($lab.LabPath)\ConfigMgrUnattend.ini" -DestinationFolderPath /Install -ComputerName $SccmServerName
 
     $sccmComputerAccount = '{0}\{1}$' -f
     $sccmServer.DomainName.Substring(0, $sccmServer.DomainName.IndexOf('.')),

@@ -137,11 +137,11 @@ function Invoke-LWCommand
             {
                 if ((Get-Item -Path $DependencyFolderPath).PSIsContainer)
                 {
-                    Send-Directory -SourceFolderPath $DependencyFolderPath -DestinationFolder (Join-Path -Path C:\ -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
+                    Send-Directory -SourceFolderPath $DependencyFolderPath -DestinationFolder (Join-Path -Path / -ChildPath (Split-Path -Path $DependencyFolderPath -Leaf)) -Session $internalSession
                 }
                 else
                 {
-                    Send-File -SourceFilePath $DependencyFolderPath -DestinationFolderPath C:\ -Session $internalSession
+                    Send-File -SourceFilePath $DependencyFolderPath -DestinationFolderPath / -Session $internalSession
                 }
             }
         }
@@ -151,7 +151,7 @@ function Invoke-LWCommand
             $cmd = ''
             if ($ScriptFileName)
             {
-                $cmd += "& '$(Join-Path -Path C:\ -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
+                $cmd += "& '$(Join-Path -Path / -ChildPath (Split-Path $DependencyFolderPath -Leaf))\$ScriptFileName'"
             }
             if ($ParameterVariableName)
             {
