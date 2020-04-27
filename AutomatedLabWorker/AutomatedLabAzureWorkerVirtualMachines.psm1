@@ -87,7 +87,7 @@
         if ($network.DnsServers)
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding DNS Servers to VNet template: {0}' -f $network.DnsServers)
-            $vNet.properties.dhcpOptions.dnsServers = $network.DnsServers.AddressAsString
+            $vNet.properties.dhcpOptions.dnsServers = [string[]]($network.DnsServers.AddressAsString)
         }
 
         if (-not $network.Subnets)
@@ -310,17 +310,14 @@
             {
                 $subnetName = ($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name
             }
-            $template.resources += 
-            @{
+             
+            $nicTemplate = @{
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.Name)')]"
                     "[resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer')]"
                 )
                 properties = @{
                     enableAcceleratedNetworking = $false
-                    dnsSettings                 = @{
-                        dnsServers = $nic.Ipv4DnsServers.AddressAsString
-                    }
                     ipConfigurations            = @(
                         @{
                             properties = @{
@@ -358,6 +355,14 @@
                 type       = "Microsoft.Network/networkInterfaces"
                 location   = "[resourceGroup().location]"
             }
+
+            if ($nic.Ipv4DnsServers)
+            {
+                $nicTemplate.properties.dnsSettings = @{
+                    dnsServers = [string[]]($nic.Ipv4DnsServers.AddressAsString)
+                }
+            }
+            $template.resources += $nicTemplate
             $niccount++
         }
 
