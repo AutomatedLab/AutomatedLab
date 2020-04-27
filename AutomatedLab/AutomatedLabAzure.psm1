@@ -424,13 +424,9 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
         Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
-        if ($global:cacheVmImages)
-        {
-            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
-        }
-
         if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
         {
+            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
             Write-ScreenInfo 'Querying available operating system images (using cache)'
             $vmImages = $global:cacheVmImages
         }
