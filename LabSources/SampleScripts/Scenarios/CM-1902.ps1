@@ -343,7 +343,7 @@ switch ($true) {
     ((Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
         throw ("Hyper-V virtual switch '{0}' does not exist" -f $ExternalVMSwitchName)
     }
-    ((Get-VMSwitch -Name $ExternalVMSwitchName).SwitchType -ne "External") { 
+    ( Get-VMSwitch | ? { ($_.Name -eq $ExternalVMSwitchName) -and ($_.SwitchType -eq "External") } )  { 
         throw ("Hyper-V virtual switch '{0}' is not of External type" -f $ExternalVMSwitchName)
     }
     (-not(Test-Path $SQLConfigurationFile)) {
