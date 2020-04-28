@@ -34,14 +34,7 @@ function New-LabVM
 
     $jobs = @()
 
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
-        Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
-        New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    foreach ($machine in $machines)
+    foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
         if ($fdvDenyWriteAccess) {
@@ -82,15 +75,15 @@ function New-LabVM
 
             Start-LabVM -ComputerName $machine
         }
-        elseif ($machine.HostType -eq 'Azure')
-        {
-            $jobs += New-LWAzureVM -Machine $machine
-
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        }
+        
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
+    }
+
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $jobs += New-LabAzureResourceGroupDeployment -Lab $lab -PassThru
     }
 
     #test if the machine creation jobs succeeded
@@ -114,12 +107,6 @@ function New-LabVM
 
         Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
         Enable-LWAzureWinRm -Machine $azureVMs -Wait
-
-        Write-PSFMessage -Message 'Setting lab DNS servers for newly created machines'
-        Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
-
-        Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
-        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and $_.Roles.Name -notcontains 'DC'}) -Wait -ProgressIndicator 10
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs

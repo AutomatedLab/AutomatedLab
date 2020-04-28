@@ -756,13 +756,14 @@ function Install-Lab
     Unblock-LabSources
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
+    $engine = $Script:data.DefaultVirtualizationEngine
 
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
 
-    if ($NetworkSwitches -or $performAll)
+    if ($engine -ne 'Azure' -and ($NetworkSwitches -or $performAll))
     {
         Write-ScreenInfo -Message 'Creating virtual networks' -TaskStart
 
@@ -935,8 +936,7 @@ function Install-Lab
 
     if (($AdTrusts -or $performAll) -and ((Get-LabVM -Role RootDC | Measure-Object).Count -gt 1))
     {
-        Write-ScreenInfo -Message 'Configuring DNS forwarding and AD trusts' -TaskStart
-        Install-LabDnsForwarder
+        Write-ScreenInfo -Message 'Configuring AD trusts' -TaskStart
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1292,6 +1292,7 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Disks.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks.cfg" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }

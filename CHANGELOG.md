@@ -6,6 +6,7 @@
 ### Enhancements
 
 - Added NuGet custom role that uses open source NuGet server package
+- AL now deploys ARM templates instead of individual resources
 
 ### Bug Fixes
 

@@ -263,7 +263,8 @@ function Add-LabAzureSubscription
     if ($global:cacheAzureRoleSizes)
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
-        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes }
+        $defaultSizes = (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes
+        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in $defaultSizes}
     }
     else
     {
