@@ -8,6 +8,8 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
+    if ($IsLinux) { return }
+
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -206,6 +208,7 @@ function Undo-LabHostRemoting
         [switch]$NoDisplay
     )
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -277,6 +280,7 @@ function Test-LabHostRemoting
     [CmdletBinding()]
     param()
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     $configOk = $true
@@ -3537,7 +3541,15 @@ function Test-LabHostConnected
         elseif ($IsLinux)
         {
             # Due to an unadressed issue with Test-Connection on Linux
-            [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+            $portOpen = Test-Port -ComputerName automatedlab.org -Port 443
+            if (-not $portOpen.Open)
+            {
+                [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+            }
+            else
+            {
+                $portOpen.Open
+            }
         }
         else
         {
