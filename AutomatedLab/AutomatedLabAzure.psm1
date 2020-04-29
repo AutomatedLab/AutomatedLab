@@ -80,6 +80,7 @@ function Add-LabAzureSubscription
 
         [string]$DefaultLocationName,
 
+        [ObsoleteAttribute()]
         [string]$DefaultStorageAccountName,
 
         [string]$DefaultResourceGroupName,
@@ -477,40 +478,8 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
     Write-PSFMessage "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
-    #$script:lab.AzureSettings.DefaultStorageAccount cannot be set when creating the definitions but is during the import process
-    if (-not $script:lab.AzureSettings.DefaultStorageAccount)
-    {
-        Write-ScreenInfo -Message 'No default storage account exist. Determining storage account now' -Type Info
-        if (-not $DefaultStorageAccountName)
-        {
-            $DefaultStorageAccountName = ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -like 'automatedlab????????' | Select-Object -First 1).StorageAccountName
-        }
-
-        if (-not $DefaultStorageAccountName)
-        {
-            Write-ScreenInfo -Message 'No storage account for AutomatedLab found. Creating a storage account now'
-            New-LabAzureDefaultStorageAccount -LocationName $DefaultLocationName -ResourceGroupName $DefaultResourceGroupName
-        }
-        else
-        {
-            try
-            {
-                Set-LabAzureDefaultStorageAccount -Name $DefaultStorageAccountName -ErrorAction Stop
-                Write-ScreenInfo -Message "Using Azure Storage Account '$DefaultStorageAccountName'" -Type Info
-            }
-            catch
-            {
-                throw 'Cannot proceed with an invalid default storage account'
-            }
-        }
-        Write-PSFMessage "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
-        [void](Set-AzCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
-    }
-
     Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
-
     Write-ScreenInfo -Message "Azure data center location will be '$DefaultLocationName'" -Type Info
-
     Write-ScreenInfo -Message 'Finished adding Azure subscription data' -Type Info -TaskEnd
 
     if ($PassThru)
@@ -689,6 +658,9 @@ function Set-LabAzureDefaultStorageAccount
         [string]$Name
     )
 
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
+
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
@@ -708,6 +680,9 @@ function Get-LabAzureDefaultStorageAccount
 {
     [CmdletBinding()]
     param ()
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Write-LogFunctionEntry
 
@@ -733,6 +708,9 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Test-LabHostConnected -Throw -Quiet
 

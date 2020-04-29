@@ -55,7 +55,7 @@ function Add-LabVirtualNetworkDefinition
         throw 'The Hyper-V tools are not installed. Please install them first to use AutomatedLab with Hyper-V. Alternatively, you can use AutomatedLab with Microsoft Azure.'
     }
 
-    if ($VirtualizationEngine -eq 'Azure' -and -not $script:lab.AzureSettings.DefaultStorageAccount)
+    if ($VirtualizationEngine -eq 'Azure' -and -not $script:lab.AzureSettings.DefaultResourceGroup)
     {
         Add-LabAzureSubscription
     }

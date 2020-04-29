@@ -778,27 +778,10 @@ function New-LWAzureVM
         return
     }
 
-    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
-    $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
-
-    if (-not $storageContext)
-    {
-        $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction Stop).Context
-    }
-
-    $container = Get-AzStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
-    if (-not $container)
-    {
-        $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
-    }
-
     Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
 
     #random number in the path to prevent conflicts
     $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
-    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
-    $lab.AzureSettings.VmDisks.Add($osVhdLocation)
-    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
@@ -835,12 +818,9 @@ function New-LWAzureVM
     Write-PSFMessage "Vnet: $Vnet"
     Write-PSFMessage "RoleSize: $RoleSize"
     Write-PSFMessage "VmImageName: $VmImageName"
-    Write-PSFMessage "OsVhdLocation: $OsVhdLocation"
     Write-PSFMessage "AdminUserName: $AdminUserName"
     Write-PSFMessage "AdminPassword: $AdminPassword"
     Write-PSFMessage "ResourceGroupName: $ResourceGroupName"
-    Write-PSFMessage "StorageAccountName: $($StorageContext.StorageAccountName)"
-    Write-PSFMessage "BlobEndpoint: $($StorageContext.BlobEndpoint)"
     Write-PSFMessage "DefaultIpAddress: $DefaultIpAddress"
     Write-PSFMessage "Location: $Location"
     Write-PSFMessage "Lab name: $LabName"
@@ -1862,13 +1842,12 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
-    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not $labSourcesStorageAccount)
     {
         return
     }
-
-    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage
 
     $result = Invoke-Command -Session $Session -ScriptBlock {
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'
