@@ -3527,6 +3527,11 @@ function Test-LabHostConnected
         $Quiet
     )
 
+    if (Get-LabConfigurationItem -Name DisableConnectivityCheck)
+    {
+        $script:connected = $true
+    }
+
     if (-not $script:connected)
     {
         $script:connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
