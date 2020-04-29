@@ -1913,7 +1913,7 @@ function Enable-LabAutoLogon
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $parameters.DomainName -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $parameters.Password -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $parameters.UserName -Type String -Force
-        } -Variable (Get-Variable parameters) -NoDisplay
+        } -Variable (Get-Variable parameters) -DoNotUseCredSsp -NoDisplay
     }
 }
 #endregion
