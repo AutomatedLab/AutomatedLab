@@ -18,6 +18,10 @@
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later'
 - Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
+- Updated some paths to work cross-platform
+  - i.e. Join-Path fails when the drive does not exist, so all calls to e.g. Send-File with a destination like C: would
+    fail on Linux, eventhough the target would always be a Windows machine. Replaced those paths with forward slash
+    which defaults to the system root on Windows and can be resolved cross-platform
 
 ## 5.20.0 - 2020-04-20
 
