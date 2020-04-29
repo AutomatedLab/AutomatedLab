@@ -600,9 +600,9 @@ function Get-LWAzureSku
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
             Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = $vmImage.Offer
+        $publisherName = $vmImage.PublisherName
+        $skusName = $vmImage.Skus
 
         if (-not $vmImageName)
         {
