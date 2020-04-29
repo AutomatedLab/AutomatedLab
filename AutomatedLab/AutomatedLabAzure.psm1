@@ -357,7 +357,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 "@
         # Detecting Interactivity this way only works in .NET Full - .NET Core always defaults to $true
         # Last Resort is checking the CommandLine Args
-        $choice = if ([Environment]::UserInteractive -or ([Environment]::GetCommandLineArgs() -match "^-Non"))
+        $choice = if (($PSVersionTable.PSEdition -eq 'Desktop' -and [Environment]::UserInteractive) -or ($PSVersionTable.PSEdition -eq 'Core' -and [string][Environment]::GetCommandLineArgs() -notmatch "-Non"))
         {
             Read-Choice -ChoiceList '&Yes', '&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
         }
