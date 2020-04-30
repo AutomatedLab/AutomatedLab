@@ -1580,7 +1580,7 @@ function Request-LabCertificate
     if ($onlineCAVM)
     {
         #$OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
-        $PSBoundParameters.OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
+        $PSBoundParameters.OnlineCA = (Get-LabIssuingCA | Where-Object Name -eq $OnlineCA).CaPath
     }
 
     $variables = Get-Variable -Name PSBoundParameters
