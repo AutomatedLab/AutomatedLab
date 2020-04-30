@@ -551,16 +551,11 @@ function Get-LWAzureSku
                 $useStandardVm = $true
             }
         }
+
         if ($role.Name -match 'VisualStudio(?<Version>\d{4})')
         {
             $visualStudioRoleName = $Matches[0]
             $visualStudioVersion = $Matches.Version
-        }
-
-        if ($role.Name -match 'SharePoint(?<Version>\d{4})')
-        {
-            $sharePointRoleName = $Matches[0]
-            $sharePointVersion = $Matches.Version
         }
     }
 
@@ -653,49 +648,6 @@ function Get-LWAzureSku
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
-        }
-    }
-    elseif ($sharePointRoleName)
-    {
-        Write-PSFMessage -Message 'This is going to be a SharePoint VM'
-
-        # AzureRM currently has only one SharePoint offer
-
-        $sharePointRoleName -match '\w+(?<Version>\d{4})'
-
-        $sharePointImages = $lab.AzureSettings.VmImages |
-            Where-Object Offer -Match 'MicrosoftSharePoint' |
-            Sort-Object -Property PublishedDate -Descending |
-            Where-Object Skus -eq $Matches.Version |
-            Select-Object -First 1
-
-        # Add the SP version
-        foreach ($sharePointImage in $sharePointImages)
-        {
-            $sharePointImage | Add-Member -Name Version -Value $sharePointImage.Skus -MemberType NoteProperty -Force
-        }
-
-        #get the image that matches the OS and SQL server version
-        $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        Write-ScreenInfo "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available." -Type Warning
-
-        #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
-        $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-            Sort-Object -Property Update -Descending | Select-Object -First 1
-
-        $offerName = $vmImageName = ($vmImage).Offer
-        $publisherName = ($vmImage).PublisherName
-        $skusName = ($vmImage).Skus
-
-        if (-not $vmImageName)
-        {
-            Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
-            foreach ($sharePointImage in $sharePointImages)
-            {
-                Write-PSFMessage -Level Host $sharePointImage.Offer $sharePointImage.Skus
-            }
-
-            throw "There is no Azure VM image for '$sharePointRoleName' on operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
         }
     }
     else
