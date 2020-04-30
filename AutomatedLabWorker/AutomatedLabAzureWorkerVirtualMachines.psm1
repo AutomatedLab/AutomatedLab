@@ -1379,6 +1379,10 @@ function Stop-LWAzureVM
                         {
                             ($_.Name -split "_")[1]
                         }
+                        elseif ($_.Name  -match "Long Running Operation for 'Stop-AzVM' on resource '(?<MachineName>[\w-]+)'")
+                        {
+                            $Matches.MachineName
+                        }
                     }) -join ", "
 
                 Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
