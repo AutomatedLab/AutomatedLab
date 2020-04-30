@@ -1369,25 +1369,24 @@ function Stop-LWAzureVM
         {
             $vm = $azureVms | Where-Object Name -eq $name
             $vm | Stop-AzVM -Force -StayProvisioned:$StayProvisioned -AsJob
+        }
 
-            Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-            $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
-            if ($failedJobs)
-            {
-                $jobNames = ($failedJobs | ForEach-Object {
-                        if ($_.Name.StartsWith("StopAzureVm_"))
-                        {
-                            ($_.Name -split "_")[1]
-                        }
-                        elseif ($_.Name  -match "Long Running Operation for 'Stop-AzVM' on resource '(?<MachineName>[\w-]+)'")
-                        {
-                            $Matches.MachineName
-                        }
-                    }) -join ", "
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        if ($failedJobs)
+        {
+            $jobNames = ($failedJobs | ForEach-Object {
+                    if ($_.Name.StartsWith("StopAzureVm_"))
+                    {
+                        ($_.Name -split "_")[1]
+                    }
+                    elseif ($_.Name  -match "Long Running Operation for 'Stop-AzVM' on resource '(?<MachineName>[\w-]+)'")
+                    {
+                        $Matches.MachineName
+                    }
+                }) -join ", "
 
-                Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
-            }
-
+            Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
         }
     }
 
