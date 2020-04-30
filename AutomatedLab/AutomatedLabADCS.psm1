@@ -1506,6 +1506,7 @@ function Get-LabIssuingCA
     }
 
     $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        Start-Service -Name CertSrv -ErrorAction SilentlyContinue
         $templates = certutil.exe -CATemplates
         if ($templates -like '*Machine*')
         {
