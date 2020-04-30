@@ -1506,7 +1506,7 @@ function Get-LabIssuingCA
     }
 
     $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
-        Start-Service -Name CertSrv -ErrorAction SilentlyContinue
+        Start-Service -Name CertSvc -ErrorAction SilentlyContinue
         $templates = certutil.exe -CATemplates
         if ($templates -like '*Machine*')
         {
@@ -1574,7 +1574,7 @@ function Request-LabCertificate
     }
 
     # Especially on Azure, the CertSrv was sometimes stopped for no apparent reason
-    Invoke-LabCommand -ComputerName $onlineCAVM -ScriptBlock { Start-Service CertSrv }
+    Invoke-LabCommand -ComputerName $onlineCAVM -ScriptBlock { Start-Service CertSvc }
 
     #machine was found so only the machine name was given. Get the full CA path.
     if ($onlineCAVM)
