@@ -14,6 +14,7 @@
 - Release tagging updated
 - Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
 - 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
+- DelayBetweenComputers works now if defined and if not is calculated based on the umber of machines
 
 ## 5.20.0 - 2020-04-20
 
