@@ -3436,7 +3436,9 @@ try
     Write-PSFMessage -Message "Next check is '$nextCheck'."
 }
 catch
-{ }
+{
+    $timestamps = New-Object $type
+}
 
 if (-not (
     (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
