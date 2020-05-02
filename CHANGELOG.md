@@ -14,6 +14,7 @@
 - Release tagging updated
 - Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
 - 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
+- Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later'
 
 ## 5.20.0 - 2020-04-20
 
