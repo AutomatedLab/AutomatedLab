@@ -200,7 +200,7 @@ function Set-CMCustomisations {
         Add-FileAssociation -Extension ".lo_" -TargetExecutable $LogApplication
         New-Shortcut -Target "C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\Microsoft.ConfigurationManagement.exe" -ShortcutName "Configuration Manager Console.lnk"
         New-Shortcut -Target "C:\Program Files\Microsoft Configuration Manager\Logs" -ShortcutName "Logs.lnk"
-        if (Test-Path "C:\Program Files (x86)\Configuration Manager Suppport Center\ConfigMgrSupportCenter.exe") { New-Shortcut -Target "C:\Program Files (x86)\Configuration Manager Suppport Center\ConfigMgrSupportCenter.exe" -ShortcutName "Support Center.lnk" }
+        if (Test-Path "C:\Program Files (x86)\Configuration Manager Support Center\ConfigMgrSupportCenter.exe") { New-Shortcut -Target "C:\Program Files (x86)\Configuration Manager Support Center\ConfigMgrSupportCenter.exe" -ShortcutName "Support Center.lnk" }
         if (Test-Path "C:\Tools") { New-Shortcut -Target "C:\Tools" -ShortcutName "Tools.lnk" }
     }
     Wait-LWLabJob -Job $job
@@ -215,7 +215,7 @@ function Set-CMCustomisations {
 }
 #endregion
 
-Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
+#Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Write-ScreenInfo -Message "Applying customisations" -TaskStart
 Set-CMCustomisations -CMServerName $ComputerName -LogViewer $LogViewer
