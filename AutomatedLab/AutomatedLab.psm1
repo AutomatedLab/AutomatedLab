@@ -707,8 +707,8 @@ function Install-Lab
         [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
-        [int]$DelayBetweenComputers,
-        [switch]$NoValidation
+        [switch]$NoValidation,
+        [int]$DelayBetweenComputers
     )
 
     Write-LogFunctionEntry
@@ -1100,11 +1100,16 @@ function Install-Lab
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
+
+        if (-not $DelayBetweenComputers)
+        {
+            $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
+            $DelayBetweenComputers = [System.Math]::Log($hypervMachineCount, 5) * 30
+            Write-ScreenInfo -Message "DelayBetweenComputers not defined, value calculated is $DelayBetweenComputers seconds"
+        }
+
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
-        }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
 
         Write-ScreenInfo -Message 'Done' -TaskEnd

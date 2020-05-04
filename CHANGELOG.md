@@ -14,6 +14,8 @@
 - Release tagging updated
 - Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
 - 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
+- DelayBetweenComputers works now if defined and if not is calculated based on the umber of machines
+- Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later'
 - Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
 
