@@ -490,7 +490,7 @@ function Update-CMSite {
 }
 #endregion
 
-Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
+#Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Write-ScreenInfo -Message "Starting site update process" -TaskStart
 Update-CMSite -CMServerName $ComputerName -CMSiteCode $CMSiteCode -Version $Version
