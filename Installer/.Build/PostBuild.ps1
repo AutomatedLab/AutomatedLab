@@ -4,7 +4,7 @@
 
     [Parameter()]
     [string[]]
-    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS'),
+    $ExternalDependency = @('PSFramework', 'newtonsoft.json', 'SHiPS', 'xPSDesiredStateConfiguration', 'xDscDiagnostics', 'xWebAdministration'),
 
     [Parameter()]
     [string[]]

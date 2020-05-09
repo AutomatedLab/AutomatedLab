@@ -1,4 +1,4 @@
-function Get-ConfigSet
+﻿function Get-ConfigSet
 {
     $class = Get-WmiObject -List -Namespace root\microsoft -Class MSReportServer_ConfigurationSetting -Recurse
     Get-CimInstance -Namespace $class.__NAMESPACE -Class $class.Name
@@ -6,7 +6,7 @@ function Get-ConfigSet
     if ($class.__NAMESPACE -match '\\v(?<version>\d\d)\\*.')
     {
         $version = $Matches.version
-        Write-Host "Installed SSRS version is $version"
+        Write-Verbose "Installed SSRS version is $version"
     }
 }
 
@@ -24,7 +24,7 @@ try
 }
 catch
 {
-    if (Get-Module -List SqlServer) 
+    if (Get-Module -List SqlServer)
     {
         Import-Module SqlServer
     }

@@ -23,10 +23,10 @@ Gets the issuing certificate authority for the current lab and if specified the 
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabIssuingCA -DomainName contoso.com
 ```
 
-{{ Add example description here }}
+Return the issuing CA for contoso
 
 ## PARAMETERS
 

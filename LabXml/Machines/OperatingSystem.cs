@@ -2,6 +2,7 @@
 using System.Xml.Serialization;
 using System.Collections.Generic;
 using System.Linq;
+using LabXml;
 
 namespace AutomatedLab
 {
@@ -37,12 +38,6 @@ namespace AutomatedLab
 
         private static ListXmlStore<ProductKey> productKeys = null;
         private static ListXmlStore<ProductKey> productKeysCustom = null;
-        private static string productKeysXmlFilePath = string.Format(@"{0}\{1}",
-                        System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                        @"AutomatedLab\Assets\ProductKeys.xml");
-        private static string productKeysCusomXmlFilePath = string.Format(@"{0}\{1}",
-                System.Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                @"AutomatedLab\Assets\ProductKeysCustom.xml");
 
         public string OperatingSystemName
         {
@@ -240,6 +235,12 @@ namespace AutomatedLab
 
         static OperatingSystem()
         {
+            string path = (string)PowerShellHelper.InvokeCommand("Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot").FirstOrDefault().BaseObject;
+
+            string productKeysXmlFilePath = $@"{path}/Assets/ProductKeys.xml";
+            string productKeysCusomXmlFilePath = string.Format(@"{0}/{1}",
+                    path,
+                    @"Assets/ProductKeysCustom.xml");
             try
             {
                 productKeys = ListXmlStore<ProductKey>.Import(productKeysXmlFilePath);

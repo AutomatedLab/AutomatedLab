@@ -1,6 +1,5 @@
 function Connect-Lab
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'Lab2Lab')]
     param
     (
@@ -48,14 +47,14 @@ function Connect-Lab
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder ="$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
+    $sourceFolder ="$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
 
-    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
+    $destinationFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -119,7 +118,6 @@ function Connect-Lab
 
 function Disconnect-Lab
 {
-    
     [CmdletBinding()]
     param
     (
@@ -196,7 +194,6 @@ function Disconnect-Lab
 
 function Restore-LabConnection
 {
-    
     param
     (
         [Parameter(Mandatory = $true)]
@@ -218,14 +215,14 @@ function Restore-LabConnection
         throw "Destination lab $DestinationLab does not exist."
     }
 
-    $sourceFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$SourceLab"
+    $sourceFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$SourceLab"
     $sourceFile = Join-Path -Path $sourceFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $sourceFile)
     {
         throw "Lab.xml is missing for $SourceLab"
     }
 
-    $destinationFolder = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$DestinationLab"
+    $destinationFolder = "$((Get-LabConfigurationItem -Name LabAppDataRoot))\Labs\$DestinationLab"
     $destinationFile = Join-Path -Path $destinationFolder -ChildPath Lab.xml -Resolve -ErrorAction SilentlyContinue
     if (-not $destinationFile)
     {
@@ -853,11 +850,9 @@ function Set-VpnDnsForwarders
     )
 
     Import-Lab $SourceLab -NoValidation
-    $lab = Get-Lab
     $sourceDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     Import-Lab $DestinationLab -NoValidation
-    $lab = Get-Lab
     $destinationDcs = Get-LabVM -Role DC, RootDC, FirstChildDC
 
     $forestNames = @($sourceDcs) + @($destinationDcs) | Where-Object { $_.Roles.Name -Contains 'RootDC'} | Select-Object -ExpandProperty DomainName

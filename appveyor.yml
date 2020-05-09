@@ -1,6 +1,7 @@
-version: 5.17.{build}
+version: 5.20.{build}
 image:
 - Visual Studio 2017
+- Ubuntu
 
 environment:
   AppVeyorApi:
@@ -14,37 +15,8 @@ branches:
 
 skip_tags: true
 
-init:
-  - ps: |
-        Write-Host "Init task - Set version number if necessary"
-        $currVersion = [version]$env:APPVEYOR_BUILD_VERSION
-        $compareVersion = [version]::new($currVersion.Major, $currVersion.Minor, 0,0)
-        Install-PackageProvider -Name Nuget -Force
-        Install-Module PSFramework -RequiredVersion 1.0.35 -Repo PSGallery -Force
-        
-        if ($env:APPVEYOR_REPO_BRANCH -eq "master" -and $currVersion -gt $compareVersion)
-        {          
-          $properVersion = $compareVersion.ToString(3)
-          Add-AppVeyorMessage -Category Warning "Resetting version from $env:APPVEYOR_BUILD_VERSION to $properVersion"
-          $deleteBuild = $env:APPVEYOR_BUILD_VERSION
-          [environment]::setenvironmentvariable('APPVEYOR_BUILD_VERSION',$properVersion )
-          Update-AppveyorBuild -Version $properVersion
-
-          Add-AppVeyorMessage "Calling API to reset build to 1 for next commit"
-          $appveyorUrl = "https://ci.appveyor.com/api/projects/automatedlab/automatedlab/settings/build-number"
-
-          $headers = @{
-              "Authorization" = "Bearer $env:AppVeyorApi"
-              "Content-type" = "application/json"
-          }
-          
-          $body = @{ nextBuildNumber=1 }
-          $body = $body | ConvertTo-Json
-          Invoke-RestMethod -Uri $appveyorUrl -Headers $headers -Body $body -Method Put
-        }
-
 install:
-  - git submodule -q update --init --recursive
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/install.ps1'
 
 dotnet_csproj:
   patch: true
@@ -64,101 +36,49 @@ assembly_info:
 
 before_build:
   - nuget restore
-  - ps: |
-        Write-Host "Publishing AutomatedLab library"
-        $projPath = Join-Path $env:APPVEYOR_BUILD_FOLDER -ChildPath 'LabXml\LabXml.csproj' -Resolve -ErrorAction Stop
-        dotnet publish $projPath -f netcoreapp2.2 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\core')
-        dotnet publish $projPath -f net462 -o (Join-Path -Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\full')
-
-        Write-Host "'before_build' block"
-
-        Write-Host "Setting version number in files"
-        Add-AppveyorMessage -Message "Setting version number in files" -Category Information
-        gci -Filter *.psd1 -Recurse | foreach {if ($_.Directory.Name -eq $_.BaseName) {(Get-Content $_.FullName -Raw) -replace "ModuleVersion += '\d\.\d\.\d'", "ModuleVersion = '$env:APPVEYOR_BUILD_VERSION'" | Out-File $_.FullName} }
-
-build:
-  project: AutomatedLab.sln
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/beforebuild.ps1'
+        
+for:
+  - matrix:
+      only:
+        - image: Visual Studio 2017
+    build:
+      project: AutomatedLab.sln
+    deploy:
+      - provider: GitHub
+        release: AutomatedLab-v$(appveyor_build_version)
+        tag: v$(appveyor_build_version)
+        description: 'This is an automated deployment'
+        auth_token:
+          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+        artifact: alinstaller
+        draft: false
+        force_update: true
+        prerelease: false
+        on:
+          branch: master
+    after_deploy:
+      ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterdeploy.ps1'
+  - matrix:
+      only:
+        - image: Ubuntu
+    build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
+    deploy:
+      - provider: GitHub
+        release: AutomatedLab-v$(appveyor_build_version)
+        tag: v$(appveyor_build_version)
+        description: 'This is an automated deployment'
+        auth_token:
+          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+        artifact: al(debian|rpm)package
+        draft: false
+        force_update: true
+        prerelease: false
+        on:
+          branch: master
 
 after_build:
-  - ps: |
-        Write-Host "Calling build script"
-        .\Build.ps1
-        Write-Host "'after_build' block"
-        $Params = @{
-        Path    = $env:APPVEYOR_BUILD_FOLDER
-        Force   = $true
-        Recurse = $false
-        Verbose = $true
-        }
-        Invoke-PSDeploy @Params # Create nuget package artifacts
-        Write-Host "Locating installer to push as artifact"
-        Add-AppveyorMessage "Locating installer to push as artifact" -Category Information
-        $msifile = Get-ChildItem -Recurse -Filter AutomatedLab.msi | Select-Object -First 1
-        Push-AppVeyorArtifact $msifile.FullName -FileName $msifile.Name -DeploymentName alinstaller
-
-deploy:
-  - provider: GitHub
-    release: AutomatedLab-v$(appveyor_build_version)
-    tag: v$(appveyor_build_version)
-    description: 'This is an automated deployment'
-    auth_token:
-      secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
-    artifact: alinstaller            # upload all NuGet packages to release assets
-    draft: false
-    prerelease: false
-    on:
-      branch: master                 # release from master branch only
-
-after_deploy:
-  ps: |
-        Write-Host "'after_deploy' block"
-        if ( (Get-PackageProvider nuget -Erroraction SilentlyContinue).Version -lt 2.8.5.210)
-        {
-          $provParams = @{
-              Name = 'NuGet'
-              MinimumVersion = '2.8.5.210'
-              Force = $true
-          }
-          $null = Install-PackageProvider @provParams
-          $null = Import-PackageProvider @provParams
-        }
-
-        $mainModuleCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\core\AutomatedLab.dll'
-        $mainModule = Join-Path $env:APPVEYOR_BUILD_FOLDER 'AutomatedLab\lib\full\AutomatedLab.dll'
-        $sourceLibraryPath = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml\bin\Debug\net462'
-        $sourceLibraryPathCore = Join-Path $env:APPVEYOR_BUILD_FOLDER 'LabXml\bin\Debug\netcoreapp2.2'
-
-
-        if(-not (Test-Path $mainModule))
-        {
-            robocopy /S /E $sourceLibraryPath (Split-Path $mainModule)
-        }
-        if(-not (Test-Path $mainModuleCore))
-        {
-            robocopy /S /E $sourceLibraryPathCore (Split-Path $mainModuleCore)
-        }
-
-        foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
-        {
-            if (-not ($m | Get-ChildItem -Filter *.psm1)) { continue }
-            
-            $publishParams = @{
-                Path        = $m.FullName
-                NuGetApiKey = $env:NuGetApiKey
-                Repository  = 'PSGallery'
-                Force = $true
-                Confirm = $false
-            }
-            write-Host "Publishing module '$($m.FullName)'"
-
-            Start-Job -Name "Publish $m" -ScriptBlock {
-                $publishParams = $args[0]
-                Publish-Module @publishParams
-            } -ArgumentList $publishParams | Receive-Job -AutoRemoveJob -Wait
-        }
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/afterbuild.ps1'
 
 on_finish:
-  - ps: |
-        Write-Host "'on_finish' block"
-        #$blockRdp = $true
-        #iex ((new-object net.webclient).DownloadString('https://raw.githubusercontent.com/appveyor/ci/master/scripts/enable-rdp.ps1'))
+  - ps: '& $env:APPVEYOR_BUILD_FOLDER/.build/onfinish.ps1'

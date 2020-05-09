@@ -13,19 +13,19 @@
         {
             $module = Get-Module -Name $moduleName -ListAvailable
             Write-Verbose -Message "Resolving Module $($moduleName)"
-            
-            if ($module) 
-            {                
+
+            if ($module)
+            {
                 $version = $module | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
                 $galleryVersion = Find-Module -Name $moduleName -Repository PSGallery | Measure-Object -Property Version -Maximum | Select-Object -ExpandProperty Maximum
 
                 if ($version -lt $galleryVersion)
                 {
-                    
+
                     if ((Get-PSRepository -Name PSGallery).InstallationPolicy -ne 'Trusted') { Set-PSRepository -Name PSGallery -InstallationPolicy Trusted }
-                    
+
                     Write-Verbose -Message "$($moduleName) Installed Version [$($version.ToString())] is outdated. Installing Gallery Version [$($galleryVersion.ToString())]"
-                    
+
                     Install-Module -Name $moduleName -Force -SkipPublisherCheck -AllowClobber
                     Import-Module -Name $moduleName -Force -RequiredVersion $galleryVersion
                 }
@@ -49,11 +49,10 @@
 Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 
 # Resolve Module will fail since AL requests interactivity, importing module fails without LabSources folder
-[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')
-$env:AUTOMATEDLAB_TELEMETRY_OPTOUT = 0
-$f = New-Item -ItemType Directory -Path C:\LabSources\CustomRoles -Force
+[System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN',0, 'Machine')
+$env:AUTOMATEDLAB_TELEMETRY_OPTIN = 0
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
 $lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
 if (-not ($lastestVersion.Version -ge '1.1.7.0'))
@@ -75,8 +74,8 @@ if (-not ($lastestVersion.Version -ge '1.6.0'))
     Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
     $m = Import-Module -Name PowerShellGet -PassThru
     Write-Host "New version of 'PowerShellGet' is not $($m.Version)"
-    
+
 }
 
-Invoke-psake .\psake.ps1
+Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )

@@ -1,4 +1,4 @@
-$chunkSize = 1MB
+﻿$chunkSize = 1MB
 
 #region Internals
 #region Get-Type (helper function for creating generic types)
@@ -456,7 +456,7 @@ function Copy-LabFileItem
         [bool]$FallbackToPSSession = $true,
 
         [bool]$UseAzureLabSourcesOnAzureVm = $true,
-        
+
         [switch]$PassThru
     )
 
@@ -510,7 +510,7 @@ function Copy-LabFileItem
                 $session = New-LabPSSession -ComputerName $machine
                 foreach ($p in $Path)
                 {
-                    
+
                     $destination = if (-not $DestinationFolderPath)
                     {
                         'C:\'

@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
@@ -7,7 +7,7 @@ param(
 
 function Download-ExchangeSources
 {
-    
+
     Write-ScreenInfo -Message 'Download Exchange 2016 requirements' -TaskStart
     $downloadTargetFolder = "$labSources\ISOs"
     Write-ScreenInfo -Message "Downloading Exchange 2016 from '$exchangeDownloadLink'"
@@ -19,7 +19,7 @@ function Download-ExchangeSources
 
     Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'"
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
-    
+
     Write-ScreenInfo -Message "Downloading C++ 2013 Runtime from '$cppredist642013DownloadLink'"
     $script:cppredist642013InstallFile = Get-LabInternetFile -Uri $cppredist642013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
     $script:cppredist322013InstallFile = Get-LabInternetFile -Uri $cppredist322013DownloadLink -Path $downloadTargetFolder -FileName vcredist_x86_2013.exe -PassThru -ErrorAction Stop
@@ -63,7 +63,7 @@ function Install-ExchangeRequirements
 
     Write-ScreenInfo "Starting machines '$($machines -join ', ')'" -NoNewLine
     Start-LabVM -ComputerName $machines -Wait
-    
+
     $cppJobs = @()
     $cppJobs += Install-LabSoftwarePackage -Path $cppredist642013InstallFile.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2013.log' -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
     $cppJobs += Install-LabSoftwarePackage -Path $cppredist322013InstallFile.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2013.log' -ComputerName $vm -AsJob -ExpectedReturnCodes 0, 3010 -PassThru
@@ -89,7 +89,7 @@ function Install-ExchangeRequirements
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     Write-ScreenInfo done
-        
+
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
     Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 10 -NoDisplay
 
@@ -102,14 +102,14 @@ function Start-ExchangeInstallSequence
     param(
         [Parameter(Mandatory)]
         [string]$Activity,
-        
+
         [Parameter(Mandatory)]
         [string]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$CommandLine
     )
-    
+
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message "Starting activity '$Activity'" -TaskStart -NoNewLine
@@ -136,7 +136,7 @@ function Start-ExchangeInstallSequence
             Restart-LabVM -ComputerName $ComputerName -Wait -NoNewLine
             Start-Sleep -Seconds 30 #as the feature installation can trigger a 2nd reboot, wait for the machine after 30 seconds again
             Wait-LabVM -ComputerName $ComputerName
-            
+
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
@@ -182,9 +182,9 @@ function Start-ExchangeInstallSequence
     Write-ProgressIndicatorEnd
 
     Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
-    
+
     $result
-    
+
     Write-LogFunctionExit
 }
 
@@ -192,13 +192,13 @@ function Start-ExchangeInstallation
 {
     param (
         [switch]$All,
-        
+
         [switch]$AddAdRightsInRootDomain,
         [switch]$PrepareSchema,
         [switch]$PrepareAD,
         [switch]$PrepareAllDomains,
         [switch]$InstallExchange,
-        
+
         [switch]$CreateCheckPoints
     )
     if ($vm.DomainName -ne $rootDc.DomainName)
@@ -233,7 +233,7 @@ function Start-ExchangeInstallation
             $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareAD' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_PrepareAD_$prepMachine" -Scope Global -Value $result -Force
         }
-   
+
         #prepare all domains
         if ($PrepareAllDomains -or $All)
         {
@@ -251,7 +251,7 @@ function Start-ExchangeInstallation
             Get-LabVM -Role RootDC | ForEach-Object {
                 Sync-LabActiveDirectory -ComputerName $_
             }
-    
+
             Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
             Restart-LabVM -ComputerName $rootDc -Wait -ProgressIndicator 10 -NoNewLine
             Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 10 -NoNewLine
@@ -261,7 +261,7 @@ function Start-ExchangeInstallation
         if ($InstallExchange -or $All)
         {
             Write-ScreenInfo -Message "Installing Exchange Server 2016 on machine '$vm'" -TaskStart
-        
+
             $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
             Remove-LabPSSession -ComputerName $prepMachine
 
@@ -269,7 +269,7 @@ function Start-ExchangeInstallation
             $commandLine = '/Mode:Install /Roles:mb,mt /InstallWindowsComponents /OrganizationName:"{0}" /IAcceptExchangeServerLicenseTerms' -f $OrganizationName
             $result = Start-ExchangeInstallSequence -Activity 'Exchange Components' -ComputerName $vm -CommandLine $commandLine -ErrorAction Stop
             Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
-            Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$vm'" -TaskEnd    
+            Write-ScreenInfo -Message "Finished installing Exchange Server 2016 on machine '$vm'" -TaskEnd
             Write-ScreenInfo -Message "Restarting machines '$vm'" -NoNewLine
             Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 15
         }

@@ -29,10 +29,10 @@ Sets the installation credential for all lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabInstallationCredential -Username Install -Password 'Somepass1!'
 ```
 
-{{ Add example description here }}
+Sets the default installation credential
 
 ## PARAMETERS
 

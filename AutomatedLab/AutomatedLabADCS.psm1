@@ -1,4 +1,4 @@
-#region Internals
+﻿#region Internals
 #region .net Types
 $certStoreTypes = @'
 using System;
@@ -161,12 +161,12 @@ namespace Pki.CATemplate
     public enum EnrollmentFlags
     {
         None = 0,
-        IncludeSymmetricAlgorithms = 1, //This flag instructs the client and server to include a Secure/Multipurpose Internet Mail Extensions (S/MIME) certificate extension, as specified in RFC4262, in the request and in the issued certificate.  
-        CAManagerApproval = 2, // This flag instructs the CA to put all requests in a pending state.  
-        KraPublish = 4, // This flag instructs the CA to publish the issued certificate to the key recovery agent (KRA) container in Active Directory.  
-        DsPublish = 8, // This flag instructs clients and CA servers to append the issued certificate to the userCertificate attribute, as specified in RFC4523, on the user object in Active Directory.  
-        AutoenrollmentCheckDsCert = 16, // This flag instructs clients not to do autoenrollment for a certificate based on this template if the user's userCertificate attribute (specified in RFC4523) in Active Directory has a valid certificate based on the same template.  
-        Autoenrollment = 32, //This flag instructs clients to perform autoenrollment for the specified template.  
+        IncludeSymmetricAlgorithms = 1, //This flag instructs the client and server to include a Secure/Multipurpose Internet Mail Extensions (S/MIME) certificate extension, as specified in RFC4262, in the request and in the issued certificate.
+        CAManagerApproval = 2, // This flag instructs the CA to put all requests in a pending state.
+        KraPublish = 4, // This flag instructs the CA to publish the issued certificate to the key recovery agent (KRA) container in Active Directory.
+        DsPublish = 8, // This flag instructs clients and CA servers to append the issued certificate to the userCertificate attribute, as specified in RFC4523, on the user object in Active Directory.
+        AutoenrollmentCheckDsCert = 16, // This flag instructs clients not to do autoenrollment for a certificate based on this template if the user's userCertificate attribute (specified in RFC4523) in Active Directory has a valid certificate based on the same template.
+        Autoenrollment = 32, //This flag instructs clients to perform autoenrollment for the specified template.
         ReenrollExistingCert = 64, //This flag instructs clients to sign the renewal request using the private key of the existing certificate.
         RequireUserInteraction = 256, // This flag instructs the client to obtain user consent before attempting to enroll for a certificate that is based on the specified template.
         RemoveInvalidFromStore = 1024, // This flag instructs the autoenrollment client to delete any certificates that are no longer needed based on the specific template from the local certificate storage.
@@ -1229,7 +1229,7 @@ $ExtendedKeyUsages = @{
 #region Get-LabCertificate
 function Get-LabCertificate
 {
-    
+
     [cmdletBinding(DefaultParameterSetName = 'FindCer')]
     param (
         [Parameter(Mandatory = $true, ParameterSetName = 'FindCer')]
@@ -1237,21 +1237,21 @@ function Get-LabCertificate
         [string]$SearchString,
 
         [Parameter(Mandatory = $true, ParameterSetName = 'FindCer')]
-        [Parameter(Mandatory = $true, ParameterSetName = 'FindPfx')]        
+        [Parameter(Mandatory = $true, ParameterSetName = 'FindPfx')]
         [System.Security.Cryptography.X509Certificates.X509FindType]$FindType,
-        
+
         [Parameter(ParameterSetName = 'AllCer')]
         [Parameter(ParameterSetName = 'AllPfx')]
         [Parameter(ParameterSetName = 'FindCer')]
         [Parameter(ParameterSetName = 'FindPfx')]
         [System.Security.Cryptography.X509Certificates.CertStoreLocation]$Location,
-        
+
         [Parameter(ParameterSetName = 'AllCer')]
         [Parameter(ParameterSetName = 'AllPfx')]
         [Parameter(ParameterSetName = 'FindCer')]
         [Parameter(ParameterSetName = 'FindPfx')]
         [System.Security.Cryptography.X509Certificates.StoreName]$Store,
-        
+
         [Parameter(ParameterSetName = 'AllCer')]
         [Parameter(ParameterSetName = 'AllPfx')]
         [Parameter(ParameterSetName = 'FindCer')]
@@ -1265,11 +1265,11 @@ function Get-LabCertificate
         [Parameter(ParameterSetName = 'AllCer')]
         [Parameter(ParameterSetName = 'AllPfx')]
         [switch]$IncludeServices,
-        
+
         [Parameter(Mandatory = $true, ParameterSetName = 'FindPfx')]
         [Parameter(Mandatory = $true, ParameterSetName = 'AllPfx')]
         [securestring]$Password = ('AL' | ConvertTo-SecureString -AsPlainText -Force),
-        
+
         [Parameter(ParameterSetName = 'FindPfx')]
         [Parameter(ParameterSetName = 'AllPfx')]
         [switch]$ExportPrivateKey,
@@ -1282,7 +1282,7 @@ function Get-LabCertificate
 
     $variables = Get-Variable -Name PSBoundParameters
     $functions = Get-Command -Name Get-Certificate2, Sync-Parameter
-    
+
     foreach ($computer in $ComputerName)
     {
         Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -ScriptBlock {
@@ -1304,7 +1304,7 @@ function Get-LabCertificate
 #region Add-LabCertificate
 function Add-LabCertificate
 {
-    
+
     [cmdletBinding(DefaultParameterSetName = 'ByteArray')]
     param(
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'File')]
@@ -1312,7 +1312,7 @@ function Add-LabCertificate
 
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true, ParameterSetName = 'ByteArray')]
         [byte[]]$RawContentBytes,
-        
+
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
         [System.Security.Cryptography.X509Certificates.StoreName]$Store,
 
@@ -1325,7 +1325,7 @@ function Add-LabCertificate
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [ValidateSet('CER', 'PFX')]
         [string]$CertificateType = 'CER',
-        
+
         [Parameter(ValueFromPipelineByPropertyName = $true)]
         [string]$Password = 'AL',
 
@@ -1354,9 +1354,9 @@ function Add-LabCertificate
             $PSBoundParameters.Remove('Path')
             $PSBoundParameters.Add('RawContentBytes', $RawContentBytes)
         }
-        
+
         Invoke-LabCommand -ActivityName 'Importing Cert file' -ComputerName $ComputerName -ScriptBlock {
-        
+
             Sync-Parameter -Command (Get-Command -Name Add-Certificate2)
             Add-Certificate2 @ALBoundParameters | Out-Null
 
@@ -1374,7 +1374,7 @@ function Add-LabCertificate
 #region New-LabCATemplate
 function New-LabCATemplate
 {
-    
+
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1446,7 +1446,7 @@ function New-LabCATemplate
 #region Test-LabCATemplate
 function Test-LabCATemplate
 {
-    
+
     [cmdletBinding()]
     param(
         [Parameter(Mandatory)]
@@ -1480,7 +1480,7 @@ function Test-LabCATemplate
 #region Get-LabIssuingCA
 function Get-LabIssuingCA
 {
-    
+
     [OutputType([AutomatedLab.Machine])]
     [cmdletBinding()]
 
@@ -1532,7 +1532,7 @@ function Get-LabIssuingCA
 #region Request-LabCertificate
 function Request-LabCertificate
 {
-    
+
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, HelpMessage = 'Please enter the subject beginning with CN=')]
@@ -1599,7 +1599,7 @@ function Request-LabCertificate
 #region Install-LabCA
 function Install-LabCA
 {
-    
+
     [cmdletBinding()]
     param ([switch]$CreateCheckPoints)
 
@@ -1751,7 +1751,7 @@ function Install-LabCA
 #region Install-LabCAMachine
 function Install-LabCAMachine
 {
-    
+
     [CmdletBinding()]
 
     param (
@@ -2924,7 +2924,7 @@ function Install-LabCAMachine
 #region Get-LabCAInstallCertificates
 function Get-LabCAInstallCertificates
 {
-    
+
     param (
         [Parameter(Mandatory, ValueFromPipeline)]
         [AutomatedLab.Machine[]]$Machines
@@ -2969,7 +2969,7 @@ function Get-LabCAInstallCertificates
 #region Publish-LabCAInstallCertificates
 function Publish-LabCAInstallCertificates
 {
-    
+
     param (
         [switch]$PassThru
     )
@@ -3097,7 +3097,7 @@ function Publish-LabCAInstallCertificates
 #region Enable-LabCertificateAutoenrollment
 function Enable-LabCertificateAutoenrollment
 {
-    
+
     [cmdletBinding()]
 
     param
@@ -3333,5 +3333,5 @@ try
 }
 catch
 {
-    Add-Type -TypeDefinition $certStoreTypes    
+    Add-Type -TypeDefinition $certStoreTypes
 }

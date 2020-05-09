@@ -23,10 +23,10 @@ Removes the resource group containing the lab sources completely
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabAzureLabSourcesStorage
 ```
 
-{{ Add example description here }}
+Removes this subscription's lab sources storage account.
 
 ## PARAMETERS
 

@@ -34,7 +34,7 @@ if (-not (Test-Path -Path $SccmPreReqsDirectory))
         Start-Sleep -Seconds 10
     }
     Write-ScreenInfo 'finished'
-    
+
 }
 else
 {

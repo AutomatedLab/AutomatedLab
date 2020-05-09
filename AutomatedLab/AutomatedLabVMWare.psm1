@@ -1,6 +1,5 @@
 ﻿function Update-LabVMWareSettings
 {
-	
 	if ((Get-PSCallStack).Command -contains 'Import-Lab')
 	{
 		$Script:lab = Get-Lab
@@ -13,14 +12,13 @@
 
 function Add-LabVMWareSettings
 {
-	
 	param (
 		[Parameter(Mandatory)]
 		[string]$DataCenterName,
 
         [Parameter(Mandatory)]
 		[string]$DataStoreName,
-		
+
 		[Parameter(Mandatory)]
 		[string]$ResourcePoolName,
 
@@ -32,19 +30,19 @@ function Add-LabVMWareSettings
 
 		[switch]$PassThru
 	)
-	
+
 	Write-LogFunctionEntry
 
     Update-LabVMWareSettings
 
     #loading a snaping twice results in: Add-PSSnapin : An item with the same key has already been added
 	#Add-PSSnapin -Name VMware.VimAutomation.Core, VMware.VimAutomation.Vds -ErrorAction Stop
-	
+
 	if (-not $script:lab.VMWareSettings)
 	{
 		$script:lab.VMWareSettings = New-Object AutomatedLab.VMWareConfiguration
 	}
-	
+
 	Connect-VIServer -Server $VCenterServerName -Credential $Credential -ErrorAction Stop
 
     $script:lab.VMWareSettings.DataCenter = Get-Datacenter -Name $DataCenterName -ErrorAction Stop
@@ -66,11 +64,11 @@ function Add-LabVMWareSettings
 
     $script:lab.VMWareSettings.VCenterServerName = $VCenterServerName
     $script:lab.VMWareSettings.Credential = [System.Management.Automation.PSSerializer]::Serialize($Credential)
-	
+
 	if ($PassThru)
 	{
 		$script:lab.VMWareSettings
 	}
-	
+
 	Write-LogFunctionExit
 }

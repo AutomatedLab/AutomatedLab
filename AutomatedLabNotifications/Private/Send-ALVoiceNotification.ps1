@@ -1,4 +1,4 @@
-function Send-ALVoiceNotification
+﻿function Send-ALVoiceNotification
 {
     param
     (
@@ -45,5 +45,5 @@ function Send-ALVoiceNotification
         Live long and prosper.
         " -f $lab.Name, $lab.DefaultVirtualizationEngine, $Activity, $Message, $env:USERNAME
     $synth.Speak($Text)
-    $synth.Dispose()    
+    $synth.Dispose()
 }

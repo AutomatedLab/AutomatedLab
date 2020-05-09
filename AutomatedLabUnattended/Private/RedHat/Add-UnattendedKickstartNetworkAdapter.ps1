@@ -1,15 +1,15 @@
-function Add-UnattendedKickstartNetworkAdapter
+﻿function Add-UnattendedKickstartNetworkAdapter
 {
 	param (
 		[string]$Interfacename,
 
 		[AutomatedLab.IPNetwork[]]$IpAddresses,
-		
+
 		[AutomatedLab.IPAddress[]]$Gateways,
-		
+
 		[AutomatedLab.IPAddress[]]$DnsServers
     )
-    
+
     $linuxInterfaceName = ($Interfacename -replace '-',':').ToLower()
     $adapterAddress = $IpAddresses | Select-Object -First 1
 

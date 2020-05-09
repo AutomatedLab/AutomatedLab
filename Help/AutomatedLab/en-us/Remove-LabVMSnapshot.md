@@ -39,10 +39,10 @@ Removes a named snapshot or all snapshots for one or more machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabVMSnapshot -SnapshotName Snappy01 -AllMachines
 ```
 
-{{ Add example description here }}
+Remove Snappy01 for all lab machines
 
 ## PARAMETERS
 

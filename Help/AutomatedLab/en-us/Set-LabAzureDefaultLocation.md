@@ -23,10 +23,10 @@ Sets the default location for all Azure-based lab commands
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabAzureDefaultLocation -Name westeurope
 ```
 
-{{ Add example description here }}
+Set the location for all Az cmdlets to westeurope, where applicable
 
 ## PARAMETERS
 

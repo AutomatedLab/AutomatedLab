@@ -1,8 +1,8 @@
-#region Virtual Network Definition Functions
+﻿#region Virtual Network Definition Functions
 #region Add-LabVirtualNetworkDefinition
 function Add-LabVirtualNetworkDefinition
 {
-    
+
 
     [CmdletBinding()]
     param (
@@ -18,7 +18,7 @@ function Add-LabVirtualNetworkDefinition
         [hashtable[]]$AzureProperties,
 
         [AutomatedLab.NetworkAdapter]$ManagementAdapter,
-        
+
         [switch]$PassThru
     )
 
@@ -31,7 +31,7 @@ function Add-LabVirtualNetworkDefinition
 
     $azurePropertiesValidKeys = 'Subnets', 'LocationName', 'DnsServers', 'ConnectToVnets', 'DnsLabel'
     $hypervPropertiesValidKeys = 'SwitchType', 'AdapterName', 'ManagementAdapter'
-    
+
     if (-not (Get-LabDefinition))
     {
         throw 'No lab defined. Please call New-LabDefinition first before calling Add-LabVirtualNetworkDefinition.'
@@ -159,7 +159,7 @@ function Add-LabVirtualNetworkDefinition
 			$network.Subnets.Add($temp)
 		}
     }
-    
+
     if ($AzureProperties.DnsLabel)
     {
         $network.AzureDnsLabel = $AzureProperties.DnsLabel
@@ -184,7 +184,7 @@ function Add-LabVirtualNetworkDefinition
 #region Get-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
-    
+
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
@@ -222,7 +222,7 @@ function Get-LabVirtualNetworkDefinition
 #region Remove-LabVirtualNetworkDefinition
 function Remove-LabVirtualNetworkDefinition
 {
-    
+
 
     [CmdletBinding()]
     param (
@@ -255,7 +255,7 @@ function Remove-LabVirtualNetworkDefinition
 #region New-LabNetworkAdapterDefinition
 function New-LabNetworkAdapterDefinition
 {
-    
+
 
     [CmdletBinding(DefaultParameterSetName = 'manual')]
     param (
@@ -329,7 +329,7 @@ function New-LabNetworkAdapterDefinition
         {
             $adapter.VirtualSwitch = Get-LabVirtualNetworkDefinition | Select-Object -First 1
         }
-    
+
         if (-not $adapter.VirtualSwitch)
         {
             throw "Could not find the virtual switch '$VirtualSwitch' nor create one automatically"
@@ -340,8 +340,8 @@ function New-LabNetworkAdapterDefinition
         {
             throw "VLAN tagging of interface '$InterfaceName' on non-external virtual switch '$VirtualSwitch' is not supported, either remove the AccessVlanID setting, or assign the interface to an external switch"
         }
-    }  
-   
+    }
+
     $adapter.InterfaceName = $InterfaceName
 
     foreach ($item in $Ipv4Address)
@@ -374,7 +374,7 @@ function New-LabNetworkAdapterDefinition
     $adapter.NetBIOSOptions              = $NetBIOSOptions
     $adapter.UseDhcp = $UseDhcp
     $adapter.AccessVLANID = $AccessVLANID
-    
+
     $adapter
 
     Write-LogFunctionExit

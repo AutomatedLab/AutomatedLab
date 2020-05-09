@@ -1,4 +1,4 @@
-function Import-UnattendedWindowsContent
+﻿function Import-UnattendedWindowsContent
 {
     param
     (
@@ -7,7 +7,7 @@ function Import-UnattendedWindowsContent
         $Content
     )
 
-    $script:un = $Content    
+    $script:un = $Content
     $script:ns = @{ un = 'urn:schemas-microsoft-com:unattend' }
     $Script:wcmNamespaceUrl = 'http://schemas.microsoft.com/WMIConfig/2002/State'
 }

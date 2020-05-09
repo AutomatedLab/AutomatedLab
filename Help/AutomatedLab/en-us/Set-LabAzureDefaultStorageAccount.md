@@ -23,10 +23,10 @@ Sets the default storage account for the lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Set-LabAzureDefaultStorageAccount -Name labstor
 ```
 
-{{ Add example description here }}
+Set the default storage account for the current lab. Usually only used by Add-LabAzureSubscription
 
 ## PARAMETERS
 

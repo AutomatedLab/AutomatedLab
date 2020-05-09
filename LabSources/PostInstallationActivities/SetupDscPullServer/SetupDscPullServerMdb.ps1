@@ -1,4 +1,4 @@
-﻿param  
+﻿param
 (
     [string]$ComputerName,
 
@@ -12,17 +12,17 @@ Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
 Configuration SetupDscPullServer
 {
-    param  
-    ( 
-        [string[]]$NodeName = 'localhost', 
+    param
+    (
+        [string[]]$NodeName = 'localhost',
 
-        [ValidateNotNullOrEmpty()] 
+        [ValidateNotNullOrEmpty()]
         [string]$CertificateThumbPrint = 'AllowUnencryptedTraffic',
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$RegistrationKey
-    ) 
+    )
 
     LocalConfigurationManager
     {
@@ -34,16 +34,16 @@ Configuration SetupDscPullServer
 
     Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration, xWebAdministration
 
-    Node $NodeName 
-    { 
+    Node $NodeName
+    {
         WindowsFeature DSCServiceFeature
-        { 
+        {
             Ensure = 'Present'
             Name   = 'DSC-Service'
         }
 
-        xDscWebService PSDSCPullServer 
-        { 
+        xDscWebService PSDSCPullServer
+        {
             Ensure                  = 'Present'
             EndpointName            = 'PSDSCPullServer'
             Port                    = 8080
@@ -54,7 +54,7 @@ Configuration SetupDscPullServer
             State                   = 'Started'
             UseSecurityBestPractices = $false
             DependsOn               = '[WindowsFeature]DSCServiceFeature'
-        } 
+        }
 
         File RegistrationKeyFile
         {
@@ -65,7 +65,7 @@ Configuration SetupDscPullServer
         }
 
         xWebConfigKeyValue CorrectDBProvider
-        { 
+        {
             ConfigSection = 'AppSettings'
             Key = 'dbprovider'
             Value = 'System.Data.OleDb'
@@ -74,9 +74,9 @@ Configuration SetupDscPullServer
         }
 
         xWebConfigKeyValue CorrectDBConnectionStr
-        { 
+        {
             ConfigSection = 'AppSettings'
-            Key = 'dbconnectionstr'            
+            Key = 'dbconnectionstr'
             Value = if ([System.Environment]::OSVersion.Version -gt '6.3.0.0') #greater then Windows Server 2012 R2
             {
                 'Provider=Microsoft.Jet.OLEDB.4.0;Data Source=C:\Program Files\WindowsPowerShell\DscService\Devices.mdb;' #does no longer work with Server 2016+

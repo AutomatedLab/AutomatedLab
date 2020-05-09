@@ -1,12 +1,77 @@
 # Changelog
 
 ## Unreleased
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->  
 
 ## 5.16.0 - 2019-09-29
 
 ### Enhancements
 
 ### Bug Fixes
+
+## 5.20.0 - 2020-04-20
+
+### Enhancements
+
+- AL can now use SSDs and UltraSSD skus (Fixes #763)
+- Agent Pool assignment on build worker now possible
+- Build workers can now be added without adding an AzDevOps lab machine
+- AL is now packaged as deb and rpm packages (kindly be reminded that this is still a beta feature :smirk: )
+
+### Bug Fixes
+
+- TFS Build Worker Role was undeployable when parameter TfsServer was used (#852).
+- Resolves a terminating error thrown by ConvertFrom-StringData if strings contained a non-escaped backslash.
+- Fixed an issue installing .net 4.8 in SQL server issue.
+- Fixed #846 not being able to deploy Windows 10 1909.
+- 'doNotSkipNonNonEnglishIso' did not work as there as a scoping issue with the variable (#860).
+- Fixed an issue with the new dependencies and moved them to offline installer.
+
+## 5.19.0 - 2020-04-03
+
+### Enhancements
+- SQL setup now does not override custom configuration file any longer when no other parameters are specified.
+- Add-LabMachineDefinition now assumes the most recent OS as a default if no system is specified.
+- Added System Center Configuration Manager 1902 custom role - Thank you @codaamok !
+- Lab Sources folder is automatically updated now, too.
+  - Will reduce issues with missing dependencies on post install activities that get renamed without an info...
+- Added support for multiple 'TfsBuildWorkers' on one machine.
+- Added option for specifying own SQL ISO for CM1902 example script for CM1902 custom role. If parameter is omitted it will auto download eval edition from Microsoft.
+- Change forwarders to AD integrated.
+- Added additional validator for DSC Pull Server Setup to validate if a CA is present.
+- File Server Role: Installed detection.
+- Removed parameter 'Path' from 'New-LabDefinition' and help
+- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help
+- Linux is now a supported host operating system for Azure-based lab environments
+- CIM Cmdlets Get/New/Remove-LabCimSession
+- Lab with Domain Join added (Fixes #194)
+
+### Bug Fixes
+- Fixes hardcode reference to a SQL configuration file with the path supplied in SQL role's properties `ConfigurationFile` - Thank you @codaamok !
+- Fixes timing issues with ADDS on Azure by skipping the wait period for guest reboots on Azure.
+- Rewritten some of the logic in Get-LabInternetFile.
+  - Improves performance of Get-LabInternetFile.
+  - Makes it working with more types of URLs.
+  - Fixed a newly introduced bug.
+- Replaced 'Get-Lab' call with lab definition data already available. 'Get-Lab' does not work as the deployment hasn't yet started.
+- Fixed a bug that prevented the call of 'Stop-LabVM2'.
+- Fixed a type (= != -eq).
+- Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
+- Removed parameter 'Path' from 'New-LabDefinition' and help.
+- Removed parameter 'NoAzurePublishSettingsFile' from 'New-LabDefinition' and help.
+- 'Test-LabPathIsOnLabAzureLabSourcesStorage' is only called if lab's DefaultVirtualizationEngine is Azure.
+- Fixed #806, Invoke-Command : Specified RemoteRunspaceInfo objects have duplicates.
+- Fixed a casting issue in 'UnknownRoleProperties' validator.
+- Fixed #814 (case sensitivity).
+- Fixed #821 by adding 'AutomatedLab.Recipe' and 'AutomatedLab.Ships' to the RequiredModules.
+- Adding missing files to VS solution and installer.
+- Fixed domain join performance issue. Joining to a domain took at least 15 minutes.
+- Rewritten some of the logic in Get-LabInternetFile.
+  - Improves performance of Get-LabInternetFile.
+  - Makes it working with more types of URLs.
+  - Fixed a newly introduced bug.
+- Fixed an issue with newer OpenSuSE ISOs not having a .content file
+- Fixed an issue where Wait-LabVm timed out on an existing domain controller
 
 ## 5.17.0 - 2020-01-08
 
@@ -34,7 +99,7 @@
 - Fixed issue with Exchange custom roles
 - Fixed unhandled exceptions in case the Hyper-V VM notes are not readable as XML
 - Improved error handling if no Az module is available
-- Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon’
+- Fixed issues in 'Reset-LabAdPassword' and 'Enable-LabAutoLogon'
 
 ## 5.16.0 - 2019-09-29
 

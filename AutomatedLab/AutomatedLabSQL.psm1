@@ -1,11 +1,10 @@
 ﻿#region Install-LabSqlServers
 function Install-LabSqlServers
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$InstallationTimeout = (Get-LabConfigurationItem -Name Timeout_Sql2012Installation),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -87,14 +86,14 @@ GO
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles |
             Where-Object Name -like 'SQL*').Properties.Keys |
     Where-Object {$_ -ne 'InstallSampleDatabase'})}
-    
+
     $downloadTargetFolder = "$labSources\SoftwarePackages"
     $cppRedist64_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2017) -Path $downloadTargetFolder -FileName vcredist_x64_2017.exe -PassThru
     $cppredist32_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2017) -Path $downloadTargetFolder -FileName vcredist_x86_2017.exe -PassThru
     $cppRedist64_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2015) -Path $downloadTargetFolder -FileName vcredist_x64_2015.exe -PassThru
     $cppredist32_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2015) -Path $downloadTargetFolder -FileName vcredist_x86_2015.exe -PassThru
     $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
-    
+
     Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
     $dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
@@ -105,7 +104,7 @@ GO
         $machineIndex = 0
         $installBatch = 0
         $totalBatches = [System.Math]::Ceiling($onPremisesMachines.count / $parallelInstalls)
-        
+
         do
         {
             $jobs = @()
@@ -117,21 +116,23 @@ GO
             Write-ScreenInfo -Message "Starting machines '$($machinesBatch -join ', ')'" -NoNewLine
             Start-LabVM -ComputerName $machinesBatch -Wait
 
-            Write-ScreenInfo -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesBatch -join ', ')'" -Type Verbose
+            Write-ScreenInfo -Message "Starting installation of pre-requisite .Net 3.5 Framework on machine '$($machinesBatch -join ', ')'" -NoNewLine
             $installFrameworkJobs = Install-LabWindowsFeature -ComputerName $machinesBatch -FeatureName Net-Framework-Core -NoDisplay -AsJob -PassThru
-
-            Write-ScreenInfo -Message "Waiting for pre-requisite .Net 3.5 Framework to finish installation on machines '$($machinesBatch -join ', ')'" -NoNewLine
-            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -ProgressIndicator 15 -NoNewLine
-
-            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2015 redist on machine '$($machinesBatch -join ', ')'" -Type Verbose -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
-            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru -AsScheduledJob
-            Restart-LabVM -ComputerName $machinesBatch -Wait -NoDisplay
+            Wait-LWLabJob -Job $installFrameworkJobs -Timeout 10 -NoDisplay -NoNewLine
             Write-ScreenInfo -Message 'done'
 
-            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -Type Verbose -NoNewLine
-            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
-            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -PassThru
+            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2015 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
+            Install-LabSoftwarePackage -Path $cppredist32_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2015.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2015.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Write-ScreenInfo -Message 'done'
+
+            Write-ScreenInfo -Message "Starting installation of pre-requisite C++ 2017 redist on machine '$($machinesBatch -join ', ')'" -NoNewLine
+            Install-LabSoftwarePackage -Path $cppredist32_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp32_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Install-LabSoftwarePackage -Path $cppRedist64_2017.FullName -CommandLine ' /quiet /norestart /log C:\DeployDebug\cpp64_2017.log' -ComputerName $machinesBatch -ExpectedReturnCodes 0,3010 -AsScheduledJob -NoDisplay
+            Write-ScreenInfo -Message 'done'
+
+            Write-ScreenInfo -Message "Restarting '$($machinesBatch -join ', ')'" -NoNewLine
+            Restart-LabVM -ComputerName $machinesBatch -Wait -NoDisplay
             Write-ScreenInfo -Message 'done'
 
             foreach ($machine in $machinesBatch)
@@ -162,17 +163,17 @@ GO
 
                 $global:setupArguments = ' /Q /Action=Install /IndicateProgress'
 
-                ?? { $role.Properties.ContainsKey('Features') } `
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Features') } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument " /Features=$($role.Properties.Features.Replace(' ', ''))" } `
                 { $global:setupArguments += Write-ArgumentVerbose -Argument ' /Features=SQL,AS,RS,IS,Tools' }
-                
+
                 #Check the usage of SQL Configuration File
                 if ($role.Properties.ContainsKey('ConfigurationFile'))
                 {
                     $global:setupArguments = ''
                     $fileName = Join-Path -Path 'C:\' -ChildPath (Split-Path -Path $role.Properties.ConfigurationFile -Leaf)
-                    $configurationFileContent = Get-Content D:\SqlConfig.ini | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
-
+                    $configurationFileContent = Get-Content $role.Properties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+                    Write-PSFMessage -Message ($configurationFileContent | Out-String)
                     try
                     {
                         Copy-LabFileItem -Path $role.Properties.ConfigurationFile -ComputerName $machine -ErrorAction Stop
@@ -184,14 +185,20 @@ GO
                     }
                 }
 
-                ?? { $role.Properties.ContainsKey('InstanceName') } `
-                {
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('InstanceName') } {
                     $global:setupArguments += Write-ArgumentVerbose -Argument " /InstanceName=$($role.Properties.InstanceName)"
                     $script:instanceName = $role.Properties.InstanceName
                 } `
                 {
-                    $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER'
-                    $script:instanceName = 'MSSQLSERVER'
+                    if ($null -eq $configurationFileContent.Where({$_.Key -eq 'INSTANCENAME'}).Value)
+                    {
+                        $global:setupArguments += Write-ArgumentVerbose -Argument ' /InstanceName=MSSQLSERVER'
+                        $script:instanceName = 'MSSQLSERVER'
+                    }
+                    else
+                    {
+                        $script:instanceName = $configurationFileContent.Where({$_.Key -eq 'INSTANCENAME'}).Value -replace "'|`""
+                    }
                 }
 
                 $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock {
@@ -206,24 +213,57 @@ GO
                     continue
                 }
 
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Collation')}              { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" + "$($role.Properties.Collation)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" + """$($role.Properties.SQLSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcPassword')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" + """$($role.Properties.SQLSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcAccount')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword')}         { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType')}      { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType')}  { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType')}       { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts')}     { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcPassword=" + "$($role.Properties.AsSvcPassword)") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcAccount')}           { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcPassword')}          { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } { }
-                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSysAdminAccounts')}    { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' }
-
-                Invoke-Ternary -Decider {$machine.Roles.Name -notcontains 'SQLServer2008'}        { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('Collation') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLCollation=" + "$($role.Properties.Collation)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLCollation'}).Value) {$global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLCollation=Latin1_General_CI_AS'} else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcAccount=" + """$($role.Properties.SQLSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSvcAccount="NT Authority\Network Service"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSvcPassword=" + """$($role.Properties.SQLSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcAccount=" + """$($role.Properties.AgtSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcPassword=" + """$($role.Properties.AgtSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcAccount=" + """$($role.Properties.RsSvcAccount)""") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcAccount="NT Authority\Network Service"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcPassword=" + """$($role.Properties.RsSvcPassword)""") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AgtSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AgtSvcStartupType=" + "$($role.Properties.AgtSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AgtSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AgtSvcStartupType=Disabled' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('BrowserSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /BrowserSvcStartupType=" + "$($role.Properties.BrowserSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'BrowserSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /BrowserSvcStartupType=Disabled' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('RsSvcStartupType') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /RsSvcStartupType=" + "$($role.Properties.RsSvcStartupType)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'RsSvcStartupType'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /RsSvcStartupType=Automatic' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSysAdminAccounts') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSysAdminAccounts=" + "$($role.Properties.AsSysAdminAccounts)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSysAdminAccounts="BUILTIN\Administrators"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcAccount=" + "$($role.Properties.AsSvcAccount)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'AsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /AsSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('AsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /AsSvcPassword=" + "$($role.Properties.AsSvcPassword)") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcAccount') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcAccount=" + "$($role.Properties.IsSvcAccount)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'IsSvcAccount'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /IsSvcAccount="NT Authority\System"' } else {} }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('IsSvcPassword') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /IsSvcPassword=" + "$($role.Properties.IsSvcPassword)") } `
+                { }
+                Invoke-Ternary -Decider { $role.Properties.ContainsKey('SQLSysAdminAccounts') } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (" /SQLSysAdminAccounts=" + "$($role.Properties.SQLSysAdminAccounts)") } `
+                { if ($null -eq $configurationFileContent.Where({$_.Key -eq 'SQLSysAdminAccounts'}).Value) { $global:setupArguments += Write-ArgumentVerbose -Argument ' /SQLSysAdminAccounts="BUILTIN\Administrators"' } else {} }
+                Invoke-Ternary -Decider { $machine.Roles.Name -notcontains 'SQLServer2008' } `
+                { $global:setupArguments += Write-ArgumentVerbose -Argument (' /IAcceptSQLServerLicenseTerms') } `
+                { }
 
                 if ($role.Name -notin 'SQLServer2008R2', 'SQLServer2008')
                 {
@@ -289,7 +329,7 @@ GO
                 if ($installBatch -lt $totalBatches -and ($machinesBatch | Where-Object HostType -eq 'HyperV'))
                 {
                     Write-ScreenInfo -Message "Saving machines '$($machinesBatch -join ', ')' as these are not needed right now" -Type Warning
-                    Save-VM -Name $machinesBatch
+                    Save-LabVM -Name $machinesBatch
                 }
             }
 
@@ -324,7 +364,7 @@ GO
             {
                 $server | Add-Member -Name SsRsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)SSRS") -Force
             }
-            
+
             if (($sqlRole.Properties.Features -split ',') -contains 'Tools' -or
                 (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'Tools' -or
                 (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
@@ -332,15 +372,15 @@ GO
                 $server | Add-Member -Name SsmsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)ManagementStudio") -Force
             }
         }
-                
-        #region install SSRS        
+
+        #region install SSRS
         $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
         Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
-        
+
         if ($servers)
         {
             Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
-            Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
+            Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
             Restart-LabVM -ComputerName $servers -Wait
         }
 
@@ -360,7 +400,7 @@ GO
             {
                 $null = New-Item -ItemType Directory -Path $downloadFolder
             }
-            
+
             Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
             Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Sql$($server.SqlVersion)SSRS) -Path $downloadFolder\SQLServerReportingServices.exe
 
@@ -665,68 +705,8 @@ function New-LabSqlAccount
 
     if ($RoleProperties.ContainsKey('ConfigurationFile'))
     {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
-
-        if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq SQLSvcAccount).Value
-            $password = ($config | Where-Object Key -eq SQLSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq AgtSvcAccount) -and ($config | Where-Object Key -eq AgtSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq AgtSvcAccount).Value
-            $password = ($config | Where-Object Key -eq AgtSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq RsSvcAccount) -and ($config | Where-Object Key -eq RsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq RsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq RsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq AsSvcAccount) -and ($config | Where-Object Key -eq AsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq AsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq AsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq IsSvcAccount) -and ($config | Where-Object Key -eq IsSvcPassword))
-        {
-            $user = ($config | Where-Object Key -eq IsSvcAccount).Value
-            $password = ($config | Where-Object Key -eq IsSvcPassword).Value
-            $user = $user.Substring(1, $user.Length - 2)
-            $password = $password.Substring(1, $password.Length - 2)
-            $usersAndPasswords[$user] = $password
-        }
-
-        if (($config | Where-Object Key -eq SqlSysAdminAccounts))
-        {
-            $group = ($config | Where-Object Key -eq SqlSysAdminAccounts).Value
-            $groups += $group.Substring(1, $group.Length - 2)
-        }
-    }
-
-    if ($RoleProperties.ContainsKey('SqlSysAdminAccounts'))
-    {
-        $groups += $RoleProperties['SqlSysAdminAccounts']
-    }
-
-    if ($RoleProperties.ContainsKey('ConfigurationFile'))
-    {
-        $config = Get-Content -Path $RoleProperties.ConfigurationFile | ConvertFrom-String -Delimiter = -PropertyNames Key, Value
+        $config = Get-Content -Path $RoleProperties.ConfigurationFile | Where-Object -FilterScript {-not $_.StartsWith('#') -and $_.Contains('=')}
+        $config = $config -replace '\\', '\\' | ConvertFrom-StringData
 
         if (($config | Where-Object Key -eq SQLSvcAccount) -and ($config | Where-Object Key -eq SQLSvcPassword))
         {

@@ -1,7 +1,6 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -106,6 +105,21 @@ function Install-LabDscPullServer
     if ($Online)
     {
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
+            # Due to changes in the gallery: Accept TLS12
+            try
+            {
+                #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+                if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+                {
+                    Write-Verbose -Message 'Adding support for TLS 1.2'
+                    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+                }
+            }
+            catch
+            {
+                Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+            }
+
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
             Install-Module -Name $requiredModules -Force
@@ -120,6 +134,19 @@ function Install-LabDscPullServer
         else
         {
             Write-ScreenInfo "Downloading the modules '$($requiredModules -join ', ')' locally and copying them to the DSC Pull Servers."
+            try
+            {
+                #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+                if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+                {
+                    Write-Verbose -Message 'Adding support for TLS 1.2'
+                    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+                }
+            }
+            catch
+            {
+                Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+            }
 
             Install-PackageProvider -Name NuGet -Force | Out-Null
             Install-Module -Name $requiredModules -Force
@@ -267,7 +294,6 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -470,7 +496,7 @@ function Invoke-LabDscConfiguration
 
         } -ArgumentList $Wait
     }
-    
+
     Remove-Item -Path $outputPath -Recurse -Force
 
     Write-LogFunctionExit
@@ -493,6 +519,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             [string[]]$ComputerName = 'localhost'
         )
 
+        $configurationScript = @'
         [DSCLocalConfigurationManager()]
         configuration LcmDefaultConfiguration
         {
@@ -511,7 +538,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 }
             }
         }
+'@
 
+        [scriptblock]::Create($configurationScript).Invoke()
         $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         Remove-DscConfigurationDocument -Stage Current, Pending -Force

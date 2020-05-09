@@ -13,9 +13,6 @@ $unattendedXmlDefaultContent2012 = @'
     </component>
   </settings>
   <settings pass="specialize">
-    <component name="Security-Malware-Windows-Defender" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-        <DisableAntiSpyware>true</DisableAntiSpyware>
-    </component>
     <component name="Microsoft-Windows-UnattendedJoin" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State">
       <Identification>
         <JoinWorkgroup xmlns="">NET</JoinWorkgroup>
@@ -116,11 +113,6 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>15</Order>
             <Path>cmd /c netsh advfirewall Firewall set rule group="Remote Desktop" new enable=yes</Path>
         </RunSynchronousCommand>
-		<RunSynchronousCommand wcm:action="add">
-            <Description>Enable Remote Desktop firewall rules</Description>
-            <Order>16</Order>
-            <Path>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</Path>
-        </RunSynchronousCommand>
       </RunSynchronous>
     </component>
     <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
@@ -178,10 +170,10 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>4</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
-        <SynchronousCommand wcm:action="add">
-            <Description>Disable .net optimization tasks</Description>
+		<SynchronousCommand wcm:action="add">
+            <Description>Disable .net Optimization</Description>
             <Order>5</Order>
-            <CommandLine>PowerShell -Command "Get-ScheduledTask -TaskName '.NET Framework NGEN*' | Disable-ScheduledTask"</CommandLine>
+            <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -411,6 +403,11 @@ $unattendedXmlDefaultContent2008 = @'
             <Order>6</Order>
             <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
+		<SynchronousCommand wcm:action="add">
+            <Description>Disable .net Optimization</Description>
+            <Order>7</Order>
+            <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
+        </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
         <AdministratorPassword>
@@ -542,7 +539,7 @@ $autoyastContent = @"
   <install_recommended config:type="boolean">true</install_recommended>
   <packages config:type="list">
     <package>iputils</package>
-    <package>vi</package>
+    <package>vim</package>
     <package>less</package>
   </packages>
 </software>
@@ -557,6 +554,14 @@ $autoyastContent = @"
 <networking>
 <interfaces config:type="list">
 </interfaces>
+<dns>
+    <nameservers config:type="list">
+    </nameservers>
+</dns>
+<routing>
+<routes config:type="list">
+</routes>
+</routing>
 </networking>
 <users config:type="list">
   <user>
@@ -591,7 +596,7 @@ $autoyastContent = @"
 
 function Get-LabVolumesOnPhysicalDisks
 {
-    
+    [CmdletBinding()]
 
     $physicalDisks = Get-PhysicalDisk
     $disks = Get-CimInstance -Class Win32_DiskDrive
@@ -660,14 +665,14 @@ namespace AutomatedLab
     [uint64]$totalNumberOfFreeBytes = 0
 
     $success = [AutomatedLab.DiskSpaceWin32]::GetDiskFreeSpaceEx($Path, [ref]$freeBytesAvailable, [ref]$totalNumberOfBytes, [ref]$totalNumberOfFreeBytes)
-    if(-not $success)
+    if (-not $success)
     {
         Write-Error "Could not determine free disk space of path '$Path'"
     }
 
     New-Object -TypeName PSObject -Property @{
-        TotalNumberOfBytes = $totalNumberOfBytes
-        FreeBytesAvailable = $freeBytesAvailable
+        TotalNumberOfBytes     = $totalNumberOfBytes
+        FreeBytesAvailable     = $freeBytesAvailable
         TotalNumberOfFreeBytes = $totalNumberOfFreeBytes
     }
 }
@@ -677,19 +682,15 @@ namespace AutomatedLab
 #region New-LabDefinition
 function New-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [string]$Name,
-
-        [string]$Path,
 
         [string]$VmPath,
 
         [int]$ReferenceDiskSizeInGB = 50,
 
-        [int]$MaxMemory = 0,
+        [long]$MaxMemory = 0,
 
         [hashtable]$Notes,
 
@@ -700,8 +701,6 @@ function New-LabDefinition
         [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
 
-        [switch]$NoAzurePublishSettingsFile,
-
         [string]$AzureSubscriptionName,
 
         [switch]$Passthru
@@ -710,11 +709,11 @@ function New-LabDefinition
     Write-LogFunctionEntry
     $global:PSLog_Indent = 0
 
-    $hostOSVersion = [System.Version](Get-CimInstance -ClassName Win32_OperatingSystem).Version
-    if (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393')))
+    $hostOSVersion = ([Environment]::OSVersion).Version
+    if (-Not $IsLinux -and (($hostOSVersion -lt [System.Version]'6.2') -or (($hostOSVersion -ge [System.Version]'6.4') -and ($hostOSVersion.Build -lt '14393'))))
     {
-        $osName = $((Get-CimInstance -ClassName Win32_OperatingSystem).Caption.PadRight(10))
-        $osBuild = $((Get-CimInstance -ClassName Win32_OperatingSystem).Version.PadRight(11))
+        $osName = $(([Environment]::OSVersion).VersionString.PadRight(10))
+        $osBuild = $(([Environment]::OSVersion).Version.ToString().PadRight(11))
         Write-PSFMessage -Level Host '***************************************************************************'
         Write-PSFMessage -Level Host ' THIS HOST MACHINE IS NOT RUNNING AN OS SUPPORTED BY AUTOMATEDLAB!'
         Write-PSFMessage -Level Host ''
@@ -751,7 +750,20 @@ function New-LabDefinition
 
     Write-ScreenInfo -Message 'Initialization' -TimeDelta ([timespan]0) -TimeDelta2 ([timespan]0) -TaskStart
 
-    Write-ScreenInfo -Message "Host operating system version: '$($hostOSVersion.ToString())'"
+    $hostOsName = if (($IsLinux -or $IsMacOs) -and (Get-Command -Name lsb_release -ErrorAction SilentlyContinue)) 
+    {
+        lsb_release -d -s
+    }
+    elseif (-not ($IsLinux -or $IsMacOs)) # easier than IsWindows, which does not exist in Windows PowerShell...
+    {
+        (Get-CimInstance -ClassName Win32_OperatingSystem).Caption
+    }
+    else
+    {
+        'Unknown'
+    }
+
+    Write-ScreenInfo -Message "Host operating system version: '$hostOsName, $($hostOSVersion.ToString())'"
 
     if (-not $Name)
     {
@@ -775,10 +787,9 @@ function New-LabDefinition
         #Citrix
         $reservedMacAddresses += '00:16:3E'
 
-        $macAddress = Get-CimInstance Win32_NetworkAdapter |
-        Where-Object { $_.NetEnabled -and $_.NetConnectionID } |
-        Where-Object { $_.MACaddress.ToString().SubString(0, 8) -notin $reservedMacAddresses } |
-        Select-Object -ExpandProperty MACAddress -Unique
+        $macAddress = Get-OnlineAdapterHardwareAddress |
+        Where-Object { $_.SubString(0, 8) -notin $reservedMacAddresses } |
+        Select-Object -Unique
 
         $Name = "$($env:COMPUTERNAME)$($macAddress.SubString(12,2))$($macAddress.SubString(15,2))"
         Write-ScreenInfo -Message "Lab name and network name has automatically been generated as '$Name' (if not overridden)"
@@ -802,7 +813,7 @@ function New-LabDefinition
     $script:existingHyperVVirtualSwitches = $null
 
     #cleanup $PSDefaultParameterValues for entries for AL functions
-    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object {(Get-Command ($_.Name).Split(':')[0]).Module -like 'Automated*'}
+    $automatedLabPSDefaultParameterValues = $global:PSDefaultParameterValues.GetEnumerator() | Where-Object { (Get-Command ($_.Name).Split(':')[0]).Module -like 'Automated*' }
     if ($automatedLabPSDefaultParameterValues)
     {
         foreach ($entry in $automatedLabPSDefaultParameterValues)
@@ -817,16 +828,12 @@ function New-LabDefinition
         Remove-Variable -Name 'AutoIPAddress' -Scope Script
     }
 
-    if ($global:labNamePrefix) { $Name = "$global:labNamePrefix$Name" }
+    if ($global:labNamePrefix)
+    {
+        $Name = "$global:labNamePrefix$Name" 
+    }
 
-    if ($PSBoundParameters.ContainsKey('Path'))
-    {
-        $script:labPath = $Path
-    }
-    else
-    {
-        $script:labpath = "$([System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::CommonApplicationData))\AutomatedLab\Labs\$Name"
-    }
+    $script:labPath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs/$Name"
     Write-ScreenInfo -Message "Location of lab definition files will be '$($script:labpath)'"
 
     $script:lab = New-Object AutomatedLab.Lab
@@ -909,7 +916,7 @@ function New-LabDefinition
     }
 
     $global:AL_CurrentLab = $script:lab
-    
+
     Register-LabArgumentCompleters
 
     Write-LogFunctionExit
@@ -919,8 +926,6 @@ function New-LabDefinition
 #region Get-LabDefinition
 function Get-LabDefinition
 {
-    
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.Lab])]
     param ()
@@ -961,7 +966,7 @@ function Set-LabDefinition
         }
 
         $script:machines.Clear()
-        $Machines | Foreach-Object { $script:Machines.Add($_)}
+        $Machines | ForEach-Object { $script:Machines.Add($_) }
     }
 
     if ($Disks)
@@ -975,8 +980,6 @@ function Set-LabDefinition
 #region Export-LabDefinition
 function Export-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [switch]
@@ -1014,7 +1017,7 @@ function Export-LabDefinition
             if (-not ((Get-LabVirtualNetworkDefinition)[0].DnsServers) -and $dnsServerIP)
             {
                 (Get-LabVirtualNetworkDefinition)[0].DnsServers = $dnsServerIP
-                $dnsServerName = (Get-LabMachineDefinition | Where-Object {$_.IpV4Address -eq $dnsServerIP}).Name
+                $dnsServerName = (Get-LabMachineDefinition | Where-Object { $_.IpV4Address -eq $dnsServerIP }).Name
 
                 if (-not $Silent)
                 {
@@ -1036,7 +1039,7 @@ function Export-LabDefinition
             if ($firstRouter)
             {
                 $mappingNetworks = Compare-Object -ReferenceObject $firstRouter.NetworkAdapters.VirtualSwitch.Name `
-                -DifferenceObject $machine.NetworkAdapters.VirtualSwitch.Name -ExcludeDifferent -IncludeEqual
+                    -DifferenceObject $machine.NetworkAdapters.VirtualSwitch.Name -ExcludeDifferent -IncludeEqual
             }
 
             foreach ($networkAdapter in $machine.NetworkAdapters)
@@ -1260,8 +1263,6 @@ function Export-LabDefinition
 #region Test-LabDefinition
 function Test-LabDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [string]$Path,
@@ -1364,7 +1365,7 @@ function Test-LabDefinition
         {
             $messages | Where-Object { $_.Type -band [AutomatedLab.MessageType]::Warning } | ForEach-Object `
             {
-                Write-Screeninfo -Message "Issue: '$($_.TargetObject)'. Cause: $($_.Message)" -Type Warning
+                Write-ScreenInfo -Message "Issue: '$($_.TargetObject)'. Cause: $($_.Message)" -Type Warning
             }
         }
 
@@ -1372,7 +1373,7 @@ function Test-LabDefinition
         {
             $messages | Where-Object { $_.Type -band [AutomatedLab.MessageType]::Error } | ForEach-Object `
             {
-                Write-Screeninfo -Message "Issue: '$($_.TargetObject)'. Cause: $($_.Message)" -Type Error
+                Write-ScreenInfo -Message "Issue: '$($_.TargetObject)'. Cause: $($_.Message)" -Type Error
             }
         }
     }
@@ -1397,8 +1398,6 @@ function Test-LabDefinition
 #region Add-LabDomainDefinition
 function Add-LabDomainDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1447,8 +1446,6 @@ function Add-LabDomainDefinition
 #region Get-LabDomainDefinition
 function Get-LabDomainDefinition
 {
-    
-
     Write-LogFunctionEntry
 
     return $script:lab.Domains
@@ -1460,8 +1457,6 @@ function Get-LabDomainDefinition
 #region Remove-LabDomainDefinition
 function Remove-LabDomainDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -1491,8 +1486,6 @@ function Remove-LabDomainDefinition
 #region Add-LabIsoImageDefinition
 function Add-LabIsoImageDefinition
 {
-    
-
     [CmdletBinding()]
     param (
 
@@ -1517,13 +1510,18 @@ function Add-LabIsoImageDefinition
         throw 'Please create a lab before using this cmdlet. To create a new lab, call New-LabDefinition'
     }
 
-
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.IsoImage
     #read the cache
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedIsos = $importMethodInfo.Invoke($null, ('Cache', 'LocalIsoImages'))
+        if ($IsLinux -or $IsMacOs) {
+            $cachedIsos = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalIsoImages.xml'))
+        }
+        else
+        {
+            $cachedIsos = $type::ImportFromRegistry('Cache', 'LocalIsoImages')
+        }
+
         Write-PSFMessage "Read $($cachedIsos.Count) ISO images from the cache"
     }
     catch
@@ -1532,21 +1530,25 @@ function Add-LabIsoImageDefinition
         $cachedIsos = New-Object $type
     }
 
-    if (Test-LabPathIsOnLabAzureLabSourcesStorage $Path)
+    $lab = try { Get-Lab -ErrorAction Stop } catch { Get-LabDefinition -ErrorAction Stop }
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
-        $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
-
-        if ( [System.IO.Path]::HasExtension($Path))
+        if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
-            $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+            $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
 
-            if (-not $isoFiles -and $Name)
+            if ( [System.IO.Path]::HasExtension($Path))
             {
-                $filterPath = Split-Path -Path $Path -Leaf
-                Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
-                Sync-LabAzureLabSources -Filter $filterPath
+                $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
 
-                $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+                if (-not $isoFiles -and $Name)
+                {
+                    $filterPath = Split-Path -Path $Path -Leaf
+                    Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
+                    Sync-LabAzureLabSources -Filter $filterPath
+
+                    $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+                }
             }
         }
     }
@@ -1596,7 +1598,7 @@ function Add-LabIsoImageDefinition
                 Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
                 $letter = (Get-DiskImage -ImagePath $isoFile.FullName | Get-Volume).DriveLetter
                 $isOperatingSystem = (Test-Path "$letter`:\Sources\Install.wim") -or (Test-Path "$letter`:\.discinfo") -or (Test-Path "$letter`:\isolinux") -or (Test-Path "$letter`:\suse")
-                [void] (DisMount-DiskImage -ImagePath $isoFile.FullName)
+                [void] (Dismount-DiskImage -ImagePath $isoFile.FullName)
             }
 
             if ($isOperatingSystem)
@@ -1636,7 +1638,14 @@ function Add-LabIsoImageDefinition
         ForEach-Object { Write-ScreenInfo "The operating system $($_.OperatingSystemName) version $($_.Version) defined more than once in '$($iso.Path)'" -Type Warning }
     }
 
-    $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
+    if ($IsLinux -or $IsMacOs)
+    {
+        $cachedIsos.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalIsoImages.xml'))
+    }
+    else
+    {
+        $cachedIsos.ExportToRegistry('Cache', 'LocalIsoImages')
+    }
 
     foreach ($iso in $isos)
     {
@@ -1664,8 +1673,6 @@ function Add-LabIsoImageDefinition
 #region Get-LabIsoImageDefinition
 function Get-LabIsoImageDefinition
 {
-    
-
     Write-LogFunctionEntry
 
     $script:lab.Sources.ISOs
@@ -1677,8 +1684,6 @@ function Get-LabIsoImageDefinition
 #region Remove-LabIsoImageDefinition
 function Remove-LabIsoImageDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -1710,24 +1715,22 @@ function Remove-LabIsoImageDefinition
 #region Add-LabDiskDefinition
 function Add-LabDiskDefinition
 {
-    
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.Disk])]
     param (
         [Parameter(Mandatory, ValueFromPipelineByPropertyName)]
         [ValidateScript( {
-                    $doesAlreadyExist = Test-Path -Path $_
-                    if ($doesAlreadyExist)
-                    {
-                        Write-ScreenInfo 'The disk does already exist' -Type Warning
-                        return $false
-                    }
-                    else
-                    {
-                        return $true
-                    }
+                $doesAlreadyExist = Test-Path -Path $_
+                if ($doesAlreadyExist)
+                {
+                    Write-ScreenInfo 'The disk does already exist' -Type Warning
+                    return $false
                 }
+                else
+                {
+                    return $true
+                }
+            }
         )]
         [ValidateNotNullOrEmpty()]
         [string]$Name,
@@ -1751,7 +1754,7 @@ function Add-LabDiskDefinition
 
     Write-LogFunctionEntry
 
-    if ($script:disks -eq $null)
+    if ($null -eq $script:disks)
     {
         $errorMessage = "Create a new lab first using 'New-LabDefinition' before adding disks"
         Write-Error $errorMessage
@@ -1761,10 +1764,9 @@ function Add-LabDiskDefinition
 
     if ($Name)
     {
-        if ($script:disks | Where-Object { $_.Name -eq $Name }
-        )
+        if ($script:disks | Where-Object Name -eq $Name)
         {
-            $errorMessage = "A disk with the name '$Path ' does already exist"
+            $errorMessage = "A disk with the name '$Name' does already exist"
             Write-Error $errorMessage
             Write-LogFunctionExitWithError -Message $errorMessage
             return
@@ -1803,8 +1805,6 @@ function Add-LabDiskDefinition
 #region Add-LabMachineDefinition
 function Add-LabMachineDefinition
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'Network')]
     [OutputType([AutomatedLab.Machine])]
     param
@@ -1870,7 +1870,7 @@ function Add-LabMachineDefinition
         [AutomatedLab.Role[]]$Roles,
 
         #Created ValidateSet using: "'" + ([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name -join "', '") + "'" | clip
-        [ValidateScript({ $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::InstalledWin32Cultures).Name)})]
+        [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name) })]
         [string]$UserLocale,
 
         [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
@@ -1938,7 +1938,7 @@ function Add-LabMachineDefinition
         $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
         $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
         $AttributeCollection.Add($ParameterAttribute)
-        if($script:RedHatPackage.Count -gt 0)
+        if ($script:RedHatPackage.Count -gt 0)
         {
             $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:RedHatPackage))
             $AttributeCollection.Add($ValidateSetAttribute)
@@ -1975,9 +1975,12 @@ function Add-LabMachineDefinition
     process
     {
         $machineRoles = ''
-        if ($Roles) { $machineRoles = " (Roles: $($Roles.Name -join ', '))" }
+        if ($Roles)
+        {
+            $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
+        }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName','UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
         $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
@@ -2022,7 +2025,17 @@ function Add-LabMachineDefinition
 
         if (-not $OperatingSystem)
         {
-            throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
+            $os = Get-LabAvailableOperatingSystem -UseOnlyCache -NoDisplay | Where-Object -Property OperatingSystemType -eq 'Windows' | Sort-Object Version | Select-Object -Last 1
+
+            if ($null -ne $os)
+            {
+                Write-ScreenInfo -Message "No operating system specified. Assuming you want $os ($(Split-Path -Leaf -Path $os.IsoPath))."
+                $OperatingSystem = $os
+            }
+            else
+            {
+                throw "No operating system was defined for machine '$Name' and no default operating system defined. Please define either of these and retry. Call 'Get-LabAvailableOperatingSystem' to get a list of operating systems added to the lab."
+            }
         }
 
         if ($AzureProperties)
@@ -2030,6 +2043,11 @@ function Add-LabMachineDefinition
             $illegalKeys = Compare-Object -ReferenceObject $azurePropertiesValidKeys -DifferenceObject ($AzureProperties.Keys | Sort-Object -Unique) |
             Where-Object SideIndicator -eq '=>' |
             Select-Object -ExpandProperty InputObject
+
+            if ($AzureProperties.ContainsKey('StorageSku') -and ($AzureProperties['StorageSku'] -notin (Get-LabConfigurationItem -Name AzureDiskSkus)))
+            {
+                throw "$($AzureProperties['StorageSku']) is not in $(Get-LabConfigurationItem -Name AzureDiskSkus)"
+            }
 
             if ($illegalKeys)
             {
@@ -2048,9 +2066,12 @@ function Add-LabMachineDefinition
             }
         }
 
-        if ($global:labNamePrefix) { $Name = "$global:labNamePrefix$Name" }
+        if ($global:labNamePrefix)
+        {
+            $Name = "$global:labNamePrefix$Name" 
+        }
 
-        if ($script:machines -eq $null)
+        if ($null -eq $script:machines)
         {
             $errorMessage = "Create a new lab first using 'New-LabDefinition' before adding machines"
             Write-Error $errorMessage
@@ -2107,9 +2128,18 @@ function Add-LabMachineDefinition
             {
                 switch ($VirtualizationHost)
                 {
-                    'HyperV' { $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') }
-                    'Azure' { $installationUser = New-Object AutomatedLab.User('Install', 'Somepass1') }
-                    Default { $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') }
+                    'HyperV'
+                    {
+                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') 
+                    }
+                    'Azure'
+                    {
+                        $installationUser = New-Object AutomatedLab.User('Install', 'Somepass1') 
+                    }
+                    Default
+                    {
+                        $installationUser = New-Object AutomatedLab.User('Administrator', 'Somepass1') 
+                    }
                 }
             }
         }
@@ -2147,9 +2177,18 @@ function Add-LabMachineDefinition
                         $DomainName = 'contoso.com'
                         switch ($VirtualizationHost)
                         {
-                            'Azure' { Add-LabDomainDefinition -Name $DomainName -AdminUser Install -AdminPassword Somepass1 }
-                            'HyperV' { Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 }
-                            'VMware' { Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 }
+                            'Azure'
+                            {
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Install -AdminPassword Somepass1 
+                            }
+                            'HyperV'
+                            {
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 
+                            }
+                            'VMware'
+                            {
+                                Add-LabDomainDefinition -Name $DomainName -AdminUser Administrator -AdminPassword Somepass1 
+                            }
                         }
                     }
                     else
@@ -2249,12 +2288,30 @@ function Add-LabMachineDefinition
 
         switch ($OperatingSystem.Version.ToString(2))
         {
-            '6.0' { $level = 'Win2008' }
-            '6.1' { $level = 'Win2008R2' }
-            '6.2' { $level = 'Win2012' }
-            '6.3' { $level = 'Win2012R2' }
-            '6.4' { $level = 'WinThreshold' }
-            '10.0' { $level = 'WinThreshold' }
+            '6.0'
+            {
+                $level = 'Win2008' 
+            }
+            '6.1'
+            {
+                $level = 'Win2008R2' 
+            }
+            '6.2'
+            {
+                $level = 'Win2012' 
+            }
+            '6.3'
+            {
+                $level = 'Win2012R2' 
+            }
+            '6.4'
+            {
+                $level = 'WinThreshold' 
+            }
+            '10.0'
+            {
+                $level = 'WinThreshold' 
+            }
         }
 
         $role = $roles | Where-Object Name -in ('RootDC', 'FirstChildDC', 'DC')
@@ -2282,12 +2339,12 @@ function Add-LabMachineDefinition
             {
                 if ($role.Name -eq 'RootDC')
                 {
-                    $role.Properties = @{'ForestFunctionalLevel' = $level}
+                    $role.Properties = @{'ForestFunctionalLevel' = $level }
                     $role.Properties.Add('DomainFunctionalLevel', $level)
                 }
                 elseif ($role.Name -eq 'FirstChildDC')
                 {
-                    $role.Properties = @{'DomainFunctionalLevel' = $level}
+                    $role.Properties = @{'DomainFunctionalLevel' = $level }
                 }
             }
         }
@@ -2460,7 +2517,7 @@ function Add-LabMachineDefinition
                                     Write-PSFMessage -Message 'Existing External Hyper-V virtual switch found with same name and address space as first virtual network specified. Using this.'
                                 }
                             }
-                            else 
+                            else
                             {
                                 if ($networkDefinition.AddressSpace -ne $existingNetwork.AddressSpace)
                                 {
@@ -2586,7 +2643,7 @@ function Add-LabMachineDefinition
                     elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
                     {
                         # No default subnet and no name selected. Chose fitting subnet.
-                        $chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$IpAddress -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+                        $chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object { $IpAddress -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
                         if (-not $chosenSubnet)
                         {
                             throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
@@ -2616,7 +2673,7 @@ function Add-LabMachineDefinition
                     elseif ($VirtualizationHost -eq 'Azure' -and $adapterVirtualNetwork.Subnets.Count -gt 0 -and -not $AzureProperties.SubnetName)
                     {
                         # No default subnet and no name selected. Chose fitting subnet.
-                        $chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object {$ip -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
+                        $chosenSubnet = $adapterVirtualNetwork.Subnets | Where-Object { $ip -in (Get-NetworkRange -IPAddress $_.AddressSpace.IpAddress -SubnetMask $_.AddressSpace.Netmask) }
                         if (-not $chosenSubnet)
                         {
                             throw ('No fitting subnet available. No subnet was found with a valid address range. {0} was not in the range of these subnets: ' -f $IpAddress, ($adapterVirtualNetwork.Subnets.Name -join ','))
@@ -2631,8 +2688,14 @@ function Add-LabMachineDefinition
                 }
             }
 
-            if ($DnsServer1) { $adapter.Ipv4DnsServers.Add($DnsServer1) }
-            if ($DnsServer2) { $adapter.Ipv4DnsServers.Add($DnsServer2) }
+            if ($DnsServer1)
+            {
+                $adapter.Ipv4DnsServers.Add($DnsServer1) 
+            }
+            if ($DnsServer2)
+            {
+                $adapter.Ipv4DnsServers.Add($DnsServer2) 
+            }
 
             #if the virtual network is not external, the machine is not an Azure one, is domain joined and there is no DNS server configured
             if ($adapter.VirtualSwitch.SwitchType -ne 'External' -and
@@ -2640,12 +2703,15 @@ function Add-LabMachineDefinition
                 #$machine.IsDomainJoined -and
                 -not $adapter.UseDhcp -and
                 -not ($DnsServer1 -or $DnsServer2
-            ))
+                ))
             {
                 $adapter.Ipv4DnsServers.Add('0.0.0.0')
             }
 
-            if ($Gateway) { $adapter.Ipv4Gateway.Add($Gateway) }
+            if ($Gateway)
+            {
+                $adapter.Ipv4Gateway.Add($Gateway) 
+            }
 
             $machine.NetworkAdapters.Add($adapter)
         }
@@ -2655,7 +2721,18 @@ function Add-LabMachineDefinition
         if ($processors -eq 0)
         {
             $processors = 1
-            if (-not $script:processors) { $script:processors = (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors }
+            if (-not $script:processors)
+            {
+                $script:processors = if ($IsLinux -or $IsMacOs)
+                {
+                    $coreInf = Get-Content /proc/cpuinfo | Select-String 'siblings\s+:\s+\d+' | Select-Object -Unique
+                    [int]($coreInf -replace 'siblings\s+:\s+')
+                }
+                else
+                {
+                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors 
+                }
+            }
             if ($script:processors -ge 2)
             {
                 $machine.Processors = 2
@@ -2703,8 +2780,14 @@ function Add-LabMachineDefinition
 
         if ($machine.HostType -eq 'HyperV')
         {
-            if ($RhelPackage) { $machine.LinuxPackageGroup = $RhelPackage}
-            if ($SusePackage) { $machine.LinuxPackageGroup = $SusePackage}
+            if ($RhelPackage)
+            {
+                $machine.LinuxPackageGroup = $RhelPackage
+            }
+            if ($SusePackage)
+            {
+                $machine.LinuxPackageGroup = $SusePackage
+            }
 
             if ($OperatingSystemVersion)
             {
@@ -2748,10 +2831,16 @@ function Add-LabMachineDefinition
             $machine.OperatingSystem = $OperatingSystem
         }
 
-        if (-not $TimeZone) { $TimeZone = tzutil.exe /g }
+        if (-not $TimeZone)
+        {
+            $TimeZone = (Get-TimeZone).StandardName
+        }
         $machine.Timezone = $TimeZone
 
-        if (-not $UserLocale) { $UserLocale = (Get-Culture).Name }
+        if (-not $UserLocale)
+        {
+            $UserLocale = (Get-Culture).Name -replace '-POSIX'
+        }
         $machine.UserLocale = $UserLocale
 
         $machine.Roles = $Roles
@@ -2823,8 +2912,6 @@ function Add-LabMachineDefinition
 #region Get-LabMachineDefinition
 function Get-LabMachineDefinition
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     [OutputType([AutomatedLab.Machine])]
 
@@ -2901,8 +2988,6 @@ function Get-LabMachineDefinition
 #region Remove-LabMachineDefinition
 function Remove-LabMachineDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory = $true, ValueFromPipelineByPropertyName = $true)]
@@ -2930,8 +3015,6 @@ function Remove-LabMachineDefinition
 #region Get-LabMachineRoleDefinition
 function Get-LabMachineRoleDefinition
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
@@ -2962,8 +3045,6 @@ function Get-LabMachineRoleDefinition
 #region Get-LabPostInstallationActivity
 function Get-LabPostInstallationActivity
 {
-    
-
     [CmdletBinding()]
     param (
         [Parameter(Mandatory, ParameterSetName = 'FileContentDependencyRemoteScript')]
@@ -3019,7 +3100,10 @@ function Get-LabPostInstallationActivity
         Write-LogFunctionEntry
         $CustomRole = $PsBoundParameters['CustomRole']
         $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
-        if (-not $Properties) { $Properties = @{} }
+        if (-not $Properties)
+        {
+            $Properties = @{ } 
+        }
     }
 
     process
@@ -3157,8 +3241,6 @@ function Get-LabPostInstallationActivity
 #region Get-DiskSpeed
 function Get-DiskSpeed
 {
-    
-
     [CmdletBinding()]
     param (
         [ValidatePattern('[a-zA-Z]')]
@@ -3202,7 +3284,7 @@ function Get-DiskSpeed
     $result = New-Object PSObject -Property ([ordered]@{
             ReadRandom  = $readThroughoutRandom
             WriteRandom = $writeThroughoutRandom
-    })
+        })
 
     $result
 
@@ -3213,11 +3295,11 @@ function Get-DiskSpeed
 #region Set-LabLocalVirtualMachineDiskAuto
 function Set-LabLocalVirtualMachineDiskAuto
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
-        [int64]$SpaceNeeded
+        [int64]
+        $SpaceNeeded
     )
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.LocalDisk
@@ -3226,8 +3308,14 @@ function Set-LabLocalVirtualMachineDiskAuto
     #read the cache
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $cachedDrives = $importMethodInfo.Invoke($null, ('Cache', 'LocalDisks'))
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cachedDrives = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalDisks.xml'))
+        }
+        else
+        {
+            $cachedDrives = $type::ImportFromRegistry('Cache', 'LocalDisks')
+        }
         Write-PSFMessage "Read $($cachedDrives.Count) drive infos from the cache"
     }
     catch
@@ -3303,7 +3391,15 @@ function Set-LabLocalVirtualMachineDiskAuto
             Write-PSFMessage -Message "Measurements for drive $drive (serial: $($drive.Serial)) (signature: $($drive.Signature)): Read=$([int]($drive.ReadSpeed)) MB/s  Write=$([int]($drive.WriteSpeed)) MB/s  Total=$([int]($drive.TotalSpeed)) MB/s"
         }
     }
-    $drives.ExportToRegistry('Cache', 'LocalDisks')
+
+    if ($IsLinux -or $IsMacOs)
+    {
+        $drives.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/LocalDisks.xml'))
+    }
+    else
+    {
+        $drives.ExportToRegistry('Cache', 'LocalDisks')
+    }
 
     #creating a new list is required as otherwise $drives would be converted into an Object[]
     $drives = $drives | Sort-Object -Property TotalSpeed -Descending
@@ -3352,13 +3448,17 @@ function Set-LabLocalVirtualMachineDiskAuto
 #region Get-LabVirtualNetwork
 function Get-LabVirtualNetwork
 {
-    
-
     [cmdletBinding()]
 
     $virtualnetworks = @()
 
-    $switches = Get-VMSwitch
+    $switches = if ($IsLinux)
+    {  
+    }
+    else
+    {
+        Get-VMSwitch 
+    }
 
     foreach ($switch in $switches)
     {
@@ -3384,7 +3484,6 @@ function Get-LabVirtualNetwork
 #region Get-LabAvailableAddresseSpace
 function Get-LabAvailableAddresseSpace
 {
-    
     $defaultAddressSpace = Get-LabConfigurationItem -Name DefaultAddressSpace
 
     if (-not $defaultAddressSpace)
@@ -3398,7 +3497,10 @@ function Get-LabAvailableAddresseSpace
     $networkFound = $false
     $addressSpace = [AutomatedLab.IPNetwork]$defaultAddressSpace
 
-    if ($null -eq $reservedAddressSpaces) { $script:reservedAddressSpaces = @() }
+    if ($null -eq $reservedAddressSpaces)
+    {
+        $script:reservedAddressSpaces = @() 
+    }
 
     do
     {
@@ -3417,13 +3519,31 @@ function Get-LabAvailableAddresseSpace
             continue
         }
 
-        if ($addressSpace.IpAddress -in (Get-NetIPAddress -AddressFamily IPv4).IPAddress)
+        $localAddresses = if ($IsLinux)
+        {
+            (ip -4 addr) | grep -oP '(?<=inet\s)\d+(\.\d+){3}'
+        }
+        else
+        {
+            (Get-NetIPAddress -AddressFamily IPv4).IPAddress
+        }
+
+        if ($addressSpace.IpAddress -in $localAddresses)
         {
             Write-PSFMessage -Message "Network '$addressSpace' is in use locally"
             continue
         }
 
-        if (Get-NetRoute -DestinationPrefix $addressSpace.ToString() -ErrorAction SilentlyContinue)
+        $route = if ($IsLinux)
+        {
+            (route | Select-Object -First 5 -Skip 2 | ForEach-Object { '{0}/{1}' -f ($_ -split '\s+')[0], (ConvertTo-MaskLength ($_ -split '\s+')[2]) })
+        }
+        else
+        {
+            Get-NetRoute -DestinationPrefix $addressSpace.ToString() -ErrorAction SilentlyContinue
+        }
+
+        if ($null -ne $route)
         {
             Write-PSFMessage -Message "Network '$addressSpace' is routable"
             continue
@@ -3441,7 +3561,9 @@ function Get-LabAvailableAddresseSpace
 #region Internal
 function Repair-LabDuplicateIpAddresses
 {
-    
+    [CmdletBinding()]
+    param ( )
+
     foreach ($machine in (Get-LabMachineDefinition))
     {
         foreach ($adapter in $machine.NetworkAdapters)
@@ -3487,6 +3609,27 @@ function Set-LinuxPackage
     foreach ($entry in $Package)
     {
         [void] ($script:SusePackage.Add($entry))
+    }
+}
+
+function Get-OnlineAdapterHardwareAddress
+{
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Special handling for Linux")]
+    [OutputType([string[]])]
+    [CmdletBinding()]
+    param ( )
+
+    if ($IsLinux)
+    {
+        ip link show up | ForEach-Object { if ($_ -match '(\w{2}:?){6}' -and $Matches.0 -ne '00:00:00:00:00:00')
+            {
+                $Matches.0
+            }
+        }
+    }
+    else
+    {
+        Get-CimInstance Win32_NetworkAdapter | Where-Object { $_.NetEnabled -and $_.NetConnectionID } | Select-Object -ExpandProperty MacAddress
     }
 }
 #endregion Internal

@@ -1,4 +1,4 @@
-<#
+﻿<#
         In this scenario AutomatedLab builds a lab inside a lab. Thanks to nested virtualization in Hyper-V and Azure,
         this can be done on a Windows Server 2016 or Windows 10 host machine.
         This lab contains:
@@ -36,7 +36,7 @@ $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
 Add-LabMachineDefinition -Name ALDC1 -Roles RootDC, Routing -NetworkAdapter $netAdapter
 
-Add-LabMachineDefinition -Name AL1 -Memory 12GB -Roles HyperV #-OperatingSystem 'Windows Server Standard' 
+Add-LabMachineDefinition -Name AL1 -Memory 12GB -Roles HyperV #-OperatingSystem 'Windows Server Standard'
 
 Add-LabMachineDefinition -Name ALServer1
 
@@ -48,6 +48,20 @@ Invoke-LabCommand -ActivityName 'Install AutomatedLab and create LabSources fold
 
     #Add the AutomatedLab Telemetry setting to default to allow collection, otherwise will prompt during installation
     [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT', '0')
+    try
+    {
+        #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+        if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+        {
+            Write-Verbose -Message 'Adding support for TLS 1.2'
+            [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+        }
+    }
+    catch
+    {
+        Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+    }
+
     Install-PackageProvider -Name Nuget -ForceBootstrap -Force -ErrorAction Stop | Out-Null
     Install-Module -Name AutomatedLab -AllowClobber -Force -ErrorAction Stop
 

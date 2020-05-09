@@ -1,10 +1,10 @@
-function Set-UnattendedTimeZone
+﻿function Set-UnattendedTimeZone
 {
-    param 
+    param
     (
         [Parameter(Mandatory = $true)]
         [string]$TimeZone,
-        
+
         [switch]
         $IsKickstart,
 
@@ -19,8 +19,8 @@ function Set-UnattendedTimeZone
     }
 
     if ($IsKickstart) { Set-UnattendedKickstartTimeZone -TimeZone $TimeZone; return }
-    
+
     if ($IsAutoYast) { Set-UnattendedYastTimeZone -TimeZone $TimeZone; return }
-    
+
     Set-UnattendedWindowsTimeZone -TimeZone $TimeZone
 }

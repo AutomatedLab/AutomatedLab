@@ -2,7 +2,7 @@
 
 ![Image](AutomatedLab-GIF250-whitebg-lossy25.gif)
 
-AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements you need to make sure: You need the DVD ISO images and a Hyper-V host or an Azure subscription.
+AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements: You need .NET 4.7.1 (Windows PowerShell) or .NET Core 2+ (PowerShell 6+) and either DVD ISO images and a Hyper-V host or an Azure subscription.
 
 Build | Status | Last Commit | Latest Release
 --- | --- | --- | ---
@@ -17,14 +17,31 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 
 Apart from the module itself your system needs to meet the following requirements:
 
-- Windows Management Framework 5+
-- Windows Server 2012 R2+/Windows 8.1+
+- Windows Management Framework 5+ (Windows)
+- .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
+- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
 - Recommended OS language is en-us
 - Admin privileges are required
 - ISO files for all operating systems and roles to be deployed
 - Intel VT-x or AMD/V capable CPU
 - A decent amount of RAM
-- An SSD for your machines is highly recommended as many issues arise from slow HDDs
+- Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
+
+### Windows
+
+- Windows Management Framework 5+
+- Windows Server 2012 R2+/Windows 8.1+
+- Recommended OS language is en-us
+- Admin privileges are required
+
+### Linux
+
+- WSL supported, Azure Cloud Shell supported
+- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
+- PowerShell 6+
+- gss-ntlmssp to enable remoting (mandatory)
+- ip and route commands available
+- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for Q3/2020.
 
 ## Supported products
 
@@ -32,15 +49,19 @@ This solution supports setting up virtual machines with the following products
 
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
 - SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
-- Visual Studio 2012, 2013, 2015
-- Team Foundation Services 2018, Azure DevOps
+- Visual Studio 2012, 2013, 2015, 2017
+- Team Foundation Services 2015+, Azure DevOps
 - Exchange 2013, Exchange 2016
+- SharePoint 2013, 2016, 2019
 - System Center Orchestrator 2012
 - System Center Configuration Manager 1809
+- System Center Configuration Manager 1902+
 - MDT
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016
 - DSC Pull Server (with SQL Reporting)
+- Hyper-V
+- Failover Clustering
 
 ## Feature List
 
@@ -57,224 +78,7 @@ This solution supports setting up virtual machines with the following products
 
 ## Telemetry
 
-Starting with AutomatedLab version 5 we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you. The [full report] can be viewed at your leisure.
-
-We are collecting the following with Azure Application Insights:
-- Your country and city (IP addresses are by default set to 0.0.0.0 after the location is extracted)
-- Your number of lab machines
-- The roles you used
-- The time it took your lab to finish
-- Your AutomatedLab version, OS Version and the lab's Hypervisor type
-- The lifetime of your lab once you remove it
-
-We collect no personally identifiable information, ever.
-
-If you change your mind later on, you can always set the environment
-variable AUTOMATEDLAB_TELEMETRY_OPTIN to no, false or 0 in order to opt out or to yes,true or 1 to opt in.
-Alternatively you can use Enable-LabTelemetry and Disable-LabTelemetry to accomplish the same.
-
-We will not ask you again while $env:AUTOMATEDLAB_TELEMETRY_OPTIN exists.
-
-Take a look at the following samples to see what is transmitted. These are actual events. Notice that the IP address defaults
-to 0.0.0.0, and we overwrite any PII with 'nope'.
-
-### LabStarted event - transmitted data sample  
-
-```json
-{
-    "event":  [
-                  {
-                      "name":  "LabStarted",
-                      "count":  1
-                  }
-              ],
-    "internal":  {
-                     "data":  {
-                                  "id":  "abe26991-dd13-11e9-b08a-8102ecc783ba",
-                                  "documentVersion":  "1.61"
-                              }
-                 },
-    "context":  {
-                    "data":  {
-                                 "eventTime":  "2019-09-22T08:33:35.1951198Z",
-                                 "isSynthetic":  false,
-                                 "samplingRate":  100.0
-                             },
-                    "cloud":  {
-
-                              },
-                    "device":  {
-                                   "type":  "PC",
-                                   "roleName":  "nope",
-                                   "roleInstance":  "nope",
-                                   "screenResolution":  ""
-                               },
-                    "session":  {
-                                    "isFirst":  false
-                                },
-                    "operation":  {
-
-                                  },
-                    "location":  {
-                                     "clientip":  "0.0.0.0",
-                                     "continent":  "Europe",
-                                     "country":  "Germany"
-                                 },
-                    "custom":  {
-                                   "dimensions":  "   ",
-                                   "metrics":  ""
-                               }
-                }
-}
-```
-
-### LabFinished event - transmitted data sample  
-
-```json
-{
-    "event":  [
-                  {
-                      "name":  "LabFinished",
-                      "count":  1
-                  }
-              ],
-    "internal":  {
-                     "data":  {
-                                  "id":  "c4edb2a0-dd13-11e9-817d-49de0b58223d",
-                                  "documentVersion":  "1.61"
-                              }
-                 },
-    "context":  {
-                    "data":  {
-                                 "eventTime":  "2019-09-22T08:34:17.1963486Z",
-                                 "isSynthetic":  false,
-                                 "samplingRate":  100.0
-                             },
-                    "cloud":  {
-
-                              },
-                    "device":  {
-                                   "type":  "PC",
-                                   "roleName":  "nope",
-                                   "roleInstance":  "nope",
-                                   "screenResolution":  ""
-                               },
-                    "session":  {
-                                    "isFirst":  false
-                                },
-                    "operation":  {
-
-                                  },
-                    "location":  {
-                                     "clientip":  "0.0.0.0",
-                                     "continent":  "Europe",
-                                     "country":  "Germany"
-                                 },
-                    "custom":  {
-                                   "dimensions":  "",
-                                   "metrics":  ""
-                               }
-                }
-}
-```
-
-### LabRemoved event - transmitted data sample  
-
-```json
-{
-    "event":  [
-                  {
-                      "name":  "LabRemoved",
-                      "count":  1
-                  }
-              ],
-    "internal":  {
-                     "data":  {
-                                  "id":  "c52bcd10-dd13-11e9-b94e-bbbcc152ed38",
-                                  "documentVersion":  "1.61"
-                              }
-                 },
-    "context":  {
-                    "data":  {
-                                 "eventTime":  "2019-09-22T08:34:17.5926954Z",
-                                 "isSynthetic":  false,
-                                 "samplingRate":  100.0
-                             },
-                    "cloud":  {
-
-                              },
-                    "device":  {
-                                   "type":  "PC",
-                                   "roleName":  "nope",
-                                   "roleInstance":  "nope",
-                                   "screenResolution":  ""
-                               },
-                    "session":  {
-                                    "isFirst":  false
-                                },
-                    "operation":  {
-
-                                  },
-                    "location":  {
-                                     "clientip":  "0.0.0.0",
-                                     "continent":  "Europe",
-                                     "country":  "Germany"
-                                 },
-                    "custom":  {
-                                   "metrics":  ""
-                               }
-                }
-}
-```
-
-### Role event - transmitted data sample  
-
-```json
-{
-    "event":  [
-                  {
-                      "name":  "Role",
-                      "count":  1
-                  }
-              ],
-    "internal":  {
-                     "data":  {
-                                  "id":  "aba95830-dd13-11e9-8c80-71afcdf3720b",
-                                  "documentVersion":  "1.61"
-                              }
-                 },
-    "context":  {
-                    "data":  {
-                                 "eventTime":  "2019-09-22T08:33:34.7148692Z",
-                                 "isSynthetic":  false,
-                                 "samplingRate":  100.0
-                             },
-                    "cloud":  {
-
-                              },
-                    "device":  {
-                                   "type":  "PC",
-                                   "roleName":  "nope",
-                                   "roleInstance":  "nope",
-                                   "screenResolution":  ""
-                               },
-                    "session":  {
-                                    "isFirst":  false
-                                },
-                    "operation":  {
-
-                                  },
-                    "location":  {
-                                     "clientip":  "0.0.0.0",
-                                     "continent":  "Europe",
-                                     "country":  "Germany"
-                                 },
-                    "custom":  {
-                                   "dimensions":  ""
-                               }
-                }
-}
-```
+Starting with AutomatedLab version 5 we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you. The [full report] can be viewed at your leisure. To learn more about what is actually collected, see [here](https://automatedlab.org/en/latest/Wiki/telemetry.md).
 
 ### Facts and figures
 

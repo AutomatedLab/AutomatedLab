@@ -1,4 +1,4 @@
-$labName = 'Test3'
+﻿$labName = 'Test3'
 
 #create an empty lab template and define where the lab XML files and the VMs will be stored
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV
@@ -32,18 +32,18 @@ $PSDefaultParameterValues = @{
 $roles = Get-LabMachineRoleDefinition -Role RootDC @{ DomainFunctionalLevel = 'Win2012R2'; ForestFunctionalLevel = 'Win2012R2' }
 #The PostInstallationActivity is just creating some users
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
-Add-LabMachineDefinition -Name T3RDC1 -IpAddress 192.168.50.10 -DomainName vm.net -Roles $roles -PostInstallationActivity $postInstallActivity 
+Add-LabMachineDefinition -Name T3RDC1 -IpAddress 192.168.50.10 -DomainName vm.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
 #the root domain gets a second domain controller
 $roles = Get-LabMachineRoleDefinition -Role DC
-Add-LabMachineDefinition -Name T3RDC2 -IpAddress 192.168.50.11 -DomainName vm.net -Roles $roles    
+Add-LabMachineDefinition -Name T3RDC2 -IpAddress 192.168.50.11 -DomainName vm.net -Roles $roles
 
 #this is the first domain controller of the child domain 'a' defined above
-#The PostInstallationActivity is filling the domain with some life. 
+#The PostInstallationActivity is filling the domain with some life.
 #At the end about 6000 users are available with OU and manager hierarchy as well as a bunch of groups
 $roles = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'vm.net'; NewDomain = 'a'; DomainFunctionalLevel = 'Win2012R2' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
-Add-LabMachineDefinition -Name T3ADC1 -IpAddress 192.168.50.20 -DomainName a.vm.net -Roles $roles -PostInstallationActivity $postInstallActivity 
+Add-LabMachineDefinition -Name T3ADC1 -IpAddress 192.168.50.20 -DomainName a.vm.net -Roles $roles -PostInstallationActivity $postInstallActivity
 
 #2nd domain controller for the child domain 'a'
 $roles = Get-LabMachineRoleDefinition -Role DC
@@ -58,7 +58,7 @@ $roles = Get-LabMachineRoleDefinition -Role DC
 Add-LabMachineDefinition -Name T3BDC2 -IpAddress 192.168.50.31 -DomainName b.vm.net -Roles $roles
 
 #file server in the child domain 'a'
-$roles = (Get-LabMachineRoleDefinition -Role FileServer)    
+$roles = (Get-LabMachineRoleDefinition -Role FileServer)
 Add-LabMachineDefinition -Name T3AFS1 -IpAddress 192.168.50.50 -DomainName a.vm.net -Roles $roles
 
 #A SQL server in the child domain 'a' with demo databases

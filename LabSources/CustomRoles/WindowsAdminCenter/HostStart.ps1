@@ -1,4 +1,4 @@
-param
+﻿param
 (
     [Parameter(Mandatory)]
     [string]
@@ -70,7 +70,7 @@ if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     }
 }
 
-if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') 
+if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
 {
     Write-Verbose -Message 'Adding support for TLS 1.2'
     [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12

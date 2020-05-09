@@ -385,7 +385,7 @@ namespace AutomatedLab
             return name;
         }
 
-        public PSCredential GetLocalCredential()
+        public PSCredential GetLocalCredential(bool Force = false)
         {
             var securePassword = new SecureString();
 
@@ -398,7 +398,7 @@ namespace AutomatedLab
             var dcRole = roles.Where(role => ((AutomatedLab.Roles)role.Name & dcRoles) == role.Name).FirstOrDefault();
 
             string userName = string.Empty;
-            if (dcRole == null)
+            if (dcRole == null || Force)
             {
                 //machine is not a domain controller, creating a local username 
                 userName = OperatingSystemType == OperatingSystemType.Linux ? "root" : string.Format(@"{0}\{1}", name, installationUser.UserName);

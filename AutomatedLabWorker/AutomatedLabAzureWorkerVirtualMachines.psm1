@@ -1,4 +1,4 @@
-#region New-LWAzureVM
+﻿#region New-LWAzureVM
 function New-LWAzureVM
 {
     [Cmdletbinding()]
@@ -13,7 +13,7 @@ function New-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $lab = Get-Lab
 
     $resourceGroupName = $lab.Name
@@ -332,8 +332,8 @@ function New-LWAzureVM
     Write-PSFMessage "Skus: $SkusName"
     Write-PSFMessage '-------------------------------------------------------'
 
-    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
-            Get-AzVirtualNetworkSubnetConfig | 
+    $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName |
+            Get-AzVirtualNetworkSubnetConfig |
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $machine.IpAddress[0].IpAddress.ToString()
             }
@@ -352,7 +352,13 @@ function New-LWAzureVM
         $machineAvailabilitySet = New-AzAvailabilitySet -ResourceGroupName $ResourceGroupName -Name ($Machine.Network)[0] -Location $Location -ErrorAction Stop -Sku aligned -PlatformUpdateDomainCount 2 -PlatformFaultDomainCount 2
     }
 
-    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop
+    $useULTRA = $false
+    if ($Machine.AzureProperties.ContainsKey('StorageSku'))
+    {
+        $useULTRA = $Machine.AzureProperties['StorageSku'] -eq 'UltraSSD_LRS'
+    }
+
+    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -EnableUltraSSD:$useULTRA
     $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
 
     Write-PSFMessage "Choosing latest source image for $SkusName in $OfferName"
@@ -393,6 +399,14 @@ function New-LWAzureVM
 
     if ($Disks)
     {
+        $diskSku = if ($Machine.AzureProperties.ContainsKey('StorageSku'))
+        {
+            $Machine.AzureProperties['StorageSku']
+        }
+        else
+        {
+            'Premium_LRS'
+        }
         Write-PSFMessage "Adding $($Disks.Count) data disks"
         $lun = 0
 
@@ -402,7 +416,7 @@ function New-LWAzureVM
             $diskSize = $Disk.Value
 
             Write-PSFMessage -Message "Adding disk $dataDiskName to VM $Machine with $diskSize GB (LUN $lun)"
-            $diskConfig = New-AzDiskConfig -SkuName Standard_LRS -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
+            $diskConfig = New-AzDiskConfig -SkuName $diskSku -DiskSizeGB $diskSize -CreateOption Empty -Location $Location
             $dataDisk = New-AzDisk -ResourceGroupName $resourceGroupName -DiskName $dataDiskName -Disk $diskConfig
             $vm = $vm | Add-AzVMDataDisk -Name $dataDiskName -ManagedDiskId $dataDisk.Id -Caching None -DiskSizeInGB $diskSize -Lun $lun -CreateOption Attach
             $lun++
@@ -415,8 +429,8 @@ function New-LWAzureVM
     $niccount = 1
     foreach ($adapter in ($Machine.NetworkAdapters | Where-Object {$_.Ipv4Address.IPAddress.ToString() -ne $defaultIPv4Address}))
     {
-        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName | 
-            Get-AzVirtualNetworkSubnetConfig | 
+        $subnet = Get-AzVirtualNetwork -ResourceGroupName $ResourceGroupName |
+            Get-AzVirtualNetworkSubnetConfig |
             Where-Object -FilterScript {
                 (Get-NetworkRange -IPAddress $_.AddressPrefix) -contains $adapter.Ipv4Address[0].IpAddress.ToString()
             }
@@ -569,9 +583,9 @@ function Initialize-LWAzureVM
         netsh.exe advfirewall set private state off
         netsh.exe advfirewall set public state off
 
-        if (($MachineSettings."$computerName")[6])
+        if (($MachineSettings."$computerName")[4])
         {
-            $dnsServers = ($MachineSettings."$computerName")[6]
+            $dnsServers = ($MachineSettings."$computerName")[4]
             Write-Verbose "Configuring $($dnsServers.Count) DNS Servers"
             $idx = (Get-NetIPInterface | Where-object {$_.AddressFamily -eq "IPv4" -and $_.InterfaceAlias -like "*Ethernet*"}).ifIndex
             Set-DnsClientServerAddress -InterfaceIndex $idx -ServerAddresses $dnsServers
@@ -674,11 +688,11 @@ function Initialize-LWAzureVM
                 $m.TimeZone,
                 [int]($m.Disks.Count),
                 (Get-LabAzureLabSourcesStorage),
-                $DnsServers,
-                $Machine.GetLocalCredential()
+                $DnsServers
             )
         )
     }
+
     $jobs = Invoke-LabCommand -ComputerName $Machine -ActivityName VmInit -ScriptBlock $initScript -UseLocalCredential -ArgumentList $machineSettings -DoNotUseCredSsp -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Write-ScreenInfo -Message 'Finished' -TaskEnd
@@ -781,7 +795,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
     {
@@ -835,8 +849,6 @@ function Start-LWAzureVM
 
         Write-PSFMessage -Message 'Start joining the machines to the respective domains'
         Join-LabVMDomain -Machine $machinesToJoin
-
-        Enable-LabAutoLogon -ComputerName $machinesToJoin
     }
 
     Write-LogFunctionExit
@@ -869,7 +881,7 @@ function Stop-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
 
     $lab = Get-Lab
@@ -960,7 +972,7 @@ function Wait-LWAzureRestartVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $start = $MonitoringStartTime.ToUniversalTime()
 
     Write-PSFMessage -Message "Starting monitoring the servers at '$start'"
@@ -1046,7 +1058,7 @@ function Get-LWAzureVMStatus
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
+
     $result = @{ }
     $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
@@ -1154,7 +1166,9 @@ function Get-LWAzureVMConnectionInfo
 #region Enable-LWAzureVMRemoting
 function Enable-LWAzureVMRemoting
 {
-    param(
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not enabling CredSSP a third time on Linux")]
+    param
+    (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ComputerName,
 
@@ -1203,10 +1217,15 @@ function Enable-LWAzureVMRemoting
         try
         {
             Invoke-LabCommand -ComputerName $machine -ActivityName SetLabVMRemoting -ScriptBlock $script -DoNotUseCredSsp -NoDisplay `
-                -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop
+                -ArgumentList $machine.DomainName, $cred.UserName, $cred.GetNetworkCredential().Password -ErrorAction Stop -UseLocalCredential
         }
         catch
         {
+            if ($IsLinux)
+            {
+                return
+            }
+
             if ($UseSSL)
             {
                 Connect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName -Credential $cred -Port $machine.AzureConnectionInfo.Port -UseSSL -SessionOption (New-WSManSessionOption -SkipCACheck -SkipCNCheck)
@@ -1215,6 +1234,7 @@ function Enable-LWAzureVMRemoting
             {
                 Connect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName -Credential $cred -Port $machine.AzureConnectionInfo.Port
             }
+
             Set-Item -Path "WSMan:\$($machine.AzureConnectionInfo.DnsName)\Service\Auth\CredSSP" -Value $true
             Disconnect-WSMan -ComputerName $machine.AzureConnectionInfo.DnsName
         }
@@ -1247,7 +1267,7 @@ function Enable-LWAzureWinRm
     $lab = Get-Lab
     $jobs = @()
 
-    $tempFileName = Join-Path -Path $env:TEMP -ChildPath enableazurewinrm.labtempfile.ps1
+    $tempFileName = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath enableazurewinrm.labtempfile.ps1
     $customScriptContent = @'
 New-Item -ItemType Directory -Path C:\ALAzure -ErrorAction SilentlyContinue
 'Trying to enable Remoting and CredSSP' | Out-File C:\ALAzure\WinRmActivation.log -Append
@@ -1324,8 +1344,8 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
-    
-    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -ne 'CredSsp' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
     {
         return
     }
@@ -1375,6 +1395,7 @@ function Connect-LWAzureLabSourcesDrive
 #region Mount-LWAzureIsoImage
 function Mount-LWAzureIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant, used in Invoke-LabCommand")]
     [CmdletBinding()]
     param
     (
@@ -1415,6 +1436,7 @@ function Mount-LWAzureIsoImage
 #region Dismount-LWAzureIsoImage
 function Dismount-LWAzureIsoImage
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant, used in Invoke-LabCommand")]
     param
     (
         [Parameter(Mandatory, Position = 0)]
@@ -1446,11 +1468,11 @@ function Dismount-LWAzureIsoImage
 function Checkpoint-LWAzureVM
 {
     [Cmdletbinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
@@ -1458,7 +1480,7 @@ function Checkpoint-LWAzureVM
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
-    
+
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
@@ -1471,7 +1493,7 @@ function Checkpoint-LWAzureVM
     $jobs = foreach ($machine in $ComputerName)
     {
         $vm = Get-AzVM -ResourceGroupName $resourceGroupName -Name $machine -ErrorAction SilentlyContinue
-        if (-not $vm) 
+        if (-not $vm)
         {
             Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
             continue
@@ -1496,8 +1518,8 @@ function Checkpoint-LWAzureVM
         $skipRemove = $true
     }
 
-    if ($jobs) 
-    { 
+    if ($jobs)
+    {
         $null = $jobs | Wait-Job
         $jobs | Remove-Job
     }
@@ -1520,7 +1542,7 @@ function Restore-LWAzureVmSnapshot
     (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$SnapshotName
     )
@@ -1528,10 +1550,10 @@ function Restore-LWAzureVmSnapshot
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
-    
+
     $lab = Get-Lab
     $resourceGroupName = $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName
-    
+
     $runningMachines = Get-LabVM -IsRunning -ComputerName $ComputerName
     if ($runningMachines)
     {
@@ -1547,7 +1569,7 @@ function Restore-LWAzureVmSnapshot
     {
         $vm = $vms | Where-Object Name -eq $machine
         $vmSnapshotName = '{0}_{1}' -f $machine, $SnapshotName
-        if (-not $vm) 
+        if (-not $vm)
         {
             Write-ScreenInfo -Message "$machine could not be found in $($resourceGroupName). Skipping snapshot." -type Warning
             continue
@@ -1559,13 +1581,13 @@ function Restore-LWAzureVmSnapshot
             Write-ScreenInfo -Message "No snapshot named $vmSnapshotName found for $machine. Skipping restore." -Type Warning
             continue
         }
-        
+
         $osDiskName = $vm.StorageProfile.OsDisk.name
         $oldOsDisk = Get-AzDisk -Name $osDiskName -ResourceGroupName $resourceGroupName
         $disksToRemove += $oldOsDisk.Name
         $storageType = $oldOsDisk.sku.name
         $diskconf = New-AzDiskConfig -AccountType $storagetype -Location $oldOsdisk.Location -SourceResourceId $snapshot.Id -CreateOption Copy
-        
+
         $machineStatus[$machine].Stage1 = @{
             VM      = $vm
             OldDisk = $oldOsDisk.Name
@@ -1587,7 +1609,7 @@ function Restore-LWAzureVmSnapshot
         $null = Set-AzVMOSDisk -VM $vm -ManagedDiskId $newDisk.Id -Name $newDisk.Name
         $machineStatus[$machine].Stage2 = @{
             Job = Update-AzVM -ResourceGroupName $resourceGroupName -VM $vm -AsJob
-        }        
+        }
     }
 
     $null = $machineStatus.Values.Stage2.Job | Wait-Job
@@ -1635,15 +1657,15 @@ function Restore-LWAzureVmSnapshot
 function Remove-LWAzureVmSnapshot
 {
     [Cmdletbinding()]
-    Param 
+    Param
     (
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [Parameter(Mandatory, ParameterSetName = 'AllSnapshots')]
         [string[]]$ComputerName,
-        
+
         [Parameter(Mandatory, ParameterSetName = 'BySnapshotName')]
         [string]$SnapshotName,
-        
+
         [Parameter(ParameterSetName = 'AllSnapshots')]
         [switch]$All
     )
@@ -1746,7 +1768,7 @@ function Enable-LWAzureAutoShutdown
         [switch]
         $Wait
     )
-    
+
     $lab = Get-Lab -ErrorAction Stop
     $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId
@@ -1780,7 +1802,7 @@ function Disable-LWAzureAutoShutdown
         [switch]
         $Wait
     )
-    
+
     $lab = Get-Lab -ErrorAction Stop
     $labVms = Get-AzVm -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName | Where-Object Name -in $ComputerName
     $resourceIdString = '{0}/providers/microsoft.devtestlab/schedules/shutdown-computevm-' -f $lab.AzureSettings.DefaultResourceGroup.ResourceId

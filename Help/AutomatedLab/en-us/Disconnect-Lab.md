@@ -25,10 +25,10 @@ On the on-premises router it will Uninstall-RemoteAccess -VpnType S2SVPN
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Disconnect-Lab -SourceLab OnPrem -DestinationLab AzLab
 ```
 
-{{ Add example description here }}
+Removes the VPN connection between OnPrem and AzLab
 
 ## PARAMETERS
 

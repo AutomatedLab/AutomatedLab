@@ -34,10 +34,10 @@ Saves the state of a lab machine on HyperV and VMWare
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Save-LabVm -All
 ```
 
-{{ Add example description here }}
+Save the state of all running VMs
 
 ## PARAMETERS
 
