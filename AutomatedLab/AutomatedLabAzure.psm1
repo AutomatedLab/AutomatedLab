@@ -1299,12 +1299,18 @@ function Sync-LabAzureLabSources
 
             # Try to set the file hash
             $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
-            $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-            $apiResponse = $uploadedFile.SetPropertiesAsync()
-            if (-not $apiResponse.Status -eq "RanToCompletion")
+            try
             {
-                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
-                continue
+                $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+                $apiResponse = $uploadedFile.SetPropertiesAsync()
+                if (-not $apiResponse.Status -eq "RanToCompletion")
+                {
+                    Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
+                }
+            }
+            catch
+            {
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
             }
 
             Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
