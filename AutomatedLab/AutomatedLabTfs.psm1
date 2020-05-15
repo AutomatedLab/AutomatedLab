@@ -311,11 +311,12 @@ function Install-LabBuildWorker
             {
                 Write-ScreenInfo -Message "No TFS server called $($role.Properties['TfsServer']) found in lab." -NoNewLine -Type Warning
                 $tfsServer = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Select-Object -First 1
-                $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
                 $role.Properties['TfsServer'] = $tfsServer.Name
                 $shouldExport = $true
                 Write-ScreenInfo -Message " Selecting $tfsServer instead." -Type Warning
             }
+
+            $useSsl = $tfsServer.InternalNotes.ContainsKey('CertificateThumbprint') -or ($tfsServer.Roles.Name -eq 'AzDevOps' -and $tfsServer.SkipDeployment)
         }
         else
         {
@@ -334,7 +335,7 @@ function Install-LabBuildWorker
         }
 
         $tfsRole = $tfsServer.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
-        if ($null -ne $tfsRole -and $tfsRole.Properties.ContainsKey('Port'))
+        if ($tfsRole -and $tfsRole.Properties.ContainsKey('Port'))
         {
             $tfsPort = $tfsRole.Properties['Port']
         }
