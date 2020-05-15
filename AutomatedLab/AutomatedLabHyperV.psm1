@@ -83,8 +83,10 @@ function Install-LabHyperV
             }
 
             Set-VMHost @parameters
-        } -Function (Get-Command -Name Sync-Parameter) -AsJob
+        } -Function (Get-Command -Name Sync-Parameter) -AsJob -PassThru
     }
+
+    Wait-LWLabJob -Job $jobs
 
     Write-LogFunctionExit
 }
