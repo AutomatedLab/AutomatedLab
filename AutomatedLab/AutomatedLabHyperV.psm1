@@ -50,7 +50,7 @@ function Install-LabHyperV
 
     $jobs = foreach ($vm in $vms)
     {
-        Invoke-LabCommand -ActivityName 'Configuring VM Host settings' -ComputerName $settingsTable.Keys -Variable (Get-Variable -Name vm) -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Configuring VM Host settings' -ComputerName $vm -Variable (Get-Variable -Name vm) -ScriptBlock {
             Import-Module Hyper-V
             # Correct data types for individual settings
             $parametersAndTypes = @{
