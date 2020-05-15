@@ -513,7 +513,7 @@ function Copy-LabFileItem
 
                     $destination = if (-not $DestinationFolderPath)
                     {
-                        'C:\'
+                        '/'
                     }
                     else
                     {
@@ -541,7 +541,7 @@ function Copy-LabFileItem
                 $session = New-LabPSSession -ComputerName $machine
                 $destination = if (-not $DestinationFolderPath)
                 {
-                    Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
+                    Join-Path -Path / -ChildPath (Split-Path -Path $p -Leaf)
                 }
                 else
                 {
