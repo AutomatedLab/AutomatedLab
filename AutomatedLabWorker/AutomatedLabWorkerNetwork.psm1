@@ -67,7 +67,7 @@ function New-LWHypervNetworkSwitch
 
         if ($network.EnableManagementAdapter) {
 
-            $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
+            $config = Get-NetAdapter | Where-Object Name -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?"
             if (-not $config)
             {
                 throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
@@ -129,16 +129,9 @@ function New-LWHypervNetworkSwitch
                         $adapterIpAddress = $adapterIpAddress.Increment()
                     }
 
-                    $arguments = @{
-                        IPAddress = @($adapterIpAddress.AddressAsString)
-                        SubnetMask = @($network.AddressSpace.Netmask.AddressAsString)
-                    }
-
-                    $result = $config | Invoke-CimMethod -MethodName EnableStatic -Arguments $arguments
-                    if ($result.ReturnValue)
-                    {
-                        throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
-                    }
+                    $null = $config | Set-NetIPInterface -Dhcp Disabled
+                    $null = $config | Remove-NetIPAddress -Confirm:$false
+                    $null = $config | New-NetIPAddress -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $network.AddressSpace.Cidr
                 }
                 else
                 {
