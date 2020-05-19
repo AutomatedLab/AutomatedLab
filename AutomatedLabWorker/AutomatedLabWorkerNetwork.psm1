@@ -129,16 +129,8 @@ function New-LWHypervNetworkSwitch
                         $adapterIpAddress = $adapterIpAddress.Increment()
                     }
 
-                    $arguments = @{
-                        IPAddress = @($adapterIpAddress.AddressAsString)
-                        SubnetMask = @($network.AddressSpace.Netmask.AddressAsString)
-                    }
-
-                    $result = $config | Invoke-CimMethod -MethodName EnableStatic -Arguments $arguments
-                    if ($result.ReturnValue)
-                    {
-                        throw "Could not set the IP address '$($arguments.IPAddress)' with subnet mask '$($arguments.SubnetMask)' on adapter 'vEthernet ($($network.Name))'. The error code was $($result.ReturnValue). Lookup the documentation of the class Win32_NetworkAdapterConfiguration in the MSDN to get more information about the error code."
-                    }
+                    $null = $config | Set-NetIPInterface -Dhcp Disabled
+                    $null = $config | Set-NetIPAddress -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $network.AddressSpace.Netmask
                 }
                 else
                 {
