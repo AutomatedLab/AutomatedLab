@@ -90,7 +90,10 @@ function Add-LabAzureSubscription
         [TimeZoneInfo]
         $AutoShutdownTimeZone,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [switch]
+        $AllowBastionHost
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -138,6 +141,7 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+    $script:lab.AzureSettings.AllowBastionHost = $AllowBastionHost.IsPresent
 
     if ($AutoShutdownTime)
     {
@@ -196,6 +200,13 @@ function Add-LabAzureSubscription
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
     Write-PSFMessage "Azure subscription '$SubscriptionName' selected as default"
+
+    if ($AllowBastionHost.IsPresent -and (Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network).RegistrationState -eq 'NotRegistered')
+    {
+        # Check if resource provider allows BastionHost deployment
+        $null = Register-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+        $null = Register-AzProviderFeature -FeatureName bastionShareableLink -ProviderNamespace Microsoft.Network
+    }
 
     $locations = Get-AzLocation
     $script:lab.AzureSettings.Locations = [AutomatedLab.Azure.AzureLocation]::Create($locations)
