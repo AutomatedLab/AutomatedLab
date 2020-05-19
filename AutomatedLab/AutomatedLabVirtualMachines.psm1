@@ -1524,7 +1524,7 @@ function Dismount-LabIsoImage
         Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
-    $machines = $machines | Where-Object HostType -eq HyperV
+    $hypervMachines = $machines | Where-Object HostType -eq HyperV
     $azureMachines = $machines | Where-Object HostType -eq Azure
 
     if ($azureMachines)
@@ -1532,14 +1532,14 @@ function Dismount-LabIsoImage
         Dismount-LWAzureIsoImage -ComputerName $azureMachines
     }
 
-    foreach ($machine in $machines)
+    foreach ($hypervMachine in $hypervMachines)
     {
         if (-not $SupressOutput)
         {
-            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$machine'." -Type Info
+            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$hypervMachine'." -Type Info
         }
 
-        Dismount-LWIsoImage -ComputerName $machine
+        Dismount-LWIsoImage -ComputerName $hypervMachine
     }
 
     Write-LogFunctionExit
