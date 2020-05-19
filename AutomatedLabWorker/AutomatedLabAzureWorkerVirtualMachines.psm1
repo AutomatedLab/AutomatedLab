@@ -2031,19 +2031,17 @@ function Mount-LWAzureIsoImage
     $azureIsoPath = $IsoPath -replace '/', '\' -replace 'https:'
 
     Invoke-LabCommand -ActivityName "Mounting $(Split-Path $azureIsoPath -Leaf) on $($ComputerName.Name -join ',')" -ComputerName $ComputerName -ScriptBlock {
-        $isoPath = $args[0]
 
-        if (-not (Test-Path $isoPath))
+        if (-not (Test-Path -Path $azureIsoPath))
         {
-            throw "$isoPath was not accessible."
+            throw "'$azureIsoPath' is not accessible."
         }
 
-        $targetPath = Join-Path -Path D: -ChildPath (Split-Path $isoPath -Leaf)
-        Copy-Item -Path $isoPath -Destination $targetPath  -Force
-        $drive = Mount-DiskImage -ImagePath $targetPath -StorageType ISO -PassThru | Get-Volume
+        $drive = Mount-DiskImage -ImagePath $azureIsoPath -StorageType ISO -PassThru | Get-Volume
         $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
         $drive | Select-Object -Property *
-    } -ArgumentList $azureIsoPath -PassThru:$PassThru
+
+    } -ArgumentList $azureIsoPath -Variable (Get-Variable -Name azureIsoPath) -PassThru:$PassThru
 }
 #endregion
 
