@@ -1505,7 +1505,14 @@ function Get-LabIssuingCA
         $machines = (Get-LabVM -Role CaRoot, CaSubordinate)
     }
 
+    if (-not $machines)
+    {
+        Write-Warning 'There is no Certificate Authority deployed in the lab. Cannot get an Issuing Certificate Authority.'
+        return
+    }
+
     $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
+        Start-Service -Name CertSvc -ErrorAction SilentlyContinue
         $templates = certutil.exe -CATemplates
         if ($templates -like '*Machine*')
         {
@@ -1565,18 +1572,21 @@ function Request-LabCertificate
     }
     if ($OnlineCA)
     {
-        $onlienCAVM = Get-LabVM -ComputerName $OnlineCA
+        $onlineCAVM = Get-LabVM -ComputerName $OnlineCA
     }
     else
     {
-        $onlienCAVM = Get-LabIssuingCA -DomainName (Get-LabVM -ComputerName $ComputerName).DomainName
+        $onlineCAVM = Get-LabIssuingCA -DomainName (Get-LabVM -ComputerName $ComputerName).DomainName
     }
 
+    # Especially on Azure, the CertSrv was sometimes stopped for no apparent reason
+    Invoke-LabCommand -ComputerName $onlineCAVM -ScriptBlock { Start-Service CertSvc }
+
     #machine was found so only the machine name was given. Get the full CA path.
-    if ($onlienCAVM)
+    if ($onlineCAVM)
     {
         #$OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
-        $PSBoundParameters.OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
+        $PSBoundParameters.OnlineCA = (Get-LabIssuingCA | Where-Object Name -eq $OnlineCA).CaPath
     }
 
     $variables = Get-Variable -Name PSBoundParameters
@@ -3001,7 +3011,7 @@ function Publish-LabCAInstallCertificates
         foreach ($certfile in (Get-ChildItem -Path "$((Get-Lab).LabPath)\Certificates"))
         {
             Write-PSFMessage -Message "Send file '$($certfile.FullName)' to 'C:\Windows\$($certfile.BaseName).crt'"
-            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath C:\Windows -Session $machineSession
+            Send-File -SourceFilePath $certfile.FullName -DestinationFolderPath /Windows -Session $machineSession
         }
 
         $scriptBlock = {
