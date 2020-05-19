@@ -67,7 +67,7 @@ function New-LWHypervNetworkSwitch
 
         if ($network.EnableManagementAdapter) {
 
-            $config = Get-CimInstance -ClassName Win32_NetworkAdapter | Where-Object NetConnectionID -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?" | Get-CimAssociatedInstance -ResultClassName Win32_NetworkAdapterConfiguration
+            $config = Get-NetAdapter | Where-Object Name -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?"
             if (-not $config)
             {
                 throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
