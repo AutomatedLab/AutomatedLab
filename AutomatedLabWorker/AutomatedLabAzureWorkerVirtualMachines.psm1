@@ -713,16 +713,11 @@ function Get-LWAzureSku
                 $useStandardVm = $true
             }
         }
+
         if ($role.Name -match 'VisualStudio(?<Version>\d{4})')
         {
             $visualStudioRoleName = $Matches[0]
             $visualStudioVersion = $Matches.Version
-        }
-
-        if ($role.Name -match 'SharePoint(?<Version>\d{4})')
-        {
-            $sharePointRoleName = $Matches[0]
-            $sharePointVersion = $Matches.Version
         }
     }
 
@@ -762,9 +757,9 @@ function Get-LWAzureSku
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
             Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = $vmImage.Offer
+        $publisherName = $vmImage.PublisherName
+        $skusName = $vmImage.Skus
 
         if (-not $vmImageName)
         {
@@ -815,49 +810,6 @@ function Get-LWAzureSku
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
-        }
-    }
-    elseif ($sharePointRoleName)
-    {
-        Write-PSFMessage -Message 'This is going to be a SharePoint VM'
-
-        # AzureRM currently has only one SharePoint offer
-
-        $sharePointRoleName -match '\w+(?<Version>\d{4})'
-
-        $sharePointImages = $lab.AzureSettings.VmImages |
-            Where-Object Offer -Match 'MicrosoftSharePoint' |
-            Sort-Object -Property PublishedDate -Descending |
-            Where-Object Skus -eq $Matches.Version |
-            Select-Object -First 1
-
-        # Add the SP version
-        foreach ($sharePointImage in $sharePointImages)
-        {
-            $sharePointImage | Add-Member -Name Version -Value $sharePointImage.Skus -MemberType NoteProperty -Force
-        }
-
-        #get the image that matches the OS and SQL server version
-        $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        Write-ScreenInfo "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available." -Type Warning
-
-        #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
-        $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-            Sort-Object -Property Update -Descending | Select-Object -First 1
-
-        $offerName = $vmImageName = ($vmImage).Offer
-        $publisherName = ($vmImage).PublisherName
-        $skusName = ($vmImage).Skus
-
-        if (-not $vmImageName)
-        {
-            Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
-            foreach ($sharePointImage in $sharePointImages)
-            {
-                Write-PSFMessage -Level Host $sharePointImage.Offer $sharePointImage.Skus
-            }
-
-            throw "There is no Azure VM image for '$sharePointRoleName' on operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
         }
     }
     else
@@ -940,27 +892,10 @@ function New-LWAzureVM
         return
     }
 
-    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
-    $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
-
-    if (-not $storageContext)
-    {
-        $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction Stop).Context
-    }
-
-    $container = Get-AzStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
-    if (-not $container)
-    {
-        $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
-    }
-
     Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
 
     #random number in the path to prevent conflicts
     $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
-    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
-    $lab.AzureSettings.VmDisks.Add($osVhdLocation)
-    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
@@ -997,12 +932,9 @@ function New-LWAzureVM
     Write-PSFMessage "Vnet: $Vnet"
     Write-PSFMessage "RoleSize: $RoleSize"
     Write-PSFMessage "VmImageName: $VmImageName"
-    Write-PSFMessage "OsVhdLocation: $OsVhdLocation"
     Write-PSFMessage "AdminUserName: $AdminUserName"
     Write-PSFMessage "AdminPassword: $AdminPassword"
     Write-PSFMessage "ResourceGroupName: $ResourceGroupName"
-    Write-PSFMessage "StorageAccountName: $($StorageContext.StorageAccountName)"
-    Write-PSFMessage "BlobEndpoint: $($StorageContext.BlobEndpoint)"
     Write-PSFMessage "DefaultIpAddress: $DefaultIpAddress"
     Write-PSFMessage "Location: $Location"
     Write-PSFMessage "Lab name: $LabName"
@@ -1599,21 +1531,24 @@ function Stop-LWAzureVM
         {
             $vm = $azureVms | Where-Object Name -eq $name
             $vm | Stop-AzVM -Force -StayProvisioned:$StayProvisioned -AsJob
+        }
 
-            Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-            $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
-            if ($failedJobs)
-            {
-                $jobNames = ($failedJobs | ForEach-Object {
-                        if ($_.Name.StartsWith("StopAzureVm_"))
-                        {
-                            ($_.Name -split "_")[1]
-                        }
-                    }) -join ", "
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        if ($failedJobs)
+        {
+            $jobNames = ($failedJobs | ForEach-Object {
+                    if ($_.Name.StartsWith("StopAzureVm_"))
+                    {
+                        ($_.Name -split "_")[1]
+                    }
+                    elseif ($_.Name  -match "Long Running Operation for 'Stop-AzVM' on resource '(?<MachineName>[\w-]+)'")
+                    {
+                        $Matches.MachineName
+                    }
+                }) -join ", "
 
-                Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
-            }
-
+            Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
         }
     }
 
@@ -2024,13 +1959,12 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
-    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not $labSourcesStorageAccount)
     {
         return
     }
-
-    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage
 
     $result = Invoke-Command -Session $Session -ScriptBlock {
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'

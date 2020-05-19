@@ -65,7 +65,7 @@ Install-LabSoftwarePackage -Path $officeDeploymentToolFilePath -CommandLine '/ex
 $tempFile = (Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'Configuration.xml')
 
 $config2019Xml | Out-File -FilePath $tempFile -Force
-Copy-LabFileItem -Path $tempFile -ComputerName $ComputerName -DestinationFolderPath C:\Office
+Copy-LabFileItem -Path $tempFile -ComputerName $ComputerName -DestinationFolderPath /Office
 
 Remove-Item -Path $tempFile
 Dismount-LabIsoImage -ComputerName $ComputerName -SupressOutput
