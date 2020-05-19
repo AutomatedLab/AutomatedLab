@@ -130,7 +130,8 @@ function New-LWHypervNetworkSwitch
                     }
 
                     $null = $config | Set-NetIPInterface -Dhcp Disabled
-                    $null = $config | Set-NetIPAddress -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $network.AddressSpace.Netmask
+                    $null = $config | Remove-NetIPAddress -Confirm:$false
+                    $null = $config | New-NetIPAddress -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $network.AddressSpace.Cidr
                 }
                 else
                 {
