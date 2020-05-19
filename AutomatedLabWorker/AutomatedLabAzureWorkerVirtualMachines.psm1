@@ -34,6 +34,7 @@
         location   = "[resourceGroup().location]"
         properties = @{
             securityRules = @(
+                # Necessary mgmt ports for AutomatedLab
                 @{
                     name       = "NecessaryPorts"
                     properties = @{
@@ -54,10 +55,84 @@
                         destinationAddressPrefixes = @()
                     }
                 }
+                # Rules for bastion host deployment - always included to be able to deploy bastion at a later stage
+                @{
+                    name       = "BastionIn"
+                    properties = @{
+                        protocol                   = "TCP"
+                        sourcePortRange            = "*"
+                        sourceAddressPrefix        = "*"
+                        destinationAddressPrefix   = "*"
+                        access                     = "Allow"
+                        priority                   = 101
+                        direction                  = "Inbound"
+                        sourcePortRanges           = @()
+                        destinationPortRanges      = @(
+                            "443"
+                        )
+                        sourceAddressPrefixes      = @()
+                        destinationAddressPrefixes = @()
+                    }
+                }
+                @{
+                    name       = "BastionMgmtOut"
+                    properties = @{
+                        protocol                   = "TCP"
+                        sourcePortRange            = "*"
+                        sourceAddressPrefix        = "*"
+                        destinationAddressPrefix   = "AzureCloud"
+                        access                     = "Allow"
+                        priority                   = 100
+                        direction                  = "Outbound"
+                        sourcePortRanges           = @()
+                        destinationPortRanges      = @(
+                            "443"
+                        )
+                        sourceAddressPrefixes      = @()
+                        destinationAddressPrefixes = @()
+                    }
+                }
+                @{
+                    name       = "BastionRdsOut"
+                    properties = @{
+                        protocol                   = "TCP"
+                        sourcePortRange            = "*"
+                        sourceAddressPrefix        = "*"
+                        destinationAddressPrefix   = "VirtualNetwork"
+                        access                     = "Allow"
+                        priority                   = 101
+                        direction                  = "Outbound"
+                        sourcePortRanges           = @()
+                        destinationPortRanges      = @(
+                            "3389"
+                            "22"
+                        )
+                        sourceAddressPrefixes      = @()
+                        destinationAddressPrefixes = @()
+                    }
+                }
             )
         }
     }
     #endregion
+
+    #region Wait for availability of Bastion
+    if ($Lab.AzureSettings.AllowBastionHost)
+    {
+        $bastionFeature = Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+        while (($bastionFeature).RegistrationState -ne 'Registered')
+        {
+            if ($bastionFeature.RegistrationState -eq 'NotRegistered')
+            {
+                $null = Register-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+                $null = Register-AzProviderFeature -FeatureName bastionShareableLink -ProviderNamespace Microsoft.Network
+            }
+
+            Start-Sleep -Seconds 5
+            Write-ScreenInfo -Type Verbose -Message "Waiting for registration of bastion host feature. Current status: $(($bastionFeature).RegistrationState)"
+            $bastionFeature = Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+        }
+    }
 
     foreach ($network in $Lab.VirtualNetworks)
     {
@@ -103,6 +178,7 @@
                 }
             }
         }
+
         foreach ($subnet in $network.Subnets)
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding subnet {0} ({1}) to VNet' -f $subnet.Name, $subnet.AddressSpace)
@@ -113,6 +189,92 @@
                     networkSecurityGroup = @{
                         id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
                     }
+                }
+            }
+        }
+
+        if ($Lab.AzureSettings.AllowBastionHost)
+        {
+            if ($network.Subnets.Name -notcontains 'AzureBastionSubnet')
+            {
+                $sourceMask = $network.AddressSpace.Cidr
+                $sourceMaskIp = $network.AddressSpace.NetMask
+                $sourceRange = Get-NetworkRange -IPAddress $network.AddressSpace.IpAddress.AddressAsString -SubnetMask $network.AddressSpace.NetMask
+                $sourceInfo = Get-NetworkSummary -IPAddress $network.AddressSpace.IpAddress.AddressAsString -SubnetMask $network.AddressSpace.NetMask
+                $superNetMask = $sourceMask - 1
+                $superNetIp = $network.AddressSpace.IpAddress.AddressAsString
+                $superNet = [AutomatedLab.VirtualNetwork]::new()
+                $superNet.AddressSpace = '{0}/{1}' -f $superNetIp, $superNetMask
+                $superNetInfo = Get-NetworkSummary -IPAddress $superNet.AddressSpace.IpAddress.AddressAsString -SubnetMask $superNet.AddressSpace.NetMask
+
+                foreach ($address in (Get-NetworkRange -IPAddress $superNet.AddressSpace.IpAddress.AddressAsString -SubnetMask $superNet.AddressSpace.NetMask))
+                {
+                    if ($address -in @($sourceRange + $sourceInfo.Network + $sourceInfo.Broadcast))
+                    {
+                        continue
+                    }
+
+                    $bastionNet = [AutomatedLab.VirtualNetwork]::new()
+                    $bastionNet.AddressSpace = '{0}/{1}' -f $address, $sourceMask
+                    break
+                }
+
+                $vNet.properties.addressSpace.addressPrefixes = @(
+                    $superNet.AddressSpace.ToString()
+                    )
+                $vnet.properties.subnets += @{
+                    name = 'AzureBastionSubnet'
+                    properties = @{
+                        addressPrefix = $bastionNet.AddressSpace.ToString()
+                        networkSecurityGroup = @{
+                            id = "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
+                        }
+                    }
+                }
+            }
+
+            $dnsLabel = "azbastion$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
+            Write-ScreenInfo -Type Verbose -Message ('Adding Azure bastion public static IP with DNS label {0} to template' -f $dnsLabel)
+            $template.resources +=
+            @{
+                apiVersion = "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]"
+                type       = "Microsoft.Network/publicIPAddresses"
+                name       = "$($Lab.Name)$($network.Name)bastionip"
+                location   = "[resourceGroup().location]"
+                properties = @{
+                    publicIPAllocationMethod = "static"
+                    dnsSettings              = @{
+                        domainNameLabel = $dnsLabel
+                    }
+                }
+                sku        = @{
+                    name = 'Standard'
+                }
+            }
+
+            $template.resources += @{
+                apiVersion = "[providers('Microsoft.Network','bastionHosts').apiVersions[0]]"
+                type       = "Microsoft.Network/bastionHosts"
+                name       = "$($Lab.Name)$($network.Name)bastion"
+                location   = "[resourceGroup().location]"
+                dependsOn  = @(
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
+                    "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)bastionip')]"
+                )
+                properties = @{
+                    ipConfigurations = @(
+                        @{
+                            name       = "IpConf"
+                            properties = @{
+                                subnet          = @{
+                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($network.Name)','AzureBastionSubnet')]"
+                                }
+                                publicIPAddress = @{
+                                    id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)bastionip')]"
+                                }
+                            }
+                        }
+                    )
                 }
             }
         }
@@ -306,9 +468,9 @@
         {
             Write-ScreenInfo -Type Verbose -Message ('Creating NIC {0}' -f $nic.InterfaceName)
             $subnetName = 'default'
-            if (($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name)
+            if (($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name)
             {
-                $subnetName = ($nic.VirtualSwitch.Subnets | Select-Object -First 1).Name
+                $subnetName = ($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name
             }
              
             $nicTemplate = @{
@@ -551,16 +713,11 @@ function Get-LWAzureSku
                 $useStandardVm = $true
             }
         }
+
         if ($role.Name -match 'VisualStudio(?<Version>\d{4})')
         {
             $visualStudioRoleName = $Matches[0]
             $visualStudioVersion = $Matches.Version
-        }
-
-        if ($role.Name -match 'SharePoint(?<Version>\d{4})')
-        {
-            $sharePointRoleName = $Matches[0]
-            $sharePointVersion = $Matches.Version
         }
     }
 
@@ -600,9 +757,9 @@ function Get-LWAzureSku
         $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
         $vmImage = $sqlServerImages | Where-Object { $_.SqlVersion -eq $sqlServerVersion -and $_.OS.Version -eq $machineOs.Version } |
             Sort-Object -Property SqlServicePack -Descending | Select-Object -First 1
-        $offerName = $vmImageName = $vmImage | Select-Object -ExpandProperty Offer
-        $publisherName = $vmImage | Select-Object -ExpandProperty PublisherName
-        $skusName = $vmImage | Select-Object -ExpandProperty Skus
+        $offerName = $vmImageName = $vmImage.Offer
+        $publisherName = $vmImage.PublisherName
+        $skusName = $vmImage.Skus
 
         if (-not $vmImageName)
         {
@@ -653,49 +810,6 @@ function Get-LWAzureSku
             }
 
             throw "There is no Azure VM image for '$visualStudioRoleName' on operating system '$($machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
-        }
-    }
-    elseif ($sharePointRoleName)
-    {
-        Write-PSFMessage -Message 'This is going to be a SharePoint VM'
-
-        # AzureRM currently has only one SharePoint offer
-
-        $sharePointRoleName -match '\w+(?<Version>\d{4})'
-
-        $sharePointImages = $lab.AzureSettings.VmImages |
-            Where-Object Offer -Match 'MicrosoftSharePoint' |
-            Sort-Object -Property PublishedDate -Descending |
-            Where-Object Skus -eq $Matches.Version |
-            Select-Object -First 1
-
-        # Add the SP version
-        foreach ($sharePointImage in $sharePointImages)
-        {
-            $sharePointImage | Add-Member -Name Version -Value $sharePointImage.Skus -MemberType NoteProperty -Force
-        }
-
-        #get the image that matches the OS and SQL server version
-        $machineOs = New-Object AutomatedLab.OperatingSystem($machine.OperatingSystem)
-        Write-ScreenInfo "The SharePoint 2013 Trial image in Azure does not have any information about the OS anymore, hence this operating system specified is ignored. There is only $($sharePointImages.Count) image available." -Type Warning
-
-        #$vmImageName = $sharePointImages | Where-Object { $_.Version -eq $sharePointVersion -and $_.OS.Version -eq $machineOs.Version } |
-        $vmImage = $sharePointImages | Where-Object Version -eq $sharePointVersion |
-            Sort-Object -Property Update -Descending | Select-Object -First 1
-
-        $offerName = $vmImageName = ($vmImage).Offer
-        $publisherName = ($vmImage).PublisherName
-        $skusName = ($vmImage).Skus
-
-        if (-not $vmImageName)
-        {
-            Write-ScreenInfo 'SharePoint image could not be found. The following combinations are currently supported by Azure:' -Type Warning
-            foreach ($sharePointImage in $sharePointImages)
-            {
-                Write-PSFMessage -Level Host $sharePointImage.Offer $sharePointImage.Skus
-            }
-
-            throw "There is no Azure VM image for '$sharePointRoleName' on operating system '$($Machine.OperatingSystem)'. The machine cannot be created. Cancelling lab setup. Please find the available images above."
         }
     }
     else
@@ -778,27 +892,10 @@ function New-LWAzureVM
         return
     }
 
-    Write-PSFMessage -Message "Creating container 'automatedlabdisks' for additional disks"
-    $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue).Context
-
-    if (-not $storageContext)
-    {
-        $storageContext = (Get-AzStorageAccount -Name $lab.AzureSettings.DefaultStorageAccount -ResourceGroupName $machineResourceGroup -ErrorAction Stop).Context
-    }
-
-    $container = Get-AzStorageContainer -Name automatedlabdisks -Context $storageContext -ErrorAction SilentlyContinue
-    if (-not $container)
-    {
-        $container = New-AzStorageContainer -Name automatedlabdisks -Context $storageContext
-    }
-
     Write-PSFMessage -Message "Scheduling creation Azure machine '$Machine'"
 
     #random number in the path to prevent conflicts
     $rnd = (Get-Random -Minimum 1 -Maximum 1000).ToString('0000')
-    $osVhdLocation = "$($storageContext.BlobEndpoint)/automatedlab1/$($machine.Name)OsDisk$rnd.vhd"
-    $lab.AzureSettings.VmDisks.Add($osVhdLocation)
-    Write-PSFMessage -Message "The location of the VM disk is '$osVhdLocation'"
 
     $adminUserName = $Machine.InstallationUser.UserName
     $adminPassword = $Machine.InstallationUser.Password
@@ -835,12 +932,9 @@ function New-LWAzureVM
     Write-PSFMessage "Vnet: $Vnet"
     Write-PSFMessage "RoleSize: $RoleSize"
     Write-PSFMessage "VmImageName: $VmImageName"
-    Write-PSFMessage "OsVhdLocation: $OsVhdLocation"
     Write-PSFMessage "AdminUserName: $AdminUserName"
     Write-PSFMessage "AdminPassword: $AdminPassword"
     Write-PSFMessage "ResourceGroupName: $ResourceGroupName"
-    Write-PSFMessage "StorageAccountName: $($StorageContext.StorageAccountName)"
-    Write-PSFMessage "BlobEndpoint: $($StorageContext.BlobEndpoint)"
     Write-PSFMessage "DefaultIpAddress: $DefaultIpAddress"
     Write-PSFMessage "Location: $Location"
     Write-PSFMessage "Lab name: $LabName"
@@ -1437,21 +1531,24 @@ function Stop-LWAzureVM
         {
             $vm = $azureVms | Where-Object Name -eq $name
             $vm | Stop-AzVM -Force -StayProvisioned:$StayProvisioned -AsJob
+        }
 
-            Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
-            $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
-            if ($failedJobs)
-            {
-                $jobNames = ($failedJobs | ForEach-Object {
-                        if ($_.Name.StartsWith("StopAzureVm_"))
-                        {
-                            ($_.Name -split "_")[1]
-                        }
-                    }) -join ", "
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+        $failedJobs = $jobs | Where-Object {$_.State -eq 'Failed'}
+        if ($failedJobs)
+        {
+            $jobNames = ($failedJobs | ForEach-Object {
+                    if ($_.Name.StartsWith("StopAzureVm_"))
+                    {
+                        ($_.Name -split "_")[1]
+                    }
+                    elseif ($_.Name  -match "Long Running Operation for 'Stop-AzVM' on resource '(?<MachineName>[\w-]+)'")
+                    {
+                        $Matches.MachineName
+                    }
+                }) -join ", "
 
-                Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
-            }
-
+            Write-ScreenInfo -Message "Could not stop Azure VM(s): '$jobNames'" -Type Error
         }
     }
 
@@ -1862,13 +1959,12 @@ function Connect-LWAzureLabSourcesDrive
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
 
-    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not (Get-LabAzureDefaultStorageAccount -ErrorAction SilentlyContinue))
+    if ($Session.Runspace.ConnectionInfo.AuthenticationMechanism -notin 'CredSsp','Negotiate' -or -not $labSourcesStorageAccount)
     {
         return
     }
-
-    $labSourcesStorageAccount = Get-LabAzureLabSourcesStorage
 
     $result = Invoke-Command -Session $Session -ScriptBlock {
         $pattern = '^(OK|Unavailable) +(?<DriveLetter>\w): +\\\\automatedlab'

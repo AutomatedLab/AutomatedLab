@@ -606,22 +606,21 @@ function Get-LabInternetFile
 
             $end = Get-Date
             Write-PSFMessage "Download has taken: $($end - $start)"
-
-            if ($PassThru)
-            {
-                $uri2 = New-Object System.Uri($Uri)
-                New-Object PSObject -Property @{
-                    Uri = $Uri
-                    Path = $Path
-                    FileName = ?? { $FileName } { $FileName } { $script:FileName}
-                    FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName})
-                    Length = $result.ContentLength
-                }
-            }
         }
         catch
         {
             Write-Error -ErrorRecord $_
+        }
+    }
+
+    if ($PassThru)
+    {
+        New-Object PSObject -Property @{
+            Uri = $Uri
+            Path = $Path
+            FileName = ?? { $FileName } { $FileName } { $script:FileName}
+            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName})
+            Length = $result.ContentLength
         }
     }
 }

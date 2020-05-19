@@ -36,6 +36,7 @@ namespace AutomatedLab
 
         public string AutoShutdownTime {get; set;}
         public string AutoShutdownTimeZone { get; set; }
+        public bool AllowBastionHost {get; set; }
 
         public string LabSourcesResourceGroupName
         {

@@ -80,6 +80,7 @@ function Add-LabAzureSubscription
 
         [string]$DefaultLocationName,
 
+        [ObsoleteAttribute()]
         [string]$DefaultStorageAccountName,
 
         [string]$DefaultResourceGroupName,
@@ -90,7 +91,10 @@ function Add-LabAzureSubscription
         [TimeZoneInfo]
         $AutoShutdownTimeZone,
 
-        [switch]$PassThru
+        [switch]$PassThru,
+
+        [switch]
+        $AllowBastionHost
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -138,6 +142,7 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+    $script:lab.AzureSettings.AllowBastionHost = $AllowBastionHost.IsPresent
 
     if ($AutoShutdownTime)
     {
@@ -196,6 +201,13 @@ function Add-LabAzureSubscription
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
     Write-PSFMessage "Azure subscription '$SubscriptionName' selected as default"
+
+    if ($AllowBastionHost.IsPresent -and (Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network).RegistrationState -eq 'NotRegistered')
+    {
+        # Check if resource provider allows BastionHost deployment
+        $null = Register-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+        $null = Register-AzProviderFeature -FeatureName bastionShareableLink -ProviderNamespace Microsoft.Network
+    }
 
     $locations = Get-AzLocation
     $script:lab.AzureSettings.Locations = [AutomatedLab.Azure.AzureLocation]::Create($locations)
@@ -355,7 +367,9 @@ execute Sync-LabAzureLabSources manually. The maximum file size for the automati
 be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
 "@
-        $choice = if ([Environment]::UserInteractive)
+        # Detecting Interactivity this way only works in .NET Full - .NET Core always defaults to $true
+        # Last Resort is checking the CommandLine Args
+        $choice = if (($PSVersionTable.PSEdition -eq 'Desktop' -and [Environment]::UserInteractive) -or ($PSVersionTable.PSEdition -eq 'Core' -and [string][Environment]::GetCommandLineArgs() -notmatch "-Non"))
         {
             Read-Choice -ChoiceList '&Yes', '&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
         }
@@ -424,13 +438,9 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
         Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
-        if ($global:cacheVmImages)
-        {
-            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
-        }
-
         if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
         {
+            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
             Write-ScreenInfo 'Querying available operating system images (using cache)'
             $vmImages = $global:cacheVmImages
         }
@@ -479,40 +489,8 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
     Write-PSFMessage "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
-    #$script:lab.AzureSettings.DefaultStorageAccount cannot be set when creating the definitions but is during the import process
-    if (-not $script:lab.AzureSettings.DefaultStorageAccount)
-    {
-        Write-ScreenInfo -Message 'No default storage account exist. Determining storage account now' -Type Info
-        if (-not $DefaultStorageAccountName)
-        {
-            $DefaultStorageAccountName = ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -like 'automatedlab????????' | Select-Object -First 1).StorageAccountName
-        }
-
-        if (-not $DefaultStorageAccountName)
-        {
-            Write-ScreenInfo -Message 'No storage account for AutomatedLab found. Creating a storage account now'
-            New-LabAzureDefaultStorageAccount -LocationName $DefaultLocationName -ResourceGroupName $DefaultResourceGroupName
-        }
-        else
-        {
-            try
-            {
-                Set-LabAzureDefaultStorageAccount -Name $DefaultStorageAccountName -ErrorAction Stop
-                Write-ScreenInfo -Message "Using Azure Storage Account '$DefaultStorageAccountName'" -Type Info
-            }
-            catch
-            {
-                throw 'Cannot proceed with an invalid default storage account'
-            }
-        }
-        Write-PSFMessage "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
-        [void](Set-AzCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
-    }
-
     Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
-
     Write-ScreenInfo -Message "Azure data center location will be '$DefaultLocationName'" -Type Info
-
     Write-ScreenInfo -Message 'Finished adding Azure subscription data' -Type Info -TaskEnd
 
     if ($PassThru)
@@ -691,6 +669,9 @@ function Set-LabAzureDefaultStorageAccount
         [string]$Name
     )
 
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
+
     Write-LogFunctionEntry
 
     Update-LabAzureSettings
@@ -710,6 +691,9 @@ function Get-LabAzureDefaultStorageAccount
 {
     [CmdletBinding()]
     param ()
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Write-LogFunctionEntry
 
@@ -735,6 +719,9 @@ function New-LabAzureDefaultStorageAccount
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Test-LabHostConnected -Throw -Quiet
 
@@ -1323,12 +1310,18 @@ function Sync-LabAzureLabSources
 
             # Try to set the file hash
             $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
-            $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-            $apiResponse = $uploadedFile.SetPropertiesAsync()
-            if (-not $apiResponse.Status -eq "RanToCompletion")
+            try
             {
-                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
-                continue
+                $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+                $apiResponse = $uploadedFile.SetPropertiesAsync()
+                if (-not $apiResponse.Status -eq "RanToCompletion")
+                {
+                    Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
+                }
+            }
+            catch
+            {
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
             }
 
             Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"

@@ -8,6 +8,8 @@ function Enable-LabHostRemoting
         [switch]$NoDisplay
     )
 
+    if ($IsLinux) { return }
+
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -206,6 +208,7 @@ function Undo-LabHostRemoting
         [switch]$NoDisplay
     )
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -277,6 +280,7 @@ function Test-LabHostRemoting
     [CmdletBinding()]
     param()
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     $configOk = $true
@@ -2471,7 +2475,7 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
 
-        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)
+        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
@@ -2488,7 +2492,7 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
+        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
 
     $installParams = @{
@@ -3523,6 +3527,11 @@ function Test-LabHostConnected
         $Quiet
     )
 
+    if (Get-LabConfigurationItem -Name DisableConnectivityCheck)
+    {
+        $script:connected = $true
+    }
+
     if (-not $script:connected)
     {
         $script:connected = if (Get-Command Get-NetConnectionProfile -ErrorAction SilentlyContinue)
@@ -3537,7 +3546,15 @@ function Test-LabHostConnected
         elseif ($IsLinux)
         {
             # Due to an unadressed issue with Test-Connection on Linux
-            [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+            $portOpen = Test-Port -ComputerName automatedlab.org -Port 443
+            if (-not $portOpen.Open)
+            {
+                [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+            }
+            else
+            {
+                $portOpen.Open
+            }
         }
         else
         {

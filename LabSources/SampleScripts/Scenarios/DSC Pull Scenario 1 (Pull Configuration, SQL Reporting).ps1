@@ -78,7 +78,7 @@ Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Install-LabWindowsFeature -ComputerName DPULL1 -FeatureName Web-Mgmt-Console
 
-Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -DestinationFolderPath C:\ -ComputerName DSQL
+Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName DSQL
 Invoke-LabCommand -ActivityName 'Create SQL Database for DSC Reporting' -ComputerName DSQL -ScriptBlock {
     C:\CreateDscSqlDatabase.ps1 -DomainAndComputerName CONTOSO\DPULL1
 }
