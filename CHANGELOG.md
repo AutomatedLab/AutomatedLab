@@ -18,6 +18,7 @@
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later'
 - Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
+- 'Get-LabIssuingCA' does no longer throw but returns $null if there is no certificate authority present in the lab.
 
 ## 5.20.0 - 2020-04-20
 
