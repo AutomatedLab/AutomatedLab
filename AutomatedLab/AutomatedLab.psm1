@@ -1108,8 +1108,16 @@ function Install-Lab
         if (-not $DelayBetweenComputers)
         {
             $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
-            $DelayBetweenComputers = [System.Math]::Log($hypervMachineCount, 5) * 30
-            Write-ScreenInfo -Message "DelayBetweenComputers not defined, value calculated is $DelayBetweenComputers seconds"
+            if ($hypervMachineCount)
+            {
+                $DelayBetweenComputers = [System.Math]::Log($hypervMachineCount, 5) * 30
+                Write-ScreenInfo -Message "DelayBetweenComputers not defined, value calculated is $DelayBetweenComputers seconds"
+            }
+            else
+            {
+                $DelayBetweenComputers = 0
+            }
+            
         }
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
