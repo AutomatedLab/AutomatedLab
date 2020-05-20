@@ -39,6 +39,12 @@ if (-not $nugetHost)
     return
 }
 
+$coreMachines    = $nugetHost | Where-Object { $_.OperatingSystem.Installation -match 'Core' }
+$nonCoreMachines = $nugetHost | Where-Object { $_.OperatingSystem.Installation -notmatch 'Core' }
+$jobs = @()
+if ($coreMachines)    { $jobs += Install-LabWindowsFeature -ComputerName $coreMachines    -AsJob -PassThru -NoDisplay -IncludeAllSubFeature -FeatureName Web-WebServer, Web-Application-Proxy, Web-Health, Web-Performance, Web-Security, Web-App-Dev, Web-Ftp-Server, Web-Metabase, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service, Web-WHC }
+if ($nonCoreMachines) { $jobs += Install-LabWindowsFeature -ComputerName $nonCoreMachines -AsJob -PassThru -NoDisplay -IncludeAllSubFeature -FeatureName Web-Server }
+
 if (-not $ApiKey)
 {
     $ApiKey = (Get-Lab).DefaultInstallationCredential.Password
@@ -90,6 +96,7 @@ else
 & $buildScript @buildParam
 
 Copy-LabFileItem -Path $PSScriptRoot\publish\BuildOutput.zip -ComputerName $ComputerName
+Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
 
 $result = Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
     
