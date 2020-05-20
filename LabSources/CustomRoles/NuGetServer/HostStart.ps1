@@ -39,7 +39,7 @@ if (-not $nugetHost)
     return
 }
 
-$jobs = Install-LabWindowsFeature -ComputerName $nugetHost -AsJob -PassThru -NoDisplay -IncludeAllSubFeature -FeatureName Web-WebServer, Web-Application-Proxy, Web-Health, Web-Performance, Web-Security, Web-App-Dev, Web-Ftp-Server, Web-Metabase, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service, Web-WHC
+$jobs = Install-LabWindowsFeature -ComputerName $nugetHost -AsJob -PassThru -NoDisplay -FeatureName Web-WebServer, Web-Application-Proxy, Web-Health, Web-Performance, Web-Security, Web-App-Dev, Web-Ftp-Server, Web-Metabase, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service, Web-WHC
 
 if (-not $ApiKey)
 {
@@ -96,6 +96,8 @@ Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
 
 $result = Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
     
+    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+
     $scriptParam = @{
         ApiKey  = [pscredential]::new('blorb', ($ApiKey | ConvertTo-SecureString -AsPlainText -Force))
         Port    = $Port
