@@ -18,7 +18,7 @@ Describe "$($Lab.Name) WebServer" -Tag WebServer {
         {
             $testedFeatures = if ($vm.OperatingSystem.Installation -eq 'Core') { $corefeatures} else {$fullfeatures}
             It "$vm should have all required WebServer features installed" {
-                (Get-LabWindowsFeature -ComputerName $vm -FeatureName $testedFeatures -NoDisplay).Installed | Should -NotContain $false
+                (Get-LabWindowsFeature -ComputerName $vm -FeatureName $testedFeatures -NoDisplay).Installed | Should -Not -Contain $false
             }
         }
     }
