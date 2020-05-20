@@ -27,7 +27,7 @@ Describe "$($Lab.Name) RootDC specific" -Tag RootDC {
     foreach ($vm in (Get-LabVm -Role RootDC))
     {
         It "$vm should hold PDC emulator FSMO role" {
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock { (Get-ADDomin).PDCEmulator} -PassThru -NoDisplay | Should -Be $vm.FQDN
+            Invoke-LabCommand -ComputerName $vm -ScriptBlock { (Get-ADDomain).PDCEmulator} -PassThru -NoDisplay | Should -Be $vm.FQDN
         }
     }
 }
