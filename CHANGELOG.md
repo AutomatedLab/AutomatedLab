@@ -16,14 +16,16 @@
 - 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
 - DelayBetweenComputers works now if defined and if not is calculated based on the umber of machines
 - Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
-- Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later'
 - Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
+- 'Get-LabIssuingCA' does no longer throw but returns $null if there is no certificate authority present in the lab.
 - Updated some paths to work cross-platform
   - i.e. Join-Path fails when the drive does not exist, so all calls to e.g. Send-File with a destination like C: would
-    fail on Linux, eventhough the target would always be a Windows machine. Replaced those paths with forward slash
+    fail on Linux, even though the target would always be a Windows machine. Replaced those paths with forward slash
     which defaults to the system root on Windows and can be resolved cross-platform
 - Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
 - Fixed and improved 'Test-LabMachineInternetConnectivity'
+- 'Dismount-LabIsoImage' on Azure did never really work, no fixed and behavior is now aligned to the Hyper-V behavior.
+- 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
 
 ## 5.20.0 - 2020-04-20
 
