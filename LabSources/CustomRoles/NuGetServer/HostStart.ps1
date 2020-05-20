@@ -91,7 +91,7 @@ else
 
 & $buildScript @buildParam
 
-Copy-LabFileItem -Path $PSScriptRoot\publish\BuildOutput.zip -ComputerName $ComputerName
+Copy-Item -ToSession (New-LabPSSession -ComputerName $ComputerName) -Path $PSScriptRoot\publish\BuildOutput.zip -Destination C:\BuildOutput.zip
 Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
 
 $result = Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
