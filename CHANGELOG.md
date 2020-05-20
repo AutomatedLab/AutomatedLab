@@ -23,6 +23,7 @@
     fail on Linux, eventhough the target would always be a Windows machine. Replaced those paths with forward slash
     which defaults to the system root on Windows and can be resolved cross-platform
 - Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
+- Fixed and improved 'Test-LabMachineInternetConnectivity'
 
 ## 5.20.0 - 2020-04-20
 

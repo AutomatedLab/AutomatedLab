@@ -1706,15 +1706,15 @@ function Test-LabMachineInternetConnectivity
             Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
             Start-Sleep -Seconds 1
         }
-
-        #if two results are positive, return the first positive result, if all are negative, return the first negative result
-        if (($result.TcpTestSucceeded | Where-Object { $_ -eq $true }).Count -ge 2)
-        {
-            $result | Where-Object TcpTestSucceeded -eq $true | Select-Object -First 1
-        }
-        elseif (($result.TcpTestSucceeded | Where-Object { $_ -eq $false }).Count -eq 5)
+    
+        #if 75% of the results are negative, return the first negative result, otherwise return the first positive result
+        if (($result | Where-Object TcpTestSucceeded -eq $false).Count -ge ($count * 0.75))
         {
             $result | Where-Object TcpTestSucceeded -eq $false | Select-Object -First 1
+        }
+        else
+        {
+            $result | Where-Object TcpTestSucceeded -eq $true | Select-Object -First 1
         }
     }
 
