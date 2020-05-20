@@ -26,8 +26,8 @@ Describe "$($Lab.Name) DC Generic" -Tag RootDC,DC,FirstChildDC {
 Describe "$($Lab.Name) RootDC specific" -Tag RootDC {
     foreach ($vm in (Get-LabVm -Role RootDC))
     {
-        It "$vm should hold domain naming master FSMO role" {
-            Invoke-LabCommand -ComputerName $vm -ScriptBlock { (Get-ADForest).DomainNamingMaster} -PassThru -NoDisplay | Should -Be $vm.FQDN
+        It "$vm should hold PDC emulator FSMO role" {
+            Invoke-LabCommand -ComputerName $vm -ScriptBlock { (Get-ADDomin).PDCEmulator} -PassThru -NoDisplay | Should -Be $vm.FQDN
         }
     }
 }
