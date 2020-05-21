@@ -23,6 +23,7 @@
     fail on Linux, even though the target would always be a Windows machine. Replaced those paths with forward slash
     which defaults to the system root on Windows and can be resolved cross-platform
 - Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
+- Fixed #890.
 - Fixed and improved 'Test-LabMachineInternetConnectivity'
 - 'Dismount-LabIsoImage' on Azure did never really work, no fixed and behavior is now aligned to the Hyper-V behavior.
 - 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
