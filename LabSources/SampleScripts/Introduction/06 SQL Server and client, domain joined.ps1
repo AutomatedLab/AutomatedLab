@@ -1,4 +1,4 @@
-﻿#This intro script is extending '03 Single domain-joined server.ps1'. An additional ISO is added to the lab which is required to install SQL Server 2014. The script makes
+#This intro script is extending '03 Single domain-joined server.ps1'. An additional ISO is added to the lab which is required to install SQL Server 2014. The script makes
 #use of the $PSDefaultParameterValues feature introduced in PowerShell version 4. Settings that are the same for all machines can be summarized
 #that way and still be overwritten when necessary.
 
