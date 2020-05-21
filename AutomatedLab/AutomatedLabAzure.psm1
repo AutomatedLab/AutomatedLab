@@ -1399,7 +1399,7 @@ function Get-LabAzureLabSourcesContentRecursive
             $content += $item.CloudFileDirectory
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.CloudFile -is [Microsoft.Azure.Storage.File.CloudFile])
+        elseif ($item.CloudFile)
         {
             $content += $item.CloudFile
         }
