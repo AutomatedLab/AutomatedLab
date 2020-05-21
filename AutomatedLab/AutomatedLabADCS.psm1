@@ -1505,6 +1505,12 @@ function Get-LabIssuingCA
         $machines = (Get-LabVM -Role CaRoot, CaSubordinate)
     }
 
+    if (-not $machines)
+    {
+        Write-Warning 'There is no Certificate Authority deployed in the lab. Cannot get an Issuing Certificate Authority.'
+        return
+    }
+
     $issuingCAs = Invoke-LabCommand -ComputerName $machines -ScriptBlock {
         Start-Service -Name CertSvc -ErrorAction SilentlyContinue
         $templates = certutil.exe -CATemplates
