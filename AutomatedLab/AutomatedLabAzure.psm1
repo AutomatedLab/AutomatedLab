@@ -1394,7 +1394,7 @@ function Get-LabAzureLabSourcesContentRecursive
     $temporaryContent = $StorageContext | Get-AzStorageFile
     foreach ($item in $temporaryContent)
     {
-        if ($item.CloudFileDirectory -is [Microsoft.Azure.Storage.File.CloudFileDirectory])
+        if ($item.CloudFileDirectory)
         {
             $content += $item.CloudFileDirectory
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
