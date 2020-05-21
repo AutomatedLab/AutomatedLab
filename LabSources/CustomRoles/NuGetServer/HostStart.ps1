@@ -39,6 +39,8 @@ if (-not $nugetHost)
     return
 }
 
+$jobs = Install-LabWindowsFeature -ComputerName $nugetHost -AsJob -PassThru -NoDisplay -IncludeManagementTools -FeatureName Web-Server,Web-Net-Ext45,Web-Asp-Net45,Web-ISAPI-Filter,Web-ISAPI-Ext
+
 if (-not $ApiKey)
 {
     $ApiKey = (Get-Lab).DefaultInstallationCredential.Password
@@ -89,10 +91,11 @@ else
 
 & $buildScript @buildParam
 
-Copy-LabFileItem -Path $PSScriptRoot\publish\BuildOutput.zip -ComputerName $ComputerName
+Copy-Item -ToSession (New-LabPSSession -ComputerName $ComputerName) -Path $PSScriptRoot\publish\BuildOutput.zip -Destination C:\BuildOutput.zip
+Wait-LWLabJob -Job $jobs -ProgressIndicator 30 -NoDisplay
+Restart-LabVM -ComputerName $ComputerName -Wait
 
 $result = Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
-    
     $scriptParam = @{
         ApiKey  = [pscredential]::new('blorb', ($ApiKey | ConvertTo-SecureString -AsPlainText -Force))
         Port    = $Port

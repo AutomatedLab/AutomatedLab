@@ -259,7 +259,7 @@ function Send-Directory
     )
 
     $isCalledRecursivly = (Get-PSCallStack | Where-Object -Property Command -EQ -Value $MyInvocation.InvocationName | Measure-Object | Select-Object -ExpandProperty Count) -gt 1
-    if (-not $DestinationFolderPath.EndsWith('\')) { $DestinationFolderPath = $DestinationFolderPath + '\' }
+    if ($DestinationFolderPath -ne '/' -and -not $DestinationFolderPath.EndsWith('\')) { $DestinationFolderPath = $DestinationFolderPath + '\' }
 
     if (-not $isCalledRecursivly)
     {
