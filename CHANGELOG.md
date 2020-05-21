@@ -25,6 +25,7 @@
 - Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
 - 'Dismount-LabIsoImage' on Azure did never really work, no fixed and behavior is now aligned to the Hyper-V behavior.
 - 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
+- Fixed SQL Server version in '06 SQL Server and client, domain joined.ps1'.
 
 ## 5.20.0 - 2020-04-20
 
