@@ -1237,14 +1237,14 @@ function Sync-LabAzureLabSources
         $err = $null
 
         # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-        New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+        New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
         Write-PSFMessage "Created directory $($folderName) in labsources"
         if ($err)
         {
             $err = $null
 
             # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-            New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+            New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
             Write-PSFMessage "Created directory '$folderName' in labsources"
             if ($err)
             {
@@ -1294,7 +1294,7 @@ function Sync-LabAzureLabSources
 
             $fileName = $file.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\", '')
 
-            $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
+            $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
             if ($azureFile)
             {
                 $azureHash = $azureFile.Properties.ContentMD5
@@ -1304,16 +1304,16 @@ function Sync-LabAzureLabSources
 
             if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
             {
-                $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
+                $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
                 Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
             }
 
             # Try to set the file hash
-            $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
+            $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
             try
             {
-                $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-                $apiResponse = $uploadedFile.SetPropertiesAsync()
+                $uploadedFile.CloudFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+                $apiResponse = $uploadedFile.CloudFile.SetPropertiesAsync()
                 if (-not $apiResponse.Status -eq "RanToCompletion")
                 {
                     Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
@@ -1383,7 +1383,8 @@ function Get-LabAzureLabSourcesContentRecursive
     [CmdletBinding()]
     param
     (
-        $StorageContext
+        [Parameter(Mandatory)]
+        [object]$StorageContext
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -1393,14 +1394,14 @@ function Get-LabAzureLabSourcesContentRecursive
     $temporaryContent = $StorageContext | Get-AzStorageFile
     foreach ($item in $temporaryContent)
     {
-        if ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory')
+        if ($item.CloudFileDirectory)
         {
-            $content += $item
+            $content += $item.CloudFileDirectory
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile')
+        elseif ($item.CloudFile)
         {
-            $content += $item
+            $content += $item.CloudFile
         }
         else
         {
