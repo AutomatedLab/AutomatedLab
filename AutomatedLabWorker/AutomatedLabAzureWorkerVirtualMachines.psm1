@@ -35,7 +35,7 @@
         tags       = @(
             @{ 
                 AutomatedLab = $Lab.Name
-                CreationTime = Get-Date
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
         )
         properties = @{
@@ -150,7 +150,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             dependsOn  = @(
@@ -253,7 +253,7 @@
                 tags       = @(
                     @{ 
                         AutomatedLab = $Lab.Name
-                        CreationTime = Get-Date
+                        CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                     }
                 )
                 type       = "Microsoft.Network/publicIPAddresses"
@@ -277,7 +277,7 @@
                 tags       = @(
                     @{ 
                         AutomatedLab = $Lab.Name
-                        CreationTime = Get-Date
+                        CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                     }
                 )
                 location   = "[resourceGroup().location]"
@@ -347,7 +347,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             type       = "Microsoft.Network/publicIPAddresses"
@@ -372,7 +372,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             apiVersion = "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]"
@@ -455,7 +455,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             apiVersion = "[providers('Microsoft.Compute','availabilitySets').apiVersions[0]]"
@@ -483,7 +483,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             apiVersion = "[providers('Microsoft.Compute','disks').apiVersions[0]]"
@@ -567,7 +567,7 @@
                 tags       = @(
                     @{ 
                         AutomatedLab = $Lab.Name
-                        CreationTime = Get-Date
+                        CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                     }
                 )
             }
@@ -588,7 +588,7 @@
             tags       = @(
                 @{ 
                     AutomatedLab = $Lab.Name
-                    CreationTime = Get-Date
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
             )
             dependsOn  = @(
@@ -1127,7 +1127,7 @@ function New-LWAzureVM
         ResourceGroupName = $ResourceGroupName
         Location          = $Location
         VM                = $vm
-        Tag               = @{ AutomatedLab = $LabName; CreationTime = Get-Date }
+        Tag               = @{ AutomatedLab = $LabName; CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss') }
         ErrorAction       = 'Stop'
         WarningAction     = 'SilentlyContinue'
         AsJob             = $true
