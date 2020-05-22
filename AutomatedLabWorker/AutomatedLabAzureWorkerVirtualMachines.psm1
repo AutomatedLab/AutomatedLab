@@ -364,6 +364,25 @@
                         name = "$($resourceGroup)$($vNet.Name)backendpoolconfig"
                     }
                 )
+                outboundRules = @(
+                    @{
+                        name = "InternetAccess"
+                        properties = @{
+                            allocatedOutboundPorts = 0 # In order to use automatic allocation
+                            frontendIPConfigurations = @(
+                                @{
+                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                                }
+                            )
+                            backendAddressPool = @{
+                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($vNet.Name)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($vNet.Name)backendpoolconfig')]"
+                            }
+                            protocol = "All"
+                            enableTcpReset = $true
+                            idleTimeoutInMinutes = 4
+                        }
+                    }
+                )
             }
         }
 

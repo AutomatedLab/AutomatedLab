@@ -30,6 +30,7 @@
 - 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
 - Integrated web server deployment into NugetServer custom role (Fixes #881)
 - Fixed SQL Server version in '06 SQL Server and client, domain joined.ps1'.
+- ARM Template Deployment now deploys outgoing NAT as well, re-enabling VM internet access...
 
 ## 5.20.0 - 2020-04-20
 
