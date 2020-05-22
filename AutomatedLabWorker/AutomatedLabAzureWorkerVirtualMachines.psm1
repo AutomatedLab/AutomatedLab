@@ -1302,8 +1302,6 @@ function Initialize-LWAzureVM
         $_.AzureProperties.ContainsKey('AutoShutdownTime')
     }
 
-    Copy-LabFileItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm:$false
-
     foreach ($machine in $machineSpecific)
     {
         $time = $machine.AzureProperties.AutoShutdownTime
@@ -1331,6 +1329,7 @@ function Initialize-LWAzureVM
     }
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    Copy-LabFileItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm:$false
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
