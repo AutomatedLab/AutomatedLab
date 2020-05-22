@@ -547,22 +547,6 @@
             $niccount++
         }
 
-        Write-ScreenInfo -Type Verbose -Message ('Adding extensions')
-        $template.resources += @{
-            apiVersion= "[providers('Microsoft.Compute','virtualMachines').apiVersions[0]]"
-            type= "Microsoft.Compute/virtualMachines/extensions"
-            name= "$($machine.Name)/bginfo"
-            location= "[resourceGroup().location]"
-            dependsOn= @(
-                "[concat('Microsoft.Compute/virtualMachines/', '$($machine.Name)')]"
-            )
-            properties= @{
-                publisher= "Microsoft.Compute"
-                type= "BGInfo"
-                typeHandlerVersion = "1.0"
-            }
-        }
-
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $machTemplate = @{
             name       = $machine.Name
@@ -1250,6 +1234,7 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable admin IE Enhanced Security Configuration
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
+        reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v BgInfo /t REG_SZ /d "C:\AL\BgInfo.exe C:\AL\BgInfo.bgi /Timer:0 /nolicprompt" /f
 
         #turn off the Windows firewall
         Set-NetFirewallProfile -Name Domain -Enabled False
@@ -1316,6 +1301,8 @@ function Initialize-LWAzureVM
     $machineSpecific = Get-LabVm -SkipConnectionInfo | Where-Object {
         $_.AzureProperties.ContainsKey('AutoShutdownTime')
     }
+
+    Copy-LabFileItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm:$false
 
     foreach ($machine in $machineSpecific)
     {
