@@ -32,12 +32,10 @@
         apiVersion = "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]"
         name       = "$($Lab.Name)nsg"
         location   = "[resourceGroup().location]"
-        tags       = @(
-            @{ 
-                AutomatedLab = $Lab.Name
-                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-            }
-        )
+        tags       = @{ 
+            AutomatedLab = $Lab.Name
+            CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+        }
         properties = @{
             securityRules = @(
                 # Necessary mgmt ports for AutomatedLab
@@ -147,12 +145,10 @@
         $vNet = @{
             type       = "Microsoft.Network/virtualNetworks"
             apiVersion = "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]"
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             dependsOn  = @(
                 "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
             )
@@ -250,12 +246,10 @@
             $template.resources +=
             @{
                 apiVersion = "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]"
-                tags       = @(
-                    @{ 
+                tags       = @{ 
                         AutomatedLab = $Lab.Name
                         CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                    }
-                )
+                }
                 type       = "Microsoft.Network/publicIPAddresses"
                 name       = "$($Lab.Name)$($network.Name)bastionip"
                 location   = "[resourceGroup().location]"
@@ -274,12 +268,10 @@
                 apiVersion = "[providers('Microsoft.Network','bastionHosts').apiVersions[0]]"
                 type       = "Microsoft.Network/bastionHosts"
                 name       = "$($Lab.Name)$($network.Name)bastion"
-                tags       = @(
-                    @{ 
-                        AutomatedLab = $Lab.Name
-                        CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                    }
-                )
+                tags       = @{ 
+                    AutomatedLab = $Lab.Name
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                }
                 location   = "[resourceGroup().location]"
                 dependsOn  = @(
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
@@ -344,12 +336,10 @@
         $template.resources +=
         @{
             apiVersion = "[providers('Microsoft.Network','publicIPAddresses').apiVersions[0]]"
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             type       = "Microsoft.Network/publicIPAddresses"
             name       = "$($Lab.Name)$($network.Name)lbfrontendip"
             location   = "[resourceGroup().location]"
@@ -369,12 +359,10 @@
         Write-ScreenInfo -Type Verbose -Message ('Adding load balancer to template')
         $loadBalancer = @{
             type       = "Microsoft.Network/loadBalancers"
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             apiVersion = "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]"
             name       = "$($resourceGroup)$($vNet.Name)loadbalancer"
             location   = "[resourceGroup().location]"
@@ -452,12 +440,10 @@
         Write-ScreenInfo -Type Verbose -Message ('Adding availability set to template')
         $template.resources += @{
             type       = "Microsoft.Compute/availabilitySets"
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             apiVersion = "[providers('Microsoft.Compute','availabilitySets').apiVersions[0]]"
             name       = "$($network.Name)"
             location   = "[resourceGroup().location]"
@@ -480,12 +466,10 @@
         $vm = $lab.Machines | Where-Object { $_.Disks.Name -contains $disk.Name }
         $template.resources += @{
             type       = "Microsoft.Compute/disks"
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             apiVersion = "[providers('Microsoft.Compute','disks').apiVersions[0]]"
             name       = $disk.Name
             location   = "[resourceGroup().location]"
@@ -564,12 +548,10 @@
                 apiVersion = "[providers('Microsoft.Network','networkInterfaces').apiVersions[0]]"
                 type       = "Microsoft.Network/networkInterfaces"
                 location   = "[resourceGroup().location]"
-                tags       = @(
-                    @{ 
-                        AutomatedLab = $Lab.Name
-                        CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                    }
-                )
+                tags       = @{ 
+                    AutomatedLab = $Lab.Name
+                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+                }
             }
 
             if ($nic.Ipv4DnsServers)
@@ -585,12 +567,10 @@
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $machTemplate = @{
             name       = $machine.Name
-            tags       = @(
-                @{ 
-                    AutomatedLab = $Lab.Name
-                    CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
-                }
-            )
+            tags       = @{ 
+                AutomatedLab = $Lab.Name
+                CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
+            }
             dependsOn  = @(
                 "[resourceId('Microsoft.Compute/availabilitySets', '$($machine.Network[0])')]"
             )
