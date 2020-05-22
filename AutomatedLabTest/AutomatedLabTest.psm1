@@ -1,189 +1,81 @@
-﻿$testResultPattern = '\d{6}_\d{4}_([\w\(\),-]| )+_Log.xml'
+﻿$script:ModuleRoot = $PSScriptRoot
+$script:ModuleVersion = (Import-PowerShellDataFile -Path "$($script:ModuleRoot)\AutomatedLabTest.psd1").ModuleVersion
 
-#region Test-LabDeployment
-function Test-LabDeployment
-{
-    [CmdletBinding()]
-
-    param(
-        [Parameter(ParameterSetName = 'Path')]
-        [string[]]$Path,
-
-        [Parameter(ParameterSetName = 'All')]
-        [string]$SampleScriptsPath,
-
-        [Parameter(ParameterSetName = 'All')]
-        [string]$Filter,
-
-        [Parameter(ParameterSetName = 'All')]
-        [switch]$All,
-
-        [string]$LogDirectory = [System.Environment]::GetFolderPath('MyDocuments'),
-
-        [hashtable]$Replace = @{}
-    )
-
-	$global:AL_TestMode = 1 #this variable is set to skip the 2nd question when deleting Azure services
-
-    if ($PSCmdlet.ParameterSetName -eq 'Path')
-    {
-        foreach ($p in $Path)
-        {
-            if (-not (Test-Path -Path $p -PathType Leaf))
-            {
-                Write-Error "The file '$p' could not be found"
-                return
-            }
-
-            $result = Invoke-LabScript -Path $p -Replace $Replace
-            $fileName = Join-Path -Path $LogDirectory -ChildPath ("{0:yyMMdd_hhmm}_$([System.IO.Path]::GetFileNameWithoutExtension($p))_Log.xml" -f (Get-Date))
-            $result | Export-Clixml -Path $fileName
-            $result
-        }
-    }
-    elseif ($PSCmdlet.ParameterSetName -eq 'All')
-    {
-        if (-not (Test-Path -Path $SampleScriptsPath -PathType Container))
-        {
-            Write-Error "The directory '$SampleScriptsPath' could not be found"
-            return
-        }
-
-        if (-not $Filter) { $Filter = '*.ps1' }
-        $scripts = Get-ChildItem -Path $SampleScriptsPath -Filter $Filter -Recurse
-
-        foreach ($script in $scripts)
-        {
-            $result = Invoke-LabScript -Path $script.FullName -Replace $Replace
-            $fileName = Join-Path -Path $LogDirectory -ChildPath ("{0:yyMMdd_hhmm}_$([System.IO.Path]::GetFileNameWithoutExtension($script))_Log.xml" -f (Get-Date))
-            $result | Export-Clixml -Path $fileName
-            $result
-        }
-    }
-
-	$global:AL_TestMode = 0
-}
-#endregion Test-LabDeployment
-
-#region Invoke-LabScript
-function Invoke-LabScript
-{
-    [CmdletBinding()]
-    param (
-        [Parameter(Mandatory)]
-        [string]$Path,
-
-        [hashtable]$Replace
-    )
-
-    $result = New-Object PSObject -Property ([ordered]@{
-            ScriptName = Split-Path -Path $Path -Leaf
-            Completed = $false
-            ErrorCount = 0
-            Errors = $null
-            ScriptFullName = $Path
-            Output = $null
-            RemoveErrors = $null
-    })
-    $result.PSObject.TypeNames.Insert(0, 'AutomatedLab.TestResult')
-
-    Write-PSFMessage -Level Host "Invoking script '$Path'"
-    Write-PSFMessage -Level Host '-------------------------------------------------------------'
-    try
-    {
-        Clear-Host
-        $content = Get-Content -Path $Path -Raw
-
-        foreach ($element in $Replace.GetEnumerator())
-        {
-            $content = $content -replace $element.Key, $element.Value
-        }
-
-        $content = [scriptblock]::Create($content)
-
-        Invoke-Command -ScriptBlock $content -ErrorVariable invokeError
-        $result.Errors = $invokeError
-        $result.Completed = $true
-    }
-    catch
-    {
-        Write-Error -Exception $_.Exception -Message "Error invoking the script '$Path': $($_.Exception.Message)"
-        $result.Errors = $_
-        $result.Completed = $false
-    }
-    finally
-    {
-        Start-Sleep -Seconds 1
-        $result.Output = Get-ConsoleText
-        $result.ErrorCount = $result.Errors.Count
-        Clear-Host
-
-        if (Get-Lab -ErrorAction SilentlyContinue)
-        {
-            Remove-Lab -Confirm:$false -ErrorVariable removeErrors
-        }
-
-        $result.RemoveErrors = $removeErrors
-
-        Write-PSFMessage -Level Host '-------------------------------------------------------------'
-        Write-PSFMessage -Level Host "Finished invkoing script '$Path'"
-
-        $result
-    }
-}
-#endregion Invoke-LabScript
-
-#region Import-LabTestResult
-function Import-LabTestResult
-{
-    [CmdletBinding(DefaultParameterSetName = 'Path')]
-
-    param(
-        [Parameter(ParameterSetName = 'Single')]
-        [string[]]$Path,
-
-        [Parameter(ParameterSetName = 'Path')]
-        [string]$LogDirectory = [System.Environment]::GetFolderPath('MyDocuments')
-    )
-
-    if ($PSCmdlet.ParameterSetName -eq 'Single')
-    {
-        if (-not (Test-Path -Path $Path -PathType Leaf))
-        {
-            Write-Error "The file '$Path' could not be found"
-            return
-        }
-
-        $result = Import-Clixml -Path $Path
-        $result.PSObject.TypeNames.Insert(0, 'AutomatedLab.TestResult')
-        $result
-    }
-    elseif ($PSCmdlet.ParameterSetName -eq 'Path')
-    {
-        $files = Get-Item -Path "$LogDirectory\*" -Filter *.xml
-
-        foreach ($file in ($files | Where-Object { $_ -match $testResultPattern }))
-        {
-            $result = Import-Clixml -Path $file.FullName
-            $result.PSObject.TypeNames.Insert(0, 'AutomatedLab.TestResult')
-            $result
-        }
-    }
-}
-#endregion Import-LabTestResult
+# Detect whether at some level dotsourcing was enforced
+$script:doDotSource = Get-PSFConfigValue -FullName AutomatedLabTest.Import.DoDotSource -Fallback $false
+if ($AutomatedLabTest_dotsourcemodule) { $script:doDotSource = $true }
 
 <#
-#test a single script with string replacement needed for Azure
-$result = Test-LabDeployment -Path 'C:\Users\randr\Documents\AutomatedLab Sample Scripts\Workshop Labs\PowerShell Lab - Azure.ps1' -Replace @{
-    '<SOME UNIQUE DATA>' = "raandree$(Get-Random)"
-    '<PATH TO YOU AZURE PUBLISHING FILE>' = 'D:\LabSources\Per1-AL2-Aldi-Per2-AL1-AL3-11-14-2015-credentials.publishsettings'
-    "(\`$azureDefaultLocation = ')(\w| )+(')" = '$1North Europe$3'
-    '(Add-LabAzureSubscription -Path \$azurePublishingFile -DefaultLocationName \$azureDefaultLocation)' = '$1 -SubscriptionName Aldi'
+Note on Resolve-Path:
+All paths are sent through Resolve-Path/Resolve-PSFPath in order to convert them to the correct path separator.
+This allows ignoring path separators throughout the import sequence, which could otherwise cause trouble depending on OS.
+Resolve-Path can only be used for paths that already exist, Resolve-PSFPath can accept that the last leaf my not exist.
+This is important when testing for paths.
+#>
+
+# Detect whether at some level loading individual module files, rather than the compiled module was enforced
+$importIndividualFiles = Get-PSFConfigValue -FullName AutomatedLabTest.Import.IndividualFiles -Fallback $false
+if ($AutomatedLabTest_importIndividualFiles) { $importIndividualFiles = $true }
+if (Test-Path (Resolve-PSFPath -Path "$($script:ModuleRoot)\..\.git" -SingleItem -NewChild)) { $importIndividualFiles = $true }
+if ("<was not compiled>" -eq '<was not compiled>') { $importIndividualFiles = $true }
+	
+function Import-ModuleFile
+{
+	<#
+		.SYNOPSIS
+			Loads files into the module on module import.
+		
+		.DESCRIPTION
+			This helper function is used during module initialization.
+			It should always be dotsourced itself, in order to proper function.
+			
+			This provides a central location to react to files being imported, if later desired
+		
+		.PARAMETER Path
+			The path to the file to load
+		
+		.EXAMPLE
+			PS C:\> . Import-ModuleFile -File $function.FullName
+	
+			Imports the file stored in $function according to import policy
+	#>
+	[CmdletBinding()]
+	Param (
+		[string]
+		$Path
+	)
+	
+	$resolvedPath = $ExecutionContext.SessionState.Path.GetResolvedPSPathFromPSPath($Path).ProviderPath
+	if ($doDotSource) { . $resolvedPath }
+	else { $ExecutionContext.InvokeCommand.InvokeScript($false, ([scriptblock]::Create([io.file]::ReadAllText($resolvedPath))), $null, $null) }
 }
 
-#testa a single script
-$result = Test-LabDeployment -Path 'C:\Users\raandree\Documents\AutomatedLab Sample Scripts\HyperV\Single 2012R2 Server.ps1'
+#region Load individual files
+if ($importIndividualFiles)
+{
+	# Execute Preimport actions
+	. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\preimport.ps1"
+	
+	# Import all internal functions
+	foreach ($function in (Get-ChildItem "$ModuleRoot\internal\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
+	{
+		. Import-ModuleFile -Path $function.FullName
+	}
+	
+	# Import all public functions
+	foreach ($function in (Get-ChildItem "$ModuleRoot\functions" -Filter "*.ps1" -Recurse -ErrorAction Ignore))
+	{
+		. Import-ModuleFile -Path $function.FullName
+	}
+	
+	# Execute Postimport actions
+	. Import-ModuleFile -Path "$ModuleRoot\internal\scripts\postimport.ps1"
+	
+	# End it here, do not load compiled code below
+	return
+}
+#endregion Load individual files
 
-#test all scripts in the HyperV folder
-$result = Test-LabDeployment -SampleScriptsPath 'C:\Users\randr\Documents\AutomatedLab Sample Scripts\HyperV' -All
-#>
+#region Load compiled code
+"<compile code into here>"
+#endregion Load compiled code
