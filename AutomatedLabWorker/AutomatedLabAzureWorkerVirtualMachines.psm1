@@ -547,6 +547,22 @@
             $niccount++
         }
 
+        Write-ScreenInfo -Type Verbose -Message ('Adding extensions')
+        $template.resources += @{
+            apiVersion= "[providers('Microsoft.Compute','virtualMachines').apiVersions[0]]"
+            type= "Microsoft.Compute/virtualMachines/extensions"
+            name= "$($machine.Name)/bginfo"
+            location= "[resourceGroup().location]"
+            dependsOn= @(
+                "[concat('Microsoft.Compute/virtualMachines/', '$($machine.Name)')]"
+            )
+            properties= @{
+                publisher= "Microsoft.Compute"
+                type= "BGInfo"
+                typeHandlerVersion = "1.0"
+            }
+        }
+
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $machTemplate = @{
             name       = $machine.Name
