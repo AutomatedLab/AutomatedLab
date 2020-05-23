@@ -57,7 +57,6 @@
         'PSLog',
         'PSFileTransfer',
         'AutomatedLabWorker',
-        'AutomatedLab.Ships',
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
