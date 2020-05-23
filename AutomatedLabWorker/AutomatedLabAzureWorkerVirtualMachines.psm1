@@ -364,6 +364,25 @@
                         name = "$($resourceGroup)$($vNet.Name)backendpoolconfig"
                     }
                 )
+                outboundRules = @(
+                    @{
+                        name = "InternetAccess"
+                        properties = @{
+                            allocatedOutboundPorts = 0 # In order to use automatic allocation
+                            frontendIPConfigurations = @(
+                                @{
+                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                                }
+                            )
+                            backendAddressPool = @{
+                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($vNet.Name)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($vNet.Name)backendpoolconfig')]"
+                            }
+                            protocol = "All"
+                            enableTcpReset = $true
+                            idleTimeoutInMinutes = 4
+                        }
+                    }
+                )
             }
         }
 
@@ -1215,6 +1234,7 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Policies\System' /v ConsentPromptBehaviorAdmin /t REG_DWORD /d 0 /f
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A7-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable admin IE Enhanced Security Configuration
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Active Setup\Installed Components\{A509B1A8-37EF-4b3f-8CFC-4F3A74704073}' /v IsInstalled /t REG_DWORD /d 0 /f #disable user IE Enhanced Security Configuration
+        reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v BgInfo /t REG_SZ /d "C:\AL\BgInfo.exe C:\AL\BgInfo.bgi /Timer:0 /nolicprompt" /f
 
         #turn off the Windows firewall
         Set-NetFirewallProfile -Name Domain -Enabled False
@@ -1309,6 +1329,7 @@ function Initialize-LWAzureVM
     }
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
+    Copy-LabFileItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*" -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm:$false
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
