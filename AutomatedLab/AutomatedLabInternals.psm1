@@ -897,16 +897,7 @@ function Update-LabSysinternalsTools
                 Start-Sleep -Seconds 1
                 
                 # Download Lab Sources
-                $labSources = Get-LabSourcesLocation -Local
-                if ($null -ne $labSources -and -not $($IsLinux -or $IsMacOs))
-                {
-                    $drive = ($labSources -split ':')[0]
-                    $null = New-LabSourcesFolder -DriveLetter $drive -Force -ErrorAction SilentlyContinue
-                }
-                elseif ($null -ne $labSources -and ($IsLinux -or $IsMacOs))
-                {
-                    $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
-                }
+                $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
 
                 # Download SysInternals suite
 
