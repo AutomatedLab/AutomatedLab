@@ -586,7 +586,7 @@ function Get-LabInternetFile
             $argumentList += if ($NoDisplay) {$true} else {$false}
             $argumentList += if ($Force) {$true} else {$false}
 
-            $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
         else
         {
