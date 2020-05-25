@@ -19,6 +19,13 @@ Describe "$($Lab.Name) DC Generic" -Tag RootDC,DC,FirstChildDC {
                     (Get-Service -Name ADWS).Status.ToString()
                 } -PassThru -NoDisplay | Should -Be Running
             }
+            
+            It "$vm should resond to ADWS calls" {
+                {
+                    Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+                        Get-ADUser -Identity $env:USERNAME
+                } -PassThru -NoDisplay } | Should -Not -Throw
+            }
         }
     }
 }
