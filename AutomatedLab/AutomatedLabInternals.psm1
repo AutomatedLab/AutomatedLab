@@ -759,6 +759,10 @@ function Get-LabSourcesLocationInternal
 
         Get-PSFConfigValue AutomatedLab.LabSourcesLocation
     }
+    elseif (($defaultEngine -eq 'HyperV' -or $Local) -and (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+    {
+        Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation
+    }
     elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
         $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
