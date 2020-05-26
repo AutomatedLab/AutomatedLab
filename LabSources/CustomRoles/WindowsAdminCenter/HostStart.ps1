@@ -27,7 +27,7 @@ if (-not $lab)
 
 $labMachine = Get-LabVm -ComputerName $ComputerName
 $wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\SoftwarePackages" -FileName WAC.msi -PassThru -NoDisplay
-Copy-LabFileItem -Path $wacDownload.FullName -DestinationFolderPath C:\ -ComputerName $labMachine
+Copy-LabFileItem -Path $wacDownload.FullName -ComputerName $labMachine
 
 if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.DomainName -ErrorAction SilentlyContinue) )
 {

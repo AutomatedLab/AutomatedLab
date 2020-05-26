@@ -423,13 +423,13 @@ function Install-MDT {
     $mdtInstallFile = Get-LabInternetFile -Uri $MdtDownloadUrl -Path $downloadTargetFolder -PassThru -ErrorAction Stop
    
     Write-ScreenInfo "Copying MDT Install Files to server '$ComputerName'..."
-    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $mdtInstallFile.FileName) -DestinationFolderPath C:\Install -ComputerName $ComputerName
+    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath $mdtInstallFile.FileName) -DestinationFolderPath /Install -ComputerName $ComputerName
 
     Write-ScreenInfo "Copying ADK Install Files to server '$ComputerName'..."
-    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADK') -DestinationFolderPath C:\Install -ComputerName $ComputerName -Recurse
+    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADK') -DestinationFolderPath /Install -ComputerName $ComputerName -Recurse
 
     Write-ScreenInfo "Copying ADK Windows PE Addons Install Files to server '$ComputerName'..."
-    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADKWinPEAddons') -DestinationFolderPath C:\Install -ComputerName $ComputerName -Recurse
+    Copy-LabFileItem -Path (Join-Path -Path $downloadTargetFolder -ChildPath 'ADKWinPEAddons') -DestinationFolderPath /Install -ComputerName $ComputerName -Recurse
 
     Write-ScreenInfo "Installing ADK and on server '$ComputerName'..."
     Install-LabSoftwarePackage -ComputerName $ComputerName -LocalPath C:\Install\ADK\adksetup.exe -CommandLine '/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner'

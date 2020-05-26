@@ -1,0 +1,11 @@
+﻿TOPIC
+	about_AutomatedLabTest
+	
+SHORT DESCRIPTION
+	Explains how to use the AutomatedLabTest powershell module
+	
+LONG DESCRIPTION
+	<Insert Content here>
+
+KEYWORDS
+	AutomatedLabTest

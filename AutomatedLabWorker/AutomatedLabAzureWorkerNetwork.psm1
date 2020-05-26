@@ -365,6 +365,19 @@ function Add-LWAzureLoadBalancedPort
     $nic.IpConfigurations[0].LoadBalancerInboundNatRules = $rules
     [void] ($nic | Set-AzNetworkInterface)
 
+    # Extend NSG
+    $nsg = Get-AzNetworkSecurityGroup -Name "$($lab.Name)nsg" -ResourceGroupName $resourceGroup
+
+    $rule = $nsg | Get-AzNetworkSecurityRuleConfig -Name NecessaryPorts
+    if (-not $rule.DestinationPortRange.Contains($DestinationPort))
+    {
+        $rule.DestinationPortRange.Add($DestinationPort)
+        
+        # Update the NSG.
+        $nsg = $nsg | Set-AzNetworkSecurityRuleConfig -Name $rule.Name -DestinationPortRange $rule.DestinationPortRange -Protocol $rule.Protocol -SourcePortRange $rule.SourcePortRange -SourceAddressPrefix $rule.SourceAddressPrefix -DestinationAddressPrefix $rule.DestinationAddressPrefix -Access Allow -Priority $rule.Priority -Direction $rule.Direction
+        $null = $nsg | Set-AzNetworkSecurityGroup
+    }
+
     if (-not $machine.InternalNotes."AdditionalPort-$Port-$DestinationPort")
     {
         $machine.InternalNotes.Add("AdditionalPort-$Port-$DestinationPort", $DestinationPort)

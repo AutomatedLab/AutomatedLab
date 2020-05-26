@@ -3,64 +3,6 @@
     An AutomatedLab script for Configuration Manager 1902 with support for installing updates.
 .DESCRIPTION
     An AutomatedLab script for Configuration Manager 1902 with support for installing updates.
-.EXAMPLE
-    PS C:\> .\CM-1902.ps1 
-
-    Builds a lab with the following properties:
-        - 1x AutomatedLab:
-            - Name: "CMLab01"
-            - VMPath: \<drive\>:\AutomatedLab-VMs where \<drive\> is the fastest drive available
-        - 1x Active Directory domain:
-            - Domain: "winadmins.lab"
-            - Username: "Administrator"
-            - Password: "Somepass1"
-            - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
-            - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
-        - 2x virtual machines:
-            - Operating System: Windows Server 2019 (Desktop Experience)
-            - 1x Domain Controller:
-                - Name: "DC01"
-                - vCPU: 2
-                - Max memory: 2GB
-                - Disks: 1 x 100GB (OS, dynamic)
-                - Roles: "RootDC", "Routing"
-            - 1x Configuration Manager primary site server:
-                - Name: "CM01"
-                - vCPU: 4
-                - Max memory: 8GB
-                - Disks: 1 x 100GB (OS, dynamic), 1x 30GB (SQL, dynamic), 1x 50GB (DATA, dynamic)
-                - Roles: "SQLServer2017"
-                - CustomRoles: "CM-1902"
-                - SiteCode: "P01"
-                - SiteName: "CMLab01"
-                - Version: "Latest"
-                - LogViewer: "OneTrace"
-                - Site system roles: MP, DP, SUP (inc WSUS), RSP, EP
-
-    The following customsations are applied to the ConfigMgr server post install:
-        - The ConfigMgr console is updated
-        - Shortcuts on desktop:
-            - Console
-            - Logs directory
-            - Tools directory
-            - Support Center
-
-.EXAMPLE
-    PS C:\> .\CM-1902.ps1 -ExcludePostInstallations
-
-    Builds a lab with the the same properties as the first example, with the exception that it does not install Configuration Manager. 
-    
-    In other words, the VMs DC01 and CM01 will be created, Windows installed, AD installed on DC01 and SQL installed on CM01 and that's it.
-    
-    This is useful if you want the opportunity the snapshot/checkpoint the laptop VMs before installing Configuration Manager on CM01.
-
-    See the next example on how to trigger the remainder of the isntall tasks.
-
-.EXAMPLE
-    PS C:\> .\CM-1902.ps1 -SkipDomainCheck -SkipLabNameCheck -SkipHostnameCheck -PostInstallations
-
-    Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-1902 scripts on CM01.
-
 .PARAMETER LabName
     The name of the AutomatedLab lab created by this script.
 .PARAMETER VMPath
@@ -70,7 +12,7 @@
     The Active Directory domain for this lab.
     If the domain resolves to an IP address, a terminating error is thrown. Use the -SkipDomainCheck switch to continue even if the domain resolves to an IP address.
 .PARAMETER AdminUser
-    The username of a Domain Administratior within your lab. Also the account used for installing Active Directory and other software packages in this lab.
+    The username of a Domain Administrator within your lab. Also the account used for installing Active Directory and other software packages in this lab.
 .PARAMETER AdminPass
     The password for the AdminUser.
 .PARAMETER AddressSpace
@@ -137,10 +79,66 @@
     You cannot use this parameter with -ExternalVMSwitchName.
 .PARAMETER AutoLogon
     Specify this to enable auto logon for all VMs in this lab.
+.EXAMPLE
+    PS C:\> .\CM-1902.ps1 
+
+    Builds a lab with the following properties:
+        - 1x AutomatedLab:
+            - Name: "CMLab01"
+            - VMPath: \<drive\>:\AutomatedLab-VMs where \<drive\> is the fastest drive available
+        - 1x Active Directory domain:
+            - Domain: "winadmins.lab"
+            - Username: "Administrator"
+            - Password: "Somepass1"
+            - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
+            - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
+        - 2x virtual machines:
+            - Operating System: Windows Server 2019 (Desktop Experience)
+            - 1x Domain Controller:
+                - Name: "DC01"
+                - vCPU: 2
+                - Max memory: 2GB
+                - Disks: 1 x 100GB (OS, dynamic)
+                - Roles: "RootDC", "Routing"
+            - 1x Configuration Manager primary site server:
+                - Name: "CM01"
+                - vCPU: 4
+                - Max memory: 8GB
+                - Disks: 1 x 100GB (OS, dynamic), 1x 30GB (SQL, dynamic), 1x 50GB (DATA, dynamic)
+                - Roles: "SQLServer2017"
+                - CustomRoles: "CM-1902"
+                - SiteCode: "P01"
+                - SiteName: "CMLab01"
+                - Version: "Latest"
+                - LogViewer: "OneTrace"
+                - Site system roles: MP, DP, SUP (inc WSUS), RSP, EP
+
+    The following customisations are applied to the ConfigMgr server post install:
+        - The ConfigMgr console is updated
+        - Shortcuts on desktop:
+            - Console
+            - Logs directory
+            - Tools directory
+            - Support Center
+.EXAMPLE
+    PS C:\> .\CM-1902.ps1 -ExcludePostInstallations
+
+    Builds a lab with the the same properties as the first example, with the exception that it does not install Configuration Manager. 
+    
+    In other words, the VMs DC01 and CM01 will be created, Windows installed, AD installed on DC01 and SQL installed on CM01 and that's it.
+    
+    This is useful if you want the opportunity the snapshot/checkpoint the laptop VMs before installing Configuration Manager on CM01.
+
+    See the next example on how to trigger the remainder of the install tasks.
+.EXAMPLE
+    PS C:\> .\CM-1902.ps1 -SkipDomainCheck -SkipLabNameCheck -SkipHostnameCheck -PostInstallations
+
+    Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-1902 scripts on CM01.
 .NOTES
     Author:       Adam Cook (@codaamok)
     Date created: 2019-01-05
     Source:       https://github.com/codaamok/PoSH/AutomatedLab
+    TODO: Convert throw to ThrowTerminatingError() method
 #>
 #Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V"
 [Cmdletbinding()]
@@ -238,7 +236,7 @@ Param (
             throw "File '$_' does not exist or is not of type '.iso'"
         }
         elseif (!$_.StartsWith($labSources)) {
-            throw "Please move SQL ISO to your Lab Sources folder '$labSources'"
+            throw "Please move SQL ISO to your Lab Sources folder '$labSources\ISOs'"
         }
         return $true
     })]
@@ -303,6 +301,9 @@ if ($AutoLogon.IsPresent) {
     $PSDefaultParameterValues['Add-LabMachineDefinition:AutoLogonPassword']   = $AdminPass
 }
 
+$DataDisk = "{0}-DATA-01" -f $CMHostname
+$SQLDisk = "{0}-SQL-01" -f $CMHostname
+
 $SQLConfigurationFile = Join-Path -Path $labSources -ChildPath "CustomRoles\CM-1902\ConfigurationFile-SQL.ini"
 #endregion
 
@@ -323,7 +324,7 @@ switch ($true) {
         }
     }
     (-not $SkipHostnameCheck.IsPresent) {
-        ForEach ($Hostname in @($DCHostname,$CMHostname)) {
+        foreach ($Hostname in @($DCHostname,$CMHostname)) {
             try {
                 [System.Net.Dns]::Resolve($Hostname) | Out-Null
                 throw ("Host '{0}' resolves, choose a different hostname" -f $Hostname)
@@ -340,10 +341,10 @@ switch ($true) {
     ($NoInternetAccess.IsPresent -And $PSBoundParameters.ContainsKey("ExternalVMSwitchName")) {
         throw "Can not use -NoInternetAccess and -ExternalVMSwitchName together"
     }
-    ((Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
+    ((-not $NoInternetAccess.IsPresent) -And (Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
         throw ("Hyper-V virtual switch '{0}' does not exist" -f $ExternalVMSwitchName)
     }
-    ((Get-VMSwitch -Name $ExternalVMSwitchName).SwitchType -ne "External") { 
+    ((-not $NoInternetAccess.IsPresent) -And (Get-VMSwitch -Name $ExternalVMSwitchName).SwitchType -ne "External") { 
         throw ("Hyper-V virtual switch '{0}' is not of External type" -f $ExternalVMSwitchName)
     }
     (-not(Test-Path $SQLConfigurationFile)) {
@@ -361,48 +362,23 @@ Set-LabInstallationCredential -Username $AdminUser -Password $AdminPass
 if (!$PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
     Write-ScreenInfo -Message "Downloading SQL Server 2017 Evaluation" -TaskStart
 
-    $URL = "https://download.microsoft.com/download/5/2/2/522EE642-941E-47A6-8431-57F0C2694EDF/SQLServer2017-SSEI-Eval.exe"
-    $SQLServer2017EXE = Join-Path -Path $labSources -ChildPath "SoftwarePackages\SQLServer2017-SSEI-Eval.exe"
+    $URL = "https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLServer2017-x64-ENU.iso"
     $SQLServer2017ISO = Join-Path -Path $labSources -ChildPath "ISOs\SQLServer2017-x64-ENU.iso"
 
     if (Test-Path $SQLServer2017ISO) {
         Write-ScreenInfo -Message ("SQL Server 2017 Evaluation ISO already exists, delete '{0}' if you want to download again" -f $SQLServer2017ISO)
     }
-    elseif (Test-Path $SQLServer2017EXE) {
-        Write-ScreenInfo -Message ("SQL Server 2017 Evaluation downloader binary already exists, delete '{0}' if you want to download again" -f $SQLServer2017EXE)
-    }
     else {
         try {
-            Write-ScreenInfo -Message "Downloading the downloader" -TaskStart
-            Get-LabInternetFile -Uri $URL -Path (Split-Path $SQLServer2017EXE -Parent) -FileName (Split-Path $SQLServer2017EXE -Leaf) -ErrorAction "Stop"
+            Write-ScreenInfo -Message "Downloading SQL Server 2017 ISO" -TaskStart
+            Get-LabInternetFile -Uri $URL -Path (Split-Path $SQLServer2017ISO -Parent) -FileName (Split-Path $SQLServer2017ISO -Leaf) -ErrorAction "Stop"
             Write-ScreenInfo -Message "Done" -TaskEnd
         }
         catch {
-            $Message = "Failed to download SQL Server 2017 downloader binary ({0})" -f $_.Exception.Message
+            $Message = "Failed to download SQL Server 2017 ISO ({0})" -f $_.Exception.Message
             Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
             throw $Message
         }
-    }
-
-    if (-not (Test-Path $SQLServer2017ISO)) {
-        try {
-            Write-ScreenInfo -Message "Downloading the ISO" -TaskStart
-            $pArgs = @(
-                "/c"
-                "{0}" -f $SQLServer2017EXE
-                "/ACTION=Download"
-                "/MEDIATYPE=ISO"
-                "/MEDIAPATH=`"{0}`"" -f (Split-Path $SQLServer2017ISO -Parent)
-                "/QUIET"
-            )
-            Start-Process -FilePath cmd.exe -ArgumentList $pArgs -Wait -ErrorAction "Stop"
-        }
-        catch {
-            $Message = "Failed to initiate download of SQL Server 2017 ISO using the downloader ({0})" -f $_.Exception.Message
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $Message
-        }
-
         if (-not (Test-Path $SQLServer2017ISO)) {
             $Message = "Could not find SQL Server 2017 ISO '{0}' after download supposedly complete" -f $SQLServer2017ISO
             Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
@@ -425,33 +401,39 @@ if ($NoInternetAccess.IsPresent -And $CMVersion -ne "1902") {
 
 #region Forcing log viewer to be CMTrace if $CMVersion -eq 1902
 if ($CMVersion -eq 1902 -and $LogViewer -eq "OneTrace") {
-    Write-ScreenInfo -Message "Setting LogViewer to 'CMTrace' as OneTrace is only availale in 1906 or newer" -Type "Warning"
+    Write-ScreenInfo -Message "Setting LogViewer to 'CMTrace' as OneTrace is only available in 1906 or newer" -Type "Warning"
     $LogViewer = "CMTrace"
 }
 #endregion
 
 #region Build AutomatedLab
 $netAdapter = @()
+$Roles = @("RootDC")
+
 $AddLabVirtualNetworkDefinitionSplat = @{
     Name                   = $LabName
     VirtualizationEngine   = "HyperV"
 }
+
 $NewLabNetworkAdapterDefinitionSplat = @{
     VirtualSwitch = $LabName
 }
+
 if ($PSBoundParameters.ContainsKey("AddressSpace")) {
     $AddLabVirtualNetworkDefinitionSplat.Add("AddressSpace", $AddressSpace)
     $NewLabNetworkAdapterDefinitionSplat.Add("Ipv4Address", $AddressSpace)
 }
+
 Add-LabVirtualNetworkDefinition @AddLabVirtualNetworkDefinitionSplat
 $netAdapter += New-LabNetworkAdapterDefinition @NewLabNetworkAdapterDefinitionSplat
 
 if (-not $NoInternetAccess.IsPresent) {
-    Add-LabVirtualNetworkDefinition -Name "Internet" -VirtualizationEngine "HyperV" -HyperVProperties @{ SwitchType = 'External'; AdapterName = 'Internet' }
-    $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch "Internet" -UseDhcp
+    Add-LabVirtualNetworkDefinition -Name $ExternalVMSwitchName -VirtualizationEngine "HyperV" -HyperVProperties @{ SwitchType = 'External'; AdapterName = $ExternalVMSwitchName }
+    $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $ExternalVMSwitchName -UseDhcp
+    $Roles += "Routing"
 }
 
-Add-LabMachineDefinition -Name $DCHostname -Processors $DCCPU -Roles RootDC,Routing -NetworkAdapter $netAdapter -MaxMemory $DCMemory
+Add-LabMachineDefinition -Name $DCHostname -Processors $DCCPU -Roles $Roles -NetworkAdapter $netAdapter -MaxMemory $DCMemory
 
 Add-LabIsoImageDefinition -Name SQLServer2017 -Path $SQLServer2017ISO
 
@@ -460,29 +442,29 @@ $sqlRole = Get-LabMachineRoleDefinition -Role SQLServer2017 -Properties @{
     Collation = "SQL_Latin1_General_CP1_CI_AS"
 }
 
-Add-LabDiskDefinition -Name "CM01-DATA-01" -DiskSizeInGb 50 -Label "DATA01" -DriveLetter "G"
-Add-LabDiskDefinition -Name "CM01-SQL-01" -DiskSizeInGb 30 -Label "SQL01" -DriveLetter "F"
+Add-LabDiskDefinition -Name $DataDisk -DiskSizeInGb 50 -Label "DATA01" -DriveLetter "G"
+Add-LabDiskDefinition -Name $SQLDisk -DiskSizeInGb 30 -Label "SQL01" -DriveLetter "F"
 
 if ($ExcludePostInstallations.IsPresent) {
-    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName "CM01-DATA-01","CM01-SQL-01"
+    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName $DataDisk, $SQLDisk
 }
 else {
     $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-1902" -Properties @{
         CMSiteCode              = $SiteCode
         CMSiteName              = $SiteName
-        CMBinariesDirectory     = "$labSources\SoftwarePackages\CM1902"
-        CMPreReqsDirectory      = "$labSources\SoftwarePackages\CMPreReqs"
+        CMBinariesDirectory     = "{0}\SoftwarePackages\CM1902" -f $labSources
+        CMPreReqsDirectory      = "{0}\SoftwarePackages\CMPreReqs" -f $labSources
         CMProductId             = "Eval" # Can be "Eval" or a product key
         Version                 = $CMVersion
-        AdkDownloadPath         = "$labSources\SoftwarePackages\ADK"
-        WinPEDownloadPath       = "$labSources\SoftwarePackages\WinPE"
+        AdkDownloadPath         = "{0}\SoftwarePackages\ADK" -f $labSources
+        WinPEDownloadPath       = "{0}\SoftwarePackages\WinPE" -f $labSources
         LogViewer               = $LogViewer
         SqlServerName           = $CMHostname
         DoNotDownloadWMIEv2     = $DoNotDownloadWMIEv2.IsPresent.ToString()
         AdminUser               = $AdminUser
         AdminPass               = $AdminPass
     }
-    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MinMemory 2GB -MaxMemory 8GB -Memory 4GB -DiskName "CM01-DATA-01","CM01-SQL-01" -PostInstallationActivity $CMRole
+    Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName $DataDisk, $SQLDisk -PostInstallationActivity $CMRole
 }
 #endregion
 

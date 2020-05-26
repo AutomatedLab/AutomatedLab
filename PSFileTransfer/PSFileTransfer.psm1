@@ -259,7 +259,7 @@ function Send-Directory
     )
 
     $isCalledRecursivly = (Get-PSCallStack | Where-Object -Property Command -EQ -Value $MyInvocation.InvocationName | Measure-Object | Select-Object -ExpandProperty Count) -gt 1
-    if (-not $DestinationFolderPath.EndsWith('\')) { $DestinationFolderPath = $DestinationFolderPath + '\' }
+    if ($DestinationFolderPath -ne '/' -and -not $DestinationFolderPath.EndsWith('\')) { $DestinationFolderPath = $DestinationFolderPath + '\' }
 
     if (-not $isCalledRecursivly)
     {
@@ -513,7 +513,7 @@ function Copy-LabFileItem
 
                     $destination = if (-not $DestinationFolderPath)
                     {
-                        'C:\'
+                        '/'
                     }
                     else
                     {
@@ -541,7 +541,7 @@ function Copy-LabFileItem
                 $session = New-LabPSSession -ComputerName $machine
                 $destination = if (-not $DestinationFolderPath)
                 {
-                    Join-Path -Path C:\ -ChildPath (Split-Path -Path $p -Leaf)
+                    Join-Path -Path / -ChildPath (Split-Path -Path $p -Leaf)
                 }
                 else
                 {

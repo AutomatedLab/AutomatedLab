@@ -570,6 +570,7 @@ function Invoke-LabCommand
                     $hostStartPath = Join-Path -Path $item.DependencyFolder -ChildPath 'HostStart.ps1'
                     if (Test-Path -Path $hostStartPath)
                     {
+                        if (-not $script:data) {$script:data = Get-Lab}
                         $hostStartScript = Get-Command -Name $hostStartPath
                         $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties
                         if ($hostStartScript.Parameters.ContainsKey('ComputerName'))

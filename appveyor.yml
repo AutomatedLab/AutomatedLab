@@ -1,4 +1,4 @@
-version: 5.20.{build}
+version: 5.21.{build}
 image:
 - Visual Studio 2017
 - Ubuntu
@@ -46,8 +46,6 @@ for:
       project: AutomatedLab.sln
     deploy:
       - provider: GitHub
-        release: AutomatedLab-v$(appveyor_build_version)
-        tag: v$(appveyor_build_version)
         description: 'This is an automated deployment'
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
@@ -65,8 +63,6 @@ for:
     build_script: dotnet build -f netcoreapp2.2 LabXml/LabXml.csproj
     deploy:
       - provider: GitHub
-        release: AutomatedLab-v$(appveyor_build_version)
-        tag: v$(appveyor_build_version)
         description: 'This is an automated deployment'
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub

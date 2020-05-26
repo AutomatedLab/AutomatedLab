@@ -743,6 +743,7 @@ function New-LabDefinition
     $Global:AL_DeploymentStart = $null
     $Global:taskStart = @()
     $Global:indent = 0
+    $global:AL_CurrentLab = $null
 
     $Global:labDeploymentNoNewLine = $false
 
@@ -1537,7 +1538,7 @@ function Add-LabIsoImageDefinition
         {
             $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
 
-            if ( [System.IO.Path]::HasExtension($Path))
+            if ( -not $IsLinux -and [System.IO.Path]::HasExtension($Path) -or $IsLinux -and $Path -match '\.iso$')
             {
                 $isoFiles = $isoFiles | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
 

@@ -34,14 +34,7 @@ function New-LabVM
 
     $jobs = @()
 
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
-        Write-ScreenInfo -Message 'Creating Azure load balancer for the newly created machines' -TaskStart
-        New-LWAzureLoadBalancer -ConnectedMachines ($machines.Where({ $_.HostType -eq 'Azure' })) -Wait
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
-    foreach ($machine in $machines)
+    foreach ($machine in $machines.Where({$_.HostType -ne 'Azure'}))
     {
         $fdvDenyWriteAccess = (Get-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -ErrorAction SilentlyContinue).FDVDenyWriteAccess
         if ($fdvDenyWriteAccess) {
@@ -82,15 +75,15 @@ function New-LabVM
 
             Start-LabVM -ComputerName $machine
         }
-        elseif ($machine.HostType -eq 'Azure')
-        {
-            $jobs += New-LWAzureVM -Machine $machine
-
-            Write-ScreenInfo -Message 'Done' -TaskEnd
-        }
+        
         if ($fdvDenyWriteAccess) {
             Set-ItemProperty -Path HKLM:\SYSTEM\CurrentControlSet\Policies\Microsoft\FVE -Name FDVDenyWriteAccess -Value $fdvDenyWriteAccess
         }
+    }
+
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $jobs += New-LabAzureResourceGroupDeployment -Lab $lab -PassThru
     }
 
     #test if the machine creation jobs succeeded
@@ -114,12 +107,6 @@ function New-LabVM
 
         Write-PSFMessage -Message 'Calling Enable-PSRemoting on machines'
         Enable-LWAzureWinRm -Machine $azureVMs -Wait
-
-        Write-PSFMessage -Message 'Setting lab DNS servers for newly created machines'
-        Set-LWAzureDnsServer -VirtualNetwork $lab.VirtualNetworks
-
-        Write-PSFMessage -Message 'Restarting machines to apply DNS settings'
-        Restart-LabVM -ComputerName $azureVMs.Where({$_.Roles.Name -notcontains 'RootDC' -and $_.Roles.Name -notcontains 'FirstChildDc' -and $_.Roles.Name -notcontains 'DC'}) -Wait -ProgressIndicator 10
 
         Write-PSFMessage -Message 'Executing initialization script on machines'
         Initialize-LWAzureVM -Machine $azureVMs
@@ -1537,7 +1524,7 @@ function Dismount-LabIsoImage
         Write-ScreenInfo "Using ISO images is only supported with Hyper-V VMs or on Azure. Skipping machine '$($_.Name)'" -Type Warning
     }
 
-    $machines = $machines | Where-Object HostType -eq HyperV
+    $hypervMachines = $machines | Where-Object HostType -eq HyperV
     $azureMachines = $machines | Where-Object HostType -eq Azure
 
     if ($azureMachines)
@@ -1545,14 +1532,14 @@ function Dismount-LabIsoImage
         Dismount-LWAzureIsoImage -ComputerName $azureMachines
     }
 
-    foreach ($machine in $machines)
+    foreach ($hypervMachine in $hypervMachines)
     {
         if (-not $SupressOutput)
         {
-            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$machine'." -Type Info
+            Write-ScreenInfo -Message "Dismounting currently mounted ISO image on computer '$hypervMachine'." -Type Info
         }
 
-        Dismount-LWIsoImage -ComputerName $machine
+        Dismount-LWIsoImage -ComputerName $hypervMachine
     }
 
     Write-LogFunctionExit
@@ -1719,15 +1706,15 @@ function Test-LabMachineInternetConnectivity
             Test-NetConnection www.microsoft.com -CommonTCPPort HTTP -InformationLevel Detailed -WarningAction SilentlyContinue
             Start-Sleep -Seconds 1
         }
-
-        #if two results are positive, return the first positive result, if all are negative, return the first negative result
-        if (($result.TcpTestSucceeded | Where-Object { $_ -eq $true }).Count -ge 2)
-        {
-            $result | Where-Object TcpTestSucceeded -eq $true | Select-Object -First 1
-        }
-        elseif (($result.TcpTestSucceeded | Where-Object { $_ -eq $false }).Count -eq 5)
+    
+        #if 75% of the results are negative, return the first negative result, otherwise return the first positive result
+        if (($result | Where-Object TcpTestSucceeded -eq $false).Count -ge ($count * 0.75))
         {
             $result | Where-Object TcpTestSucceeded -eq $false | Select-Object -First 1
+        }
+        else
+        {
+            $result | Where-Object TcpTestSucceeded -eq $true | Select-Object -First 1
         }
     }
 
@@ -1926,7 +1913,7 @@ function Enable-LabAutoLogon
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultDomainName -Value $parameters.DomainName -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultPassword -Value $parameters.Password -Type String -Force
             Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon" -Name DefaultUserName -Value $parameters.UserName -Type String -Force
-        } -Variable (Get-Variable parameters) -NoDisplay
+        } -Variable (Get-Variable parameters) -DoNotUseCredSsp -NoDisplay
     }
 }
 #endregion

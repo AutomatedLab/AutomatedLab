@@ -146,7 +146,7 @@ function Install-LabSharePoint
         Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name $thing) -Path $labsources\SoftwarePackages -FileName $fName -NoDisplay
     }
 
-    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
+    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
 
     # Download and copy Prerequisite Files to server
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
@@ -180,7 +180,7 @@ function Install-LabSharePoint
             }
         }
 
-        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
+        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose

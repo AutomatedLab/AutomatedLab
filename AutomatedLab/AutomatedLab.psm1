@@ -1,4 +1,4 @@
-#region Enable-LabHostRemoting
+﻿#region Enable-LabHostRemoting
 function Enable-LabHostRemoting
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
@@ -7,6 +7,8 @@ function Enable-LabHostRemoting
 
         [switch]$NoDisplay
     )
+
+    if ($IsLinux) { return }
 
     Write-LogFunctionEntry
 
@@ -206,6 +208,7 @@ function Undo-LabHostRemoting
         [switch]$NoDisplay
     )
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     if (-not (Test-IsAdministrator))
@@ -277,6 +280,7 @@ function Test-LabHostRemoting
     [CmdletBinding()]
     param()
 
+    if ($IsLinux) { return }
     Write-LogFunctionEntry
 
     $configOk = $true
@@ -524,7 +528,7 @@ function Import-Lab
         }
 
         $minimumAzureModuleVersion = Get-LabConfigurationItem -Name MinimumAzureModuleVersion
-        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-Module -Name Az.* -ListAvailable | Where-Object Version -ge $minimumAzureModuleVersion))
+        if (($Script:data.Machines | Where-Object HostType -eq Azure) -and -not (Get-InstalledModule -Name Az | Where-Object Version -ge $minimumAzureModuleVersion))
         {
             throw "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available. Please install it using the command 'Install-Module -Name Az -Force'"
         }
@@ -707,8 +711,8 @@ function Install-Lab
         [switch]$HyperV,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
-        [int]$DelayBetweenComputers,
-        [switch]$NoValidation
+        [switch]$NoValidation,
+        [int]$DelayBetweenComputers
     )
 
     Write-LogFunctionEntry
@@ -756,13 +760,14 @@ function Install-Lab
     Unblock-LabSources
 
     Send-ALNotification -Activity 'Lab started' -Message ('Lab deployment started with {0} machines' -f (Get-LabVM).Count) -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
+    $engine = $Script:data.DefaultVirtualizationEngine
 
     if (Get-LabVM -All -IncludeLinux | Where-Object HostType -eq 'HyperV')
     {
         Update-LabMemorySettings
     }
 
-    if ($NetworkSwitches -or $performAll)
+    if ($engine -ne 'Azure' -and ($NetworkSwitches -or $performAll))
     {
         Write-ScreenInfo -Message 'Creating virtual networks' -TaskStart
 
@@ -935,8 +940,7 @@ function Install-Lab
 
     if (($AdTrusts -or $performAll) -and ((Get-LabVM -Role RootDC | Measure-Object).Count -gt 1))
     {
-        Write-ScreenInfo -Message 'Configuring DNS forwarding and AD trusts' -TaskStart
-        Install-LabDnsForwarder
+        Write-ScreenInfo -Message 'Configuring AD trusts' -TaskStart
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1100,11 +1104,24 @@ function Install-Lab
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
+
+        if (-not $DelayBetweenComputers)
+        {
+            $hypervMachineCount = (Get-LabVM -IncludeLinux | Where-Object HostType -eq HyperV).Count
+            if ($hypervMachineCount)
+            {
+                $DelayBetweenComputers = [System.Math]::Log($hypervMachineCount, 5) * 30
+                Write-ScreenInfo -Message "DelayBetweenComputers not defined, value calculated is $DelayBetweenComputers seconds"
+            }
+            else
+            {
+                $DelayBetweenComputers = 0
+            }
+            
+        }
+
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        if ($DelayBetweenComputers){
-            $DelayBetweenComputers = ([int]((Get-LabVM -IncludeLinux).HostType -contains 'HyperV') * 30)
-        }
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1292,6 +1309,7 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name DiskFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Disks.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks.cfg" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
@@ -1365,7 +1383,7 @@ function Get-LabAvailableOperatingSystem
         foreach ($os in $cachedSkus)
         {
             $cachedOs = [AutomatedLab.OperatingSystem]::new($os.Skus, $true)
-            if ($null -ne $cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
+            if ($cachedOs.OperatingSystemName) {$cachedOsList.Add($cachedOs)}
         }
 
         if ($UseOnlyCache)
@@ -2465,7 +2483,7 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
 
-        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $Path -Leaf)
+        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
@@ -2482,7 +2500,7 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installPath = Join-Path -Path C:\ -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
+        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
 
     $installParams = @{
@@ -2872,7 +2890,7 @@ function Set-LabInstallationCredential
 
     if ((Get-LabDefinition).DefaultVirtualizationEngine -eq 'Azure')
     {
-        if ($null -ne $Password -and $azurePasswordBlacklist -contains $Password)
+        if ($Password -and $azurePasswordBlacklist -contains $Password)
         {
             throw "Password '$Password' is in the list of forbidden passwords for Azure VMs: $($azurePasswordBlacklist -join ', ')"
         }
@@ -2890,7 +2908,7 @@ function Set-LabInstallationCredential
             $Password.Length -ge 8
         )
 
-        if ($null -ne $Password -and $checks -contains $false)
+        if ($Password -and $checks -contains $false)
         {
             throw "Passwords for Azure VM administrator have to:
                 Be at least 8 characters long
@@ -3430,7 +3448,9 @@ try
     Write-PSFMessage -Message "Next check is '$nextCheck'."
 }
 catch
-{ }
+{
+    $timestamps = New-Object $type
+}
 
 if (-not (
     (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
@@ -3487,7 +3507,7 @@ function Get-LabConfigurationItem
     if ($Name)
     {
         $setting = (Get-PSFConfig -Module AutomatedLab -Name $Name).Value
-        if ($null -eq $setting -and $null -ne $Default)
+        if (-not $setting -and $Default)
         {
             return $Default
         }
@@ -3504,6 +3524,7 @@ function Test-LabHostConnected
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "")]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingComputerNameHardcoded", "")]
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("ALSimpleNullComparison", "", Justification="We want a boolean")]
     [CmdletBinding()]
     param
     (
@@ -3513,6 +3534,11 @@ function Test-LabHostConnected
         [switch]
         $Quiet
     )
+
+    if (Get-LabConfigurationItem -Name DisableConnectivityCheck)
+    {
+        $script:connected = $true
+    }
 
     if (-not $script:connected)
     {
@@ -3525,9 +3551,22 @@ function Test-LabHostConnected
             # Assuming that we are in Azure Cloud Console aka Cloud Shell which is connected but cannot send ICMP packages
             $true
         }
+        elseif ($IsLinux)
+        {
+            # Due to an unadressed issue with Test-Connection on Linux
+            $portOpen = Test-Port -ComputerName automatedlab.org -Port 443
+            if (-not $portOpen.Open)
+            {
+                [System.Net.NetworkInformation.Ping]::new().Send('automatedlab.org').Status -eq 'Success'
+            }
+            else
+            {
+                $portOpen.Open
+            }
+        }
         else
         {
-            Test-Connection -ComputerName 8.8.8.8 -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
+            Test-Connection -ComputerName automatedlab.org -Count 4 -Quiet -ErrorAction SilentlyContinue -InformationAction Ignore
         }
     }
 
@@ -3564,7 +3603,7 @@ if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 
 if (-not (Test-Path -Path $productKeyFilePath))
 {
-    Get-LabInternetFile -Uri $productKeyFileLink -Path $productKeyFilePath
+    Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath
 }
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom

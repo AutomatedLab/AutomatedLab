@@ -202,7 +202,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Verbose "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
 
         try
@@ -993,6 +993,9 @@ function Install-LabRootDcs
             $machine = $args[0] | Where-Object { $_.Name -eq $env:COMPUTERNAME }
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
         } -ArgumentList $machines -NoDisplay
+
+        # Configure DNS forwarders for Azure machines to be able to mount LabSoures
+        Install-LabDnsForwarder
 
         $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
 

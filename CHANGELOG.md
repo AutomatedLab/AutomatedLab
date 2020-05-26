@@ -1,13 +1,46 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->  
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
+
+### Enhancements 
+
+### Bug Fixes
+
+## 5.21.0 - 2020-05-26
 
 ## 5.16.0 - 2019-09-29
 
 ### Enhancements
 
+- Added NuGet custom role that uses open source NuGet server package
+- AL now deploys ARM templates instead of individual resources
+- Compatibility with Az module 4.1.0. The minimum version of Az is now 4.1.0
+- LabSources location can now be configured
+
 ### Bug Fixes
+
+- Fixed module import loop (Fixes #869)
+- Release tagging updated
+- Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
+- 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
+- DelayBetweenComputers works now if defined and if not is calculated based on the umber of machines
+- Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
+- Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
+- 'Get-LabIssuingCA' does no longer throw but returns $null if there is no certificate authority present in the lab.
+- Updated some paths to work cross-platform
+  - i.e. Join-Path fails when the drive does not exist, so all calls to e.g. Send-File with a destination like C: would
+    fail on Linux, even though the target would always be a Windows machine. Replaced those paths with forward slash
+    which defaults to the system root on Windows and can be resolved cross-platform
+- Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
+- Fixed #890.
+- Fixed and improved 'Test-LabMachineInternetConnectivity'
+- 'Dismount-LabIsoImage' on Azure did never really work, no fixed and behavior is now aligned to the Hyper-V behavior.
+- 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
+- Integrated web server deployment into NugetServer custom role (Fixes #881)
+- Fixed SQL Server version in '06 SQL Server and client, domain joined.ps1'.
+- ARM Template Deployment now deploys outgoing NAT as well, re-enabling VM internet access...
+- Re-enabled BGInfo
 
 ## 5.20.0 - 2020-04-20
 

@@ -1,6 +1,8 @@
 ## Description
 
-Please describe your issue in as much detail as necessary for us to understand it.
+Please describe your issue in as much detail as necessary for us to understand it. Please
+create **one GitHub issue for each problem you experience**. Otherwise it is hard to track
+the progress.
 
 ## Expected behavior
 
