@@ -1,8 +1,8 @@
 ﻿param
 (
-    [Parameter(Mandatory)]
+    [Parameter()]
     [AutomatedLab.Lab]
-    $Lab
+    $Lab = $global:pesterLab
 )
 
 Describe "$($Lab.Name) Office2016" -Tag Office2016 {

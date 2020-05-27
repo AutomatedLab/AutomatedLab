@@ -1,8 +1,8 @@
 ﻿param
 (
-    [Parameter(Mandatory)]
+    [Parameter()]
     [AutomatedLab.Lab]
-    $Lab
+    $Lab = $global:pesterLab
 )
 
 Describe "$($Lab.Name) SQLServer2008R2" -Tag SQLServer2008R2 {
