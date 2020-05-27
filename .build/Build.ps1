@@ -84,7 +84,5 @@ if ($IsLinux)
 
 Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
-Install-Module -Name Pester -MaximumVersion 4.99.99 -Force
-
 Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )

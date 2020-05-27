@@ -76,10 +76,11 @@ Task Test -Depends Init {
     "`n`tSTATUS: Testing with PowerShell $PSVersion"
 
     # Ensure recent Pester version is actually used
-    Import-Module -Name Pester -MinimumVersion 4.0.0 -MaximumVersion 4.99.99 -Force
+    Import-Module -Name Pester -MinimumVersion 5.0.0 -Force
 
     # Gather test results. Store them in a variable and file
-    $TestResults = Invoke-Pester -Path $ProjectRoot\Tests -PassThru -OutputFormat NUnitXml -OutputFile "$ProjectRoot\$TestFile"
+    $TestResults = Invoke-Pester -Path $ProjectRoot\Tests | ConvertTo-NUnitReport -ErrorAction SilentlyContinue
+    $TestResults.Save("$ProjectRoot\$TestFile")
 
     # In Appveyor?  Upload our tests! #Abstract this into a function?
     If ($ENV:BHBuildSystem -eq 'AppVeyor')
