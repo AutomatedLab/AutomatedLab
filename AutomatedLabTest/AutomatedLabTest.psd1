@@ -26,7 +26,9 @@
     FunctionsToExport      = @(
         'Test-LabDeployment',
         'Import-LabTestResult',
-        'Invoke-LabPester')
+        'Invoke-LabPester',
+        'New-LabPesterTest'
+    )
 
     FileList               = @('AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
 

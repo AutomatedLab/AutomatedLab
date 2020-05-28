@@ -3,7 +3,8 @@
 ## Unreleased
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
 
-### Enhancements 
+### Enhancements
+- AutomatedLabTest updated to use Pester V5
 
 ### Bug Fixes
 
