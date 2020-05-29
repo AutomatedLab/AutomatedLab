@@ -1207,6 +1207,11 @@ function Get-LabTfsParameter
         SkipCertificateCheck = $true
     }
 
+    if (-not $role)
+    {
+        $role = (Get-LabVm -ComputerName $bwrole.Properties.TfsServer).Roles | Where-Object -Property Name -match 'Tfs\d{4}|AzDevOps'
+    }
+
     $defaultParam.ApiVersion = switch ($role.Name)
     {
         'Tfs2015' { '2.0'; break }
