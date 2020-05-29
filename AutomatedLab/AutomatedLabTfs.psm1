@@ -1152,7 +1152,13 @@ function Get-LabTfsParameter
 
     if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
-        $tfsPort = (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
+        $tfsPort = if ($bwRole) {
+            (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $bwRole.Properties.TfsServer -ErrorAction SilentlyContinue).FrontendPort
+        }
+        else
+        {
+            (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $tfsVm -ErrorAction SilentlyContinue).FrontendPort
+        }
 
         if (-not $tfsPort)
         {
@@ -1160,7 +1166,13 @@ function Get-LabTfsParameter
             return
         }
 
-        $tfsInstance = $tfsVm.AzureConnectionInfo.DnsName
+        $tfsInstance = if ($bwRole) {
+            (Get-LabVm $bwRole.Properties.TfsServer).AzureConnectionInfo.DnsName
+        }
+        else
+        {
+            $tfsVm.AzureConnectionInfo.DnsName
+        }
     }
 
     if ($role -and $role.Properties.ContainsKey('InitialCollection'))
