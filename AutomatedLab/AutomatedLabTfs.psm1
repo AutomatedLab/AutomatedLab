@@ -490,14 +490,14 @@ function Set-LabBuildWorkerCapability
             $bwParam = Get-LabTfsParameter -ComputerName $machine
             if ($numberOfBuildWorkers)
             {
-                $numberOfBuildWorkers = 1..$numberOfBuildWorkers
+                $range = 1..$numberOfBuildWorkers
             }
             else
             {
-                $numberOfBuildWorkers = 1
+                $range = 1
             }
 
-            foreach ($numberOfBuildWorker in $numberOfBuildWorkers)
+            foreach ($numberOfBuildWorker in $range)
             {
                 $agt = Get-TfsAgent @bwParam -PoolName $agentPool -Filter ([scriptblock]::Create("`$_.name -eq '$($machine.Name)-$numberOfBuildWorker'"))
                 $caps = @{}
@@ -506,7 +506,7 @@ function Set-LabBuildWorkerCapability
                     $caps[$prop.Name] = $prop.Value
                 }
 
-                $null = Add-TfsAgentUserCapability @bwParam -Capability $caps -Agent $agt
+                $null = Add-TfsAgentUserCapability @bwParam -Capability $caps -Agent $agt -PoolName $agentPool
             }
         }
     }
@@ -1196,6 +1196,11 @@ function Get-LabTfsParameter
         $tfsPort = 443
     }
 
+    if (-not $role)
+    {
+        $tfsVm = Get-LabVm -ComputerName $bwrole.Properties.TfsServer
+        $role = $tfsVm.Roles | Where-Object -Property Name -match 'Tfs\d{4}|AzDevOps'
+    }
     $credential = $tfsVm.GetCredential((Get-Lab))
     $useSsl = $tfsVm.InternalNotes.ContainsKey('CertificateThumbprint') -or ($role.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment) -or ($bwRole -and $bwRole.Properties.ContainsKey('Organisation'))
     
@@ -1205,11 +1210,6 @@ function Get-LabTfsParameter
         CollectionName       = $initialCollection
         UseSsl               = $useSsl
         SkipCertificateCheck = $true
-    }
-
-    if (-not $role)
-    {
-        $role = (Get-LabVm -ComputerName $bwrole.Properties.TfsServer).Roles | Where-Object -Property Name -match 'Tfs\d{4}|AzDevOps'
     }
 
     $defaultParam.ApiVersion = switch ($role.Name)
