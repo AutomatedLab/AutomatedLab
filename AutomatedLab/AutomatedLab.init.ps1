@@ -376,6 +376,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'AgentPool'
             'PAT'
             'Organisation'
+            'Capabilities'
         )
     }
     MandatoryRoleProperties = @{

@@ -220,6 +220,7 @@
         'Get-LabCache',
         'New-LabReleasePipeline',
         'Get-LabAzureLoadBalancedPort',
+        'Get-LabTfsParameter',
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry',
