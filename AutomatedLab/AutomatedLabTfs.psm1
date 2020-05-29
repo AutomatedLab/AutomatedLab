@@ -1203,6 +1203,11 @@ function Get-LabTfsParameter
         default { '2.0' }
     }
 
+    if (($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment) -or ($bwRole -and $bwRole.Properties.ContainsKey('Organisation')))
+    {
+        $defaultParam.ApiVersion = '5.1'
+    }
+
     if ($accessToken)
     {
         $defaultParam.PersonalAccessToken = $accessToken
