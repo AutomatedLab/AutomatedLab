@@ -1144,6 +1144,8 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    Install-LabRdsCertificate
+
     try
     {
         [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
@@ -1214,6 +1216,10 @@ function Remove-Lab
         Write-ScreenInfo -Message 'Removing lab sessions'
         Remove-LabPSSession -All
         Write-PSFMessage '...done'
+
+        Write-ScreenInfo -Message 'Removing imported RDS certificates'
+        Uninstall-LabRdsCertificate
+        Write-PsfMessage '...done'
 
         Write-ScreenInfo -Message 'Removing lab background jobs'
         $jobs = Get-Job
