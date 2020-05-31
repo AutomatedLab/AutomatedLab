@@ -1111,9 +1111,9 @@ function Install-LabRdsCertificate
     $tmp = $lab.LabPath
     foreach ($session in (New-LabPSSession -ComputerName $machines))
     {
-        $fPath = Join-Path -Path $tmp -ChildPath "$($session.ComputerName).cer"
-        Receive-File -SourceFilePath $($session.ComputerName) -DestinationFilePath $fPath -Session $session
-        Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
+        $fPath = Join-Path -Path $tmp -ChildPath "$($session.LabMachineName).cer"
+        Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
+        $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
     }
 }
 #endregion
@@ -1130,14 +1130,16 @@ function Uninstall-LabRdsCertificate
         return
     }
 
-    foreach ($certFile in (Get-ChildItem -Path $lab.LabPath -Filter *.cer))
+    foreach ($certFile in (Get-ChildItem -File -Path $lab.LabPath -Filter *.cer))
     {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.Import($certFile.FullName)
         if ($cert.Thumbprint)
         {
-            Remove-Item -Path ('Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint)
+            Get-Item -Path ('Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint) | Remove-Item
         }
+
+        $certFile | Remove-Item
     }
 }
 #endregion
