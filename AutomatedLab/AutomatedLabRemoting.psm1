@@ -1130,13 +1130,14 @@ function Uninstall-LabRdsCertificate
         return
     }
 
-    $thumbprints = foreach ($certFile in (Get-ChildItem -Path $lab.LabPath -Filter *.cer))
+    foreach ($certFile in (Get-ChildItem -Path $lab.LabPath -Filter *.cer))
     {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.Import($certFile.FullName)
-        'Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint
+        if ($cert.Thumbprint)
+        {
+            Remove-Item -Path ('Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint)
+        }
     }
-
-    Get-ChildItem -Path $thumbprints | Remove-Item
 }
 #endregion
