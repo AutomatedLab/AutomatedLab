@@ -6,11 +6,12 @@
 ### Enhancements
 
 - Parameter ReferenceDiskSizeInGB now works by created additional reference disks with different sizes (Fixes #862)
+- AutomatedLabTest updated to use Pester V5
 - Build Agent role can now get Capabilities through its role definition
   - New key Capabilities which contains a hashtable (within the realms of what is possible with Azure DevOps)
 - New cmdlet Get-LabTfsParameter to retrieve standard parameter dictionary
   which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
-
+  
 ### Bug Fixes
 
 ## 5.21.0 - 2020-05-26

@@ -1,15 +1,7 @@
-﻿param
-(
-    [Parameter(Mandatory)]
-    [AutomatedLab.Lab]
-    $Lab
-)
-
-Describe "$($Lab.Name) CaRoot" -Tag CaRoot {
-
-    Context "Role deployment successful" {
-        It "Should return the correct amount of machines" {
-            (Get-LabVm -Role CaRoot).Count | Should -Be $Lab.Machines.Where({$_.Roles.Name -contains 'CaRoot'}).Count
+Describe "[$($(Get-Lab).Name)] CaRoot" -Tag CaRoot {
+Context "Role deployment successful" {
+        It "[CaRoot] Should return the correct amount of machines" {
+            (Get-LabVm -Role CaRoot).Count | Should -Be $(Get-Lab).Machines.Where({$_.Roles.Name -contains 'CaRoot'}).Count
         }
 
         foreach ($vm in (Get-LabVM -Role CaRoot))
@@ -22,3 +14,4 @@ Describe "$($Lab.Name) CaRoot" -Tag CaRoot {
         }
     }
 }
+
