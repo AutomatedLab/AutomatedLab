@@ -33,20 +33,17 @@ if ($TestGeneral)
 	foreach ($file in (Get-ChildItem "$PSScriptRoot\general" | Where-Object Name -like "*.Tests.ps1"))
 	{
 		Write-PSFMessage -Level Significant -Message "  Executing <c='em'>$($file.Name)</c>"
-		$results = Invoke-Pester -Script $file.FullName -Show $Show -PassThru
-		foreach ($result in $results)
+		$results = Invoke-Pester -Path $file.FullName -Output $Show -PassThru
+		$totalRun += $results.TotalCount
+		$totalFailed += $results.FailedCount
+		foreach ($result in $results.Failed)
 		{
-			$totalRun += $result.TotalCount
-			$totalFailed += $result.FailedCount
-			$result.TestResult | Where-Object { -not $_.Passed } | ForEach-Object {
-				$name = $_.Name
-				$testresults += [pscustomobject]@{
-					Describe = $_.Describe
-					Context  = $_.Context
-					Name	 = "It $name"
-					Result   = $_.Result
-					Message  = $_.FailureMessage
-				}
+			$testresults += [pscustomobject]@{
+				Describe = $result.Block.Path[1]
+				Context  = $result.Block.Path[0]
+				Name	 = $result.Block.Name
+				Result   = $result.Result
+				Message  = $result.ErrorRecord.Exception.Message
 			}
 		}
 	}
@@ -63,20 +60,17 @@ Write-PSFMessage -Level Important -Message "Proceeding with individual tests"
 		if ($file.Name -like $Exclude) { continue }
 		
 		Write-PSFMessage -Level Significant -Message "  Executing $($file.Name)"
-		$results = Invoke-Pester -Script $file.FullName -Show $Show -PassThru
-		foreach ($result in $results)
+		$results = Invoke-Pester -Path $file.FullName -Output $Show -PassThru
+		$totalRun += $results.TotalCount
+		$totalFailed += $results.FailedCount
+		foreach ($result in $results.Failed)
 		{
-			$totalRun += $result.TotalCount
-			$totalFailed += $result.FailedCount
-			$result.TestResult | Where-Object { -not $_.Passed } | ForEach-Object {
-				$name = $_.Name
-				$testresults += [pscustomobject]@{
-					Describe = $_.Describe
-					Context  = $_.Context
-					Name	 = "It $name"
-					Result   = $_.Result
-					Message  = $_.FailureMessage
-				}
+			$testresults += [pscustomobject]@{
+				Describe = $result.Block.Path[1]
+				Context  = $result.Block.Path[0]
+				Name	 = $result.Block.Name
+				Result   = $result.Result
+				Message  = $result.ErrorRecord.Exception.Message
 			}
 		}
 	}
