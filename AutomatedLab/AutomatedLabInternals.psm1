@@ -586,7 +586,7 @@ function Get-LabInternetFile
             $argumentList += if ($NoDisplay) {$true} else {$false}
             $argumentList += if ($Force) {$true} else {$false}
 
-            $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
         else
         {
@@ -759,6 +759,10 @@ function Get-LabSourcesLocationInternal
 
         Get-PSFConfigValue AutomatedLab.LabSourcesLocation
     }
+    elseif (($defaultEngine -eq 'HyperV' -or $Local) -and (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+    {
+        Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation
+    }
     elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
         $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
@@ -893,16 +897,7 @@ function Update-LabSysinternalsTools
                 Start-Sleep -Seconds 1
                 
                 # Download Lab Sources
-                $labSources = Get-LabSourcesLocation -Local
-                if ($null -ne $labSources -and -not $($IsLinux -or $IsMacOs))
-                {
-                    $drive = ($labSources -split ':')[0]
-                    $null = New-LabSourcesFolder -DriveLetter $drive -Force -ErrorAction SilentlyContinue
-                }
-                elseif ($null -ne $labSources -and ($IsLinux -or $IsMacOs))
-                {
-                    $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
-                }
+                $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
 
                 # Download SysInternals suite
 

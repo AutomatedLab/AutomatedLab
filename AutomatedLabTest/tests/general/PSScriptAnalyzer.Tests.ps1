@@ -4,15 +4,15 @@ Param (
 	$SkipTest,
 	
 	[string[]]
-	$CommandPath = @("$PSScriptRoot\..\..\functions", "$PSScriptRoot\..\..\internal\functions")
+	$CommandPath 
 )
 
 if ($SkipTest) { return }
 
-$list = New-Object System.Collections.ArrayList
+$global:list = New-Object System.Collections.ArrayList
 
 Describe 'Invoking PSScriptAnalyzer against commandbase' {
-	$commandFiles = Get-ChildItem -Path $CommandPath -Recurse | Where-Object Name -like "*.ps1"
+	$commandFiles = Get-ChildItem -Path @("$PSScriptRoot\..\..\functions", "$PSScriptRoot\..\..\internal\functions") -Recurse | Where-Object Name -like "*.ps1"
 	$scriptAnalyzerRules = Get-ScriptAnalyzerRule
 	
 	foreach ($file in $commandFiles)
@@ -25,13 +25,13 @@ Describe 'Invoking PSScriptAnalyzer against commandbase' {
 				It "Should pass $rule" {
 					If ($analysis.RuleName -contains $rule)
 					{
-						$analysis | Where-Object RuleName -EQ $rule -outvariable failures | ForEach-Object { $list.Add($_) }
+						$analysis | Where-Object RuleName -EQ $rule -outvariable failures | ForEach-Object { $global:list.Add($_) }
 						
-						1 | Should Be 0
+						1 | Should -Be 0
 					}
 					else
 					{
-						0 | Should Be 0
+						0 | Should -Be 0
 					}
 				}
 			}
@@ -39,4 +39,4 @@ Describe 'Invoking PSScriptAnalyzer against commandbase' {
 	}
 }
 
-$list | Out-Default
+$global:list | Out-Default
