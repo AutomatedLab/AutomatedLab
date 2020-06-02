@@ -1181,7 +1181,7 @@ function Connect-LabVM
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
+            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)" /f
 
             Start-Sleep -Seconds 5 #otherwise credentials get deleted too quickly
 
@@ -1192,7 +1192,7 @@ function Connect-LabVM
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($machine.Name)"
+            mstsc.exe "/v:$($machine.Name)" /f
 
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
 
