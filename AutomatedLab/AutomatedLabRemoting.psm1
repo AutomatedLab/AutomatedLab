@@ -1108,7 +1108,8 @@ function Install-LabRdsCertificate
         Get-ChildItem -Path 'Cert:\LocalMachine\Remote Desktop' | Export-Certificate -FilePath C:\$env:COMPUTERNAME.cer -Type CERT -Force
     }
 
-    $tmp = $lab.LabPath
+    $tmp = Join-Path -Path $lab.LabPath -ChildPath Certificates
+    if (-not (Test-Path -Path $tmp)) { $null = New-Item -ItemType Directory -Path $tmp }
     foreach ($session in (New-LabPSSession -ComputerName $machines))
     {
         $fPath = Join-Path -Path $tmp -ChildPath "$($session.LabMachineName).cer"
@@ -1130,7 +1131,7 @@ function Uninstall-LabRdsCertificate
         return
     }
 
-    foreach ($certFile in (Get-ChildItem -File -Path $lab.LabPath -Filter *.cer))
+    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer))
     {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.Import($certFile.FullName)
