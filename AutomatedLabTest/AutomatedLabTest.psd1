@@ -26,14 +26,16 @@
     FunctionsToExport      = @(
         'Test-LabDeployment',
         'Import-LabTestResult',
-        'Invoke-LabPester')
+        'Invoke-LabPester',
+        'New-LabPesterTest'
+    )
 
     FileList               = @('AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
 
     PrivateData            = @{ }
 
     RequiredModules        = @(
-        @{ModuleName='Pester'; ModuleVersion='4.9.0'; }
+        @{ ModuleName='Pester'; ModuleVersion='5.0.0'; }
         @{ ModuleName='PSFramework'; ModuleVersion='1.1.59' }
     )
 }

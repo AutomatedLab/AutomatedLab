@@ -369,9 +369,9 @@ function Add-LWAzureLoadBalancedPort
     $nsg = Get-AzNetworkSecurityGroup -Name "$($lab.Name)nsg" -ResourceGroupName $resourceGroup
 
     $rule = $nsg | Get-AzNetworkSecurityRuleConfig -Name NecessaryPorts
-    if (-not $rule.DestinationPortRange.Contains($DestinationPort))
+    if (-not $rule.DestinationPortRange.Contains($Port))
     {
-        $rule.DestinationPortRange.Add($DestinationPort)
+        $rule.DestinationPortRange.Add($Port)
         
         # Update the NSG.
         $nsg = $nsg | Set-AzNetworkSecurityRuleConfig -Name $rule.Name -DestinationPortRange $rule.DestinationPortRange -Protocol $rule.Protocol -SourcePortRange $rule.SourcePortRange -SourceAddressPrefix $rule.SourceAddressPrefix -DestinationAddressPrefix $rule.DestinationAddressPrefix -Access Allow -Priority $rule.Priority -Direction $rule.Direction
