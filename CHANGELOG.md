@@ -12,6 +12,7 @@
 - New cmdlet Get-LabTfsParameter to retrieve standard parameter dictionary
   which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
 - Connect-LabVM uses full screen mode by default
+- Fixed #561
   
 ### Bug Fixes
 
