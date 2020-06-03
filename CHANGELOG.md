@@ -8,6 +8,7 @@
 - Added NuGet custom role that uses open source NuGet server package
 - AL now deploys ARM templates instead of individual resources
 - Compatibility with Az module 4.1.0. The minimum version of Az is now 4.1.0
+- Fixed #561
 
 ### Bug Fixes
 
