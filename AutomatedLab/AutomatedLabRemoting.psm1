@@ -1089,3 +1089,58 @@ function Remove-LabCimSession
     Write-LogFunctionExit
 }
 #endregion
+
+#region Install-LabRdsCertificate
+function Install-LabRdsCertificate
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All | Where-Object -Property OperatingSystemType -eq 'Windows'
+
+    Invoke-LabCommand -ComputerName $machines -ActivityName 'Exporting RDS certs' -ScriptBlock {
+        Get-ChildItem -Path 'Cert:\LocalMachine\Remote Desktop' | Export-Certificate -FilePath C:\$env:COMPUTERNAME.cer -Type CERT -Force
+    }
+
+    $tmp = Join-Path -Path $lab.LabPath -ChildPath Certificates
+    if (-not (Test-Path -Path $tmp)) { $null = New-Item -ItemType Directory -Path $tmp }
+    foreach ($session in (New-LabPSSession -ComputerName $machines))
+    {
+        $fPath = Join-Path -Path $tmp -ChildPath "$($session.LabMachineName).cer"
+        Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
+        $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
+    }
+}
+#endregion
+
+#region Uninstall-LabRdsCertificate
+function Uninstall-LabRdsCertificate
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer))
+    {
+        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $cert.Import($certFile.FullName)
+        if ($cert.Thumbprint)
+        {
+            Get-Item -Path ('Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint) | Remove-Item
+        }
+
+        $certFile | Remove-Item
+    }
+}
+#endregion

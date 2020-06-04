@@ -1139,7 +1139,7 @@ function Get-LabTfsParameter
     $bwRole = $tfsVm.Roles | Where-Object -Property Name -eq TfsBuildWorker
     $initialCollection = 'AutomatedLab'
     $tfsPort = 8080
-    $tfsInstance = $tfsVm.FQDN
+    $tfsInstance = if (-not $bwRole) {$tfsVm.FQDN} else {$bwRole.Properties.TfsServer}
 
     if ($role -and $role.Properties.ContainsKey('Port'))
     {

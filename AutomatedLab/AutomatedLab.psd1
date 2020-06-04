@@ -67,6 +67,8 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
+        'Install-LabRdsCertificate',
+        'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
