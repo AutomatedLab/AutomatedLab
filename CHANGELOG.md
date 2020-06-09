@@ -13,6 +13,11 @@
   which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
 - Connect-LabVM uses full screen mode by default
 - Fixed #561
+- Added CM-2002 CustomRole
+  - Uses Configuration Manager 2002 baseline media
+  - Supports Technical Preview (including updating to the latest release)
+- Updated CM-1902 CustomRole
+  - Max -CMVersion is now 1910 (use CM-2002 CustomRole if you want newer), formatting
   
 ### Bug Fixes
 

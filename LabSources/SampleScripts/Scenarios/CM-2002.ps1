@@ -1,8 +1,8 @@
 <#
 .SYNOPSIS
-    An AutomatedLab script for Configuration Manager 1902 with support for installing updates.
+    An AutomatedLab script for Configuration Manager 2002 with support for installing updates.
 .DESCRIPTION
-    An AutomatedLab script for Configuration Manager 1902 with support for installing updates.
+    An AutomatedLab script for Configuration Manager 2002 with support for installing updates.
 .PARAMETER LabName
     The name of the AutomatedLab lab created by this script.
 .PARAMETER VMPath
@@ -28,8 +28,11 @@
     Configuration Manager site name.
 .PARAMETER CMVersion
     The target Configuration version you wish to install.
-    This script first installs 1902 baseline and then installs updates. If -CMVersion is "1902" then the update process is skipped.
-    Acceptable values are "1902", "1906" or "1910".
+    This script first installs 2002 baseline and then installs updates. If -CMVersion is "2002" then the update process is skipped.
+    Acceptable values are controlled via the parameter attribute ValidateSet(), meaning you can tab complete the options available.
+.PARAMETER Branch
+    Specify the branch of Configuration Manager you want to install: "CB" (Current Branch) or "TP" (Technical Preview).
+    If you specify Technical Preview, note that the -NoInternetAccess switch cannot be used.
 .PARAMETER OSVersion
     Operating System version for all VMs in this lab.
     The names match those that Get-WindowsImage returns by property "ImageName".
@@ -53,8 +56,12 @@
     The path to a SQL Server 2017 ISO used for SQL Server 2017 installation. Omitting this parameter downloads the evaluation version of SQL Server 2017 (first downloads a small binary in to LabSources\SoftwarePackages, which the binary then downloads the ISO in to LabSources\ISOs)
 .PARAMETER LogViewer
     The default .log and .lo_ file viewer for only the Configuration Manager server.
-    OneTrace was introduced in 1906 so if -LogViewer is "OneTrace" and -CMVersion is "1902" or -NoInternetAccess is specified, then -LogViewer will revert to "CMTrace".
-    Acceptable values are "CMTrace" or "OneTrace".
+    OneTrace was introduced in 1906 so if -LogViewer is "OneTrace" and -CMVersion is "2002" or -NoInternetAccess is specified, then -LogViewer will revert to "CMTrace".
+    Acceptable values are controlled via the parameter attribute ValidateSet(), meaning you can tab complete the options available.
+.PARAMETER ADKDownloadURL
+    URL to the ADK executable.
+.PARAMETER WinPEDownloadURL
+    URL to the WinPE addon executable.
 .PARAMETER SkipDomainCheck
     While there's nothing technically stopping you from installing Active Directory using a domain that already exists and is out of your control, you probably shouldn't. So I've implemented blocks in case -Domain does resolve.
     Specifying this switch skips the check and continues to build the lab.
@@ -82,7 +89,7 @@
 .PARAMETER AutoLogon
     Specify this to enable auto logon for all VMs in this lab.
 .EXAMPLE
-    PS C:\> .\CM-1902.ps1 
+    PS C:\> .\CM-2002.ps1 
 
     Builds a lab with the following properties:
         - 1x AutomatedLab:
@@ -108,10 +115,10 @@
                 - Max memory: 8GB
                 - Disks: 1 x 100GB (OS, dynamic), 1x 30GB (SQL, dynamic), 1x 50GB (DATA, dynamic)
                 - Roles: "SQLServer2017"
-                - CustomRoles: "CM-1902"
+                - CustomRoles: "CM-2002"
                 - SiteCode: "P01"
                 - SiteName: "CMLab01"
-                - Version: "1910"
+                - Version: "Latest"
                 - LogViewer: "OneTrace"
                 - Site system roles: MP, DP, SUP (inc WSUS), RSP, EP
 
@@ -123,7 +130,7 @@
             - Tools directory
             - Support Center
 .EXAMPLE
-    PS C:\> .\CM-1902.ps1 -ExcludePostInstallations
+    PS C:\> .\CM-2002.ps1 -ExcludePostInstallations
 
     Builds a lab with the the same properties as the first example, with the exception that it does not install Configuration Manager. 
     
@@ -133,14 +140,13 @@
 
     See the next example on how to trigger the remainder of the install tasks.
 .EXAMPLE
-    PS C:\> .\CM-1902.ps1 -SkipDomainCheck -SkipLabNameCheck -SkipHostnameCheck -PostInstallations
+    PS C:\> .\CM-2002.ps1 -SkipDomainCheck -SkipLabNameCheck -SkipHostnameCheck -PostInstallations
 
-    Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-1902 scripts on CM01.
+    Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-2002 scripts on CM01.
 .NOTES
     Author:       Adam Cook (@codaamok)
-    Date created: 2019-01-05
+    Date created: 2020-06-03
     Source:       https://github.com/codaamok/PoSH/AutomatedLab
-    TODO: Convert throw to ThrowTerminatingError() method
 #>
 #Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V"
 [Cmdletbinding()]
@@ -156,7 +162,7 @@ Param (
         elseif (-not ($_ | Test-Path -PathType Container)) { 
             throw "Value must be a directory, not a file" 
         }
-        return $true
+        $true
     })]
     [String]$VMPath,
 
@@ -190,8 +196,12 @@ Param (
     [String]$SiteName = $LabName,
 
     [Parameter()]
-    [ValidateSet("1902","1906","1910")]
-    [String]$CMVersion = "1910",
+    [ValidateSet("2002","Latest")]
+    [String]$CMVersion = "Latest",
+
+    [Parameter()]
+    [ValidateSet("CB","TP")]
+    [String]$Branch = "CB",
 
     [Parameter()]
     [ValidateSet(
@@ -212,14 +222,19 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt 0) { throw "Invalid number of CPUs" }; return $true
+        if ($_ -lt 0) { throw "Invalid number of CPUs" }; $true
     })]
     [Int]$DCCPU = 2,
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { throw "Memory for VM must be more than 128MB and less than 128GB" }; $true
-        if ($_ -lt [Double]1GB) { throw "Please specify more than 1GB of memory" }
+        if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { 
+            throw "Memory for VM must be more than 128MB and less than 128GB" 
+        }
+        if ($_ -lt [Double]1GB) { 
+            throw "Please specify more than 1GB of memory" 
+        }
+        $true
     })]
     [Double]$DCMemory = 2GB,
 
@@ -229,7 +244,7 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt 0) { throw "Invalid number of CPUs" }; return $true
+        if ($_ -lt 0) { throw "Invalid number of CPUs" }; $true
     })]
     [Int]$CMCPU = 4,
 
@@ -237,7 +252,7 @@ Param (
     [ValidateScript({
         if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { throw "Memory for VM must be more than 128MB and less than 128GB" }
         if ($_ -lt [Double]1GB) { throw "Please specify more than 1GB of memory" }
-        return $true
+        $true
     })]
     [Double]$CMMemory = 8GB,
 
@@ -249,13 +264,21 @@ Param (
         elseif (-not $_.StartsWith($labSources)) {
             throw "Please move SQL ISO to your Lab Sources folder '$labSources\ISOs'"
         }
-        return $true
+        $true
     })]
     [String]$SQLServer2017ISO,
 
     [Parameter()]
     [ValidateSet("CMTrace", "OneTrace")]
     [String]$LogViewer = "OneTrace",
+
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [String]$ADKDownloadUrl = "https://go.microsoft.com/fwlink/?linkid=2086042",
+
+    [Parameter()]
+    [ValidateNotNullOrEmpty()]
+    [String]$WinPEDownloadURL = "https://go.microsoft.com/fwlink/?linkid=2087112",
 
     [Parameter()]
     [Switch]$SkipDomainCheck,
@@ -290,8 +313,8 @@ $NewLabDefinitionSplat = @{
     ErrorAction                 = "Stop"
 }
 if ($PSBoundParameters.ContainsKey("VMPath")) { 
-    $Path = Join-Path -Path $VMPath -ChildPath $LabName
-    $NewLabDefinitionSplat.Add("VMPath",$Path)
+    $Path = "{0}\{1}" -f $VMPath, $LabName
+    $NewLabDefinitionSplat["VMPath"] = $Path
 }
 New-LabDefinition @NewLabDefinitionSplat
 #endregion
@@ -301,7 +324,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:OperatingSystem' = $OSVersion
     'Add-LabMachineDefinition:DomainName'      = $Domain
     'Add-LabMachineDefinition:Network'         = $LabName
-    'Add-LabMachineDefinition:ToolsPath'       = "{0}\Tools" -f $labSources
+    'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
     'Add-LabMachineDefinition:MinMemory'       = 1GB
     'Add-LabMachineDefinition:Memory'          = 1GB
 }
@@ -315,7 +338,7 @@ if ($AutoLogon.IsPresent) {
 $DataDisk = "{0}-DATA-01" -f $CMHostname
 $SQLDisk = "{0}-SQL-01" -f $CMHostname
 
-$SQLConfigurationFile = Join-Path -Path $labSources -ChildPath "CustomRoles\CM-1902\ConfigurationFile-SQL.ini"
+$SQLConfigurationFile = "{0}\CustomRoles\CM-2002\ConfigurationFile-SQL.ini" -f $labSources
 #endregion
 
 #region Preflight checks
@@ -352,6 +375,9 @@ switch ($true) {
     ($NoInternetAccess.IsPresent -And $PSBoundParameters.ContainsKey("ExternalVMSwitchName")) {
         throw "Can not use -NoInternetAccess and -ExternalVMSwitchName together"
     }
+    ($NoInternetAccess.IsPresent -And $Branch -eq "TP") {
+        throw "Can not install Technical Preview with -NoInternetAccess"
+    }
     ((-not $NoInternetAccess.IsPresent) -And (Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
         throw ("Hyper-V virtual switch '{0}' does not exist" -f $ExternalVMSwitchName)
     }
@@ -374,7 +400,7 @@ if (-not $PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
     Write-ScreenInfo -Message "Downloading SQL Server 2017 Evaluation" -TaskStart
 
     $URL = "https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLServer2017-x64-ENU.iso"
-    $SQLServer2017ISO = Join-Path -Path $labSources -ChildPath "ISOs\SQLServer2017-x64-ENU.iso"
+    $SQLServer2017ISO = "{0}\ISOs\SQLServer2017-x64-ENU.iso" -f $labSources
 
     if (Test-Path $SQLServer2017ISO) {
         Write-ScreenInfo -Message ("SQL Server 2017 Evaluation ISO already exists, delete '{0}' if you want to download again" -f $SQLServer2017ISO)
@@ -403,17 +429,15 @@ if (-not $PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
 }
 #endregion
 
-#region Forcing site version to be 1902 if -NoInternetAccess is passed
-if ($NoInternetAccess.IsPresent -And $CMVersion -ne "1902") {
-    Write-ScreenInfo -Message "Switch -NoInternetAccess is passed therefore will not be able to update ConfigMgr, forcing target version to be '1902' to skip checking for updates later"
-    $CMVersion = "1902"
+#region Evaluate -CMVersion 
+if ($NoInternetAccess.IsPresent -And $CMVersion -ne "2002") {
+    Write-ScreenInfo -Message "Switch -NoInternetAccess is passed therefore will not be able to update ConfigMgr, forcing target version to be '2002' to skip checking for updates later"
+    $CMVersion = "2002"
 }
-#endregion
-
-#region Forcing log viewer to be CMTrace if $CMVersion -eq 1902
-if ($CMVersion -eq 1902 -and $LogViewer -eq "OneTrace") {
-    Write-ScreenInfo -Message "Setting LogViewer to 'CMTrace' as OneTrace is only available in 1906 or newer" -Type "Warning"
-    $LogViewer = "CMTrace"
+# Forcing site version to be latest for TP if -CMVersion is not baseline or latest
+if ($Branch -eq "TP" -And @("2002","Latest") -notcontains $CMVersion) {
+    Write-ScreenInfo -Message "-CMVersion should only be '2002 or 'Latest' for Technical Preview, forcing target version to be 'Latest'"
+    $CMVersion = "Latest"
 }
 #endregion
 
@@ -431,8 +455,8 @@ $NewLabNetworkAdapterDefinitionSplat = @{
 }
 
 if ($PSBoundParameters.ContainsKey("AddressSpace")) {
-    $AddLabVirtualNetworkDefinitionSplat.Add("AddressSpace", $AddressSpace)
-    $NewLabNetworkAdapterDefinitionSplat.Add("Ipv4Address", $AddressSpace)
+    $AddLabVirtualNetworkDefinitionSplat["AddressSpace"] = $AddressSpace
+    $NewLabNetworkAdapterDefinitionSplat["Ipv4Address"]  = $AddressSpace
 }
 
 Add-LabVirtualNetworkDefinition @AddLabVirtualNetworkDefinitionSplat
@@ -460,21 +484,32 @@ if ($ExcludePostInstallations.IsPresent) {
     Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName $DataDisk, $SQLDisk
 }
 else {
-    $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-1902" -Properties @{
-        CMSiteCode              = $SiteCode
-        CMSiteName              = $SiteName
-        CMBinariesDirectory     = "{0}\SoftwarePackages\CM1902" -f $labSources
-        CMPreReqsDirectory      = "{0}\SoftwarePackages\CMPreReqs" -f $labSources
-        CMProductId             = "Eval" # Can be "Eval" or a product key
-        Version                 = $CMVersion
-        AdkDownloadPath         = "{0}\SoftwarePackages\ADK" -f $labSources
-        WinPEDownloadPath       = "{0}\SoftwarePackages\WinPE" -f $labSources
-        LogViewer               = $LogViewer
-        SqlServerName           = $CMHostname
-        DoNotDownloadWMIEv2     = $DoNotDownloadWMIEv2.IsPresent.ToString()
-        AdminUser               = $AdminUser
-        AdminPass               = $AdminPass
+    $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-2002" -Properties @{
+        Branch              = $Branch
+        Version             = $CMVersion
+        CMSiteCode          = $SiteCode
+        CMSiteName          = $SiteName
+        CMBinariesDirectory = "{0}\SoftwarePackages\CM2002-{1}" -f $labSources, $Branch
+        CMPreReqsDirectory  = "{0}\SoftwarePackages\CM2002-PreReqs-{1}" -f $labSources, $Branch
+        CMProductId         = "EVAL" # Can be "Eval" or a product key
+        CMDownloadURL       = switch ($Branch) {
+            "CB" { 
+                "https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe"
+            }
+            "TP" { 
+                "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2002.exe"
+            }
+        }
+        ADKDownloadURL      = $ADKDownloadUrl
+        ADKDownloadPath     = "{0}\SoftwarePackages\ADK" -f $labSources
+        WinPEDownloadURL    = $WinPEDownloadURL
+        WinPEDownloadPath   = "{0}\SoftwarePackages\WinPE" -f $labSources
+        LogViewer           = $LogViewer
+        DoNotDownloadWMIEv2 = $DoNotDownloadWMIEv2.IsPresent.ToString()
+        AdminUser           = $AdminUser
+        AdminPass           = $AdminPass
     }
+
     Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName $DataDisk, $SQLDisk -PostInstallationActivity $CMRole
 }
 #endregion
