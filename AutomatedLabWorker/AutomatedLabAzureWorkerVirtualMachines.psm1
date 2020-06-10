@@ -1210,6 +1210,8 @@ function Initialize-LWAzureVM
         {
             $geoId = 244 #default is US
         }
+        
+        Copy-LabALCommon -ComputerName $Machine
 
         if (-not (Test-Path 'C:\AL'))
         {
