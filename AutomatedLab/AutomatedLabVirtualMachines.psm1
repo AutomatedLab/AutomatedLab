@@ -998,6 +998,11 @@ function Remove-LabVM
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
 
+        if (Get-LabConfigurationItem -Name SkipHostFileModification)
+        {
+            $computerName = $machine.IPV4Address
+        }
+
         <#
                 removed 161023, might not be required
                 if ((Get-LabVMStatus -ComputerName $machine) -eq 'Unknown')
@@ -2122,16 +2127,7 @@ function Checkpoint-LabVM
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
@@ -2186,16 +2182,7 @@ function Restore-LabVMSnapshot
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine '$machine'"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
