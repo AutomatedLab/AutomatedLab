@@ -2417,7 +2417,7 @@ function Copy-LabALCommon
         Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
     }
 
-    $coreChild = @($childPath) -eq 'core'ithug
+    $coreChild = @($childPath) -eq 'core'
     $fullChild = @($childPath) -eq 'full'
     $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
 
