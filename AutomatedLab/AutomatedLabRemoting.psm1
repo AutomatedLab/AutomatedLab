@@ -110,10 +110,16 @@ function New-LabPSSession
             }
             elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
             {
+                # DoNotUseGetHostEntryInNewLabPSSession is used when existing DNS is possible
+                # SkipHostFileModification is used when the local hosts file should not be used
                 $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
+                }
+                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                {
+                    $name = $m.IpV4Address
                 }
 
                 if ($name)
@@ -345,6 +351,10 @@ function Remove-LabPSSession
             if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {
                 $param.Add('ComputerName', $m.Name)
+            }
+            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
             }
             else
             {
@@ -860,6 +870,10 @@ function New-LabCimSession
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
                 }
+                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                {
+                    $name = $m.IpV4Address
+                }
 
                 if ($name)
                 {
@@ -1070,6 +1084,10 @@ function Remove-LabCimSession
             if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {
                 $param.Add('ComputerName', $m.Name)
+            }
+            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
             }
             else
             {
