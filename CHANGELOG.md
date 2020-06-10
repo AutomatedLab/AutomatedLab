@@ -13,6 +13,7 @@
   which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
 - Connect-LabVM uses full screen mode by default
 - Fixed #561
+- Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
   
 ### Bug Fixes
 
