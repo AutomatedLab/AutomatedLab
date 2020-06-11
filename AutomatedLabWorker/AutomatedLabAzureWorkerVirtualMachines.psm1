@@ -1210,8 +1210,6 @@ function Initialize-LWAzureVM
         {
             $geoId = 244 #default is US
         }
-        
-        Copy-LabALCommon -ComputerName $Machine
 
         if (-not (Test-Path 'C:\AL'))
         {
@@ -1330,7 +1328,6 @@ function Initialize-LWAzureVM
     $initScriptFile = New-TemporaryFile
     $initScript.ToString() | Set-Content -Path $initScriptFile -Force
 
-
     # Configure AutoShutdown
     if ($lab.AzureSettings.AutoShutdownTime)
     {
@@ -1372,6 +1369,7 @@ function Initialize-LWAzureVM
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
     Copy-LabFileItem -Path (Get-ChildItem -Path "$((Get-Module -Name AutomatedLab)[0].ModuleBase)\Tools\HyperV\*") -DestinationFolderPath /AL -ComputerName $Machine -UseAzureLabSourcesOnAzureVm:$false
+    Copy-LabALCommon -ComputerName $Machine
     Write-ScreenInfo -Message 'Finished' -TaskEnd
 
     Write-ScreenInfo -Message 'Stopping all new machines except domain controllers'
