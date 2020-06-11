@@ -3222,7 +3222,8 @@ function Get-LabPostInstallationActivity
             {
                 foreach ($kvp in $Properties.GetEnumerator())
                 {
-                    $activity.Properties.Add($kvp.Key, $kvp.Value)
+                    [object[]]$toList = $kvp.Value
+                    $activity.Properties.Add($kvp.Key, $toList )
                 }
             }
         }

@@ -14,6 +14,7 @@
 - Connect-LabVM uses full screen mode by default
 - Fixed #561
 - Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
+- Custom Roles can now have any parameter type they would like, fixing #925
   
 ### Bug Fixes
 

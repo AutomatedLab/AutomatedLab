@@ -12,9 +12,8 @@
     [uint16]
     $Port = 443,
 
-    [ValidateSet('True', 'False')]
-    [string]
-    $EnableDevMode = 'False'
+    [bool]
+    $EnableDevMode
 )
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -44,7 +43,7 @@ $arguments = @(
     "SME_PORT=$Port"
 )
 
-if ([Convert]::ToBoolean($EnableDevMode))
+if ($EnableDevMode)
 {
     $arguments += 'DEV_MODE=1'
 }
