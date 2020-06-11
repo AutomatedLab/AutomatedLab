@@ -18,6 +18,8 @@
   - Supports Technical Preview (including updating to the latest release)
 - Updated CM-1902 CustomRole
   - Max -CMVersion is now 1910 (use CM-2002 CustomRole if you want newer), formatting
+- Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
+- Custom Roles can now have any parameter type they would like, fixing #925
   
 ### Bug Fixes
 

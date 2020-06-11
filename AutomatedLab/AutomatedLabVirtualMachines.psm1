@@ -753,6 +753,7 @@ function Wait-LabVM
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
                     Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
                     Enable-LabAutoLogon -ComputerName $ComputerName
+                    Copy-LabALCommon -ComputerName $ComputerName
                 }
 
                 if ($DoNotUseCredSsp -and ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp)
@@ -998,6 +999,11 @@ function Remove-LabVM
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
 
+        if (Get-LabConfigurationItem -Name SkipHostFileModification)
+        {
+            $computerName = $machine.IPV4Address
+        }
+
         <#
                 removed 161023, might not be required
                 if ((Get-LabVMStatus -ComputerName $machine) -eq 'Unknown')
@@ -1188,6 +1194,17 @@ function Connect-LabVM
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
         }
+        elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+        {
+            $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.IpAddress.ipaddress.AddressAsString, $cred.UserName, $cred.GetNetworkCredential().Password
+            Invoke-Expression $cmd | Out-Null
+            mstsc.exe "/v:$($machine.IpAddress.ipaddress.AddressAsString)" /f
+
+            Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
+
+            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $machine.IpAddress.ipaddress.AddressAsString
+            Invoke-Expression $cmd | Out-Null
+        }
         else
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
@@ -1196,7 +1213,7 @@ function Connect-LabVM
 
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
 
-            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
+            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $machine.Name
             Invoke-Expression $cmd | Out-Null
         }
     }
@@ -2111,16 +2128,7 @@ function Checkpoint-LabVM
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
@@ -2175,16 +2183,7 @@ function Restore-LabVMSnapshot
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine '$machine'"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
@@ -2392,3 +2391,51 @@ function Get-LabMachineAutoShutdown
     }
 }
 #endregion
+
+#region Copy-LabALCommon
+function Copy-LabALCommon
+{
+    [CmdletBinding()]
+    param
+    ( 
+        [Parameter(Mandatory)]
+        [string[]]
+        $ComputerName
+    )
+    
+    $childPath = foreach ($vm in $ComputerName)
+    {
+        Invoke-LabCommand -ScriptBlock {
+            if ($PSEdition -eq 'Core')
+            {
+                'core'
+            } else
+            {
+                'full'
+            }
+        } -ComputerName $vm -NoDisplay -PassThru |
+        Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
+    }
+
+    $coreChild = @($childPath) -eq 'core'
+    $fullChild = @($childPath) -eq 'full'
+    $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
+
+    if ($coreChild -and @(Invoke-LabCommand -ScriptBlock{
+                Get-Item -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+    } -ComputerName $coreChild.ComputerName -NoDisplay -PassThru).Count -ne $coreChild.Count)
+    {
+        $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
+    }
+
+    if ($fullChild -and @(Invoke-LabCommand -ScriptBlock {
+                Get-Item -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+    } -ComputerName $fullChild.ComputerName -NoDisplay -PassThru).Count -ne $fullChild.Count)
+    {
+        $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
+    }
+}
+#endregion Copy-LabALCommon
+ 

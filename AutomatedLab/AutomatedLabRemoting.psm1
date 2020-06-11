@@ -110,10 +110,16 @@ function New-LabPSSession
             }
             elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
             {
+                # DoNotUseGetHostEntryInNewLabPSSession is used when existing DNS is possible
+                # SkipHostFileModification is used when the local hosts file should not be used
                 $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
+                }
+                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                {
+                    $name = $m.IpV4Address
                 }
 
                 if ($name)
@@ -346,6 +352,10 @@ function Remove-LabPSSession
             {
                 $param.Add('ComputerName', $m.Name)
             }
+            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
+            }
             else
             {
                 $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
@@ -572,7 +582,7 @@ function Invoke-LabCommand
                     {
                         if (-not $script:data) {$script:data = Get-Lab}
                         $hostStartScript = Get-Command -Name $hostStartPath
-                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties -ConvertValue
                         if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
                             $hostStartParam['ComputerName'] = $machine.Name
@@ -860,6 +870,10 @@ function New-LabCimSession
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
                 }
+                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                {
+                    $name = $m.IpV4Address
+                }
 
                 if ($name)
                 {
@@ -1070,6 +1084,10 @@ function Remove-LabCimSession
             if (Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession)
             {
                 $param.Add('ComputerName', $m.Name)
+            }
+            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
             }
             else
             {
