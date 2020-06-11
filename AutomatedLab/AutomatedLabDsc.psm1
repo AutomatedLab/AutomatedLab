@@ -432,7 +432,11 @@ function Invoke-LabDscConfiguration
             }
 
             Push-Location -Path Function:
-            $configuration | New-Item
+            if ($configuration | Get-Item -ErrorAction SilentlyContinue)
+            {
+                $configuration | Remove-Item
+            }
+            $configuration | New-Item -Force
             Pop-Location
 
             Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
