@@ -1122,10 +1122,24 @@ function Install-LabRdsCertificate
 
     $machines = Get-LabVM -All | Where-Object -Property OperatingSystemType -eq 'Windows'
 
-    Invoke-LabCommand -ComputerName $machines -ActivityName 'Exporting RDS certs' -ScriptBlock {
-        Get-ChildItem -Path 'Cert:\LocalMachine\Remote Desktop' | Export-Certificate -FilePath C:\$env:COMPUTERNAME.cer -Type CERT -Force
+    $jobs = foreach ($machine in $machines)
+    {
+        Invoke-LabCommand -ComputerName $machines -ActivityName 'Exporting RDS certs' -ScriptBlock {
+            [string[]]$SANs = $machine.FQDN
+            if ($machine.HostType -eq 'Azure' -and (Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue))
+            {
+                $SANs += $machine.AzureConnectionInfo.DnsName
+            }
+            
+            $cert = New-SelfSignedCertificate -Subject "CN=$($machine.Name)" -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\my' -Type SSLServerAuthentication
+            $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices
+            $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
+            $rdsSettings | Set-CimInstance
+            $null = $cert | Export-Certificate -FilePath "C:\$($machine.Name).cer" -Type CERT -Force
+        } -Variable (Get-Variable machine) -AsJob -PassThru
     }
 
+    Wait-LWLabJob -Job $jobs -NoDisplay
     $tmp = Join-Path -Path $lab.LabPath -ChildPath Certificates
     if (-not (Test-Path -Path $tmp)) { $null = New-Item -ItemType Directory -Path $tmp }
     foreach ($session in (New-LabPSSession -ComputerName $machines))
