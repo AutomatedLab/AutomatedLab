@@ -51,7 +51,7 @@ This solution supports setting up virtual machines with the following products
 - Team Foundation Services 2018, Azure DevOps Server
 - Exchange 2013, 2016, 2019
 - System Center Orchestrator 2012
-- System Center Configuration Manager 1809
+- Microsoft Endpoint Manager Configuration Manager 1902 (and newer)
 - MDT
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016, 2019

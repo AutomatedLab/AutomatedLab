@@ -239,8 +239,8 @@ function Update-CMSite {
     #endregion
 
     #region Check $Version
-    if ($Version -eq "1902") {
-        Write-ScreenInfo -Message "Target verison is 1902, skipping updates"
+    if ($Version -eq "2002") {
+        Write-ScreenInfo -Message "Target verison is 2002, skipping updates"
         return
     }
     #endregion
@@ -290,9 +290,13 @@ function Update-CMSite {
             throw $ReceiveJobErr
         }
     }
-
-    $Update = $Update | Where-Object { $_.Name -like "*$Version*" }
-
+    if ($Version -eq "Latest") {
+        # https://github.com/PowerShell/PowerShell/issues/9185
+        $Update = $Update[0]
+    }
+    else {
+        $Update = $Update | Where-Object { $_.Name -like "*$Version*" }
+    }
     # Writing dot because of -NoNewLine in Wait-LWLabJob
     Write-ScreenInfo -Message "."
     Write-ScreenInfo -Message ("Found update: '{0}' {1} ({2})" -f $Update.Name, $Update.FullVersion, $Update.PackageGuid)
@@ -485,8 +489,6 @@ function Update-CMSite {
 
 }
 #endregion
-
-#Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 
 Write-ScreenInfo -Message "Starting site update process" -TaskStart
 Update-CMSite -CMServerName $ComputerName -CMSiteCode $CMSiteCode -Version $Version

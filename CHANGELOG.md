@@ -13,6 +13,13 @@
   which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
 - Connect-LabVM uses full screen mode by default
 - Fixed #561
+- Added CM-2002 CustomRole
+  - Uses Configuration Manager 2002 baseline media
+  - Supports Technical Preview (including updating to the latest release)
+  - -ExternalVMSwitchName accepts the "Default Switch"
+- Updated CM-1902 CustomRole
+  - -ExternalVMSwitchName accepts the "Default Switch"
+  - Max -CMVersion is now 1910 (use CM-2002 CustomRole if you want newer), formatting
 - Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
 - Custom Roles can now have any parameter type they would like, fixing #925
 - Install-Lab imports the VMs RDP certificates and Remove-Lab removes them to enable seamless Connect-LabVm
