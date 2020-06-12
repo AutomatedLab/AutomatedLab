@@ -19,7 +19,8 @@
     The IP subnet this lab uses, accepted syntax for the value is slash notation, for example 192.168.1.0/24.
     Omitting this parameter forces AutomatedLab to find new subnets by simply increasing 192.168.1.0 until a free network is found. Free means that there is no virtual network switch with an IP address in the range of the subnet and the subnet is not routable. If these conditions are not met, the subnet is incremented again.
 .PARAMETER ExternalVMSwitchName
-    The name of the External Hyper-V switch. The given name must be of an existing Hyper-V switch and it must be of 'External' type.
+    The name of the External Hyper-V switch. The given name must be of an existing Hyper-V switch and it must be of 'External' type. 
+    "Default Switch" is also an acceptable value, this way the lab can still form an independent network and have access to the host's network using NAT.
     If you do not want this lab to have physical network access, use the -NoInternetAccess switch.
     You cannot use this parameter with -NoInternetAccess.
 .PARAMETER SiteCode
@@ -95,12 +96,12 @@
         - 1x AutomatedLab:
             - Name: "CMLab01"
             - VMPath: \<drive\>:\AutomatedLab-VMs where \<drive\> is the fastest drive available
+            - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
+            - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
         - 1x Active Directory domain:
             - Domain: "sysmansquad.lab"
             - Username: "Administrator"
             - Password: "Somepass1"
-            - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
-            - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
         - 2x virtual machines:
             - Operating System: Windows Server 2019 (Desktop Experience)
             - 1x Domain Controller:
@@ -377,6 +378,9 @@ switch ($true) {
     }
     ($NoInternetAccess.IsPresent -And $Branch -eq "TP") {
         throw "Can not install Technical Preview with -NoInternetAccess"
+    }
+    ((-not $NoInternetAccess.IsPresent) -And $ExternalVMSwitchName -eq 'Default Switch') { 
+        break
     }
     ((-not $NoInternetAccess.IsPresent) -And (Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
         throw ("Hyper-V virtual switch '{0}' does not exist" -f $ExternalVMSwitchName)
