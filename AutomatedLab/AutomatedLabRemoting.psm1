@@ -1124,7 +1124,7 @@ function Install-LabRdsCertificate
 
     $jobs = foreach ($machine in $machines)
     {
-        Invoke-LabCommand -ComputerName $machines -ActivityName 'Exporting RDS certs' -ScriptBlock {
+        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -ScriptBlock {
             [string[]]$SANs = $machine.FQDN
             if ($machine.HostType -eq 'Azure' -and (Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue))
             {
