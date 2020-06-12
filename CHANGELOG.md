@@ -19,6 +19,8 @@
   
 ### Bug Fixes
 
+- Build Agent role on Azure can now again connect to its server (Fixes #938)
+
 ## 5.21.0 - 2020-05-26
 
 ### Enhancements
