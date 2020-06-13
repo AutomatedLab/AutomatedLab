@@ -7,6 +7,27 @@ $DoNotDownloadWMIEv2 = [Convert]::ToBoolean($DoNotDownloadWMIEv2)
 
 Write-ScreenInfo -Message "Starting miscellaneous items download process" -TaskStart
 
+#region Download Microsoft SQL Server 2012 Native Client QFE
+# https://support.microsoft.com/en-us/help/3135244/tls-1-2-support-for-microsoft-sql-server
+Write-ScreenInfo -Message "Downloading SQL Native Client" -TaskStart
+
+$SQLNCLIMSIPath = Join-Path -Path $labSources -ChildPath "SoftwarePackages\sqlncli.msi"
+if (Test-Path -Path $SQLNCLIMSIPath) {
+    Write-ScreenInfo -Message ("SQL Native Client MSI already exists, delete '{0}' if you want to download again" -f $SQLNCLIMSIPath)
+}
+
+$URL = "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi"
+try {
+    Get-LabInternetFile -Uri $URL -Path (Split-Path -Path $SQLNCLIMSIPath) -FileName (Split-Path $SQLNCLIMSIPath -Leaf) -ErrorAction "Stop" -ErrorVariable "GetLabInternetFileErr"
+}
+catch {
+    $Message = "Failed to download SQL Native Client from '{0}' ({1})" -f $URL, $GetLabInternetFileErr.ErrorRecord.Exception.Message
+    Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+    throw $Message
+}
+Write-ScreenInfo -Message "Activity Done" -TaskEnd
+#endregion
+
 #region Download WMIExplorer v2
 if ([bool]$DoNotDownloadWMIEv2 -eq $false) {
     $WMIv2Zip = "{0}\WmiExplorer_2.0.0.2.zip" -f $labSources
