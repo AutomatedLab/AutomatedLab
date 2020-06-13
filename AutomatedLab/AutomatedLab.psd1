@@ -46,6 +46,7 @@
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabTfs.psm1',
+        'AutomatedLabWac.psm1',
         'AutomatedLabHyperV.psm1',
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',

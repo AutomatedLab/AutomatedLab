@@ -1029,6 +1029,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if ((Get-LabVm -Role WindowsAdminCenter))
+    {
+        Write-ScreenInfo -Message 'Installing Windows Admin Center Servers' -TaskStart
+        Write-ScreenInfo -Message "Machines to have Windows Admin Center installed: '$((Get-LabVM -Role WebServer | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
+        Install-LabWindowsAdminCenter
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     if (($Orchestrator2012 -or $performAll) -and (Get-LabVM -Role Orchestrator2012))
     {
         Write-ScreenInfo -Message 'Installing Orchestrator Servers' -TaskStart
