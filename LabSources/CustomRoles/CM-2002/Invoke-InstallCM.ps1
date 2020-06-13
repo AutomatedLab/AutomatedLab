@@ -348,7 +348,7 @@ function Install-CMSite {
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
     
-    #region CM binaries, pre-reqs, ADK and WinPE files
+    #region Copy CM binaries, pre-reqs, SQL Server Native Client, ADK and WinPE files
     Write-ScreenInfo -Message "Copying files" -TaskStart
     try {
         Copy-LabFileItem -Path $CMBinariesDirectory -DestinationFolderPath $VMInstallDirectory
@@ -370,6 +370,7 @@ function Install-CMSite {
         "{0}\ADK" -f $downloadTargetDirectory
         "{0}\WinPE" -f $downloadTargetDirectory
         "{0}\ConfigurationFile-CM.ini" -f $downloadTargetDirectory
+        "{0}\sqlncli.msi" -f $downloadTargetDirectory
     )
     ForEach ($Path in $Paths) {
         # Put CM ini file in same location as SQL ini, just for consistency. Placement of SQL ini from SQL role isn't configurable.
@@ -389,6 +390,21 @@ function Install-CMSite {
             Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
             throw $Message
         }
+    }
+    Write-ScreenInfo -Message "Activity done" -TaskEnd
+    #endregion
+
+    #region Install SQL Server Native Client
+    Write-ScreenInfo -Message "Installing SQL Server Native Client" -TaskStart
+    $Path = "{0}\sqlncli.msi" -f $VMInstallDirectory
+    $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/qn /norestart" -ExpectedReturnCodes 0
+    Wait-LWLabJob -Job $job
+    try {
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
+    }
+    catch {
+        Write-ScreenInfo -Message ("Failed to install SQL Server Native Client ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
+        throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
