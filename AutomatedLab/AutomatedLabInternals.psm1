@@ -579,8 +579,8 @@ function Get-LabInternetFile
 
             $argumentList = $Uri, $Path, $FileName
 
-            $argumentList += if ($NoDisplay) {$true} else {$false}
-            $argumentList += if ($Force) {$true} else {$false}
+            $argumentList += if ($NoDisplay) { $true } else { $false }
+            $argumentList += if ($Force) { $true } else { $false }
 
             $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
@@ -614,7 +614,7 @@ function Get-LabInternetFile
             Uri = $Uri
             Path = $Path
             FileName = ?? { $FileName } { $FileName } { $result.FileName }
-            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName })
+            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
             Length = $result.ContentLength
         }
     }
