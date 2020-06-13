@@ -147,6 +147,8 @@
         'Install-LabWindowsFeature',
         'Install-LabTeamFoundationEnvironment',
         'Install-LabHyperV',
+        'Install-LabWindowsAdminCenter',
+        'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
