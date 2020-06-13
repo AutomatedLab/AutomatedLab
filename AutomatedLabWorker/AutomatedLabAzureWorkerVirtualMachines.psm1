@@ -1277,9 +1277,7 @@ function Initialize-LWAzureVM
         reg.exe add 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run' /v BgInfo /t REG_SZ /d "C:\AL\BgInfo.exe C:\AL\BgInfo.bgi /Timer:0 /nolicprompt" /f
 
         #turn off the Windows firewall
-        Set-NetFirewallProfile -Name Domain -Enabled False
-        Set-NetFirewallProfile -Name Private -Enabled False
-        Set-NetFirewallProfile -Name Public -Enabled False
+        Set-NetFirewallProfile -All -Enabled False -PolicyStore PersistentStore
 
         if ($DnsServers.Count -gt 0)
         {

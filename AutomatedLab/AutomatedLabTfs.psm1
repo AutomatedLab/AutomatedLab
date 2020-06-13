@@ -169,8 +169,6 @@ function Install-LabTeamFoundationServer
                 Add-LWAzureLoadBalancedPort -ComputerName $machine -DestinationPort $tfsPort -Port $remotePort
             }
 
-            $machineName = $machine.AzureConnectionInfo.DnsName
-
             if ($role.Properties.ContainsKey('Port'))
             {
                 $machine.Roles.Where( { $_.Name -match 'Tfs\d{4}|AzDevOps' }).ForEach( { $_.Properties['Port'] = $tfsPort })
@@ -193,6 +191,12 @@ function Install-LabTeamFoundationServer
                 [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $sqlServer instead." -Type Warning
             }
+        }
+
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+        {
+            # For good luck, disable the firewall again - in case Invoke-AzVmRunCommand failed to do its job.
+            Invoke-LabCommand -ComputerName $machine,$sqlServer -NoDisplay -ScriptBlock {Set-NetFirewallProfile -All -Enabled False -PolicyStore PersistentStore}
         }
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {

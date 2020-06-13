@@ -22,6 +22,13 @@ of Install-Lab -Verbose will also be helpful in a code block.
 
 ## Environment details
 
+Ideally, if you can: Upload a support package. ***Be warned, this may contain PII and confidential information***. If
+in doubt, have a look at it first.
+Support packages can be generated in the same PowerShell session you experience an error in with `New-PSFSupportPackage -Include All`
+
+The support package allows us to retrieve all errors as well as all verbose messages, regardless of whether you have
+used the Verbose parameter or not.
+
 PowerShell Version
 ```code
 Please paste the output of $PSVersionTable in this code field
