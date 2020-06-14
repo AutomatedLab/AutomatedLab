@@ -16,6 +16,7 @@
 - Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
   
 ### Bug Fixes
+- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
 
 ## 5.21.0 - 2020-05-26
 
