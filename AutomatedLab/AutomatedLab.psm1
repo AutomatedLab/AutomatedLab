@@ -2887,7 +2887,6 @@ function Set-LabInstallationCredential
             $Password -match '[A-Z]'
             $Password -match '[a-z]'
             $Password -match '\d'
-            $Password -match '[\W_]'
             $Password.Length -ge 8
         )
 
@@ -2898,7 +2897,6 @@ function Set-LabInstallationCredential
                 Have lower characters
                 Have upper characters
                 Have a digit
-                Have a special character (Regex match [\W_])
             "
         }
     }
