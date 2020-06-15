@@ -1123,6 +1123,16 @@ function Get-LabTfsFeed
     $defaultParam['ApiVersion'] = '5.0-preview.1'
     
     $feed = Get-TfsFeed @defaultParam
+        
+    if (-not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $ismatch = $feed.url -match 'http(s?)://(?<Host>[\w\.]+):'
+        if ($ismatch)
+        {
+            $feed.url = $feed.url.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.Fqdn)
+        }
+    }
+
     if ($feed.url -match '(?<url>http.*)\/_apis')
     {
         $nugetV2Url = '{0}/_packaging/{1}/nuget/v2' -f $Matches.url, $feed.name
