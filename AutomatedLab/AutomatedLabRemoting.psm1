@@ -1120,7 +1120,7 @@ function Install-LabRdsCertificate
         return
     }
 
-    $machines = Get-LabVM -All | Where-Object -Property OperatingSystemType -eq 'Windows'
+    $machines = Get-LabVM -All | Where-Object -FilterScript {$_.OperatingSystemType -eq 'Windows' -and -not $_.SkipDeployment }
 
     $jobs = foreach ($machine in $machines)
     {
