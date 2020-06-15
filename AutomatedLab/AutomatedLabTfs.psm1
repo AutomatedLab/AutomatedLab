@@ -594,6 +594,15 @@ function New-LabReleasePipeline
     $repository = Get-TfsGitRepository @defaultParam
     $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $defaultParam.Port
 
+    if (-not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $ismatch = $repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):'
+        if ($ismatch)
+        {
+            $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.Fqdn)
+        }
+    }
+
     if ($SourceRepository)
     {
         if (-not $gitBinary)
