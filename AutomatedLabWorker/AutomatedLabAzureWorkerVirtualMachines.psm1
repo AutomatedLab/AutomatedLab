@@ -410,7 +410,7 @@
             }
         }
 
-        $rules = foreach ($machine in ($Lab.Machines | Where-Object -Property Network -EQ $vNet.Name))
+        $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript {$_.Network -EQ $vNet.Name -and -not $_.SkipDeployment))
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
             @{
@@ -512,7 +512,7 @@
     }
     #endregion
 
-    foreach ($machine in $Lab.Machines)
+    foreach ($machine in $Lab.Machines.Where({-not $_.SkipDeployment}))
     {
         $niccount = 0
         foreach ($nic in $machine.NetworkAdapters)
