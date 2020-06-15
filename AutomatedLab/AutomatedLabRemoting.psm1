@@ -1124,7 +1124,7 @@ function Install-LabRdsCertificate
 
     $jobs = foreach ($machine in $machines)
     {
-        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -ScriptBlock {
+        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -NoDisplay -ScriptBlock {
             [string[]]$SANs = $machine.FQDN
             if ($machine.HostType -eq 'Azure' -and (Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue))
             {
@@ -1163,7 +1163,7 @@ function Uninstall-LabRdsCertificate
         return
     }
 
-    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer))
+    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer -ErrorAction SilentlyContinue))
     {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.Import($certFile.FullName)

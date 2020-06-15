@@ -21,7 +21,7 @@ Add-LabMachineDefinition -Name WACDC1 -Memory 1GB -Roles RootDC -PostInstallatio
 # CA
 Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 
-# WAC Server
+# WAC Server in lab
 $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter <#-Properties @{
     # Optional, defaults to 443
     Port = 8080
@@ -31,6 +31,24 @@ $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter <#-Properties @{
     ConnectedNode = '["WACHO1","WACHO3"]'
 }#>
 Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles $role
+
+# WAC server on-prem -SkipDeployment means it is not removed when the lab is removed, but we will connect other Lab VMs to it
+$role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter -Properties @{
+    Port = '4711'
+    UseSsl = 'False'
+    ConnectedNode = '["WACHO1","WACHO3"]'
+}
+$instCred = [pscredential]::new('fabrikam\OtherUser' , ('Other Password' | ConvertTo-SecureString -AsPlain -Force)
+Add-LabMachineDefinition -Name WACWAC2.fabrikam.com -SkipDeployment -Roles $role -InstallationUserCredential $instCred
+
+# or to connect to your local installation
+$role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter -Properties @{
+    Port = '6516'
+    UseSsl = 'False'
+    ConnectedNode = '["WACHO1","WACHO3"]'
+}
+$instCred = Get-Credential -UserName $env:USERNAME
+Add-LabMachineDefinition -Name localhost -SkipDeployment -Roles $role -InstallationUserCredential $instCred
 
 # Some managed hosts
 foreach ($i in 1..4)

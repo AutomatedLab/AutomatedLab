@@ -382,7 +382,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'Organisation'
             'Capabilities'
         )
-        WindowsAdminCenter = @('Credential', 'Port', 'EnableDevMode')
+        WindowsAdminCenter = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
