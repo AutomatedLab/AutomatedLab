@@ -779,7 +779,7 @@ function New-LabReleasePipeline
 
             Set-Location -Path "C:\$ProjectName.temp\$ProjectName"
 
-            git remote add tfs $repository.remoteUrl
+            git remote add tfs $repoUrl
 
             $pattern = '(?>remotes\/origin\/)(?<BranchName>[\w\/]+)'
             $branches = git branch -a | Where-Object { $_ -cnotlike '*HEAD*' -and -not $_.StartsWith('*') }
@@ -800,7 +800,7 @@ function New-LabReleasePipeline
 
             Set-Location -Path C:\
             Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
-        } -Variable (Get-Variable -Name repository, ProjectName)
+        } -Variable (Get-Variable -Name repoUrl, ProjectName)
     }
 
     if (-not ($role.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
@@ -812,7 +812,7 @@ function New-LabReleasePipeline
                 New-Item -ItemType Directory -Path C:\Git | Out-Null
             }
             Set-Location -Path C:\Git
-            git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
+            git -c http.sslVerify=false clone $repoUrl 2>&1
 
         } -Variable (Get-Variable -Name repository, ProjectName)
     }
