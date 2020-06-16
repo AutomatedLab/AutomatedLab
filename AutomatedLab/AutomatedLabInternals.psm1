@@ -444,11 +444,6 @@ function Get-LabInternetFile
                 return
             }
 
-            if ((Test-Path -Path $Path) -and $Force)
-            {
-                Remove-Item -Path $Path -Force
-            }
-
             Write-Verbose "Uri is '$Uri'"
             Write-Verbose "Path os '$Path'"
 
@@ -491,7 +486,7 @@ function Get-LabInternetFile
                         }
                         if ((Test-Path -Path $Path -PathType Container) -and -not $FileName)
                         {
-                            $script:FileName = $FileName = $response.ResponseUri.Segments[-1]
+                            $FileName = $response.ResponseUri.Segments[-1]
                             $Path = Join-Path -Path $Path -ChildPath $FileName
                         }
                         if ([System.IO.Path]::GetPathRoot($Path) -eq $Path)
@@ -501,45 +496,46 @@ function Get-LabInternetFile
                         }
                         if (-not $FileName)
                         {
-                            $script:FileName = $FileName = Split-Path -Path $Path -Leaf
+                            $FileName = Split-Path -Path $Path -Leaf
                         }
                         if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
                         {
                             Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
-                            return
                         }
-
-                        $localStream = [System.IO.File]::Create($Path)
-
-                        $buffer = New-Object System.Byte[] 10MB
-                        $bytesRead = 0
-                        [int]$percentageCompletedPrev = 0
-
-                        do
+                        else
                         {
-                            $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
-                            $localStream.Write($buffer, 0, $bytesRead)
-                            $bytesProcessed += $bytesRead
+                            $localStream = [System.IO.File]::Create($Path)
 
-                            [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
-                            if ($percentageCompleted -gt 0)
+                            $buffer = New-Object System.Byte[] 10MB
+                            $bytesRead = 0
+                            [int]$percentageCompletedPrev = 0
+
+                            do
                             {
-                                if ($percentageCompletedPrev -ne $percentageCompleted)
+                                $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                                $localStream.Write($buffer, 0, $bytesRead)
+                                $bytesProcessed += $bytesRead
+
+                                [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
+                                if ($percentageCompleted -gt 0)
                                 {
-                                    $percentageCompletedPrev = $percentageCompleted
-                                    Write-Progress -Activity "Downloading file '$FileName'" `
-                                    -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                    -PercentComplete ($percentageCompleted)
+                                    if ($percentageCompletedPrev -ne $percentageCompleted)
+                                    {
+                                        $percentageCompletedPrev = $percentageCompleted
+                                        Write-Progress -Activity "Downloading file '$FileName'" `
+                                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                        -PercentComplete ($percentageCompleted)
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
-                            }
-                        } while ($bytesRead -gt 0)
+                                else
+                                {
+                                    Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
+                                }
+                            } while ($bytesRead -gt 0)
+                        }
                     }
 
-                    $response
+                    $response | Add-Member -Name FileName -MemberType NoteProperty -Value $FileName -PassThru
                 }
             }
             catch
@@ -583,8 +579,8 @@ function Get-LabInternetFile
 
             $argumentList = $Uri, $Path, $FileName
 
-            $argumentList += if ($NoDisplay) {$true} else {$false}
-            $argumentList += if ($Force) {$true} else {$false}
+            $argumentList += if ($NoDisplay) { $true } else { $false }
+            $argumentList += if ($Force) { $true } else { $false }
 
             $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
         }
@@ -601,7 +597,6 @@ function Get-LabInternetFile
         $PSBoundParameters.Remove('PassThru') | Out-Null
         try
         {
-            $x = $PSBoundParameters
             $result = Get-LabInternetFileInternal @PSBoundParameters
 
             $end = Get-Date
@@ -618,8 +613,8 @@ function Get-LabInternetFile
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            FileName = ?? { $FileName } { $FileName } { $script:FileName}
-            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName})
+            FileName = ?? { $FileName } { $FileName } { $result.FileName }
+            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
             Length = $result.ContentLength
         }
     }

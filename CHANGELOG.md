@@ -25,6 +25,7 @@
 - Install-Lab imports the VMs RDP certificates and Remove-Lab removes them to enable seamless Connect-LabVm
   
 ### Bug Fixes
+- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
 
 - Build Agent role on Azure can now again connect to its server (Fixes #938)
 
