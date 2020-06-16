@@ -99,7 +99,7 @@ function New-LabVM
         throw "Failed to create the Azure machines mentioned in the errors above."
     }
 
-    $azureVms = $machines | Where-Object HostType -eq Azure
+    $azureVms = Get-LabVm -ComputerName $machines | Where-Object {$_.HostType -eq 'Azure' -and -not $_.SkipDeployment}
 
     if ($azureVMs)
     {
@@ -1839,7 +1839,7 @@ function Get-LabVM
     end
     {
         #Add Azure Connection Info
-        $azureVMs = $Script:data.Machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
+        $azureVMs = $Script:data.Machines | Where-Object { -not $_.SkipDeployment -and $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
         if ($azureVMs -and -not $SkipConnectionInfo.IsPresent)
         {
             $azureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $azureVMs

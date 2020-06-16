@@ -99,6 +99,11 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
+                if (-not $m.AzureConnectionInfo.DnsName)
+                {
+                    $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
+                }
+
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
@@ -1120,11 +1125,11 @@ function Install-LabRdsCertificate
         return
     }
 
-    $machines = Get-LabVM -All | Where-Object -Property OperatingSystemType -eq 'Windows'
+    $machines = Get-LabVM -All | Where-Object -FilterScript {$_.OperatingSystemType -eq 'Windows' -and -not $_.SkipDeployment }
 
     $jobs = foreach ($machine in $machines)
     {
-        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -ScriptBlock {
+        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -NoDisplay -ScriptBlock {
             [string[]]$SANs = $machine.FQDN
             if ($machine.HostType -eq 'Azure' -and (Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue))
             {
@@ -1163,7 +1168,7 @@ function Uninstall-LabRdsCertificate
         return
     }
 
-    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer))
+    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer -ErrorAction SilentlyContinue))
     {
         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
         $cert.Import($certFile.FullName)
