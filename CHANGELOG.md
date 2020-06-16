@@ -23,6 +23,7 @@
 - Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
 - Custom Roles can now have any parameter type they would like, fixing #925
 - Install-Lab imports the VMs RDP certificates and Remove-Lab removes them to enable seamless Connect-LabVm
+- Relaxed Azure password policy as special characters are not mandatory.
   
 ### Bug Fixes
 - Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
