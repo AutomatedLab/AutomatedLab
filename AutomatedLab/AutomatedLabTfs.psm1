@@ -596,10 +596,9 @@ function New-LabReleasePipeline
 
     if (-not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $ismatch = $repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):'
-        if ($ismatch)
+        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):')
         {
-            $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.Fqdn)
+            $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.DnsName)
         }
     }
 
@@ -1126,10 +1125,10 @@ function Get-LabTfsFeed
         
     if (-not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
     {
-        $ismatch = $feed.url -match 'http(s?)://(?<Host>[\w\.]+):'
-        if ($ismatch)
+        if ($feed.url -match 'http(s?)://(?<Host>[\w\.]+):(?<Port>\d+)/')
         {
-            $feed.url = $feed.url.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.Fqdn)
+            $feed.url = $feed.url.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.DnsName)
+            $feed.url = $feed.url.Replace($Matches.Port, $defaultParam.Port)
         }
     }
 
