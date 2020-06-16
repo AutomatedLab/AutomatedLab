@@ -1110,7 +1110,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
 
-    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux))
+    if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
     {
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
 
@@ -1136,7 +1136,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($PostInstallations -or $performAll) -and (Get-LabVM))
+    if (($PostInstallations -or $performAll) -and (Get-LabVM | Where-Object -Property SkipDeployment -eq $false))
     {
         $machines = Get-LabVM | Where-Object { -not $_.SkipDeployment }
         $jobs = Invoke-LabCommand -PostInstallationActivity -ActivityName 'Post-installation' -ComputerName $machines -PassThru -NoDisplay

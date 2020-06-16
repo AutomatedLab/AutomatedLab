@@ -1805,7 +1805,7 @@ function Get-LWAzureVMConnectionInfo
         $azureVM = $azureVMs | Where-Object Name -eq $name
 
         if (-not $azureVM)
-        { return }
+        { continue }
 
         $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($name.Network[0])lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 

@@ -99,6 +99,11 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
+                if (-not $m.AzureConnectionInfo.DnsName)
+                {
+                    $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
+                }
+
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
