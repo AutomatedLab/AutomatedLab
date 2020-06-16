@@ -814,7 +814,7 @@ function New-LabReleasePipeline
             Set-Location -Path C:\Git
             git -c http.sslVerify=false clone $repoUrl 2>&1
 
-        } -Variable (Get-Variable -Name repository, ProjectName)
+        } -Variable (Get-Variable -Name repoUrl, ProjectName)
     }
 
     if ($BuildSteps.Count -gt 0)
