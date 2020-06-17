@@ -485,7 +485,9 @@ function Invoke-LabCommand
 
         [switch]$PassThru,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     Write-LogFunctionEntry
@@ -604,7 +606,7 @@ function Invoke-LabCommand
                 $param.Add('ComputerName', $ComputerName)
 
                 Write-PSFMessage "Creating session to computers) '$ComputerName'"
-                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp
+                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent
                 if (-not $session)
                 {
                     Write-LogFunctionExitWithError "Could not create a session to machine '$ComputerName'"
@@ -692,7 +694,7 @@ function Invoke-LabCommand
         $param.Add('ComputerName', $machines)
 
         Write-PSFMessage "Creating session to computer(s) '$machines'"
-        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential)
+        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent)
         if (-not $session)
         {
             Write-LogFunctionExitWithError "Could not create a session to machine '$machines'"
