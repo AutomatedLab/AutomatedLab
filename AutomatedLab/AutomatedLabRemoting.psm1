@@ -22,7 +22,9 @@ function New-LabPSSession
 
         [int]$Interval = 5,
 
-        [switch]$UseSSL
+        [switch]$UseSSL,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     begin
@@ -170,7 +172,7 @@ function New-LabPSSession
             if ($internalSession)
             {
                 if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and
-                    -not $internalSession.ALLabSourcesMapped -and
+                    -not (-not $IgnoreAzureLabSources .IsPresent -and $internalSession.ALLabSourcesMapped) -and
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
