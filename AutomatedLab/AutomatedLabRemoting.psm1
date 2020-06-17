@@ -172,7 +172,7 @@ function New-LabPSSession
             if ($internalSession)
             {
                 if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and
-                    -not (-not $IgnoreAzureLabSources.IsPresent -and $internalSession.ALLabSourcesMapped) -and
+                    -not $IgnoreAzureLabSources.IsPresent -and -not $internalSession.ALLabSourcesMapped -and
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
