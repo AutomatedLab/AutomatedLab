@@ -592,7 +592,23 @@ function New-LabReleasePipeline
 
     $project = New-TfsProject @defaultParam -SourceControlType Git -TemplateName 'Agile' -Timeout (New-TimeSpan -Minutes 5)
     $repository = Get-TfsGitRepository @defaultParam
-    $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $defaultParam.Port
+
+    if ($CodeUploadMethod -eq 'git' -and -not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $repository.remoteUrl = $repository.remoteUrl -replace $originalPort, $defaultParam.Port
+        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):')
+        {
+            $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.DnsName)
+        }
+    }
+
+    if ($CodeUploadMethod -eq 'FileCopy' -and -not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if ($repository.remoteUrl -match 'http(s?)://(?<Host>[\w\.]+):')
+        {
+            $repository.remoteUrl = $repository.remoteUrl.Replace($Matches.Host, $tfsVm.FQDN)
+        }
+    }
 
     if ($SourceRepository)
     {
@@ -713,7 +729,7 @@ function New-LabReleasePipeline
             {
                 $branch -match $pattern | Out-Null
 
-                git checkout $Matches.BranchName 2>&1
+                $null = git checkout $Matches.BranchName 2>&1
                 if ($LASTEXITCODE -eq 0)
                 {
                     $retries = 3
@@ -758,20 +774,21 @@ function New-LabReleasePipeline
             return
         }
 
+        $repoDestination = if ($IsLinux -or $IsMacOs) { "/$ProjectName.temp" } else { "C:\$ProjectName.temp" }
         if ($repositoryPath)
         {
-            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath "/$ProjectName.temp" -Recurse
+            Copy-LabFileItem -Path $repositoryPath -ComputerName $tfsVm -DestinationFolderPath $repoDestination -Recurse
         }
         else
         {
-            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath "/$ProjectName.temp" -Recurse
+            Copy-LabFileItem -Path $SourcePath -ComputerName $tfsVm -DestinationFolderPath $repoDestination -Recurse
         }
 
         Invoke-LabCommand -ActivityName 'Push code to TFS/AZDevOps' -ComputerName $tfsVm -ScriptBlock {
 
             Set-Location -Path "C:\$ProjectName.temp\$ProjectName"
 
-            git remote add tfs $repository.remoteUrl
+            git remote add tfs $repoUrl
 
             $pattern = '(?>remotes\/origin\/)(?<BranchName>[\w\/]+)'
             $branches = git branch -a | Where-Object { $_ -cnotlike '*HEAD*' -and -not $_.StartsWith('*') }
@@ -780,19 +797,19 @@ function New-LabReleasePipeline
             {
                 if ($branch -match $pattern)
                 {
-                    git checkout $Matches.BranchName 2>&1
+                    $null = git checkout $Matches.BranchName 2>&1
                     if ($LASTEXITCODE -eq 0)
                     {
                         git add . 2>&1
                         git commit -m 'Initial' 2>&1
-                        git push --set-upstream tfs $Matches.BranchName 2>&1
+                        git -c http.sslVerify=false push --set-upstream tfs $Matches.BranchName 2>&1
                     }
                 }
             }
 
             Set-Location -Path C:\
             Remove-Item -Path "C:\$ProjectName.temp" -Recurse -Force
-        } -Variable (Get-Variable -Name repository, ProjectName)
+        } -Variable (Get-Variable -Name repoUrl, ProjectName)
     }
 
     if (-not ($role.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
@@ -804,9 +821,9 @@ function New-LabReleasePipeline
                 New-Item -ItemType Directory -Path C:\Git | Out-Null
             }
             Set-Location -Path C:\Git
-            git -c http.sslVerify=false clone $repository.remoteUrl 2>&1
+            git -c http.sslVerify=false clone $repoUrl 2>&1
 
-        } -Variable (Get-Variable -Name repository, ProjectName)
+        } -Variable (Get-Variable -Name repoUrl, ProjectName)
     }
 
     if ($BuildSteps.Count -gt 0)
@@ -1114,6 +1131,16 @@ function Get-LabTfsFeed
     $defaultParam['ApiVersion'] = '5.0-preview.1'
     
     $feed = Get-TfsFeed @defaultParam
+        
+    if (-not $tfsVm.SkipDeployment -and $(Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        if ($feed.url -match 'http(s?)://(?<Host>[\w\.]+):(?<Port>\d+)/')
+        {
+            $feed.url = $feed.url.Replace($Matches.Host, $tfsVm.AzureConnectionInfo.DnsName)
+            $feed.url = $feed.url.Replace($Matches.Port, $defaultParam.Port)
+        }
+    }
+
     if ($feed.url -match '(?<url>http.*)\/_apis')
     {
         $nugetV2Url = '{0}/_packaging/{1}/nuget/v2' -f $Matches.url, $feed.name
