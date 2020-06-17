@@ -2426,7 +2426,7 @@ function Copy-LabALCommon
     } -ComputerName $coreChild.ComputerName -NoDisplay -PassThru).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
-        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
     }
 
     if ($fullChild -and @(Invoke-LabCommand -ScriptBlock {
@@ -2434,7 +2434,7 @@ function Copy-LabALCommon
     } -ComputerName $fullChild.ComputerName -NoDisplay -PassThru).Count -ne $fullChild.Count)
     {
         $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
-        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
     }
 }
 #endregion Copy-LabALCommon
