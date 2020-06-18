@@ -211,7 +211,8 @@ function New-LabPSSession
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
-                    if ($internalSession)
+                    # Additional check here for availability/state due to issues with Azure IaaS
+                    if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
                         Write-PSFMessage "Session to computer '$($param.ComputerName)' created"
                         $sessions += $internalSession

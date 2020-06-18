@@ -83,7 +83,7 @@ function Install-LabHyperV
             }
 
             Set-VMHost @parameters
-        } -Function (Get-Command -Name Sync-Parameter) -AsJob -PassThru
+        } -Function (Get-Command -Name Sync-Parameter) -AsJob -PassThru -IgnoreAzureLabSources
     }
 
     Wait-LWLabJob -Job $jobs
