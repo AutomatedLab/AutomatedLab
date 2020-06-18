@@ -2413,7 +2413,7 @@ function Copy-LabALCommon
             {
                 'full'
             }
-        } -ComputerName $vm -NoDisplay -PassThru |
+        } -ComputerName $vm -NoDisplay -IgnoreAzureLabSources -PassThru |
         Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
     }
 
@@ -2423,18 +2423,18 @@ function Copy-LabALCommon
 
     if ($coreChild -and @(Invoke-LabCommand -ScriptBlock{
                 Get-Item -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-    } -ComputerName $coreChild.ComputerName -NoDisplay -PassThru).Count -ne $coreChild.Count)
+    } -ComputerName $coreChild.ComputerName -IgnoreAzureLabSources -NoDisplay -PassThru).Count -ne $coreChild.Count)
     {
         $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
-        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
     }
 
     if ($fullChild -and @(Invoke-LabCommand -ScriptBlock {
                 Get-Item -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
-    } -ComputerName $fullChild.ComputerName -NoDisplay -PassThru).Count -ne $fullChild.Count)
+    } -ComputerName $fullChild.ComputerName -IgnoreAzureLabSources -NoDisplay -PassThru).Count -ne $fullChild.Count)
     {
         $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
-        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries'
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
     }
 }
 #endregion Copy-LabALCommon

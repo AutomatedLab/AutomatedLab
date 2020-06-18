@@ -507,7 +507,7 @@ function Copy-LabFileItem
                     continue
                 }
 
-                $session = New-LabPSSession -ComputerName $machine
+                $session = New-LabPSSession -ComputerName $machine -IgnoreAzureLabSources
                 foreach ($p in $Path)
                 {
 

@@ -22,7 +22,9 @@ function New-LabPSSession
 
         [int]$Interval = 5,
 
-        [switch]$UseSSL
+        [switch]$UseSSL,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     begin
@@ -170,7 +172,7 @@ function New-LabPSSession
             if ($internalSession)
             {
                 if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and
-                    -not $internalSession.ALLabSourcesMapped -and
+                    -not $IgnoreAzureLabSources.IsPresent -and -not $internalSession.ALLabSourcesMapped -and
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
@@ -209,7 +211,8 @@ function New-LabPSSession
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
-                    if ($internalSession)
+                    # Additional check here for availability/state due to issues with Azure IaaS
+                    if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
                         Write-PSFMessage "Session to computer '$($param.ComputerName)' created"
                         $sessions += $internalSession
@@ -483,7 +486,9 @@ function Invoke-LabCommand
 
         [switch]$PassThru,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     Write-LogFunctionEntry
@@ -602,7 +607,7 @@ function Invoke-LabCommand
                 $param.Add('ComputerName', $ComputerName)
 
                 Write-PSFMessage "Creating session to computers) '$ComputerName'"
-                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp
+                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent
                 if (-not $session)
                 {
                     Write-LogFunctionExitWithError "Could not create a session to machine '$ComputerName'"
@@ -690,7 +695,7 @@ function Invoke-LabCommand
         $param.Add('ComputerName', $machines)
 
         Write-PSFMessage "Creating session to computer(s) '$machines'"
-        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential)
+        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent)
         if (-not $session)
         {
             Write-LogFunctionExitWithError "Could not create a session to machine '$machines'"
