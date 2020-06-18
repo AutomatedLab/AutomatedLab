@@ -1161,7 +1161,10 @@ function Get-LabTfsParameter
     (
         [Parameter(Mandatory)]
         [string]
-        $ComputerName
+        $ComputerName,
+
+        [switch]
+        $Local
     )
     
     $lab = Get-Lab
@@ -1181,7 +1184,7 @@ function Get-LabTfsParameter
         $tfsPort = $bwRole.Properties['Port']
     }
 
-    if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
+    if (-not $Local.IsPresent -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and -not ($tfsVm.Roles.Name -eq 'AzDevOps' -and $tfsVm.SkipDeployment))
     {
         $tfsPort = if ($bwRole) {
             (Get-LWAzureLoadBalancedPort -DestinationPort $tfsPort -ComputerName $bwRole.Properties.TfsServer -ErrorAction SilentlyContinue).FrontendPort
