@@ -1802,7 +1802,7 @@ function Get-LWAzureVMConnectionInfo
 
     foreach ($name in $ComputerName)
     {
-        $azureVM = $azureVMs | Where-Object Name -eq $name
+        $azureVM = $azureVMs | Where-Object Name -eq $name.ResourceName
 
         if (-not $azureVM)
         { continue }

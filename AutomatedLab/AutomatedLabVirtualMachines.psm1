@@ -410,8 +410,8 @@ function Save-LabVM
         Write-PSFMessage -Message "Saving VMs '$($vms -join ',')"
         switch ($lab.DefaultVirtualizationEngine)
         {
-            'HyperV' { Save-LWHypervVM -ComputerName $vms}
-            'VMWare' { Save-LWVMWareVM -ComputerName $vms}
+            'HyperV' { Save-LWHypervVM -ComputerName $vms.ResourceName}
+            'VMWare' { Save-LWVMWareVM -ComputerName $vms.ResourceName}
             'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
 
@@ -536,16 +536,16 @@ function Stop-LabVM
 
     if ($hypervVms)
     {
-        Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
+        Stop-LWHypervVM -ComputerName $hypervVms.ResourceName -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
         -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
     }
     if ($azureVms)
     {
-        Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+        Stop-LWAzureVM -ComputerName $azureVms.ResourceName -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
     if ($vmwareVms)
     {
-        Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
+        Stop-LWVMWareVM -ComputerName $vmwareVms.ResourceName -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
     }
 
     $remainingTargets = @()
@@ -762,11 +762,11 @@ function Wait-LabVM
         {
             if ((Get-LabVM -ComputerName $machine).HostType -eq 'HyperV')
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                     Copy-LabALCommon -ComputerName $ComputerName
                 }
@@ -814,7 +814,7 @@ function Wait-LabVM
                         Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
                     }
 
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
             }
         }

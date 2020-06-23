@@ -1264,7 +1264,7 @@ function Remove-Lab
 
             $removeMachines = foreach ($machine in $labMachines)
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
                 $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
                 if (-not $machineMetadata)
                 {
