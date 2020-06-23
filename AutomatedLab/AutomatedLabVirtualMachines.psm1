@@ -295,19 +295,19 @@ function Start-LabVM
         $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
         if ($hypervVMs)
         {
-            Start-LWHypervVM -ComputerName $hypervVMs.ResourceName -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
+            Start-LWHypervVM -ComputerName $hypervVMs -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
         }
 
         $azureVms = $vms | Where-Object HostType -eq 'Azure'
         if ($azureVms)
         {
-            Start-LWAzureVM -ComputerName $azureVms.ResourceName -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
+            Start-LWAzureVM -ComputerName $azureVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
         }
 
         $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'
         if ($vmwareVms)
         {
-            Start-LWVMWareVM -ComputerName $vmwareVms.ResourceName -DelayBetweenComputers $DelayBetweenComputers
+            Start-LWVMWareVM -ComputerName $vmwareVms -DelayBetweenComputers $DelayBetweenComputers
         }
 
         if ($Wait)
@@ -521,16 +521,16 @@ function Stop-LabVM
 
     if ($hypervVms)
     {
-        Stop-LWHypervVM -ComputerName $hypervVms.ResourceName -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
+        Stop-LWHypervVM -ComputerName $hypervVms -TimeoutInMinutes $ShutdownTimeoutInMinutes -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewLine `
         -ErrorVariable hypervErrors -ErrorAction SilentlyContinue
     }
     if ($azureVms)
     {
-        Stop-LWAzureVM -ComputerName $azureVms.ResourceName -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
+        Stop-LWAzureVM -ComputerName $azureVms -ErrorVariable azureErrors -ErrorAction SilentlyContinue -StayProvisioned $KeepAzureVmProvisioned
     }
     if ($vmwareVms)
     {
-        Stop-LWVMWareVM -ComputerName $vmwareVms.ResourceName -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
+        Stop-LWVMWareVM -ComputerName $vmwareVms -ErrorVariable vmwareErrors -ErrorAction SilentlyContinue
     }
 
     $remainingTargets = @()
