@@ -1125,7 +1125,7 @@ function Export-LabDefinition
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
-        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) }).Count * 2GB
+        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) }).Count * 2GB
 
         $spaceNeeded = $spaceNeededBaseDisks + $spaceNeededData - $spaceBaseDisksAlreadyClaimed
 
@@ -2098,6 +2098,7 @@ function Add-LabMachineDefinition
 
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
+        $machine.FriendlyName = $FriendlyName
         $script:machines.Add($machine)
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))

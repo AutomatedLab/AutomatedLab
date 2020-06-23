@@ -563,7 +563,7 @@
                     )
                     enableIPForwarding          = $false
                 }
-                name       = "$($machine.Name)nic$($niccount)"
+                name       = "$($machine.ResourceName)nic$($niccount)"
                 apiVersion = "[providers('Microsoft.Network','networkInterfaces').apiVersions[0]]"
                 type       = "Microsoft.Network/networkInterfaces"
                 location   = "[resourceGroup().location]"
@@ -585,7 +585,7 @@
 
         Write-ScreenInfo -Type Verbose -Message ('Adding machine template')
         $machTemplate = @{
-            name       = $machine.Name
+            name       = $machine.ResourceName
             tags       = @{ 
                 AutomatedLab = $Lab.Name
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
@@ -611,7 +611,7 @@
                 }
                 osProfile       = @{
                     adminPassword            = $machine.GetLocalCredential($true).GetNetworkCredential().Password
-                    computerName             = $machine.Name
+                    computerName             = $machine.ResourceName
                     allowExtensionOperations = $true
                     adminUsername            = ($machine.GetLocalCredential($true).UserName -split '\\')[-1]
                     windowsConfiguration     = @{
@@ -655,9 +655,9 @@
         foreach ($nic in $machine.NetworkAdapters)
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding NIC {0} to template' -f $nic.InterfaceName)
-            $machtemplate.dependsOn += "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.Name)nic$($niccount)')]"
+            $machtemplate.dependsOn += "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.ResourceName)nic$($niccount)')]"
             $machTemplate.properties.networkProfile.networkInterfaces += @{
-                id         = "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.name)nic$($niccount)')]"
+                id         = "[resourceId('Microsoft.Network/networkInterfaces', '$($machine.ResourceName)nic$($niccount)')]"
                 properties = @{
                     primary = $niccount -eq 0
                 }
@@ -931,7 +931,7 @@ function New-LWAzureVM
         $machineResourceGroup = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
     }
 
-    if (Get-AzVM -Name $machine.Name -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
+    if (Get-AzVM -Name $machine.ResourceName -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
     {
         Write-PSFMessage -Message "Target machine $($Machine.Name) already exists. Skipping..."
         return
@@ -944,7 +944,7 @@ function New-LWAzureVM
         $global:cacheVMs = Get-AzVM
     }
 
-    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.Name -and $_.ResourceGroupName -eq $resourceGroupName })
+    if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.ResourceName -and $_.ResourceGroupName -eq $resourceGroupName })
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
@@ -1028,8 +1028,8 @@ function New-LWAzureVM
         $useULTRA = $Machine.AzureProperties['StorageSku'] -eq 'UltraSSD_LRS'
     }
 
-    $vm = New-AzVMConfig -VMName $Machine.Name -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -EnableUltraSSD:$useULTRA
-    $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.Name -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
+    $vm = New-AzVMConfig -VMName $Machine.ResourceName -VMSize $RoleSize -AvailabilitySetId $machineAvailabilitySet.Id  -ErrorAction Stop -EnableUltraSSD:$useULTRA
+    $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $Machine.ResourceName -Credential $cred -ProvisionVMAgent -EnableAutoUpdate -ErrorAction Stop -WinRMHttp
 
     Write-PSFMessage "Choosing latest source image for $SkusName in $OfferName"
     $vm = Set-AzVMSourceImage -VM $vm -PublisherName $PublisherName -Offer $OfferName -Skus $SkusName -Version "latest" -ErrorAction Stop
@@ -1362,7 +1362,7 @@ function Initialize-LWAzureVM
             DnsServers         = $DnsServers
         }
 
-        Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.Name -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+        Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
     }
 
     Wait-LWLabJob -Job $jobs -ProgressIndicator 5 -Timeout 30 -NoDisplay
@@ -1798,7 +1798,7 @@ function Get-LWAzureVMConnectionInfo
     }
 
     $resourceGroupName = (Get-LabAzureDefaultResourceGroup).ResourceGroupName
-    $azureVMs = Get-AzVM | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.Name
+    $azureVMs = Get-AzVM | Where-Object ResourceGroupName -in (Get-LabAzureResourceGroup).ResourceGroupName | Where-Object Name -in $ComputerName.ResourceName
 
     foreach ($name in $ComputerName)
     {
@@ -1978,7 +1978,7 @@ catch
 
     $jobs = foreach ($m in $Machine)
     {
-        Invoke-AzVMRunCommand -ResourceGroupName $rgName -VMName $m.Name -ScriptPath $tempFileName -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
+        Invoke-AzVMRunCommand -ResourceGroupName $rgName -VMName $m.ResourceName -ScriptPath $tempFileName -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
     }
 
     if ($Wait)
