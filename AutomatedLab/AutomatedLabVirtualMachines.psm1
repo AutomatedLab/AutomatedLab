@@ -310,19 +310,19 @@ function Start-LabVM
         $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
         if ($hypervVMs)
         {
-            Start-LWHypervVM -ComputerName $hypervVMs -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
+            Start-LWHypervVM -ComputerName $hypervVMs.ResourceName -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -PreDelaySeconds $PreDelaySeconds -PostDelaySeconds $PostDelaySeconds -NoNewLine:$NoNewline
         }
 
         $azureVms = $vms | Where-Object HostType -eq 'Azure'
         if ($azureVms)
         {
-            Start-LWAzureVM -ComputerName $azureVms -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
+            Start-LWAzureVM -ComputerName $azureVms.ResourceName -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator $ProgressIndicator -NoNewLine:$NoNewline
         }
 
         $vmwareVms = $vms | Where-Object HostType -eq 'VmWare'
         if ($vmwareVms)
         {
-            Start-LWVMWareVM -ComputerName $vmwareVms -DelayBetweenComputers $DelayBetweenComputers
+            Start-LWVMWareVM -ComputerName $vmwareVms.ResourceName -DelayBetweenComputers $DelayBetweenComputers
         }
 
         if ($Wait)
@@ -1038,15 +1038,15 @@ function Remove-LabVM
 
         if ($machine.HostType -eq 'HyperV')
         {
-            Remove-LWHypervVM -Name $machine
+            Remove-LWHypervVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'Azure')
         {
-            Remove-LWAzureVM -Name $machine
+            Remove-LWAzureVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'VMWare')
         {
-            Remove-LWVMWareVM -Name $machine
+            Remove-LWVMWareVM -Name $machine.ResourceName
         }
 
         if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
@@ -1084,13 +1084,13 @@ function Get-LabVMStatus
     }
 
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
-    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.Name }
+    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.ResourceName }
 
     $azureVMs = $vms | Where-Object HostType -eq 'Azure'
-    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.Name }
+    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.ResourceName }
 
     $vmwareVMs = $vms | Where-Object HostType -eq 'VMWare'
-    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.Name }
+    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.ResourceName }
 
     $result = @{ }
     if ($hypervStatus) { $result = $result + $hypervStatus }
@@ -2159,8 +2159,8 @@ function Checkpoint-LabVM
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
     }
 
@@ -2214,8 +2214,8 @@ function Restore-LabVMSnapshot
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
     }
 
@@ -2272,7 +2272,7 @@ function Remove-LabVMSnapshot
     }
 
     $parameters = @{
-        ComputerName = $machines
+        ComputerName = $machines.ResourceName
     }
 
     if ($SnapshotName)
