@@ -123,7 +123,7 @@ function Add-LabVirtualNetworkDefinition
     $network.Name = $Name
     if ($HyperVProperties.SwitchType) { $network.SwitchType = $HyperVProperties.SwitchType }
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }
-    if ($HyperVProperties.ManagementAdapter -eq $false) {$network.EnableManagementAdapter = $false }
+    if (-not $HyperVProperties -or ($HyperVProperties -and -not $HyperVProperties.ContainsKey('ManagementAdapter') -or $HyperVProperties.ManagementAdapter -eq $false)) {$network.EnableManagementAdapter = $false }
     if ($ManagementAdapter) {$network.ManagementAdapter = $ManagementAdapter}
 
     #VLAN's are not supported on non-external interfaces
