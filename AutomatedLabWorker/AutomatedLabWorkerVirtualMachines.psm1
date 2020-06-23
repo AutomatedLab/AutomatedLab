@@ -932,22 +932,22 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $ComputerName)
+    foreach ($Name in $(Get-LabVM -ComputerName $Name))
     {
         $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
-        $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
+        $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name.ResourceName
 
         try
         {
-            Start-VM -Name $Name -ErrorAction Stop
+            Start-VM -Name $Name.ResourceName -ErrorAction Stop
 
             if ($machine.NetworkAdapters.Count -gt 1 -and
             ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
             {
                 Repair-LWHypervNetworkConfig -ComputerName $Name
                 $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
+                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name.ResourceName
             }
         }
         catch
@@ -1047,7 +1047,7 @@ function Stop-LWHypervVM
     else
     {
         $jobs = @()
-        foreach ($name in $ComputerName)
+        foreach ($name in (Get-LabVm -ComputerName $ComputerName).ResourceName)
         {
             $job = Start-Job -Name "AL_Shutdown_$name" -ScriptBlock {
                 try
@@ -1374,20 +1374,23 @@ function Get-LWHypervVMStatus
 
     $result = @{ }
     $vms = Get-VM -Name $ComputerName
+    $vmTable = @{ }
+    Get-LabVm -IncludeLinux | Where-Object FriendlyName -in $ComputerName | ForEach-Object {$vmTable[$_.FriendlyName] = $_.Name}
 
     foreach ($vm in $vms)
     {
+        $vmName = if ($vmTable[$vm.Name]) {$vmTable[$vm.Name]} else {$vm.Name}
         if ($vm.State -eq 'Running')
         {
-            $result.Add($vm.Name, 'Started')
+            $result.Add($vmName, 'Started')
         }
         elseif ($vm.State -eq 'Off')
         {
-            $result.Add($vm.Name, 'Stopped')
+            $result.Add($vmName, 'Stopped')
         }
         else
         {
-            $result.Add($vm.Name, 'Unknown')
+            $result.Add($vmName, 'Unknown')
         }
     }
 

@@ -1466,6 +1466,7 @@ function Start-LWAzureVM
     Write-LogFunctionEntry
 
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
+    $machines = Get-LabVm -ComputerName $ComputerName
 
     $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
     if (-not $azureVms)
@@ -1478,13 +1479,13 @@ function Start-LWAzureVM
         }
     }
 
-    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and $_.Name -in $ComputerName}
+    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and $_.Name -in $machines.ResourceName}
 
     $lab = Get-Lab
 
     $machinesToJoin = @()
 
-    $jobs = foreach ($name in $ComputerName)
+    $jobs = foreach ($name in $machines.ResourceName)
     {
         $vm = $azureVms | Where-Object Name -eq $name
         $vm | Start-AzVM -AsJob
@@ -1492,11 +1493,11 @@ function Start-LWAzureVM
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
 
-    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName}
+    $azureVms = $azureVms | Where-Object { $_.Name -in $machines.ResourceName}
 
-    foreach ($name in $ComputerName)
+    foreach ($name in $machines)
     {
-        $vm = $azureVms | Where-Object Name -eq $name
+        $vm = $azureVms | Where-Object Name -eq $name.ResourceName
 
         if (-not $vm.PowerState -eq 'VM Running')
         {
@@ -1556,14 +1557,15 @@ function Stop-LWAzureVM
     if (-not $PSBoundParameters.ContainsKey('ProgressIndicator')) { $PSBoundParameters.Add('ProgressIndicator', $ProgressIndicator) } #enables progress indicator
 
     $lab = Get-Lab
+    $machines = Get-LabVm -ComputerName $ComputerName -IncludeLinux
     $azureVms = Get-AzVM -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName
 
-    $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName }
+    $azureVms = $azureVms | Where-Object { $_.Name -in $machines.ResourceName }
 
     if ($ShutdownFromOperatingSystem)
     {
         $jobs = @()
-        $linux, $windows = (Get-LabVm -ComputerName $ComputerName -IncludeLinux).Where( {$_.OperatingSystemType -eq 'Linux'}, 'Split')
+        $linux, $windows = $machines.Where( {$_.OperatingSystemType -eq 'Linux'}, 'Split')
 
         $jobs += Invoke-LabCommand -ComputerName $windows -NoDisplay -AsJob -PassThru -ScriptBlock {
             Stop-Computer -Force -ErrorAction Stop
@@ -1586,7 +1588,7 @@ function Stop-LWAzureVM
     }
     else
     {
-        $jobs = foreach ($name in $ComputerName)
+        $jobs = foreach ($name in $machines.ResourceName)
         {
             $vm = $azureVms | Where-Object Name -eq $name
             $vm | Stop-AzVM -Force -StayProvisioned:$StayProvisioned -AsJob
