@@ -294,8 +294,8 @@ function New-LWHypervVM
         1
     }
 
-    $vmPath = $lab.GetMachineTargetPath($Machine.Name)
-    $path = "$vmPath\$($Machine.Name).vhdx"
+    $vmPath = $lab.GetMachineTargetPath($Machine.ResourceName)
+    $path = "$vmPath\$($Machine.ResourceName).vhdx"
     Write-PSFMessage "`tVM Disk path is '$path'"
 
     if (Test-Path -Path $path)
@@ -916,7 +916,7 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $(Get-LabVM -ComputerName $Name))
+    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName))
     {
         if ($Name.OperatingSystemType -eq 'Linux')
         {

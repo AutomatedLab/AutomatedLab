@@ -667,7 +667,7 @@ function Wait-LabVM
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
         if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
         {
-            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
             if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
             {
                 Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
