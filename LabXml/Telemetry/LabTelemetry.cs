@@ -198,7 +198,7 @@ namespace AutomatedLab
             };
 
             var eventMessage = "Function called - Transmitting the following:" +
-                $"\r\function = {functionName}";
+                $"\r\nfunction = {functionName}";
             try
             {
                 EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 101);
