@@ -1760,6 +1760,7 @@ function Get-LabVM
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string[]]$ComputerName,
 
         [Parameter(Mandatory, ParameterSetName = 'ByRole')]
@@ -1767,6 +1768,8 @@ function Get-LabVM
 
         [Parameter(Mandatory, ParameterSetName = 'All')]
         [switch]$All,
+
+        [scriptblock]$Filter,
 
         [switch]$IncludeLinux,
 
@@ -1797,7 +1800,7 @@ function Get-LabVM
             {
                 foreach ($n in $ComputerName)
                 {
-                    $machine = $Script:data.Machines | Where-Object Name -in $n
+                    $machine = $Script:data.Machines | Where-Object Name -Like $n
                     if (-not $machine)
                     {
                         continue
@@ -1853,7 +1856,7 @@ function Get-LabVM
             }
         }
 
-        if ($IsRunning)
+        $result = if ($IsRunning)
         {
             if ($result.Count -eq 1)
             {
@@ -1864,9 +1867,18 @@ function Get-LabVM
             }
             else
             {
-                $startedMachines = (Get-LabVMStatus -ComputerName $result).GetEnumerator() | Where-Object Value -eq 'Started'
+                $startedMachines = (Get-LabVMStatus -ComputerName $result).GetEnumerator() | Where-Object Value -EQ Started
                 $Script:data.Machines | Where-Object { $_.Name -in $startedMachines.Name }
             }
+        }
+        else
+        {
+            $result
+        }
+
+        if ($Filter)
+        {
+            $result.Where($Filter)
         }
         else
         {
@@ -2438,4 +2450,3 @@ function Copy-LabALCommon
     }
 }
 #endregion Copy-LabALCommon
- 
