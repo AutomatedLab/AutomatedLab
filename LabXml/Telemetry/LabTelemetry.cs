@@ -188,6 +188,34 @@ namespace AutomatedLab
             }
         }
 
+        public void FunctionCalled(string functionName)
+        {
+            if (!GetEnvironmentVariableAsBool(_telemetryOptInVar, false)) return;
+
+            var properties = new Dictionary<string, string>
+            {
+                { "functionname", functionName}
+            };
+
+            var eventMessage = "Function called - Transmitting the following:" +
+                $"\r\nfunction = {functionName}";
+            try
+            {
+                EventLog.WriteEntry("AutomatedLab", eventMessage, EventLogEntryType.Information, 101);
+            }
+            catch { }
+
+            try
+            {
+                telemetryClient.TrackEvent("FunctionCalled", properties);
+                telemetryClient.Flush();
+            }
+            catch
+            {
+                ; //nothing to catch. If it doesn't work, it doesn't work.
+            }
+        }
+
         private void SendUsedRole(List<string> roleName, bool isCustomRole = false)
         {
             if (!GetEnvironmentVariableAsBool(_telemetryOptInVar, false)) return;
@@ -227,6 +255,7 @@ namespace AutomatedLab
                 ; //nothing to catch. If it doesn't work, it doesn't work.
             }
         }
+
     }
 
     public class LabTelemetryInitializer : ITelemetryInitializer
