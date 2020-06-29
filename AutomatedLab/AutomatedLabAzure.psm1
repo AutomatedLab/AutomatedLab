@@ -1297,7 +1297,7 @@ function Sync-LabAzureLabSources
             $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
             if ($azureFile)
             {
-                $azureHash = $azureFile.Properties.ContentMD5
+                $azureHash = $azureFile.CloudFile.Properties.ContentMD5
                 $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
                 Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
             }
