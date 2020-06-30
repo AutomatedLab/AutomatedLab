@@ -1136,6 +1136,15 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    # A new bug surfaced where on some occasion, Azure IaaS workloads were not connected to the internet
+    # until a restart was done
+    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $vms = Get-LabVm
+        $disconnectedVms = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $vms -ScriptBlock { $null -eq (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue) } | Where-Object { $_}
+        if ($disconnectedVms) { Restart-LabVm $disconnectedVms.PSComputerName -Wait -NoDisplay -NoNewLine }
+    }
+
     if (($PostInstallations -or $performAll) -and (Get-LabVM | Where-Object -Property SkipDeployment -eq $false))
     {
         $machines = Get-LabVM | Where-Object { -not $_.SkipDeployment }
