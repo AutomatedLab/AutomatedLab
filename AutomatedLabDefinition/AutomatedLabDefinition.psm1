@@ -1899,7 +1899,7 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-        [string]$FriendlyName,
+        [string]$ResourceName,
 
         [switch]$SkipDeployment
     )
@@ -2099,7 +2099,7 @@ function Add-LabMachineDefinition
 
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
-        $machine.FriendlyName = $FriendlyName
+        $machine.FriendlyName = $ResourceName
         $script:machines.Add($machine)
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
