@@ -49,7 +49,7 @@ function New-LWHypervVM
         $PSDefaultParameterValues['*:IsAutoYast'] = $true
     }
 
-    Write-PSFMessage "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
+    Write-PSFMessage "Creating machine with the name '$($Machine.ResourceName)' in the path '$VmPath'"
 
     #region Unattend XML settings
     if (-not $Machine.ProductKey)
@@ -465,12 +465,12 @@ function New-LWHypervVM
     foreach ($adapter in $adapters)
     {
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
+        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.ResourceName -PassThru
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
             Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
-            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
+            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.ResourceName)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
         }
     }
 
@@ -1587,7 +1587,7 @@ function Repair-LWHypervNetworkConfig
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
-            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.Name
+            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
             while ($newName -in $newNames)
             {
                 $newName = Add-StringIncrement -String $newName
@@ -1629,9 +1629,9 @@ function Repair-LWHypervNetworkConfig
             [array]::Reverse($machine.NetworkAdapters)
             foreach ($adapterInfo in $sortedAdapters)
             {
-                Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
+                Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.ResourceName)'"
                 do {
-                    nvspbind.exe /+ $adapterInfo.VirtualSwitch.Name ms_tcpip | Out-File -FilePath c:\nvspbind.log -Append
+                    nvspbind.exe /+ $adapterInfo.VirtualSwitch.ResourceName ms_tcpip | Out-File -FilePath c:\nvspbind.log -Append
                     $i++
 
                     if ($i -gt $retries) { return }
@@ -1643,11 +1643,11 @@ function Repair-LWHypervNetworkConfig
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
-        $vmAdapter = Get-VMNetworkAdapter -VMName $machine.ResourceName -Name $adapterInfo.VirtualSwitch.Name
+        $vmAdapter = Get-VMNetworkAdapter -VMName $machine.ResourceName -Name $adapterInfo.VirtualSwitch.ResourceName
 
-        if ($adapterInfo.VirtualSwitch.Name -ne $vmAdapter.SwitchName)
+        if ($adapterInfo.VirtualSwitch.ResourceName -ne $vmAdapter.SwitchName)
         {
-            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
+            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.ResourceName
         }
     }
 

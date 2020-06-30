@@ -30,6 +30,16 @@ namespace AutomatedLab
             set { subnets = value; }
         }
 
+        public string FriendlyName { get; set; }
+
+        public string ResourceName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(FriendlyName)) { return FriendlyName; } else { return Name; }
+            }
+        }
+
         [XmlAttribute]
         public string Name
         {

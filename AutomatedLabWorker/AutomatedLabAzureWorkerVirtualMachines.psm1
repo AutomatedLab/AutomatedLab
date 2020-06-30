@@ -141,7 +141,7 @@
     foreach ($network in $Lab.VirtualNetworks)
     {
         #region VNet
-        Write-ScreenInfo -Type Verbose -Message ('Adding vnet {0} ({1}) to template' -f $network.Name, $network.AddressSpace)
+        Write-ScreenInfo -Type Verbose -Message ('Adding vnet {0} ({1}) to template' -f $network.ResourceName, $network.AddressSpace)
         $vNet = @{
             type       = "Microsoft.Network/virtualNetworks"
             apiVersion = "[providers('Microsoft.Network','virtualNetworks').apiVersions[0]]"
@@ -152,7 +152,7 @@
             dependsOn  = @(
                 "[resourceId('Microsoft.Network/networkSecurityGroups', '$($Lab.Name)nsg')]"
             )
-            name       = $network.Name
+            name       = $network.ResourceName
             location   = "[resourceGroup().location]"
             properties = @{
                 addressSpace = @{
@@ -251,7 +251,7 @@
                         CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
                 type       = "Microsoft.Network/publicIPAddresses"
-                name       = "$($Lab.Name)$($network.Name)bastionip"
+                name       = "$($Lab.Name)$($network.ResourceName)bastionip"
                 location   = "[resourceGroup().location]"
                 properties = @{
                     publicIPAllocationMethod = "static"
@@ -267,15 +267,15 @@
             $template.resources += @{
                 apiVersion = "[providers('Microsoft.Network','bastionHosts').apiVersions[0]]"
                 type       = "Microsoft.Network/bastionHosts"
-                name       = "$($Lab.Name)$($network.Name)bastion"
+                name       = "$($Lab.Name)$($network.ResourceName)bastion"
                 tags       = @{ 
                     AutomatedLab = $Lab.Name
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
                 location   = "[resourceGroup().location]"
                 dependsOn  = @(
-                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
-                    "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)bastionip')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
+                    "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)bastionip')]"
                 )
                 properties = @{
                     ipConfigurations = @(
@@ -283,10 +283,10 @@
                             name       = "IpConf"
                             properties = @{
                                 subnet          = @{
-                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($network.Name)','AzureBastionSubnet')]"
+                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($network.ResourceName)','AzureBastionSubnet')]"
                                 }
                                 publicIPAddress = @{
-                                    id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)bastionip')]"
+                                    id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)bastionip')]"
                                 }
                             }
                         }
@@ -301,15 +301,15 @@
         #region Peering
         foreach ($peer in $network.ConnectToVnets)
         {
-            Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.Name, $peer)
+            Write-ScreenInfo -Type Verbose -Message ('Adding peering from {0} to {1} to VNet template' -f $network.ResourceName, $peer)
             $template.Resources += @{
                 apiVersion = "[providers('Microsoft.Network', 'virtualNetworks').apiVersions[0]]"
                 dependsOn  = @(
-                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.Name)')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($network.ResourceName)')]"
                     "[resourceId('Microsoft.Network/virtualNetworks', '$($peer)')]"
                 )
                 type       = "Microsoft.Network/virtualNetworks/virtualNetworkPeerings"
-                name       = "$($network.Name)/$($network.Name)To$($peer)"
+                name       = "$($network.ResourceName)/$($network.ResourceName)To$($peer)"
                 location   = "[resourceGroup().location]"
                 properties = @{
                     allowVirtualNetworkAccess = $true
@@ -341,7 +341,7 @@
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
             type       = "Microsoft.Network/publicIPAddresses"
-            name       = "$($Lab.Name)$($network.Name)lbfrontendip"
+            name       = "$($Lab.Name)$($network.ResourceName)lbfrontendip"
             location   = "[resourceGroup().location]"
             properties = @{
                 publicIPAllocationMethod = "static"
@@ -364,28 +364,28 @@
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
             apiVersion = "[providers('Microsoft.Network','loadBalancers').apiVersions[0]]"
-            name       = "$($resourceGroup)$($vNet.Name)loadbalancer"
+            name       = "$($resourceGroup)$($vNet.ResourceName)loadbalancer"
             location   = "[resourceGroup().location]"
             sku        = @{
                 name = "Standard"
             }
             dependsOn  = @(
-                "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)lbfrontendip')]"
+                "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)lbfrontendip')]"
             )
             properties = @{
                 frontendIPConfigurations = @(
                     @{
-                        name       = "$($resourceGroup)$($vNet.Name)lbfrontendconfig"
+                        name       = "$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig"
                         properties = @{
                             publicIPAddress = @{
-                                id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.Name)lbfrontendip')]"
+                                id = "[resourceId('Microsoft.Network/publicIPAddresses', '$($Lab.Name)$($network.ResourceName)lbfrontendip')]"
                             }
                         }
                     }
                 )
                 backendAddressPools      = @(
                     @{
-                        name = "$($resourceGroup)$($vNet.Name)backendpoolconfig"
+                        name = "$($resourceGroup)$($vNet.ResourceName)backendpoolconfig"
                     }
                 )
                 outboundRules = @(
@@ -395,11 +395,11 @@
                             allocatedOutboundPorts = 0 # In order to use automatic allocation
                             frontendIPConfigurations = @(
                                 @{
-                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                                    id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.ResourceName)loadbalancer', '$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig')]"
                                 }
                             )
                             backendAddressPool = @{
-                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($vNet.Name)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($vNet.Name)backendpoolconfig')]"
+                                id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($vNet.ResourceName)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($vNet.ResourceName)backendpoolconfig')]"
                             }
                             protocol = "All"
                             enableTcpReset = $true
@@ -410,14 +410,14 @@
             }
         }
 
-        $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript {$_.Network -EQ $vNet.Name -and -not $_.SkipDeployment}))
+        $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript {$_.Network -EQ $vNet.ResourceName -and -not $_.SkipDeployment}))
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
             @{
-                name       = "$($machine.Name.ToLower())rdpin"
+                name       = "$($machine.ResourceName.ToLower())rdpin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.ResourceName)loadbalancer', '$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig')]"
                     }
                     frontendPort            = $machine.LoadBalancerRdpPort
                     backendPort             = 3389
@@ -426,10 +426,10 @@
                 }
             }
             @{
-                name       = "$($machine.Name.ToLower())winrmin"
+                name       = "$($machine.ResourceName.ToLower())winrmin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.ResourceName)loadbalancer', '$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig')]"
                     }
                     frontendPort            = $machine.LoadBalancerWinRmHttpPort
                     backendPort             = 5985
@@ -438,10 +438,10 @@
                 }
             }
             @{
-                name       = "$($machine.Name.ToLower())winrmhttpsin"
+                name       = "$($machine.ResourceName.ToLower())winrmhttpsin"
                 properties = @{
                     frontendIPConfiguration = @{
-                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.Name)loadbalancer', '$($resourceGroup)$($vNet.Name)lbfrontendconfig')]"
+                        id = "[resourceId('Microsoft.Network/loadBalancers/frontendIPConfigurations', '$($resourceGroup)$($vNet.ResourceName)loadbalancer', '$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig')]"
                     }
                     frontendPort            = $machine.LoadBalancerWinrmHttpsPort
                     backendPort             = 5986
@@ -464,7 +464,7 @@
                 CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
             }
             apiVersion = "[providers('Microsoft.Compute','availabilitySets').apiVersions[0]]"
-            name       = "$($network.Name)"
+            name       = "$($network.ResourceName)"
             location   = "[resourceGroup().location]"
             sku        = @{
                 name = "Aligned"
@@ -526,8 +526,8 @@
              
             $nicTemplate = @{
                 dependsOn  = @(
-                    "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.Name)')]"
-                    "[resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer')]"
+                    "[resourceId('Microsoft.Network/virtualNetworks', '$($nic.VirtualSwitch.ResourceName)')]"
+                    "[resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.ResourceName)loadbalancer')]"
                 )
                 properties = @{
                     enableAcceleratedNetworking = $false
@@ -535,7 +535,7 @@
                         @{
                             properties = @{
                                 subnet                          = @{
-                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($nic.VirtualSwitch.Name)', '$subnetName')]"
+                                    id = "[resourceId('Microsoft.Network/virtualNetworks/subnets', '$($nic.VirtualSwitch.ResourceName)', '$subnetName')]"
                                 }
                                 primary                         = $true
                                 privateIPAllocationMethod       = "Static"
@@ -543,18 +543,18 @@
                                 privateIPAddressVersion         = "IPv4"                                
                                 loadBalancerBackendAddressPools = @(
                                     @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($nic.VirtualSwitch.Name)backendpoolconfig')]"
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($resourceGroup)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
                                     }
                                 )
                                 loadBalancerInboundNatRules     = @(
                                     @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())rdpin')]"
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
                                     }
                                     @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())winrmin')]"
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
                                     }
                                     @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.Name)loadbalancer'),'/inboundNatRules/$($machine.Name.ToLower())winrmhttpsin')]"
+                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($resourceGroup)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
                                     }
                                 )
                             }
@@ -933,7 +933,7 @@ function New-LWAzureVM
 
     if (Get-AzVM -Name $machine.ResourceName -ResourceGroupName $machineResourceGroup -ErrorAction SilentlyContinue)
     {
-        Write-PSFMessage -Message "Target machine $($Machine.Name) already exists. Skipping..."
+        Write-PSFMessage -Message "Target machine $($machine.ResourceName) already exists. Skipping..."
         return
     }
 
@@ -947,7 +947,7 @@ function New-LWAzureVM
     if ($global:cacheVMs | Where-Object { $_.Name -eq $Machine.ResourceName -and $_.ResourceGroupName -eq $resourceGroupName })
     {
         Write-ProgressIndicatorEnd
-        Write-ScreenInfo -Message "Machine '$($machine.name)' already exist. Skipping creation of this machine" -Type Warning
+        Write-ScreenInfo -Message "Machine '$($machine.ResourceName)' already exist. Skipping creation of this machine" -Type Warning
         return
     }
 
@@ -987,7 +987,7 @@ function New-LWAzureVM
     $LabName = $lab.Name
 
     Write-PSFMessage '-------------------------------------------------------'
-    Write-PSFMessage "Machine: $($Machine.name)"
+    Write-PSFMessage "Machine: $($machine.ResourceName)"
     Write-PSFMessage "Vnet: $Vnet"
     Write-PSFMessage "RoleSize: $RoleSize"
     Write-PSFMessage "VmImageName: $VmImageName"
@@ -1042,12 +1042,12 @@ function New-LWAzureVM
     Write-PSFMessage -Message 'Locating load balancer and assigning NIC to appropriate rules and pool'
     $LoadBalancer = Get-AzLoadBalancer -Name "$($ResourceGroupName)$($machine.Network[0])loadbalancer" -ResourceGroupName $resourceGroupName -ErrorAction Stop
 
-    $inboundNatRules = @(Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())rdpin" -ErrorAction SilentlyContinue)
-    $inboundNatRules += Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmin" -ErrorAction SilentlyContinue
-    $inboundNatRules += Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.Name.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
+    $inboundNatRules = @(Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.ResourceName.ToLower())rdpin" -ErrorAction SilentlyContinue)
+    $inboundNatRules += Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.ResourceName.ToLower())winrmin" -ErrorAction SilentlyContinue
+    $inboundNatRules += Get-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $LoadBalancer -Name "$($machine.ResourceName.ToLower())winrmhttpsin" -ErrorAction SilentlyContinue
 
     $nicProperties = @{
-        Name                           = "$($Machine.Name.ToLower())nic0"
+        Name                           = "$($machine.ResourceName.ToLower())nic0"
         ResourceGroupName              = $ResourceGroupName
         Location                       = $Location
         Subnet                         = $subnet
@@ -1107,7 +1107,7 @@ function New-LWAzureVM
 
         Write-PSFMessage -Message "Adding additional network adapter to $Machine"
         $additionalNicParameters = @{
-            Name              = "$($Machine.Name.ToLower())nic$niccount"
+            Name              = "$($machine.ResourceName.ToLower())nic$niccount"
             ResourceGroupName = $ResourceGroupName
             Location          = $Location
             Subnet            = $subnet

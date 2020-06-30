@@ -30,7 +30,7 @@ function New-LabNetworkSwitches
         }
     }
 
-    Write-PSFMessage "Creating network switch '$($virtualNetwork.Name)'..."
+    Write-PSFMessage "Creating network switch '$($virtualNetwork.ResourceName)'..."
 
     $hypervNetworks = $data.VirtualNetworks | Where-Object HostType -eq HyperV
     if ($hypervNetworks)
@@ -77,16 +77,16 @@ function Remove-LabNetworkSwitches
     $virtualNetworks = $Script:data.VirtualNetworks | Where-Object { $_.HostType -eq 'HyperV' -and $_.Name -ne 'Default Switch' }
     foreach ($virtualNetwork in $virtualNetworks)
     {
-        Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.Name)'..."
+        Write-PSFMessage "Removing Hyper-V network switch '$($virtualNetwork.ResourceName)'..."
 
         if ($virtualNetwork.SwitchType -eq 'External' -and -not $RemoveExternalSwitches)
         {
-            Write-ScreenInfo "The virtual switch '$($virtualNetwork.Name)' is of type external and will not be removed as it may also be used by other labs"
+            Write-ScreenInfo "The virtual switch '$($virtualNetwork.ResourceName)' is of type external and will not be removed as it may also be used by other labs"
             continue
         }
         else
         {
-            Remove-LWNetworkSwitch -Name $virtualNetwork.Name
+            Remove-LWNetworkSwitch -Name $virtualNetwork.ResourceName
         }
         Write-PSFMessage '...done'
     }
