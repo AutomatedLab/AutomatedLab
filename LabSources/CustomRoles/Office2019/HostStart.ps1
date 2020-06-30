@@ -26,7 +26,6 @@ $config2019Xml = @"
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
 $labMachine = Get-LabVm -ComputerName $ComputerName
-$OFficeInstallFile = Get-Item -Path $IsoPath
 
 if (-not $lab)
 {
@@ -34,7 +33,7 @@ if (-not $lab)
     return
 }
 
-if (-not (Test-Path -Path $IsoPath))
+if ($Lab.DefaultVirtualizationEngine -eq 'HyperV' -and -not (Test-Path -Path $IsoPath))
 {
     Write-Error "The ISO file '$IsoPath' could not be found."
     return
@@ -44,21 +43,19 @@ $officeDeploymentToolFileName = 'OfficeDeploymentTool.exe'
 $officeDeploymentToolFilePath = Join-Path -Path $labSources\SoftwarePackages -ChildPath $officeDeploymentToolFileName
 $officeDeploymentToolUri = Get-LabConfigurationItem -Name OfficeDeploymentTool
 
-if (-not (Test-Path -Path $officeDeploymentToolFilePath))
-{
-    Get-LabInternetFile -Uri $officeDeploymentToolUri -Path $officeDeploymentToolFilePath
-}
+Get-LabInternetFile -Uri $officeDeploymentToolUri -Path $officeDeploymentToolFilePath
+
 
 Write-ScreenInfo -Message 'Waiting for machines to startup' -NoNewline
 Start-LabVM -ComputerName $ComputerName -Wait -ProgressIndicator 15
 
 Write-ScreenInfo "Preparing Office 2019 installation on '$ComputerName'..." -NoNewLine
-$disk = Mount-LabIsoImage -ComputerName $ComputerName -IsoPath $OFficeInstallFile -PassThru -SupressOutput
+$disk = Mount-LabIsoImage -ComputerName $ComputerName -IsoPath $IsoPath -PassThru -SupressOutput
 
 Invoke-LabCommand -ActivityName 'Copy Office to C' -ComputerName $ComputerName -ScriptBlock {
 New-Item -ItemType Directory -Path C:\Office | Out-Null
 Copy-Item -Path "$($args[0])\Office" -Destination C:\Office -Recurse
-} -ArgumentList $disk.DriveLetter
+} -ArgumentList $disk.DriveLetter -passthru
 
 Install-LabSoftwarePackage -Path $officeDeploymentToolFilePath -CommandLine '/extract:c:\Office /quiet' -ComputerName $ComputerName -NoDisplay
 
@@ -73,7 +70,7 @@ Write-ScreenInfo 'finished.'
 
 $jobs = @()
 
-$jobs = Install-LabSoftwarePackage -LocalPath C:\Office\setup.exe -CommandLine '/configure c:\Office\Configuration.xml' -ComputerName $ComputerName -AsJob -PassThru
+$jobs = Install-LabSoftwarePackage -LocalPath C:\Office\setup.exe -CommandLine '/configure c:\Office\Configuration.xml' -ComputerName $ComputerName -AsJob -PassThru -Timeout 15
 
 Write-ScreenInfo -Message 'Waiting for Office 2019 to complete installation' -NoNewline
 
