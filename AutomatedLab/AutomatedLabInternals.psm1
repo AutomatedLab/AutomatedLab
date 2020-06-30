@@ -583,7 +583,10 @@ function Get-LabInternetFile
             if (-not $doNotGetVm)
             {
                 $machine =  Invoke-LabCommand -PassThru -NoDisplay -ComputerName $(Get-LabVM -IsRunning) -ScriptBlock {
-                    hostname
+                    if (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue)
+                    {
+                        hostname
+                    }
                 } -ErrorAction SilentlyContinue | Select-Object -First 1 
                 Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
