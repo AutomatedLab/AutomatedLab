@@ -465,12 +465,12 @@ function New-LWHypervVM
     foreach ($adapter in $adapters)
     {
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.ResourceName -PassThru
+        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch.ResourceName -SwitchName $adapter.VirtualSwitch.ResourceName -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
             Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
-            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.ResourceName)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
+            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch.ResourceName)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
         }
     }
 
@@ -1593,7 +1593,14 @@ function Repair-LWHypervNetworkConfig
                 $newName = Add-StringIncrement -String $newName
             }
             $newNames += $newName
-            $adapterInfo.VirtualSwitch.Name = $newName
+            if (-not [string]::IsNullOrEmpty($adapterInfo.VirtualSwitch.FriendlyName))
+            {
+                $adapterInfo.VirtualSwitch.FriendlyName = $newName
+            }
+            else
+            {
+                $adapterInfo.VirtualSwitch.Name = $newName
+            }
 
             if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
             {

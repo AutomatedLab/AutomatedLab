@@ -2495,12 +2495,12 @@ function Add-LabMachineDefinition
                 foreach ($networkDefinition in $networkDefinitions)
                 {
                     #check for an virtual switch having already the name of the new network switch
-                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
+                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition.ResourceName
 
                     #does the current network definition has an address space assigned
                     if ($networkDefinition.AddressSpace)
                     {
-                        Write-PSFMessage -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
+                        Write-PSFMessage -Message "Virtual network '$($networkDefinition.ResourceName)' specified with address space '$($networkDefinition.AddressSpace)'"
 
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)
