@@ -1,5 +1,8 @@
-﻿namespace AutomatedLab.Azure
+﻿using System;
+
+namespace AutomatedLab.Azure
 {
+    [Serializable]
     public class AzureConnectionInfo
     {
         public string ComputerName { get; set; }
