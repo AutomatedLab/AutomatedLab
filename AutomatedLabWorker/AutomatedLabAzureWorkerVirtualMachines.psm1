@@ -1812,7 +1812,7 @@ function Get-LWAzureVMConnectionInfo
 
         $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($name.Network[0])lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
-        $result = New-Object PSObject -Property @{
+        $result = [AzureConnectionInfo]@{
             ComputerName      = $name.Name
             DnsName           = $ip.DnsSettings.Fqdn
             HttpsName         = $ip.DnsSettings.Fqdn

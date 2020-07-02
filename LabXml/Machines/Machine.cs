@@ -329,6 +329,8 @@ namespace AutomatedLab
             set { autoLogonPassword = value; }
         }
 
+        public AzureConnectionInfo AzureConnectionInfo {get; set;}
+
         public SerializableDictionary<string, string> AzureProperties
         {
             get
