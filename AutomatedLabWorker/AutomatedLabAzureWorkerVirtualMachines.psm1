@@ -1752,19 +1752,23 @@ function Get-LWAzureVMStatus
     $resourceGroups = (Get-LabVM).AzureConnectionInfo.ResourceGroupName | Select-Object -Unique
     $azureVms = $azureVms | Where-Object { $_.Name -in $ComputerName -and $_.ResourceGroupName -in $resourceGroups }
 
+    $vmTable = @{ }
+    Get-LabVm -IncludeLinux | Where-Object FriendlyName -in $ComputerName | ForEach-Object {$vmTable[$_.FriendlyName] = $_.Name}
+
     foreach ($azureVm in $azureVms)
     {
+        $vmName = if ($vmTable[$azureVm.Name]) {$vmTable[$azureVm.Name]} else {$azureVm.Name}
         if ($azureVm.PowerState -eq 'VM running')
         {
-            $result.Add($azureVm.Name, 'Started')
+            $result.Add($vmName, 'Started')
         }
         elseif ($azureVm.PowerState -eq 'VM stopped' -or $azureVm.PowerState -eq 'VM deallocated')
         {
-            $result.Add($azureVm.Name, 'Stopped')
+            $result.Add($vmName, 'Stopped')
         }
         else
         {
-            $result.Add($azureVm.Name, 'Unknown')
+            $result.Add($vmName, 'Unknown')
         }
     }
 
