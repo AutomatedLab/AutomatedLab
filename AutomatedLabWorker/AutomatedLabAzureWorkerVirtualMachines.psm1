@@ -410,7 +410,7 @@
             }
         }
 
-        $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript {$_.Network -EQ $vNet.ResourceName -and -not $_.SkipDeployment}))
+        $rules = foreach ($machine in ($Lab.Machines | Where-Object -FilterScript {$_.Network -EQ $network.Name -and -not $_.SkipDeployment}))
         {
             Write-ScreenInfo -Type Verbose -Message ('Adding inbound NAT rules for {0}: {1}:3389, {2}:5985, {3}:5986' -f $machine, $machine.LoadBalancerRdpPort, $machine.LoadBalancerWinRmHttpPort, $machine.LoadBalancerWinrmHttpsPort)
             @{
@@ -612,7 +612,7 @@
                 }
                 osProfile       = @{
                     adminPassword            = $machine.GetLocalCredential($true).GetNetworkCredential().Password
-                    computerName             = $machine.ResourceName
+                    computerName             = $machine.Name
                     allowExtensionOperations = $true
                     adminUsername            = ($machine.GetLocalCredential($true).UserName -split '\\')[-1]
                     windowsConfiguration     = @{
@@ -1480,34 +1480,35 @@ function Start-LWAzureVM
         }
     }
 
-    $azureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and $_.Name -in $machines.ResourceName}
+    $stoppedAzureVms = $azureVms | Where-Object { $_.PowerState -ne 'VM running' -and $_.Name -in $machines.ResourceName}
 
     $lab = Get-Lab
 
     $machinesToJoin = @()
 
-    $jobs = foreach ($name in $machines.ResourceName)
+    if ($stoppedAzureVms)
     {
-        $vm = $azureVms | Where-Object Name -eq $name
-        $vm | Start-AzVM -AsJob
-    }
+        $jobs = foreach ($name in $machines.ResourceName)
+        {
+            $vm = $azureVms | Where-Object Name -eq $name
+            $vm | Start-AzVM -AsJob
+        }
 
-    Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+        Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
+    }
 
     $azureVms = $azureVms | Where-Object { $_.Name -in $machines.ResourceName}
 
-    foreach ($name in $machines)
+    foreach ($machine in $machines)
     {
-        $vm = $azureVms | Where-Object Name -eq $name.ResourceName
+        $vm = $azureVms | Where-Object Name -eq $machine.ResourceName
 
-        if (-not $vm.PowerState -eq 'VM Running')
+        if ($vm.PowerState -ne 'VM Running')
         {
-            throw "Could not start machine '$name'"
+            throw "Could not start machine '$machine'"
         }
         else
         {
-            $machine = Get-LabVM -ComputerName $name
-            #if the machine should be domain-joined but has not yet joined and is not a domain controller
             if ($machine.IsDomainJoined -and -not $machine.HasDomainJoined -and ($machine.Roles.Name -notcontains 'RootDC' -and $machine.Roles.Name -notcontains 'FirstChildDC' -and $machine.Roles.Name -notcontains 'DC'))
             {
                 $machinesToJoin += $machine
@@ -1810,9 +1811,10 @@ function Get-LWAzureVMConnectionInfo
         if (-not $azureVM)
         { continue }
 
-        $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($name.Network[0])lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
+        $net = $lab.VirtualNetworks.Where({$_.Name -eq $name.Network[0]})
+        $ip = Get-AzPublicIpAddress -Name "$($resourceGroupName)$($net.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroupName -ErrorAction SilentlyContinue
 
-        $result = [AzureConnectionInfo]@{
+        $result = [AutomatedLab.Azure.AzureConnectionInfo] @{
             ComputerName      = $name.Name
             DnsName           = $ip.DnsSettings.Fqdn
             HttpsName         = $ip.DnsSettings.Fqdn
