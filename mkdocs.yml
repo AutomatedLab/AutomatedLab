@@ -2,16 +2,17 @@ copyright: AutomatedLab is licensed under the <a href='https://github.com/Automa
 repo_url: https://github.com/AutomatedLab/AutomatedLab
 nav:
 - Home: index.md
-- Installation: Wiki/install.md
+- Installation: Wiki/Basic/install.md
 - Getting started:
-  - First steps: Wiki/gettingstarted.md
-  - Advanced configuration : Wiki/automatedlabconfig.md
+  - First steps: Wiki/Basic/gettingstarted.md
+  - Advanced configuration : Wiki/Advanced/automatedlabconfig.md
 - Defining your lab:
-  - Creating a new lab: Wiki/createnewlab.md
-  - Networks and IP Addresses: Wiki/networksandaddresses.md
-  - Adding machines: Wiki/addmachines.md
-  - Preparing a fully offline environment: Wiki/fullyoffline.md
-  - Joining lab VMs to existing domain: Wiki/joindomain.md
+  - Creating a new lab: Wiki/Basic/createnewlab.md
+  - Networks and IP Addresses: Wiki/Basic/networksandaddresses.md
+  - Adding machines: Wiki/Basic/addmachines.md
+  - Preparing a fully offline environment: Wiki/Basic/fullyoffline.md
+  - Joining lab VMs to existing domain: Wiki/Basic/joindomain.md
+  - Parallel deployments: Wiki/Advanced/resourcenaming.md
 - Roles:
   - About roles: Wiki/Roles/roles.md
   - ActiveDirectory: Wiki/Roles/activedirectory.md
@@ -23,20 +24,21 @@ nav:
   - SQL Server: Wiki/Roles/sql.md
   - DSC Pull Server: Wiki/Roles/dscpull.md
   - Lab Builder REST API : Wiki/Roles/restapi.md
-- Custom roles: Wiki/customroles.md
+- Custom roles: Wiki/Advanced/customroles.md
 - Customizing your lab:
-  - Installing Windows features: Wiki/installwindowsfeatures.md
-  - Installing software: Wiki/installsoftware.md
-  - Run remote commands: Wiki/invokelabcommand.md
-  - Use DSC: Wiki/usedsc.md
-  - Exchanging data: Wiki/exchangedata.md
-  - Notification system: Wiki/notifications.md
-  - Connecting two labs: Wiki/connectlabs.md
+  - Installing Windows features: Wiki/Basic/installwindowsfeatures.md
+  - Installing software: Wiki/Basic/installsoftware.md
+  - Run remote commands: WikiBasic//invokelabcommand.md
+  - Use DSC: Wiki/Advanced/usedsc.md
+  - Exchanging data: Wiki/Basic/exchangedata.md
+  - Notification system: Wiki/Advanced/notifications.md
+  - Connecting two labs: Wiki/Advanced/connectlabs.md
 - Azure labs:
-  - Adding a subscription: Wiki/addazuresubscription.md
-  - Synchronise local lab sources: Wiki/synclabsources.md
-  - Mounting ISO files : Wiki/mountazureisos.md
-- Lab telemetry: Wiki/telemetry.md
+  - Adding a subscription: Wiki/Basic/addazuresubscription.md
+  - Synchronise local lab sources: Wiki/Basic/synclabsources.md
+  - Mounting ISO files : Wiki/Basic/mountazureisos.md
+  - Using the Bastion host: Wiki/Basic/useazurebastion.md
+- Lab telemetry: Wiki/About/telemetry.md
 - Version history: https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md
 - Module help:
   - AutomatedLab:
