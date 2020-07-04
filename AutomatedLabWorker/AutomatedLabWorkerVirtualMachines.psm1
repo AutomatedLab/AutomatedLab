@@ -510,7 +510,22 @@ function New-LWHypervVM
         {
             #for Generation 2 VMs
             $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
-            $VhdVolume = "$($VhdOsPartition.DriveLetter):"
+            # If no drive letter is assigned, make sure we assign it before continuing
+            If ($vhdOsPartition.NoDefaultDriveLetter) {
+                # Get all available drive letters, and store in a temporary variable.
+                $usedDriveLetters = @(Get-Volume | ForEach-Object { "$([char]$_.DriveLetter)" }) + @(Get-WmiObject -Class Win32_MappedLogicalDisk | ForEach-Object { $([char]$_.DeviceID.Trim(':')) })
+                $tempDriveLetters = @(Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" } ) | Where-Object { $_.SideIndicator -eq '<=' } | ForEach-Object { $_.InputObject })
+                # Sort the available drive letters to get the first available drive letter
+                $availableDriveLetters = ($TempDriveLetters | Sort-Object)
+                $firstAvailableDriveLetter = $availableDriveLetters[0]
+                $vhdOsPartition | Set-Partition -NewDriveLetter $firstAvailableDriveLetter
+                $VhdVolume = "$($firstAvailableDriveLetter):"
+
+            }
+            Else
+            {
+                $VhdVolume = "$($vhdOsPartition.DriveLetter):"
+            }
         }
         else
         {
@@ -518,11 +533,10 @@ function New-LWHypervVM
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
 
-        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
-
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
 
+        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
         $unattendXmlContent = Get-UnattendedContent
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
         Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
