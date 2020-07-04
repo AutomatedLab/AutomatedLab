@@ -359,7 +359,7 @@ function Add-LWAzureLoadBalancedPort
     $lb = Add-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.ResourceName.ToLower())-$Port-$DestinationPort" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $Port -BackendPort $DestinationPort
     $lb = $lb | Set-AzLoadBalancer
 
-    $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
+    $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $machine.ResourceName
     $nic = $vm.NetworkProfile.NetworkInterfaces | Get-AzResource | Get-AzNetworkInterface
     $rules = Get-LWAzureLoadBalancedPort -ComputerName $ComputerName
     $nic.IpConfigurations[0].LoadBalancerInboundNatRules = $rules
@@ -409,6 +409,7 @@ function Get-LWAzureLoadBalancedPort
 
     $lab = Get-Lab
     $resourceGroup = $lab.Name
+    $machine = Get-LabVm -ComputerName $ComputerName
 
     $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
@@ -424,9 +425,9 @@ function Get-LWAzureLoadBalancedPort
     {
         $filteredRules = $existingConfiguration | Where-Object -Property FrontendPort -eq $Port
 
-        if (($filteredRules | Where-Object Name -notlike "$ComputerName*"))
+        if (($filteredRules | Where-Object Name -notlike "$($machine.ResourceName)*"))
         {
-            $err = ($filteredRules | Where-Object Name -notlike "$ComputerName*")[0].Name
+            $err = ($filteredRules | Where-Object Name -notlike "$($machine.ResourceName)*")[0].Name
             $existingComputer = $err.Substring(0, $err.IndexOf('-'))
             Write-Error -Message ("Incoming port {0} is already mapped to {1}!" -f $Port, $existingComputer)
             return
@@ -437,10 +438,10 @@ function Get-LWAzureLoadBalancedPort
 
     if ($DestinationPort)
     {
-        return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$ComputerName*"})
+        return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$($machine.ResourceName)*"})
     }
 
-    return ($existingConfiguration | Where-Object -Property Name -like "$ComputerName*")
+    return ($existingConfiguration | Where-Object -Property Name -like "$($machine.ResourceName)*")
 }
 
 function Get-LabAzureLoadBalancedPort
