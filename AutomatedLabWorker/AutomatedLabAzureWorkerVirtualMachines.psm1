@@ -1497,6 +1497,18 @@ function Start-LWAzureVM
         Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator $ProgressIndicator
     }
 
+    # Refresh status
+    $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
+    if (-not $azureVms)
+    {
+        Start-Sleep -Seconds 2
+        $azureVms = Get-AzVM -Status -ResourceGroupName (Get-LabAzureDefaultResourceGroup).ResourceGroupName -ErrorAction SilentlyContinue
+        if (-not $azureVms)
+        {
+            throw 'Get-AzVM did not return anything, stopping lab deployment. Code will be added to handle this error soon'
+        }
+    }
+
     $azureVms = $azureVms | Where-Object { $_.Name -in $machines.ResourceName}
 
     foreach ($machine in $machines)
