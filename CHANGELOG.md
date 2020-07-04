@@ -31,6 +31,7 @@
 - Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
 - Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
 - Build Agent role on Azure can now again connect to its server (Fixes #938)
+- Ensure drive letter gets assigned when mounting an image (Fixes #874)
 
 ## 5.21.0 - 2020-05-26
 
