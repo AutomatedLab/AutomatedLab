@@ -514,7 +514,7 @@ function New-LWHypervVM
             If ($vhdOsPartition.NoDefaultDriveLetter) {
                 # Get all available drive letters, and store in a temporary variable.
                 $usedDriveLetters = @(Get-Volume | ForEach-Object { "$([char]$_.DriveLetter)" }) + @(Get-CimInstance -ClassName Win32_MappedLogicalDisk | ForEach-Object { $([char]$_.DeviceID.Trim(':')) })
-                $tempDriveLetters = @(Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" } ) | Where-Object { $_.SideIndicator -eq '<=' } | ForEach-Object { $_.InputObject })
+                [char[]]$tempDriveLetters = Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" }) -PassThru | Where-Object { $_.SideIndicator -eq '<=' }
                 # Sort the available drive letters to get the first available drive letter
                 $availableDriveLetters = ($TempDriveLetters | Sort-Object)
                 $firstAvailableDriveLetter = $availableDriveLetters[0]
