@@ -89,17 +89,32 @@ function New-LabVM
     #test if the machine creation jobs succeeded
     Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     $jobs | Wait-Job | Out-Null
-    $failedJobs = $jobs | Where-Object State -eq 'Failed'
-    $completedJobs = $jobs | Where-Object State -eq 'Completed'
+
+    $failedJobs = @()
+    $completedJobs = @()
+    foreach ($job in $jobs){
+
+        $result = $job | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
+
+        if ($job.State -eq 'Failed' -or $jobErrors.Count)
+        {
+            $failedJobs += $job
+        }
+        else
+        {
+            $completedJobs += $job
+        }
+    }
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
     if ($failedJobs)
     {
-        $failedJobs | Receive-Job -Keep
+        $result = $failedJobs | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
+        $jobErrors | Write-Error
         throw "Failed to create the Azure machines mentioned in the errors above."
     }
 
-    $azureVms = Get-LabVm -ComputerName $machines | Where-Object {$_.HostType -eq 'Azure' -and -not $_.SkipDeployment}
+    $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
 
     if ($azureVMs)
     {
