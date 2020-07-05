@@ -765,7 +765,7 @@ function Wait-LWHypervVMRestart
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
@@ -932,7 +932,7 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName))
+    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux))
     {
         $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
@@ -1047,7 +1047,7 @@ function Stop-LWHypervVM
     else
     {
         $jobs = @()
-        foreach ($name in (Get-LabVm -ComputerName $ComputerName).ResourceName)
+        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux).ResourceName)
         {
             $job = Start-Job -Name "AL_Shutdown_$name" -ScriptBlock {
                 try
