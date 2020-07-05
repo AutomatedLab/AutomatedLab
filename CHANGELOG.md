@@ -32,6 +32,7 @@
 - Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
 - Build Agent role on Azure can now again connect to its server (Fixes #938)
 - Ensure drive letter gets assigned when mounting an image (Fixes #874)
+- Fixed Azure error handling
 
 ## 5.21.0 - 2020-05-26
 
