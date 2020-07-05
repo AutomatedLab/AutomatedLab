@@ -942,13 +942,7 @@ function Start-LWHypervVM
 
     foreach ($Name in $ComputerName)
     {
-        $machine = Get-LabVM -ComputerName $Name
-
-        if ($machine.OperatingSystemType -eq 'Linux')
-        {
-            Write-PSFMessage -Message "Skipping the wait period for $machine as it is a Linux system"
-            continue
-        }
+        $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
         $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
 
@@ -969,6 +963,13 @@ function Start-LWHypervVM
             $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName': $($_.Exception.Message)", $_.Exception)
             throw $ex
         }
+
+        if ($machine.OperatingSystemType -eq 'Linux')
+        {
+            Write-PSFMessage -Message "Skipping the wait period for $machine as it is a Linux system"
+            continue
+        }
+
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
         {
             $job = Start-Job -Name 'Start-LWHypervVM - DelayBetweenComputers' -ScriptBlock { Start-Sleep -Seconds $Using:DelayBetweenComputers }
@@ -1039,7 +1040,7 @@ function Stop-LWHypervVM
 
         $stopFailures = foreach ($failedJob in $failedJobs)
         {
-            if (Get-LabVm -ComputerName $failedJob.Location)
+            if (Get-LabVm -ComputerName $failedJob.Location -IncludeLinux)
             {
                 $failedJob.Location
             }
