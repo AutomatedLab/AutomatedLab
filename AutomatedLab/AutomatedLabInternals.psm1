@@ -828,7 +828,7 @@ function Get-LabSourcesLocationInternal
     }
     elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -In 2, 3).DeviceID | Sort-Object -Descending
 
         $folders = foreach ($drive in $hardDrives)
         {
