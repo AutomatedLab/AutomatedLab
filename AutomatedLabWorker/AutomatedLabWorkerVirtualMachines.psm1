@@ -956,9 +956,9 @@ function Start-LWHypervVM
             throw $ex
         }
 
-        if ($machine.OperatingSystemType -eq 'Linux')
+        if ($Name.OperatingSystemType -eq 'Linux')
         {
-            Write-PSFMessage -Message "Skipping the wait period for $machine as it is a Linux system"
+            Write-PSFMessage -Message "Skipping the wait period for $Name as it is a Linux system"
             continue
         }
 
