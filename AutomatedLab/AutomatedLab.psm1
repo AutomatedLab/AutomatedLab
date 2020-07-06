@@ -512,7 +512,7 @@ function Import-Lab
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks.cfg
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
                     {
