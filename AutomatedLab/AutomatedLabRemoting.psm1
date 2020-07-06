@@ -725,7 +725,7 @@ function Invoke-LabCommand
             }
             else
             {
-                 Get-Content -Path $FilePath -Raw
+                Get-Content -Path $FilePath -Raw
             }
             $ScriptBlock = [scriptblock]::Create($scriptContent)
         }
@@ -1130,18 +1130,30 @@ function Install-LabRdsCertificate
         return
     }
 
-    $machines = Get-LabVM -All | Where-Object -FilterScript {$_.OperatingSystemType -eq 'Windows' -and -not $_.SkipDeployment }
+    $machines = Get-LabVM -All | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Windows' -and $_.OperatingSystem.Version -ge 6.3 -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
 
     $jobs = foreach ($machine in $machines)
     {
         Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -NoDisplay -ScriptBlock {
             [string[]]$SANs = $machine.FQDN
-            if ($machine.HostType -eq 'Azure' -and (Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue))
+            $cmdlet = Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue
+            if ($machine.HostType -eq 'Azure' -and $cmdlet)
             {
                 $SANs += $machine.AzureConnectionInfo.DnsName
             }
-            
-            $cert = New-SelfSignedCertificate -Subject "CN=$($machine.Name)" -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\my' -Type SSLServerAuthentication
+
+            $cert = if ($cmdlet.Parameters.ContainsKey('Subject'))
+            {
+                New-SelfSignedCertificate -Subject "CN=$($machine.Name)" -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\My' -Type SSLServerAuthentication
+            }
+            else
+            {
+                New-SelfSignedCertificate -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\my'
+            }
             $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices
             $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
             $rdsSettings | Set-CimInstance
