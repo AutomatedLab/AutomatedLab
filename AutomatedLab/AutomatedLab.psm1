@@ -1339,8 +1339,8 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks.cfg" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
 

@@ -446,7 +446,6 @@ $unattendedXmlDefaultContent2008 = @'
 
 $kickstartContent = @"
 install
-firewall --disabled
 cdrom
 text
 firstboot --disable
@@ -1246,11 +1245,11 @@ function Export-LabDefinition
             }
             if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
             {
-                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks.cfg) -Encoding unicode
+                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_default.cfg) -Encoding unicode
             }
             if ($Script:machines | Where-Object LinuxType -eq 'Suse')
             {
-                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst.xml) -Encoding unicode
+                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst_default.xml) -Encoding unicode
             }
         }
     }
