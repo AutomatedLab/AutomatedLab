@@ -1114,10 +1114,13 @@ function Install-Lab
     {
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
-        Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
+        if ($linuxHosts)
+        {
+            Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
         On Windows, those are installed from scratch and do not use differencing disks.
         
         This process may take up to 30 minutes."
+        }
 
         if (-not $DelayBetweenComputers)
         {
