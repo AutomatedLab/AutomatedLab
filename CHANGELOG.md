@@ -35,6 +35,7 @@
 - LabSources folder is now supported in SD cards or memory sticks (Fixes #946)
 - Ensure drive letter gets assigned when mounting an image (Fixes #874)
 - Fixed Azure error handling
+- Added compatibility with CentOS 8 (partially fixes #967)
 
 ## 5.21.0 - 2020-05-26
 
