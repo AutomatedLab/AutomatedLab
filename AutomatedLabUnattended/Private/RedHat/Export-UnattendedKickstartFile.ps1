@@ -26,6 +26,8 @@ function Export-UnattendedKickstartFile
             'yum list installed "omi-psrp-server" > /tmp/ksOmi'
             'authselect sssd with-mkhomedir'
             'systemctl restart sssd'
+            'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
+            'systemctl restart sshd'
         ) | ForEach-Object -Process {
             $idx++
             $script:un.Insert($idx, $_)

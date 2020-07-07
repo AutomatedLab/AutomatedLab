@@ -583,6 +583,8 @@ $autoyastContent = @"
             zypper update
             zypper -f -v install powershell omi openssl
             systemctl enable omid
+            echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config
+            systemctl restart sshd
         ]]>
         </source>
       </script>
