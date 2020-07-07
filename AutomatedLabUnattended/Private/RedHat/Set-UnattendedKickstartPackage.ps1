@@ -31,5 +31,9 @@ function Set-UnattendedKickstartPackage
     $script:un.Add('sssd')
     $script:un.Add('adcli')
     $script:un.Add('krb5-workstation')
+    $script:un.Add('realmd')
+    $script:un.Add('samba-common')
+    $script:un.Add('samba-common-tools')
+    $script:un.Add('authselect-compat')
     $script:un.Add('%end')
 }

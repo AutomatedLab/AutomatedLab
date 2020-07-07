@@ -13,24 +13,19 @@ function Export-UnattendedKickstartFile
         $idx = $script:un.IndexOf('%post')
     }
 
-    if ($script:un[$idx + 1] -ne 'function IsNotInstalled {')
+    if ($script:un[$idx + 1] -ne '#start')
     {
         @(
-            'function IsNotInstalled {'
-            'if yum list installed "$@" >/dev/null 2>&1; then'
-            'false'
-            'else'
-            'true'
-            'fi'
-            '}'
+            '#start'
             'curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/yum.repos.d/microsoft.repo'
             'yum install -y openssl'
+            'yum install -y omi'
             'yum install -y powershell'
             'yum install -y omi-psrp-server'
-            'if IsNotInstalled powershell; then yum install -y powershell; fi'
-            'if IsNotInstalled omi-psrp-server; then yum install -y powershell; fi'
             'yum list installed "powershell" > /tmp/ksPowerShell'
             'yum list installed "omi-psrp-server" > /tmp/ksOmi'
+            'authselect sssd with-mkhomedir'
+            'systemctl restart sssd'
         ) | ForEach-Object -Process {
             $idx++
             $script:un.Insert($idx, $_)

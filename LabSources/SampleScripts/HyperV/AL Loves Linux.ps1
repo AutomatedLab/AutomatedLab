@@ -26,11 +26,11 @@ Add-LabMachineDefinition -Name LINDC1 -Roles RootDC, Routing -Memory 1GB -PostIn
 
 # Make sure to download an ISO that contains the selected packages as well as SSSD,oddjob,oddjob-mkhomedir and adcli
 # Or use an internet-connected lab so that the packages can be loaded on the fly
-Add-LabMachineDefinition -Name LINCN1 -OperatingSystem 'CentOS Linux 8' -DomainName contoso.com -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name LINCN1 -OperatingSystem 'CentOS-7' -DomainName contoso.com -RhelPackage gnome-desktop
 Add-LabMachineDefinition -Name LINSU1 -OperatingSystem 'openSUSE Leap 15.1' -DomainName contoso.com -SusePackage gnome_basis
 
 # Non domain-joined
-Add-LabMachineDefinition -Name LINCN2 -OperatingSystem 'CentOS Linux 8' -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name LINCN2 -OperatingSystem 'CentOS-7' -RhelPackage gnome-desktop
 Add-LabMachineDefinition -Name LINSU2 -OperatingSystem 'openSUSE Leap 15.1' -SusePackage gnome_basis
 Install-Lab
 
