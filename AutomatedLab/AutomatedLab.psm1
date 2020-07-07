@@ -833,7 +833,7 @@ function Install-Lab
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
             #add a hosts entry for each lab machine
             $hostFileAddedEntries = 0
-            foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($machine.FriendlyName)}))
+            foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
             {
                 if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address -and -not (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
