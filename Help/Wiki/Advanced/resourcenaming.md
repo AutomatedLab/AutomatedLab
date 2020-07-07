@@ -9,14 +9,18 @@ can be deployed multiple times.
 
 Both `Add-LabVirtualNetworkDefinition` as well as `Add-LabMachineDefinition` can use the `ResourceName` parameter.
 
+***Important: This feature does not overcome the boundaries of networking on Hyper-V. Remember to use non-overlapping address
+spaces for each lab network, as shown in the example.  
+For various reasons, AutomatedLab uses Internal virtual switches on Hyper-V.***
+
 ## Example
 
 ```powershell
 foreach ($studentNumber in (1..10))
 {
-    New-LabDefinition -Name $($studentNumber)POSH -DefaultVirtualizationEngine HyperV
-    Add-LabVirtualNetworkDefinition -Name VMNet -ResourceName $($studentNumber)VMNet -AddressSpace 192.168.$($studentNumber).0/24
-    Add-LabMachineDefinition -Name DC01 -ResourceName $($studentNumber)DC01 -Roles RootDC -Domain contoso.com
+    New-LabDefinition -Name "$($studentNumber)POSH" -DefaultVirtualizationEngine HyperV
+    Add-LabVirtualNetworkDefinition -Name VMNet -ResourceName "$($studentNumber)VMNet" -AddressSpace "192.168.$($studentNumber).0/24"
+    Add-LabMachineDefinition -Name DC01 -ResourceName "$($studentNumber)DC01" -Roles RootDC -Domain contoso.com -OperatingSystem 'Windows Server 2016 Datacenter'
     Install-Lab
 }
 ```
