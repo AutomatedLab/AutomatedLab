@@ -512,11 +512,11 @@ function Import-Lab
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'RedHat')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks.cfg
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath ks_default.cfg
                     }
                     if ($this.OperatingSystemType -eq 'Linux' -and $this.LinuxType -eq 'Suse')
                     {
-                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst.xml
+                        $Path = Join-Path -Path (Get-Lab).Sources.UnattendedXml.Value -ChildPath autoinst_default.xml
                     }
                     return (Get-Content -Path $Path)
                 }
@@ -1112,7 +1112,12 @@ function Install-Lab
 
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
     {
+        $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
+        Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
+        On Windows, those are installed from scratch and do not use differencing disks.
+        
+        This process may take up to 30 minutes."
 
         if (-not $DelayBetweenComputers)
         {
@@ -1334,8 +1339,8 @@ function Remove-Lab
             if (Test-Path "$($Script:data.LabPath)/$(Get-LabConfigurationItem -Name MachineFileName)") { Remove-Item -Path "$($Script:data.LabPath)/Machines.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Unattended*.xml") { Remove-Item -Path "$($Script:data.LabPath)/Unattended*.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/armtemplate.json") { Remove-Item -Path "$($Script:data.LabPath)/armtemplate.json" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/ks.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks.cfg" -Force -Confirm:$false }
-            if (Test-Path "$($Script:data.LabPath)/autoinst.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst.xml" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/ks*.cfg") { Remove-Item -Path "$($Script:data.LabPath)/ks*.cfg" -Force -Confirm:$false }
+            if (Test-Path "$($Script:data.LabPath)/autoinst*.xml") { Remove-Item -Path "$($Script:data.LabPath)/autoinst*.xml" -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml") { Remove-Item -Path "$($Script:data.LabPath)/AzureNetworkConfig.Xml" -Recurse -Force -Confirm:$false }
             if (Test-Path "$($Script:data.LabPath)/Certificates") { Remove-Item -Path "$($Script:data.LabPath)/Certificates" -Recurse -Force -Confirm:$false }
 

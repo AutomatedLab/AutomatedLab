@@ -96,17 +96,34 @@
 
     # RHEL, CentOS, Fedora et al
     $rhelPath = "$DriveLetter`:\.treeinfo" # TreeInfo Syntax https://release-engineering.github.io/productmd/treeinfo-1.0.html
-    $rhelPackageInfo = "$DriveLetter`:\repodata"
+    $rhelPackageInfo = "$DriveLetter`:{0}\repodata"
     if (Test-Path -Path $rhelPath -PathType Leaf)
     {
-        $generalInfo = (Get-Content -Path $rhelPath | Select-String '\[general\]' -Context 7).Context.PostContext| Where-Object -FilterScript { $_ -match '^\w+\s*=\s*\w+' }  | ConvertFrom-StringData -ErrorAction SilentlyContinue
-        $versionInfo = if ($generalInfo.version.Contains('.')) { $generalInfo.version -as [Version] } else {[Version]::new($generalInfo.Version, 0)}
+        $contentMatch = (Get-Content -Path $rhelPath -Raw) -match '(?s)(?<=\[general\]).*?(?=\[)'
+        if (-not $contentMatch) {
+            throw "Unknown structure of $rhelPath. Cannot add ISO"
+        }
 
-        $os = New-Object -TypeName AutomatedLab.OperatingSystem(('{0} {1}' -f $content.Family, $os.Version), $IsoFile.FullName)
-        $os.OperatingSystemImageName = $content.Name
+        $generalInfo = $Matches.0 -replace ';.*' -split "`n" | ConvertFrom-String -Delimiter '=' -PropertyNames Name,Value
+        $version = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'version'}).Value).Trim()
+        $name = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'name'}).Value).Trim()
+        $variant = ([string]$generalInfo.Where({$_.Name.Trim() -eq 'variant'}).Value).Trim()
+        $versionInfo = if (-not $version) { [Version]::new(1,0,0,0) } elseif ($version.Contains('.')) { $version -as [Version] } else {[Version]::new($Version, 0)}
+
+        if ($variant -and $versionInfo -ge '8.0')
+        {
+            $rhelPackageInfo = $rhelPackageInfo -f "\$variant"
+        }
+        else
+        {
+            $rhelPackageInfo = $rhelPackageInfo -f $null
+        }
+
+        $os = New-Object -TypeName AutomatedLab.OperatingSystem($name, $IsoFile.FullName)
+        $os.OperatingSystemImageName = $name
         $os.Size = $IsoFile.Length
 
-        $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml | Select-Object -First 1).FullName
+        $packageXml = (Get-ChildItem -Path $rhelPackageInfo -Filter *comps*.xml -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
         if (-not $packageXml)
         {
             # CentOS ISO for some reason contained only GUIDs
@@ -123,22 +140,14 @@
             $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
         }
 
-        if ($generalInfo.version.Contains('.'))
-        {
-            $os.Version = $generalInfo.version
-        }
-        else
-        {
-            $os.Version = [AutomatedLab.Version]::new($generalInfo.version, 0)
-        }
-
-        $os.OperatingSystemName = $generalInfo.name
+        $os.Version = $versionInfo
+        $os.OperatingSystemName = $name
 
         # Unix time stamp...
         $os.PublishedDate = (Get-Item -Path $rhelPath).CreationTime
-        $os.Edition = if ($generalInfo.Variant)
+        $os.Edition = if ($variant)
         {
-            $content.Variant
+            $variant
         }
         else
         {

@@ -292,7 +292,7 @@ function Start-LabVM
             return
         }
 
-        $vmsCopy = $vms
+        $vmsCopy = $vms | Where-Object {-not ($_.OperatingSystemType -eq 'Linux' -and $_.OperatingSystem.OperatingSystemName -match ('Suse|CentOS Linux 8'))}
 
         #filtering out all machines that are already running
         $vmStates = Get-LabVMStatus -ComputerName $vms -AsHashTable
