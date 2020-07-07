@@ -32,6 +32,9 @@
 - Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
 - Build Agent role on Azure can now again connect to its server (Fixes #938)
 - Fixed Install-LabRdsCertificate which did not work with 2012 R2 lab VMs
+- LabSources folder is now supported in SD cards or memory sticks (Fixes #946)
+- Ensure drive letter gets assigned when mounting an image (Fixes #874)
+- Fixed Azure error handling
 
 ## 5.21.0 - 2020-05-26
 
