@@ -15,6 +15,7 @@ Both `Add-LabVirtualNetworkDefinition` as well as `Add-LabMachineDefinition` can
 foreach ($studentNumber in (1..10))
 {
     New-LabDefinition -Name $($studentNumber)POSH -DefaultVirtualizationEngine HyperV
+    Add-LabVirtualNetworkDefinition -Name VMNet -ResourceName $($studentNumber)VMNet -AddressSpace 192.168.$($studentNumber).0/24
     Add-LabMachineDefinition -Name DC01 -ResourceName $($studentNumber)DC01 -Roles RootDC -Domain contoso.com
     Install-Lab
 }

@@ -25,7 +25,7 @@ namespace AutomatedLab
 
             foreach (var vswitch in vswitches)
             {
-                var overlappingAddress = networks.FirstOrDefault(nw => nw.AddressSpace.ToString().Equals(vswitch.Properties["AddressSpace"].ToString()));
+                var overlappingAddress = networks.FirstOrDefault(nw => !nw.ResourceName.Equals(vswitch.Properties["ResourceName"].ToString()) && nw.AddressSpace.ToString().Equals(vswitch.Properties["AddressSpace"].ToString()));
                 if (null != overlappingAddress)
                 {
                     yield return new ValidationMessage
