@@ -448,7 +448,7 @@ function Import-Lab
 
             foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
             {
-                if ((Get-LabConfigurationItem -Name SkipHostFileModification) -and (Get-HostEntry -HostName $machine) -and (Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -ne $machine.IpV4Address)
+                if (([string]::IsNullOrEmpty($machine.FriendlyName) -or -not (Get-LabConfigurationItem -Name SkipHostFileModification)) -and (Get-HostEntry -HostName $machine) -and (Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -ne $machine.IpV4Address)
                 {
                     throw "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
                 }
@@ -833,7 +833,7 @@ function Install-Lab
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
             #add a hosts entry for each lab machine
             $hostFileAddedEntries = 0
-            foreach ($machine in $Script:data.Machines)
+            foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($machine.FriendlyName)}))
             {
                 if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address -and -not (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {

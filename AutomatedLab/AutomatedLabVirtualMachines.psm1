@@ -1014,7 +1014,7 @@ function Remove-LabVM
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
 
-        if (Get-LabConfigurationItem -Name SkipHostFileModification)
+        if (-not [string]::IsNullOrEmpty($machine.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
         {
             $computerName = $machine.IPV4Address
         }
