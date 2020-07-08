@@ -1696,7 +1696,9 @@ function Install-LabFileServers
     Write-ScreenInfo -Message 'Waiting for File Server role to complete installation' -NoNewLine
 
     $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
-    $remainingMachines = Get-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false | Select-Object -Unique -ExpandProperty PSComputerName
+    $remainingMachines = $machines | Where-Object {
+        Get-LabWindowsFeature -ComputerName $_ -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false
+    }
 
     if ($remainingMachines.Count -eq 0)
     {
