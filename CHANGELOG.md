@@ -26,6 +26,9 @@
 - Relaxed Azure password policy as special characters are not mandatory.
 - Windows Admin Center implemented as proper Role to enable SkipDeployment parameter
 - Including name of used function in telemetry, for all functions using Write-LogFunctionEntry
+- ResourceName parameter of Add-LabMachineDefinition now actually supported. Fixes #23
+  - No interaction is done in AL using the resource name. This is only for the purpose of
+    deploying the same lab on the same host with different resource names (VM names, switch names)
   
 ### Bug Fixes
 - Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.

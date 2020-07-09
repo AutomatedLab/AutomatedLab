@@ -1126,7 +1126,7 @@ function Export-LabDefinition
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
-        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) }).Count * 2GB
+        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) }).Count * 2GB
 
         $spaceNeeded = $spaceNeededBaseDisks + $spaceNeededData - $spaceBaseDisksAlreadyClaimed
 
@@ -1899,7 +1899,7 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-        [string]$FriendlyName,
+        [string]$ResourceName,
 
         [switch]$SkipDeployment
     )
@@ -2099,6 +2099,7 @@ function Add-LabMachineDefinition
 
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
+        $machine.FriendlyName = $ResourceName
         $script:machines.Add($machine)
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
@@ -2494,12 +2495,12 @@ function Add-LabMachineDefinition
                 foreach ($networkDefinition in $networkDefinitions)
                 {
                     #check for an virtual switch having already the name of the new network switch
-                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
+                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition.ResourceName
 
                     #does the current network definition has an address space assigned
                     if ($networkDefinition.AddressSpace)
                     {
-                        Write-PSFMessage -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
+                        Write-PSFMessage -Message "Virtual network '$($networkDefinition.ResourceName)' specified with address space '$($networkDefinition.AddressSpace)'"
 
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)

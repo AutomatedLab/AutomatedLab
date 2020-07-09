@@ -8,7 +8,7 @@ Describe "[$($(Get-Lab).Name)] HyperV" -Tag HyperV {
         It "[$(Get-LabVm -Role HyperV)] should have exposed virtualization extension" -Skip:$(-not (Test-IsAdministrator)) {
             foreach ($vm in (Get-LabVm -Role HyperV))
             {
-                (Get-Vm -Name $vm | Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                (Get-Vm -Name $vm.ResourceName | Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
             }
         }
 

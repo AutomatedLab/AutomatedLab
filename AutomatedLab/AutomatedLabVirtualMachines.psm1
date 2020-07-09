@@ -410,8 +410,8 @@ function Save-LabVM
         Write-PSFMessage -Message "Saving VMs '$($vms -join ',')"
         switch ($lab.DefaultVirtualizationEngine)
         {
-            'HyperV' { Save-LWHypervVM -ComputerName $vms}
-            'VMWare' { Save-LWVMWareVM -ComputerName $vms}
+            'HyperV' { Save-LWHypervVM -ComputerName $vms.ResourceName}
+            'VMWare' { Save-LWVMWareVM -ComputerName $vms.ResourceName}
             'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
 
@@ -682,7 +682,7 @@ function Wait-LabVM
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
         if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
         {
-            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
             if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
             {
                 Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
@@ -762,11 +762,11 @@ function Wait-LabVM
         {
             if ((Get-LabVM -ComputerName $machine).HostType -eq 'HyperV')
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
                     Copy-LabALCommon -ComputerName $ComputerName
                 }
@@ -814,7 +814,7 @@ function Wait-LabVM
                         Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
                     }
 
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
             }
         }
@@ -1014,7 +1014,7 @@ function Remove-LabVM
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
 
-        if (Get-LabConfigurationItem -Name SkipHostFileModification)
+        if (-not [string]::IsNullOrEmpty($machine.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
         {
             $computerName = $machine.IPV4Address
         }
@@ -1038,15 +1038,15 @@ function Remove-LabVM
 
         if ($machine.HostType -eq 'HyperV')
         {
-            Remove-LWHypervVM -Name $machine
+            Remove-LWHypervVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'Azure')
         {
-            Remove-LWAzureVM -Name $machine
+            Remove-LWAzureVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'VMWare')
         {
-            Remove-LWVMWareVM -Name $machine
+            Remove-LWVMWareVM -Name $machine.ResourceName
         }
 
         if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
@@ -1084,13 +1084,13 @@ function Get-LabVMStatus
     }
 
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
-    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.Name }
+    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.ResourceName }
 
     $azureVMs = $vms | Where-Object HostType -eq 'Azure'
-    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.Name }
+    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.ResourceName }
 
     $vmwareVMs = $vms | Where-Object HostType -eq 'VMWare'
-    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.Name }
+    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.ResourceName }
 
     $result = @{ }
     if ($hypervStatus) { $result = $result + $hypervStatus }
@@ -1801,10 +1801,7 @@ function Get-LabVM
         Write-LogFunctionEntry
 
         $result = @()
-        if (-not $script:data)
-        {
-            $script:data = Get-Lab
-        }
+        $script:data = Get-Lab -ErrorAction SilentlyContinue
     }
 
     process
@@ -2159,8 +2156,8 @@ function Checkpoint-LabVM
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
     }
 
@@ -2214,8 +2211,8 @@ function Restore-LabVMSnapshot
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
     }
 
@@ -2272,7 +2269,7 @@ function Remove-LabVMSnapshot
     }
 
     $parameters = @{
-        ComputerName = $machines
+        ComputerName = $machines.ResourceName
     }
 
     if ($SnapshotName)

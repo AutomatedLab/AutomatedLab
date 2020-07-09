@@ -445,10 +445,18 @@ function Import-Lab
         if (-not $NoValidation)
         {
             Write-ScreenInfo -Message 'Validating lab definition' -TaskStart
+            $skipHostFileModification = Get-LabConfigurationItem -Name SkipHostFileModification
 
             foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
             {
-                if ((Get-LabConfigurationItem -Name SkipHostFileModification) -and (Get-HostEntry -HostName $machine) -and (Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -ne $machine.IpV4Address)
+                $hostEntry = Get-HostEntry -HostName $machine
+
+                if ($machine.FriendlyName -or $skipHostFileModification)
+                {
+                     continue #if FriendlyName / ResourceName is defined, host file will not be modified
+                }
+
+                if ($hostEntry -and $hostEntry.IpAddress.IPAddressToString -ne $machine.IpV4Address)
                 {
                     throw "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
                 }
@@ -833,7 +841,7 @@ function Install-Lab
             Write-ScreenInfo -Message 'Creating VMs' -TaskStart
             #add a hosts entry for each lab machine
             $hostFileAddedEntries = 0
-            foreach ($machine in $Script:data.Machines)
+            foreach ($machine in ($Script:data.Machines | Where-Object {[string]::IsNullOrEmpty($_.FriendlyName)}))
             {
                 if ($machine.Hosttype -eq 'HyperV' -and $machine.NetworkAdapters[0].Ipv4Address -and -not (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
@@ -1114,10 +1122,13 @@ function Install-Lab
     {
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
-        Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
+        if ($linuxHosts)
+        {
+            Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
         On Windows, those are installed from scratch and do not use differencing disks.
         
         This process may take up to 30 minutes."
+        }
 
         if (-not $DelayBetweenComputers)
         {
@@ -1264,8 +1275,8 @@ function Remove-Lab
 
             $removeMachines = foreach ($machine in $labMachines)
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine -ErrorAction SilentlyContinue
-                $vm = Get-VM -Name $machine -ErrorAction SilentlyContinue
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine.ResourceName -ErrorAction SilentlyContinue
+                $vm = Get-VM -Name $machine.ResourceName -ErrorAction SilentlyContinue
                 if (-not $machineMetadata)
                 {
                     Write-Error -Message "Cannot remove machine '$machine' because lab meta data could not be retrieved"
@@ -1685,7 +1696,9 @@ function Install-LabFileServers
     Write-ScreenInfo -Message 'Waiting for File Server role to complete installation' -NoNewLine
 
     $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
-    $remainingMachines = Get-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false | Select-Object -Unique -ExpandProperty PSComputerName
+    $remainingMachines = $machines | Where-Object {
+        Get-LabWindowsFeature -ComputerName $_ -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false
+    }
 
     if ($remainingMachines.Count -eq 0)
     {
@@ -2700,8 +2713,8 @@ function Update-LabMemorySettings
 
     if ($machines | Where-Object Memory -lt 32)
     {
-        $totalMemoryAlreadyReservedAndClaimed = ((Get-VM -Name $machines -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
-        $machinesNotCreated = $machines | Where-Object { (-not (Get-VM -Name $_ -ErrorAction SilentlyContinue)) }
+        $totalMemoryAlreadyReservedAndClaimed = ((Get-VM -Name $machines.ResourceName -ErrorAction SilentlyContinue) | Measure-Object -Sum -Property MemoryStartup).Sum
+        $machinesNotCreated = $machines | Where-Object { (-not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue)) }
 
         $totalMemoryAlreadyReserved = ($machines | Where-Object { $_.Memory -ge 128 -and $_.Name -notin $machinesNotCreated.Name } | Measure-Object -Property Memory -Sum).Sum
 
@@ -2770,7 +2783,7 @@ function Update-LabMemorySettings
             }
         }
 
-        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) })
+        ForEach ($machine in $machines | Where-Object { $_.Memory -lt 32 -and -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) })
         {
             $memoryCalculated = ($totalMemory / $totalMemoryUnits * $machine.Memory / 64) * 64
             if ($memoryUsagePrediction -gt $totalMemory)

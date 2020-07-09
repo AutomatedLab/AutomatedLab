@@ -124,7 +124,7 @@ function New-LabPSSession
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
                 }
-                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
                     $name = $m.IpV4Address
                 }
@@ -360,7 +360,7 @@ function Remove-LabPSSession
             {
                 $param.Add('ComputerName', $m.Name)
             }
-            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
             {
                 $param.Add('ComputerName', $m.IpV4Address)
             }
@@ -880,7 +880,7 @@ function New-LabCimSession
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
                 }
-                elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+                elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
                 {
                     $name = $m.IpV4Address
                 }

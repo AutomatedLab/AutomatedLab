@@ -50,7 +50,7 @@ namespace AutomatedLab
         {
             get
             {
-                if(System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Windows"))
+                if (System.Text.RegularExpressions.Regex.IsMatch(OperatingSystem.OperatingSystemName, "Windows"))
                 {
                     return LinuxType.Unknown;
                 }
@@ -63,6 +63,8 @@ namespace AutomatedLab
             }
         }
 
+        public string FriendlyName { get; set; }
+
         public bool Gen2VmSupported
         {
             get
@@ -71,6 +73,13 @@ namespace AutomatedLab
             }
         }
 
+        public string ResourceName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(FriendlyName)) { return FriendlyName; } else { return Name; }
+            }
+        }
         public int LoadBalancerRdpPort { get; set; }
         public int LoadBalancerWinRmHttpPort { get; set; }
         public int LoadBalancerWinrmHttpsPort { get; set; }
@@ -319,6 +328,8 @@ namespace AutomatedLab
             get { return autoLogonPassword; }
             set { autoLogonPassword = value; }
         }
+
+        public Azure.AzureConnectionInfo AzureConnectionInfo {get; set;}
 
         public SerializableDictionary<string, string> AzureProperties
         {

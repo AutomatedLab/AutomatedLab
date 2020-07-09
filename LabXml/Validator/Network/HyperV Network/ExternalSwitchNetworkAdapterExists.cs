@@ -26,13 +26,13 @@ namespace AutomatedLab
 
             foreach (var networkSwitch in externalSwitches)
             {
-                var networkAdapter = networkAdapters.Where(na => na.Properties["InterfaceType"].Value.ToString() == "6" && na.Properties["Name"].Value.ToString().ToLower() == networkSwitch.Name.ToLower());
+                var networkAdapter = networkAdapters.Where(na => na.Properties["InterfaceType"].Value.ToString() == "6" && na.Properties["Name"].Value.ToString().ToLower() == networkSwitch.ResourceName.ToLower());
                 if (networkAdapters.Count() == 0)
                 {
                     yield return new ValidationMessage
                     {
                         Message = string.Format("The specified physical non-Wi-Fi adapter '{0}' does not exist", networkSwitch.AdapterName),
-                        TargetObject = networkSwitch.Name,
+                        TargetObject = networkSwitch.ResourceName,
                         Type = MessageType.Error
                     };
                 }
