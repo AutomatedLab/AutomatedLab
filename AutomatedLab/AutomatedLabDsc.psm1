@@ -208,6 +208,11 @@ function Install-LabDscPullServer
             'edb'
         }
 
+        if ($databaseEngine -eq 'sql' -and $role.Properties.SqlServer)
+        {
+            Invoke-LabCommand -ActivityName 'Creating DSC SQL Database' -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName $role.Properties.SqlServer -ArgumentList $machine.DomainAccountName -Retries 1
+        }
+
         if ($databaseEngine -eq 'mdb')
         {
             #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+

@@ -123,6 +123,7 @@
         'Get-LabWindowsFeature',
         'Get-LabAzureAvailableSku',
         'Get-LabAzureAvailableRoleSize',
+        'Get-LabTfsUri',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
@@ -210,6 +211,7 @@
         'Test-LabMachineInternetConnectivity',
         'Test-LabHostRemoting',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
+        'Test-LabTfsEnvironment',
         'Unblock-LabSources',
         'Undo-LabHostRemoting',
         'Uninstall-LabWindowsFeature'

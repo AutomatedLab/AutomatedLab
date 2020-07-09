@@ -969,16 +969,6 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
-    {
-        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
-
-        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
-        Install-LabDscPullServer
-
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
     if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
     {
         Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
@@ -1009,6 +999,16 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
+    {
+        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+
+        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
+        Install-LabDscPullServer
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
