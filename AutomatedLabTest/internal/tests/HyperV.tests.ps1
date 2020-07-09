@@ -8,7 +8,7 @@ Describe "[$($Lab.Name)] HyperV" -Tag HyperV {
         {
             It "[$vm] should have exposed virtualization extension" -Skip:$(-not (Test-IsAdministrator)) -TestCases @{vm = $vm } {
             
-                (Get-VM -Name $vm | Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                (Get-VM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
             }
             It "[$vm] should have Hyper-V feature installed" -TestCases @{vm = $vm } {
             
