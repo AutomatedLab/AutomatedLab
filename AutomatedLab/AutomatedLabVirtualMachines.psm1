@@ -1801,10 +1801,7 @@ function Get-LabVM
         Write-LogFunctionEntry
 
         $result = @()
-        if (-not $script:data)
-        {
-            $script:data = Get-Lab
-        }
+        $script:data = Get-Lab -ErrorAction SilentlyContinue
     }
 
     process

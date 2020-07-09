@@ -445,10 +445,18 @@ function Import-Lab
         if (-not $NoValidation)
         {
             Write-ScreenInfo -Message 'Validating lab definition' -TaskStart
+            $skipHostFileModification = Get-LabConfigurationItem -Name SkipHostFileModification
 
             foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
             {
-                if (([string]::IsNullOrEmpty($machine.FriendlyName) -or -not (Get-LabConfigurationItem -Name SkipHostFileModification)) -and (Get-HostEntry -HostName $machine) -and (Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -ne $machine.IpV4Address)
+                $hostEntry = Get-HostEntry -HostName $machine
+
+                if ($machine.FriendlyName -or $skipHostFileModification)
+                {
+                     continue #if FriendlyName / ResourceName is defined, host file will not be modified
+                }
+
+                if ($hostEntry -and $hostEntry.IpAddress.IPAddressToString -ne $machine.IpV4Address)
                 {
                     throw "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
                 }
@@ -1688,7 +1696,9 @@ function Install-LabFileServers
     Write-ScreenInfo -Message 'Waiting for File Server role to complete installation' -NoNewLine
 
     $windowsFeatures = 'FileAndStorage-Services', 'File-Services ', 'FS-FileServer', 'FS-DFS-Namespace', 'FS-Resource-Manager', 'Print-Services', 'NET-Framework-Features', 'NET-Framework-45-Core'
-    $remainingMachines = Get-LabWindowsFeature -ComputerName $machines -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false | Select-Object -Unique -ExpandProperty PSComputerName
+    $remainingMachines = $machines | Where-Object {
+        Get-LabWindowsFeature -ComputerName $_ -FeatureName $windowsFeatures -NoDisplay | Where-Object -Property Installed -eq $false
+    }
 
     if ($remainingMachines.Count -eq 0)
     {
