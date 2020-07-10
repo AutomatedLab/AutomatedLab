@@ -1190,6 +1190,21 @@ function Install-Lab
         Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
     }
 
+    if (-not $NoValidation.IsPresent -and (Get-InstalledModule -Name pester -MinimumVersion 5.0))
+    {
+        Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
+        $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
+        if ($result.Result -eq 'Failed')
+        {
+            Write-ScreenInfo -Type Error -Message "Lab deployment seems to have failed. The following tests were not passed:"
+        }
+
+        foreach ($fail in $result.Failed)
+        {
+            Write-ScreenInfo -Type Error -Message "$($fail.Name)"
+        }
+    }
+
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
 
     Write-LogFunctionExit

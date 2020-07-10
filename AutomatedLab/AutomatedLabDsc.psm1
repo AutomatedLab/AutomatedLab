@@ -210,7 +210,7 @@ function Install-LabDscPullServer
 
         if ($databaseEngine -eq 'sql' -and $role.Properties.SqlServer)
         {
-            Invoke-LabCommand -ActivityName 'Creating DSC SQL Database' -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName $role.Properties.SqlServer -ArgumentList $machine.DomainAccountName -Retries 1
+            Invoke-LabCommand -ActivityName 'Creating DSC SQL Database' -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName $role.Properties.SqlServer -ArgumentList $machine.DomainAccountName
         }
 
         if ($databaseEngine -eq 'mdb')
