@@ -30,7 +30,7 @@
         'New-LabPesterTest'
     )
 
-    FileList               = @('AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
+    FileList               = @('xml\AutomatedLabTest.format.ps1xml', 'AutomatedLabTest.psm1', 'AutomatedLabTest.psd1')
 
     PrivateData            = @{ }
 
