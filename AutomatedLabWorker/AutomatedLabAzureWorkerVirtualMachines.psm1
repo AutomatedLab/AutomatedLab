@@ -27,6 +27,7 @@
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
+    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object {$_ -split '\s*[,;]\s*'}
     $template.resources += @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]"
@@ -44,7 +45,7 @@
                     properties = @{
                         protocol                   = "TCP"
                         sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
+                        sourceAddressPrefix        = if ($allowedIps) { $null } else { "*" }
                         destinationAddressPrefix   = "VirtualNetwork"
                         access                     = "Allow"
                         priority                   = 100
@@ -55,7 +56,7 @@
                             "5985"
                             "5986"
                         )
-                        sourceAddressPrefixes      = @()
+                        sourceAddressPrefixes      = if ($allowedIps) { $allowedIps } else { @() }
                         destinationAddressPrefixes = @()
                     }
                 }
@@ -65,7 +66,7 @@
                     properties = @{
                         protocol                   = "TCP"
                         sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
+                        sourceAddressPrefix        = if ($allowedIps) { $null } else { "*" }
                         destinationAddressPrefix   = "*"
                         access                     = "Allow"
                         priority                   = 101
@@ -74,7 +75,7 @@
                         destinationPortRanges      = @(
                             "443"
                         )
-                        sourceAddressPrefixes      = @()
+                        sourceAddressPrefixes      = if ($allowedIps) { $allowedIps } else { @() }
                         destinationAddressPrefixes = @()
                     }
                 }
