@@ -3,6 +3,8 @@
 ## Unreleased
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
 
+## 5.22.0 - 2020-07-10
+
 ### Enhancements
 
 - Parameter ReferenceDiskSizeInGB now works by created additional reference disks with different sizes (Fixes #862)
