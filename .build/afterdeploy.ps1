@@ -26,7 +26,7 @@ if (-not (Test-Path $mainModuleCore))
 }
 
 $env:PSModulePath += ";$env:APPVEYOR_BUILD_FOLDER"
-foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common))
+foreach ($m in (Get-ChildItem -Path $env:APPVEYOR_BUILD_FOLDER -Directory -Exclude AutomatedLab.Common, scriptanalyzer))
 {
     if (-not ($m | Get-ChildItem -Filter *.psm1))
     {
