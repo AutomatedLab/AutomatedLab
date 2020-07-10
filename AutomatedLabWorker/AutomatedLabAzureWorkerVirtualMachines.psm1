@@ -27,7 +27,7 @@
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
-    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object {$_ -split '\s*[,;]\s*'}
+    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object {$_ -split '\s*[,;]\s*'} | Where-Object {-not [string]::IsNullOrWhitespace($_)}
     $template.resources += @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]"
