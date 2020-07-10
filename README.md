@@ -17,14 +17,31 @@ AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or A
 
 Apart from the module itself your system needs to meet the following requirements:
 
-- Windows Management Framework 5+
-- Windows Server 2012 R2+/Windows 8.1+
+- Windows Management Framework 5+ (Windows)
+- .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
+- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
 - Recommended OS language is en-us
 - Admin privileges are required
 - ISO files for all operating systems and roles to be deployed
 - Intel VT-x or AMD/V capable CPU
 - A decent amount of RAM
-- An SSD for your machines is highly recommended as many issues arise from slow HDDs
+- Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
+
+#### Windows
+
+- Windows Management Framework 5+
+- Windows Server 2012 R2+/Windows 8.1+
+- Recommended OS language is en-us
+- Admin privileges are required
+
+#### Linux
+
+- WSL supported, Azure Cloud Shell supported
+- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
+- PowerShell 6+
+- gss-ntlmssp to enable remoting (mandatory - no remoting, no way for AutomatedLab to do its thing)
+- ip and route commands available
+- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.
 
 ### Download AutomatedLab
 
