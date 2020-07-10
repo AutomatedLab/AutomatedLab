@@ -446,7 +446,6 @@ $unattendedXmlDefaultContent2008 = @'
 
 $kickstartContent = @"
 install
-firewall --disabled
 cdrom
 text
 firstboot --disable
@@ -584,6 +583,8 @@ $autoyastContent = @"
             zypper update
             zypper -f -v install powershell omi openssl
             systemctl enable omid
+            echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config
+            systemctl restart sshd
         ]]>
         </source>
       </script>
@@ -1125,7 +1126,7 @@ function Export-LabDefinition
 
         $spaceNeededBaseDisks = ($hypervUsedOperatingSystems | Measure-Object -Property Size -Sum).Sum
         $spaceBaseDisksAlreadyClaimed = ($hypervUsedOperatingSystems | Measure-Object -Property size -Sum).Sum
-        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.Name -ErrorAction SilentlyContinue) }).Count * 2GB
+        $spaceNeededData = ($hypervMachines | Where-Object { -not (Get-VM -Name $_.ResourceName -ErrorAction SilentlyContinue) }).Count * 2GB
 
         $spaceNeeded = $spaceNeededBaseDisks + $spaceNeededData - $spaceBaseDisksAlreadyClaimed
 
@@ -1246,11 +1247,11 @@ function Export-LabDefinition
             }
             if ($Script:machines | Where-Object LinuxType -eq 'RedHat')
             {
-                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks.cfg) -Encoding unicode
+                $kickstartContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath ks_default.cfg) -Encoding unicode
             }
             if ($Script:machines | Where-Object LinuxType -eq 'Suse')
             {
-                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst.xml) -Encoding unicode
+                $autoyastContent | Out-File -FilePath (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath autoinst_default.xml) -Encoding unicode
             }
         }
     }
@@ -1898,7 +1899,7 @@ function Add-LabMachineDefinition
 
         [switch]$PassThru,
 
-        [string]$FriendlyName,
+        [string]$ResourceName,
 
         [switch]$SkipDeployment
     )
@@ -1981,7 +1982,7 @@ function Add-LabMachineDefinition
             $machineRoles = " (Roles: $($Roles.Name -join ', '))" 
         }
 
-        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
+        $azurePropertiesValidKeys = 'ResourceGroupName', 'UseAllRoleSizes', 'RoleSize', 'LoadBalancerRdpPort', 'LoadBalancerWinRmHttpPort', 'LoadBalancerWinRmHttpsPort', 'LoadBalancerAllowedIp', 'SubnetName', 'UseByolImage', 'AutoshutdownTime', 'AutoshutdownTimezoneId', 'StorageSku'
         $hypervPropertiesValidKeys = 'AutomaticStartAction', 'AutomaticStartDelay', 'AutomaticStopAction'
 
         if (-not $VirtualizationHost -and -not (Get-LabDefinition).DefaultVirtualizationEngine)
@@ -2098,6 +2099,7 @@ function Add-LabMachineDefinition
 
         $machine = New-Object AutomatedLab.Machine
         $machine.Name = $Name
+        $machine.FriendlyName = $ResourceName
         $script:machines.Add($machine)
 
         if ((Get-LabDefinition).DefaultVirtualizationEngine -and (-not $PSBoundParameters.ContainsKey('VirtualizationHost')))
@@ -2493,12 +2495,12 @@ function Add-LabMachineDefinition
                 foreach ($networkDefinition in $networkDefinitions)
                 {
                     #check for an virtual switch having already the name of the new network switch
-                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition
+                    $existingNetwork = $existingHyperVVirtualSwitches | Where-Object Name -eq $networkDefinition.ResourceName
 
                     #does the current network definition has an address space assigned
                     if ($networkDefinition.AddressSpace)
                     {
-                        Write-PSFMessage -Message "Virtual network '$networkDefinition' specified with address space '$($networkDefinition.AddressSpace)'"
+                        Write-PSFMessage -Message "Virtual network '$($networkDefinition.ResourceName)' specified with address space '$($networkDefinition.AddressSpace)'"
 
                         #then check if the existing network has the same address space as the new one and throw an exception if not
                         if ($existingNetwork)
@@ -3222,7 +3224,8 @@ function Get-LabPostInstallationActivity
             {
                 foreach ($kvp in $Properties.GetEnumerator())
                 {
-                    $activity.Properties.Add($kvp.Key, $kvp.Value)
+                    [object[]]$toList = $kvp.Value
+                    $activity.Properties.Add($kvp.Key, $toList )
                 }
             }
         }

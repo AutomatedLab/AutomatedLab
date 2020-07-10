@@ -1062,7 +1062,7 @@ function Install-LabRootDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
@@ -1361,7 +1361,7 @@ function Install-LabFirstChildDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 

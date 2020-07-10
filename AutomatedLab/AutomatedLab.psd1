@@ -46,6 +46,7 @@
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabTfs.psm1',
+        'AutomatedLabWac.psm1',
         'AutomatedLabHyperV.psm1',
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',
@@ -67,6 +68,8 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
+        'Install-LabRdsCertificate',
+        'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
@@ -77,6 +80,7 @@
         'Clear-LabCache',
         'Connect-Lab',
         'Connect-LabVM',
+        'Copy-LabALCommon',
         'Disable-LabVMFirewallGroup',
         'Disconnect-Lab',
         'Dismount-LabIsoImage',
@@ -144,6 +148,8 @@
         'Install-LabWindowsFeature',
         'Install-LabTeamFoundationEnvironment',
         'Install-LabHyperV',
+        'Install-LabWindowsAdminCenter',
+        'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
@@ -220,6 +226,7 @@
         'Get-LabCache',
         'New-LabReleasePipeline',
         'Get-LabAzureLoadBalancedPort',
+        'Get-LabTfsParameter',
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry',

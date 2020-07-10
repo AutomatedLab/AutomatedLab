@@ -22,7 +22,9 @@ function New-LabPSSession
 
         [int]$Interval = 5,
 
-        [switch]$UseSSL
+        [switch]$UseSSL,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     begin
@@ -99,6 +101,11 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
+                if (-not $m.AzureConnectionInfo.DnsName)
+                {
+                    $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
+                }
+
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)
@@ -110,10 +117,16 @@ function New-LabPSSession
             }
             elseif ($m.HostType -eq 'HyperV' -or $m.HostType -eq 'VMWare')
             {
+                # DoNotUseGetHostEntryInNewLabPSSession is used when existing DNS is possible
+                # SkipHostFileModification is used when the local hosts file should not be used
                 $doNotUseGetHostEntry = Get-LabConfigurationItem -Name DoNotUseGetHostEntryInNewLabPSSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
+                }
+                elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+                {
+                    $name = $m.IpV4Address
                 }
 
                 if ($name)
@@ -159,7 +172,7 @@ function New-LabPSSession
             if ($internalSession)
             {
                 if ($internalSession.Runspace.ConnectionInfo.AuthenticationMechanism -eq 'CredSsp' -and
-                    -not $internalSession.ALLabSourcesMapped -and
+                    -not $IgnoreAzureLabSources.IsPresent -and -not $internalSession.ALLabSourcesMapped -and
                     (Get-LabVM -ComputerName $internalSession.LabMachineName).HostType -eq 'Azure'
                 )
                 {
@@ -198,7 +211,8 @@ function New-LabPSSession
                     $internalSession = New-PSSession @param -ErrorAction SilentlyContinue -ErrorVariable sessionError
                     $internalSession | Add-Member -Name LabMachineName -MemberType ScriptProperty -Value { $this.Name.Substring(0, $this.Name.IndexOf('_')) }
 
-                    if ($internalSession)
+                    # Additional check here for availability/state due to issues with Azure IaaS
+                    if ($internalSession -and $internalSession.Availability -eq 'Available' -and $internalSession.State -eq 'Opened')
                     {
                         Write-PSFMessage "Session to computer '$($param.ComputerName)' created"
                         $sessions += $internalSession
@@ -346,6 +360,10 @@ function Remove-LabPSSession
             {
                 $param.Add('ComputerName', $m.Name)
             }
+            elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
+            }
             else
             {
                 $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
@@ -468,7 +486,9 @@ function Invoke-LabCommand
 
         [switch]$PassThru,
 
-        [switch]$NoDisplay
+        [switch]$NoDisplay,
+
+        [switch]$IgnoreAzureLabSources
     )
 
     Write-LogFunctionEntry
@@ -572,7 +592,7 @@ function Invoke-LabCommand
                     {
                         if (-not $script:data) {$script:data = Get-Lab}
                         $hostStartScript = Get-Command -Name $hostStartPath
-                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties -ConvertValue
                         if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
                             $hostStartParam['ComputerName'] = $machine.Name
@@ -587,7 +607,7 @@ function Invoke-LabCommand
                 $param.Add('ComputerName', $ComputerName)
 
                 Write-PSFMessage "Creating session to computers) '$ComputerName'"
-                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp
+                $session = New-LabPSSession -ComputerName $ComputerName -DoNotUseCredSsp:$item.DoNotUseCredSsp -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent
                 if (-not $session)
                 {
                     Write-LogFunctionExitWithError "Could not create a session to machine '$ComputerName'"
@@ -675,7 +695,7 @@ function Invoke-LabCommand
         $param.Add('ComputerName', $machines)
 
         Write-PSFMessage "Creating session to computer(s) '$machines'"
-        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential)
+        $session = @(New-LabPSSession -ComputerName $machines -DoNotUseCredSsp:$DoNotUseCredSsp -UseLocalCredential:$UseLocalCredential -Credential $credential -IgnoreAzureLabSources:$IgnoreAzureLabSources.IsPresent)
         if (-not $session)
         {
             Write-LogFunctionExitWithError "Could not create a session to machine '$machines'"
@@ -705,7 +725,7 @@ function Invoke-LabCommand
             }
             else
             {
-                 Get-Content -Path $FilePath -Raw
+                Get-Content -Path $FilePath -Raw
             }
             $ScriptBlock = [scriptblock]::Create($scriptContent)
         }
@@ -859,6 +879,10 @@ function New-LabCimSession
                 if (-not $doNotUseGetHostEntry)
                 {
                     $name = (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString
+                }
+                elseif (-not [string]::IsNullOrEmpty($m.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+                {
+                    $name = $m.IpV4Address
                 }
 
                 if ($name)
@@ -1071,6 +1095,10 @@ function Remove-LabCimSession
             {
                 $param.Add('ComputerName', $m.Name)
             }
+            elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+            {
+                $param.Add('ComputerName', $m.IpV4Address)
+            }
             else
             {
                 $param.Add('ComputerName', (Get-HostEntry -Hostname $m).IpAddress.IpAddressToString)
@@ -1087,5 +1115,86 @@ function Remove-LabCimSession
 
     Write-PSFMessage "Removed $($sessions.Count) PSSessions..."
     Write-LogFunctionExit
+}
+#endregion
+
+#region Install-LabRdsCertificate
+function Install-LabRdsCertificate
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    $machines = Get-LabVM -All | Where-Object -FilterScript { $_.OperatingSystemType -eq 'Windows' -and $_.OperatingSystem.Version -ge 6.3 -and -not $_.SkipDeployment }
+    if (-not $machines)
+    {
+        return
+    }
+
+    $jobs = foreach ($machine in $machines)
+    {
+        Invoke-LabCommand -ComputerName $machine -ActivityName 'Exporting RDS certs' -NoDisplay -ScriptBlock {
+            [string[]]$SANs = $machine.FQDN
+            $cmdlet = Get-Command -Name New-SelfSignedCertificate -ErrorAction SilentlyContinue
+            if ($machine.HostType -eq 'Azure' -and $cmdlet)
+            {
+                $SANs += $machine.AzureConnectionInfo.DnsName
+            }
+
+            $cert = if ($cmdlet.Parameters.ContainsKey('Subject'))
+            {
+                New-SelfSignedCertificate -Subject "CN=$($machine.Name)" -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\My' -Type SSLServerAuthentication
+            }
+            else
+            {
+                New-SelfSignedCertificate -DnsName $SANs -CertStoreLocation 'Cert:\LocalMachine\my'
+            }
+            $rdsSettings = Get-CimInstance -ClassName Win32_TSGeneralSetting -Namespace ROOT\CIMV2\TerminalServices
+            $rdsSettings.SSLCertificateSHA1Hash = $cert.Thumbprint
+            $rdsSettings | Set-CimInstance
+            $null = $cert | Export-Certificate -FilePath "C:\$($machine.Name).cer" -Type CERT -Force
+        } -Variable (Get-Variable machine) -AsJob -PassThru
+    }
+
+    Wait-LWLabJob -Job $jobs -NoDisplay
+    $tmp = Join-Path -Path $lab.LabPath -ChildPath Certificates
+    if (-not (Test-Path -Path $tmp)) { $null = New-Item -ItemType Directory -Path $tmp }
+    foreach ($session in (New-LabPSSession -ComputerName $machines))
+    {
+        $fPath = Join-Path -Path $tmp -ChildPath "$($session.LabMachineName).cer"
+        Receive-File -SourceFilePath "C:\$($session.LabMachineName).cer" -DestinationFilePath $fPath -Session $session
+        $null = Import-Certificate -FilePath $fPath -CertStoreLocation 'Cert:\LocalMachine\Root'
+    }
+}
+#endregion
+
+#region Uninstall-LabRdsCertificate
+function Uninstall-LabRdsCertificate
+{
+    [CmdletBinding()]
+    param ( )
+
+    $lab = Get-Lab
+    if (-not $lab)
+    {
+        return
+    }
+
+    foreach ($certFile in (Get-ChildItem -File -Path (Join-Path -Path $lab.LabPath -ChildPath Certificates) -Filter *.cer -ErrorAction SilentlyContinue))
+    {
+        $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+        $cert.Import($certFile.FullName)
+        if ($cert.Thumbprint)
+        {
+            Get-Item -Path ('Cert:\LocalMachine\Root\{0}' -f $cert.Thumbprint) | Remove-Item
+        }
+
+        $certFile | Remove-Item
+    }
 }
 #endregion

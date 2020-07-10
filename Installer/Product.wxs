@@ -116,6 +116,7 @@
                 <File Id='Sample_ProGetLab_Azure' Name='ProGet Lab - Azure.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\ProGet Lab - Azure.ps1' />
                 <File Id='Sample_WinRMClientsWithSSL' Name='WinRM clients with SSL.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WinRM clients with SSL.ps1' />
                 <File Id='Sample_WindowsAdminCenter' Name='WindowsAdminCenter.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WindowsAdminCenter.ps1' />
+                <File Id='Sample_WindowsAdminCenterOnPrem' Name='WindowsAdminCenter-OnPrem.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\WindowsAdminCenter-OnPrem.ps1' />
                 <File Id='Sample_DSCPullScenario1' Name='DSC Pull Scenario 1 (Pull Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration).ps1' />
                 <File Id='Sample_DSCPullScenario1S' Name='DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1' />
                 <File Id='Sample_DSCPullScenario2' Name='DSC Pull Scenario 2 (Pull Partial Configuration).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1' />

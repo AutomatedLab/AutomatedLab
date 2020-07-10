@@ -12,6 +12,16 @@ function Write-LogFunctionEntry
 
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
+    if ($callerFunctionName)
+    {
+        try
+        {
+            [AutomatedLab.LabTelemetry]::Instance.FunctionCalled($callerFunctionName)
+        }
+        catch
+        { }
+    }
+
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf

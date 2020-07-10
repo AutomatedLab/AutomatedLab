@@ -2,8 +2,6 @@
 #region Add-LabVirtualNetworkDefinition
 function Add-LabVirtualNetworkDefinition
 {
-
-
     [CmdletBinding()]
     param (
         [string]$Name = (Get-LabDefinition).Name,
@@ -18,6 +16,8 @@ function Add-LabVirtualNetworkDefinition
         [hashtable[]]$AzureProperties,
 
         [AutomatedLab.NetworkAdapter]$ManagementAdapter,
+
+        [string]$ResourceName,
 
         [switch]$PassThru
     )
@@ -121,6 +121,7 @@ function Add-LabVirtualNetworkDefinition
     $network = New-Object -TypeName AutomatedLab.VirtualNetwork
     $network.AddressSpace = $AddressSpace
     $network.Name = $Name
+    if ($ResourceName) {$network.FriendlyName = $ResourceName}
     if ($HyperVProperties.SwitchType) { $network.SwitchType = $HyperVProperties.SwitchType }
     if ($HyperVProperties.AdapterName) {$network.AdapterName = $HyperVProperties.AdapterName }
     if ($HyperVProperties.ManagementAdapter -eq $false) {$network.EnableManagementAdapter = $false }

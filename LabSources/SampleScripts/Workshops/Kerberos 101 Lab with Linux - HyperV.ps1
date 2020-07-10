@@ -45,7 +45,7 @@ Add-LabMachineDefinition -Name KerbRouter1 -NetworkAdapter $netAdapter -DomainNa
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.22.15 -Ipv4DNSServers 192.168.22.10
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
-Add-LabMachineDefinition -Name KerbLinux1 -OperatingSystem 'CentOS 7.5' -DomainName vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name KerbLinux1 -OperatingSystem 'CentOS-7' -DomainName vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
 
 #========== #these credentials are used for connecting to the machines in the child doamin a.vm.net. ==========================
 Set-LabInstallationCredential -Username Install -Password Somepass2
@@ -77,7 +77,7 @@ Add-LabMachineDefinition -Name KerbClient2 -Memory 2GB -NetworkAdapter $netAdapt
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.22.60 -Ipv4DNSServers 192.168.22.11
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
-Add-LabMachineDefinition -Name KerbLinux2 -OperatingSystem 'CentOS 7.5' -DomainName a.vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name KerbLinux2 -OperatingSystem 'CentOS-7' -DomainName a.vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
 
 #========== Now the 2nd forest gets setup with new credentials ==========================
 Set-LabInstallationCredential -Username Install -Password Somepass0

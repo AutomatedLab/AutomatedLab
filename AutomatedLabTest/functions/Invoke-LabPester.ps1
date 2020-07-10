@@ -11,18 +11,14 @@
         [string]
         $LabName,
 
-        [Pester.OutputTypes]
+        [ValidateSet('None', 'Normal', 'Detailed' , 'Diagnostic')]
         $Show = 'None',
 
         [switch]
         $PassThru,
 
         [string]
-        $OutputFile,
-
-        [ValidateSet('NUnitXml')]
-        [string]
-        $OutputFormat = 'NUnitXml'
+        $OutputFile
     )
 
     process
@@ -32,15 +28,20 @@
             $Lab = Import-Lab -Name $LabName -ErrorAction Stop -NoDisplay -NoValidation -PassThru
         }
 
-        # Execute all role-specific tests
-        $null = $PSBoundParameters.Remove('Lab')
-        $null = $PSBoundParameters.Remove('LabName')
+        $global:pesterLab = $Lab # No parameters in Pester v5 yet
+        $configuration = [PesterConfiguration]::Default
+        $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
+        $configuration.Run.PassThru = $PassThru.IsPresent
+        $configuration.Filter.Tag = $Lab.Machines.Roles.Name
+        $configuration.Should.ErrorAction = 'Continue'
+        $configuration.TestResult.Enabled = $true
+        if ($OutputFile)
+        {
+            $configuration.TestResult.OutputPath = $OutputFile
+        }
+        $configuration.Output.Verbosity = $Show
 
-        Invoke-Pester -Script @{
-            Path       = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
-            Parameters = @{
-                Lab = $Lab
-            }
-        } -Tag $Lab.Machines.Roles.Name @PSBoundParameters
+        Invoke-Pester -Configuration $configuration
+        Remove-Variable -Name pesterLab -Scope Global
     }
 }

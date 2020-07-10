@@ -444,11 +444,6 @@ function Get-LabInternetFile
                 return
             }
 
-            if ((Test-Path -Path $Path) -and $Force)
-            {
-                Remove-Item -Path $Path -Force
-            }
-
             Write-Verbose "Uri is '$Uri'"
             Write-Verbose "Path os '$Path'"
 
@@ -491,7 +486,7 @@ function Get-LabInternetFile
                         }
                         if ((Test-Path -Path $Path -PathType Container) -and -not $FileName)
                         {
-                            $script:FileName = $FileName = $response.ResponseUri.Segments[-1]
+                            $FileName = $response.ResponseUri.Segments[-1]
                             $Path = Join-Path -Path $Path -ChildPath $FileName
                         }
                         if ([System.IO.Path]::GetPathRoot($Path) -eq $Path)
@@ -501,45 +496,46 @@ function Get-LabInternetFile
                         }
                         if (-not $FileName)
                         {
-                            $script:FileName = $FileName = Split-Path -Path $Path -Leaf
+                            $FileName = Split-Path -Path $Path -Leaf
                         }
                         if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
                         {
                             Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
-                            return
                         }
-
-                        $localStream = [System.IO.File]::Create($Path)
-
-                        $buffer = New-Object System.Byte[] 10MB
-                        $bytesRead = 0
-                        [int]$percentageCompletedPrev = 0
-
-                        do
+                        else
                         {
-                            $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
-                            $localStream.Write($buffer, 0, $bytesRead)
-                            $bytesProcessed += $bytesRead
+                            $localStream = [System.IO.File]::Create($Path)
 
-                            [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
-                            if ($percentageCompleted -gt 0)
+                            $buffer = New-Object System.Byte[] 10MB
+                            $bytesRead = 0
+                            [int]$percentageCompletedPrev = 0
+
+                            do
                             {
-                                if ($percentageCompletedPrev -ne $percentageCompleted)
+                                $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                                $localStream.Write($buffer, 0, $bytesRead)
+                                $bytesProcessed += $bytesRead
+
+                                [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
+                                if ($percentageCompleted -gt 0)
                                 {
-                                    $percentageCompletedPrev = $percentageCompleted
-                                    Write-Progress -Activity "Downloading file '$FileName'" `
-                                    -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                    -PercentComplete ($percentageCompleted)
+                                    if ($percentageCompletedPrev -ne $percentageCompleted)
+                                    {
+                                        $percentageCompletedPrev = $percentageCompleted
+                                        Write-Progress -Activity "Downloading file '$FileName'" `
+                                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                        -PercentComplete ($percentageCompleted)
+                                    }
                                 }
-                            }
-                            else
-                            {
-                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
-                            }
-                        } while ($bytesRead -gt 0)
+                                else
+                                {
+                                    Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
+                                }
+                            } while ($bytesRead -gt 0)
+                        }
                     }
 
-                    $response
+                    $response | Add-Member -Name FileName -MemberType NoteProperty -Value $FileName -PassThru
                 }
             }
             catch
@@ -573,20 +569,88 @@ function Get-LabInternetFile
     }
 
     $lab = Get-Lab -ErrorAction SilentlyContinue
+    if (-not $lab)
+    {
+        $lab = Get-LabDefinition -ErrorAction SilentlyContinue
+        $doNotGetVm = $true
+    }
 
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
-            $machine = Get-LabVM -IsRunning | Select-Object -First 1
-            Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+            # We need to test first, even if it takes a second longer.
+            if (-not $doNotGetVm)
+            {
+                $machine =  Invoke-LabCommand -PassThru -NoDisplay -ComputerName $(Get-LabVM -IsRunning) -ScriptBlock {
+                    if (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue)
+                    {
+                        hostname
+                    }
+                } -ErrorAction SilentlyContinue | Select-Object -First 1 
+                Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-            $argumentList = $Uri, $Path, $FileName
+                $argumentList = $Uri, $Path, $FileName
 
-            $argumentList += if ($NoDisplay) {$true} else {$false}
-            $argumentList += if ($Force) {$true} else {$false}
+                $argumentList += if ($NoDisplay) { $true } else { $false }
+                $argumentList += if ($Force) { $true } else { $false }
+            }
 
-            $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            if ($machine)
+            {
+                $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            }
+            elseif (Get-LabAzureSubscription -ErrorAction SilentlyContinue)
+            {
+                $blob = $Path.Replace("$(Get-LabSourcesLocation)\",'')
+                $PSBoundParameters.Remove('PassThru') | Out-Null
+                $param = Sync-Parameter -Command (Get-Command Get-LabInternetFileInternal) -Parameters $PSBoundParameters
+                $param['Path'] = $Path.Replace((Get-LabSourcesLocation), (Get-LabSourcesLocation -Local))
+
+                $result = Get-LabInternetFileInternal @param
+                $fullName = Join-Path -Path $param.Path.Replace($FileName,'') -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
+                $storageAccount = Get-AzStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
+                
+                $container = Split-Path -Path $blob
+                $blobName = Split-Path -Path $blob -Leaf
+                New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+                Write-PSFMessage "Created directory $($container) in labsources"
+                if ($err)
+                {
+                    $err = $null
+
+                    # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
+                    New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+                    Write-PSFMessage "Created directory '$container' in labsources"
+                    if ($err)
+                    {
+                        if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
+                        {
+                            throw "An error ocurred during file upload: $($err[0].Exception.Message)"
+                        }
+                    }
+                }
+
+                $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $blobName -ErrorAction SilentlyContinue
+                if ($azureFile)
+                {
+                    $azureHash = $azureFile.CloudFile.Properties.ContentMD5
+                    $fileHash = (Get-FileHash -Path $fullName -Algorithm MD5).Hash
+                    Write-PSFMessage "$blobName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
+                }
+
+                if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
+                {
+                    $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $fullName -Path $blobName -ErrorAction SilentlyContinue -Force
+                    Write-PSFMessage "Azure file $blobName successfully uploaded. Generating file hash..."
+                }
+            }
+            else
+            {
+                Write-ScreenInfo -Type Erro -Message "Unable to upload file to Azure lab sources - No VM is available and no Azure subscription was added to the lab`r`n
+                Please at least execute New-LabDefinition and Add-LabAzureSubscription before using Get-LabInternetFile"
+                return
+            }
         }
         else
         {
@@ -601,7 +665,6 @@ function Get-LabInternetFile
         $PSBoundParameters.Remove('PassThru') | Out-Null
         try
         {
-            $x = $PSBoundParameters
             $result = Get-LabInternetFileInternal @PSBoundParameters
 
             $end = Get-Date
@@ -618,8 +681,8 @@ function Get-LabInternetFile
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            FileName = ?? { $FileName } { $FileName } { $script:FileName}
-            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $script:FileName})
+            FileName = ?? { $FileName } { $FileName } { $result.FileName }
+            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
             Length = $result.ContentLength
         }
     }
@@ -765,7 +828,7 @@ function Get-LabSourcesLocationInternal
     }
     elseif ($defaultEngine -eq 'HyperV' -or $Local)
     {
-        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
+        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -In 2, 3).DeviceID | Sort-Object -Descending
 
         $folders = foreach ($drive in $hardDrives)
         {

@@ -13,22 +13,22 @@ function New-LWHypervNetworkSwitch
 
     foreach ($network in $VirtualNetwork)
     {
-        if (-not $network.Name)
+        if (-not $network.ResourceName)
         {
             throw 'No name specified for virtual network to be created'
         }
 
-        Write-ScreenInfo -Message "Creating Hyper-V virtual network '$($network.Name)'" -TaskStart
+        Write-ScreenInfo -Message "Creating Hyper-V virtual network '$($network.ResourceName)'" -TaskStart
 
-        if (Get-VMSwitch -Name $network.Name -ErrorAction SilentlyContinue)
+        if (Get-VMSwitch -Name $network.ResourceName -ErrorAction SilentlyContinue)
         {
-            Write-ScreenInfo -Message "The network switch '$($network.Name)' already exists, no changes will be made to configuration" -Type Warning
+            Write-ScreenInfo -Message "The network switch '$($network.ResourceName)' already exists, no changes will be made to configuration" -Type Warning
             continue
         }
 
         if ((Get-NetIPAddress -AddressFamily IPv4) -contains $network.AddressSpace.FirstUsable)
         {
-            Write-ScreenInfo -Message "The IP '$($network.AddressSpace.FirstUsable)' Address for network switch '$($network.Name)' is already in use" -Type Error
+            Write-ScreenInfo -Message "The IP '$($network.AddressSpace.FirstUsable)' Address for network switch '$($network.ResourceName)' is already in use" -Type Error
             return
         }
 
@@ -44,22 +44,22 @@ function New-LWHypervNetworkSwitch
                 }
                 else
                 {
-                    throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.Name)) is already part of a network bridge and cannot be used."
+                    throw "The given network adapter ($($network.AdapterName)) for the external virtual switch ($($network.ResourceName)) is already part of a network bridge and cannot be used."
                 }
             }
 
-            $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.Name -AllowManagementOS $network.EnableManagementAdapter -ErrorAction Stop
+            $switch = New-VMSwitch -NetAdapterName $network.AdapterName -Name $network.ResourceName -AllowManagementOS $network.EnableManagementAdapter -ErrorAction Stop
         }
         else
         {
             try
             {
-                $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
+                $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
             }
             catch
             {
                 Start-Sleep -Seconds 2
-                $switch = New-VMSwitch -Name $network.Name -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
+                $switch = New-VMSwitch -Name $network.ResourceName -SwitchType ([string]$network.SwitchType) -ErrorAction Stop
             }
         }
 
@@ -67,7 +67,7 @@ function New-LWHypervNetworkSwitch
 
         if ($network.EnableManagementAdapter) {
 
-            $config = Get-NetAdapter | Where-Object Name -Match "vEthernet \($($network.Name)\) ?(\d{1,2})?"
+            $config = Get-NetAdapter | Where-Object Name -Match "^vEthernet \($($network.ResourceName)\) ?(\d{1,2})?"
             if (-not $config)
             {
                 throw "The network adapter for network switch '$network' could not be found. Cannot set up address hence will not be able to contact the machines"
@@ -97,16 +97,16 @@ function New-LWHypervNetworkSwitch
 
                 #Assign the IP address to the interface, implementing a default gateway if one was supplied
                 if ($network.ManagementAdapter.ipv4Gateway) {
-                    $null = New-NetIPAddress -InterfaceAlias "vEthernet ($($network.Name))" -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $adapterCidr -DefaultGateway $network.ManagementAdapter.ipv4Gateway.AddressAsString
+                    $null = New-NetIPAddress -InterfaceAlias "vEthernet ($($network.ResourceName))" -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $adapterCidr -DefaultGateway $network.ManagementAdapter.ipv4Gateway.AddressAsString
                 }
                 else
                 {
-                    $null = New-NetIPAddress -InterfaceAlias "vEthernet ($($network.Name))" -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $adapterCidr
+                    $null = New-NetIPAddress -InterfaceAlias "vEthernet ($($network.ResourceName))" -IPAddress $adapterIpAddress.AddressAsString -AddressFamily IPv4 -PrefixLength $adapterCidr
                 }
 
                 if (-not $network.ManagementAdapter.AccessVLANID -eq 0) {
                     #VLANID has been specified for the vEthernet Adapter, so set it
-                    Set-VMNetworkAdapterVlan -ManagementOS -VMNetworkAdapterName $network.Name -Access -VlanId $network.ManagementAdapter.AccessVLANID
+                    Set-VMNetworkAdapterVlan -ManagementOS -VMNetworkAdapterName $network.ResourceName -Access -VlanId $network.ManagementAdapter.AccessVLANID
                 }
             }
             else
@@ -135,7 +135,7 @@ function New-LWHypervNetworkSwitch
                 }
                 else
                 {
-                    Write-ScreenInfo -Message "Management Interface for switch '$($network.Name)' on Network Adapter '$($network.AdapterName)' has no defined AddressSpace and will remain DHCP enabled, ensure this is desired behaviour." -Type Warning
+                    Write-ScreenInfo -Message "Management Interface for switch '$($network.ResourceName)' on Network Adapter '$($network.AdapterName)' has no defined AddressSpace and will remain DHCP enabled, ensure this is desired behaviour." -Type Warning
                 }
             }
         }

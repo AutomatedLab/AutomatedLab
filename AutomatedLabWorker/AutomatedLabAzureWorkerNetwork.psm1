@@ -24,17 +24,17 @@ function New-LWAzureNetworkSwitch
     $lab = Get-Lab
     $jobs = @()
 
-    Write-ScreenInfo -Message "Creating Azure virtual networks '$($VirtualNetwork.Name -join ',')'" -TaskStart
+    Write-ScreenInfo -Message "Creating Azure virtual networks '$($VirtualNetwork.ResourceName -join ',')'" -TaskStart
     $jobs = foreach ($network in $VirtualNetwork)
     {
         if (Get-LWAzureNetworkSwitch -VirtualNetwork $network)
         {
-            Write-PSFMessage "Azure virtual network '$($network.Name)' already exists. Skipping..."
+            Write-PSFMessage "Azure virtual network '$($network.ResourceName)' already exists. Skipping..."
             continue
         }
 
         $azureNetworkParameters = @{
-            Name              = $network.Name
+            Name              = $network.ResourceName
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
             Location          = (Get-LabAzureDefaultLocation)
             AddressPrefix     = $network.AddressSpace
@@ -78,11 +78,11 @@ function New-LWAzureNetworkSwitch
     {
         if (-not $network.ConnectToVnets)
         {
-            Write-PSFMessage "The network '$($network.Name)' is not connected hence no need for creating a gateway"
+            Write-PSFMessage "The network '$($network.ResourceName)' is not connected hence no need for creating a gateway"
         }
         else
         {
-            $sourceNetwork = Get-AzVirtualNetwork -Name $network.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
+            $sourceNetwork = Get-AzVirtualNetwork -Name $network.ResourceName -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
 
             foreach ($connectedNetwork in $network.ConnectToVnets)
             {
@@ -101,7 +101,7 @@ function New-LWAzureNetworkSwitch
 
                 if (-not $alreadyExists)
                 {
-                    Add-AzVirtualNetworkPeering -Name "$($network.Name)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop | Out-Null
+                    Add-AzVirtualNetworkPeering -Name "$($network.ResourceName)_to_$connectedNetwork" -VirtualNetwork $sourceNetwork -RemoteVirtualNetworkId $remoteNetwork.Id -ErrorAction Stop | Out-Null
                 }
 
                 $existingPeerings = Get-AzVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)
@@ -114,7 +114,7 @@ function New-LWAzureNetworkSwitch
 
                 if (-not (Get-AzVirtualNetworkPeering -VirtualNetworkName $remoteNetwork.Name -ResourceGroupName (Get-LabAzureDefaultResourceGroup)))
                 {
-                    Add-AzVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.Name)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop | Out-Null
+                    Add-AzVirtualNetworkPeering -Name "$($connectedNetwork)_to_$($network.ResourceName)" -VirtualNetwork $remoteNetwork -RemoteVirtualNetworkId $sourceNetwork.Id -ErrorAction Stop | Out-Null
                 }
                 Write-PSFMessage -Message 'Peering successfully configured'
             }
@@ -139,19 +139,19 @@ function Remove-LWAzureNetworkSwitch
     $lab = Get-Lab
     $resourceGroupName = Get-LabAzureDefaultResourceGroup
 
-    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.Name -join ', ')'" -Type Warning
+    Write-ScreenInfo -Message "Removing virtual network(s) '$($VirtualNetwork.ResourceName -join ', ')'" -Type Warning
 
 
     $jobs = foreach ($network in $VirtualNetwork)
     {
-        Write-PSFMessage "Start removal of virtual network '$($network.name)'"
-        Remove-AzVirtualNetwork -Name $network.Name -ResourceGroupName $resourceGroupName -AsJob -Force
+        Write-PSFMessage "Start removal of virtual network '$($network.ResourceName)'"
+        Remove-AzVirtualNetwork -Name $network.ResourceName -ResourceGroupName $resourceGroupName -AsJob -Force
     }
 
     Write-PSFMessage "Waiting on the removal of $($jobs.Count)"
     Wait-LWLabJob -Job $jobs
 
-    Write-PSFMessage "Virtual network(s) '$($VirtualNetwork.Name -join ', ')' removed from Azure"
+    Write-PSFMessage "Virtual network(s) '$($VirtualNetwork.ResourceName -join ', ')' removed from Azure"
 
     Write-LogFunctionExit
 }
@@ -174,10 +174,10 @@ function Get-LWAzureNetworkSwitch
 
     foreach ($network in $VirtualNetwork)
     {
-        Write-PSFMessage -Message "Locating Azure virtual network '$($network.Name)'"
+        Write-PSFMessage -Message "Locating Azure virtual network '$($network.ResourceName)'"
 
         $azureNetworkParameters = @{
-            Name              = $network.Name
+            Name              = $network.ResourceName
             ResourceGroupName = (Get-LabAzureDefaultResourceGroup)
             ErrorAction       = 'SilentlyContinue'
             WarningAction     = 'SilentlyContinue'
@@ -206,7 +206,7 @@ function New-LWAzureLoadBalancer
 
     $jobs = foreach ($vNet in $lab.VirtualNetworks)
     {
-        $publicIp = Get-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
+        $publicIp = Get-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroup -ErrorAction SilentlyContinue
 
         $dnsLabel = "$((1..10 | ForEach-Object { [char[]](97..122) | Get-Random }) -join '')"
 
@@ -217,23 +217,23 @@ function New-LWAzureLoadBalancer
 
         if (-not $publicIp)
         {
-            $publicIp = New-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.Name)lbfrontendip" -ResourceGroupName $resourceGroup `
+            $publicIp = New-AzPublicIpAddress -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendip" -ResourceGroupName $resourceGroup `
                 -Location $location -AllocationMethod Static -IpAddressVersion IPv4 `
                 -DomainNameLabel $dnsLabel -ErrorAction SilentlyContinue
         }
 
-        $frontendConfig = New-AzLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.Name)lbfrontendconfig" -PublicIpAddress $publicIp
-        $backendConfig = New-AzLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)$($vNet.Name)backendpoolconfig"
+        $frontendConfig = New-AzLoadBalancerFrontendIpConfig -Name "$($resourceGroup)$($vNet.ResourceName)lbfrontendconfig" -PublicIpAddress $publicIp
+        $backendConfig = New-AzLoadBalancerBackendAddressPoolConfig -Name "$($resourceGroup)$($vNet.ResourceName)backendpoolconfig"
 
         $inboundRules = @()
-        foreach ($machine in ($ConnectedMachines | Where-Object -Property Network -EQ $vNet.Name))
+        foreach ($machine in ($ConnectedMachines | Where-Object -Property Network -EQ $vNet.ResourceName))
         {
             $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())rdpin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerRdpPort -BackendPort 3389
             $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinRmHttpPort -BackendPort 5985
             $inboundRules += New-AzLoadBalancerInboundNatRuleConfig -Name "$($machine.Name.ToLower())winrmhttpsin" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $machine.LoadBalancerWinrmHttpsPort -BackendPort 5986
         }
 
-        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.Name)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -AsJob
+        New-AzLoadBalancer -Name "$($resourceGroup)$($vNet.ResourceName)loadbalancer" -ResourceGroupName $resourceGroup -Location $location -FrontendIpConfiguration $frontendConfig -BackendAddressPool $backendConfig -InboundNatRule $inboundRules -Force -AsJob
     }
 
     # If Wait is not used, return either nothing or the jobs
@@ -291,15 +291,15 @@ function Set-LWAzureDnsServer
     {
         if ($network.DnsServers.Count -eq 0)
         {
-            Write-PSFMessage -Message "Skipping $($network.Name) because no DNS servers are configured"
+            Write-PSFMessage -Message "Skipping $($network.ResourceName) because no DNS servers are configured"
             continue
         }
 
-        Write-ScreenInfo -Message "Setting DNS servers for $($network.Name)" -TaskStart
+        Write-ScreenInfo -Message "Setting DNS servers for $($network.ResourceName)" -TaskStart
         $azureVnet = Get-LWAzureNetworkSwitch -VirtualNetwork $network -ErrorAction SilentlyContinue
         if (-not $azureVnet)
         {
-            Write-Error "$($network.Name) does not exist"
+            Write-Error "$($network.ResourceName) does not exist"
             continue
         }
 
@@ -312,7 +312,7 @@ function Set-LWAzureDnsServer
             $azureVnet
         }
 
-        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.Name)" -TaskEnd
+        Write-ScreenInfo -Message "Successfully set DNS servers for $($network.ResourceName)" -TaskEnd
     }
 
     Write-LogFunctionExit
@@ -356,10 +356,10 @@ function Add-LWAzureLoadBalancedPort
 
     $frontendConfig = $lb | Get-AzLoadBalancerFrontendIpConfig
 
-    $lb = Add-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.Name.ToLower())-$Port-$DestinationPort" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $Port -BackendPort $DestinationPort
+    $lb = Add-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $lb -Name "$($machine.ResourceName.ToLower())-$Port-$DestinationPort" -FrontendIpConfiguration $frontendConfig -Protocol Tcp -FrontendPort $Port -BackendPort $DestinationPort
     $lb = $lb | Set-AzLoadBalancer
 
-    $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
+    $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $machine.ResourceName
     $nic = $vm.NetworkProfile.NetworkInterfaces | Get-AzResource | Get-AzNetworkInterface
     $rules = Get-LWAzureLoadBalancedPort -ComputerName $ComputerName
     $nic.IpConfigurations[0].LoadBalancerInboundNatRules = $rules
@@ -409,6 +409,7 @@ function Get-LWAzureLoadBalancedPort
 
     $lab = Get-Lab
     $resourceGroup = $lab.Name
+    $machine = Get-LabVm -ComputerName $ComputerName
 
     $lb = Get-AzLoadBalancer -ResourceGroupName $resourceGroup
     if (-not $lb)
@@ -424,9 +425,9 @@ function Get-LWAzureLoadBalancedPort
     {
         $filteredRules = $existingConfiguration | Where-Object -Property FrontendPort -eq $Port
 
-        if (($filteredRules | Where-Object Name -notlike "$ComputerName*"))
+        if (($filteredRules | Where-Object Name -notlike "$($machine.ResourceName)*"))
         {
-            $err = ($filteredRules | Where-Object Name -notlike "$ComputerName*")[0].Name
+            $err = ($filteredRules | Where-Object Name -notlike "$($machine.ResourceName)*")[0].Name
             $existingComputer = $err.Substring(0, $err.IndexOf('-'))
             Write-Error -Message ("Incoming port {0} is already mapped to {1}!" -f $Port, $existingComputer)
             return
@@ -437,10 +438,10 @@ function Get-LWAzureLoadBalancedPort
 
     if ($DestinationPort)
     {
-        return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$ComputerName*"})
+        return ($existingConfiguration | Where-Object {$_.BackendPort -eq $DestinationPort -and $_.Name -like "$($machine.ResourceName)*"})
     }
 
-    return ($existingConfiguration | Where-Object -Property Name -like "$ComputerName*")
+    return ($existingConfiguration | Where-Object -Property Name -like "$($machine.ResourceName)*")
 }
 
 function Get-LabAzureLoadBalancedPort
@@ -496,7 +497,7 @@ function Get-LabAzureLoadBalancedPort
         [pscustomobject]@{
             Port = ($_.Key -split '-')[1]
             DestinationPort = ($_.Key -split '-')[2]
-            ComputerName = $machine.Name
+            ComputerName = $machine.ResourceName
         }
     }
 }

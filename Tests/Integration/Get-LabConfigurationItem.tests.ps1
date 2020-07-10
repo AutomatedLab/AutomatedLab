@@ -6,7 +6,8 @@ $rootpath = $PSScriptRoot
 if (-not (Get-Module -List AutomatedLab.Common)) {Install-Module -Name AutomatedLab.Common -Force -SkipPublisherCheck -AllowClobber}
 if (-not (Get-Module -List PSFramework)) {Install-Module -Name PSFramework -Force -SkipPublisherCheck -AllowClobber}
 
-Import-Module -Name PSFramework, AutomatedLab.Common, Pester
+Import-Module -Name PSFramework, AutomatedLab.Common
+Import-Module -Name Pester
 if (-not $env:AUTOMATEDLAB_TELEMETRY_OPTOUT)
 {
     [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTOUT',0, 'Machine')

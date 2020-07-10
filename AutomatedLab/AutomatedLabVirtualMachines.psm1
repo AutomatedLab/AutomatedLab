@@ -89,17 +89,32 @@ function New-LabVM
     #test if the machine creation jobs succeeded
     Write-ScreenInfo -Message 'Waiting for all machines to finish installing' -TaskStart
     $jobs | Wait-Job | Out-Null
-    $failedJobs = $jobs | Where-Object State -eq 'Failed'
-    $completedJobs = $jobs | Where-Object State -eq 'Completed'
+
+    $failedJobs = @()
+    $completedJobs = @()
+    foreach ($job in $jobs){
+
+        $result = $job | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
+
+        if ($job.State -eq 'Failed' -or $jobErrors.Count)
+        {
+            $failedJobs += $job
+        }
+        else
+        {
+            $completedJobs += $job
+        }
+    }
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
     if ($failedJobs)
     {
-        $failedJobs | Receive-Job -Keep
+        $result = $failedJobs | Receive-Job -Keep -ErrorVariable jobErrors -ErrorAction SilentlyContinue
+        $jobErrors | Write-Error
         throw "Failed to create the Azure machines mentioned in the errors above."
     }
 
-    $azureVms = $machines | Where-Object HostType -eq Azure
+    $azureVms = Get-LabVM -ComputerName $machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.SkipDeployment }
 
     if ($azureVMs)
     {
@@ -277,7 +292,7 @@ function Start-LabVM
             return
         }
 
-        $vmsCopy = $vms
+        $vmsCopy = $vms | Where-Object {-not ($_.OperatingSystemType -eq 'Linux' -and $_.OperatingSystem.OperatingSystemName -match ('Suse|CentOS Linux 8'))}
 
         #filtering out all machines that are already running
         $vmStates = Get-LabVMStatus -ComputerName $vms -AsHashTable
@@ -395,8 +410,8 @@ function Save-LabVM
         Write-PSFMessage -Message "Saving VMs '$($vms -join ',')"
         switch ($lab.DefaultVirtualizationEngine)
         {
-            'HyperV' { Save-LWHypervVM -ComputerName $vms}
-            'VMWare' { Save-LWVMWareVM -ComputerName $vms}
+            'HyperV' { Save-LWHypervVM -ComputerName $vms.ResourceName}
+            'VMWare' { Save-LWVMWareVM -ComputerName $vms.ResourceName}
             'Azure'  { Write-PSFMessage -Level Warning -Message "Skipping Azure VMs '$($vms -join ',')' as suspending the VMs is not supported on Azure."}
         }
 
@@ -667,7 +682,7 @@ function Wait-LabVM
         #if called without using DoNotUseCredSsp and the machine is not yet configured for CredSsp, call Wait-LabVM again but with DoNotUseCredSsp. Wait-LabVM enables CredSsp if called with DoNotUseCredSsp switch.
         if ($lab.DefaultVirtualizationEngine -eq 'HyperV')
         {
-            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm
+            $machineMetadata = Get-LWHypervVMDescription -ComputerName $vm.ResourceName
             if (($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp -and -not $DoNotUseCredSsp)
             {
                 Wait-LabVM -ComputerName $vm -TimeoutInMinutes $TimeoutInMinutes -PostDelaySeconds $PostDelaySeconds -ProgressIndicator $ProgressIndicator -DoNotUseCredSsp -NoNewLine:$NoNewLine
@@ -747,12 +762,13 @@ function Wait-LabVM
         {
             if ((Get-LabVM -ComputerName $machine).HostType -eq 'HyperV')
             {
-                $machineMetadata = Get-LWHypervVMDescription -ComputerName $machine
+                $machineMetadata = Get-LWHypervVMDescription -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 if ($machineMetadata.InitState -eq [AutomatedLab.LabVMInitState]::Uninitialized)
                 {
                     $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::ReachedByAutomatedLab
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                     Enable-LabAutoLogon -ComputerName $ComputerName
+                    Copy-LabALCommon -ComputerName $ComputerName
                 }
 
                 if ($DoNotUseCredSsp -and ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::EnabledCredSsp) -ne [AutomatedLab.LabVMInitState]::EnabledCredSsp)
@@ -798,7 +814,7 @@ function Wait-LabVM
                         Write-ScreenInfo "CredSsp could not be enabled on machine '$machine'" -Type Warning
                     }
 
-                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $machine
+                    Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $(Get-LabVM -ComputerName $machine).ResourceName
                 }
             }
         }
@@ -998,6 +1014,11 @@ function Remove-LabVM
             $computerName = (Get-HostEntry -Hostname $machine).IpAddress.IpAddressToString
         }
 
+        if (-not [string]::IsNullOrEmpty($machine.FriendlyName) -or (Get-LabConfigurationItem -Name SkipHostFileModification))
+        {
+            $computerName = $machine.IPV4Address
+        }
+
         <#
                 removed 161023, might not be required
                 if ((Get-LabVMStatus -ComputerName $machine) -eq 'Unknown')
@@ -1017,15 +1038,15 @@ function Remove-LabVM
 
         if ($machine.HostType -eq 'HyperV')
         {
-            Remove-LWHypervVM -Name $machine
+            Remove-LWHypervVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'Azure')
         {
-            Remove-LWAzureVM -Name $machine
+            Remove-LWAzureVM -Name $machine.ResourceName
         }
         elseif ($machine.HostType -eq 'VMWare')
         {
-            Remove-LWVMWareVM -Name $machine
+            Remove-LWVMWareVM -Name $machine.ResourceName
         }
 
         if ((Get-HostEntry -Section (Get-Lab).Name.ToLower() -HostName $machine))
@@ -1063,13 +1084,13 @@ function Get-LabVMStatus
     }
 
     $hypervVMs = $vms | Where-Object HostType -eq 'HyperV'
-    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.Name }
+    if ($hypervVMs) { $hypervStatus = Get-LWHypervVMStatus -ComputerName $hypervVMs.ResourceName }
 
     $azureVMs = $vms | Where-Object HostType -eq 'Azure'
-    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.Name }
+    if ($azureVMs) { $azureStatus = Get-LWAzureVMStatus -ComputerName $azureVMs.ResourceName }
 
     $vmwareVMs = $vms | Where-Object HostType -eq 'VMWare'
-    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.Name }
+    if ($vmwareVMs) { $vmwareStatus = Get-LWVMWareVMStatus -ComputerName $vmwareVMs.ResourceName }
 
     $result = @{ }
     if ($hypervStatus) { $result = $result + $hypervStatus }
@@ -1181,22 +1202,33 @@ function Connect-LabVM
             $cn = Get-LWAzureVMConnectionInfo -ComputerName $machine
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $cn.DnsName, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)"
+            mstsc.exe "/v:$($cn.DnsName):$($cn.RdpPort)" /f
 
             Start-Sleep -Seconds 5 #otherwise credentials get deleted too quickly
 
             $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
             Invoke-Expression $cmd | Out-Null
         }
+        elseif (Get-LabConfigurationItem -Name SkipHostFileModification)
+        {
+            $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.IpAddress.ipaddress.AddressAsString, $cred.UserName, $cred.GetNetworkCredential().Password
+            Invoke-Expression $cmd | Out-Null
+            mstsc.exe "/v:$($machine.IpAddress.ipaddress.AddressAsString)" /f
+
+            Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
+
+            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $machine.IpAddress.ipaddress.AddressAsString
+            Invoke-Expression $cmd | Out-Null
+        }
         else
         {
             $cmd = 'cmdkey.exe /add:"TERMSRV/{0}" /user:"{1}" /pass:"{2}"' -f $machine.Name, $cred.UserName, $cred.GetNetworkCredential().Password
             Invoke-Expression $cmd | Out-Null
-            mstsc.exe "/v:$($machine.Name)"
+            mstsc.exe "/v:$($machine.Name)" /f
 
             Start-Sleep -Seconds 1 #otherwise credentials get deleted too quickly
 
-            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $cn.DnsName
+            $cmd = 'cmdkey /delete:TERMSRV/"{0}"' -f $machine.Name
             Invoke-Expression $cmd | Out-Null
         }
     }
@@ -1743,6 +1775,7 @@ function Get-LabVM
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [ValidateNotNullOrEmpty()]
+        [SupportsWildcards()]
         [string[]]$ComputerName,
 
         [Parameter(Mandatory, ParameterSetName = 'ByRole')]
@@ -1750,6 +1783,8 @@ function Get-LabVM
 
         [Parameter(Mandatory, ParameterSetName = 'All')]
         [switch]$All,
+
+        [scriptblock]$Filter,
 
         [switch]$IncludeLinux,
 
@@ -1766,10 +1801,7 @@ function Get-LabVM
         Write-LogFunctionEntry
 
         $result = @()
-        if (-not $script:data)
-        {
-            $script:data = Get-Lab
-        }
+        $script:data = Get-Lab -ErrorAction SilentlyContinue
     }
 
     process
@@ -1780,7 +1812,7 @@ function Get-LabVM
             {
                 foreach ($n in $ComputerName)
                 {
-                    $machine = $Script:data.Machines | Where-Object Name -in $n
+                    $machine = $Script:data.Machines | Where-Object Name -Like $n
                     if (-not $machine)
                     {
                         continue
@@ -1822,7 +1854,7 @@ function Get-LabVM
     end
     {
         #Add Azure Connection Info
-        $azureVMs = $Script:data.Machines | Where-Object { $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
+        $azureVMs = $Script:data.Machines | Where-Object { -not $_.SkipDeployment -and $_.HostType -eq 'Azure' -and -not $_.AzureConnectionInfo.DnsName }
         if ($azureVMs -and -not $SkipConnectionInfo.IsPresent)
         {
             $azureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $azureVMs
@@ -1836,7 +1868,7 @@ function Get-LabVM
             }
         }
 
-        if ($IsRunning)
+        $result = if ($IsRunning)
         {
             if ($result.Count -eq 1)
             {
@@ -1847,9 +1879,18 @@ function Get-LabVM
             }
             else
             {
-                $startedMachines = (Get-LabVMStatus -ComputerName $result).GetEnumerator() | Where-Object Value -eq 'Started'
+                $startedMachines = (Get-LabVMStatus -ComputerName $result).GetEnumerator() | Where-Object Value -EQ Started
                 $Script:data.Machines | Where-Object { $_.Name -in $startedMachines.Name }
             }
+        }
+        else
+        {
+            $result
+        }
+
+        if ($Filter)
+        {
+            $result.Where($Filter)
         }
         else
         {
@@ -2111,21 +2152,12 @@ function Checkpoint-LabVM
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Checkpoint-LWHypervVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Checkpoint-LWAzureVM -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Snapshotting VMWare VMs is not yet implemented'}
     }
 
@@ -2175,21 +2207,12 @@ function Restore-LabVMSnapshot
         return
     }
 
-    foreach ($machine in $machines)
-    {
-        $ip = (Get-HostEntry -Hostname $machine).IpAddress.IPAddressToString
-        $sessions = Get-PSSession | Where-Object { $_.ComputerName -eq $ip }
-        if ($sessions)
-        {
-            Write-PSFMessage "Removing $($sessions.Count) open sessions to the machine '$machine'"
-            $sessions | Remove-PSSession
-        }
-    }
+    Remove-LabPSSession -ComputerName $machines
 
     switch ($lab.DefaultVirtualizationEngine)
     {
-        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
-        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines -SnapshotName $SnapshotName}
+        'HyperV' { Restore-LWHypervVMSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
+        'Azure'  { Restore-LWAzureVmSnapshot -ComputerName $machines.ResourceName -SnapshotName $SnapshotName}
         'VMWare' { Write-ScreenInfo -Type Error -Message 'Restoring snapshots of VMWare VMs is not yet implemented'}
     }
 
@@ -2246,7 +2269,7 @@ function Remove-LabVMSnapshot
     }
 
     $parameters = @{
-        ComputerName = $machines
+        ComputerName = $machines.ResourceName
     }
 
     if ($SnapshotName)
@@ -2392,3 +2415,50 @@ function Get-LabMachineAutoShutdown
     }
 }
 #endregion
+
+#region Copy-LabALCommon
+function Copy-LabALCommon
+{
+    [CmdletBinding()]
+    param
+    ( 
+        [Parameter(Mandatory)]
+        [string[]]
+        $ComputerName
+    )
+    
+    $childPath = foreach ($vm in $ComputerName)
+    {
+        Invoke-LabCommand -ScriptBlock {
+            if ($PSEdition -eq 'Core')
+            {
+                'core'
+            } else
+            {
+                'full'
+            }
+        } -ComputerName $vm -NoDisplay -IgnoreAzureLabSources -PassThru |
+        Add-Member -MemberType NoteProperty -Name ComputerName -Value $vm -Force -PassThru
+    }
+
+    $coreChild = @($childPath) -eq 'core'
+    $fullChild = @($childPath) -eq 'full'
+    $libLocation = Split-Path -Parent -Path (Split-Path -Path ([AutomatedLab.Common.Win32Exception]).Assembly.Location -Parent)
+
+    if ($coreChild -and @(Invoke-LabCommand -ScriptBlock{
+                Get-Item -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+    } -ComputerName $coreChild.ComputerName -IgnoreAzureLabSources -NoDisplay -PassThru).Count -ne $coreChild.Count)
+    {
+        $coreLibraryFolder = Join-Path -Path $libLocation -ChildPath $coreChild[0]
+        Copy-LabFileItem -Path $coreLibraryFolder -ComputerName $coreChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
+    }
+
+    if ($fullChild -and @(Invoke-LabCommand -ScriptBlock {
+                Get-Item -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+    } -ComputerName $fullChild.ComputerName -IgnoreAzureLabSources -NoDisplay -PassThru).Count -ne $fullChild.Count)
+    {
+        $fullLibraryFolder = Join-Path -Path $libLocation -ChildPath $fullChild[0]
+        Copy-LabFileItem -Path $fullLibraryFolder -ComputerName $fullChild.ComputerName -DestinationFolderPath '/ALLibraries' -UseAzureLabSourcesOnAzureVm $false
+    }
+}
+#endregion Copy-LabALCommon

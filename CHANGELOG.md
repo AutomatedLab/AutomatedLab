@@ -3,9 +3,45 @@
 ## Unreleased
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
 
-### Enhancements 
+## 5.22.0 - 2020-07-10
 
+### Enhancements
+
+- Parameter ReferenceDiskSizeInGB now works by created additional reference disks with different sizes (Fixes #862)
+- AutomatedLabTest updated to use Pester V5
+- Build Agent role can now get Capabilities through its role definition
+  - New key Capabilities which contains a hashtable (within the realms of what is possible with Azure DevOps)
+- New cmdlet Get-LabTfsParameter to retrieve standard parameter dictionary
+  which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
+- Connect-LabVM uses full screen mode by default
+- Fixed #561
+- Added CM-2002 CustomRole
+  - Uses Configuration Manager 2002 baseline media
+  - Supports Technical Preview (including updating to the latest release)
+  - -ExternalVMSwitchName accepts the "Default Switch"
+- Updated CM-1902 CustomRole
+  - -ExternalVMSwitchName accepts the "Default Switch"
+  - Max -CMVersion is now 1910 (use CM-2002 CustomRole if you want newer), formatting
+- Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
+- Custom Roles can now have any parameter type they would like, fixing #925
+- Install-Lab imports the VMs RDP certificates and Remove-Lab removes them to enable seamless Connect-LabVm
+- Relaxed Azure password policy as special characters are not mandatory.
+- Windows Admin Center implemented as proper Role to enable SkipDeployment parameter
+- Including name of used function in telemetry, for all functions using Write-LogFunctionEntry
+- ResourceName parameter of Add-LabMachineDefinition now actually supported. Fixes #23
+  - No interaction is done in AL using the resource name. This is only for the purpose of
+    deploying the same lab on the same host with different resource names (VM names, switch names)
+- Enabling configuration of allowed inbound IP addresses for Azure load balancer
+  
 ### Bug Fixes
+- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
+- Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
+- Build Agent role on Azure can now again connect to its server (Fixes #938)
+- Fixed Install-LabRdsCertificate which did not work with 2012 R2 lab VMs
+- LabSources folder is now supported in SD cards or memory sticks (Fixes #946)
+- Ensure drive letter gets assigned when mounting an image (Fixes #874)
+- Fixed Azure error handling
+- Added compatibility with CentOS 8 (partially fixes #967)
 
 ## 5.21.0 - 2020-05-26
 

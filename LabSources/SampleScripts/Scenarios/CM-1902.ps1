@@ -20,6 +20,7 @@
     Omitting this parameter forces AutomatedLab to find new subnets by simply increasing 192.168.1.0 until a free network is found. Free means that there is no virtual network switch with an IP address in the range of the subnet and the subnet is not routable. If these conditions are not met, the subnet is incremented again.
 .PARAMETER ExternalVMSwitchName
     The name of the External Hyper-V switch. The given name must be of an existing Hyper-V switch and it must be of 'External' type.
+    "Default Switch" is also an acceptable value, this way the lab can still form an independent network and have access to the host's network using NAT.
     If you do not want this lab to have physical network access, use the -NoInternetAccess switch.
     You cannot use this parameter with -NoInternetAccess.
 .PARAMETER SiteCode
@@ -29,10 +30,12 @@
 .PARAMETER CMVersion
     The target Configuration version you wish to install.
     This script first installs 1902 baseline and then installs updates. If -CMVersion is "1902" then the update process is skipped.
-    Acceptable values are "1902", "1906", "1910" or "Latest".
+    Acceptable values are "1902", "1906" or "1910".
 .PARAMETER OSVersion
     Operating System version for all VMs in this lab.
-    Acceptable values are "2016" or "2019". Ensure you have the corresponding ISO media in your LabSources\ISOs folder.
+    The names match those that Get-WindowsImage returns by property "ImageName".
+    Acceptable values are controlled via the parameter attribute ValidateSet(), meaning you can tab complete the options available.
+    Ensure you have the corresponding ISO media in your LabSources\ISOs folder.
 .PARAMETER DCHostname
     Hostname for this lab's Domain Controller.
 .PARAMETER DCCPU
@@ -86,12 +89,12 @@
         - 1x AutomatedLab:
             - Name: "CMLab01"
             - VMPath: \<drive\>:\AutomatedLab-VMs where \<drive\> is the fastest drive available
-        - 1x Active Directory domain:
-            - Domain: "winadmins.lab"
-            - Username: "Administrator"
-            - Password: "Somepass1"
             - AddressSpace: An unused and available subnet increasing 192.168.1.0 by 1 until one is found.
             - ExternalVMSwitch: Allows physical network access via Hyper-V external switch named "Internet".
+        - 1x Active Directory domain:
+            - Domain: "sysmansquad.lab"
+            - Username: "Administrator"
+            - Password: "Somepass1"
         - 2x virtual machines:
             - Operating System: Windows Server 2019 (Desktop Experience)
             - 1x Domain Controller:
@@ -109,7 +112,7 @@
                 - CustomRoles: "CM-1902"
                 - SiteCode: "P01"
                 - SiteName: "CMLab01"
-                - Version: "Latest"
+                - Version: "1910"
                 - LogViewer: "OneTrace"
                 - Site system roles: MP, DP, SUP (inc WSUS), RSP, EP
 
@@ -148,10 +151,10 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if (!([System.IO.Directory]::Exists($_))) { 
+        if (-not ([System.IO.Directory]::Exists($_))) { 
             throw "Invalid path or access denied" 
         } 
-        elseif (!($_ | Test-Path -PathType Container)) { 
+        elseif (-not ($_ | Test-Path -PathType Container)) { 
             throw "Value must be a directory, not a file" 
         }
         return $true
@@ -160,7 +163,7 @@ Param (
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
-    [String]$Domain = "winadmins.lab",
+    [String]$Domain = "sysmansquad.lab",
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -188,12 +191,21 @@ Param (
     [String]$SiteName = $LabName,
 
     [Parameter()]
-    [ValidateSet("1902","1906","1910","Latest")]
-    [String]$CMVersion = "Latest",
+    [ValidateSet("1902","1906","1910")]
+    [String]$CMVersion = "1910",
 
     [Parameter()]
-    [ValidateSet("2016","2019")]
-    [String]$OSVersion = "2019",
+    [ValidateSet(
+        "Windows Server 2016 Standard Evaluation (Desktop Experience)",
+        "Windows Server 2016 Datacenter Evaluation (Desktop Experience)",
+        "Windows Server 2019 Standard Evaluation (Desktop Experience)",
+        "Windows Server 2019 Datacenter Evaluation (Desktop Experience)",
+        "Windows Server 2016 Standard (Desktop Experience)",
+        "Windows Server 2016 Datacenter (Desktop Experience)",
+        "Windows Server 2019 Standard (Desktop Experience)",
+        "Windows Server 2019 Datacenter (Desktop Experience)"
+    )]
+    [String]$OSVersion = "Windows Server 2019 Standard Evaluation (Desktop Experience)",
 
     [Parameter()]
     [ValidateNotNullOrEmpty()]
@@ -232,10 +244,10 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if (![System.IO.File]::Exists($_) -And ($_ -notmatch "\.iso$")) {
+        if (-not [System.IO.File]::Exists($_) -And ($_ -notmatch "\.iso$")) {
             throw "File '$_' does not exist or is not of type '.iso'"
         }
-        elseif (!$_.StartsWith($labSources)) {
+        elseif (-not $_.StartsWith($labSources)) {
             throw "Please move SQL ISO to your Lab Sources folder '$labSources\ISOs'"
         }
         return $true
@@ -287,10 +299,10 @@ New-LabDefinition @NewLabDefinitionSplat
 
 #region Initialise
 $PSDefaultParameterValues = @{
-    'Add-LabMachineDefinition:OperatingSystem' = "Windows Server $OSVersion Standard (Desktop Experience)"
+    'Add-LabMachineDefinition:OperatingSystem' = $OSVersion
     'Add-LabMachineDefinition:DomainName'      = $Domain
     'Add-LabMachineDefinition:Network'         = $LabName
-    'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
+    'Add-LabMachineDefinition:ToolsPath'       = "{0}\Tools" -f $labSources
     'Add-LabMachineDefinition:MinMemory'       = 1GB
     'Add-LabMachineDefinition:Memory'          = 1GB
 }
@@ -341,6 +353,9 @@ switch ($true) {
     ($NoInternetAccess.IsPresent -And $PSBoundParameters.ContainsKey("ExternalVMSwitchName")) {
         throw "Can not use -NoInternetAccess and -ExternalVMSwitchName together"
     }
+    ((-not $NoInternetAccess.IsPresent) -And $ExternalVMSwitchName -eq 'Default Switch') { 
+        break
+    }
     ((-not $NoInternetAccess.IsPresent) -And (Get-VMSwitch).Name -notcontains $ExternalVMSwitchName) { 
         throw ("Hyper-V virtual switch '{0}' does not exist" -f $ExternalVMSwitchName)
     }
@@ -359,7 +374,7 @@ Set-LabInstallationCredential -Username $AdminUser -Password $AdminPass
 #endregion
 
 #region Get SQL Server 2017 Eval if no .ISO given
-if (!$PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
+if (-not $PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
     Write-ScreenInfo -Message "Downloading SQL Server 2017 Evaluation" -TaskStart
 
     $URL = "https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLServer2017-x64-ENU.iso"

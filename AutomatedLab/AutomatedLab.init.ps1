@@ -95,8 +95,12 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -
 #Hyper-V Network settings
 Set-PSFConfig -Module 'AutomatedLab' -Name MacAddressPrefix -Value '0017FB' -Initialize -Validation string -Description 'The MAC address prefix for Hyper-V labs'
 
+#Admin Center
+Set-PSFConfig -Module 'AutomatedLab' -Name WacDownloadUrl -Value 'http://aka.ms/WACDownload' -Validation string -Initialize -Description 'Windows Admin Center Download URL'
+
 #Host Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name DiskDeploymentInProgressPath -Value (Join-Path -Path (Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot) -ChildPath "LabDiskDeploymentInProgress.txt") -Initialize -Validation string -Description 'The file indicating that Hyper-V disks are being configured to reduce disk congestion'
+Set-PSFConfig -Module 'AutomatedLab' -Name SkipHostFileModification -Value $false -Initialize -Validation bool -Description 'Indicates that the hosts file should not be modified when deploying a new lab.'
 
 #Azure
 Set-PSFConfig -Module 'AutomatedLab' -Name MinimumAzureModuleVersion -Value '4.1.0' -Initialize -Validation string -Description 'The minimum expected Azure module version'
@@ -105,7 +109,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name LabSourcesMaxFileSizeMb -Value 50 -In
 Set-PSFConfig -Module 'AutomatedLab' -Name AzureDiskSkus -Value @('Standard_LRS', 'Premium_LRS', 'StandardSSD_LRS') # 'UltraSSD_LRS' is not allowed!
 
 #Office
-Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_11107-33602.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'
+Set-PSFConfig -Module 'AutomatedLab' -Name OfficeDeploymentTool -Value 'https://download.microsoft.com/download/2/7/A/27AF1BE6-DD20-4CB4-B154-EBAB8A7D4A7E/officedeploymenttool_12827-20268.exe' -Initialize -Validation string -Description 'Link to Microsoft Office deployment tool'
 
 #SysInternals
 Set-PSFConfig -Module 'AutomatedLab' -Name SysInternalsUrl -Value 'https://technet.microsoft.com/en-us/sysinternals/bb842062' -Initialize -Validation string -Description 'Link to SysInternals to check for newer versions'
@@ -376,7 +380,9 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'AgentPool'
             'PAT'
             'Organisation'
+            'Capabilities'
         )
+        WindowsAdminCenter = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(

@@ -290,13 +290,9 @@ function Update-CMSite {
             throw $ReceiveJobErr
         }
     }
-    if ($Version -eq "Latest") {
-        # https://github.com/PowerShell/PowerShell/issues/9185
-        $Update = $Update[0]
-    }
-    else {
-        $Update = $Update | Where-Object { $_.Name -like "*$Version*" }
-    }
+
+    $Update = $Update | Where-Object { $_.Name -like "*$Version*" }
+
     # Writing dot because of -NoNewLine in Wait-LWLabJob
     Write-ScreenInfo -Message "."
     Write-ScreenInfo -Message ("Found update: '{0}' {1} ({2})" -f $Update.Name, $Update.FullVersion, $Update.PackageGuid)

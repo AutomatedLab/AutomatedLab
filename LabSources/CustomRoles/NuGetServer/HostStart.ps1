@@ -25,9 +25,8 @@
     $Port,
     
     [Parameter()]
-    [ValidateSet('false', 'true')]
-    [string]
-    $UseSsl = 'false'
+    [bool]
+    $UseSsl
 )
 
 Import-Lab -Name $data.Name -NoValidation -NoDisplay
@@ -50,24 +49,23 @@ if (-not $Port)
 {
     $Port = if (Get-LabVM -Role CaRoot, CaSubordinate)
     {
-        $UseSsl = 'true'
+        $UseSsl = $true
         443 
     }
     else
     {
-        $UseSsl = 'false'
         80
     }
 }
 
-if ([Convert]::ToBoolean($UseSsl) -and -not (Get-LabVM -Role CaRoot, CaSubordinate))
+if ($UseSsl -and -not (Get-LabVM -Role CaRoot, CaSubordinate))
 {
     Write-ScreenInfo -Type Error -Message 'No CA found in your lab, but you selected UseSsl. NuGet server will not be deployed'
     return
 }
 
 $cert = 'Unencrypted'
-if ([Convert]::ToBoolean($UseSsl))
+if ($UseSsl)
 {
     Write-ScreenInfo -Type Verbose -Message 'Requesting certificate'
     $cert = Request-LabCertificate -Computer $ComputerName -Subject "CN=$ComputerName" -SAN $nugetHost.FQDN, 'localhost' -Template WebServer -PassThru
@@ -99,10 +97,10 @@ $result = Invoke-LabCommand -ComputerName $ComputerName -ScriptBlock {
     $scriptParam = @{
         ApiKey  = [pscredential]::new('blorb', ($ApiKey | ConvertTo-SecureString -AsPlainText -Force))
         Port    = $Port
-        UseSsl = [Convert]::ToBoolean($UseSsl)
+        UseSsl = $UseSsl
     }
 
-    if ([Convert]::ToBoolean($UseSsl))
+    if ($UseSsl)
     {
         $scriptParam['CertificateThumbprint'] = $cert.Thumbprint
     }
