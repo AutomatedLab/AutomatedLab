@@ -27,7 +27,8 @@
     
     #region Network Security Group
     Write-ScreenInfo -Type Verbose -Message 'Adding network security group to template, enabling traffic to ports 3389,5985,5986 for VMs behind load balancer'
-    $template.resources += @{
+    [string[]]$allowedIps = (Get-LabVm).AzureProperties["LoadBalancerAllowedIp"] | Foreach-Object {$_ -split '\s*[,;]\s*'} | Where-Object {-not [string]::IsNullOrWhitespace($_)}
+    $nsg = @{
         type       = "Microsoft.Network/networkSecurityGroups"
         apiVersion = "[providers('Microsoft.Network','networkSecurityGroups').apiVersions[0]]"
         name       = "$($Lab.Name)nsg"
@@ -44,7 +45,7 @@
                     properties = @{
                         protocol                   = "TCP"
                         sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
+                        sourceAddressPrefix        = if ($allowedIps) { $null } else { "*" }
                         destinationAddressPrefix   = "VirtualNetwork"
                         access                     = "Allow"
                         priority                   = 100
@@ -65,7 +66,7 @@
                     properties = @{
                         protocol                   = "TCP"
                         sourcePortRange            = "*"
-                        sourceAddressPrefix        = "*"
+                        sourceAddressPrefix        = if ($allowedIps) { $null } else { "*" }
                         destinationAddressPrefix   = "*"
                         access                     = "Allow"
                         priority                   = 101
@@ -118,6 +119,12 @@
             )
         }
     }
+
+    if ($allowedIps)
+    {
+        $nsg.properties.securityrules | Where-Object {$_.properties.direction -eq 'Inbound'} | Foreach-object {$_.properties.sourceAddressPrefixes = $allowedIps}
+    }
+    $template.resources += $nsg
     #endregion
 
     #region Wait for availability of Bastion
