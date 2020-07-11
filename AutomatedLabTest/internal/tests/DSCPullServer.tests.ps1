@@ -22,9 +22,9 @@ Describe "[$($Lab.Name)] DSCPullServer" -Tag DSCPullServer {
             }
 
             It "[$vm] Endpoint should be accessible" -TestCases @{vm = $vm} {
-                $config = Get-DscConfiguration -CimSession (New-LabCimSession -ComputerName $vm) -ErrorAction SilentlyContinue | Where-Object -Property CimClassName -eq 'DSC_xDscWebService'
+                $uri = (Get-DscConfiguration -CimSession (New-LabCimSession -ComputerName $vm) -ErrorAction SilentlyContinue | Where-Object -Property CimClassName -eq 'DSC_xDscWebService').DscServerUrl
                 
-                {Invoke-RestMethod -Method Get -Uri $config.DscServerUrl -UseBasicParsing -ErrorAction Stop} | Should -Not -Throw
+                {Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable uri) -ScriptBlock {Invoke-RestMethod -Method Get -Uri $config.DscServerUrl -UseBasicParsing -ErrorAction Stop} -ErrorAction Stop} | Should -Not -Throw
             }
         }
     }

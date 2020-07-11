@@ -17,7 +17,7 @@ Context "Role deployment successful" {
             It "[$vm] Instance(s) should be running" -TestCases @{
                 vm = $vm
             } {
-                $query = 'Select State from Win32_Service where Name like "MSSQLSERVER%"'
+                $query = 'Select State from Win32_Service where Name like "MSSQLSERVER%" and StartMode = "Auto"'
                 $session = New-LabCimSession -Computername $vm
                 (Get-CimInstance -Query $query -CimSession $session).State | Should -Not -Contain 'Stopped'
             }
