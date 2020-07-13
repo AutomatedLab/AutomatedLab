@@ -6,10 +6,19 @@ Describe "[$($Lab.Name)] HyperV" -Tag HyperV {
         
         foreach ($vm in (Get-LabVM -Role HyperV))
         {
-            It "[$vm] should have exposed virtualization extension" -Skip:$(-not (Test-IsAdministrator) -or ($Lab.DefaultVirtualizationEngine -eq 'Azure')) -TestCases @{vm = $vm } {
+            if ($Lab.DefaultVirtualizationEngine -eq 'HyperV' -and (Test-IsAdministrator))
+            {
+                It "[$vm] should have exposed virtualization extension" -TestCases @{vm = $vm } {
             
-                (Get-VM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                    (Get-VM -Name $vm.ResourceName| Get-VMProcessor).ExposeVirtualizationExtensions | Should -Be $true
+                }
             }
+
+            if ($Lab.DefaultVirtualizationEngine -eq 'Azure')
+            {
+                (Get-AzVm -ResourceGroupName (Get-LabAzureDefaultResourceGroup).Name -Name $vm.ResourceName).HardwareProfile.VmSize | Should -Match '_[DE]\d+(s?)_v3|_F\d+s_v2|_M\d+[mlts]*'
+            }
+            
             It "[$vm] should have Hyper-V feature installed" -TestCases @{vm = $vm } {
             
                 (Get-LabWindowsFeature -ComputerName $vm -FeatureName Hyper-V -NoDisplay).Installed | Should -Be $true

@@ -175,7 +175,7 @@ function Install-LabSharePoint
             if ($download.FullName.EndsWith('.zip'))
             {
                 # Sync client...
-                Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)"
+                Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)" -Force
                 Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
             }
         }
