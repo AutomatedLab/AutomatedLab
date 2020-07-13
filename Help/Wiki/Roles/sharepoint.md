@@ -31,7 +31,7 @@ Add-LabIsoImageDefinition -Name SharePoint2016 -Path $labsources\ISOs\en_sharepo
 Add-LabIsoImageDefinition -Name SharePoint2019 -Path $labsources\ISOs\en_sharepoint_server_2019_x64_dvd_68e34c9e.iso
 
 Add-LabMachineDefinition -Name SPDC1 -Memory 2gB -Roles RootDC -IpAddress 192.168.30.10
-Add-LabMachineDefinition -Name SPSP1 -Memory 4gB -Roles SharePoint2013 -IpAddress 192.168.30.13
+Add-LabMachineDefinition -Name SPSP1 -Memory 4gB -Roles SharePoint2013 -IpAddress 192.168.30.13 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)'
 Add-LabMachineDefinition -Name SPSP2 -Memory 4gB -Roles SharePoint2016 -IpAddress 192.168.30.16
 Add-LabMachineDefinition -Name SPSP3 -Memory 4gB -Roles SharePoint2019 -IpAddress 192.168.30.19
 

@@ -186,12 +186,16 @@ function Install-LabSharePoint
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
         Invoke-LabCommand -ComputerName $group.Group -NoDisplay -ScriptBlock {
             param ([string] $Script )
+            if (-not (Test-Path -Path C:\DeployDebug))
+            {
+                $null = New-Item -ItemType Directory -Path C:\DeployDebug
+            }
             Set-Content C:\DeployDebug\SPPrereq.ps1 -Value $Script
                 
         } -ArgumentList (Get-Variable -Name "$($Group.Name)InstallScript").Value.ToString()
     }
 
-    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
+    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
     $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
     if ($null -ne $failed)
     {
@@ -221,7 +225,7 @@ function Install-LabSharePoint
     {
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
         $configFile = $setupConfigFileContent -f $productKey
-        Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint" -ScriptBlock {
+        Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
             $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
             Set-Content C:\DeployDebug\SPInst.cmd -Value 'C:\SPInstall\setup.exe /config C:\SPInstall\files\al-config.xml'
