@@ -152,7 +152,7 @@ function Install-LabSharePoint
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
     foreach ($group in $versionGroups)
     {        
-        if ($lab.DefaultVirtualizationEngine -eq HyperV -and -not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
+        if ($lab.DefaultVirtualizationEngine -eq 'HyperV' -and -not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
         {
             $null = New-Item -ItemType Directory -Path $labsources\SoftwarePackages\$($group.Name)
         }
