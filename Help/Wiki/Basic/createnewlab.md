@@ -6,15 +6,11 @@ It is mandatory to define the name of the lab and the virtualization engine. So 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -Path D:\AutomatedLabs -VmPath D:\AutomatedLab-VMs
 ```
 
-* **New-LabDefinition** Parameters
-** **Name**: The name if the lab to create. The name must be unique.
-** **DefaultVirtualizationEngine**: HyperV for local deployments or Azure to deploy into the cloud.
-** **Path**: This is the path were the lab files will go (screenshot 1). If not defined the labs will be stored in "C:\Users\<username>\Documents\AutomatedLab-Labs".
-** **VmPath**: This is where AL creates the virtual machines. If this path is not defined AL will choose the fastest drive by trying not to use the system drive and create a folder there names "AutomatedLab-VMs".
-
-
-***
-
+- **New-LabDefinition** Parameters
+  - **Name**: The name if the lab to create. The name must be unique.
+  - **DefaultVirtualizationEngine**: HyperV for local deployments or Azure to deploy into the cloud.
+  - **Path**: This is the path were the lab files will go (screenshot 1). If not defined the labs will be stored in "C:\Users\<username>\Documents\AutomatedLab-Labs".
+  - **VmPath**: This is where AL creates the virtual machines. If this path is not defined AL will choose the fastest drive by trying not to use the system drive and create a folder there names "AutomatedLab-VMs".
 
 During the lab deployment, AL exports your definitions into XML files. By default these are stored in 'C:\Users\<username>\Documents\AutomatedLab-Labs'. If you close the PowerShell session after the lab deployment, you can import the lab again using the Import-Lab cmdlet.
 
