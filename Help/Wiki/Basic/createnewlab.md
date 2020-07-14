@@ -24,6 +24,10 @@ The virtual machines are stored in a different folder. AL tries to determine the
 
 !https://cloud.githubusercontent.com/assets/11280760/20642671/252e839a-b415-11e6-8c80-307f7662d64a.JPG!
 
+Starting with version 5.23, each lab deployment will not only be validated before the deployment but also
+when the installation is finished. To enable the deployment validation, you need to install Pester 5.0.1+.
+We did not mark Pester as a dependency, as these tests are optional.
+
 ## Lab building with the REST API
 
 With the custom role 'LabBuilder' it is now possible to create a simple REST API powered by [Polaris](https://github.com/PowerShell/Polaris) on any virtualization host. The REST API provides the following functionality:

@@ -81,11 +81,6 @@ function Install-LabSharePoint
     Write-LogFunctionEntry
 
     $lab = Get-Lab
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
-        Write-ScreenInfo -Message 'SharePoint on Azure is deployed through the SKU - no work needs to be done' -Type Verbose
-        Write-LogFunctionExit
-    }
   
     if (-not (Get-LabVM))
     {
@@ -131,14 +126,18 @@ function Install-LabSharePoint
     # Mount SharePoint ISO
     Dismount-LabIsoImage -ComputerName $machines -SupressOutput
 
-    foreach ($group in $versionGroups)
+    $jobs = foreach ($group in $versionGroups)
     {
-        Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -SupressOutput
+        foreach ($machine in $group.Group)
+        {
+            $spImage = Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -PassThru
+            Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
+                Copy-Item -Path "$($spImage.DriveLetter)\" -Destination "C:\SPInstall\" -Recurse
+            } -Variable (Get-Variable -Name spImage) -AsJob
+        }        
     }
 
-    Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
-        Copy-Item -Path "D:\" -Destination "C:\SPInstall\" -Recurse
-    }
+    Wait-LWLabJob -Job $jobs -NoDisplay
 
     foreach ($thing in @('cppredist32_2012', 'cppredist64_2012', 'cppredist32_2015', 'cppredist64_2015', 'cppredist32_2017', 'cppredist64_2017'))
     {
@@ -175,8 +174,20 @@ function Install-LabSharePoint
             if ($download.FullName.EndsWith('.zip'))
             {
                 # Sync client...
-                Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)" -Force
-                Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+                {
+                    $anyVm = Get-LabVm -IsRunning | Select-Object -First 1
+                    Copy-LabFileItem -Path $download.FullName -DestinationFolderPath C:\ -ComputerName $anyVm -UseAzureLabSourcesOnAzureVm $true
+                    Invoke-LabCommand -ComputerName $anyVm -ScriptBlock {
+                        Expand-Archive -Path (Join-Path -Path C:\ -ChildPath $download.FileName) -DestinationPath Z:\SoftwarePackages\$($group.Name) -Force
+                        Get-ChildItem -Recurse -Path "Z:\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "Z:\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                    } -Variable (Get-Variable download,group)
+                }
+                else
+                {
+                    Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)" -Force
+                    Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                }
             }
         }
 
