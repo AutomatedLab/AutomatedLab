@@ -133,7 +133,7 @@ function Install-LabSharePoint
             $spImage = Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -PassThru
             Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
                 Copy-Item -Path "$($spImage.DriveLetter)\" -Destination "C:\SPInstall\" -Recurse
-            } -Variable (Get-Variable -Name spImage) -AsJob
+            } -Variable (Get-Variable -Name spImage) -AsJob -PassThru
         }        
     }
 
@@ -145,7 +145,7 @@ function Install-LabSharePoint
         Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name $thing) -Path $labsources\SoftwarePackages -FileName $fName -NoDisplay
     }
 
-    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
+    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
     # Download and copy Prerequisite Files to server
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
