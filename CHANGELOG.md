@@ -1,7 +1,11 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
+
+### Fixes
+
+- Aligned the name of the 'DscMofEncryption' template with its display name
 
 ## 5.22.0 - 2020-07-10
 
