@@ -191,7 +191,7 @@ function Install-LabSharePoint
             }
         }
 
-        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
+        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
