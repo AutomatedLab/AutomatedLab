@@ -1121,7 +1121,7 @@ function Install-Lab
     if (($Scvmm -or $performAll) -and (Get-LabVM -Role SCVMM))
     {
         Write-ScreenInfo -Message 'Installing SCVMM'
-        Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role SCVMM).Name -join ', ')'"
+        Write-ScreenInfo -Message "Machines to have SCVMM Management or Console installed: '$((Get-LabVM -Role SCVMM).Name -join ', ')'"
 
         $machinesToStart = Get-LabVM -Role SCVMM | Where-Object -Property SkipDeployment -eq $false
         if ($machinesToStart)
