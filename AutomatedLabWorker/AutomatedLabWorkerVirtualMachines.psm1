@@ -1573,6 +1573,8 @@ function Repair-LWHypervNetworkConfig
 
     $machine = Get-LabVM -ComputerName $ComputerName
 
+    if (-not $machine) { return } # No fixing this on a Linux VM
+
     Wait-LabVM -ComputerName $machine -NoNewLine
 
     #remoting does serialization with a depth of 1. Here we need more
