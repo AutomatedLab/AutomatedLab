@@ -82,7 +82,7 @@ function Install-LabScvmm
             $iniServer['ProductKey'] = $role.Properties['ProductKey']
         }
 
-        $iniServer['ProgramFiles'] = $iniServer['ProgramFiles'] -f $role.Name.Substring(5)
+        $iniServer['ProgramFiles'] = $iniServer['ProgramFiles'] -f $role.Name.ToString().Substring(5)
         if ($iniServer['SqlMachineName'] -eq 'REPLACE')
         {
             $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer | Select-Object -First 1 -ExpandProperty Fqdn
@@ -98,7 +98,7 @@ function Install-LabScvmm
             if (-not $ouExists) { New-ADObject -Name $OUName -Path (Get-ADDomain).SystemsContainer -Type Container -ProtectedFromAccidentalDeletion $true }
         } -ArgumentList $iniServer.TopContainerName
 
-        if ([string]::IsNullOrEmpty($role['SkipServer'] -or -not ([Convert]::ToBoolean($role['SkipServer']))))
+        if ($role.Properties -and -not ([Convert]::ToBoolean($role.Properties['SkipServer'])))
         {
             $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
             $domainCredential = $vm.GetCredential((Get-Lab))
@@ -122,14 +122,14 @@ function Install-LabScvmm
     {
         $iniConsole = $iniContentConsole.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if (-not [string]::IsNullOrEmpty($role['SkipServer'] -and ([Convert]::ToBoolean($role['SkipServer']))))
+        if ($role.Properties -and ([Convert]::ToBoolean($role.Properties['SkipServer'])))
         {
             foreach ($property in $role.Properties.GetEnumerator())
             {
                 if (-not $iniConsole.ContainsKey($property.Key)) { continue }
                 $iniConsole[$property.Key] = $property.Value
             }
-            $iniConsole.ProgramFiles = $iniConsole.ProgramFiles -f $role.Name.Substring(5)
+            $iniConsole.ProgramFiles = $iniConsole.ProgramFiles -f $role.Name.ToString().Substring(5)
             if ($iniConsole['VmmServerForOpsMgrConfig'] -eq 'REPLACE')
             {
                 $iniConsole['VmmServerForOpsMgrConfig'] = $vm.Fqdn
