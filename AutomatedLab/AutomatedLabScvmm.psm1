@@ -42,10 +42,10 @@ function Install-LabScvmm
     $adkpe = Get-LabConfigurationItem -Name WindowsAdkPe
     $odbc = Get-LabConfigurationItem -Name SqlOdbc
     $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\Tools -FileName sqlcmd.msi -PassThru
-    $sqlFile = Get-LabInternetFile -Uri $odbc -Path $labsources\Tools -FileName odbc.msi -PassThru
+    $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\Tools -FileName odbc.msi -PassThru
     $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\Tools -FileName adk.exe -PassThru
     $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\Tools -FileName adkpe.exe -PassThru
-    Install-LabSoftwarePackage -Path $odbc.FullName -ComputerName $all
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all
     Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $all
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
