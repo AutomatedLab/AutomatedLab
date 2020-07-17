@@ -50,7 +50,8 @@
         'AutomatedLabHyperV.psm1',
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',
-        'AutomatedLabRemoting.psm1'
+        'AutomatedLabRemoting.psm1',
+        'AutomatedLabScvmm.psm1'
     )
 
     RequiredModules        = @(
@@ -68,6 +69,7 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
+        'Install-LabScvmm',
         'Install-LabRdsCertificate',
         'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
