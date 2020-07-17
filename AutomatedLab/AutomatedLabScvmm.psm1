@@ -145,7 +145,7 @@ function Install-LabScvmm
             }
             
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini' -AsJob -PassThru
-            Dismount-LabIsoImage -ComputerName $vm -SuppressOutput
+            Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
     
