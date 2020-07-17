@@ -46,7 +46,7 @@ function Install-LabScvmm
     $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\Tools -FileName adk.exe -PassThru
     $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\Tools -FileName adkpe.exe -PassThru
     Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
-    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $all -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES/L*v C:\sqlcmd.log'
+    Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $all -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
     {
@@ -115,7 +115,7 @@ function Install-LabScvmm
         }
     }
 
-    if ($jobs) { Wait-LWLabJob $jobs }
+    if ($jobs) { Wait-LWLabJob -Job $jobs }
 
     # Console, if SkipServer was chosen
     $jobs = foreach ($vm in (Get-LabVM -Role SCVMM))
@@ -149,5 +149,5 @@ function Install-LabScvmm
         }
     }
     
-    if ($jobs) { Wait-LWLabJob $jobs }
+    if ($jobs) { Wait-LWLabJob -Job $jobs }
 }
