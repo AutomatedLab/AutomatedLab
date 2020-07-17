@@ -40,7 +40,7 @@ function Install-LabScvmm
     $sqlcmd = Get-LabConfigurationItem -Name SqlCommandLineUtils
     $adk = Get-LabConfigurationItem -Name WindowsAdk
     $adkpe = Get-LabConfigurationItem -Name WindowsAdkPe
-    $odbc = Get-LabConfigurationItem -Name SqlOdbc
+    $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\Tools -FileName sqlcmd.msi -PassThru
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\Tools -FileName odbc.msi -PassThru
     $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\Tools -FileName adk.exe -PassThru
@@ -106,12 +106,12 @@ function Install-LabScvmm
 
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                & $setup.FullName /VERYSILENT /DIR=C:\SCVMM
+                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM'
                 '[OPTIONS]' | Set-Content C:\Server.ini
                 $iniServer.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
             }
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru
-            Dismount-LabIsoImage -ComputerName $vm -SuppressOutput
+            Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
 
@@ -139,7 +139,7 @@ function Install-LabScvmm
 
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniConsole, scvmmIso) -ActivityName 'Extracting SCVMM Console' -ScriptBlock {
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                & $setup.FullName /VERYSILENT /DIR=C:\SCVMM
+                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM'
                 '[OPTIONS]' | Set-Content C:\Server.ini
                 $iniConsole.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
             }
