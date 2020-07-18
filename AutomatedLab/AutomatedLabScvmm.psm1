@@ -3,7 +3,7 @@
     CompanyName                 = 'AutomatedLab'
     ProgramFiles                = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
     CreateNewSqlDatabase        = '1'
-    SqlInstanceName             = 'MSSQL$VMM$'
+    SqlInstanceName             = 'MSSQLSERVER'
     SqlDatabaseName             = 'VirtualManagerDB'
     RemoteDatabaseImpersonation = '0'
     SqlMachineName              = 'REPLACE'
@@ -20,13 +20,12 @@
     SQMOptIn                    = '0'
     MUOptIn                     = '0'
     VmmServiceLocalAccount      = '0'
-    TopContainerName            = 'VMMServer'
+    TopContainerName            = 'CN=VMMServer,DC=contoso,DC=com'
 }
 $iniContentConsole = @{
     ProgramFiles             = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
     IndigoTcpPort            = '8100'
     MUOptIn                  = '0'
-    VmmServerForOpsMgrConfig = 'REPLACE'
 }
 $setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
 
@@ -34,19 +33,26 @@ function Install-LabScvmm
 {
     [CmdletBinding()]
     param ( )
-
+    $lab = Get-Lab
     # Prerequisites, all
     $all = Get-LabVM -Role SCVMM
     $sqlcmd = Get-LabConfigurationItem -Name SqlCommandLineUtils
     $adk = Get-LabConfigurationItem -Name WindowsAdk
     $adkpe = Get-LabConfigurationItem -Name WindowsAdkPe
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
-    $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\Tools -FileName sqlcmd.msi -PassThru
-    $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\Tools -FileName odbc.msi -PassThru
-    $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\Tools -FileName adk.exe -PassThru
-    $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\Tools -FileName adkpe.exe -PassThru
+    $cpp64 = Get-LabConfigurationItem -Name cppredist64_2012
+    $cpp32 = Get-LabConfigurationItem -Name cppredist32_2012
+    $sqlFile = Get-LabInternetFile -Uri $sqlcmd -Path $labsources\SoftwarePackages -FileName sqlcmd.msi -PassThru
+    $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
+    $adkFile = Get-LabInternetFile -Uri $adk -Path $labsources\SoftwarePackages -FileName adk.exe -PassThru
+    $adkpeFile = Get-LabInternetFile -Uri $adkpe -Path $labsources\SoftwarePackages -FileName adkpe.exe -PassThru
+    $cpp64File = Get-LabInternetFile -uri $cpp64 -Path $labsources\SoftwarePackages -FileName vcredist_64_2012.exe -PassThru
+    $cpp32File = Get-LabInternetFile -uri $cpp32 -Path $labsources\SoftwarePackages -FileName vcredist_32_2012.exe -PassThru
     Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
     Install-LabSoftwarePackage -Path $sqlFile.FullName -ComputerName $all -CommandLine '/QN IACCEPTMSSQLCMDLNUTILSLICENSETERMS=YES /L*v C:\sqlcmd.log'
+    Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
+    Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
+
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
     {
@@ -90,15 +96,26 @@ function Install-LabScvmm
 
         Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
             param ($OUName)
+            if ($OUName -match 'CN=')
+            {
+                $path = ($OUName -split ',')[1..999] -join ','
+                $name = ($OUName -split ',')[0] -replace 'CN='
+            }
+            else
+            {
+                $path = (Get-ADDomain).SystemsContainer
+                $name = $OUName
+            }
+
             try 
             {
-                $ouExists = Get-ADObject -Identity "CN=$($OUName),$((Get-ADDomain).SystemsContainer)" -ErrorAction Stop
+                $ouExists = Get-ADObject -Identity "CN=$($name),$path" -ErrorAction Stop
             }
             catch { }
-            if (-not $ouExists) { New-ADObject -Name $OUName -Path (Get-ADDomain).SystemsContainer -Type Container -ProtectedFromAccidentalDeletion $true }
+            if (-not $ouExists) { New-ADObject -Name $name -Path $path -Type Container -ProtectedFromAccidentalDeletion $true }
         } -ArgumentList $iniServer.TopContainerName
 
-        if ($role.Properties -and -not ([Convert]::ToBoolean($role.Properties['SkipServer'])))
+        if (-not ([Convert]::ToBoolean($role.Properties['SkipServer'])))
         {
             $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
             $domainCredential = $vm.GetCredential((Get-Lab))
@@ -106,11 +123,11 @@ function Install-LabScvmm
 
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniServer, scvmmIso) -ActivityName 'Extracting SCVMM Server' -ScriptBlock {
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM'
+                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Server.ini
                 $iniServer.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
             }
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru
+            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
@@ -122,7 +139,7 @@ function Install-LabScvmm
     {
         $iniConsole = $iniContentConsole.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        if ($role.Properties -and ([Convert]::ToBoolean($role.Properties['SkipServer'])))
+        if ([Convert]::ToBoolean($role.Properties['SkipServer']))
         {
             foreach ($property in $role.Properties.GetEnumerator())
             {
@@ -130,21 +147,17 @@ function Install-LabScvmm
                 $iniConsole[$property.Key] = $property.Value
             }
             $iniConsole.ProgramFiles = $iniConsole.ProgramFiles -f $role.Name.ToString().Substring(5)
-            if ($iniConsole['VmmServerForOpsMgrConfig'] -eq 'REPLACE')
-            {
-                $iniConsole['VmmServerForOpsMgrConfig'] = $vm.Fqdn
-            }
 
             $scvmmIso = Mount-LabIsoImage -ComputerName $vm -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $role.Name }).Path -SupressOutput -PassThru
 
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniConsole, scvmmIso) -ActivityName 'Extracting SCVMM Console' -ScriptBlock {
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
-                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM'
+                Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Server.ini
                 $iniConsole.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
             }
             
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini' -AsJob -PassThru
+            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini' -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
