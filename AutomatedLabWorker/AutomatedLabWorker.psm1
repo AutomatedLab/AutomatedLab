@@ -74,7 +74,7 @@ function Invoke-LWCommand
 
     if ($DependencyFolderPath)
     {
-        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' } `
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath) } `
         { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $DependencyFolderPath } `
         { Test-Path -Path $DependencyFolderPath }
         
@@ -87,7 +87,7 @@ function Invoke-LWCommand
 
     if ($ScriptFilePath)
     {
-        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' } `
+        $result = ?? { (Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath)} `
         { Test-LabPathIsOnLabAzureLabSourcesStorage -Path $ScriptFilePath } `
         { Test-Path -Path $ScriptFilePath }
         

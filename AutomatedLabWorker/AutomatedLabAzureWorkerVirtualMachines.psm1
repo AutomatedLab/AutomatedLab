@@ -1224,6 +1224,8 @@ function Initialize-LWAzureVM
             $alDir = New-Item -ItemType Directory -Path C:\AL -Force
         }
 
+        $alDir = 'C:\AL'
+
         $tempFile = Join-Path -Path $alDir -ChildPath RegionalSettings
         $regionSettings -f $UserLocale, $geoId | Out-File -FilePath $tempFile
         $argument = 'intl.cpl,,/f:"{0}"' -f $tempFile
@@ -1268,7 +1270,19 @@ function Initialize-LWAzureVM
         } | Export-Clixml -Path C:\AL\LabSourcesStorageAccount.xml
         $script | Out-File C:\AL\AzureLabSources.ps1 -Force
 
-        SCHTASKS /Create /SC ONCE /ST 00:00 /TN ALLabSourcesCmdKey /TR "powershell.exe -File C:\AL\AzureLabSources.ps1" /RU "NT AUTHORITY\SYSTEM"
+        if (Get-Command Register-ScheduledTask -ErrorAction SilentlyContinue)
+        {
+            $trigger = New-ScheduledTaskTrigger -Once -At '0:00:00'
+            $action = New-ScheduledTaskAction -Execute (Join-Path $PSHome 'powershell.exe') -Argument '-File C:\AL\AzureLabSources.ps1'
+            $principal = New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\System' -RunLevel Highest
+            $task = New-ScheduledTask -Trigger $trigger -Action $action -Principal $principal
+            $task = $task | Register-ScheduledTask -TaskName ALLabSourcesCmdKey -Force
+            $task | Start-ScheduledTask
+        }
+        else
+        {
+            SCHTASKS /Create /SC ONCE /ST 00:00 /TN ALLabSourcesCmdKey /TR "powershell.exe -File C:\AL\AzureLabSources.ps1" /RU "NT AUTHORITY\SYSTEM"
+        }
 
         #set the time zone
         Set-TimeZone -Name $TimeZoneId
@@ -1370,6 +1384,7 @@ function Initialize-LWAzureVM
             DnsServers         = $DnsServers
         }
 
+        if ($DNSServers.Count -eq 0) {$scriptParam.Remove('DnsServers')}
         Invoke-AzVMRunCommand -ResourceGroupName $lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -VMName $m.ResourceName -ScriptPath $initScriptFile -Parameter $scriptParam -CommandId 'RunPowerShellScript' -ErrorAction Stop -AsJob
     }
 
