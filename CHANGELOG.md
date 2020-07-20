@@ -6,6 +6,7 @@
 ### Fixes
 
 - Aligned the name of the 'DscMofEncryption' template with its display name
+- Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989)
 
 ## 5.22.0 - 2020-07-10
 
