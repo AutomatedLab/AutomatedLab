@@ -56,8 +56,8 @@ function Install-LabScvmm
     
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
     {
-        Install-LabSoftwarePackage -Path $adkFile -ComputerName $all -CommandLine '/quiet /layout c:\ADKoffline'
-        Install-LabSoftwarePackage -Path $adkpeFile -ComputerName $all -CommandLine '/quiet /layout c:\ADKPEoffline'
+        Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $all -CommandLine '/quiet /layout c:\ADKoffline'
+        Install-LabSoftwarePackage -Path $adkpeFile.FullName -ComputerName $all -CommandLine '/quiet /layout c:\ADKPEoffline'
     }
     else
     {
