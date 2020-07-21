@@ -1,4 +1,5 @@
-﻿﻿function Install-LabScvmm
+﻿﻿#region Install-LabScvmm
+function Install-LabScvmm
 {
     [CmdletBinding()]
     param ( )
@@ -34,7 +35,7 @@
         MUOptIn                  = '0'
     }
     $setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
-    
+
     $lab = Get-Lab
     # Prerequisites, all
     $all = Get-LabVM -Role SCVMM
@@ -55,7 +56,7 @@
     Install-LabSoftwarePackage -path $cpp64File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp64_2012.log'
     Install-LabSoftwarePackage -path $cpp32File.FullName -ComputerName $all -CommandLine '/quiet /norestart /log C:\DeployDebug\cpp32_2012.log'
 
-    
+
     if ($(Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -or (Test-LabMachineInternetConnectivity -ComputerName $all[0]))
     {
         Install-LabSoftwarePackage -Path $adkFile.FullName -ComputerName $all -CommandLine '/quiet /layout c:\ADKoffline'
@@ -68,7 +69,7 @@
         Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline) -ComputerName $all
         Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline) -ComputerName $all
     }
-    
+
     Install-LabSoftwarePackage -LocalPath C:\ADKOffline\adksetup.exe -ComputerName $all -CommandLine '/quiet /installpath C:\ADK'
     Install-LabSoftwarePackage -LocalPath C:\ADKPEOffline\adkwinpesetup.exe -ComputerName $all -CommandLine '/quiet /installpath C:\ADK'
     Restart-LabVM -ComputerName $all -Wait
@@ -78,7 +79,7 @@
     {
         $iniServer = $iniContentServer.Clone()
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
-        
+
         foreach ($property in $role.Properties.GetEnumerator())
         {
             if (-not $iniServer.ContainsKey($property.Key)) { continue }
@@ -114,7 +115,7 @@
                 $name = $OUName
             }
 
-            try 
+            try
             {
                 $ouExists = Get-ADObject -Identity "CN=$($name),$path" -ErrorAction Stop
             }
@@ -132,7 +133,7 @@
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Server.ini
-                $iniServer.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
+                $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
             }
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
@@ -161,13 +162,14 @@
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
                 '[OPTIONS]' | Set-Content C:\Console.ini
-                $iniConsole.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
+                $iniConsole.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
             }
-            
+
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
-    
+
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 }
+#endregion

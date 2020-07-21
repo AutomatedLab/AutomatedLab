@@ -414,6 +414,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'ProgramFiles'
             'LibrarySharePath'
             'IndigoTcpPort'
+            'SkipServer'
         )
         Scvmm2019 = @(
             'MUOptIn'

@@ -1,10 +1,6 @@
 ﻿using System;
-using System.CodeDom;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Xml;
 
 namespace AutomatedLab
 {
@@ -24,32 +20,36 @@ namespace AutomatedLab
         {
             var scvmmRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("Scvmm"));
             var sqlRoles = ((Roles[])Enum.GetValues(typeof(AutomatedLab.Roles))).Where(r => r.ToString().StartsWith("SQLServer"));
-            List<Machine> sqlvms= new List<Machine>();
+            var sqlvms = new List<Machine>();
             foreach (var role in sqlRoles)
             {
-                lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0 & m.HostType == VirtualizationHost.HyperV).ForEach(m => sqlvms.Add(m));
+                lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0).ForEach(m => sqlvms.Add(m));
             }
 
             foreach (var role in scvmmRoles)
             {
-                if (role == Roles.Scvmm2016 && sqlvms.Where(m => m.Roles.Where(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016).Count() >= 0).Count() == 0)
+                var scvmmvms = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0);
+                foreach (var vm in scvmmvms.Where(m => ! m.Roles.FirstOrDefault(r => r.Name == role).Properties.ContainsKey("SkipServer")))
                 {
-                    yield return new ValidationMessage
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2016) != null && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2012 || r.Name == Roles.SQLServer2014 || r.Name == Roles.SQLServer2016) != null).Count() == 0)
                     {
-                        Message = string.Format("SCVMM 2016 requires SQL 2012, 2014 or 2016", role.ToString()),
-                        Type = MessageType.Error,
-                        TargetObject = role.ToString()
-                    };
-                }
+                        yield return new ValidationMessage
+                        {
+                            Message = string.Format("SCVMM Server 2016 requires SQL 2012, 2014 or 2016", vm.ToString()),
+                            Type = MessageType.Error,
+                            TargetObject = vm.ToString()
+                        };
+                    }
 
-                if (role == Roles.Scvmm2019 && sqlvms.Where(m => m.Roles.Where(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017).Count() >= 0).Count() == 0)
-                {
-                    yield return new ValidationMessage
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2019) != null && sqlvms.Where(m => m.Roles.FirstOrDefault(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017) != null).Count() == 0)
                     {
-                        Message = string.Format("SCVMM 2016 requires SQL 2016 or 2017", role.ToString()),
-                        Type = MessageType.Error,
-                        TargetObject = role.ToString()
-                    };
+                        yield return new ValidationMessage
+                        {
+                            Message = string.Format("SCVMM Server 2019 requires SQL 2016 or 2017", vm.ToString()),
+                            Type = MessageType.Error,
+                            TargetObject = vm.ToString()
+                        };
+                    }
                 }
             }
         }
