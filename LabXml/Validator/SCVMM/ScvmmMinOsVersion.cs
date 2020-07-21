@@ -30,7 +30,7 @@ namespace AutomatedLab
 
                 foreach (var vm in scvmmServers)
                 {
-                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2016 || r.Name == Roles.Scvmm2019) != null && vm.OperatingSystem.Version < new Version(10, 0, 0, 0))
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2016 || r.Name == Roles.Scvmm2019) != null && vm.OperatingSystem.Version < new Version(10, 0))
                     {
                         yield return new ValidationMessage
                         {
@@ -42,7 +42,7 @@ namespace AutomatedLab
                 }
                 foreach (var vm in scvmmConsoles)
                 {
-                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2016) != null && vm.OperatingSystem.Version < new Version(6, 2, 0, 0))
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2016) != null && vm.OperatingSystem.Version < new Version(6, 2))
                     {
                         yield return new ValidationMessage
                         {
@@ -52,7 +52,7 @@ namespace AutomatedLab
                         };
                     }
 
-                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2019) != null && vm.OperatingSystem.Version < new Version(10, 0, 0, 0))
+                    if (vm.Roles.FirstOrDefault(r => r.Name == Roles.Scvmm2019) != null && vm.OperatingSystem.Version < new Version(10, 0))
                     {
                         yield return new ValidationMessage
                         {
