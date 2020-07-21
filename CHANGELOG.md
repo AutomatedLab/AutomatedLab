@@ -3,6 +3,10 @@
 ## Unreleased
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
+### Enhancements
+
+- Added SCVMM Role to deploy SCVMM 2016 and 2019
+
 ### Fixes
 
 - Aligned the name of the 'DscMofEncryption' template with its display name
