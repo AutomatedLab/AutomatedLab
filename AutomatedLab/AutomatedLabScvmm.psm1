@@ -1,38 +1,40 @@
-﻿﻿$iniContentServer = @{
-    UserName                    = 'Administrator'
-    CompanyName                 = 'AutomatedLab'
-    ProgramFiles                = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
-    CreateNewSqlDatabase        = '1'
-    SqlInstanceName             = 'MSSQLSERVER'
-    SqlDatabaseName             = 'VirtualManagerDB'
-    RemoteDatabaseImpersonation = '0'
-    SqlMachineName              = 'REPLACE'
-    IndigoTcpPort               = '8100'
-    IndigoHTTPSPort             = '8101'
-    IndigoNETTCPPort            = '8102'
-    IndigoHTTPPort              = '8103'
-    WSManTcpPort                = '5985'
-    BitsTcpPort                 = '443'
-    CreateNewLibraryShare       = '1'
-    LibraryShareName            = 'MSSCVMMLibrary'
-    LibrarySharePath            = 'C:\ProgramData\Virtual Machine Manager Library Files'
-    LibraryShareDescription     = 'Virtual Machine Manager Library Files'
-    SQMOptIn                    = '0'
-    MUOptIn                     = '0'
-    VmmServiceLocalAccount      = '0'
-    TopContainerName            = 'CN=VMMServer,DC=contoso,DC=com'
-}
-$iniContentConsole = @{
-    ProgramFiles             = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
-    IndigoTcpPort            = '8100'
-    MUOptIn                  = '0'
-}
-$setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
-
-function Install-LabScvmm
+﻿﻿function Install-LabScvmm
 {
     [CmdletBinding()]
     param ( )
+
+    # defaults
+    $iniContentServer = @{
+        UserName                    = 'Administrator'
+        CompanyName                 = 'AutomatedLab'
+        ProgramFiles                = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
+        CreateNewSqlDatabase        = '1'
+        SqlInstanceName             = 'MSSQLSERVER'
+        SqlDatabaseName             = 'VirtualManagerDB'
+        RemoteDatabaseImpersonation = '0'
+        SqlMachineName              = 'REPLACE'
+        IndigoTcpPort               = '8100'
+        IndigoHTTPSPort             = '8101'
+        IndigoNETTCPPort            = '8102'
+        IndigoHTTPPort              = '8103'
+        WSManTcpPort                = '5985'
+        BitsTcpPort                 = '443'
+        CreateNewLibraryShare       = '1'
+        LibraryShareName            = 'MSSCVMMLibrary'
+        LibrarySharePath            = 'C:\ProgramData\Virtual Machine Manager Library Files'
+        LibraryShareDescription     = 'Virtual Machine Manager Library Files'
+        SQMOptIn                    = '0'
+        MUOptIn                     = '0'
+        VmmServiceLocalAccount      = '0'
+        TopContainerName            = 'CN=VMMServer,DC=contoso,DC=com'
+    }
+    $iniContentConsole = @{
+        ProgramFiles             = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
+        IndigoTcpPort            = '8100'
+        MUOptIn                  = '0'
+    }
+    $setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
+    
     $lab = Get-Lab
     # Prerequisites, all
     $all = Get-LabVM -Role SCVMM
@@ -153,11 +155,11 @@ function Install-LabScvmm
             Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable iniConsole, scvmmIso) -ActivityName 'Extracting SCVMM Console' -ScriptBlock {
                 $setup = Get-ChildItem -Path $scvmmIso.DriveLetter -Filter *.exe | Select-Object -First 1
                 Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCVMM' -Wait
-                '[OPTIONS]' | Set-Content C:\Server.ini
+                '[OPTIONS]' | Set-Content C:\Console.ini
                 $iniConsole.GetEnumerator() | foreach { "$($_.Key) = $($_.Value)" | Add-Content C:\Console.ini }
             }
             
-            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini' -AsJob -PassThru -UseShellExecute -Timeout 20
+            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine '/client /i /f C:\Console.ini /IACCEPTSCEULA' -AsJob -PassThru -UseShellExecute -Timeout 20
             Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
