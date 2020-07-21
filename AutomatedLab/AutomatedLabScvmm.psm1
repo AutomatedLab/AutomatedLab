@@ -91,9 +91,14 @@
         }
 
         $iniServer['ProgramFiles'] = $iniServer['ProgramFiles'] -f $role.Name.ToString().Substring(5)
-        if ($iniServer['SqlMachineName'] -eq 'REPLACE')
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role -eq [AutomatedLab.Roles]::Scvmm2016)
         {
-            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer | Select-Object -First 1 -ExpandProperty Fqdn
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2012,SQLServer2014,SQLServer2016 | Select-Object -First 1 -ExpandProperty Fqdn
+        }
+
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role -eq [AutomatedLab.Roles]::Scvmm2019)
+        {
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016,SQLServer2017 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
         Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
