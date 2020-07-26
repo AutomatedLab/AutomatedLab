@@ -1,6 +1,6 @@
 ﻿param (
-    [Parameter(Mandatory)]
-    [string]$DomainAndComputerName
+	[Parameter(Mandatory)]
+	[string]$DomainAndComputerName
 )
 
 $creatreDbQuery = @'
@@ -569,41 +569,45 @@ GO
 
 if (-not (Test-Path -Path C:\DSCDB))
 {
-    New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
+	New-Item -ItemType Directory -Path C:\DSCDB | Out-Null
 }
 
-Write-Host "Creating the DSC database on the local default SQL instance..." -NoNewline
+$dbCreated = Invoke-Sqlcmd -Query "SELECT name FROM master.sys.databases WHERE name='DSC'" -ServerInstance localhost
+if (-not $dbCreated)
+{
+	Write-Verbose "Creating the DSC database on the local default SQL instance..."
 
-Invoke-Sqlcmd -Query $creatreDbQuery -ServerInstance localhost
+	Invoke-Sqlcmd -Query $creatreDbQuery -ServerInstance localhost
 
-Write-Host 'finished.'
-Write-Host 'Database is stored on C:\DSCDB'
+	Write-Verbose 'finished.'
+	Write-Verbose 'Database is stored on C:\DSCDB'
+}
 
-Write-Host "Adding permissions to DSC database for $DomainAndComputerName..." -NoNewline
+Write-Verbose "Adding permissions to DSC database for $DomainAndComputerName..."
 
 $domain = ($DomainAndComputerName -split '\\')[0]
 $name = ($DomainAndComputerName -split '\\')[1]
 
 if ($ComputerName -eq $env:COMPUTERNAME -and $DomainName -eq $env:USERDOMAIN)
 {
-    $domain = 'NT AUTHORITY'
-    $name = 'SYSTEM'
+	$domain = 'NT AUTHORITY'
+	$name = 'SYSTEM'
 }
 $name = $name + '$'
 
 $account = New-Object System.Security.Principal.NTAccount($domain, $name)
 try
 {
-    $account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
+	$account.Translate([System.Security.Principal.SecurityIdentifier]) | Out-Null
 }
 catch
 {
-    Write-Error "The account '$domain\$name' could not be found"
-    continue
+	Write-Error "The account '$domain\$name' could not be found"
+	continue
 }
 
 $query = $addPermissionsQuery -f $domain, $name
 
 Invoke-Sqlcmd -Query $query -ServerInstance localhost
 
-Write-Host 'finished'
+Write-Verbose 'finished'

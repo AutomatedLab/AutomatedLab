@@ -1,12 +1,21 @@
-Describe "[$((Get-Lab).Name)] WindowsAdminCenter" -Tag WindowsAdminCenter {
+Describe "[$($Lab.Name)] WindowsAdminCenter" -Tag WindowsAdminCenter {
     Context "Role deployment successful" {
-        It "[$((Get-LabVM).Where({$_.PostInstallationActivity.Where({$_.IsCustomRole}).RoleName -contains 'WindowsAdminCenter'}))] URL accessible" {
-            foreach ($vm in $((Get-LabVM).Where({$_.PostInstallationActivity.Where({$_.IsCustomRole}).RoleName -contains 'WindowsAdminCenter'})))
+        foreach ($vm in $((Get-LabVM).Where({$_.PostInstallationActivity.Where({$_.IsCustomRole}).RoleName -contains 'WindowsAdminCenter'})))
             {
+                It "[$vm] URL accessible" -TestCases @{vm = $vm} {
+            
                 $role = $vm.PostInstallationActivity.Where({$_.IsCustomRole -and $_.RoleName -eq 'WindowsAdminCenter'})
                 $port = 443
                 if ($role.Properties.Port) { $port = $role.Properties.Port }
-                $uri = "https://$($vm.Fqdn):$port"
+
+                $uri = if ($vm.FriendlyName)
+                {
+                    "https://$($vm.IPV4Address):$port"
+                }
+                else
+                {
+                    "https://$($vm.Fqdn):$port"
+                }
 
                 [ServerCertificateValidationCallback]::Ignore()
 

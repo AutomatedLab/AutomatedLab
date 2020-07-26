@@ -81,11 +81,6 @@ function Install-LabSharePoint
     Write-LogFunctionEntry
 
     $lab = Get-Lab
-    if ($lab.DefaultVirtualizationEngine -eq 'Azure')
-    {
-        Write-ScreenInfo -Message 'SharePoint on Azure is deployed through the SKU - no work needs to be done' -Type Verbose
-        Write-LogFunctionExit
-    }
   
     if (-not (Get-LabVM))
     {
@@ -131,14 +126,18 @@ function Install-LabSharePoint
     # Mount SharePoint ISO
     Dismount-LabIsoImage -ComputerName $machines -SupressOutput
 
-    foreach ($group in $versionGroups)
+    $jobs = foreach ($group in $versionGroups)
     {
-        Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -SupressOutput
+        foreach ($machine in $group.Group)
+        {
+            $spImage = Mount-LabIsoImage -ComputerName $group.Group -IsoPath ($lab.Sources.ISOs | Where-Object { $_.Name -eq $group.Name }).Path -PassThru
+            Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
+                Copy-Item -Path "$($spImage.DriveLetter)\" -Destination "C:\SPInstall\" -Recurse
+            } -Variable (Get-Variable -Name spImage) -AsJob -PassThru
+        }        
     }
 
-    Invoke-LabCommand -ComputerName $machines -ActivityName "Copy SharePoint Installation Files" -ScriptBlock {
-        Copy-Item -Path "D:\" -Destination "C:\SPInstall\" -Recurse
-    }
+    Wait-LWLabJob -Job $jobs -NoDisplay
 
     foreach ($thing in @('cppredist32_2012', 'cppredist64_2012', 'cppredist32_2015', 'cppredist64_2015', 'cppredist32_2017', 'cppredist64_2017'))
     {
@@ -146,13 +145,13 @@ function Install-LabSharePoint
         Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name $thing) -Path $labsources\SoftwarePackages -FileName $fName -NoDisplay
     }
 
-    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
+    Copy-LabFileItem -Path $labsources\SoftwarePackages\vcredist_64_2012.exe, $labsources\SoftwarePackages\vcredist_64_2015.exe, $labsources\SoftwarePackages\vcredist_64_2017.exe -ComputerName $machines  -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
     # Download and copy Prerequisite Files to server
     Write-ScreenInfo -Message "Downloading and copying prerequisite files to servers"
     foreach ($group in $versionGroups)
     {        
-        if (-not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
+        if ($lab.DefaultVirtualizationEngine -eq 'HyperV' -and -not (Test-Path -Path $labsources\SoftwarePackages\$($group.Name)))
         {
             $null = New-Item -ItemType Directory -Path $labsources\SoftwarePackages\$($group.Name)
         }
@@ -175,23 +174,39 @@ function Install-LabSharePoint
             if ($download.FullName.EndsWith('.zip'))
             {
                 # Sync client...
-                Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)"
-                Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                if ($lab.DefaultVirtualizationEngine -eq 'Azure')
+                {
+                    $anyVm = Get-LabVm -IsRunning | Select-Object -First 1
+                    Copy-LabFileItem -Path $download.FullName -DestinationFolderPath C:\ -ComputerName $anyVm -UseAzureLabSourcesOnAzureVm $true
+                    Invoke-LabCommand -ComputerName $anyVm -ScriptBlock {
+                        Expand-Archive -Path (Join-Path -Path C:\ -ChildPath $download.FileName) -DestinationPath Z:\SoftwarePackages\$($group.Name) -Force
+                        Get-ChildItem -Recurse -Path "Z:\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "Z:\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                    } -Variable (Get-Variable download,group)
+                }
+                else
+                {
+                    Expand-Archive -Path $download.FullName -DestinationPath "$labsources\SoftwarePackages\$($group.Name)" -Force
+                    Get-ChildItem -Recurse -Path "$labsources\SoftwarePackages\$($group.Name)" -Filter Synchronization.msi | Move-Item -Destination (Join-Path -Path "$labsources\SoftwarePackages\$($group.Name)" -ChildPath Synchronization.msi) -Force
+                }
             }
         }
 
-        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "/SPInstall\prerequisiteinstallerfiles"
+        Copy-LabFileItem -ComputerName $group.Group -Path $labsources\SoftwarePackages\$($group.Name)\* -DestinationFolderPath "C:\SPInstall\prerequisiteinstallerfiles"
 
         # Installing Prereqs
         Write-ScreenInfo -Message "Installing prerequisite files for $($group.Name) on server" -Type Verbose
         Invoke-LabCommand -ComputerName $group.Group -NoDisplay -ScriptBlock {
             param ([string] $Script )
+            if (-not (Test-Path -Path C:\DeployDebug))
+            {
+                $null = New-Item -ItemType Directory -Path C:\DeployDebug
+            }
             Set-Content C:\DeployDebug\SPPrereq.ps1 -Value $Script
                 
         } -ArgumentList (Get-Variable -Name "$($Group.Name)InstallScript").Value.ToString()
     }
 
-    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install $($group.Name) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
+    $instResult = Invoke-LabCommand -PassThru -ComputerName $machines -ActivityName "Install SharePoint (all) Prerequisites" -ScriptBlock { & C:\DeployDebug\SPPrereq.ps1 -Mode '/unattended' }
     $failed = $instResult | Where-Object { $_ -notin 0, 3010 }
     if ($null -ne $failed)
     {
@@ -221,7 +236,7 @@ function Install-LabSharePoint
     {
         $productKey = Get-LabConfigurationItem -Name "$($group.Name)Key"
         $configFile = $setupConfigFileContent -f $productKey
-        Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint" -ScriptBlock {
+        Invoke-LabCommand -ComputerName $group.Group -ActivityName "Install SharePoint $($group.Name)" -ScriptBlock {
             Set-Content -Force -Path C:\SPInstall\files\al-config.xml -Value $configFile
             $null = Start-Process -Wait "C:\SPInstall\setup.exe" –ArgumentList "/config C:\SPInstall\files\al-config.xml"
             Set-Content C:\DeployDebug\SPInst.cmd -Value 'C:\SPInstall\setup.exe /config C:\SPInstall\files\al-config.xml'

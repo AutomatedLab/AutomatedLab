@@ -32,7 +32,7 @@
         $configuration = [PesterConfiguration]::Default
         $configuration.Run.Path = Join-Path -Path $PSCmdlet.MyInvocation.MyCommand.Module.ModuleBase -ChildPath 'internal/tests'
         $configuration.Run.PassThru = $PassThru.IsPresent
-        $configuration.Filter.Tag = $Lab.Machines.Roles.Name
+        $configuration.Filter.Tag = [string[]]($Lab.Machines.Roles).Name
         $configuration.Should.ErrorAction = 'Continue'
         $configuration.TestResult.Enabled = $true
         if ($OutputFile)
