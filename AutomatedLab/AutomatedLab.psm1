@@ -2583,6 +2583,13 @@ function Install-LabSoftwarePackage
             Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
 
+        if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
+        {
+            # Often issues with Zone Mapping
+            $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            Copy-Item -Path $installParams.Path -Destination $newPath -Force
+            $installParams.Path = $newPath
+        }
         Install-SoftwarePackage @installParams
     }
 
