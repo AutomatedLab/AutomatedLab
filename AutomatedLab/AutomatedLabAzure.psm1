@@ -1264,7 +1264,7 @@ function Sync-LabAzureLabSources
         }
         $files = Get-ChildItem @fileParams
 
-        Write-ScreenInfo "with $($files.Count) files" -NoNewLine
+        Write-ScreenInfo "$($files.Count) files" -NoNewLine
         foreach ($file in $files)
         {
             Write-ProgressIndicator
