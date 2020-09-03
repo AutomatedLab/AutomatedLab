@@ -11,6 +11,8 @@
 
 - Aligned the name of the 'DscMofEncryption' template with its display name
 - Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989)
+- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab 
+  threw errors in case only some parts of the lab deployment should be done.
 
 ## 5.22.0 - 2020-07-10
 

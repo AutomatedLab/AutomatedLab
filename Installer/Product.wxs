@@ -123,6 +123,7 @@
                 <File Id='Sample_DSCCICD' Name='DSC With Release Pipeline.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1' />
                 <File Id='Sample_MultiAdForest1' Name='Multi-AD Forest with Trusts.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Multi-AD Forest with Trusts.ps1' />
                 <File Id='Sample_FailoverClustering1' Name='Failover Clustering 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1' />
+                <File Id='Sample_FailoverClustering2' Name='Failover Clustering 2 (Shared Storage).ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Failover Clustering 2 (Shared Storage).ps1' />
                 <File Id='Sample_HybridEnvironmentHyperVandAzure1' Name='Hybrid Environment HyperV and Azure 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1' />
                 <File Id='Sample_Tfs2015Environment' Name='TFS 2015 Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS 2015 Deployment.ps1' />
                 <File Id='Sample_Tfs2017Environment' Name='TFS 2017 Deployment.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\TFS 2017 Deployment.ps1' />
