@@ -1423,7 +1423,7 @@ function Remove-LWAzureVM
 {
     Param (
         [Parameter(Mandatory)]
-        [string]$ComputerName,
+        [string]$Name,
 
         [switch]$AsJob,
 
@@ -1437,33 +1437,28 @@ function Remove-LWAzureVM
     $azureRetryCount = Get-LabConfigurationItem -Name AzureRetryCount
 
     $Lab = Get-Lab
-
-    if ($AsJob)
+    $vm = Get-AzVM -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -Name $Name -ErrorAction SilentlyContinue
+    $null = $vm | Remove-AzVM -Force
+    foreach ($loadBalancer in (Get-AzLoadBalancer -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName))
     {
-        $job = Start-Job -ScriptBlock {
-            param (
-                [Parameter(Mandatory)]
-                [hashtable]$ComputerName
-            )
-
-            $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
-
-            $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
-
-            $vm | Remove-AzVM -Force
-        } -ArgumentList $ComputerName
-
-        if ($PassThru)
+        $rules = $loadBalancer | Get-AzLoadBalancerInboundNatRuleConfig | Where-Object Name -like "$($Name)*"
+        foreach ($rule in $rules)
         {
-            $job
+            $null = Remove-AzLoadBalancerInboundNatRuleConfig -LoadBalancer $loadBalancer -Name $rule.Name -Confirm:$false
         }
     }
-    else
-    {
-        $resourceGroup = ((Get-LabVM -ComputerName $ComputerName).AzureConnectionInfo.ResourceGroupName)
-        $vm = Get-AzVM -ResourceGroupName $resourceGroup -Name $ComputerName
 
-        $result = $vm | Remove-AzVM -Force
+    $vmResources = Get-AzResource -ResourceGroupName $Lab.AzureSettings.DefaultResourceGroup.ResourceGroupName -Name "$($name)*"
+    $jobs = $vmResources | Remove-AzResource -AsJob -Force -Confirm:$false
+
+    if (-not $AsJob.IsPresent)
+    {
+        $null = $jobs | Wait-Job
+    }
+
+    if ($PassThru.IsPresent)
+    {
+        $jobs
     }
 
     Write-LogFunctionExit
