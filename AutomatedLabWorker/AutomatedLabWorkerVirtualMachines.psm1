@@ -604,14 +604,14 @@ $diskpartCmd = 'LIST DISK'
 $disks = $diskpartCmd | diskpart.exe
  foreach ($line in $disks)
 {
-    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (MB|GB|TB)\s+(?<Free>\d+) (B|GB)')
     {
         #$nextDriveLetter = [char[]](67..90) |
         #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
         #Select-Object -ExpandProperty DeviceID) -notcontains "$($_):"} |
         #Select-Object -First 1
-         $diskNumber = $Matches.DiskNumber
-         if ($Matches.State -eq 'Offline')
+        $diskNumber = $Matches.DiskNumber
+        if ($Matches.State -eq 'Offline')
         {
             $diskpartCmd = "@
                 SELECT DISK $diskNumber
@@ -623,17 +623,17 @@ $disks = $diskpartCmd | diskpart.exe
         }
     }
 }
- foreach ($volume in (Get-WmiObject -Class Win32_Volume))
+foreach ($volume in (Get-WmiObject -Class Win32_Volume))
 {
     if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')
     {
         continue
     }
-     if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
+        if ($volume.DriveLetter -ne "$($Matches.DriveLetter):")
     {
         $volume.DriveLetter = "$($Matches.DriveLetter):"
     }
-     $volume.Label = $Matches.Label
+        $volume.Label = $Matches.Label
     $volume.Put()
 }
 Stop-Transcript
