@@ -490,6 +490,10 @@
         if (-not $disk) { continue } # Due to an issue with the disk collection being enumerated even if it is empty
         Write-ScreenInfo -Type Verbose -Message ('Creating managed data disk {0} ({1} GB)' -f $disk.Name, $disk.DiskSize)
         $vm = $lab.Machines | Where-Object { $_.Disks.Name -contains $disk.Name }
+        if (-not $vm)
+        {
+            Write-Error "No VM defined in the lab that has the disk '$($disk.Name)' assigned." -ErrorAction Stop
+        }
         $template.resources += @{
             type       = "Microsoft.Compute/disks"
             tags       = @{ 
