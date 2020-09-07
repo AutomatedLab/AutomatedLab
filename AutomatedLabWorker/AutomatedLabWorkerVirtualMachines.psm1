@@ -602,9 +602,10 @@ Windows Registry Editor Version 5.00
 Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
 $diskpartCmd = 'LIST DISK'
 $disks = $diskpartCmd | diskpart.exe
- foreach ($line in $disks)
+$pattern = 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB)'
+foreach ($line in $disks)
 {
-    if ($line -match 'Disk (?<DiskNumber>\d) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (MB|GB|TB)\s+(?<Free>\d+) (B|GB)')
+    if ($line -match $pattern)
     {
         #$nextDriveLetter = [char[]](67..90) |
         #Where-Object { (Get-CimInstance -Class Win32_LogicalDisk |
