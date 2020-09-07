@@ -9,11 +9,12 @@
 
 ### Fixes
 
-- Aligned the name of the 'DscMofEncryption' template with its display name
-- Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989)
-- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab 
-  threw errors in case only some parts of the lab deployment should be done.
-- Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
+- Aligned the name of the 'DscMofEncryption' template with its display name.
+- Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989).
+- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before
+  Install-Lab threw errors in case only some parts of the lab deployment should be done.
+- Remove-LabVm now removes associated resources on Azure (Issue #998 and #997).
+- Fixes an issue with RegEx resulting in not initialize all additional disks (Issue #1006).
 
 ## 5.22.0 - 2020-07-10
 
