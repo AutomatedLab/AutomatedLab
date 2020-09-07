@@ -14,6 +14,7 @@
 - Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab 
   threw errors in case only some parts of the lab deployment should be done.
 - Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
+- New-LabSourcesFolder now actually copies dev branch.
 - Improved error handling in Azure ARM deployment for disks.
 
 ## 5.22.0 - 2020-07-10
