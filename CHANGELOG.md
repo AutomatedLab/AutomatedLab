@@ -15,6 +15,7 @@
   threw errors in case only some parts of the lab deployment should be done.
 - Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
 - Added error handling when trying to restore snapshots in Azure that don't exist.
+- New-LabSourcesFolder now actually copies dev branch.
 
 ## 5.22.0 - 2020-07-10
 

@@ -3422,7 +3422,7 @@ function New-LabSourcesFolder
     {
         $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
-        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath "$Branch.zip")
 
         try
         {
@@ -3432,6 +3432,7 @@ function New-LabSourcesFolder
         {
             Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
         }
+
         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
@@ -3439,7 +3440,7 @@ function New-LabSourcesFolder
             $Path = (New-Item -ItemType Directory -Path $Path).FullName
         }
 
-        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master/LabSources/*) -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-*/LabSources/*) -Destination $Path -Recurse -Force:$Force
 
         Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 
