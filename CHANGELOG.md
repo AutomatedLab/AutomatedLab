@@ -16,6 +16,7 @@
 - Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
 - Added error handling when trying to restore snapshots in Azure that don't exist.
 - New-LabSourcesFolder now actually copies dev branch.
+- Fixes an issue with RegEx resulting in not initialize all additional disks (Issue #1006).
 
 ## 5.22.0 - 2020-07-10
 
