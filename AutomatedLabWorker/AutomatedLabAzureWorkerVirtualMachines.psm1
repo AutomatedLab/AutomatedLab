@@ -2304,7 +2304,10 @@ function Restore-LWAzureVmSnapshot
         }
     }
 
-    $null = $machineStatus.Values.Stage1.Job | Wait-Job
+    if ($machineStatus.Values.Stage1.Job)
+    {
+        $null = $machineStatus.Values.Stage1.Job | Wait-Job
+    }
 
     $failedStage1 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage1.Job.State -eq 'Failed'}).Name
     if ($failedStage1) { Write-ScreenInfo -Type Error -Message "The following machines failed to create a new disk from the snapshot: $($failedStage1 -join ',')"}
@@ -2321,7 +2324,10 @@ function Restore-LWAzureVmSnapshot
         }
     }
 
-    $null = $machineStatus.Values.Stage2.Job | Wait-Job
+    if ($machineStatus.Values.Stage2.Job)
+    {
+        $null = $machineStatus.Values.Stage2.Job | Wait-Job
+    }
 
     $failedStage2 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage2.Job.State -eq 'Failed'}).Name
     if ($failedStage2) { Write-ScreenInfo -Type Error -Message "The following machines failed to update with the new OS disk created from a snapshot: $($failedStage2 -join ',')"}
@@ -2335,8 +2341,10 @@ function Restore-LWAzureVmSnapshot
             Job = Remove-AzDisk -ResourceGroupName $resourceGroupName -DiskName $disk -Confirm:$false -Force -AsJob
         }
     }
-
-    $null = $machineStatus.Values.Stage3.Job | Wait-Job
+    if ($machineStatus.Values.Stage3.Job)
+    {
+        $null = $machineStatus.Values.Stage3.Job | Wait-Job
+    }
 
     $failedStage3 = $($machineStatus.GetEnumerator() | Where-Object -FilterScript {$_.Value.Stage3.Job.State -eq 'Failed'}).Name
     if ($failedStage3)
@@ -2356,7 +2364,11 @@ function Restore-LWAzureVmSnapshot
         Start-LWAzureVM -ComputerName $runningMachines
         Wait-LabVM -ComputerName $runningMachines
     }
-    $machineStatus.Values.Values.Job | Remove-Job
+
+    if ($machineStatus.Values.Values.Job)
+    {
+        $machineStatus.Values.Values.Job | Remove-Job
+    }
 
     Write-LogFunctionExit
 }
