@@ -500,9 +500,9 @@
             name       = $disk.Name
             location   = "[resourceGroup().location]"
             sku        = @{
-                name = if ($vm.AzureProperties.ContainsKey('StorageSku'))
+                name = if ($vm.AzureProperties.StorageSku)
                 {
-                    $vm.AzureProperties['StorageSku'] 
+                    $vm.AzureProperties['StorageSku']
                 }
                 else
                 {
