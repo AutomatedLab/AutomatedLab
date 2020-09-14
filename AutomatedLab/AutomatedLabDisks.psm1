@@ -399,7 +399,7 @@ function Update-LabIsoImage
         New-Item -ItemType Directory -Path $OutputPath | Out-Null
 
 
-        $image = Mount-LabDiskImage -ImagePath $SourceIsoImagePath -PassThru
+        $image = Mount-LabDiskImage -ImagePath $SourceIsoImagePath -StorageType ISO -PassThru
         Get-PSDrive | Out-Null #This is just to refresh the drives. Somehow if this cmdlet is not called, PowerShell does not see the new drives.
 
         if($image)
