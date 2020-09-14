@@ -404,7 +404,7 @@ function Update-LabIsoImage
 
         if($image)
         {
-            $source = Join-Path -Path ([IO.DriveInfo]$image.DriveLetter).Name -ChildPath '*'
+            $source = Join-Path -Path ([IO.DriveInfo][string]$image.DriveLetter).Name -ChildPath '*'
 
             Write-PSFMessage -Message "Extracting ISO image '$source' to '$OutputPath'"
             Copy-Item -Path $source -Destination $OutputPath -Recurse -Force
@@ -433,7 +433,7 @@ function Update-LabIsoImage
             return
         }
 
-        $image = Mount-DiskImage $IsoImagePath -PassThru
+        $image = Mount-DiskImage $IsoImagePath -StorageType ISO -PassThru
         $image | Get-Volume | Select-Object -ExpandProperty FileSystemLabel
         [void] ($image | Dismount-DiskImage)
     }
