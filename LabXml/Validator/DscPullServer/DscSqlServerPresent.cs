@@ -17,7 +17,7 @@ namespace AutomatedLab.Validator.FailoverCluster
         {
             var role = Roles.DSCPullServer;
             var machines = lab.Machines.Where(m => m.Roles.Where(r => r.Name == role).Count() > 0);
-            var sqlServers = lab.Machines.Where(m => m.Roles.Where(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017).Count() > 0);
+            var sqlServers = lab.Machines.Where(m => m.Roles.Where(r => r.Name == Roles.SQLServer2016 || r.Name == Roles.SQLServer2017 || r.Name == Roles.SQLServer2019).Count() > 0);
 
             foreach (var machine in machines)
             {

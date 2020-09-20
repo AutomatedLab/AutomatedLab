@@ -18,6 +18,8 @@
 - Improved error handling in Azure ARM deployment for disks.
 - Added error handling when trying to restore snapshots in Azure that don't exist.
 - Fixes an issue with RegEx resulting in not initialize all additional disks (Issue #1006).
+- Fixes issues with Update-LabIsoImage not working
+- Fixes issue with DSC Pull Server role validation so that SQL2016 and newer is supported
 
 ## 5.22.0 - 2020-07-10
 
