@@ -1,13 +1,82 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->  
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
+
+## 5.22.0 - 2020-07-10
+
+### Enhancements
+
+- Parameter ReferenceDiskSizeInGB now works by created additional reference disks with different sizes (Fixes #862)
+- AutomatedLabTest updated to use Pester V5
+- Build Agent role can now get Capabilities through its role definition
+  - New key Capabilities which contains a hashtable (within the realms of what is possible with Azure DevOps)
+- New cmdlet Get-LabTfsParameter to retrieve standard parameter dictionary
+  which can be used with our TFS cmdlets. Reduced a lot of duplicated code.
+- Connect-LabVM uses full screen mode by default
+- Fixed #561
+- Added CM-2002 CustomRole
+  - Uses Configuration Manager 2002 baseline media
+  - Supports Technical Preview (including updating to the latest release)
+  - -ExternalVMSwitchName accepts the "Default Switch"
+- Updated CM-1902 CustomRole
+  - -ExternalVMSwitchName accepts the "Default Switch"
+  - Max -CMVersion is now 1910 (use CM-2002 CustomRole if you want newer), formatting
+- Transfer of ALCommon library takes place in Wait-LabVM or Initialize-LWAzureVM now to have the lib on all lab VMs.
+- Custom Roles can now have any parameter type they would like, fixing #925
+- Install-Lab imports the VMs RDP certificates and Remove-Lab removes them to enable seamless Connect-LabVm
+- Relaxed Azure password policy as special characters are not mandatory.
+- Windows Admin Center implemented as proper Role to enable SkipDeployment parameter
+- Including name of used function in telemetry, for all functions using Write-LogFunctionEntry
+- ResourceName parameter of Add-LabMachineDefinition now actually supported. Fixes #23
+  - No interaction is done in AL using the resource name. This is only for the purpose of
+    deploying the same lab on the same host with different resource names (VM names, switch names)
+- Enabling configuration of allowed inbound IP addresses for Azure load balancer
+  
+### Bug Fixes
+- Get-LabInternetFile did not work on Azure when the Uri did not contain a file name like 'https://go.microsoft.com/fwlink/?Linkid=85215'.
+- Decreased runtime of installation on Azure by disabling the Azure LabSources check in Copy-LabAlCommon
+- Build Agent role on Azure can now again connect to its server (Fixes #938)
+- Fixed Install-LabRdsCertificate which did not work with 2012 R2 lab VMs
+- LabSources folder is now supported in SD cards or memory sticks (Fixes #946)
+- Ensure drive letter gets assigned when mounting an image (Fixes #874)
+- Fixed Azure error handling
+- Added compatibility with CentOS 8 (partially fixes #967)
+
+## 5.21.0 - 2020-05-26
 
 ## 5.16.0 - 2019-09-29
 
 ### Enhancements
 
+- Added NuGet custom role that uses open source NuGet server package
+- AL now deploys ARM templates instead of individual resources
+- Compatibility with Az module 4.1.0. The minimum version of Az is now 4.1.0
+- LabSources location can now be configured
+
 ### Bug Fixes
+
+- Fixed module import loop (Fixes #869)
+- Release tagging updated
+- Fixed an issue where Azure labs would prompt the user even when in a non-interactive environment
+- 'Enable-LabAutoLogon' does no longer use CredSSP as this authentication protocol is not enabled at that early stage (fixes #880)
+- DelayBetweenComputers works now if defined and if not is calculated based on the umber of machines
+- Fixing an 'Cannot index into a null array' error when answering the very first telemetry question with 'Ask later' (fixes #884)
+- Several CM-1902 CustomRole fixes/improvements: Formatting and grammar, make -NoInteretAccess work, download SQL ISO directly rather than via downloader application, removed hardcoded VM specs for ConfigMgr VM, data and SQL VHDX names on host's disk match hostname of ConfigMgr VM.
+- 'Get-LabIssuingCA' does no longer throw but returns $null if there is no certificate authority present in the lab.
+- Updated some paths to work cross-platform
+  - i.e. Join-Path fails when the drive does not exist, so all calls to e.g. Send-File with a destination like C: would
+    fail on Linux, even though the target would always be a Windows machine. Replaced those paths with forward slash
+    which defaults to the system root on Windows and can be resolved cross-platform
+- Fixed an issue where the CimAssociatedInstances for the network adapter could not be reliably retrieved with the current insider builds.
+- Fixed #890.
+- Fixed and improved 'Test-LabMachineInternetConnectivity'
+- 'Dismount-LabIsoImage' on Azure did never really work, no fixed and behavior is now aligned to the Hyper-V behavior.
+- 'Mount-LWAzureIsoImage' is no longer copying the image to a local drive but mounts it from the network drive.
+- Integrated web server deployment into NugetServer custom role (Fixes #881)
+- Fixed SQL Server version in '06 SQL Server and client, domain joined.ps1'.
+- ARM Template Deployment now deploys outgoing NAT as well, re-enabling VM internet access...
+- Re-enabled BGInfo
 
 ## 5.20.0 - 2020-04-20
 

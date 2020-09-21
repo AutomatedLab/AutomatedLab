@@ -72,6 +72,7 @@ namespace AutomatedLab
         AzDevOps = 34359738368,
         SharePoint2019 = 68719476736,
         SharePoint = SharePoint2013 | SharePoint2016 | SharePoint2019,
+        WindowsAdminCenter = 137438953472
     }
 
     public enum ActiveDirectoryFunctionalLevel

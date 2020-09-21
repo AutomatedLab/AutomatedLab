@@ -30,7 +30,7 @@ function New-LWHypervVM
 
     $script:lab = Get-Lab
 
-    if (Get-VM -Name $Machine.Name -ErrorAction SilentlyContinue)
+    if (Get-VM -Name $Machine.ResourceName -ErrorAction SilentlyContinue)
     {
         Write-ProgressIndicatorEnd
         Write-ScreenInfo -Message "The machine '$Machine' does already exist" -Type Warning
@@ -49,7 +49,7 @@ function New-LWHypervVM
         $PSDefaultParameterValues['*:IsAutoYast'] = $true
     }
 
-    Write-PSFMessage "Creating machine with the name '$($Machine.Name)' in the path '$VmPath'"
+    Write-PSFMessage "Creating machine with the name '$($Machine.ResourceName)' in the path '$VmPath'"
 
     #region Unattend XML settings
     if (-not $Machine.ProductKey)
@@ -294,8 +294,8 @@ function New-LWHypervVM
         1
     }
 
-    $vmPath = $lab.GetMachineTargetPath($Machine.Name)
-    $path = "$vmPath\$($Machine.Name).vhdx"
+    $vmPath = $lab.GetMachineTargetPath($Machine.ResourceName)
+    $path = "$vmPath\$($Machine.ResourceName).vhdx"
     Write-PSFMessage "`tVM Disk path is '$path'"
 
     if (Test-Path -Path $path)
@@ -344,10 +344,12 @@ function New-LWHypervVM
         if ($Machine.LinuxType -eq 'RedHat')
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath ks.cfg)
+            Export-UnattendedFile -Path (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "ks_$($Machine.Name).cfg")
         }
         else
         {
             Export-UnattendedFile -Path (Join-Path -Path $drive.RootDirectory -ChildPath autoinst.xml)
+            Export-UnattendedFile -Path (Join-Path -Path $script:lab.Sources.UnattendedXml.Value -ChildPath "autoinst_$($Machine.Name).xml")
             # Mount ISO
             $mountedIso = Mount-DiskImage -ImagePath $Machine.OperatingSystem.IsoPath -PassThru | Get-Volume
             $isoDrive = [System.IO.DriveInfo][string]$mountedIso.DriveLetter
@@ -407,7 +409,7 @@ function New-LWHypervVM
     Write-ProgressIndicator
 
     $vmParameter = @{
-        Name = $Machine.Name
+        Name = $Machine.ResourceName
         MemoryStartupBytes = ($Machine.Memory)
         VHDPath = $systemDisk.Path
         Path = $VmPath
@@ -417,7 +419,7 @@ function New-LWHypervVM
 
     $vm = New-VM @vmParameter
 
-    Set-LWHypervVMDescription -ComputerName $Machine -Hashtable @{
+    Set-LWHypervVMDescription -ComputerName $Machine.ResourceName -Hashtable @{
         CreatedBy = '{0} ({1})' -f $PSCmdlet.MyInvocation.MyCommand.Module.Name, $PSCmdlet.MyInvocation.MyCommand.Module.Version
         CreationTime = Get-Date
         LabName = (Get-Lab).Name
@@ -462,23 +464,13 @@ function New-LWHypervVM
     $vm | Remove-VMNetworkAdapter
     foreach ($adapter in $adapters)
     {
-        #external switches will be connected after the domain join and after the network order is configures correctly
-        # if ($adapter.VirtualSwitch.SwitchType -eq 'External' -and $adapters.Count -gt 1)
-        # {
-        #     $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
-        # }
-        # else
-        # {
-        #     $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
-        # }
-
         #bind all network adapters to their designated switches, Repair-LWHypervNetworkConfig will change the binding order if necessary
-        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch -SwitchName $adapter.VirtualSwitch -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
+        $newAdapter = Add-VMNetworkAdapter -Name $adapter.VirtualSwitch.ResourceName -SwitchName $adapter.VirtualSwitch.ResourceName -StaticMacAddress $adapter.MacAddress -VMName $vm.Name -PassThru
 
         if (-not $adapter.AccessVLANID -eq 0) {
 
             Set-VMNetworkAdapterVlan -VMNetworkAdapter $newAdapter -Access -VlanId $adapter.AccessVLANID
-            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
+            Write-PSFMessage "Network Adapter: '$($adapter.VirtualSwitch.ResourceName)' for VM: '$($vm.Name)' created with VLAN ID: '$($adapter.AccessVLANID)', Ensure external routing is configured correctly"
         }
     }
 
@@ -510,7 +502,22 @@ function New-LWHypervVM
         {
             #for Generation 2 VMs
             $vhdOsPartition = $VhdPartition | Where-Object Type -eq 'Basic'
-            $VhdVolume = "$($VhdOsPartition.DriveLetter):"
+            # If no drive letter is assigned, make sure we assign it before continuing
+            If ($vhdOsPartition.NoDefaultDriveLetter) {
+                # Get all available drive letters, and store in a temporary variable.
+                $usedDriveLetters = @(Get-Volume | ForEach-Object { "$([char]$_.DriveLetter)" }) + @(Get-CimInstance -ClassName Win32_MappedLogicalDisk | ForEach-Object { $([char]$_.DeviceID.Trim(':')) })
+                [char[]]$tempDriveLetters = Compare-Object -DifferenceObject $usedDriveLetters -ReferenceObject $( 67..90 | ForEach-Object { "$([char]$_)" }) -PassThru | Where-Object { $_.SideIndicator -eq '<=' }
+                # Sort the available drive letters to get the first available drive letter
+                $availableDriveLetters = ($TempDriveLetters | Sort-Object)
+                $firstAvailableDriveLetter = $availableDriveLetters[0]
+                $vhdOsPartition | Set-Partition -NewDriveLetter $firstAvailableDriveLetter
+                $VhdVolume = "$($firstAvailableDriveLetter):"
+
+            }
+            Else
+            {
+                $VhdVolume = "$($vhdOsPartition.DriveLetter):"
+            }
         }
         else
         {
@@ -518,11 +525,10 @@ function New-LWHypervVM
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
 
-        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
-
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
 
+        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
         $unattendXmlContent = Get-UnattendedContent
         $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
         Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
@@ -662,24 +668,24 @@ Stop-Transcript
 
     $param = Sync-Parameter -Command (Get-Command Set-Vm) -Parameters $param
 
-    Set-VM -Name $Machine.Name @param
+    Set-VM -Name $Machine.ResourceName @param
 
-    Set-VM -Name $Machine.Name -ProcessorCount $Machine.Processors
+    Set-VM -Name $Machine.ResourceName -ProcessorCount $Machine.Processors
 
     if ($DisableIntegrationServices)
     {
-        Disable-VMIntegrationService -VMName $Machine.Name -Name 'Time Synchronization'
+        Disable-VMIntegrationService -VMName $Machine.ResourceName -Name 'Time Synchronization'
     }
 
     if ($Generation -eq 1)
     {
-        Set-VMBios -VMName $Machine.Name -EnableNumLock
+        Set-VMBios -VMName $Machine.ResourceName -EnableNumLock
     }
 
-    Write-PSFMessage "Creating snapshot named '$($Machine.Name) - post OS Installation'"
+    Write-PSFMessage "Creating snapshot named '$($Machine.ResourceName) - post OS Installation'"
     if ($CreateCheckPoints)
     {
-        Checkpoint-VM -VM (Get-VM -Name $Machine.Name) -SnapshotName 'Post OS Installation'
+        Checkpoint-VM -VM (Get-VM -Name $Machine.ResourceName) -SnapshotName 'Post OS Installation'
     }
 
     if ($Machine.Disks.Name)
@@ -687,7 +693,7 @@ Stop-Transcript
         $disks = Get-LabVHDX -Name $Machine.Disks.Name
         foreach ($disk in $disks)
         {
-            Add-LWVMVHDX -VMName $Machine.Name -VhdxPath $disk.Path
+            Add-LWVMVHDX -VMName $Machine.ResourceName -VhdxPath $disk.Path
         }
     }
 
@@ -759,12 +765,12 @@ function Wait-LWHypervVMRestart
 
     Write-LogFunctionEntry
 
-    $machines = Get-LabVM -ComputerName $ComputerName
+    $machines = Get-LabVM -ComputerName $ComputerName -IncludeLinux
 
     $machines | Add-Member -Name Uptime -MemberType NoteProperty -Value 0 -Force
     foreach ($machine in $machines)
     {
-        $machine.Uptime = (Get-VM -Name $machine).Uptime.TotalSeconds
+        $machine.Uptime = (Get-VM -Name $machine.ResourceName).Uptime.TotalSeconds
     }
 
     $vmDrive = ((Get-Lab).Target.Path)[0]
@@ -839,8 +845,8 @@ function Wait-LWHypervVMRestart
 
         foreach ($machine in $machines)
         {
-            $currentMachineUptime = (Get-VM -Name $machine).Uptime.TotalSeconds
-            Write-Debug -Message "Uptime machine '$($machine.name)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
+            $currentMachineUptime = (Get-VM -Name $machine.ResourceName).Uptime.TotalSeconds
+            Write-Debug -Message "Uptime machine '$($machine.ResourceName)'=$currentMachineUptime, Saved uptime=$($machine.uptime)"
             if ($machine.Uptime -ne 0 -and $currentMachineUptime -lt $machine.Uptime)
             {
                 Write-PSFMessage -Message "Machine '$machine' is now stopped"
@@ -926,28 +932,22 @@ function Start-LWHypervVM
         Wait-LWLabJob -Job $job -NoNewLine -ProgressIndicator $ProgressIndicator -Timeout 15 -NoDisplay
     }
 
-    foreach ($Name in $ComputerName)
+    foreach ($Name in $(Get-LabVM -ComputerName $ComputerName -IncludeLinux))
     {
-        $machine = Get-LabVM -ComputerName $Name
+        $machine = Get-LabVM -ComputerName $Name -IncludeLinux
 
-        if ($machine.OperatingSystemType -eq 'Linux')
-        {
-            Write-PSFMessage -Message "Skipping the wait period for $machine as it is a Linux system"
-            continue
-        }
-
-        $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name
+        $machineMetadata = Get-LWHypervVMDescription -ComputerName $Name.ResourceName
 
         try
         {
-            Start-VM -Name $Name -ErrorAction Stop
+            Start-VM -Name $Name.ResourceName -ErrorAction Stop
 
             if ($machine.NetworkAdapters.Count -gt 1 -and
             ($machineMetadata.InitState -band [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected) -ne [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected)
             {
                 Repair-LWHypervNetworkConfig -ComputerName $Name
                 $machineMetadata.InitState = [AutomatedLab.LabVMInitState]::NetworkAdapterBindingCorrected
-                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name
+                Set-LWHypervVMDescription -Hashtable $machineMetadata -ComputerName $Name.ResourceName
             }
         }
         catch
@@ -955,6 +955,13 @@ function Start-LWHypervVM
             $ex = New-Object System.Exception("Could not start Hyper-V machine '$ComputerName': $($_.Exception.Message)", $_.Exception)
             throw $ex
         }
+
+        if ($Name.OperatingSystemType -eq 'Linux')
+        {
+            Write-PSFMessage -Message "Skipping the wait period for $Name as it is a Linux system"
+            continue
+        }
+
         if ($DelayBetweenComputers -and $Name -ne $ComputerName[-1])
         {
             $job = Start-Job -Name 'Start-LWHypervVM - DelayBetweenComputers' -ScriptBlock { Start-Sleep -Seconds $Using:DelayBetweenComputers }
@@ -1025,7 +1032,7 @@ function Stop-LWHypervVM
 
         $stopFailures = foreach ($failedJob in $failedJobs)
         {
-            if (Get-LabVm -ComputerName $failedJob.Location)
+            if (Get-LabVm -ComputerName $failedJob.Location -IncludeLinux)
             {
                 $failedJob.Location
             }
@@ -1040,7 +1047,7 @@ function Stop-LWHypervVM
     else
     {
         $jobs = @()
-        foreach ($name in $ComputerName)
+        foreach ($name in (Get-LabVm -ComputerName $ComputerName -IncludeLinux).ResourceName)
         {
             $job = Start-Job -Name "AL_Shutdown_$name" -ScriptBlock {
                 try
@@ -1367,20 +1374,23 @@ function Get-LWHypervVMStatus
 
     $result = @{ }
     $vms = Get-VM -Name $ComputerName
+    $vmTable = @{ }
+    Get-LabVm -IncludeLinux | Where-Object FriendlyName -in $ComputerName | ForEach-Object {$vmTable[$_.FriendlyName] = $_.Name}
 
     foreach ($vm in $vms)
     {
+        $vmName = if ($vmTable[$vm.Name]) {$vmTable[$vm.Name]} else {$vm.Name}
         if ($vm.State -eq 'Running')
         {
-            $result.Add($vm.Name, 'Started')
+            $result.Add($vmName, 'Started')
         }
         elseif ($vm.State -eq 'Off')
         {
-            $result.Add($vm.Name, 'Stopped')
+            $result.Add($vmName, 'Stopped')
         }
         else
         {
-            $result.Add($vm.Name, 'Unknown')
+            $result.Add($vmName, 'Unknown')
         }
     }
 
@@ -1475,20 +1485,20 @@ function Mount-LWIsoImage
             {
                 if ($machine.OperatingSystem.Version -ge '6.2')
                 {
-                    $drive = Add-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = Add-VMDvdDrive -VMName $machine.ResourceName -Path $IsoPath -ErrorAction Stop -Passthru
                 }
                 else
                 {
-                    if (-not (Get-VMDvdDrive -VMName $machine))
+                    if (-not (Get-VMDvdDrive -VMName $machine.ResourceName))
                     {
                         throw "No DVD drive exist for machine '$machine'. Machine is generation 1 and DVD drive needs to be crate in advance (during creation of the machine). Cannot continue."
                     }
-                    $drive = Set-VMDvdDrive -VMName $machine -Path $IsoPath -ErrorAction Stop -Passthru
+                    $drive = Set-VMDvdDrive -VMName $machine.ResourceName -Path $IsoPath -ErrorAction Stop -Passthru
                 }
 
                 Start-Sleep -Seconds $delayBeforeCheck[$delayIndex]
 
-                if ((Get-VMDvdDrive -VMName $machine).Path -contains $IsoPath)
+                if ((Get-VMDvdDrive -VMName $machine.ResourceName).Path -contains $IsoPath)
                 {
                     $done = $true
                 }
@@ -1538,12 +1548,12 @@ function Dismount-LWIsoImage
         if ($machine.OperatingSystem.Version -ge [System.Version]'6.2')
         {
             Write-PSFMessage -Message "Removing DVD drive for machine '$machine'"
-            Get-VMDvdDrive -VMName $machine | Remove-VMDvdDrive
+            Get-VMDvdDrive -VMName $machine.ResourceName | Remove-VMDvdDrive
         }
         else
         {
             Write-PSFMessage -Message "Setting DVD drive for machine '$machine' to null"
-            Get-VMDvdDrive -VMName $machine | Set-VMDvdDrive -Path $null
+            Get-VMDvdDrive -VMName $machine.ResourceName | Set-VMDvdDrive -Path $null
         }
     }
 }
@@ -1577,13 +1587,20 @@ function Repair-LWHypervNetworkConfig
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
-            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.Name
+            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
             while ($newName -in $newNames)
             {
                 $newName = Add-StringIncrement -String $newName
             }
             $newNames += $newName
-            $adapterInfo.VirtualSwitch.Name = $newName
+            if (-not [string]::IsNullOrEmpty($adapterInfo.VirtualSwitch.FriendlyName))
+            {
+                $adapterInfo.VirtualSwitch.FriendlyName = $newName
+            }
+            else
+            {
+                $adapterInfo.VirtualSwitch.Name = $newName
+            }
 
             if ($machine.OperatingSystem.Version.Major -lt 6 -and $machine.OperatingSystem.Version.Minor -lt 2)
             {
@@ -1619,9 +1636,9 @@ function Repair-LWHypervNetworkConfig
             [array]::Reverse($machine.NetworkAdapters)
             foreach ($adapterInfo in $sortedAdapters)
             {
-                Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.Name)'"
+                Write-Verbose "Setting the order for adapter '$($adapterInfo.VirtualSwitch.ResourceName)'"
                 do {
-                    nvspbind.exe /+ $adapterInfo.VirtualSwitch.Name ms_tcpip | Out-File -FilePath c:\nvspbind.log -Append
+                    nvspbind.exe /+ $adapterInfo.VirtualSwitch.ResourceName ms_tcpip | Out-File -FilePath c:\nvspbind.log -Append
                     $i++
 
                     if ($i -gt $retries) { return }
@@ -1633,11 +1650,11 @@ function Repair-LWHypervNetworkConfig
 
     foreach ($adapterInfo in $machine.NetworkAdapters)
     {
-        $vmAdapter = Get-VMNetworkAdapter -VMName $machine -Name $adapterInfo.VirtualSwitch.Name
+        $vmAdapter = Get-VMNetworkAdapter -VMName $machine.ResourceName -Name $adapterInfo.VirtualSwitch.ResourceName
 
-        if ($adapterInfo.VirtualSwitch.Name -ne $vmAdapter.SwitchName)
+        if ($adapterInfo.VirtualSwitch.ResourceName -ne $vmAdapter.SwitchName)
         {
-            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.Name
+            $vmAdapter | Connect-VMNetworkAdapter -SwitchName $adapterInfo.VirtualSwitch.ResourceName
         }
     }
 

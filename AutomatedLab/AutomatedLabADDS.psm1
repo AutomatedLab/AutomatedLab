@@ -202,7 +202,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Verbose "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
 
         try
@@ -994,6 +994,9 @@ function Install-LabRootDcs
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
         } -ArgumentList $machines -NoDisplay
 
+        # Configure DNS forwarders for Azure machines to be able to mount LabSoures
+        Install-LabDnsForwarder
+
         $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
 
         if ($linuxMachines)
@@ -1059,7 +1062,7 @@ function Install-LabRootDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
@@ -1358,7 +1361,7 @@ function Install-LabFirstChildDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 

@@ -43,6 +43,7 @@ There are several properties that can be used with the `AzureProperties` paramet
 - LoadBalancerRdpPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
 - LoadBalancerWinRmHttpPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
 - LoadBalancerWinRmHttpsPort - Use a different port for the inbound NAT rule. Needs to be unique in your lab!
+- LoadBalancerAllowedIp - A comma-separated string (NOT an array) containing IP addresses allowed to connect, e.g. "$(Get-PublicIpAddress), 1.2.3.4"
 - SubnetName - The subnet name this machine is deployed into
 - UseByolImage - Boolean as string indicating that BYOL licensing is used
 - AutoshutdownTime - The timespan as string when the machines shut be shut down

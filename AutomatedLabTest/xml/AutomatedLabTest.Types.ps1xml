@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Types>
+  <!-- Foo.Bar -->
+  <Type>
+    <Name>Deserialized.Foo.Bar</Name>
+    <Members>
+      <MemberSet>
+        <Name>PSStandardMembers</Name>
+        <Members>
+          <NoteProperty>
+            <Name>
+              TargetTypeForDeserialization
+            </Name>
+            <Value>
+              Foo.Bar
+            </Value>
+          </NoteProperty>
+        </Members>
+      </MemberSet>
+    </Members>
+  </Type>
+  <Type>
+    <Name>Foo.Bar</Name>
+    <Members>
+      <CodeProperty IsHidden="true">
+        <Name>SerializationData</Name>
+        <GetCodeReference>
+          <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+          <MethodName>GetSerializationData</MethodName>
+        </GetCodeReference>
+      </CodeProperty>
+    </Members>
+    <TypeConverter>
+      <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+    </TypeConverter>
+  </Type>
+</Types>

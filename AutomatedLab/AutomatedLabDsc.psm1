@@ -376,7 +376,9 @@ function Invoke-LabDscConfiguration
         [Parameter(ParameterSetName = 'UseExisting')]
         [switch]$UseExisting,
 
-        [switch]$Wait
+        [switch]$Wait,
+
+        [switch]$Force
     )
 
     Write-LogFunctionEntry
@@ -429,6 +431,14 @@ function Invoke-LabDscConfiguration
                 $adaptedConfig = $ConfigurationData.Clone()
             }
 
+            Push-Location -Path Function:
+            if ($configuration | Get-Item -ErrorAction SilentlyContinue)
+            {
+                $configuration | Remove-Item
+            }
+            $configuration | New-Item -Force
+            Pop-Location
+
             Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
             if ($Configuration.Parameters.ContainsKey('ComputerName'))
             {
@@ -464,7 +474,7 @@ function Invoke-LabDscConfiguration
 
         #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
         #to find out all the reuqired modules we need to upload in total
-        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name -ErrorAction Stop
+        $requiredDscModules = Get-DscConfigurationImportedResource -Configuration $Configuration -ErrorAction Stop
         foreach ($requiredDscModule in $requiredDscModules)
         {
             Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
@@ -472,7 +482,7 @@ function Invoke-LabDscConfiguration
 
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
 
-            $path = "C:\AL Dsc\$($args[0])"
+            $path = "C:\AL Dsc\$($Configuration.Name)"
 
             Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
 
@@ -484,17 +494,17 @@ function Invoke-LabDscConfiguration
 
             $mofFiles | Rename-Item -NewName localhost.mof
 
-            Start-DscConfiguration -Path $path -Wait:$Wait
+            Start-DscConfiguration -Path $path -Wait:$Wait -Force:$Force
 
-        } -ArgumentList $Configuration.Name, $Wait
+        } -Variable (Get-Variable -Name Configuration, Wait, Force)
     }
     else
     {
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying existing DSC configuration' -ScriptBlock {
 
-            Start-DscConfiguration -UseExisting -Wait:$Wait
+            Start-DscConfiguration -UseExisting -Wait:$Wait -Force:$Force
 
-        } -ArgumentList $Wait
+        } -Variable (Get-Variable -Name Wait, Force)
     }
 
     Remove-Item -Path $outputPath -Recurse -Force

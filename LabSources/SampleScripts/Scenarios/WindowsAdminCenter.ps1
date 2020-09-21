@@ -22,13 +22,15 @@ Add-LabMachineDefinition -Name WACDC1 -Memory 1GB -Roles RootDC -PostInstallatio
 Add-LabMachineDefinition -Name WACCA1 -Memory 1GB -Roles CARoot
 
 # WAC Server
-$role = Get-LabPostInstallationActivity -CustomRole WindowsAdminCenter -Properties @{
-    WacDownloadLink = 'http://aka.ms/WACDownload'
-    <# Remove the comment to enable developer mode
+$role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter <#-Properties @{
+    # Optional, defaults to 443
+    Port = 8080
+    # Optional, indicates that the developer mode should be enabled, i.e. to develop extensions
     EnableDevMode   = 'True'
-    #>
-}
-Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles WebServer -PostInstallationActivity $role
+    # Optional, defaults to all lab VMs except the WAC host. Needs to be JSON string!
+    ConnectedNode = '["WACHO1","WACHO3"]'
+}#>
+Add-LabMachineDefinition -Name WACWAC1 -Memory 1GB -Roles $role
 
 # Some managed hosts
 foreach ($i in 1..4)

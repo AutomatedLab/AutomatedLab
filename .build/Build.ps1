@@ -52,12 +52,10 @@ Get-PackageProvider -Name NuGet -ForceBootstrap | Out-Null
 [System.Environment]::SetEnvironmentVariable('AUTOMATEDLAB_TELEMETRY_OPTIN',0, 'Machine')
 $env:AUTOMATEDLAB_TELEMETRY_OPTIN = 0
 
-Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
-
-$lastestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
-if (-not ($lastestVersion.Version -ge '1.1.7.0'))
+$latestVersion = Get-Module -Name PackageManagement -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+if (-not ($latestVersion.Version -ge '1.1.7.0'))
 {
-    Write-Host "Latest Version of 'PackageManagement' is '$($lastestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
+    Write-Host "Latest Version of 'PackageManagement' is '$($latestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
     Install-Module -Name PackageManagement -RequiredVersion 1.1.7.0 -Force -Confirm:$false #-Verbose
 
     Remove-Module -Name PackageManagement -Force -ErrorAction Ignore
@@ -65,17 +63,26 @@ if (-not ($lastestVersion.Version -ge '1.1.7.0'))
     Write-Host "New version of 'PackageManagement' is not $($m.Version)"
 }
 
-$lastestVersion = Get-Module -Name PowerShellGet -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
-if (-not ($lastestVersion.Version -ge '1.6.0'))
+$latestVersion = Get-Module -Name PowerShellGet -ListAvailable | Sort-Object -Property Version -Descending | Select-Object -First 1
+if (-not ($latestVersion.Version -ge '1.6.0'))
 {
-    Write-Host "Latest Version of 'PowerShellGet' is '$($lastestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
+    Write-Host "Latest Version of 'PowerShellGet' is '$($latestVersion.Version)'. Updating to the latest version on the PowerShell Gallery"
     Install-Module -Name PowerShellGet -RequiredVersion 1.6.0 -Force -Confirm:$false #-Verbose
 
     Remove-Module -Name PowerShellGet -Force -ErrorAction Ignore
     $m = Import-Module -Name PowerShellGet -PassThru
     Write-Host "New version of 'PowerShellGet' is not $($m.Version)"
-
 }
+
+if ($IsLinux)
+{
+    $null = sudo mkdir ./usr/share/AutomatedLab/Assets -p
+    $null = sudo mkdir ./usr/share/AutomatedLab/Stores -p
+    $null = sudo mkdir ./usr/share/AutomatedLab/Labs -p
+    $null = sudo mkdir ./usr/share/AutomatedLab/LabSources -p
+}
+
+Resolve-Module -Name Psake, PSDeploy, Pester, BuildHelpers, AutomatedLab, Ships, PSFramework, xPSDesiredStateConfiguration, xDscDiagnostics, xWebAdministration
 
 Invoke-psake ./.build/psake.ps1
 exit ( [int]( -not $psake.build_success ) )

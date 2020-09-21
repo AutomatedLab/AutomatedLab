@@ -20,7 +20,7 @@ Write-ScreenInfo -Message "Starting deployment of Lab Builder on $vm"
 
 Write-ScreenInfo -Message "Exposing virtualization extensions on $vm" -Type Verbose
 Stop-LabVm -ComputerName $vm -Wait
-$hyperVvm = Get-Vm -Name $vm.Name
+$hyperVvm = Get-Vm -Name $vm.ResourceName
 $hyperVvm | Set-VMProcessor -ExposeVirtualizationExtensions $true
 Start-LabVM $vm -Wait
 
