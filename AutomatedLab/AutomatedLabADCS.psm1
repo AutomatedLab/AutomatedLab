@@ -1285,10 +1285,16 @@ function Get-LabCertificate
 
     foreach ($computer in $ComputerName)
     {
-        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -ScriptBlock {
-            Add-Type -TypeDefinition $args[0]
-            Add-Type -TypeDefinition $args[1]
-        } -ArgumentList $certStoreTypes, $pkiInternalsTypes -NoDisplay
+        Invoke-LabCommand -ActivityName "Adding 'AutomatedLab.Common.dll'" -ComputerName $ComputerName -ScriptBlock {
+            if ($PSEdition -eq 'core')
+            {
+                Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+            }
+            elseif ([System.Environment]::OSVersion.Version -ge '6.3')
+            {
+                Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+            }
+        } -NoDisplay
 
         Invoke-LabCommand -ActivityName 'Exporting certificates' -ComputerName $ComputerName -ScriptBlock {
             Sync-Parameter -Command (Get-Command -Name Get-Certificate2)
@@ -1343,10 +1349,16 @@ function Add-LabCertificate
         $variables = Get-Variable -Name PSBoundParameters
         $functions = Get-Command -Name Add-Certificate2, Sync-Parameter
 
-        Invoke-LabCommand -ActivityName 'Adding Cert Store Types' -ComputerName $ComputerName -ScriptBlock {
-            Add-Type -TypeDefinition $args[0]
-            Add-Type -TypeDefinition $args[1]
-        } -ArgumentList $certStoreTypes, $pkiInternalsTypes -NoDisplay
+        Invoke-LabCommand -ActivityName "Adding 'AutomatedLab.Common.dll'" -ComputerName $ComputerName -ScriptBlock {
+            if ($PSEdition -eq 'core')
+            {
+                Add-Type -Path '/ALLibraries/core/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+            }
+            elseif ([System.Environment]::OSVersion.Version -ge '6.3')
+            {
+                Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
+            }
+        } -NoDisplay
 
         if ($Path)
         {
