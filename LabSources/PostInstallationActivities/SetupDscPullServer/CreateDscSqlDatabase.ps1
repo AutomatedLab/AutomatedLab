@@ -545,6 +545,14 @@ INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReport
 INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
 ORDER BY dbo.StatusReportMetaData.CreationTime DESC
 GO
+
+CREATE VIEW [dbo].[vDscTaggingData]
+AS
+SELECT dbo.RegistrationData.NodeName, dbo.TaggingData.Environment, dbo.TaggingData.BuildNumber, dbo.TaggingData.GitCommitId, dbo.TaggingData.Version, dbo.TaggingData.BuildDate, dbo.TaggingData.Timestamp, 
+dbo.TaggingData.AgentId
+FROM dbo.RegistrationData INNER JOIN
+dbo.TaggingData ON dbo.RegistrationData.AgentId = dbo.TaggingData.AgentId
+GO
 '@
 
 $addPermissionsQuery = @'
