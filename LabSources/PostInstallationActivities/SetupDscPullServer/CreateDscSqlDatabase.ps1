@@ -184,6 +184,13 @@ CREATE TABLE [dbo].[RegistrationMetaData](
 ) ON [PRIMARY]
 GO
 
+CREATE TABLE [dbo].[StatusReportMetaData](
+       [Id] [int] IDENTITY(1,1) NOT NULL,
+       [JobId] [nvarchar](255) NOT NULL,
+       [CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+
 CREATE TABLE [dbo].[TaggingData](
 	[AgentId] [nvarchar](255) NOT NULL,
 	[Environment] [nvarchar](255) NULL,
@@ -199,12 +206,21 @@ CREATE TABLE [dbo].[TaggingData](
 ) ON [PRIMARY]
 GO
 
-CREATE TABLE [dbo].[StatusReportMetaData](
-       [Id] [int] IDENTITY(1,1) NOT NULL,
-       [JobId] [nvarchar](255) NOT NULL,
-       [CreationTime] [datetime] NOT NULL
+CREATE TABLE [dbo].[NodeLastStatusData](
+	[NodeName] [varchar](30) NOT NULL,
+	[NumberOfResources] [int] NULL,
+	[DscMode] [varchar](10) NULL,
+	[DscConfigMode] [varchar](100) NULL,
+	[ActionAfterReboot] [varchar](50) NULL,
+	[ReapplyMOFCycle] [int] NULL,
+	[CheckForNewMOF] [int] NULL,
+	[PullServer] [varchar](30) NULL,
+	[LastUpdate] [datetime] NULL
+ CONSTRAINT [PK_NodeLastStatusData] PRIMARY KEY CLUSTERED 
+(
+	[NodeName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 ) ON [PRIMARY]
-
 GO
 
 CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
