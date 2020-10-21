@@ -521,20 +521,41 @@ GO
 
 CREATE VIEW [dbo].[vNodeStatusSimple]
 AS
-SELECT rd.NodeName, IIF(nss.NodeName IS NULL,'Failure',nss.Status) as Status, nss.Time
+SELECT rd.NodeName,nss.Time,
+       CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NOT NULL THEN 'No data' ELSE
+       CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NULL THEN 'LCM Error' ELSE
+       CASE WHEN nss.NodeName IS NOT NULL AND RefreshMode IS NULL THEN 'LCM Error' ELSE
+       CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState > 0 THEN 'Not in Desired state' ELSE
+       CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState = 0 THEN 'In Desired state' ELSE
+       CASE WHEN nss.NodeName IS NOT NULL THEN Status END END END END END END AS Status,
+       ResourceCountNotInDesiredState,
+       IIF(ResourcesNotInDesiredState IS NULL, '0', ResourcesNotInDesiredState) AS ResourcesNotInDesiredState
 FROM (
-SELECT DISTINCT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
+SELECT DISTINCT
+       dbo.StatusReport.NodeName
+       ,dbo.StatusReport.Status
+       ,(SELECT COUNT(*)
+             FROM OPENJSON(
+             (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+             ))  AS ResourceCountNotInDesiredState
+       ,(SELECT [ResourceId] + ',' AS [text()] 
+       FROM OPENJSON(
+       (SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+       )
+       WITH (
+             ResourceId nvarchar(200) '$.ResourceId'
+       ) FOR XML PATH (''))  AS ResourcesNotInDesiredState
+       ,dbo.StatusReport.EndTime AS Time
+       ,dbo.StatusReport.RefreshMode
 FROM dbo.StatusReport INNER JOIN
     (SELECT MAX(EndTime) AS MaxEndTime, NodeName
     FROM dbo.StatusReport AS StatusReport_1
     GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
        WHERE dbo.StatusReport.Status IS NOT NULL
 ) as nss
-RIGHT OUTER JOIN dbo.RegistrationData AS rd
+RIGHT OUTER JOIN dbo.RegistrationData AS rd 
 ON nss.NodeName = rd.NodeName
-
 GO
-
 
 CREATE VIEW [dbo].[vNodeStatusComplex]
 AS
