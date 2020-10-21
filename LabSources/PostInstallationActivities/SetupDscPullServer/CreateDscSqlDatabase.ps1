@@ -182,7 +182,21 @@ CREATE TABLE [dbo].[RegistrationMetaData](
 	[AgentId] [nvarchar](255) NOT NULL,
 	[CreationTime] [datetime] NOT NULL
 ) ON [PRIMARY]
+GO
 
+CREATE TABLE [dbo].[TaggingData](
+	[AgentId] [nvarchar](255) NOT NULL,
+	[Environment] [nvarchar](255) NULL,
+	[BuildNumber] [int] NOT NULL,
+	[GitCommitId] [nvarchar](255) NOT NULL,
+	[Version] [nvarchar](50) NOT NULL,
+	[BuildDate] [datetime] NOT NULL,
+	[Timestamp] [datetime] NOT NULL,
+ CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
+(
+	[AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
 GO
 
 CREATE TABLE [dbo].[StatusReportMetaData](
