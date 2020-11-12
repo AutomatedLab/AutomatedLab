@@ -1,7 +1,7 @@
-#region Add-LabAzureWebAppDefinition
+﻿#region Add-LabAzureWebAppDefinition
 function Add-LabAzureWebAppDefinition
 {
-    
+
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
@@ -62,7 +62,7 @@ function Add-LabAzureWebAppDefinition
 #region Get-LabAzureWebAppDefinition
 function Get-LabAzureWebAppDefinition
 {
-    
+
 
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
@@ -109,7 +109,7 @@ function Get-LabAzureWebAppDefinition
 #region Add-LabAzureAppServicePlanDefinition
 function Add-LabAzureAppServicePlanDefinition
 {
-    
+
 
     [CmdletBinding()]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
@@ -168,7 +168,7 @@ function Add-LabAzureAppServicePlanDefinition
 #region Get-LabAzureAppServicePlanDefinition
 function Get-LabAzureAppServicePlanDefinition
 {
-    
+
 
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]

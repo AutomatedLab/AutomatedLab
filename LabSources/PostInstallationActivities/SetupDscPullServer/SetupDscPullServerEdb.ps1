@@ -1,4 +1,4 @@
-﻿param  
+﻿param
 (
     [string]$ComputerName,
 
@@ -12,16 +12,16 @@ Import-Module -Name xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
 Configuration SetupDscPullServer
 {
-    param  
-    ( 
-        [string[]]$NodeName = 'localhost', 
+    param
+    (
+        [string[]]$NodeName = 'localhost',
 
         [string]$CertificateThumbPrint = 'AllowUnencryptedTraffic',
 
         [Parameter(Mandatory)]
         [ValidateNotNullOrEmpty()]
         [string]$RegistrationKey
-    ) 
+    )
 
     LocalConfigurationManager
     {
@@ -33,16 +33,16 @@ Configuration SetupDscPullServer
 
     Import-DSCResource -ModuleName xPSDesiredStateConfiguration, PSDesiredStateConfiguration
 
-    Node $NodeName 
-    { 
+    Node $NodeName
+    {
         WindowsFeature DSCServiceFeature
-        { 
+        {
             Ensure = 'Present'
             Name   = 'DSC-Service'
-        } 
+        }
 
-        xDscWebService PSDSCPullServer 
-        { 
+        xDscWebService PSDSCPullServer
+        {
             Ensure                  = 'Present'
             EndpointName            = 'PSDSCPullServer'
             Port                    = 8080
@@ -53,7 +53,7 @@ Configuration SetupDscPullServer
             State                   = 'Started'
             UseSecurityBestPractices = $false
             DependsOn               = '[WindowsFeature]DSCServiceFeature'
-        } 
+        }
 
         File RegistrationKeyFile
         {

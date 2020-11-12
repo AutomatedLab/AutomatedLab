@@ -35,7 +35,7 @@ Write-Host "Group '$group' created"
 #The cmdlet New-ADUSer creates the users in test OU (OU=Test,<DomainNamingContext>).
 Write-Host 'Importing users from CSV file...' -NoNewline
 Import-Csv -Path "$((Split-Path -Path $MyInvocation.MyCommand.Path -Parent))\LabUsers.txt" `
-	-Header Name,GivenName,Surname,EmailAddress,OfficePhone,StreetAddress,PostalCode,City,Country,Title,Company,Department,Description,EmployeeID,SamAccountName | 
+	-Header Name,GivenName,Surname,EmailAddress,OfficePhone,StreetAddress,PostalCode,City,Country,Title,Company,Department,Description,EmployeeID,SamAccountName |
 	New-ADUser -Path $ou -ErrorAction SilentlyContinue
 Write-Host 'done'
 
@@ -44,9 +44,9 @@ Write-Host 'done'
 #We read all test users and get the unique coutries. The RegionInfo class is use to convert the two-character coutry code into the full name
 Write-Host 'Getting countries of all newly added accounts...' -NoNewline
 $countries = @{}
-Get-ADUser -Filter "Description -eq 'Testing'" -Properties Country | 
-	Sort-Object -Property Country -Unique | 
-	ForEach-Object { 
+Get-ADUser -Filter "Description -eq 'Testing'" -Properties Country |
+	Sort-Object -Property Country -Unique |
+	ForEach-Object {
 		$region = New-Object System.Globalization.RegionInfo($_.Country)
 		$countries.Add($region.Name, $region.EnglishName.Replace('.',''))
 	}
@@ -56,11 +56,11 @@ Write-Host
 #We now take the countries' full name and create the OUs and groups.
 Write-Host 'Creating OUs and groups for countries and moving users...'
 foreach ($country in $countries.GetEnumerator())
-{ 
+{
     Write-Host "Working on country '$($country.Value)'..." -NoNewline
 	$countryOu = New-ADOrganizationalUnit -Name $country.Value -Path $ou -ProtectedFromAccidentalDeletion $false -PassThru
     Write-Host 'OU, ' -NoNewline
-	$group = New-ADGroup -Name $country.Value -Path $countryOu -GroupScope Global -PassThru    
+	$group = New-ADGroup -Name $country.Value -Path $countryOu -GroupScope Global -PassThru
 	Add-ADGroupMember -Identity AllTestUsers -Members $group
     Write-Host 'Group, ' -NoNewline
 

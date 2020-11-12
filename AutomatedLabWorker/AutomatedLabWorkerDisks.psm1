@@ -1,6 +1,7 @@
 #region New-LWReferenceVHDX
 function New-LWReferenceVHDX
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         #ISO of OS
@@ -205,6 +206,7 @@ exit
 #region New-LWVHDX
 function New-LWVHDX
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         #Path to reference VHD
@@ -278,6 +280,7 @@ function New-LWVHDX
 #region Remove-LWVHDX
 function Remove-LWVHDX
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         #Path to reference VHD
@@ -305,6 +308,7 @@ function Remove-LWVHDX
 #region Add-LWVMVHDX
 function Add-LWVMVHDX
 {
+    [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Not relevant on Linux")]
     [Cmdletbinding()]
     Param (
         [Parameter(Mandatory = $true)]

@@ -1,10 +1,10 @@
-function Set-UnattendedKickstartUserLocale
+﻿function Set-UnattendedKickstartUserLocale
 {
     param (
         [Parameter(Mandatory = $true)]
         [string]$UserLocale
     )
-    
+
     try
     {
         $ci = [cultureinfo]::new($UserLocale)

@@ -1,7 +1,7 @@
-function New-LabRecipe
+﻿function New-LabRecipe
 {
     [CmdletBinding(SupportsShouldProcess)]
-    param 
+    param
     (
         # Name of the lab and recipe
         [Parameter(Mandatory)]
@@ -75,7 +75,7 @@ function New-LabRecipe
     if ($shouldAlsoDeployDomain -and $DeployRole -notcontains 'Domain') {$roles += 'Domain'}
     if ($shouldAlsoDeployPki -and $DeployRole -notcontains 'PKI') {$roles += 'PKI'}
     $labContent.DeployRole = $roles
-    
+
     foreach ($role in $roles)
     {
         if ($role -notin 'Domain', 'PKI', 'DscPull')
@@ -100,6 +100,6 @@ function New-LabRecipe
     {
         $labContent | ConvertTo-Json | Set-Content -Path $recipeFileName -NoNewline -Force
     }
-    
+
     if ($PassThru) {$labContent}
 }

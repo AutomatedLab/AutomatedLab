@@ -1,7 +1,6 @@
 ﻿#region Install-LabDscPullServer
 function Install-LabDscPullServer
 {
-    
     [cmdletBinding()]
     param (
         [int]$InstallationTimeout = 15
@@ -97,15 +96,30 @@ function Install-LabDscPullServer
         -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca -ErrorAction Stop
     }
 
-    if (-not (Test-LabCATemplate -TemplateName DscMofEncryption  -ComputerName $ca))
+    if (-not (Test-LabCATemplate -TemplateName DscMofFileEncryption  -ComputerName $ca))
     {
-        New-LabCATemplate -TemplateName DscMofEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
+        New-LabCATemplate -TemplateName DscMofFileEncryption -DisplayName 'Dsc Mof File Encryption' -SourceTemplateName CEPEncryption -ApplicationPolicy 'Document Encryption' `
         -KeyUsage KEY_ENCIPHERMENT, DATA_ENCIPHERMENT -EnrollmentFlags Autoenrollment -PrivateKeyFlags AllowKeyExport -Version 2 -SamAccountName 'Domain Computers' -ComputerName $ca
     }
 
     if ($Online)
     {
         Invoke-LabCommand -ActivityName 'Setup Dsc Pull Server 1' -ComputerName $machines -ScriptBlock {
+            # Due to changes in the gallery: Accept TLS12
+            try
+            {
+                #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+                if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+                {
+                    Write-Verbose -Message 'Adding support for TLS 1.2'
+                    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+                }
+            }
+            catch
+            {
+                Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+            }
+
             Install-WindowsFeature -Name DSC-Service
             Install-PackageProvider -Name NuGet -Force
             Install-Module -Name $requiredModules -Force
@@ -120,6 +134,19 @@ function Install-LabDscPullServer
         else
         {
             Write-ScreenInfo "Downloading the modules '$($requiredModules -join ', ')' locally and copying them to the DSC Pull Servers."
+            try
+            {
+                #https://docs.microsoft.com/en-us/dotnet/api/system.net.securityprotocoltype?view=netcore-2.0#System_Net_SecurityProtocolType_SystemDefault
+                if ($PSVersionTable.PSVersion.Major -lt 6 -and [Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
+                {
+                    Write-Verbose -Message 'Adding support for TLS 1.2'
+                    [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12
+                }
+            }
+            catch
+            {
+                Write-Warning -Message 'Adding TLS 1.2 to supported security protocols was unsuccessful.'
+            }
 
             Install-PackageProvider -Name NuGet -Force | Out-Null
             Install-Module -Name $requiredModules -Force
@@ -181,6 +208,11 @@ function Install-LabDscPullServer
             'edb'
         }
 
+        if ($databaseEngine -eq 'sql' -and $role.Properties.SqlServer)
+        {
+            Invoke-LabCommand -ActivityName 'Creating DSC SQL Database' -FilePath $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName $role.Properties.SqlServer -ArgumentList $machine.DomainAccountName
+        }
+
         if ($databaseEngine -eq 'mdb')
         {
             #Install the missing database driver for access mbd that is no longer available on Windows Server 2016+
@@ -198,7 +230,7 @@ function Install-LabDscPullServer
             Add-LWAzureLoadBalancedPort -Port $remotePort -DestinationPort 8080 -ComputerName $machine -ErrorAction SilentlyContinue
         }
 
-        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofEncryption -ComputerName $machine -PassThru | Out-Null
+        Request-LabCertificate -Subject "CN=$machine" -TemplateName DscMofFileEncryption -ComputerName $machine -PassThru | Out-Null
 
         $cert = Request-LabCertificate -Subject "CN=$($machine.Name)" -SAN $machine.Name, $machine.FQDN -TemplateName DscPullSsl -ComputerName $machine -PassThru -ErrorAction Stop
 
@@ -267,7 +299,6 @@ function Install-LabDscPullServer
 #region Install-LabDscClient
 function Install-LabDscClient
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param(
         [Parameter(Mandatory, ParameterSetName = 'ByName')]
@@ -350,12 +381,15 @@ function Invoke-LabDscConfiguration
         [Parameter(ParameterSetName = 'UseExisting')]
         [switch]$UseExisting,
 
-        [switch]$Wait
+        [switch]$Wait,
+
+        [switch]$Force
     )
 
     Write-LogFunctionEntry
 
     $lab = Get-Lab
+    $localLabSoures = Get-LabSourcesLocation -Local
     if (-not $lab.Machines)
     {
         Write-LogFunctionExitWithError -Message 'No machine definitions imported, so there is nothing to do. Please use Import-Lab first'
@@ -372,7 +406,7 @@ function Invoke-LabDscConfiguration
 
     if ($PSCmdlet.ParameterSetName -eq 'New')
     {
-        $outputPath = "$($global:labSources)\$(Get-LabConfigurationItem -Name DscMofPath)\$(New-Guid)"
+        $outputPath = "$localLabSoures\$(Get-LabConfigurationItem -Name DscMofPath)\$(New-Guid)"
 
         if (Test-Path -Path $outputPath)
         {
@@ -401,6 +435,14 @@ function Invoke-LabDscConfiguration
             {
                 $adaptedConfig = $ConfigurationData.Clone()
             }
+
+            Push-Location -Path Function:
+            if ($configuration | Get-Item -ErrorAction SilentlyContinue)
+            {
+                $configuration | Remove-Item
+            }
+            $configuration | New-Item -Force
+            Pop-Location
 
             Write-Information -MessageData "Creating Configuration MOF '$($Configuration.Name)' for node '$c'" -Tags DSC
             if ($Configuration.Parameters.ContainsKey('ComputerName'))
@@ -437,7 +479,7 @@ function Invoke-LabDscConfiguration
 
         #Get-DscConfigurationImportedResource now needs to walk over all the resources used in the composite resource
         #to find out all the reuqired modules we need to upload in total
-        $requiredDscModules = Get-DscConfigurationImportedResource -Name $Configuration.Name -ErrorAction Stop
+        $requiredDscModules = Get-DscConfigurationImportedResource -Configuration $Configuration -ErrorAction Stop
         foreach ($requiredDscModule in $requiredDscModules)
         {
             Send-ModuleToPSSession -Module (Get-Module -Name $requiredDscModule -ListAvailable) -Session (New-LabPSSession -ComputerName $ComputerName) -Scope AllUsers -IncludeDependencies
@@ -445,7 +487,7 @@ function Invoke-LabDscConfiguration
 
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying new DSC configuration' -ScriptBlock {
 
-            $path = "C:\AL Dsc\$($args[0])"
+            $path = "C:\AL Dsc\$($Configuration.Name)"
 
             Remove-Item -Path "$path\localhost.mof" -ErrorAction SilentlyContinue
 
@@ -457,19 +499,19 @@ function Invoke-LabDscConfiguration
 
             $mofFiles | Rename-Item -NewName localhost.mof
 
-            Start-DscConfiguration -Path $path -Wait:$Wait
+            Start-DscConfiguration -Path $path -Wait:$Wait -Force:$Force
 
-        } -ArgumentList $Configuration.Name, $Wait
+        } -Variable (Get-Variable -Name Configuration, Wait, Force)
     }
     else
     {
         Invoke-LabCommand -ComputerName $ComputerName -ActivityName 'Applying existing DSC configuration' -ScriptBlock {
 
-            Start-DscConfiguration -UseExisting -Wait:$Wait
+            Start-DscConfiguration -UseExisting -Wait:$Wait -Force:$Force
 
-        } -ArgumentList $Wait
+        } -Variable (Get-Variable -Name Wait, Force)
     }
-    
+
     Remove-Item -Path $outputPath -Recurse -Force
 
     Write-LogFunctionExit
@@ -492,6 +534,7 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
             [string[]]$ComputerName = 'localhost'
         )
 
+        $configurationScript = @'
         [DSCLocalConfigurationManager()]
         configuration LcmDefaultConfiguration
         {
@@ -510,7 +553,9 @@ function Remove-LabDscLocalConfigurationManagerConfiguration
                 }
             }
         }
+'@
 
+        [scriptblock]::Create($configurationScript).Invoke()
         $path = New-Item -ItemType Directory -Path "$([System.IO.Path]::GetTempPath())\$(New-Guid)"
 
         Remove-DscConfigurationDocument -Stage Current, Pending -Force

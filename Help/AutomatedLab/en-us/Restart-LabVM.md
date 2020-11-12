@@ -24,10 +24,10 @@ Restarts one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Restart-LabVm -ComputerName SQL01 -Wait -NoDisplay
 ```
 
-{{ Add example description here }}
+Wait for SQL01 to restart fully before continuing with the script.
 
 ## PARAMETERS
 

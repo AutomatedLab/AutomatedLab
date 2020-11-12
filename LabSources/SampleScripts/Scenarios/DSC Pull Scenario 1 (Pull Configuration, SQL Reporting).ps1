@@ -1,4 +1,4 @@
-<#
+﻿<#
 This scenario demos a DSC pull server. The lab must have an internet connection in order to download additional required bits. PowerShell 5.0
 or greater is required on all DSC pull servers or clients. Please take a look at introduction script '10 ISO Offline Patching.ps1' if you
 want to create a Windows Server 2012 base image with PowerShell 5.
@@ -78,11 +78,11 @@ Get-Job -Name 'Installation of*' | Wait-Job | Out-Null
 
 Install-LabWindowsFeature -ComputerName DPULL1 -FeatureName Web-Mgmt-Console
 
-Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -DestinationFolderPath C:\ -ComputerName DSQL
+Copy-LabFileItem -Path $labSources\PostInstallationActivities\SetupDscPullServer\CreateDscSqlDatabase.ps1 -ComputerName DSQL
 Invoke-LabCommand -ActivityName 'Create SQL Database for DSC Reporting' -ComputerName DSQL -ScriptBlock {
     C:\CreateDscSqlDatabase.ps1 -DomainAndComputerName CONTOSO\DPULL1
 }
 
 Install-LabDscClient -All
 
-Show-LabDeploymentSummary -Detailed 
+Show-LabDeploymentSummary -Detailed

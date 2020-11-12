@@ -1,4 +1,4 @@
-param
+﻿param
 (
     [Parameter(Mandatory)]
     [string]
@@ -12,9 +12,8 @@ param
     [uint16]
     $Port = 443,
 
-    [ValidateSet('True', 'False')]
-    [string]
-    $EnableDevMode = 'False'
+    [bool]
+    $EnableDevMode
 )
 
 $lab = Import-Lab -Name $data.Name -NoValidation -NoDisplay -PassThru
@@ -27,7 +26,7 @@ if (-not $lab)
 
 $labMachine = Get-LabVm -ComputerName $ComputerName
 $wacDownload = Get-LabInternetFile -Uri $WacDownloadLink -Path "$labSources\SoftwarePackages" -FileName WAC.msi -PassThru -NoDisplay
-Copy-LabFileItem -Path $wacDownload.FullName -DestinationFolderPath C:\ -ComputerName $labMachine
+Copy-LabFileItem -Path $wacDownload.FullName -ComputerName $labMachine
 
 if ($labMachine.IsDomainJoined -and (Get-LabIssuingCA -DomainName $labMachine.DomainName -ErrorAction SilentlyContinue) )
 {
@@ -44,7 +43,7 @@ $arguments = @(
     "SME_PORT=$Port"
 )
 
-if ([Convert]::ToBoolean($EnableDevMode))
+if ($EnableDevMode)
 {
     $arguments += 'DEV_MODE=1'
 }
@@ -70,7 +69,7 @@ if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     }
 }
 
-if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12') 
+if ([Net.ServicePointManager]::SecurityProtocol -notmatch 'Tls12')
 {
     Write-Verbose -Message 'Adding support for TLS 1.2'
     [Net.ServicePointManager]::SecurityProtocol += [Net.SecurityProtocolType]::Tls12

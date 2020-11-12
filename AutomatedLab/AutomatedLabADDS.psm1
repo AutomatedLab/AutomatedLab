@@ -1,4 +1,4 @@
-#region DC Install Scripts
+﻿#region DC Install Scripts
 $adInstallRootDcScriptPre2012 = {
     param (
         [string]$DomainName,
@@ -36,7 +36,7 @@ $adInstallRootDcScriptPre2012 = {
 "@
 
     $VerbosePreference = $using:VerbosePreference
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -202,7 +202,7 @@ $adInstallFirstChildDc2012 = {
     $retriesDone = 0
     do
     {
-        Write-ScreenInfo "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
+        Write-Verbose "The first try to promote '$(HOSTNAME.EXE)' did not work. The error was '$($result.Message)'. Retrying after $SecondsBetweenRetries seconds. Retry count $retriesDone of $Retries." -Type Warning
         ipconfig.exe /flushdns | Out-Null
 
         try
@@ -287,7 +287,7 @@ $adInstallFirstChildDcPre2012 = {
     )
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -598,7 +598,7 @@ $adInstallDcPre2012 = {
     $VerbosePreference = $using:VerbosePreference
 
     Start-Transcript -Path C:\DeployDebug\ALDCPromo.log
-    
+
     Write-Verbose -Message 'Installing AD-Domain-Services windows feature'
     Import-Module -Name ServerManager
     Add-WindowsFeature -Name DNS
@@ -745,13 +745,12 @@ $adInstallDcPre2012 = {
 #region Install-LabRootDcs
 function Install-LabRootDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -807,7 +806,7 @@ function Install-LabRootDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         foreach ($machine in $machines)
         {
@@ -932,12 +931,22 @@ function Install-LabRootDcs
             $machinesToStart += Get-LabVM | Where-Object { -not $_.IsDomainJoined }
         }
 
-        Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
-        Write-ScreenInfo -Message done
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
 
-        Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure')
+        {
+            Wait-LabVMRestart -ComputerName $machines.Name -StartMachinesWhileWaiting $machinesToStart -DoNotUseCredSsp -ProgressIndicator 30 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
+            Write-ScreenInfo -Message done
 
-        Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
+            Write-ScreenInfo -Message 'Root Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
+
+            Wait-LabVM -ComputerName $machines -DoNotUseCredSsp -TimeoutInMinutes 30 -ProgressIndicator 30 -NoNewLine
+        }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 30 -NoNewLine
 
         #Create reverse lookup zone (forest scope)
@@ -985,6 +994,9 @@ function Install-LabRootDcs
             dnscmd localhost /recordadd $env:USERDNSDOMAIN $env:USERDOMAIN A $machine.IpV4Address
         } -ArgumentList $machines -NoDisplay
 
+        # Configure DNS forwarders for Azure machines to be able to mount LabSoures
+        Install-LabDnsForwarder
+
         $linuxMachines = Get-LabVM -All -IncludeLinux | Where-Object -Property OperatingSystemType -eq 'Linux'
 
         if ($linuxMachines)
@@ -1027,6 +1039,10 @@ function Install-LabRootDcs
                 New-LabADSite -ComputerName $machine -SiteName $dcRole.Properties.SiteName -SiteSubnet $dcRole.Properties.SiteSubnet
                 Move-LabDomainController -ComputerName $machine -SiteName $dcRole.Properties.SiteName
             }
+
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
         }
 
         if ($CreateCheckPoints)
@@ -1046,7 +1062,7 @@ function Install-LabRootDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
@@ -1067,13 +1083,12 @@ function Install-LabRootDcs
 #region Install-LabFirstChildDcs
 function Install-LabFirstChildDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1126,7 +1141,7 @@ function Install-LabFirstChildDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $jobs = @()
         foreach ($machine in $machines)
@@ -1259,16 +1274,25 @@ function Install-LabFirstChildDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -in $domains
         }
 
-        Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
-        Write-ScreenInfo done
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
 
-        Write-ScreenInfo -Message 'First Child Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure')
+        {
+            Wait-LabVMRestart -ComputerName $machines.name -StartMachinesWhileWaiting $machinesToStart -ProgressIndicator 45 -TimeoutInMinutes $DcPromotionRestartTimeout -ErrorAction Stop -MonitorJob $jobs -NoNewLine
+            Write-ScreenInfo done
 
-        #Wait a little to be able to connect in first attempt
-        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock { Start-Sleep -Seconds 60 }) -ProgressIndicator 20 -NoDisplay -NoNewLine
+            Write-ScreenInfo -Message 'First Child Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
 
-        Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
+            #Wait a little to be able to connect in first attempt
+            Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock { Start-Sleep -Seconds 60 }) -ProgressIndicator 20 -NoDisplay -NoNewLine
 
+            Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
+        }
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
         #Make sure the specified installation user will be domain admin
@@ -1311,6 +1335,13 @@ function Install-LabFirstChildDcs
             $jobs += Sync-LabActiveDirectory -ComputerName $dc -ProgressIndicator 20 -AsJob -Passthru
         }
         Wait-LWLabJob -Job $jobs -ProgressIndicator 20 -NoDisplay -NoNewLine
+        
+        foreach ($machine in $machines)
+        {
+            Reset-LabAdPassword -DomainName $machine.DomainName
+            Remove-LabPSSession -ComputerName $machine
+            Enable-LabAutoLogon -ComputerName $machine
+        }
 
         if ($CreateCheckPoints)
         {
@@ -1330,7 +1361,7 @@ function Install-LabFirstChildDcs
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
-    $filterScript = { 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
+    $filterScript = {-not $_.SkipDeployment -and 'RootDC' -notin $_.Roles.Name -and 'FirstChildDC' -notin $_.Roles.Name -and 'DC' -notin $_.Roles.Name -and
     -not $_.HasDomainJoined -and $_.DomainName -in $domains -and $_.HostType -eq 'Azure' }
     $retries = 3
 
@@ -1351,13 +1382,12 @@ function Install-LabFirstChildDcs
 #region Install-LabDcs
 function Install-LabDcs
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$DcPromotionRestartTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionRestartAfterDcpromo),
-        
+
         [int]$AdwsReadyTimeout = (Get-LabConfigurationItem -Name Timeout_DcPromotionAdwsReady),
-        
+
         [switch]$CreateCheckPoints,
 
         [ValidateRange(0, 300)]
@@ -1411,7 +1441,7 @@ function Install-LabDcs
             $rule = New-Object System.Security.AccessControl.FileSystemAccessRule('Everyone', 'Read', 'ObjectInherit', 'None', 'Allow')
             $acl.AddAccessRule($rule)
             Set-Acl -Path C:\DeployDebug -AclObject $acl
-        } -DoNotUseCredSsp
+        } -DoNotUseCredSsp -UseLocalCredential
 
         $rootDcs = Get-LabVM -Role RootDC
         $childDcs = Get-LabVM -Role FirstChildDC
@@ -1524,17 +1554,27 @@ function Install-LabDcs
             $machinesToStart += Get-LabVM | Where-Object DomainName -notin $domains
         }
 
-        Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -NoNewLine -ErrorAction Stop
-        Write-ScreenInfo -Message done
+        # Creating sessions from a Linux host requires the correct user name.
+        # By setting HasDomainJoined to $true we ensure that not the local, but the domain admin cred is returned
+        foreach ($machine in $machines)
+        {
+            $machine.HasDomainJoined = $true
+        }
 
-        Write-ScreenInfo -Message 'Additional Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure')
+        {
+            Wait-LabVMRestart -ComputerName $machines -StartMachinesWhileWaiting $machinesToStart -TimeoutInMinutes $DcPromotionRestartTimeout -MonitorJob $jobs -ProgressIndicator 60 -NoNewLine -ErrorAction Stop
+            Write-ScreenInfo -Message done
 
-        #Wait a little to be able to connect in first attempt
-        Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {
-                Start-Sleep -Seconds 60
-        }) -ProgressIndicator 20 -NoDisplay -NoNewLine
+            Write-ScreenInfo -Message 'Additional Domain Controllers have now restarted. Waiting for Active Directory to start up' -NoNewLine
 
-        Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
+            #Wait a little to be able to connect in first attempt
+            Wait-LWLabJob -Job (Start-Job -Name 'Delay waiting for machines to be reachable' -ScriptBlock {
+                    Start-Sleep -Seconds 60
+            }) -ProgressIndicator 20 -NoDisplay -NoNewLine
+
+            Wait-LabVM -ComputerName $machines -TimeoutInMinutes 30 -ProgressIndicator 20 -NoNewLine
+        }
 
         Wait-LabADReady -ComputerName $machines -TimeoutInMinutes $AdwsReadyTimeout -ErrorAction Stop -ProgressIndicator 20 -NoNewLine
 
@@ -1542,6 +1582,7 @@ function Install-LabDcs
         Restart-ServiceResilient -ComputerName $machines -ServiceName nlasvc -NoNewLine
 
         Enable-LabVMRemoting -ComputerName $machines
+        Enable-LabAutoLogon -ComputerName $machines
 
         #DNS client configuration is change by DCpromo process. Change this back
         Reset-DNSConfiguration -ComputerName (Get-LabVM -Role DC) -ProgressIndicator 20 -NoNewLine
@@ -1590,7 +1631,6 @@ function Install-LabDcs
 #region Wait-LabADReady
 function Wait-LabADReady
 {
-    
     param (
         [Parameter(Mandatory)]
         [string[]]$ComputerName,
@@ -1686,7 +1726,6 @@ function Wait-LabADReady
 #region Test-LabADReady
 function Test-LabADReady
 {
-    
     param (
         [Parameter(Mandatory)]
         [string]$ComputerName
@@ -1703,7 +1742,7 @@ function Test-LabADReady
 
     $adReady = Invoke-LabCommand -ComputerName $machine -ActivityName GetAdwsServiceStatus -ScriptBlock {
 
-        if ((Get-Service -Name ADWS).Status -eq 'Running')
+        if ((Get-Service -Name ADWS -ErrorAction SilentlyContinue).Status -eq 'Running')
         {
             try
             {
@@ -1729,8 +1768,7 @@ function Test-LabADReady
 #region Reset-DNSConfiguration
 function Reset-DNSConfiguration
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [string[]]$ComputerName,
@@ -1773,8 +1811,7 @@ function Reset-DNSConfiguration
 #region Sync-LabActiveDirectory
 function Sync-LabActiveDirectory
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -1811,6 +1848,11 @@ function Sync-LabActiveDirectory
             $VerbosePreference = $using:VerbosePreference
 
             ipconfig.exe -flushdns
+
+            if (-not -(Test-Path -Path C:\DeployDebug))
+            {
+                New-Item C:\DeployDebug -Force -ItemType Directory | Out-Null
+            }
 
             Write-Verbose -Message 'Getting list of DCs'
             $dcs = repadmin.exe /viewlist *
@@ -1896,7 +1938,6 @@ function Sync-LabActiveDirectory
 #region Add-LabDomainAdmin
 function Add-LabDomainAdmin
 {
-    
     param(
         [Parameter(Mandatory)]
         [string]$Name,
@@ -1940,8 +1981,7 @@ function Add-LabDomainAdmin
 #region New-LabADSubnet
 function New-LabADSubnet
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param(
         [switch]$PassThru
     )
@@ -2017,8 +2057,7 @@ function New-LabADSubnet
 #region function New-LabADSite
 function New-LabADSite
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -2057,7 +2096,7 @@ function New-LabADSite
         }
     }
 
-    $result = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
+    $null = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2123,8 +2162,7 @@ function New-LabADSite
 #region function Move-LabDomainController
 function Move-LabDomainController
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
@@ -2144,7 +2182,7 @@ function Move-LabDomainController
         Write-PSFMessage "No Domain Controller roles found on computer '$ComputerName'"
         return
     }
-    
+
     $machine = Get-LabVM -ComputerName $ComputerName
     $lab = Get-Lab
 
@@ -2166,7 +2204,7 @@ function Move-LabDomainController
         $domainRootMachine = Get-LabVM -Role FirstChildDC | Where-Object DomainName -eq $machine.DomainName
     }
     
-    $result = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
+    $null = Invoke-LabCommand -ComputerName $domainRootMachine -NoDisplay -PassThru -ScriptBlock `
     {
         param
         (
@@ -2191,7 +2229,6 @@ function Move-LabDomainController
 #region Install-LabDnsForwarder
 function Install-LabDnsForwarder
 {
-    
     $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
@@ -2210,7 +2247,7 @@ function Install-LabDnsForwarder
             `$hostname = hostname.exe
             Write-Verbose "Creating a DNS forwarder on server '$hostname'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             #Add-DnsServerConditionalForwarderZone -ReplicationScope Forest -Name $($forwarder.Destination) -MasterServers $($masterServers.IpV4Address)
-            dnscmd . /zoneadd $($forwarder.Destination) /forwarder $($masterServers.IpV4Address)
+            dnscmd . /zoneadd $($forwarder.Destination) /dsforwarder $($masterServers.IpV4Address)
             Write-Verbose '...done'
 "@
 
@@ -2225,12 +2262,11 @@ function Install-LabDnsForwarder
         }
     }
 }
-#region Install-LabDnsForwarder
+#endregion Install-LabDnsForwarder
 
 #region Install-LabADDSTrust
 function Install-LabADDSTrust
 {
-    
     $forestNames = (Get-LabVM -Role RootDC).DomainName
     if (-not $forestNames)
     {
@@ -2249,7 +2285,7 @@ function Install-LabADDSTrust
             `$hostname = hostname.exe
             Write-Verbose "Creating a DNS forwarder on server '$hostname'. Forwarder name is '$($forwarder.Destination)' and target DNS server is '$($masterServers.IpV4Address)'..."
             #Add-DnsServerConditionalForwarderZone -ReplicationScope Forest -Name $($forwarder.Destination) -MasterServers $($masterServers.IpV4Address)
-            dnscmd . /zoneadd $($forwarder.Destination) /forwarder $($masterServers.IpV4Address)
+            dnscmd . /zoneadd $($forwarder.Destination) /dsforwarder $($masterServers.IpV4Address)
             Write-Verbose '...done'
 "@
 
@@ -2270,7 +2306,7 @@ function Install-LabADDSTrust
                 {
                     $dcName = $dc.Split()[2]
                     Write-Verbose -Message "Executing 'repadmin.exe /SyncAll /Ae $dcname'"
-                    $result = repadmin.exe /SyncAll /AeP $dcName
+                    $null = repadmin.exe /SyncAll /AeP $dcName
                 }
             }
             Write-Verbose '...done'
@@ -2313,4 +2349,38 @@ function Install-LabADDSTrust
         }
     }
 }
-#region Install-LabADDSTrust
+#endregion Install-LabADDSTrust
+
+#region Reset-LabAdPassword
+function Reset-LabAdPassword
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$DomainName
+    )
+    
+    $lab = Get-Lab
+    $domain = $lab.Domains | Where-Object Name -eq $DomainName
+    $vm = Get-LabVM -Role RootDC, FirstChildDC | Where-Object DomainName -eq $DomainName
+    
+    Invoke-LabCommand -ActivityName 'Reset Administrator password in AD' -ScriptBlock {
+        Add-Type -AssemblyName System.DirectoryServices.AccountManagement
+        $ctx = New-Object System.DirectoryServices.AccountManagement.PrincipalContext('Domain')
+        $i = 0
+        while (-not $u -and $i -lt 25)
+        {
+            try
+            {
+                $u = [System.DirectoryServices.AccountManagement.UserPrincipal]::FindByIdentity($ctx, $args[0])
+                $u.SetPassword($args[1])
+            }
+            catch
+            {
+                Start-Sleep -Seconds 10
+                $i++
+            }
+        }
+        
+    } -ComputerName $vm -ArgumentList $domain.Administrator.UserName, $domain.Administrator.Password -NoDisplay
+}
+#endregion Reset-LabAdPassword

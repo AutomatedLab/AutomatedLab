@@ -1,8 +1,8 @@
-param(
-    
+﻿param(
+
     [Parameter(Mandatory)]
     [string]$ComputerName,
-    
+
     [Parameter(Mandatory)]
     [string]$SccmSiteCode,
 
@@ -25,7 +25,7 @@ if (-not $sqlServer)
 {
     Write-Error "The specified SQL Server '$SqlServerName' does not exist in the lab."
     return
-}    
+}
 
 if ($sccmServer.OperatingSystem.Version -lt 10.0 -or $SqlServer.OperatingSystem.Version -lt 10.0)
 {

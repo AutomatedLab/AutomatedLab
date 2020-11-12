@@ -1,12 +1,12 @@
-function Add-UnattendedYastNetworkAdapter
+﻿function Add-UnattendedYastNetworkAdapter
 {
     param (
         [string]$Interfacename,
 
         [AutomatedLab.IPNetwork[]]$IpAddresses,
-		
+
         [AutomatedLab.IPAddress[]]$Gateways,
-		
+
         [AutomatedLab.IPAddress[]]$DnsServers,
 
         [string]$ConnectionSpecificDNSSuffix,
@@ -18,16 +18,14 @@ function Add-UnattendedYastNetworkAdapter
 
     $networking = $script:un.SelectSingleNode('/un:profile/un:networking', $script:nsm)
     $interfaceList = $script:un.SelectSingleNode('/un:profile/un:networking/un:interfaces', $script:nsm)
-
-    if (-not $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm))
-    {
-        $dns = $script:un.CreateElement('dns', $script:nsm.LookupNamespace('un'))
-        $host = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
-        $null = $dns.AppendChild($host)
-    }
+    $dns = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm)
+    $nameServers = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns/un:nameservers', $script:nsm)
+    $routes = $script:un.SelectSingleNode('/un:profile/un:networking/un:routing/un:routes', $script:nsm)
+    $hostName = $script:un.CreateElement('hostname', $script:nsm.LookupNamespace('un'))
+    $null = $dns.AppendChild($hostName)
 
     if ($DnsDomain)
-    {    
+    {
         $domain = $script:un.CreateElement('domain', $script:nsm.LookupNamespace('un'))
         $domain.InnerText = $DnsDomain
         $null = $dns.AppendChild($domain)
@@ -35,19 +33,12 @@ function Add-UnattendedYastNetworkAdapter
 
     if ($DnsServers)
     {
-        $nameservers = $script:un.CreateElement('nameservers', $script:nsm.LookupNamespace('un'))
-        $nsAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
-        $nsAttr.InnerText = 'list'
-        $null = $nameservers.Attributes.Append($nsAttr)
-
         foreach ($ns in $DnsServers)
         {
             $nameserver = $script:un.CreateElement('nameserver', $script:nsm.LookupNamespace('un'))
             $nameserver.InnerText = $ns
             $null = $nameservers.AppendChild($nameserver)
         }
-
-        $null = $dns.AppendChild($nameservers)
 
         if ($DNSSuffixSearchOrder)
         {
@@ -80,7 +71,7 @@ function Add-UnattendedYastNetworkAdapter
     $deviceNode.InnerText = $interface
     $firewallnode = $script:un.CreateElement('firewall', $script:nsm.LookupNamespace('un'))
     $firewallnode.InnerText = 'no'
-    
+
     $ipaddr = $script:un.CreateElement('ipaddr', $script:nsm.LookupNamespace('un'))
     $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
     $network = $script:un.CreateElement('network', $script:nsm.LookupNamespace('un'))
@@ -127,12 +118,6 @@ function Add-UnattendedYastNetworkAdapter
 
     if ($Gateways)
     {
-        $routing = $script:un.CreateElement('routing', $script:nsm.LookupNamespace('un'))
-        $routes = $script:un.CreateElement('routes', $script:nsm.LookupNamespace('un'))
-        $listAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
-        $listAttr.InnerText = 'list'
-        $null = $routes.Attributes.Append($listAttr)
-
         foreach ($gateway in $Gateways)
         {
             $routeNode = $script:un.CreateElement('route', $script:nsm.LookupNamespace('un'))
@@ -142,7 +127,7 @@ function Add-UnattendedYastNetworkAdapter
             $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
 
             $destinationNode.InnerText = 'default' # should work for both IPV4 and IPV6 routes
-            
+
             $devicenode.InnerText = $interface
             $gatewayNode.InnerText = $gateway.AddressAsString
             $netmask.InnerText = '-'
@@ -152,9 +137,6 @@ function Add-UnattendedYastNetworkAdapter
             $null = $routeNode.AppendChild($gatewayNode)
             $null = $routeNode.AppendChild($netmask)
             $null = $routes.AppendChild($routeNode)
-            $null = $routing.AppendChild($routes)
         }
-
-        $null = $networking.AppendChild($routing)
     }
 }

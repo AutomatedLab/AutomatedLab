@@ -13,7 +13,7 @@ Return the current unattend content that has been created
 ## SYNTAX
 
 ```
-Get-UnattendedContent
+Get-UnattendedContent [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,9 @@ PS C:\> Get-UnattendedContent
 Returns whatever Unattend content has been created.
 
 ## PARAMETERS
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

@@ -1,32 +1,32 @@
-@{
+﻿@{
     RootModule             = 'AutomatedLab.psm1'
-    
+
     ModuleVersion          = '1.0.0'
-	
+
     CompatiblePSEditions   = 'Core', 'Desktop'
-    
+
     GUID                   = '6ee6d36f-7914-4bf6-9e3b-c0131669e808'
-    
+
     Author                 = 'Raimund Andree, Per Pedersen, Jan-Hendrik Peters'
-    
+
     CompanyName            = 'AutomatedLab Team'
-    
+
     Copyright              = '2019'
-    
+
     Description            = 'The module creates a Hyper-V visual lab automatically as defined in the XML files.'
-    
+
     PowerShellVersion      = '5.1'
-    
+
     DotNetFrameworkVersion = '4.0'
-    
+
     CLRVersion             = '4.0'
 
     ModuleList             = @('AutomatedLab')
-    
+
     ScriptsToProcess       = @('AutomatedLab.init.ps1')
-    
+
     FormatsToProcess       = @('AutomatedLab.format.ps1xml')
-    
+
     NestedModules          = @(
         'AutomatedLabAzureServices.psm1',
         'AutomatedLabADDS.psm1',
@@ -46,7 +46,12 @@
         'AutomatedLabHybrid.psm1',
         'AutomatedLabFailover.psm1',
         'AutomatedLabTfs.psm1',
-        'AutomatedLabHyperV.psm1'
+        'AutomatedLabWac.psm1',
+        'AutomatedLabHyperV.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1',
+        'AutomatedLabRemoting.psm1',
+        'AutomatedLabScvmm.psm1'
     )
 
     RequiredModules        = @(
@@ -57,13 +62,16 @@
         'HostsFile',
         'AutomatedLabUnattended',
         'AutomatedLabNotifications',
-        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.164'; }        
+        @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.188'; }
         'PSFramework'
     )
 
     CmdletsToExport        = @()
-    
+
     FunctionsToExport      = @(
+        'Install-LabScvmm',
+        'Install-LabRdsCertificate',
+        'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
         'Add-LabAzureSubscription',
         'Add-LabCertificate',
@@ -74,6 +82,7 @@
         'Clear-LabCache',
         'Connect-Lab',
         'Connect-LabVM',
+        'Copy-LabALCommon',
         'Disable-LabVMFirewallGroup',
         'Disconnect-Lab',
         'Dismount-LabIsoImage',
@@ -114,7 +123,9 @@
         'Get-LabVMStatus',
         'Get-LabVMUptime',
         'Get-LabWindowsFeature',
-        'Get-LabAvailableAzureSku',
+        'Get-LabAzureAvailableSku',
+        'Get-LabAzureAvailableRoleSize',
+        'Get-LabTfsUri',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
@@ -122,6 +133,7 @@
         'Install-LabAdfs',
         'Install-LabAdfsProxy',
         'Install-LabAzureServices',
+        'Install-LabBuildWorker',
         'Install-LabDcs',
         'Install-LabDnsForwarder',
         'Install-LabDscClient',
@@ -139,6 +151,8 @@
         'Install-LabWindowsFeature',
         'Install-LabTeamFoundationEnvironment',
         'Install-LabHyperV',
+        'Install-LabWindowsAdminCenter',
+        'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
         'Join-LabVMDomain',
@@ -152,6 +166,7 @@
         'New-LabPSSession',
         'New-LabVHDX',
         'New-LabVM',
+        'New-LabAzureResourceGroupDeployment',
         'Remove-DeploymentFiles',
         'Remove-Lab',
         'Remove-LabAzureLabSourcesStorage',
@@ -191,12 +206,14 @@
         'Test-FileList',
         'Test-FolderExist',
         'Test-FolderNotExist',
+        'Test-LabADReady',
         'Test-LabAutoLogon',
         'Test-LabAzureLabSourcesStorage',
         'Test-LabCATemplate',
         'Test-LabMachineInternetConnectivity',
         'Test-LabHostRemoting',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
+        'Test-LabTfsEnvironment',
         'Unblock-LabSources',
         'Undo-LabHostRemoting',
         'Uninstall-LabWindowsFeature'
@@ -213,6 +230,7 @@
         'Get-LabCache',
         'New-LabReleasePipeline',
         'Get-LabAzureLoadBalancedPort',
+        'Get-LabTfsParameter',
         'Open-LabTfsSite'
         'Enable-LabTelemetry',
         'Disable-LabTelemetry',
@@ -220,13 +238,21 @@
         'Register-LabArgumentCompleters',
         'Get-LabVmSnapshot',
         'Test-LabHostConnected',
-        'Test-LabAzureModuleAvailability'
+        'Test-LabAzureModuleAvailability',
+        'Get-LabMachineAutoShutdown',
+        'Enable-LabMachineAutoShutdown',
+        'Disable-LabMAchineAutoShutdown',
+        'Get-LabTfsFeed',
+        'New-LabTfsFeed',
+        'New-LabCimSession',
+        'Get-LabCimSession',
+        'Remove-LabCimSession'
     )
-    
+
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',
-        'AutomatedLab.psd1', 
+        'AutomatedLab.psd1',
         'AutomatedLab.psm1',
         'AutomatedLabADCS.psm1',
         'AutomatedLabADDS.psm1',
@@ -244,6 +270,8 @@
         'AutomatedLabSharePoint.psm1',
         'AutomatedLabSQL.psm1',
         'AutomatedLabVirtualMachines.psm1',
-        'AutomatedLabVMWare.psm1'
+        'AutomatedLabVMWare.psm1',
+        'AutomatedLabDiskImageLinux.psm1',
+        'AutomatedLabDiskImageWindows.psm1'
     )
 }

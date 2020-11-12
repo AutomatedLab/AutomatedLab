@@ -43,10 +43,10 @@ Starts one or more lab machines
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Start-LabVm -All -Wait
 ```
 
-{{ Add example description here }}
+Start all VMs in a lab and wait for them to respond to WSMAN requests
 
 ## PARAMETERS
 

@@ -1,6 +1,6 @@
-function Get-UnattendedContent
+﻿function Get-UnattendedContent
 {
 	param ()
-	
+
 	return $script:un
 }

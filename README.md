@@ -17,14 +17,31 @@ AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or A
 
 Apart from the module itself your system needs to meet the following requirements:
 
-- Windows Management Framework 5+
-- Windows Server 2012 R2+/Windows 8.1+
+- Windows Management Framework 5+ (Windows)
+- .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
+- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
 - Recommended OS language is en-us
 - Admin privileges are required
 - ISO files for all operating systems and roles to be deployed
 - Intel VT-x or AMD/V capable CPU
 - A decent amount of RAM
-- An SSD for your machines is highly recommended as many issues arise from slow HDDs
+- Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
+
+#### Windows
+
+- Windows Management Framework 5+
+- Windows Server 2012 R2+/Windows 8.1+
+- Recommended OS language is en-us
+- Admin privileges are required
+
+#### Linux
+
+- WSL supported, Azure Cloud Shell supported
+- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
+- PowerShell 6+
+- gss-ntlmssp to enable remoting (mandatory - no remoting, no way for AutomatedLab to do its thing)
+- ip and route commands available
+- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.
 
 ### Download AutomatedLab
 
@@ -51,7 +68,7 @@ This solution supports setting up virtual machines with the following products
 - Team Foundation Services 2018, Azure DevOps Server
 - Exchange 2013, 2016, 2019
 - System Center Orchestrator 2012
-- System Center Configuration Manager 1809
+- Microsoft Endpoint Manager Configuration Manager 1902 (and newer)
 - MDT
 - ProGet (Private PowerShell Gallery)
 - Office 2013, 2016, 2019
@@ -69,7 +86,3 @@ This solution supports setting up virtual machines with the following products
 - Creating a [virtual environment that is connected to the internet](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1) was never easier. The only requirements are defining an external facing virtual switch and a machine with two network cards that acts as the router. AL takes care about all the configuration details like setting the gateway on all machines and also the DNS settings (see introduction script [05 Single domain-joined server (internet facing).ps1](/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)).
 - AL offers offline patching with a single command. As all machines a based on one disk per OS, it is much more efficient to patch the ISO files that are used to create the base images (Update-LabIsoImage). See script [11 ISO Offline Patching.ps1](/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1) for more details.
 - If a lab is no longer required, one command is enough to remove everything to be ready to start from scratch (Remove-Lab)
-
-## Project Management Dashboard
-
-[![Throughput Graph](https://graphs.waffle.io/AutomatedLab/AutomatedLab/throughput.svg)](https://waffle.io/AutomatedLab/AutomatedLab/metrics/throughput)

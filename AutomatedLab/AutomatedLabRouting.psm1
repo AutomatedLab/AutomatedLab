@@ -1,8 +1,7 @@
 ﻿#region Install-LabRouting
 function Install-LabRouting
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [int]$InstallationTimeout = 15,
 
@@ -123,7 +122,8 @@ function Install-LabRouting
 #region Set-LabADDNSServerForwarder
 function Set-LabADDNSServerForwarder
 {
-    
+    [CmdletBinding()]
+    param ( )
 
     Write-PSFMessage 'Setting DNS fowarder on all domain controllers in root domains'
 
@@ -152,7 +152,7 @@ function Set-LabADDNSServerForwarder
         }
 
         Write-PSFMessage "Read gateway '$gateway' from interface '$($netAdapter.InterfaceName)' on machine '$dc'"
-        
+
         $defaultDnsForwarder1 = Get-LabConfigurationItem -Name DefaultDnsForwarder1
         $defaultDnsForwarder2 = Get-LabConfigurationItem -Name DefaultDnsForwarder2
         Invoke-LabCommand -ActivityName ResetDnsForwarder -ComputerName $dc -ScriptBlock {

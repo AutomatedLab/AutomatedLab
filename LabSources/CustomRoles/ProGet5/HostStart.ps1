@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ProGetDownloadLink,
 
@@ -78,20 +78,20 @@ GO
 DECLARE @roleId int
 
 SELECT @roleId = [Role_Id]
-    FROM [ProGet].[dbo].[Roles] 
+    FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'Administer'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Domain Admins@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
 -- give Domain Users the 'Publish Packages' privilege
 DECLARE @roleId int
 SELECT @roleId = [Role_Id]
-    FROM [ProGet].[dbo].[Roles] 
+    FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'Publish Packages'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Domain Users@{1}', 'G', @roleId, NULL, 'G', 3)
 GO
 
@@ -101,7 +101,7 @@ SELECT @roleId = [Role_Id]
     FROM [ProGet].[dbo].[Roles]
     WHERE [Role_Name] = 'View & Download Packages'
 
-INSERT INTO [ProGet].[dbo].[Privileges] 
+INSERT INTO [ProGet].[dbo].[Privileges]
     VALUES ('Anonymous', 'U', @roleId, NULL, 'G', 3)
 GO
 
@@ -134,7 +134,7 @@ $activationRetries = 10
 while (-not $isActivated -and $activationRetries -gt 0)
 {
     Write-ScreenInfo 'ProGet is not activated yet, retrying...'
-    $isActivated = Invoke-LabCommand -ActivityName 'Verifying ProGet activation' -ComputerName $sqlServer -ScriptBlock { 
+    $isActivated = Invoke-LabCommand -ActivityName 'Verifying ProGet activation' -ComputerName $sqlServer -ScriptBlock {
         $cn = New-Object System.Data.SqlClient.SqlConnection("Server=localhost;Database=ProGet;Trusted_Connection=True;")
         $cn.Open() | Out-Null
 
@@ -172,7 +172,7 @@ if (-not $isActivated)
 }
 else
 {
-    Write-ScreenInfo 'ProGet was successfully activated' 
+    Write-ScreenInfo 'ProGet was successfully activated'
 }
 
 Write-ScreenInfo 'ProGet installation finished'

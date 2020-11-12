@@ -27,10 +27,14 @@ C:\AdditionalDisksOnline.ps1
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-DeploymentFiles
 ```
 
-{{ Add example description here }}
+Removes the following files and folders used to deploy the machines from all running lab machines:
+C:\unattend.xml
+C:\WSManRegKey.reg
+C:\DeployDebug
+C:\AdditionalDisksOnline.ps1
 
 ## PARAMETERS
 

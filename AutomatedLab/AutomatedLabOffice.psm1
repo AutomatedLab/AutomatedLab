@@ -1,8 +1,7 @@
 ﻿#region Install-LabOffice2013
 function Install-LabOffice2013
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -38,7 +37,6 @@ function Install-LabOffice2013
 
     foreach ($machine in $machines)
     {
-        $cred = $machine.GetCredential((Get-Lab))
 
         $parameters = @{ }
         $parameters.Add('ComputerName', $machine.Name)
@@ -155,8 +153,7 @@ function Install-LabOffice2013
 #region Install-LabOffice2016
 function Install-LabOffice2016
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -202,7 +199,7 @@ function Install-LabOffice2016
     $officeDeploymentToolFileName = 'OfficeDeploymentTool.exe'
     $officeDeploymentToolFilePath = Join-Path -Path $labSources\SoftwarePackages -ChildPath $officeDeploymentToolFileName
     $officeDeploymentToolUri = Get-LabConfigurationItem -Name OfficeDeploymentTool
-    
+
     if (-not (Test-Path -Path $officeDeploymentToolFilePath))
     {
         Get-LabInternetFile -Uri $officeDeploymentToolUri -Path $officeDeploymentToolFilePath
@@ -233,7 +230,7 @@ function Install-LabOffice2016
         $tempFile = (Join-Path -Path ([System.IO.Path]::GetTempPath()) -ChildPath 'Configuration.xml')
 
         $config2016Xml | Out-File -FilePath $tempFile -Force
-        Copy-LabFileItem -Path $tempFile -ComputerName $machine -DestinationFolderPath C:\Office
+        Copy-LabFileItem -Path $tempFile -ComputerName $machine -DestinationFolderPath /Office
 
         Remove-Item -Path $tempFile
 

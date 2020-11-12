@@ -23,10 +23,10 @@ Removes one or more resource groups from Azure and from the lab cache
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-LabAzureResourceGroup -ResourceGroupName MyLab
 ```
 
-{{ Add example description here }}
+Removes the resource group MyLab - usually only used in Remove-Lab
 
 ## PARAMETERS
 

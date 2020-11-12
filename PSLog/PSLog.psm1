@@ -12,6 +12,16 @@ function Write-LogFunctionEntry
 
     $caller = (Get-PSCallStack)[1]
     $callerFunctionName = $caller.Command
+    if ($callerFunctionName)
+    {
+        try
+        {
+            [AutomatedLab.LabTelemetry]::Instance.FunctionCalled($callerFunctionName)
+        }
+        catch
+        { }
+    }
+
     if ($caller.ScriptName)
     {
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
@@ -71,7 +81,7 @@ function Write-LogFunctionEntry
     $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message
     $Message = ($Message -split ';')[2..3] -join ' '
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 
@@ -115,7 +125,7 @@ function Write-LogFunctionExit
     $Message = '{0};{1};{2};{3};{4}' -f (Get-Date), $callerScriptName, $callerFunctionName, $Message, ("(Time elapsed: {0:hh}:{0:mm}:{0:ss}:{0:fff})" -f $ts)
     $Message = -join ($Message -split ';')[2..4]
 
-    Microsoft.PowerShell.Utility\Write-Verbose $Message
+    Write-PSFMessage -Message $Message
 }
 #endregion
 
@@ -178,7 +188,7 @@ function Write-LogFunctionExitWithError
     {
         $Message += ';' + $Details
     }
-    
+
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)
@@ -225,9 +235,9 @@ function Write-LogError
         $callerScriptName = Split-Path -Path $caller.ScriptName -Leaf
     }
 
-    if ($Excpetion)
+    if ($Exception)
     {
-        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Excpetion.Message)
+        $Message = '{0};{1};{2};{3}' -f (Get-Date), $callerScriptName, $callerFunctionName, ('{0}: {1}' -f $Message, $Exception.Message)
     }
     else
     {
@@ -238,7 +248,7 @@ function Write-LogError
     {
         $Message += ';' + $Details
     }
-    
+
     $Message = -join ($Message -split ';')[2..3]
 
     if ($script:PSLog_Silent)
@@ -414,7 +424,7 @@ function Get-CallerPreference
 #region Write-ProgressIndicator
 function Write-ProgressIndicator
 {
-    
+
 
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
@@ -427,7 +437,7 @@ function Write-ProgressIndicator
 #region Write-ProgressIndicatorEnd
 function Write-ProgressIndicatorEnd
 {
-    
+
     if (-not (Get-PSCallStack)[1].InvocationInfo.BoundParameters['ProgressIndicator'])
     {
         return
@@ -444,7 +454,7 @@ function Write-ProgressIndicatorEnd
 #region Write-ScreenInfo
 function Write-ScreenInfo
 {
-    
+
     param
     (
         [Parameter(Position = 1)]
@@ -494,7 +504,8 @@ function Write-ScreenInfo
 
         $newSize = ($Global:taskStart).Length - 1
         if ($newSize -lt 0) { $newSize = 0 }
-        $Global:taskStart = $Global:taskStart | Select-Object -first (($Global:taskStart).Length - 1)
+        #Replaced Select-Object with array indexing because of https://github.com/PowerShell/PowerShell/issues/9185
+        $Global:taskStart = $Global:taskStart[0..(($Global:taskStart).Length - 1)] #$Global:taskStart | Select-Object -First (($Global:taskStart).Length - 1)
     }
 
 
@@ -528,7 +539,7 @@ function Write-ScreenInfo
                 Info { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline }
                 Debug { if ($DebugPreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
                 Verbose { if ($VerbosePreference -eq 'Continue') { Microsoft.PowerShell.Utility\Write-Host $Message -NoNewline -ForegroundColor Cyan } }
-            }            
+            }
         }
         else
         {

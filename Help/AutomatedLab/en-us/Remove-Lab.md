@@ -35,10 +35,10 @@ For Azure-based labs, the lab resource group is removed completely, regardless o
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Remove-Lab -Name MyOldLab
 ```
 
-{{ Add example description here }}
+Removes the lab with the name MyOldLab
 
 ## PARAMETERS
 

@@ -8,6 +8,11 @@ class LabHost : SHiPSDirectory {
     }
 
     [object[]] GetChildItem() {
+        if (-not (Get-Module -ListAvailable (AutomatedLab)))
+        {
+            Write-Warning -Message 'AutomatedLab is not available - using its SHiPS provider will not work this way'
+            return $null
+        }
         $labs = @()
         foreach ($lab in (Get-Lab -List)) {
             $labs += [Lab]::new($lab)

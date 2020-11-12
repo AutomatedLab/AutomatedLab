@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Management.Automation;
 
 namespace AutomatedLab
 {
@@ -25,7 +24,7 @@ namespace AutomatedLab
                 foreach (var role in machine.Roles.Where(r => validRoleProperties.ContainsKey(r.Name.ToString())))
                 {
                     var validKeys = new List<string>();
-                    var keysFromModule = ((object[])((PSObject)validRoleProperties[role.Name.ToString()]).BaseObject).Cast<string>().ToArray();
+                    var keysFromModule = ((object[])validRoleProperties[role.Name.ToString()]).Cast<string>().ToArray();
 
                     if (keysFromModule.GetType().IsArray)
                         validKeys.AddRange(keysFromModule);
@@ -35,12 +34,17 @@ namespace AutomatedLab
                     }
 
                     var unknownProperties = role.Properties.Keys.Where(k => !validKeys.Contains(k));
+                    var validKeysString = validKeys.Aggregate(
+                        new System.Text.StringBuilder(),
+                        (current, next) => current.Append(current.Length == 0 ? "" : ", ").Append(next))
+                        .ToString();
 
                     foreach (var unknownProperty in unknownProperties)
                     {
                         yield return new ValidationMessage
                         {
-                            Message = string.Format("The property '{0}' is unknwon for role '{1}'", unknownProperty, role.Name),
+                            Message = string.Format("The property '{0}' is unknown for role '{1}'. Please use one of the following properties: {2}",
+                                unknownProperty, role.Name, validKeysString),
                             Type = MessageType.Error,
                             TargetObject = machine.Name
                         };

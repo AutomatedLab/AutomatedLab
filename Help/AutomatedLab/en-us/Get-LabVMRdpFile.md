@@ -30,10 +30,10 @@ Gets a Remote Desktop connection file for one or more lab machines and stores th
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabVMRdpFile -ComputerName DC01
 ```
 
-{{ Add example description here }}
+Stores an RDP connection file to DC01
 
 ## PARAMETERS
 

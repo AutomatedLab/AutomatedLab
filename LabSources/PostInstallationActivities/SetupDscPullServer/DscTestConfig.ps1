@@ -1,7 +1,7 @@
 ﻿Configuration "TestConfig$($env:COMPUTERNAME)"
 {
     Import-DscResource –ModuleName 'PSDesiredStateConfiguration'
-    
+
     Node localhost
     {
         File "TestFile$($env:COMPUTERNAME)"

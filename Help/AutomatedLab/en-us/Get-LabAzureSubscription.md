@@ -23,10 +23,10 @@ Gets all subscriptions for a given lab
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Get-LabAzureSubscription
 ```
 
-{{ Add example description here }}
+Gets all subscriptions for a given lab
 
 ## PARAMETERS
 

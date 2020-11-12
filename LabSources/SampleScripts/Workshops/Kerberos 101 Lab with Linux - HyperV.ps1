@@ -1,4 +1,4 @@
-$labName = 'Kerberos101'
+﻿$labName = 'Kerberos101'
 
 #--------------------------------------------------------------------------------------------------------------------
 #----------------------- CHANGING ANYTHING BEYOND THIS LINE SHOULD NOT BE REQUIRED ----------------------------------
@@ -45,13 +45,13 @@ Add-LabMachineDefinition -Name KerbRouter1 -NetworkAdapter $netAdapter -DomainNa
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.22.15 -Ipv4DNSServers 192.168.22.10
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
-Add-LabMachineDefinition -Name KerbLinux1 -OperatingSystem 'CentOS 7.5' -DomainName vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name KerbLinux1 -OperatingSystem 'CentOS-7' -DomainName vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
 
 #========== #these credentials are used for connecting to the machines in the child doamin a.vm.net. ==========================
 Set-LabInstallationCredential -Username Install -Password Somepass2
 
 #this is the first domain controller of the child domain 'a' defined above
-#The PostInstallationActivity is filling the domain with some life. 
+#The PostInstallationActivity is filling the domain with some life.
 #At the end about 6000 users are available with OU and manager hierarchy as well as a bunch of groups
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'vm.net'; NewDomain = 'a' }
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName 'New-ADLabAccounts 2.0.ps1' -DependencyFolder $labSources\PostInstallationActivities\PrepareFirstChildDomain
@@ -77,7 +77,7 @@ Add-LabMachineDefinition -Name KerbClient2 -Memory 2GB -NetworkAdapter $netAdapt
 $netAdapter = @()
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch $labName -Ipv4Address 192.168.22.60 -Ipv4DNSServers 192.168.22.11
 $netAdapter += New-LabNetworkAdapterDefinition -VirtualSwitch 'Default Switch' -UseDhcp
-Add-LabMachineDefinition -Name KerbLinux2 -OperatingSystem 'CentOS 7.5' -DomainName a.vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
+Add-LabMachineDefinition -Name KerbLinux2 -OperatingSystem 'CentOS-7' -DomainName a.vm.net -NetworkAdapter $netAdapter -RhelPackage gnome-desktop
 
 #========== Now the 2nd forest gets setup with new credentials ==========================
 Set-LabInstallationCredential -Username Install -Password Somepass0
@@ -86,7 +86,7 @@ Set-LabInstallationCredential -Username Install -Password Somepass0
 #The PostInstallationActivity is just creating some users
 $postInstallActivity = Get-LabPostInstallationActivity -ScriptFileName PrepareRootDomain.ps1 -DependencyFolder $labSources\PostInstallationActivities\PrepareRootDomain
 Add-LabMachineDefinition -Name KerbDC0 -IpAddress 192.168.22.100 -DnsServer1 192.168.22.100 -DomainName test.net -Roles RootDC -PostInstallationActivity $postInstallActivity
-    
+
 #This is a web serverin the child domain
 Add-LabMachineDefinition -Name KerbWeb0 -IpAddress 192.168.22.110 -DnsServer1 192.168.22.100 -DomainName test.net -Roles WebServer
 
@@ -112,14 +112,14 @@ Restart-LabVM -ComputerName $fileServers -Wait
 <#in server 2019 there seems to be an issue with dynamic DNS registration, doing this manually
         foreach ($domain in (Get-Lab).Domains)
         {
-        $vms = Get-LabVM -All -IncludeLinux | Where-Object { 
+        $vms = Get-LabVM -All -IncludeLinux | Where-Object {
         $_.DomainName -eq $domain.Name -and
         $_.OperatingSystem -like '*2019*' -or
         $_.OperatingSystem -like '*CentOS*'
         }
-    
+
         $dc = Get-LabVM -Role ADDS | Where-Object DomainName -eq $domain.Name | Select-Object -First 1
-    
+
         Invoke-LabCommand -ActivityName 'Registering DNS records' -ScriptBlock {
         foreach ($vm in $vms)
         {
@@ -128,7 +128,7 @@ Restart-LabVM -ComputerName $fileServers -Wait
                 "Running 'Add-DnsServerResourceRecord -ZoneName $($vm.DomainName) -IPv4Address $($vm.IpV4Address) -Name $($vm.Name) -A'"
                 Add-DnsServerResourceRecord -ZoneName $vm.DomainName -IPv4Address $vm.IpV4Address -Name $vm.Name -A
             }
-        }    
+        }
         } -ComputerName $dc -Variable (Get-Variable -Name vms) -PassThru
 }#>
 
@@ -138,11 +138,11 @@ Invoke-LabCommand -ActivityName 'Create SMB Share' -ComputerName (Get-LabVM -Rol
     New-Item -ItemType Directory C:\Test -ErrorAction SilentlyContinue
     New-SmbShare -Name Test -Path C:\Test -FullAccess Everyone
     New-Item -Path C:\Test\TestFile.txt -ItemType File
-    
+
 }
 
 #install missing packages on Linux client
-Invoke-LabCommand -ActivityName 'Install packages' -ComputerName KerbLinux1 -ScriptBlock { 
+Invoke-LabCommand -ActivityName 'Install packages' -ComputerName KerbLinux1 -ScriptBlock {
 
     sudo yum install samba-client -y
     sudo yum install cifs-utils -y
@@ -151,11 +151,11 @@ Invoke-LabCommand -ActivityName 'Install packages' -ComputerName KerbLinux1 -Scr
 }
 
 #mounting the test share in the Linux client
-Invoke-LabCommand -ActivityName 'Mounting test share' -ComputerName KerbLinux1 -ScriptBlock { 
+Invoke-LabCommand -ActivityName 'Mounting test share' -ComputerName KerbLinux1 -ScriptBlock {
 
     sudo mkdir /test
     'Somepass1' | sudo kinit install@VM.NET
-    
+
     sudo mount -t cifs -o sec=krb5 //KerbFile2.a.vm.net/Test /test --verbose
 
 } -PassThru

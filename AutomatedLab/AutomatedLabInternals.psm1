@@ -2,6 +2,11 @@
 function Get-LabHyperVAvailableMemory
 {
     # .ExternalHelp AutomatedLab.Help.xml
+    if ($IsLinux -or $IsMacOS)
+    {
+        return [int]((Get-Content -Path /proc/meminfo) -replace ':','=' -replace '\skB' | ConvertFrom-StringData).MemTotal
+    }
+
     [int](((Get-CimInstance -Namespace Root\Cimv2 -Class win32_operatingsystem).TotalVisibleMemorySize) / 1kb)
 }
 #endregion Get-LabHyperVAvailableMemory
@@ -9,45 +14,15 @@ function Get-LabHyperVAvailableMemory
 #region Reset-AutomatedLab
 function Reset-AutomatedLab
 {
-    
-    Remove-Lab
+    Remove-Lab -Confirm:$false
     Remove-Module *
 }
 #endregion Reset-AutomatedLab
 
-#region Save-Hashes
-function Save-Hashes
-{
-    
-    [cmdletbinding()]
-    param
-    (
-        $Filename = 'C:\ALFiles.txt',
-        $FolderName
-    )
-
-    $ModulePath = "$([environment]::getfolderpath('mydocuments'))\WindowsPowerShell\Modules"
-    $Folders = 'AutomatedLab', 'AutomatedLabDefinition', 'AutomatedLabUnattended', 'AutomatedLabWorker', 'HostsFile', 'PSFileTransfer', 'PSLog'
-
-    foreach ($Folder in $Folders)
-    {
-        Get-FileHash -Path "$ModulePath\$Folder\*" | Select-Object Algorithm, Hash, @{name='Path';expression={$_.Path.Replace($ModulePath, '<MODULEPATH>')}} | Export-Csv -Path $Filename -Append
-    }
-
-    if ($FolderName)
-    {
-        foreach ($Folder in $Foldername)
-        {
-            Get-ChildItem -Path C:\LabSources\Tools\PSv4Part1 -Recurse -Exclude '*.ISO' | Get-FileHash | Export-Csv -Path $Filename -Append
-        }
-    }
-}
-#endregion Save-Hashes
-
 #region Test-FileHashes
 function Test-FileHashes
 {
-    
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (
@@ -63,14 +38,14 @@ function Test-FileHashes
     {
         if (-not (Test-Path $File.path.replace('<MODULEPATH>', $ModulePath)))
         {
-            "'$File' is missing"
+            Write-PSFMessage -Level Host -Message "'$File' is missing"
             $Issues = $True
         }
         else
         {
             if ((Get-FileHash -Path $File.path.replace('<MODULEPATH>', $ModulePath)).hash -ne $File.Hash)
             {
-                "'$File.Path' has wrong hash and is thereby not the file you think it is"
+                Write-PSFMessage -Level Host -Message "'$File.Path' has wrong hash and is thereby not the file you think it is"
                 $Issues = $True
             }
         }
@@ -83,7 +58,7 @@ function Test-FileHashes
 #region Save-FileList
 function Save-FileList
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -97,7 +72,7 @@ function Save-FileList
 #region Test-FileList
 function Test-FileList
 {
-    
+    [OutputType([System.Boolean])]
     [cmdletbinding()]
     param
     (
@@ -121,7 +96,7 @@ function Test-FileList
 #region Test-FolderExist
 function Test-FolderExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -138,7 +113,7 @@ function Test-FolderExist
 #region Test-FolderNotExist
 function Test-FolderNotExist
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -155,7 +130,7 @@ function Test-FolderNotExist
 #region Restart-ServiceResilient
 function Restart-ServiceResilient
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -325,7 +300,7 @@ function Restart-ServiceResilient
 #region Remove-DeploymentFiles
 function Remove-DeploymentFiles
 {
-    
+
     Invoke-LabCommand -ComputerName (Get-LabVM) -ActivityName 'Remove deployment files (files used during deployment)' -AsJob -NoDisplay -ScriptBlock `
     {
         Remove-Item -Path C:\unattend.xml
@@ -339,7 +314,7 @@ function Remove-DeploymentFiles
 #region Enable-LabVMFirewallGroup
 function Enable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -377,7 +352,7 @@ function Enable-LabVMFirewallGroup
 #region Disable-LabVMFirewallGroup
 function Disable-LabVMFirewallGroup
 {
-    
+
     [cmdletbinding()]
     param
     (
@@ -412,26 +387,10 @@ function Disable-LabVMFirewallGroup
 }
 #endregion Disable-LabVMFirewallGroup
 
-#region Test-Port
-
-#endregion Test-Port
-
-#region Get-StringSection
-#endregion Get-StringSection
-
-#region Add-StringIncrement
-
-#endregion Add-StringIncrement
-
-#region Get-FullMesh
-
-
-#endregion Get-FullMesh
-
 #region Get-LabInternetFile
 function Get-LabInternetFile
 {
-    
+
     param(
         [Parameter(Mandatory = $true)]
         [string]$Uri,
@@ -456,7 +415,7 @@ function Get-LabInternetFile
 
             [Parameter(Mandatory = $true)]
             [string]$Path,
-            
+
             [string]$FileName,
 
             [bool]$NoDisplay,
@@ -469,13 +428,13 @@ function Get-LabInternetFile
             $Path = Join-Path -Path $Path -ChildPath $FileName
         }
 
-        if ((Test-Path -Path $Path) -and -not $Force)
+        if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
         {
             Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
         }
         else
         {
-            if (-not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
+            if (-not ($IsLinux -or $IsMacOS) -and -not (Get-NetConnectionProfile -ErrorAction SilentlyContinue | Where-Object { $_.IPv4Connectivity -eq 'Internet' -or $_.IPv6Connectivity -eq 'Internet' }))
             {
                 #machine does not have internet connectivity
                 if (-not $offlineNode)
@@ -483,11 +442,6 @@ function Get-LabInternetFile
                     Write-Error "Machine is not connected to the internet and cannot download the file '$Uri'"
                 }
                 return
-            }
-
-            if ((Test-Path -Path $Path) -and $Force)
-            {
-                Remove-Item -Path $Path -Force
             }
 
             Write-Verbose "Uri is '$Uri'"
@@ -519,41 +473,69 @@ function Get-LabInternetFile
                     $response = $request.GetResponse()
                     if ($response)
                     {
-                        Write-Verbose 'Responce received'
+                        Write-Verbose 'Response received'
                         $remoteStream = $response.GetResponseStream()
-                        $parent = Split-Path -Path $Path
-                        if (-not (Test-Path -Path $Path))
+
+                        if ([System.IO.Path]::GetPathRoot($Path) -ne $Path)
+                        {
+                            $parent = Split-Path -Path $Path
+                        }
+                        if (-not (Test-Path -Path $parent -PathType Container) -and -not ([System.IO.Path]::GetPathRoot($parent) -eq $parent))
                         {
                             New-Item -Path $parent -ItemType Directory -Force | Out-Null
                         }
-
-                        $localStream = [System.IO.File]::Create($Path)
-
-                        $buffer = New-Object System.Byte[] 5MB
-                        $bytesRead = 0
-
-                        do
+                        if ((Test-Path -Path $Path -PathType Container) -and -not $FileName)
                         {
-                            $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
-                            $localStream.Write($buffer, 0, $bytesRead)
-                            $bytesProcessed += $bytesRead
+                            $FileName = $response.ResponseUri.Segments[-1]
+                            $Path = Join-Path -Path $Path -ChildPath $FileName
+                        }
+                        if ([System.IO.Path]::GetPathRoot($Path) -eq $Path)
+                        {
+                            Write-Error "The path '$Path' is the drive root and the file name could not be retrived using the given url. Please provide a file name using the 'FileName' parameter."
+                            return
+                        }
+                        if (-not $FileName)
+                        {
+                            $FileName = Split-Path -Path $Path -Leaf
+                        }
+                        if ((Test-Path -Path $Path -PathType Leaf) -and -not $Force)
+                        {
+                            Write-Verbose -Message "The file '$Path' does already exist, skipping the download"
+                        }
+                        else
+                        {
+                            $localStream = [System.IO.File]::Create($Path)
 
-                            $percentageCompleted = $bytesProcessed / $response.ContentLength
-                            if ($percentageCompleted -gt 0)
-                            {
-                                Write-Progress -Activity "Downloading file '$FileName'" `
-                                -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f $percentageCompleted, ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
-                                -PercentComplete ($percentageCompleted * 100)
-                            }
-                            else
-                            {
-                                Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
-                            }
+                            $buffer = New-Object System.Byte[] 10MB
+                            $bytesRead = 0
+                            [int]$percentageCompletedPrev = 0
 
-                        } while ($bytesRead -gt 0)
+                            do
+                            {
+                                $bytesRead = $remoteStream.Read($buffer, 0, $buffer.Length)
+                                $localStream.Write($buffer, 0, $bytesRead)
+                                $bytesProcessed += $bytesRead
+
+                                [int]$percentageCompleted = $bytesProcessed / $response.ContentLength * 100
+                                if ($percentageCompleted -gt 0)
+                                {
+                                    if ($percentageCompletedPrev -ne $percentageCompleted)
+                                    {
+                                        $percentageCompletedPrev = $percentageCompleted
+                                        Write-Progress -Activity "Downloading file '$FileName'" `
+                                        -Status ("{0:P} completed, {1:N2}MB of {2:N2}MB" -f ($percentageCompleted / 100), ($bytesProcessed / 1MB), ($response.ContentLength / 1MB)) `
+                                        -PercentComplete ($percentageCompleted)
+                                    }
+                                }
+                                else
+                                {
+                                    Write-Verbose -Message "Could not determine the ContentLength of '$Uri'"
+                                }
+                            } while ($bytesRead -gt 0)
+                        }
                     }
 
-                    $response
+                    $response | Add-Member -Name FileName -MemberType NoteProperty -Value $FileName -PassThru
                 }
             }
             catch
@@ -574,29 +556,101 @@ function Get-LabInternetFile
 
     #TODO: This needs to go into config
     $offlineNode = $true
-    
+
     if (-not $FileName)
     {
         $internalUri = New-Object System.Uri($Uri)
-        $FileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
-        $PSBoundParameters.FileName = $FileName
+        $tempFileName = $internalUri.Segments[$internalUri.Segments.Count - 1]
+        if (Test-FileName -Path $tempFileName)
+        {
+            $FileName = $tempFileName
+            $PSBoundParameters.FileName = $FileName
+        }
     }
-    
+
     $lab = Get-Lab -ErrorAction SilentlyContinue
-    
+    if (-not $lab)
+    {
+        $lab = Get-LabDefinition -ErrorAction SilentlyContinue
+        $doNotGetVm = $true
+    }
+
     if ($lab.DefaultVirtualizationEngine -eq 'Azure')
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
-            $machine = Get-LabVM -IsRunning | Select-Object -First 1
-            Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
+            # We need to test first, even if it takes a second longer.
+            if (-not $doNotGetVm)
+            {
+                $machine =  Invoke-LabCommand -PassThru -NoDisplay -ComputerName $(Get-LabVM -IsRunning) -ScriptBlock {
+                    if (Get-NetConnectionProfile -IPv4Connectivity Internet -ErrorAction SilentlyContinue)
+                    {
+                        hostname
+                    }
+                } -ErrorAction SilentlyContinue | Select-Object -First 1 
+                Write-PSFMessage "Target path is on AzureLabSources, invoking the copy job on the first available Azure machine."
 
-            $argumentList = $Uri, $Path, $FileName
+                $argumentList = $Uri, $Path, $FileName
 
-            $argumentList += if ($NoDisplay) {$true} else {$false}
-            $argumentList += if ($Force) {$true} else {$false}
-        
-            $result = Invoke-LabCommand -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+                $argumentList += if ($NoDisplay) { $true } else { $false }
+                $argumentList += if ($Force) { $true } else { $false }
+            }
+
+            if ($machine)
+            {
+                $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+            }
+            elseif (Get-LabAzureSubscription -ErrorAction SilentlyContinue)
+            {
+                $blob = $Path.Replace("$(Get-LabSourcesLocation)\",'')
+                $PSBoundParameters.Remove('PassThru') | Out-Null
+                $param = Sync-Parameter -Command (Get-Command Get-LabInternetFileInternal) -Parameters $PSBoundParameters
+                $param['Path'] = $Path.Replace((Get-LabSourcesLocation), (Get-LabSourcesLocation -Local))
+
+                $result = Get-LabInternetFileInternal @param
+                $fullName = Join-Path -Path $param.Path.Replace($FileName,'') -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
+                $storageAccount = Get-AzStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
+                
+                $container = Split-Path -Path $blob
+                $blobName = Split-Path -Path $blob -Leaf
+                New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+                Write-PSFMessage "Created directory $($container) in labsources"
+                if ($err)
+                {
+                    $err = $null
+
+                    # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
+                    New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+                    Write-PSFMessage "Created directory '$container' in labsources"
+                    if ($err)
+                    {
+                        if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
+                        {
+                            throw "An error ocurred during file upload: $($err[0].Exception.Message)"
+                        }
+                    }
+                }
+
+                $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $blobName -ErrorAction SilentlyContinue
+                if ($azureFile)
+                {
+                    $azureHash = $azureFile.CloudFile.Properties.ContentMD5
+                    $fileHash = (Get-FileHash -Path $fullName -Algorithm MD5).Hash
+                    Write-PSFMessage "$blobName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
+                }
+
+                if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
+                {
+                    $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $fullName -Path $blobName -ErrorAction SilentlyContinue -Force
+                    Write-PSFMessage "Azure file $blobName successfully uploaded. Generating file hash..."
+                }
+            }
+            else
+            {
+                Write-ScreenInfo -Type Erro -Message "Unable to upload file to Azure lab sources - No VM is available and no Azure subscription was added to the lab`r`n
+                Please at least execute New-LabDefinition and Add-LabAzureSubscription before using Get-LabInternetFile"
+                return
+            }
         }
         else
         {
@@ -609,20 +663,26 @@ function Get-LabInternetFile
     {
         Write-PSFMessage "Target path is local, invoking the copy job locally."
         $PSBoundParameters.Remove('PassThru') | Out-Null
-        $result = Get-LabInternetFileInternal @PSBoundParameters
-    }
+        try
+        {
+            $result = Get-LabInternetFileInternal @PSBoundParameters
 
-    $end = Get-Date
-    Write-PSFMessage "Download has taken: $($end - $start)"
+            $end = Get-Date
+            Write-PSFMessage "Download has taken: $($end - $start)"
+        }
+        catch
+        {
+            Write-Error -ErrorRecord $_
+        }
+    }
 
     if ($PassThru)
     {
-        $uri2 = New-Object System.Uri($Uri)
         New-Object PSObject -Property @{
             Uri = $Uri
             Path = $Path
-            FileName = $FileName
-            FullName = Join-Path -Path $Path -ChildPath $FileName
+            FileName = ?? { $FileName } { $FileName } { $result.FileName }
+            FullName = Join-Path -Path $Path -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
             Length = $result.ContentLength
         }
     }
@@ -632,7 +692,7 @@ function Get-LabInternetFile
 #region Unblock-LabSources
 function Unblock-LabSources
 {
-    
+
     param(
         [string]$Path = $global:labSources
     )
@@ -661,21 +721,37 @@ function Unblock-LabSources
 
     try
     {
-        $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
-        Write-PSFMessage 'Imported Cache\Timestamps from regirtry'
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $cache = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
+
+        Write-PSFMessage 'Imported Cache\Timestamps from registry/file store'
     }
     catch
     {
         $cache = New-Object $type
-        Write-PSFMessage 'No entry found in the regirtry at Cache\Timestamps'
+        Write-PSFMessage 'No entry found in the registry at Cache\Timestamps'
     }
 
     if (-not $cache['LabSourcesLastUnblock'] -or $cache['LabSourcesLastUnblock'] -lt (Get-Date).AddDays(-1))
     {
         Write-PSFMessage 'Last unblock more than 24 hours ago, unblocking files'
-        Get-ChildItem -Path $Path -Recurse | Unblock-File
+        if (-not ($IsLinux -or $IsMacOs)) { Get-ChildItem -Path $Path -Recurse | Unblock-File }
         $cache['LabSourcesLastUnblock'] = Get-Date
-        $cache.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $cache.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $cache.ExportToRegistry('Cache', 'Timestamps')
+        }
+
         Write-PSFMessage 'LabSources folder unblocked and new timestamp written to Cache\Timestamps'
     }
     else
@@ -687,10 +763,10 @@ function Unblock-LabSources
 }
 #endregion Unblock-LabSources
 
-
+#region Set-LabVMDescription
 function Set-LabVMDescription
 {
-    
+
     [CmdletBinding()]
     param (
         [hashtable]$Hashtable,
@@ -719,7 +795,9 @@ function Set-LabVMDescription
 
     Write-LogFunctionExit
 }
+#endregion Set-LabVMDescription
 
+#region Get-LabSourcesLocationInternal
 function Get-LabSourcesLocationInternal
 {
     param
@@ -728,17 +806,30 @@ function Get-LabSourcesLocationInternal
     )
 
     $lab = $global:AL_CurrentLab
-    
+
     $defaultEngine = 'HyperV'
     $defaultEngine = if ($lab)
     {
         $lab.DefaultVirtualizationEngine
     }
-    
-    if ($defaultEngine -eq 'HyperV' -or $Local)
+
+    if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
     {
-        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -eq 3).DeviceID | Sort-Object -Descending
-        
+        if (-not (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+        {
+            Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home/automatedlabsources -PassThru | Register-PSFConfig
+        }
+
+        Get-PSFConfigValue AutomatedLab.LabSourcesLocation
+    }
+    elseif (($defaultEngine -eq 'HyperV' -or $Local) -and (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+    {
+        Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation
+    }
+    elseif ($defaultEngine -eq 'HyperV' -or $Local)
+    {
+        $hardDrives = (Get-CimInstance -NameSpace Root\CIMv2 -Class Win32_LogicalDisk | Where-Object DriveType -In 2, 3).DeviceID | Sort-Object -Descending
+
         $folders = foreach ($drive in $hardDrives)
         {
             if (Test-Path -Path "$drive\LabSources")
@@ -770,10 +861,12 @@ function Get-LabSourcesLocationInternal
         Get-LabSourcesLocationInternal -Local
     }
 }
+#endregion Get-LabSourcesLocationInternal
 
 #region Update-LabSysinternalsTools
 function Update-LabSysinternalsTools
 {
+    if ($IsLinux -or $IsMacOs) { return }
     #Update SysInternals suite if needed
     $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, DateTime
 
@@ -791,7 +884,14 @@ function Update-LabSysinternalsTools
     try
     {
         Write-PSFMessage -Message 'Get last check time of SysInternals suite'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.SysInternalsUpdateLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -810,10 +910,10 @@ function Update-LabSysinternalsTools
     if ((Get-Date) -gt $lastChecked)
     {
         Write-PSFMessage -Message 'Last check time is more then a week ago. Check web site for update.'
-        
+
         $sysInternalsUrl = Get-LabConfigurationItem -Name SysInternalsUrl
         $sysInternalsDownloadUrl = Get-LabConfigurationItem -Name SysInternalsDownloadUrl
-    
+
         try
         {
             Write-PSFMessage -Message 'Web page downloaded'
@@ -838,7 +938,14 @@ function Update-LabSysinternalsTools
             $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String, String
             try
             {
-                $versions = $type::ImportFromRegistry('Cache', 'Versions')
+                if ($IsLinux -or $IsMacOs)
+                {
+                    $versions = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
+                }
+                else
+                {
+                    $versions = $type::ImportFromRegistry('Cache', 'Versions')
+                }
             }
             catch
             {
@@ -849,10 +956,13 @@ function Update-LabSysinternalsTools
 
             if ($versions['SysInternals'] -ne $updateStringFromWebPage)
             {
-                Write-ScreenInfo -Message 'Performing update of SysInternals suite now' -Type Warning -TaskStart
+                Write-ScreenInfo -Message 'Performing update of SysInternals suite and lab sources directory now' -Type Warning -TaskStart
                 Start-Sleep -Seconds 1
+                
+                # Download Lab Sources
+                $null = New-LabSourcesFolder -Force -ErrorAction SilentlyContinue
 
-                #Download SysInternals suite
+                # Download SysInternals suite
 
                 $tempFilePath = [System.IO.Path]::GetTempFileName()
                 $tempFilePath = Rename-Item -Path $tempFilePath -NewName ([System.IO.Path]::ChangeExtension($tempFilePath, '.zip')) -PassThru
@@ -872,7 +982,7 @@ function Update-LabSysinternalsTools
 
                 if ($fileDownloaded)
                 {
-                    Unblock-File -Path $tempFilePath
+                    if (-not ($IsLinux -or $IsMacOs)) { Unblock-File -Path $tempFilePath }
 
                     #Extract files to Tools folder
                     if (-not (Test-Path -Path "$labSources\Tools"))
@@ -898,10 +1008,24 @@ function Update-LabSysinternalsTools
 
                     #Update registry
                     $versions['SysInternals'] = $updateStringFromWebPage
-                    $versions.ExportToRegistry('Cache', 'Versions')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $versions.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Versions.xml'))
+                    }
+                    else
+                    {
+                        $versions.ExportToRegistry('Cache', 'Versions')
+                    }
 
                     $timestamps['SysInternalsUpdateLastChecked'] = Get-Date
-                    $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    if ($IsLinux -or $IsMacOs)
+                    {
+                        $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+                    }
+                    else
+                    {
+                        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+                    }
 
                     Write-ScreenInfo -Message "SysInternals Suite has been updated and placed in '$labSources\Tools\SysInternals'" -Type Warning -TaskEnd
                 }
@@ -911,9 +1035,34 @@ function Update-LabSysinternalsTools
 }
 #endregion Update-LabSysinternalsTools
 
+#region Register-LabArgumentCompleters
 function Register-LabArgumentCompleters
 {
     $commands = Get-Command -Module AutomatedLab*, PSFileTransfer | Where-Object { $_.Parameters -and $_.Parameters.ContainsKey('ComputerName') }
 
     Register-PSFTeppArgumentCompleter -Command $commands -Parameter ComputerName -Name 'AutomatedLab-ComputerName'
 }
+#endregion Register-LabArgumentCompleters
+
+#region Test-FileName
+function Test-FileName
+{
+    param(
+        [Parameter(Mandatory)]
+        [string]$Path
+    )
+    
+    $fi = $null
+    try {
+        $fi = New-Object System.IO.FileInfo($Path)
+    }
+    catch [ArgumentException] { }
+    catch [System.IO.PathTooLongException] { }
+    catch [NotSupportedException] { }
+    if ([object]::ReferenceEquals($fi, $null) -or $fi.Name -eq '') {
+        return $false
+    } else {
+        return $true
+    }
+}
+#endregion Test-FileName

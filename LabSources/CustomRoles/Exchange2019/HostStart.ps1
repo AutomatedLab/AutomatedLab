@@ -1,4 +1,4 @@
-param(
+﻿param(
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
@@ -10,9 +10,9 @@ param(
 
 function Download-ExchangeSources
 {
-    
+
     Write-ScreenInfo -Message 'Download Exchange 2019 requirements' -TaskStart
-    
+
     #The image is no longer available publicly
     #$downloadTargetFolder = "$labSources\ISOs"
     #Write-ScreenInfo -Message "Adding Exchange 2019 iso from '$exchangeDownloadLink'"
@@ -27,7 +27,7 @@ function Download-ExchangeSources
 
     Write-ScreenInfo -Message "Downloading the Visual C++ 2013 Redistributable Package from '$VC2013RedristroDownloadLink'"
     $script:vc2013InstallFile = Get-LabInternetFile -Uri $VC2013RedristroDownloadLink -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -ErrorAction Stop
-    
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -55,11 +55,11 @@ function Add-ExchangeAdRights
 function Install-ExchangeWindowsFeature
 {
     Write-ScreenInfo "Installing Windows Features Server-Media-Foundation on '$vm'"  -TaskStart -NoNewLine
-    
+
     $jobs += Install-LabWindowsFeature -ComputerName $vm -FeatureName Server-Media-Foundation, RSAT -UseLocalCredential -AsJob -PassThru -NoDisplay
     Wait-LWLabJob -Job $jobs -NoDisplay
     Restart-LabVM -ComputerName $vm -Wait
-    
+
     Write-ScreenInfo 'finished' -TaskEnd
 }
 
@@ -71,7 +71,7 @@ function Install-ExchangeRequirements
     Start-LabVM -ComputerName $machines -Wait
 
     $jobs = @()
-    
+
     $ucmaInstalled = Invoke-LabCommand -ActivityName 'Test UCMA Installation' -ScriptBlock {
         Test-Path -Path 'C:\Program Files\Microsoft UCMA 4.0\Runtime\Uninstaller\Setup.exe'
     } -ComputerName $vm -PassThru
@@ -80,7 +80,7 @@ function Install-ExchangeRequirements
     {
         $drive = Mount-LabIsoImage -ComputerName $vm -IsoPath $exchangeInstallFile.FullName -PassThru
         $jobs += Install-LabSoftwarePackage -ComputerName $vm -LocalPath "$($drive.DriveLetter)\UCMARedist\Setup.exe" -CommandLine '/Quiet /Log c:\ucma.txt' -AsJob -PassThru
-        Wait-LWLabJob -Job $jobs  -ProgressIndicator 20 
+        Wait-LWLabJob -Job $jobs  -ProgressIndicator 20
         Dismount-LabIsoImage -ComputerName $vm
     }
 
@@ -96,25 +96,25 @@ function Install-ExchangeRequirements
         {
             Write-ScreenInfo ".net Framework 4.8 is already installed on '$machine'" -Type Verbose
         }
-        
+
         if (-not (Test-Path -Path 'Computer\HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\VisualStudio'))
-        { 
+        {
             Write-ScreenInfo "Installing Visual C++ redistributals 2012 and 2013 on '$machine'" -Type Verbose
             $cppJobs = @()
             $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2012InstallFile.FullName -CommandLine '/install /quiet /norestart /log C:\DeployDebug\cpp64_2012.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
             $cppJobs += Install-LabSoftwarePackage -ComputerName $machine -Path $vc2013InstallFile.FullName -CommandLine '/install /quiet /norestart /log C:\DeployDebug\cpp64_2013.log' -AsJob -AsScheduledJob -UseShellExecute -PassThru
             Wait-LWLabJob -Job $cppJobs -NoDisplay -ProgressIndicator 20 -NoNewLine
         }
-        else 
+        else
         {
             Write-ScreenInfo 'Visual C++ 2012 & 2013 redistributed files installed'
         }
-        
+
     }
 
     Wait-LWLabJob -Job $jobs -NoDisplay -ProgressIndicator 20 -NoNewLine
     Write-ScreenInfo done
-        
+
     Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
     Restart-LabVM -ComputerName $machines -Wait -ProgressIndicator 10 -NoDisplay
 
@@ -127,14 +127,14 @@ function Start-ExchangeInstallSequence
     param(
         [Parameter(Mandatory)]
         [string]$Activity,
-        
+
         [Parameter(Mandatory)]
         [string]$ComputerName,
-        
+
         [Parameter(Mandatory)]
         [string]$CommandLine
     )
-    
+
     Write-LogFunctionEntry
 
     Write-ScreenInfo -Message "Starting activity '$Activity'" -TaskStart -NoNewLine
@@ -161,7 +161,7 @@ function Start-ExchangeInstallSequence
             Restart-LabVM -ComputerName $ComputerName -Wait -NoNewLine
             Start-Sleep -Seconds 30 #as the feature installation can trigger a 2nd reboot, wait for the machine after 30 seconds again
             Wait-LabVM -ComputerName $ComputerName
-            
+
             try
             {
                 Write-ScreenInfo "Calling activity '$Activity' agian."
@@ -207,9 +207,9 @@ function Start-ExchangeInstallSequence
     Write-ProgressIndicatorEnd
 
     Write-ScreenInfo -Message "Finished activity '$Activity'" -TaskEnd
-    
+
     $result
-    
+
     Write-LogFunctionExit
 }
 
@@ -217,13 +217,13 @@ function Start-ExchangeInstallation
 {
     param (
         [switch]$All,
-        
+
         [switch]$AddAdRightsInRootDomain,
         [switch]$PrepareSchema,
         [switch]$PrepareAD,
         [switch]$PrepareAllDomains,
         [switch]$InstallExchange,
-        
+
         [switch]$CreateCheckPoints
     )
     if ($vm.DomainName -ne $rootDc.DomainName)
@@ -243,7 +243,7 @@ function Start-ExchangeInstallation
         $commandLine = '/InstallWindowsComponents /PrepareSchema /IAcceptExchangeServerLicenseTerms'
         $result = Start-ExchangeInstallSequence -Activity 'Exchange PrepareSchema' -ComputerName $prepMachine -CommandLine $commandLine -ErrorAction Stop
         Set-Variable -Name "AL_Result_PrepareSchema_$prepMachine" -Scope Global -Value $result -Force
-        
+
         Dismount-LabIsoImage -ComputerName $prepMachine -SupressOutput
     }
 
@@ -258,7 +258,7 @@ function Start-ExchangeInstallation
 
         Dismount-LabIsoImage -ComputerName $prepMachine -SupressOutput
     }
-   
+
     #prepare all domains
     if ($PrepareAllDomains -or $All)
     {
@@ -277,7 +277,7 @@ function Start-ExchangeInstallation
         Get-LabVM -Role RootDC | ForEach-Object {
             Sync-LabActiveDirectory -ComputerName $_
         }
-    
+
         Write-ScreenInfo -Message 'Restarting machines' -NoNewLine
         Restart-LabVM -ComputerName $rootDc -Wait -ProgressIndicator 10 -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 10 -NoNewLine
@@ -287,7 +287,7 @@ function Start-ExchangeInstallation
     if ($InstallExchange -or $All)
     {
         Write-ScreenInfo -Message "Installing Exchange Server 2019 on machine '$vm'" -TaskStart
-        
+
         $disk = Mount-LabIsoImage -ComputerName $prepMachine -IsoPath $exchangeInstallFile.FullName -PassThru -SupressOutput
 
         #Actual Exchange Installaton
@@ -296,9 +296,9 @@ function Start-ExchangeInstallation
         Set-Variable -Name "AL_Result_ExchangeInstall_$vm" -Value $result -Scope Global
 
         Dismount-LabIsoImage -ComputerName $prepMachine -SupressOutput
-        
+
         Write-ScreenInfo -Message "Finished installing Exchange Server 2019 on machine '$vm'" -TaskEnd
-    
+
         Write-ScreenInfo -Message "Restarting machines '$vm'" -NoNewLine
         Restart-LabVM -ComputerName $vm -Wait -ProgressIndicator 15
     }

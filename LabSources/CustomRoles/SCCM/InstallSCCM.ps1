@@ -1,4 +1,4 @@
-<#
+﻿<#
         .SYNOPSIS
         Install a functional SCCM Primary Site using the Automated-Lab tookit with SCCM being installed using the "CustomRoles" approach
         .DESCRIPTION
@@ -27,13 +27,13 @@ param(
 
     [Parameter(Mandatory)]
     [string]$SccmSiteCode,
-        
+
     [Parameter(Mandatory)]
     [string]$SqlServerName
 )
 
 function Install-SCCM {
-    param  
+    param
     (
         [Parameter(Mandatory)]
         [string]$SccmServerName,
@@ -46,7 +46,7 @@ function Install-SCCM {
 
         [Parameter(Mandatory)]
         [string]$SccmSiteCode,
-        
+
         [Parameter(Mandatory)]
         [string]$SqlServerName
     )
@@ -56,17 +56,17 @@ function Install-SCCM {
     $sqlServer = Get-LabVM -Role SQLServer | Where-Object Name -eq $SqlServerName
     $sqlServerFqdn = $sqlServer.FQDN
     $rootDC = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq  $sccmServer.DomainName }
-    
+
     if (-not $sqlServer)
     {
         Write-Error "The specified SQL Server '$SqlServerName' does not exist in the lab."
         return
     }
-    
+
     $mdtDownloadLocation = 'https://download.microsoft.com/download/3/3/9/339BE62D-B4B8-4956-B58D-73C4685FC492/MicrosoftDeploymentToolkit_x64.msi'
     $downloadTargetFolder = "$labSources\SoftwarePackages"
-    
-    #Do Some quick checks before we get going    
+
+    #Do Some quick checks before we get going
     #Check for existance of ADK Installation Files
     if (-not (Test-Path -Path "$downloadTargetFolder\ADK")) {
         Write-LogFunctionExitWithError -Message "ADK Installation files not located at '$downloadTargetFolder\ADK'"
@@ -90,11 +90,11 @@ function Install-SCCM {
         $dataVolume | Set-Disk -IsOffline $false
         $dataVolume | Set-Disk -IsReadOnly $false
     }
-    
+
     #Copy the SCCM Binaries
-    Copy-LabFileItem -Path $SccmBinariesDirectory -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
+    Copy-LabFileItem -Path $SccmBinariesDirectory -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
     #Copy the SCCM Prereqs (must have been previously downloaded)
-    Copy-LabFileItem -Path $SccmPreReqsDirectory -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
+    Copy-LabFileItem -Path $SccmPreReqsDirectory -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
 
     #Extend the AD Schema
     Invoke-LabCommand -ActivityName 'Extend AD Schema' -ComputerName $SccmServerName -ScriptBlock {
@@ -104,7 +104,7 @@ function Install-SCCM {
     #Need to execute this command on the Domain Controller, since it has the AD Powershell cmdlets available
     #Create the Necessary OU and permissions for the SCCM container in AD
     Invoke-LabCommand -ActivityName 'Configure SCCM Systems Management Container' -ComputerName $rootDC -ScriptBlock {
-        param  
+        param
         (
             [Parameter(Mandatory)]
             [string]$SCCMServerName
@@ -121,7 +121,7 @@ function Install-SCCM {
             $ou = Get-ADObject "CN=System Management,CN=System,$rootDomainNc"
         }
         catch
-        {   
+        {
             Write-Verbose "System Management container does not currently exist."
             $ou = New-ADObject -Type Container -name "System Management" -Path "CN=System,$rootDomainNc" -Passthru
         }
@@ -137,10 +137,10 @@ function Install-SCCM {
         $AccessControlType = "Allow"
         $Inherit = "SelfAndChildren"
         $nullGUID = [guid]'00000000-0000-0000-0000-000000000000'
- 
+
         # Create a new access control entry to allow access to the OU
         $ace = New-Object System.DirectoryServices.ActiveDirectoryAccessRule $sccmServerSId, $ActiveDirectoryRights, $AccessControlType, $Inherit, $nullGUID
-        
+
         # Add the ACE to the ACL, then set the ACL to save the changes
         $acl.AddAccessRule($ace)
         Set-ACL -AclObject $acl "ad:CN=System Management,CN=System,$rootDomainNc"
@@ -149,13 +149,13 @@ function Install-SCCM {
 
     Write-ScreenInfo -Message "Downloading MDT Installation Files from '$mdtDownloadLocation'"
     $mdtInstallFile = Get-LabInternetFile -Uri $mdtDownloadLocation -Path $downloadTargetFolder -ErrorAction Stop -PassThru
-   
+
     Write-ScreenInfo "Copying MDT Install Files to server '$SccmServerName'..."
-    Copy-LabFileItem -Path $mdtInstallFile.FullName -DestinationFolderPath C:\Install -ComputerName $SccmServerName
-   
+    Copy-LabFileItem -Path $mdtInstallFile.FullName -DestinationFolderPath /Install -ComputerName $SccmServerName
+
     Write-ScreenInfo "Copying ADK Install Files to server '$SccmServerName'..."
-    Copy-LabFileItem -Path "$downloadTargetFolder\ADK" -DestinationFolderPath C:\Install -ComputerName $SccmServerName -Recurse
-   
+    Copy-LabFileItem -Path "$downloadTargetFolder\ADK" -DestinationFolderPath /Install -ComputerName $SccmServerName -Recurse
+
     Write-ScreenInfo "Installing ADK on server '$SccmServerName'..." -NoNewLine
     $job = Install-LabSoftwarePackage -LocalPath C:\Install\ADK\adksetup.exe -CommandLine "/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner" `
     -ComputerName $SccmServerName -NoDisplay -AsJob -PassThru
@@ -164,7 +164,7 @@ function Install-SCCM {
     Write-ScreenInfo "Installing .net 3.5 on '$SccmServerName'..." -NoNewLine
     $job = Install-LabWindowsFeature -ComputerName $SccmServerName -FeatureName NET-Framework-Core -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay
-    
+
     Write-ScreenInfo "Installing WDS on '$SccmServerName'..." -NoNewLine
     $job = Install-LabWindowsFeature -ComputerName $SccmServerName -FeatureName WDS -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay
@@ -172,7 +172,7 @@ function Install-SCCM {
     Write-ScreenInfo "Installing 'MDT' on server '$SccmServerName'..." -NoNewLine
     Install-LabSoftwarePackage -ComputerName $SccmServerName -LocalPath "C:\Install\$($mdtInstallFile.FileName)" -CommandLine '/qb' -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay
-    
+
     Invoke-LabCommand -ActivityName 'Configure WDS' -ComputerName $SccmServerName -ScriptBlock {
         Start-Process -FilePath "C:\Windows\System32\WDSUTIL.EXE" -ArgumentList "/Initialize-Server /RemInst:C:\RemoteInstall" -Wait
         Start-Sleep -Seconds 10
@@ -184,7 +184,7 @@ function Install-SCCM {
     $job = Install-LabWindowsFeature -ComputerName $SccmServerName -FeatureName 'FS-FileServer,Web-Mgmt-Tools,Web-Mgmt-Console,Web-Mgmt-Compat,Web-Metabase,Web-WMI,Web-WebServer,Web-Common-Http,Web-Default-Doc,Web-Dir-Browsing,Web-Http-Errors,Web-Static-Content,Web-Http-Redirect,Web-Health,Web-Http-Logging,Web-Log-Libraries,Web-Request-Monitor,Web-Http-Tracing,Web-Performance,Web-Stat-Compression,Web-Dyn-Compression,Web-Security,Web-Filtering,Web-Windows-Auth,Web-App-Dev,Web-Net-Ext,Web-Net-Ext45,Web-Asp-Net,Web-Asp-Net45,Web-ISAPI-Ext,Web-ISAPI-Filter' -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay
     Write-ScreenInfo done
-    
+
     $job = Install-LabWindowsFeature -ComputerName $SccmServerName -FeatureName 'NET-HTTP-Activation,NET-Non-HTTP-Activ,NET-Framework-45-ASPNET,NET-WCF-HTTP-Activation45,BITS,RDC' -NoDisplay -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay
     Write-ScreenInfo done
@@ -197,7 +197,7 @@ function Install-SCCM {
     $setupConfigFileContent = @"
 [Identification]
 Action=InstallPrimarySite
-      
+
 [Options]
 ProductID=EVAL
 SiteCode=$SccmSiteCode
@@ -216,44 +216,44 @@ DistributionPointProtocol=HTTP
 DistributionPointInstallIIS=0
 AdminConsole=1
 JoinCEIP=0
-       
+
 [SQLConfigOptions]
 SQLServerName=$SqlServerFqdn
 DatabaseName=CM_$SccmSiteCode
 SQLSSBPort=4022
 SQLDataFilePath=C:\CMSQL\SQLDATA\
 SQLLogFilePath=C:\CMSQL\SQLLOGS\
-       
+
 [CloudConnectorOptions]
 CloudConnector=0
 CloudConnectorServer=$sccmServerFqdn
 UseProxy=0
-       
+
 [SystemCenterOptions]
-       
+
 [HierarchyExpansionOption]
 "@
 
     #Save the config file to disk, and copy it to the SCCM Server
     $setupConfigFileContent | Out-File -FilePath "$($lab.LabPath)\ConfigMgrUnattend.ini" -Encoding ascii
 
-    Copy-LabFileItem -Path "$($lab.LabPath)\ConfigMgrUnattend.ini" -DestinationFolderPath C:\Install -ComputerName $SccmServerName
-    
+    Copy-LabFileItem -Path "$($lab.LabPath)\ConfigMgrUnattend.ini" -DestinationFolderPath /Install -ComputerName $SccmServerName
+
     $sccmComputerAccount = '{0}\{1}$' -f
     $sccmServer.DomainName.Substring(0, $sccmServer.DomainName.IndexOf('.')),
     $SccmServerName
-    
+
     Invoke-LabCommand -ActivityName 'Create Folders for SQL DB' -ComputerName $sqlServer -ScriptBlock {
         #SQL Server does not like creating databases without the directories already existing, so make sure to create them first
         New-Item -Path 'C:\CMSQL\SQLDATA' -ItemType Directory -Force | Out-Null
         New-Item -Path 'C:\CMSQL\SQLLOGS' -ItemType Directory -Force | Out-Null
-        
+
         if (-not (Get-LocalGroupMember -Group Administrators -Member $sccmComputerAccount -ErrorAction SilentlyContinue))
         {
             Add-LocalGroupMember -Group Administrators -Member $sccmComputerAccount
         }
     } -Variable (Get-Variable -Name sccmComputerAccount) -NoDisplay
-    
+
     Write-ScreenInfo 'Install SCCM. This step will take quite some time...' -NoNewLine
     $job = Install-LabSoftwarePackage -ComputerName $SccmServerName -LocalPath C:\Install\SCCM1702\SMSSETUP\BIN\X64\setup.exe -CommandLine '/Script "C:\Install\ConfigMgrUnattend.ini" /NoUserInput' -AsJob -PassThru
     Wait-LWLabJob -Job $job -NoDisplay

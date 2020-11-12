@@ -1,21 +1,32 @@
-$PSDefaultParameterValues = @{
-    '*-Azure*:Verbose'      = $false
-    '*-Azure*:Warning'      = $false
-    'Import-Module:Verbose' = $false
-}
-
 function Test-LabAzureModuleAvailability
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ()
 
     $minimumAzureModuleVersion = [version](Get-LabConfigurationItem -Name MinimumAzureModuleVersion)
-    $paths = Join-Path -Path ($env:PSModulePath -split ';' | ? {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
-    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue | 
+    [char]$split = if ($IsLinux -or $IsMacOs)
+    {
+        ':'
+    }
+    else
+    {
+        ';'
+    }
+
+    $paths = Join-Path -Path ($env:PSModulePath -split $split | Where-Object -FilterScript {-not [string]::IsNullOrWhiteSpace($_)}) -ChildPath Az
+
+    $moduleManifest = Get-ChildItem -Path $paths -File -Filter *.psd1 -Recurse -Force -ErrorAction SilentlyContinue |
     Sort-Object -Property { Split-Path $_.DirectoryName -Leaf } -Descending |
     Select-Object -First 1
-    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
 
+    if (-not $moduleManifest)
+    {
+        Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
+        return $false
+    }
+    
+    $availableVersion = [version](Split-Path -Path $moduleManifest.DirectoryName -Leaf)
     if ($availableVersion -lt $minimumAzureModuleVersion)
     {
         Stop-PSFFunction -Message "The Azure PowerShell module version $($minimumAzureModuleVersion) or greater is not available.`r`nPlease remove all old versions of Az and AzureRM, and reinstall using Install-Module Az" -EnableException $true
@@ -27,7 +38,8 @@ function Test-LabAzureModuleAvailability
 
 function Update-LabAzureSettings
 {
-    
+    [CmdletBinding()]
+    param ( )
     if ((Get-PSCallStack).Command -contains 'Import-Lab')
     {
         $Script:lab = Get-Lab
@@ -58,19 +70,33 @@ function Update-LabAzureSettings
 
 function Add-LabAzureSubscription
 {
-    
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
+        [Parameter(ParameterSetName = 'ByName')]
         [string]$SubscriptionName,
+
+        [Parameter(ParameterSetName = 'ByName')]
+        [guid]$SubscriptionId,
 
         [string]$DefaultLocationName,
 
+        [ObsoleteAttribute()]
         [string]$DefaultStorageAccountName,
 
         [string]$DefaultResourceGroupName,
 
-        [switch]$PassThru
+        [timespan]
+        $AutoShutdownTime,
+
+        [TimeZoneInfo]
+        $AutoShutdownTimeZone,
+
+        [switch]$PassThru,
+
+        [switch]
+        $AllowBastionHost
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -85,20 +111,29 @@ function Add-LabAzureSubscription
 
     Write-ScreenInfo -Message 'Adding Azure subscription data' -Type Info -TaskStart
 
-        # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
-        $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
-        if (-not $resources)
-        {
-            Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
-            $null = Connect-AzAccount -ErrorAction Stop
-        }
+    # Try to access Azure RM cmdlets. If credentials are expired, an exception will be raised
+    $resources = Get-AzResourceProvider -ErrorAction SilentlyContinue
+    if (-not $resources)
+    {
+        Write-ScreenInfo -Message "No Azure context available. Please login to your Azure account in the next step."
+        $null = Connect-AzAccount -ErrorAction SilentlyContinue
+    }
 
-        # Select the proper subscription before saving the profile
-        if ($SubscriptionName)
-        {
-            [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
-        }
-        $AzureRmProfile = Get-AzContext
+    # Select the proper subscription before saving the profile
+    if ($SubscriptionName)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction SilentlyContinue)
+    }
+    elseif ($SubscriptionId)
+    {
+        [void](Set-AzContext -Subscription $SubscriptionId -ErrorAction SilentlyContinue)
+    }
+
+    $AzureRmProfile = Get-AzContext
+    if (-not $AzureRmProfile)
+    {
+        throw 'Cannot continue without a valid Azure connection.'
+    }
 
     Update-LabAzureSettings
     if (-not $script:lab.AzureSettings)
@@ -107,6 +142,18 @@ function Add-LabAzureSubscription
     }
 
     $script:lab.AzureSettings.DefaultRoleSize = Get-LabConfigurationItem -Name DefaultAzureRoleSize
+    $script:lab.AzureSettings.AllowBastionHost = $AllowBastionHost.IsPresent
+
+    if ($AutoShutdownTime)
+    {
+        if (-not $AutoShutdownTimeZone)
+        {
+            $AutoShutdownTimeZone = Get-TimeZone
+        }
+
+        $script:lab.AzureSettings.AutoShutdownTime = $AutoShutdownTime
+        $script:lab.AzureSettings.AutoShutdownTimeZone = $AutoShutdownTimeZone.Id
+    }
     
     # Select the subscription which is associated with this AzureRmProfile
     $subscriptions = Get-AzSubscription
@@ -117,19 +164,35 @@ function Add-LabAzureSubscription
     {
         throw "A subscription named '$SubscriptionName' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription name"
     }
-
-    #select default subscription subscription
-    if (-not $SubscriptionName)
+    if ($SubscriptionId -and -not ($script:lab.AzureSettings.Subscriptions | Where-Object Id -eq $SubscriptionId))
     {
-        $SubscriptionName = $AzureRmProfile.Subscription.Name
+        throw "A subscription with the ID '$SubscriptionId' cannot be found. Make sure you specify the right subscription name or let AutomatedLab choose on by not defining a subscription ID"
     }
 
-    Write-ScreenInfo -Message "Using Azure Subscription '$SubscriptionName'" -Type Info
-    $selectedSubscription = $Subscriptions | Where-Object {$_.Name -eq $SubscriptionName}
+    #select default subscription subscription
+    $selectedSubscription = if (-not $SubscriptionName -and -not $SubscriptionId)
+    {
+         $AzureRmProfile.Subscription
+    }
+    elseif ($SubscriptionName)
+    {
+        $Subscriptions | Where-Object Name -eq $SubscriptionName
+    }
+    elseif ($SubscriptionId)
+    {
+        $Subscriptions | Where-Object Id -eq $SubscriptionId
+    }
+
+    if ($selectedSubscription.Count -gt 1)
+    {
+        throw "There is more than one subscription with the name '$SubscriptionName'. Please use the subscription Id to select a specific subscription."
+    }
+
+    Write-ScreenInfo -Message "Using Azure Subscription '$($selectedSubscription.Name)' ($($selectedSubscription.Id))" -Type Info
 
     try
     {
-        [void](Set-AzContext -Subscription $SubscriptionName -ErrorAction Stop)
+        [void](Set-AzContext -Subscription $selectedSubscription -ErrorAction SilentlyContinue)
     }
     catch
     {
@@ -138,6 +201,13 @@ function Add-LabAzureSubscription
 
     $script:lab.AzureSettings.DefaultSubscription = [AutomatedLab.Azure.AzureSubscription]::Create($selectedSubscription)
     Write-PSFMessage "Azure subscription '$SubscriptionName' selected as default"
+
+    if ($AllowBastionHost.IsPresent -and (Get-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network).RegistrationState -eq 'NotRegistered')
+    {
+        # Check if resource provider allows BastionHost deployment
+        $null = Register-AzProviderFeature -FeatureName AllowBastionHost -ProviderNamespace Microsoft.Network
+        $null = Register-AzProviderFeature -FeatureName bastionShareableLink -ProviderNamespace Microsoft.Network
+    }
 
     $locations = Get-AzLocation
     $script:lab.AzureSettings.Locations = [AutomatedLab.Azure.AzureLocation]::Create($locations)
@@ -205,7 +275,8 @@ function Add-LabAzureSubscription
     if ($global:cacheAzureRoleSizes)
     {
         Write-ScreenInfo -Message "Querying available vm sizes for Azure location '$DefaultLocationName' (using cache)" -Type Info
-        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes }
+        $defaultSizes = (Get-LabAzureDefaultLocation).VirtualMachineRoleSizes
+        $roleSizes = $global:cacheAzureRoleSizes | Where-Object { $_.InstanceSize -in $defaultSizes}
     }
     else
     {
@@ -229,7 +300,13 @@ function Add-LabAzureSubscription
     try
     {
         Write-PSFMessage -Message 'Get last ISO update time'
-        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs) {
+            $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+        }
         $lastChecked = $timestamps.AzureIsosLastChecked
         Write-PSFMessage -Message "Last check was '$lastChecked'."
     }
@@ -255,16 +332,32 @@ function Add-LabAzureSubscription
         finally
         {
             $timestamps['AzureIsosLastChecked'] = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
+
             Write-ScreenInfo -Message 'Done' -TaskEnd
         }
     }
 
     # Check last LabSources sync timestamp
-    $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    if ($IsLinux -or $IsMacOs)
+    {
+        $timestamps = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+    }
+    else
+    {
+        $timestamps = $type::ImportFromRegistry('Cache', 'Timestamps')
+    }
+
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
-    if ($null -eq $lastchecked)
+    if (-not $lastchecked)
     {
         $syncText = @"
 Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to your Azure file share $($global:labsources)?
@@ -274,26 +367,56 @@ execute Sync-LabAzureLabSources manually. The maximum file size for the automati
 be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
 "@
-        $choice = Read-Choice -ChoiceList '&Yes','&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
+        # Detecting Interactivity this way only works in .NET Full - .NET Core always defaults to $true
+        # Last Resort is checking the CommandLine Args
+        $choice = if (($PSVersionTable.PSEdition -eq 'Desktop' -and [Environment]::UserInteractive) -or ($PSVersionTable.PSEdition -eq 'Core' -and [string][Environment]::GetCommandLineArgs() -notmatch "-Non"))
+        {
+            Read-Choice -ChoiceList '&Yes', '&No, do not ask me again', 'N&o, not this time' -Caption 'Sync lab sources to Azure?' -Message $syncText -Default 0
+        }
+        else
+        {
+            2
+        }
 
         if ($choice -eq 0)
         {
             Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
             $timestamps.LabSourcesSynced = Get-Date
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
         elseif ($choice -eq 1)
         {
             $timestamps.LabSourcesSynced = [datetime]::MaxValue
-            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            if ($IsLinux -or $IsMacOs)
+            {
+                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+            }
+            else
+            {
+                $timestamps.ExportToRegistry('Cache', 'Timestamps')
+            }
         }
     }
-    elseif ($null -ne $lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
+    elseif ($lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
     {
         Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
-        $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        if ($IsLinux -or $IsMacOs)
+        {
+            $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
+        }
+        else
+        {
+            $timestamps.ExportToRegistry('Cache', 'Timestamps')
+        }
     }
 
     $script:lab.AzureSettings.VNetConfig = (Get-AzVirtualNetwork) | ConvertTo-Json
@@ -304,17 +427,20 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
     try
     {
-        $importMethodInfo = $type.GetMethod('ImportFromRegistry', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $global:cacheVmImages = $importMethodInfo.Invoke($null, ('Cache', 'AzureOperatingSystems'))
-        Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
-
-        if ($global:cacheVmImages)
+        if ($IsLinux -or $IsMacOs) 
         {
-            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
+            $global:cacheVmImages = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
         }
+        else
+        {
+            $global:cacheVmImages = $type::ImportFromRegistry('Cache', 'AzureOperatingSystems')
+        }
+
+        Write-PSFMessage "Read $($global:cacheVmImages.Count) OS images from the cache"
 
         if ($global:cacheVmImages -and $global:cacheVmImages.TimeStamp -gt (Get-Date).AddDays(-7))
         {
+            Write-PSFMessage ("Azure OS Cache was older than {0:yyyy-MM-dd HH:mm:ss}. Cache date was {1:yyyy-MM-dd HH:mm:ss}" -f (Get-Date).AddDays(-7) , $global:cacheVmImages.TimeStamp)
             Write-ScreenInfo 'Querying available operating system images (using cache)'
             $vmImages = $global:cacheVmImages
         }
@@ -347,7 +473,14 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
         }
 
         $osImageList.Timestamp = Get-Date
-        $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        if ($IsLinux -or $IsMacOS)
+        {
+            $osImageList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/AzureOperatingSystems.xml'))
+        }
+        else
+        {
+            $osImageList.ExportToRegistry('Cache', 'AzureOperatingSystems')
+        }
     }
 
     Write-PSFMessage "Added $($script:lab.AzureSettings.VmImages.Count) virtual machine images"
@@ -356,40 +489,8 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
     $script:lab.AzureSettings.VirtualMachines = [AutomatedLab.Azure.AzureVirtualMachine]::Create($vms)
     Write-PSFMessage "Added $($script:lab.AzureSettings.VirtualMachines.Count) virtual machines"
 
-    #$script:lab.AzureSettings.DefaultStorageAccount cannot be set when creating the definitions but is during the import process
-    if (-not $script:lab.AzureSettings.DefaultStorageAccount)
-    {
-        Write-ScreenInfo -Message 'No default storage account exist. Determining storage account now' -Type Info
-        if (-not $DefaultStorageAccountName)
-        {
-            $DefaultStorageAccountName = ($script:lab.AzureSettings.StorageAccounts | Where-Object StorageAccountName -like 'automatedlab????????' | Select-Object -First 1).StorageAccountName
-        }
-
-        if (-not $DefaultStorageAccountName)
-        {
-            Write-ScreenInfo -Message 'No storage account for AutomatedLab found. Creating a storage account now'
-            New-LabAzureDefaultStorageAccount -LocationName $DefaultLocationName -ResourceGroupName $DefaultResourceGroupName
-        }
-        else
-        {
-            try
-            {
-                Set-LabAzureDefaultStorageAccount -Name $DefaultStorageAccountName -ErrorAction Stop
-                Write-ScreenInfo -Message "Using Azure Storage Account '$DefaultStorageAccountName'" -Type Info
-            }
-            catch
-            {
-                throw 'Cannot proceed with an invalid default storage account'
-            }
-        }
-        Write-PSFMessage "Mapping storage account '$((Get-LabAzureDefaultStorageAccount).StorageAccountName)' to resource group $DefaultResourceGroupName'"
-        [void](Set-AzCurrentStorageAccount -Name $((Get-LabAzureDefaultStorageAccount).StorageAccountName) -ResourceGroupName $DefaultResourceGroupName)
-    }
-
     Write-ScreenInfo -Message "Azure default resource group name will be '$($script:lab.Name)'"
-
     Write-ScreenInfo -Message "Azure data center location will be '$DefaultLocationName'" -Type Info
-
     Write-ScreenInfo -Message 'Finished adding Azure subscription data' -Type Info -TaskEnd
 
     if ($PassThru)
@@ -402,7 +503,7 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
 function Get-LabAzureSubscription
 {
-    
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -416,7 +517,7 @@ function Get-LabAzureSubscription
 
 function Get-LabAzureDefaultSubscription
 {
-    
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -430,14 +531,13 @@ function Get-LabAzureDefaultSubscription
 
 function Get-LabAzureLocation
 {
-    
-    [cmdletBinding()]
+    [CmdletBinding()]
     param (
         [string]$LocationName,
 
         [switch]$List
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -463,7 +563,7 @@ function Get-LabAzureLocation
         }
 
         $locationUrls = Get-LabConfigurationItem -Name AzureLocationsUrls
-        
+
         foreach ($location in $azureLocations)
         {
             if ($locationUrls."$($location.DisplayName)")
@@ -521,8 +621,7 @@ function Get-LabAzureLocation
 
 function Get-LabAzureDefaultLocation
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -542,7 +641,7 @@ function Get-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultLocation
 {
-    
+
     param (
         [Parameter(Mandatory)]
         [string]$Name
@@ -565,11 +664,13 @@ function Set-LabAzureDefaultLocation
 
 function Set-LabAzureDefaultStorageAccount
 {
-    
     param (
         [Parameter(Mandatory)]
         [string]$Name
     )
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Write-LogFunctionEntry
 
@@ -588,9 +689,11 @@ function Set-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultStorageAccount
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
 
     Write-LogFunctionEntry
 
@@ -609,15 +712,17 @@ function Get-LabAzureDefaultStorageAccount
 
 function New-LabAzureDefaultStorageAccount
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory)]
         [string]$LocationName,
         [Parameter(Mandatory)]
         [string]$ResourceGroupName
     )
-    
+
+    Write-ScreenInfo -Type Warning -Message 'Set-LabAzureDefaultStorageAccount is obsolete'
+    return
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -667,8 +772,7 @@ function New-LabAzureDefaultStorageAccount
 
 function Get-LabAzureDefaultResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
 
     Write-LogFunctionEntry
@@ -683,10 +787,9 @@ function Get-LabAzureDefaultResourceGroup
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Import-LabAzureCertificate
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     throw New-Object System.NotImplementedException
@@ -717,8 +820,7 @@ function Import-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function New-LabAzureCertificate
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
@@ -750,10 +852,10 @@ function New-LabAzureCertificate
 #TODO use keyvault -> New AzureProp defaultKeyVaultName
 function Get-LabAzureCertificate
 {
-    
     [OutputType([System.Security.Cryptography.X509Certificates.X509Certificate2])]
-    [cmdletbinding()]
+    [CmdletBinding()]
     param ()
+
     throw New-Object System.NotImplementedException
     Write-LogFunctionEntry
 
@@ -778,8 +880,7 @@ function Get-LabAzureCertificate
 
 function New-LabAzureRmResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0)]
         [string[]]$ResourceGroupNames,
@@ -789,7 +890,7 @@ function New-LabAzureRmResourceGroup
 
         [switch]$PassThru
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -831,8 +932,7 @@ function New-LabAzureRmResourceGroup
 
 function Remove-LabAzureResourceGroup
 {
-    
-    [cmdletbinding()]
+    [CmdletBinding()]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipelineByPropertyName)]
         [string[]]$ResourceGroupName,
@@ -879,8 +979,7 @@ function Remove-LabAzureResourceGroup
 
 function Get-LabAzureResourceGroup
 {
-    
-    [cmdletbinding(DefaultParameterSetName = 'ByName')]
+    [CmdletBinding(DefaultParameterSetName = 'ByName')]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName')]
         [string[]]$ResourceGroupName,
@@ -888,7 +987,7 @@ function Get-LabAzureResourceGroup
         [Parameter(Position = 0, ParameterSetName = 'ByLab')]
         [switch]$CurrentLab
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -906,11 +1005,10 @@ function Get-LabAzureResourceGroup
     {
         $result = $resourceGroups | Where-Object { $_.Tags.AutomatedLab -eq $script:lab.Name }
 
-        if ($null -eq $result)
+        if (-not $result)
         {
             $result = $script:lab.AzureSettings.DefaultResourceGroup
         }
-        
         $result
     }
     else
@@ -925,7 +1023,6 @@ function Get-LabAzureResourceGroup
 #region New-LabAzureLabSourcesStorage
 function New-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     (
@@ -933,7 +1030,7 @@ function New-LabAzureLabSourcesStorage
 
         [switch]$NoDisplay
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -989,11 +1086,10 @@ function New-LabAzureLabSourcesStorage
 
 function Get-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionEntry
@@ -1020,9 +1116,10 @@ function Get-LabAzureLabSourcesStorage
 
 function Test-LabAzureLabSourcesStorage
 {
+    [OutputType([System.Boolean])]
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureLabSources = Get-LabAzureLabSourcesStorage -ErrorAction SilentlyContinue
@@ -1039,14 +1136,13 @@ function Test-LabAzureLabSourcesStorage
 
 function Test-LabPathIsOnLabAzureLabSourcesStorage
 {
-    
     [CmdletBinding()]
     param
     (
         [Parameter(Mandatory)]
         [string]$Path
     )
-    
+
     if (-not (Test-LabHostConnected)) { return $false }
 
     try
@@ -1066,11 +1162,10 @@ function Test-LabPathIsOnLabAzureLabSourcesStorage
 
 function Remove-LabAzureLabSourcesStorage
 {
-    
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'High')]
     param
     ()
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1092,7 +1187,6 @@ function Remove-LabAzureLabSourcesStorage
 
 function Sync-LabAzureLabSources
 {
-    
     [CmdletBinding()]
     param
     (
@@ -1108,7 +1202,7 @@ function Sync-LabAzureLabSources
         [string]
         $Filter
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     Write-LogFunctionExit
@@ -1143,14 +1237,14 @@ function Sync-LabAzureLabSources
         $err = $null
 
         # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-        New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+        New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
         Write-PSFMessage "Created directory $($folderName) in labsources"
         if ($err)
         {
             $err = $null
 
             # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-            New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
+            New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
             Write-PSFMessage "Created directory '$folderName' in labsources"
             if ($err)
             {
@@ -1170,7 +1264,7 @@ function Sync-LabAzureLabSources
         }
         $files = Get-ChildItem @fileParams
 
-        Write-ScreenInfo "with $($files.Count) files" -NoNewLine
+        Write-ScreenInfo "$($files.Count) files" -NoNewLine
         foreach ($file in $files)
         {
             Write-ProgressIndicator
@@ -1200,28 +1294,34 @@ function Sync-LabAzureLabSources
 
             $fileName = $file.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\", '')
 
-            $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
+            $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
             if ($azureFile)
             {
-                $azureHash = $azureFile.Properties.ContentMD5
+                $azureHash = $azureFile.CloudFile.Properties.ContentMD5
                 $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
                 Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
             }
 
             if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
             {
-                $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
+                $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
                 Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
             }
 
             # Try to set the file hash
-            $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context) -Path $fileName -ErrorAction SilentlyContinue
-            $uploadedFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-            $apiResponse = $uploadedFile.SetPropertiesAsync()
-            if (-not $apiResponse.Status -eq "RanToCompletion")
+            $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
+            try
             {
-                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
-                continue
+                $uploadedFile.CloudFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+                $apiResponse = $uploadedFile.CloudFile.SetPropertiesAsync()
+                if (-not $apiResponse.Status -eq "RanToCompletion")
+                {
+                    Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
+                }
+            }
+            catch
+            {
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
             }
 
             Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
@@ -1249,7 +1349,7 @@ function Get-LabAzureLabSourcesContent
         [switch]
         $Directory
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $azureShare = Get-AzStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
@@ -1283,9 +1383,10 @@ function Get-LabAzureLabSourcesContentRecursive
     [CmdletBinding()]
     param
     (
-        $StorageContext
+        [Parameter(Mandatory)]
+        [object]$StorageContext
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     $content = @()
@@ -1293,14 +1394,14 @@ function Get-LabAzureLabSourcesContentRecursive
     $temporaryContent = $StorageContext | Get-AzStorageFile
     foreach ($item in $temporaryContent)
     {
-        if ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory')
+        if ($item.CloudFileDirectory)
         {
-            $content += $item
+            $content += $item.CloudFileDirectory
             $content += Get-LabAzureLabSourcesContentRecursive -StorageContext $item
         }
-        elseif ($item.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile')
+        elseif ($item.CloudFile)
         {
-            $content += $item
+            $content += $item.CloudFile
         }
         else
         {
@@ -1315,7 +1416,7 @@ function Test-LabAzureSubscription
 {
     [CmdletBinding()]
     param ( )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     try
@@ -1335,7 +1436,7 @@ function Get-LabAzureAvailableRoleSize
         [Parameter(Mandatory)]
         [string]$Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     if (-not (Get-AzContext -ErrorAction SilentlyContinue))
@@ -1346,7 +1447,7 @@ function Get-LabAzureAvailableRoleSize
     $azLocation = Get-AzLocation | Where-Object -Property DisplayName -eq $Location
 
     $availableRoleSizes = Get-AzComputeResourceSku | Where-Object {
-        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location #-and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
+        $_.ResourceType -eq 'virtualMachines' -and $_.Locations -contains $azLocation.Location -and $_.Restrictions.ReasonCode -notcontains 'NotAvailableForSubscription'
     } | Select-Object -ExpandProperty Name
 
     Get-AzVMSize -Location $Location | Where-Object -Property Name -in $availableRoleSizes
@@ -1361,7 +1462,7 @@ function Get-LabAzureAvailableSku
         [string]
         $Location
     )
-    
+
     Test-LabHostConnected -Throw -Quiet
 
     # Server

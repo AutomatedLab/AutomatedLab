@@ -1,6 +1,5 @@
 function Install-LabAzureServices
 {
-    
     [CmdletBinding()]
     param ()
 
@@ -39,8 +38,6 @@ function Install-LabAzureServices
 #region New-LabAzureAppServicePlan
 function New-LabAzureAppServicePlan
 {
-    
-
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -104,8 +101,6 @@ function New-LabAzureAppServicePlan
 #region Set-LabAzureWebAppContent
 function Set-LabAzureWebAppContent
 {
-    
-
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -157,8 +152,6 @@ function Set-LabAzureWebAppContent
 #region New-LabAzureWebApp
 function New-LabAzureWebApp
 {
-    
-
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -231,8 +224,6 @@ function New-LabAzureWebApp
 #region Get-LabAzureAppServicePlan
 function Get-LabAzureAppServicePlan
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmServerFarmWithRichSku])]
     param (
@@ -285,8 +276,6 @@ function Get-LabAzureAppServicePlan
 #region Get-LabAzureWebApp
 function Get-LabAzureWebApp
 {
-    
-
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
@@ -332,7 +321,6 @@ function Get-LabAzureWebApp
 #region Remove-LabAzureWebApp
 function Remove-LabAzureWebApp
 {
-    
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -380,8 +368,6 @@ function Remove-LabAzureWebApp
 #region Remove-LabAzureAppServicePlan
 function Remove-LabAzureAppServicePlan
 {
-    
-
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipeline, ValueFromPipelineByPropertyName)]
         [string[]]$Name,
@@ -428,8 +414,6 @@ function Remove-LabAzureAppServicePlan
 #region Start-LabAzureWebApp
 function Start-LabAzureWebApp
 {
-    
-
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -492,8 +476,6 @@ function Start-LabAzureWebApp
 #region Stop-LabAzureWebApp
 function Stop-LabAzureWebApp
 {
-    
-
     [OutputType([AutomatedLab.Azure.AzureRmService])]
     param (
         [Parameter(Mandatory, Position = 0, ValueFromPipeline, ValueFromPipelineByPropertyName)]
@@ -556,7 +538,6 @@ function Stop-LabAzureWebApp
 #region Get-LabAzureWebAppStatus
 function Get-LabAzureWebAppStatus
 {
-    
     [CmdletBinding(DefaultParameterSetName = 'All')]
     [OutputType([System.Collections.Hashtable])]
     param (
@@ -650,7 +631,6 @@ function Get-LabAzureWebAppStatus
 #region Send-LabAzureWebAppContent
 function Send-LabAzureWebAppContent
 {
-    
     [OutputType([string])]
     param (
         [Parameter(Mandatory, Position = 0, ParameterSetName = 'ByName', ValueFromPipelineByPropertyName)]
