@@ -6,6 +6,7 @@
 ### Enhancements
 
 - Added SCVMM Role to deploy SCVMM 2016 and 2019
+- 'FailoverStorage' is available as a separate install option
 
 ### Fixes
 
