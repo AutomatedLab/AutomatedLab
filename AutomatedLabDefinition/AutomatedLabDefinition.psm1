@@ -2733,7 +2733,7 @@ function Add-LabMachineDefinition
                 }
                 else
                 {
-                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors 
+                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor | Measure-Object NumberOfLogicalProcessors -Sum).Sum
                 }
             }
             if ($script:processors -ge 2)
