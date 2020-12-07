@@ -31,7 +31,7 @@ function Install-LabFailoverCluster
         $clusterDomains = $cluster.Group.DomainName | Sort-Object -Unique
         $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
-        $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']
+        $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp'] -split '\s*(?:,|;?),\s*'
 
         if (-not $clusterIp)
         {
@@ -144,7 +144,7 @@ function Install-LabFailoverCluster
 
             $clusterParameters = @{
                 Name                      = $clusterName
-                Node                      = $env:COMPUTERNAME
+                Node                      = @($env:COMPUTERNAME) + $clusterNodeNames
                 StaticAddress             = $clusterIp
                 AdministrativeAccessPoint = $clusterAccessPoint
                 ErrorAction               = 'Stop'
@@ -159,8 +159,6 @@ function Install-LabFailoverCluster
             {
                 Start-Sleep -Seconds 1
             }
-
-            Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
 
             if ($useDiskWitness)
             {
