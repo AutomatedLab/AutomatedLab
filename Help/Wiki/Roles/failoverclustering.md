@@ -11,8 +11,11 @@ Add-LabMachineDefinition -Name focln2 -Roles FailoverNode
 The role properties allow you to customize your cluster and to create more than one cluster.  
 ```powershell
 # Two clusters
+# Single static IP
 $cluster1 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu1'; ClusterIp = '192.168.50.111' }
-$cluster2 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu2'; ClusterIp = '192.168.50.121' }
+
+# Multiple static IP, either Comma-separated or Semicolon-separated and encapsulated in one string
+$cluster2 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ ClusterName = 'Clu2'; ClusterIp = '192.168.50.121, 192.168.50.122' }
 Add-LabMachineDefinition -Name focln11 -Roles $cluster1
 Add-LabMachineDefinition -Name focln12 -Roles $cluster1
 
