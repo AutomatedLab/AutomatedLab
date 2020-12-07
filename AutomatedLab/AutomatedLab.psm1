@@ -714,6 +714,7 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$AzureServices,
         [switch]$TeamFoundation,
+        [switch]$FailoverStorage,
         [switch]$FailoverCluster,
         [switch]$FileServer,
         [switch]$HyperV,
@@ -979,10 +980,20 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode,FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    
+    if (($FailoverStorage -or $performAll) -and (Get-LabVM -Role FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
-        Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+        Write-ScreenInfo -Message 'Installing Failover Storage' -TaskStart
+
+        Start-LabVM -RoleName FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        Install-LabFailoverStorage
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Failover Cluster' -TaskStart
 
         Start-LabVM -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverCluster

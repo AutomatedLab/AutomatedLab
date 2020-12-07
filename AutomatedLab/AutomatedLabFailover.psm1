@@ -183,27 +183,26 @@ function Install-LabFailoverStorage
     param
     ( )
 
-    $storageNode = Get-LabVm -Role FailoverStorage -ErrorAction SilentlyContinue
-    $role = $storageNode.Roles | Where-Object Name -eq FailoverStorage
-
-    $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
+    $storageNode = Get-LabVM -Role FailoverStorage -ErrorAction SilentlyContinue
+    $failoverNodes = Get-LabVM -Role FailoverNode -ErrorAction SilentlyContinue
+    
     $clusters = @{}
-
-    $failoverNodes | Foreach-Object {
-
-        $name = ($PSItem.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName']
+    
+    foreach ($failoverNode in $failoverNodes) {
+    
+        $name = ($failoverNode.Roles | Where-Object Name -eq 'FailoverNode').Properties['ClusterName']
         if (-not $name)
         {
             $name = 'ALCluster'
         }
-
+    
         if (-not $clusters.ContainsKey($name))
         {
             $clusters[$name] = @()
         }
-        $clusters[$name] += $_.Name
+        $clusters[$name] += $failoverNode.Name
     }
-
+    
     foreach ($cluster in $clusters.Clone().GetEnumerator())
     {
         $machines = $cluster.Value
@@ -213,9 +212,10 @@ function Install-LabFailoverStorage
             Start-Service -Name MSiSCSI
             "IQN:$((Get-WmiObject -Namespace root\wmi -Class MSiSCSIInitiator_MethodClass).iSCSINodeName)"
         } -PassThru -ErrorAction Stop
-
+    
         $clusters[$clusterName] = $initiatorIds
     }
+    
     Install-LabWindowsFeature -ComputerName $storageNode -FeatureName FS-iSCSITarget-Server
 
     foreach ($disk in $storageNode.Disks)
@@ -250,8 +250,9 @@ function Install-LabFailoverStorage
                 }
             }
 
-            $folder = New-Item -ItemType Directory -Path (Join-Path -Path $driveInfo -ChildPath $($disk.name)) -ErrorAction SilentlyContinue
-            $folder = Get-Item -Path (Join-Path -Path $driveInfo -ChildPath $($disk.name)) -ErrorAction Stop
+            $folderPath = Join-Path -Path $driveInfo -ChildPath $disk.Name
+            $folder = New-Item -ItemType Directory -Path $folderPath -ErrorAction SilentlyContinue
+            $folder = Get-Item -Path $folderPath -ErrorAction Stop
 
             foreach ($clu in $clusters.GetEnumerator())
             {
@@ -261,14 +262,17 @@ function Install-LabFailoverStorage
                 }
                 $diskTarget = (Join-Path -Path $folder.FullName -ChildPath "$($disk.name).vhdx")
                 $diskSize = [uint64]$disk.DiskSize*1GB
-                New-IscsiVirtualDisk -Path $diskTarget -Size $diskSize
+                if (-not (Get-IscsiVirtualDisk -Path $diskTarget -ErrorAction SilentlyContinue))
+                {
+                    New-IscsiVirtualDisk -Path $diskTarget -Size $diskSize
+                }
                 Add-IscsiVirtualDiskTargetMapping -TargetName $clu.Key -Path $diskTarget
             }
         } -Variable (Get-Variable -Name clusters, disk, driveletter) -ErrorAction Stop
 
         $targetAddress = $storageNode.IpV4Address
 
-        Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVm -Role FailoverNode) -ScriptBlock {
+        Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVM -Role FailoverNode) -ScriptBlock {
             if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
             {
                 iscsicli.exe QAddTargetPortal $targetAddress
@@ -278,7 +282,7 @@ function Install-LabFailoverStorage
             else
             {
                 New-IscsiTargetPortal -TargetPortalAddress $targetAddress
-                Get-IscsiTarget | Where-Object {-not $PSItem.IsConnected} | Connect-IscsiTarget -IsPersistent $true
+                Get-IscsiTarget | Where-Object {-not $_.IsConnected} | Connect-IscsiTarget -IsPersistent $true
             }
 
 
