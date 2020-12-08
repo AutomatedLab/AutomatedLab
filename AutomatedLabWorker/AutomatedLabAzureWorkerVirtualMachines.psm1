@@ -526,10 +526,29 @@
         {
             Write-ScreenInfo -Type Verbose -Message ('Creating NIC {0}' -f $nic.InterfaceName)
             $subnetName = 'default'
-            if (($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name)
+
+            foreach ($subnetConfig in $nic.VirtualSwitch.Subnets)
             {
-                $subnetName = ($nic.VirtualSwitch.Subnets | Where-Object -Property Name -ne AzureBastionSubnet | Select-Object -First 1).Name
+                if ($subnetConfig.Name -eq 'AzureBastionSubnet') { continue }
+
+                $usable = Get-NetworkRange -IPAddress $subnetConfig.AddressSpace.IpAddress.AddressAsString -SubnetMask $subnetConfig.AddressSpace.Cidr
+                if ($nic.Ipv4Address[0].IpAddress.AddressAsString -in $usable)
+                {
+                    $subnetName = $subnetConfig.Name
+                }
             }
+
+            $machineInboundRules = @(
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
+                }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
+                }
+                @{
+                    id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
+                }
+            )
              
             $nicTemplate = @{
                 dependsOn  = @(
@@ -547,23 +566,7 @@
                                 primary                         = $true
                                 privateIPAllocationMethod       = "Static"
                                 privateIPAddress                = $nic.Ipv4Address[0].IpAddress.AddressAsString
-                                privateIPAddressVersion         = "IPv4"                                
-                                loadBalancerBackendAddressPools = @(
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
-                                    }
-                                )
-                                loadBalancerInboundNatRules     = @(
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())rdpin')]"
-                                    }
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmin')]"
-                                    }
-                                    @{
-                                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'),'/inboundNatRules/$($machine.ResourceName.ToLower())winrmhttpsin')]"
-                                    }
-                                )
+                                privateIPAddressVersion         = "IPv4"
                             }
                             name       = "ipconfig1"
                         }
@@ -578,6 +581,17 @@
                     AutomatedLab = $Lab.Name
                     CreationTime = (Get-Date).ToString('yyyy-MM-dd HH:mm:ss')
                 }
+            }
+
+            # Add NAT only to first nic
+            if ($niccount -eq 0)
+            {
+                $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerInboundNatRules = $machineInboundRules
+                $nicTemplate.properties.ipConfigurations[0].properties.loadBalancerBackendAddressPools = @(
+                    @{
+                        id = "[concat(resourceId('Microsoft.Network/loadBalancers', '$($Lab.Name)$($nic.VirtualSwitch.ResourceName)loadbalancer'), '/backendAddressPools/$($Lab.Name)$($nic.VirtualSwitch.ResourceName)backendpoolconfig')]"
+                    }
+                )
             }
 
             if ($nic.Ipv4DnsServers)

@@ -24,6 +24,7 @@
 - Fixes an issue where SQL2019 sample databases were not installed correctly (#992)
 - Old types in Add / Get-Certificate2 threw many errors, fixed that.
 - Fixed processor count on multi-processor systems.
+- Fixed NIC to Subnet assignment on Azure
 
 ## 5.22.0 - 2020-07-10
 
