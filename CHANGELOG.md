@@ -24,6 +24,8 @@
 - Fixes an issue where SQL2019 sample databases were not installed correctly (#992)
 - Old types in Add / Get-Certificate2 threw many errors, fixed that.
 - Fixed processor count on multi-processor systems.
+- Fixed issue where Windows Admin Center would be installed when not specified (#1029)
+- Fixed an issue where SQLNcli would not be installed for SCCM custom roles (#1031)
 
 ## 5.22.0 - 2020-07-10
 
