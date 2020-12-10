@@ -44,6 +44,17 @@ function Install-LabFailoverCluster
             $clusterName = 'ALCluster'
         }
 
+        $ignoreNetwork = foreach ($network in (Get-Lab).VirtualNetworks)
+        {
+            $range = Get-NetworkRange -IPAddress $network.AddressSpace.Network.IPAddressAsString -SubnetMask $network.AddressSpace.Cidr
+            $inRange = $clusterIp | Where-Object {$_ -in $range}
+            
+            if (-not $inRange)
+            {
+                '{0}/{1}' -f $network.AddressSpace.Network.IPAddressAsString, $network.AddressSpace.Cidr
+            }
+        }
+
         if ($useDiskWitness -and -not ($firstNode.OperatingSystem.Version -lt 6.2))
         {
             Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Preparing cluster storage' -ScriptBlock {
@@ -147,6 +158,7 @@ function Install-LabFailoverCluster
                 Node                      = @($env:COMPUTERNAME) + $clusterNodeNames
                 StaticAddress             = $clusterIp
                 AdministrativeAccessPoint = $clusterAccessPoint
+                IgnoreNetwork             = $ignoreNetwork
                 ErrorAction               = 'Stop'
                 WarningAction             = 'SilentlyContinue'
             }
@@ -169,7 +181,7 @@ function Install-LabFailoverCluster
                     Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
                 }
             }
-        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint) -Function (Get-Command Sync-Parameter)
+        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint, ignoreNetwork) -Function (Get-Command Sync-Parameter)
     }
 }
 #endregion
