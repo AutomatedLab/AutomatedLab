@@ -7,6 +7,7 @@
 
 - Added SCVMM Role to deploy SCVMM 2016 and 2019
 - 'FailoverStorage' is available as a separate install option
+- Speed of Add-LabIsoImageDefinition on Azure increased by adding Path parameter
 
 ### Fixes
 
@@ -25,6 +26,9 @@
 - Old types in Add / Get-Certificate2 threw many errors, fixed that.
 - Fixed processor count on multi-processor systems.
 - Fixed NIC to Subnet assignment on Azure
+- Fixed issue where if AutomatedLab.LabSourcesLocation is configured with an empty string, testing for it was wrong. (#1035)
+- Fixed issue where Windows Admin Center would be installed when not specified (#1029)
+- Fixed an issue where SQLNcli would not be installed for SCCM custom roles (#1031)
 
 ## 5.22.0 - 2020-07-10
 
