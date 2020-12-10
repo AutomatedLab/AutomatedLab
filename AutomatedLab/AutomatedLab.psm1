@@ -718,6 +718,7 @@ function Install-Lab
         [switch]$FailoverCluster,
         [switch]$FileServer,
         [switch]$HyperV,
+        [switch]$WindowsAdminCenter,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1050,7 +1051,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ((Get-LabVm -Role WindowsAdminCenter))
+    if (($WindowsAdminCenter -or $performAll) -and (Get-LabVm -Role WindowsAdminCenter))
     {
         Write-ScreenInfo -Message 'Installing Windows Admin Center Servers' -TaskStart
         Write-ScreenInfo -Message "Machines to have Windows Admin Center installed: '$((Get-LabVM -Role WindowsAdminCenter | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
