@@ -429,7 +429,7 @@ GO
             $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
             $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
 
-            if (-not (Test-Path $downloadFolder))
+            if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
             {
                 $null = New-Item -ItemType Directory -Path $downloadFolder
             }

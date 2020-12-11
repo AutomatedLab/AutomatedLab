@@ -29,6 +29,7 @@
 - Fixed issue where if AutomatedLab.LabSourcesLocation is configured with an empty string, testing for it was wrong. (#1035)
 - Fixed issue where Windows Admin Center would be installed when not specified (#1029)
 - Fixed an issue where SQLNcli would not be installed for SCCM custom roles (#1031)
+- Fixed a visual issue during SQL deployment on Azure (New-Item is called on $labsources)
 
 ## 5.22.0 - 2020-07-10
 
