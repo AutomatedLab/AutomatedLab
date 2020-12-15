@@ -81,8 +81,14 @@ Task Test -Depends Init {
         Import-Module -Name Pester -MinimumVersion 5.0.0 -Force
 
         # Gather test results. Store them in a variable and file
-        $TestResults = Invoke-Pester -Path $ProjectRoot\Tests | ConvertTo-NUnitReport -ErrorAction SilentlyContinue
-        $TestResults.Save("$ProjectRoot\$TestFile")
+        $pesterOptions = [PesterConfiguration]::Default
+        $pesterOptions.Run.Path = "$ProjectRoot\Tests"
+        $pesterOptions.Run.PassThru = $true
+        $pesterOptions.TestResult.OutputFormat = 'NUnitXml'
+        $pesterOptions.TestResult.Enabled = $true
+        $pesterOptions.TestResult.OutputPath = "$ProjectRoot\$TestFile"
+
+        $TestResults = Invoke-Pester -Configuration $pesterOptions
 
         # In Appveyor?  Upload our tests! #Abstract this into a function?
         If ($ENV:BHBuildSystem -eq 'AppVeyor')

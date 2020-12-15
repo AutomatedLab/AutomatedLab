@@ -155,7 +155,6 @@ function Install-LabFailoverCluster
 
             $clusterParameters = @{
                 Name                      = $clusterName
-                Node                      = @($env:COMPUTERNAME) + $clusterNodeNames
                 StaticAddress             = $clusterIp
                 AdministrativeAccessPoint = $clusterAccessPoint
                 ErrorAction               = 'Stop'
@@ -174,6 +173,13 @@ function Install-LabFailoverCluster
             while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
             {
                 Start-Sleep -Seconds 1
+            }
+
+            Get-Cluster -Name $clusterName | Add-ClusterNode -Name $clusterNodeNames -ErrorAction SilentlyContinue
+
+            if (Compare-Object -ReferenceObject $clusterNodeNames -DifferenceObject (Get-ClusterNode -Name $clusterName).Name)
+            {
+                Write-Error -Message "Error deploying cluster $clusterName, not all nodes were added to the cluster"
             }
 
             if ($useDiskWitness)
