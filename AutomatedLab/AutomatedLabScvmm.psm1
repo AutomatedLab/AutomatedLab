@@ -1,4 +1,6 @@
-﻿﻿#region Install-LabScvmm
+﻿﻿# VMM implementation
+
+#region Install-LabScvmm
 function Install-LabScvmm
 {
     [CmdletBinding()]
