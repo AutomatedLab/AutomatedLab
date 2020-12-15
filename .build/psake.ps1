@@ -91,7 +91,7 @@ Task Test -Depends Init {
         $TestResults = Invoke-Pester -Configuration $pesterOptions
 
         # In Appveyor?  Upload our tests! #Abstract this into a function?
-        If ($ENV:BHBuildSystem -eq 'AppVeyor')
+        If ($ENV:APPVEYOR_JOB_ID)
         {
             (New-Object 'System.Net.WebClient').UploadFile(
                 "https://ci.appveyor.com/api/testresults/nunit/$($env:APPVEYOR_JOB_ID)",

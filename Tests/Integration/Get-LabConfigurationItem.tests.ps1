@@ -29,7 +29,7 @@
     }
 
     $functionCalls = (Get-ChildItem -Path "$rootpath\..\.." -Recurse -Filter *.ps*1 | Select-String -Pattern 'Get-LabConfigurationItem -Name [\w\.-]+').Matches.Value | Sort-Object -Unique
-    $skippedCalls = @('Sql')
+    $skippedCalls = @('Sql', 'LabSourcesLocation')
     $testCases = foreach ($call in $functionCalls)
     {
         if ($call -notmatch '-Name\s(?<Name>[\w\.-]+)') { continue }
