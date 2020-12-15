@@ -1264,7 +1264,7 @@ function Sync-LabAzureLabSources
         }
         $files = Get-ChildItem @fileParams
 
-        Write-ScreenInfo "with $($files.Count) files" -NoNewLine
+        Write-ScreenInfo "$($files.Count) files" -NoNewLine
         foreach ($file in $files)
         {
             Write-ProgressIndicator
@@ -1343,6 +1343,10 @@ function Get-LabAzureLabSourcesContent
         [string]
         $RegexFilter,
 
+        # Path relative to labsources file share
+        [string]
+        $Path,
+
         [switch]
         $File,
 
@@ -1354,7 +1358,12 @@ function Get-LabAzureLabSourcesContent
 
     $azureShare = Get-AzStorageShare -Name labsources -Context (Get-LabAzureLabSourcesStorage).Context
 
-    $content = Get-LabAzureLabSourcesContentRecursive -StorageContext $azureShare
+    $params = @{
+        StorageContext = $azureShare
+    }
+    if ($Path) {$params.Path = $Path}
+
+    $content = Get-LabAzureLabSourcesContentRecursive @params
 
     if (-not [string]::IsNullOrWhiteSpace($RegexFilter))
     {
@@ -1363,17 +1372,17 @@ function Get-LabAzureLabSourcesContent
 
     if ($File)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile'}
+        $content = $content | Where-Object -FilterScript { $PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFile' }
     }
 
     if ($Directory)
     {
-        $content = $content | Where-Object -FilterScript {$PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory'}
+        $content = $content | Where-Object -FilterScript { $PSItem.GetType().FullName -eq 'Microsoft.Azure.Storage.File.CloudFileDirectory' }
     }
 
     $content = $content |
-    Add-Member -MemberType ScriptProperty -Name FullName -Value {$this.Uri.AbsoluteUri} -Force -PassThru |
-    Add-Member -MemberType ScriptProperty -Name Length -Force -Value {$this.Properties.Length} -PassThru
+    Add-Member -MemberType ScriptProperty -Name FullName -Value { $this.Uri.AbsoluteUri } -Force -PassThru |
+    Add-Member -MemberType ScriptProperty -Name Length -Force -Value { $this.Properties.Length } -PassThru
 
     return $content
 }
@@ -1384,14 +1393,26 @@ function Get-LabAzureLabSourcesContentRecursive
     param
     (
         [Parameter(Mandatory)]
-        [object]$StorageContext
+        [object]$StorageContext,
+
+        # Path relative to labsources file share
+        [string]
+        $Path
     )
 
     Test-LabHostConnected -Throw -Quiet
 
     $content = @()
 
-    $temporaryContent = $StorageContext | Get-AzStorageFile
+    $temporaryContent = if ($Path)
+    {
+        $StorageContext | Get-AzStorageFile -Path $Path -ErrorAction SilentlyContinue
+    }
+    else
+    {
+        $StorageContext | Get-AzStorageFile
+    }
+
     foreach ($item in $temporaryContent)
     {
         if ($item.CloudFileDirectory)

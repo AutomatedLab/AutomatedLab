@@ -6,15 +6,11 @@ It is mandatory to define the name of the lab and the virtualization engine. So 
 New-LabDefinition -Name $labName -DefaultVirtualizationEngine HyperV -Path D:\AutomatedLabs -VmPath D:\AutomatedLab-VMs
 ```
 
-* **New-LabDefinition** Parameters
-** **Name**: The name if the lab to create. The name must be unique.
-** **DefaultVirtualizationEngine**: HyperV for local deployments or Azure to deploy into the cloud.
-** **Path**: This is the path were the lab files will go (screenshot 1). If not defined the labs will be stored in "C:\Users\<username>\Documents\AutomatedLab-Labs".
-** **VmPath**: This is where AL creates the virtual machines. If this path is not defined AL will choose the fastest drive by trying not to use the system drive and create a folder there names "AutomatedLab-VMs".
-
-
-***
-
+- **New-LabDefinition** Parameters
+  - **Name**: The name if the lab to create. The name must be unique.
+  - **DefaultVirtualizationEngine**: HyperV for local deployments or Azure to deploy into the cloud.
+  - **Path**: This is the path were the lab files will go (screenshot 1). If not defined the labs will be stored in "C:\Users\<username>\Documents\AutomatedLab-Labs".
+  - **VmPath**: This is where AL creates the virtual machines. If this path is not defined AL will choose the fastest drive by trying not to use the system drive and create a folder there names "AutomatedLab-VMs".
 
 During the lab deployment, AL exports your definitions into XML files. By default these are stored in 'C:\Users\<username>\Documents\AutomatedLab-Labs'. If you close the PowerShell session after the lab deployment, you can import the lab again using the Import-Lab cmdlet.
 
@@ -23,6 +19,10 @@ During the lab deployment, AL exports your definitions into XML files. By defaul
 The virtual machines are stored in a different folder. AL tries to determine the fastest drive and uses the cmdlet Get-DiskSpeed for this. AL tries to avoid using the system drive. The speed test runs only once and results are cached. However if you plug in a new drive, AL takes it into consideration and measure its speed.
 
 !https://cloud.githubusercontent.com/assets/11280760/20642671/252e839a-b415-11e6-8c80-307f7662d64a.JPG!
+
+Starting with version 5.23, each lab deployment will not only be validated before the deployment but also
+when the installation is finished. To enable the deployment validation, you need to install Pester 5.0.1+.
+We did not mark Pester as a dependency, as these tests are optional.
 
 ## Lab building with the REST API
 

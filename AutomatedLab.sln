@@ -231,6 +231,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Scenarios", "Scenarios", "{
 		LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1 = LabSources\SampleScripts\Scenarios\DSC Pull Scenario 2 (Pull Partial Configuration).ps1
 		LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1 = LabSources\SampleScripts\Scenarios\DSC With Release Pipeline.ps1
 		LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1 = LabSources\SampleScripts\Scenarios\Failover Clustering 1.ps1
+		LabSources\SampleScripts\Scenarios\Failover Clustering 2 (Shared Storage).ps1 = LabSources\SampleScripts\Scenarios\Failover Clustering 2 (Shared Storage).ps1
 		LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1 = LabSources\SampleScripts\Scenarios\Hybrid Environment HyperV and Azure 1.ps1
 		LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1 = LabSources\SampleScripts\Scenarios\Lab in a Box 1 - HyperV.ps1
 		LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1 = LabSources\SampleScripts\Scenarios\Lab in a Box 2 - Azure.ps1

@@ -815,14 +815,14 @@ function Get-LabSourcesLocationInternal
 
     if ($defaultEngine -eq 'kvm' -or ($IsLinux -and $Local.IsPresent))
     {
-        if (-not (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+        if (-not (Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation))
         {
             Set-PSFConfig -Module AutomatedLab -Name LabSourcesLocation -Description 'Location of lab sources folder' -Value $home/automatedlabsources -PassThru | Register-PSFConfig
         }
 
-        Get-PSFConfigValue AutomatedLab.LabSourcesLocation
+        Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation
     }
-    elseif (($defaultEngine -eq 'HyperV' -or $Local) -and (Get-PSFConfig -Module AutomatedLab -Name LabSourcesLocation))
+    elseif (($defaultEngine -eq 'HyperV' -or $Local) -and (Get-PSFConfigValue AutomatedLab.LabSourcesLocation))
     {
         Get-PSFConfigValue -FullName AutomatedLab.LabSourcesLocation
     }

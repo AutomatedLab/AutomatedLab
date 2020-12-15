@@ -1008,7 +1008,7 @@ function Test-LabTfsEnvironment
             }
             else
             {
-                $param.Credential = $credential
+                $param.Credential = $defaultParam.credential
             }
 
             $null = Invoke-RestMethod @param

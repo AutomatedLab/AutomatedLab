@@ -429,7 +429,7 @@ GO
             $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
             $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
 
-            if (-not (Test-Path $downloadFolder))
+            if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
             {
                 $null = New-Item -ItemType Directory -Path $downloadFolder
             }
@@ -633,13 +633,13 @@ function Install-LabSqlSampleDatabases
         FROM disk =
         '$($backupFile.FullName)'
         WITH MOVE 'WWI_Primary' TO
-        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
+        'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters.mdf',
         MOVE 'WWI_UserData' TO
-        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
+        'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters_UserData.ndf',
         MOVE 'WWI_Log' TO
-        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
+        'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters.ldf',
         MOVE 'WWI_InMemory_Data_1' TO
-        'C:\Program Files\Microsoft SQL Server\MSSQL14.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
+        'C:\Program Files\Microsoft SQL Server\MSSQL15.$roleInstance\MSSQL\DATA\WideWorldImporters_InMemory_Data_1',
         REPLACE
 "@
                 Invoke-Sqlcmd -ServerInstance $connectionInstance -Query $query

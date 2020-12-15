@@ -160,6 +160,13 @@ Set-PSFConfig -Module 'AutomatedLab' -Name AccessDatabaseEngine2016x86 -Value 'h
 #TFS Build Agent
 Set-PSFConfig -Module 'AutomatedLab' -Name BuildAgentUri -Value 'https://vstsagentpackage.azureedge.net/agent/2.153.1/vsts-agent-win-x64-2.153.1.zip' -Initialize -Validation string -Description 'Link to Azure DevOps/VSTS Build Agent'
 
+# SCVMM
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc11 -Value 'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.microsoft.com/download/D/5/E/D5EEF288-A277-45C8-855B-8E2CB7E25B96/x64/msodbcsql.msi'
+Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/8/6/c/86c218f3-4349-4aa5-beba-d05e48bbc286/adk/adksetup.exe'
+Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/3/c/2/3c2b23b2-96a0-452c-b9fd-6df72266e335/adkwinpeaddons/adkwinpesetup.exe'
+
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
 
@@ -202,6 +209,7 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2016Key -Value 'NQGJR-63HC8-X
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Key -Value 'M692G-8N2JP-GG8B2-2W2P7-YY7J6' -Validation String -Initialize -Description 'SP 2019 trial key'
 
 Set-PSFConfig -Module AutomatedLab -Name SharePoint2013Prerequisites -Value @(
+    'https://download.microsoft.com/download/E/2/1/E21644B5-2DF2-47C2-91BD-63C560427900/NDP452-KB2901907-x86-x64-AllOS-ENU.exe'
     "http://download.microsoft.com/download/9/1/3/9138773A-505D-43E2-AC08-9A77E1E0490B/1033/x64/sqlncli.msi",
     "http://download.microsoft.com/download/8/F/9/8F93DBBD-896B-4760-AC81-646F61363A6D/WcfDataServices.exe",
     "http://download.microsoft.com/download/9/1/D/91DA8796-BE1D-46AF-8489-663AB7811517/setup_msipc_x64.msi",
@@ -383,6 +391,58 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'Capabilities'
         )
         WindowsAdminCenter = @('Port', 'EnableDevMode', 'ConnectedNode', 'UseSsl')
+        Scvmm2016 = @(
+            'MUOptIn'
+            'SqlMachineName'
+            'LibraryShareDescription'
+            'UserName'
+            'CompanyName'
+            'IndigoHTTPSPort'
+            'SQMOptIn'
+            'TopContainerName'
+            'SqlInstanceName'
+            'RemoteDatabaseImpersonation'
+            'LibraryShareName'
+            'SqlDatabaseName'
+            'VmmServiceLocalAccount'
+            'IndigoNETTCPPort'
+            'CreateNewLibraryShare'
+            'WSManTcpPort'
+            'IndigoHTTPPort'
+            'ProductKey'
+            'BitsTcpPort'
+            'CreateNewSqlDatabase'
+            'ProgramFiles'
+            'LibrarySharePath'
+            'IndigoTcpPort'
+            'SkipServer'
+        )
+        Scvmm2019 = @(
+            'MUOptIn'
+            'SqlMachineName'
+            'LibraryShareDescription'
+            'UserName'
+            'CompanyName'
+            'IndigoHTTPSPort'
+            'SQMOptIn'
+            'TopContainerName'
+            'SqlInstanceName'
+            'RemoteDatabaseImpersonation'
+            'LibraryShareName'
+            'SqlDatabaseName'
+            'VmmServiceLocalAccount'
+            'IndigoNETTCPPort'
+            'CreateNewLibraryShare'
+            'WSManTcpPort'
+            'IndigoHTTPPort'
+            'ProductKey'
+            'BitsTcpPort'
+            'CreateNewSqlDatabase'
+            'ProgramFiles'
+            'LibrarySharePath'
+            'IndigoTcpPort'
+            'SkipServer'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
@@ -441,8 +501,13 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-ComputerName' -ScriptBlock {
     (Get-LabVM -All -IncludeLinux -SkipConnectionInfo).Name
 }
 
+Register-PSFTeppScriptblock Name 'AutomatedLab-Subscription' -ScriptBlock {
+    (Get-AzSubscription -WarningAction SilentlyContinue).Name
+}
+
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
 Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab -Parameter Name -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
+Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter SubscriptionName -Name 'AutomatedLab-Subscription'
 #endregion

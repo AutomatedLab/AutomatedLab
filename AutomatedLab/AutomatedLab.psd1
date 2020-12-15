@@ -50,7 +50,8 @@
         'AutomatedLabHyperV.psm1',
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',
-        'AutomatedLabRemoting.psm1'
+        'AutomatedLabRemoting.psm1',
+        'AutomatedLabScvmm.psm1'
     )
 
     RequiredModules        = @(
@@ -68,6 +69,7 @@
     CmdletsToExport        = @()
 
     FunctionsToExport      = @(
+        'Install-LabScvmm',
         'Install-LabRdsCertificate',
         'Uninstall-LabRdsCertificate',
         'New-LabSourcesFolder',
@@ -123,6 +125,7 @@
         'Get-LabWindowsFeature',
         'Get-LabAzureAvailableSku',
         'Get-LabAzureAvailableRoleSize',
+        'Get-LabTfsUri',
         'Import-Lab',
         'Import-LabAzureCertificate',
         'Install-Lab',
@@ -210,6 +213,7 @@
         'Test-LabMachineInternetConnectivity',
         'Test-LabHostRemoting',
         'Test-LabPathIsOnLabAzureLabSourcesStorage',
+        'Test-LabTfsEnvironment',
         'Unblock-LabSources',
         'Undo-LabHostRemoting',
         'Uninstall-LabWindowsFeature'

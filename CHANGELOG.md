@@ -1,7 +1,42 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE --> 
+<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
+
+### Enhancements
+
+### Fixes
+
+## 5.30.0 (2020-12-15)
+
+### Enhancements
+
+- Added SCVMM Role to deploy SCVMM 2016 and 2019
+- 'FailoverStorage' is available as a separate install option
+- Speed of Add-LabIsoImageDefinition on Azure increased by adding Path parameter
+- Added two new validators: DuplicateAddressAssigned, NonExistingDnsServerAssigned
+
+### Fixes
+
+- Aligned the name of the 'DscMofEncryption' template with its display name
+- Fixed issue with Install-LabSoftwarePackage not working for Azure VMs outside of $LabSources (Issue #989)
+- Installing RDS certificates and calling the Pester tests only if $performAll or explicitly defined. Before Install-Lab 
+  threw errors in case only some parts of the lab deployment should be done.
+- Remove-LabVm now removes associated resources on Azure (Issue #998 and #997)
+- New-LabSourcesFolder now actually copies dev branch.
+- Improved error handling in Azure ARM deployment for disks.
+- Added error handling when trying to restore snapshots in Azure that don't exist.
+- Fixes an issue with RegEx resulting in not initialize all additional disks (Issue #1006).
+- Fixes issues with Update-LabIsoImage not working
+- Fixes issue with DSC Pull Server role validation so that SQL2016 and newer is supported
+- Fixes an issue where SQL2019 sample databases were not installed correctly (#992)
+- Old types in Add / Get-Certificate2 threw many errors, fixed that.
+- Fixed processor count on multi-processor systems.
+- Fixed NIC to Subnet assignment on Azure
+- Fixed issue where if AutomatedLab.LabSourcesLocation is configured with an empty string, testing for it was wrong. (#1035)
+- Fixed issue where Windows Admin Center would be installed when not specified (#1029)
+- Fixed an issue where SQLNcli would not be installed for SCCM custom roles (#1031)
+- Fixed a visual issue during SQL deployment on Azure (New-Item is called on $labsources)
 
 ## 5.22.0 - 2020-07-10
 

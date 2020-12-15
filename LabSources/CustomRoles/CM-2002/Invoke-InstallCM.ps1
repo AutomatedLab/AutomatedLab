@@ -397,7 +397,7 @@ function Install-CMSite {
     #region Install SQL Server Native Client
     Write-ScreenInfo -Message "Installing SQL Server Native Client" -TaskStart
     $Path = "{0}\sqlncli.msi" -f $VMInstallDirectory
-    $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/qn /norestart" -ExpectedReturnCodes 0
+    $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/qn /norestart IACCEPTSQLNCLILICENSETERMS=YES" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
         $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"

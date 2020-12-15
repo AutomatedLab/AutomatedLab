@@ -1537,7 +1537,19 @@ function Add-LabIsoImageDefinition
     {
         if (Test-LabPathIsOnLabAzureLabSourcesStorage -Path $Path)
         {
-            $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
+            $isoRoot = 'ISOs'
+            if ($Path -notmatch 'ISOs$')
+            {
+                # Get relative path
+                $isoRoot = $Path.Replace($labSources, '')
+            }
+
+            if ($isoRoot.StartsWith('\') -or $isoRoot.StartsWith('/') )
+            {
+                $isoRoot = $isoRoot.Substring(1)
+            }
+
+            $isoFiles = Get-LabAzureLabSourcesContent -Path $isoRoot -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue
 
             if ( -not $IsLinux -and [System.IO.Path]::HasExtension($Path) -or $IsLinux -and $Path -match '\.iso$')
             {
@@ -2733,7 +2745,7 @@ function Add-LabMachineDefinition
                 }
                 else
                 {
-                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor).NumberOfLogicalProcessors 
+                    (Get-CimInstance -Namespace Root\CIMv2 -Class win32_processor | Measure-Object NumberOfLogicalProcessors -Sum).Sum
                 }
             }
             if ($script:processors -ge 2)

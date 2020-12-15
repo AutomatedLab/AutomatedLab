@@ -13,6 +13,9 @@ function Install-LabFailoverCluster
 
     Install-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering -IncludeAllSubFeature
 
+    Write-ScreenInfo -Message 'Restart post FCI Install'
+    Restart-LabVM $failoverNodes -Wait
+
     if (Get-LabVm -Role FailoverStorage)
     {
         Write-ScreenInfo -Message 'Waiting for failover storage server to complete installation'
@@ -64,7 +67,11 @@ function Install-LabFailoverCluster
                 Get-Disk | Where-Object -Property OperationalStatus -eq Offline | Set-Disk -IsOffline $false
             }
         }
-        else
+
+        $storageNode = Get-LabVm -Role FailoverStorage -ErrorAction SilentlyContinue
+        $role = $storageNode.Roles | Where-Object Name -eq FailoverStorage
+
+        if((-not $useDiskWitness) -or ($storageNode.Disks.Count -gt 1))
         {
             Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Preparing cluster storage' -ScriptBlock {
                 $diskpartCmd = 'LIST DISK'
@@ -157,7 +164,7 @@ function Install-LabFailoverCluster
 
             if ($useDiskWitness)
             {
-                $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk'
+                $clusterDisk = Get-ClusterResource -Cluster $clusterName -ErrorAction SilentlyContinue | Where-object -Property ResourceType -eq 'Physical Disk' | Select -First 1
 
                 if ($clusterDisk)
                 {
@@ -176,29 +183,26 @@ function Install-LabFailoverStorage
     param
     ( )
 
-    $storageNode = Get-LabVm -Role FailoverStorage -ErrorAction SilentlyContinue
-    $role = $storageNode.Roles | Where-Object Name -eq FailoverStorage
-
-    $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
+    $storageNode = Get-LabVM -Role FailoverStorage -ErrorAction SilentlyContinue
+    $failoverNodes = Get-LabVM -Role FailoverNode -ErrorAction SilentlyContinue
+    
     $clusters = @{}
-
-    $failoverNodes | Foreach-Object {
-
-        $name = ($PSItem.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName']
+    
+    foreach ($failoverNode in $failoverNodes) {
+    
+        $name = ($failoverNode.Roles | Where-Object Name -eq 'FailoverNode').Properties['ClusterName']
         if (-not $name)
         {
             $name = 'ALCluster'
         }
-
+    
         if (-not $clusters.ContainsKey($name))
         {
             $clusters[$name] = @()
         }
-        $clusters[$name] += $_.Name
+        $clusters[$name] += $failoverNode.Name
     }
-
-    $lunDrive = $role.Properties['LunDrive'][0] # Select drive letter only
-
+    
     foreach ($cluster in $clusters.Clone().GetEnumerator())
     {
         $machines = $cluster.Value
@@ -208,62 +212,81 @@ function Install-LabFailoverStorage
             Start-Service -Name MSiSCSI
             "IQN:$((Get-WmiObject -Namespace root\wmi -Class MSiSCSIInitiator_MethodClass).iSCSINodeName)"
         } -PassThru -ErrorAction Stop
-
+    
         $clusters[$clusterName] = $initiatorIds
     }
-
+    
     Install-LabWindowsFeature -ComputerName $storageNode -FeatureName FS-iSCSITarget-Server
 
-    Invoke-LabCommand -ActivityName 'Creating iSCSI target' -ComputerName $storageNode -ScriptBlock {
-        if (-not $lunDrive)
-        {
-            $lunDrive = $env:SystemDrive[0]
-        }
+    foreach ($disk in $storageNode.Disks)
+    {
+        Write-ScreenInfo "Working on $($disk.name)"
+        #$lunDrive = $role.Properties['LunDrive'][0] # Select drive letter only
+        $driveLetter = $disk.DriveLetter
 
-        $driveInfo = [System.IO.DriveInfo] [string] $lunDrive
-
-        if (-not (Test-Path $driveInfo))
-        {
-            $offlineDisk = Get-Disk | Where-Object -Property OperationalStatus -eq Offline | Select-Object -First 1
-            if ($offlineDisk)
+        Invoke-LabCommand -ActivityName "Creating iSCSI target for $($disk.name)" -ComputerName $storageNode -ScriptBlock {
+            # assign drive letter if not provided
+            if (-not $driveLetter)
             {
-                $offlineDisk | Set-Disk -IsOffline $false
-                $offlineDisk | Set-Disk -IsReadOnly $false
+                # http://vcloud-lab.com/entries/windows-2016-server-r2/find-next-available-free-drive-letter-using-powershell-
+                #$driveLetter = (68..90 | % {$L = [char]$_; if ((gdr).Name -notContains $L) {$L}})[0]
+                $driveLetter = $env:SystemDrive[0]
             }
 
-            if (-not ($offlineDisk | Get-Partition | Get-Volume))
+            $driveInfo = [System.IO.DriveInfo] [string] $driveLetter
+
+            if (-not (Test-Path $driveInfo))
             {
-                $offlineDisk | New-Volume -FriendlyName Luns -FileSystem ReFS -DriveLetter $lunDrive
+                $offlineDisk = Get-Disk | Where-Object -Property OperationalStatus -eq Offline | Select-Object -First 1
+                if ($offlineDisk)
+                {
+                    $offlineDisk | Set-Disk -IsOffline $false
+                    $offlineDisk | Set-Disk -IsReadOnly $false
+                }
+
+                if (-not ($offlineDisk | Get-Partition | Get-Volume))
+                {
+                    $offlineDisk | New-Volume -FriendlyName $disk -FileSystem ReFS -DriveLetter $driveLetter
+                }
             }
-        }
 
-        $lunFolder = New-Item -ItemType Directory -Path (Join-Path -Path $driveInfo -ChildPath LUNs) -ErrorAction SilentlyContinue
-        $lunFolder = Get-Item -Path (Join-Path -Path $driveInfo -ChildPath LUNs) -ErrorAction Stop
+            $folderPath = Join-Path -Path $driveInfo -ChildPath $disk.Name
+            $folder = New-Item -ItemType Directory -Path $folderPath -ErrorAction SilentlyContinue
+            $folder = Get-Item -Path $folderPath -ErrorAction Stop
 
-        foreach ($clu in $clusters.GetEnumerator())
-        {
-            New-IscsiServerTarget -TargetName $clu.Key -InitiatorIds $clu.Value
-            $diskTarget = (Join-Path -Path $lunFolder.FullName -ChildPath "$($clu.Key).vhdx")
-            New-IscsiVirtualDisk -Path $diskTarget -Size 1GB
-            Add-IscsiVirtualDiskTargetMapping -TargetName $clu.Key -Path $diskTarget
-        }
+            foreach ($clu in $clusters.GetEnumerator())
+            {
+                if (-not (Get-IscsiServerTarget -TargetName $clu.Key -ErrorAction SilentlyContinue))
+                {
+                    New-IscsiServerTarget -TargetName $clu.Key -InitiatorIds $clu.Value
+                }
+                $diskTarget = (Join-Path -Path $folder.FullName -ChildPath "$($disk.name).vhdx")
+                $diskSize = [uint64]$disk.DiskSize*1GB
+                if (-not (Get-IscsiVirtualDisk -Path $diskTarget -ErrorAction SilentlyContinue))
+                {
+                    New-IscsiVirtualDisk -Path $diskTarget -Size $diskSize
+                }
+                Add-IscsiVirtualDiskTargetMapping -TargetName $clu.Key -Path $diskTarget
+            }
+        } -Variable (Get-Variable -Name clusters, disk, driveletter) -ErrorAction Stop
 
-    } -Variable (Get-Variable -Name clusters, lunDrive) -ErrorAction Stop
+        $targetAddress = $storageNode.IpV4Address
 
-    $targetAddress = $storageNode.IpV4Address
+        Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVM -Role FailoverNode) -ScriptBlock {
+            if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
+            {
+                iscsicli.exe QAddTargetPortal $targetAddress
+                $target = ((iscsicli.exe ListTargets) -match 'iqn.+target')[0].Trim()
+                iscsicli.exe QLoginTarget $target
+            }
+            else
+            {
+                New-IscsiTargetPortal -TargetPortalAddress $targetAddress
+                Get-IscsiTarget | Where-Object {-not $_.IsConnected} | Connect-IscsiTarget -IsPersistent $true
+            }
 
-    Invoke-LabCommand -ActivityName 'Connecting iSCSI target' -ComputerName (Get-LabVm -Role FailoverNode) -ScriptBlock {
-        if (-not (Get-Command New-IscsiTargetPortal -ErrorAction SilentlyContinue))
-        {
-            iscsicli.exe QAddTargetPortal $targetAddress
-            $target = ((iscsicli.exe ListTargets) -match 'iqn.+target')[0].Trim()
-            iscsicli.exe QLoginTarget $target
-        }
-        else
-        {
-            New-IscsiTargetPortal -TargetPortalAddress $targetAddress
-            Get-IscsiTarget | Where-Object {-not $PSItem.IsConnected} | Connect-IscsiTarget -IsPersistent $true
-        }
-    } -Variable (Get-Variable targetAddress) -ErrorAction Stop
+
+        } -Variable (Get-Variable targetAddress) -ErrorAction Stop
+    }
 }
 #endregion

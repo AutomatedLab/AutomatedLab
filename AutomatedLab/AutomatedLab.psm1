@@ -714,11 +714,15 @@ function Install-Lab
         [switch]$Office2016,
         [switch]$AzureServices,
         [switch]$TeamFoundation,
+        [switch]$FailoverStorage,
         [switch]$FailoverCluster,
         [switch]$FileServer,
         [switch]$HyperV,
+        [switch]$WindowsAdminCenter,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
+        [switch]$InstallRdsCertificates,
+        [switch]$PostDeploymentTests,
         [switch]$NoValidation,
         [int]$DelayBetweenComputers
     )
@@ -969,16 +973,6 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
-    {
-        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
-
-        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
-        Install-LabDscPullServer
-
-        Write-ScreenInfo -Message 'Done' -TaskEnd
-    }
-
     if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
     {
         Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
@@ -987,10 +981,20 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode,FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    
+    if (($FailoverStorage -or $performAll) -and (Get-LabVM -Role FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
-        Write-ScreenInfo -Message 'Installing Failover cluster' -TaskStart
+        Write-ScreenInfo -Message 'Installing Failover Storage' -TaskStart
+
+        Start-LabVM -RoleName FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        Install-LabFailoverStorage
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Failover Cluster' -TaskStart
 
         Start-LabVM -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverCluster
@@ -1009,6 +1013,16 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2017)   { Write-ScreenInfo -Message "Machines to have SQL Server 2017 installed: '$((Get-LabVM -Role SQLServer2017).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
+
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
+    {
+        Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+
+        Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
+        Install-LabDscPullServer
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1037,7 +1051,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if ((Get-LabVm -Role WindowsAdminCenter))
+    if (($WindowsAdminCenter -or $performAll) -and (Get-LabVm -Role WindowsAdminCenter))
     {
         Write-ScreenInfo -Message 'Installing Windows Admin Center Servers' -TaskStart
         Write-ScreenInfo -Message "Machines to have Windows Admin Center installed: '$((Get-LabVM -Role WindowsAdminCenter | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
@@ -1118,6 +1132,21 @@ function Install-Lab
         Write-ScreenInfo -Message 'Team Foundation Server environment deployed'
     }
 
+    if (($Scvmm -or $performAll) -and (Get-LabVM -Role SCVMM))
+    {
+        Write-ScreenInfo -Message 'Installing SCVMM'
+        Write-ScreenInfo -Message "Machines to have SCVMM Management or Console installed: '$((Get-LabVM -Role SCVMM).Name -join ', ')'"
+
+        $machinesToStart = Get-LabVM -Role SCVMM | Where-Object -Property SkipDeployment -eq $false
+        if ($machinesToStart)
+        {
+            Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        }
+
+        Install-LabScvmm
+        Write-ScreenInfo -Message 'SCVMM environment deployed'
+    }
+
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
     {
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
@@ -1125,9 +1154,9 @@ function Install-Lab
         if ($linuxHosts)
         {
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
-        On Windows, those are installed from scratch and do not use differencing disks.
+                On Windows, those are installed from scratch and do not use differencing disks.
         
-        This process may take up to 30 minutes."
+            This process may take up to 30 minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1178,7 +1207,14 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    Install-LabRdsCertificate
+    if ($InstallRdsCertificates -or $performAll)
+    {
+        Write-ScreenInfo -Message 'Installing RDS certificates of lab machines' -TaskStart
+        
+        Install-LabRdsCertificate
+        
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
 
     try
     {
@@ -1188,6 +1224,28 @@ function Install-Lab
     {
         # Nothing to catch - if an error occurs, we simply do not get telemetry.
         Write-PSFMessage -Message ('Error sending telemetry: {0}' -f $_.Exception)
+    }
+
+    if (-not $NoValidation -and ($performAll -or $PostDeploymentTests))
+    {
+        if (Get-InstalledModule -Name Pester -MinimumVersion 5.0 -ErrorAction SilentlyContinue)
+        {    
+            Write-ScreenInfo -Type Verbose -Message "Testing deployment with Pester"
+            $result = Invoke-LabPester -Lab (Get-Lab) -Show Normal -PassThru
+            if ($result.Result -eq 'Failed')
+            {
+                Write-ScreenInfo -Type Error -Message "Lab deployment seems to have failed. The following tests were not passed:"
+            }
+
+            foreach ($fail in $result.Failed)
+            {
+                Write-ScreenInfo -Type Error -Message "$($fail.Name)"
+            }
+        }
+        else
+        {
+            Write-Warning "Cannot run post-deployment Pester test as there is no Pester version 5.0+ installed. Please run 'Install-Module -Name Pester -Force' if you want the post-deployment script to work. You can start the post-deployment tests separately with the command 'Install-Lab -PostDeploymentTests'"
+        }
     }
 
     Send-ALNotification -Activity 'Lab finished' -Message 'Lab deployment successfully finished.' -Provider (Get-LabConfigurationItem -Name Notifications.SubscribedProviders)
@@ -2568,6 +2626,13 @@ function Install-LabSoftwarePackage
             Add-Type -Path '/ALLibraries/full/AutomatedLab.Common.dll' -ErrorAction SilentlyContinue
         }
 
+        if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
+        {
+            # Often issues with Zone Mapping
+            $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            Copy-Item -Path $installParams.Path -Destination $newPath -Force
+            $installParams.Path = $newPath
+        }
         Install-SoftwarePackage @installParams
     }
 
@@ -3369,7 +3434,7 @@ function New-LabSourcesFolder
     {
         $temporaryPath = [System.IO.Path]::GetTempFileName().Replace('.tmp', '')
         [void] (New-Item -ItemType Directory -Path $temporaryPath -Force)
-        $archivePath = (Join-Path -Path $temporaryPath -ChildPath 'master.zip')
+        $archivePath = (Join-Path -Path $temporaryPath -ChildPath "$Branch.zip")
 
         try
         {
@@ -3379,6 +3444,7 @@ function New-LabSourcesFolder
         {
             Write-Error "Could not download the LabSources folder due to connection issues. Please try again." -ErrorAction Stop
         }
+
         Microsoft.PowerShell.Archive\Expand-Archive -Path $archivePath -DestinationPath $temporaryPath
 
         if (-not (Test-Path -Path $Path))
@@ -3386,7 +3452,7 @@ function New-LabSourcesFolder
             $Path = (New-Item -ItemType Directory -Path $Path).FullName
         }
 
-        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-master/LabSources/*) -Destination $Path -Recurse -Force:$Force
+        Copy-Item -Path (Join-Path -Path $temporaryPath -ChildPath AutomatedLab-*/LabSources/*) -Destination $Path -Recurse -Force:$Force
 
         Remove-Item -Path $temporaryPath -Recurse -Force -ErrorAction SilentlyContinue
 
