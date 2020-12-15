@@ -46,12 +46,12 @@ function Install-LabFailoverCluster
 
         $ignoreNetwork = foreach ($network in (Get-Lab).VirtualNetworks)
         {
-            $range = Get-NetworkRange -IPAddress $network.AddressSpace.Network.IPAddressAsString -SubnetMask $network.AddressSpace.Cidr
+            $range = Get-NetworkRange -IPAddress $network.AddressSpace.Network.AddressAsString -SubnetMask $network.AddressSpace.Cidr
             $inRange = $clusterIp | Where-Object {$_ -in $range}
             
             if (-not $inRange)
             {
-                '{0}/{1}' -f $network.AddressSpace.Network.IPAddressAsString, $network.AddressSpace.Cidr
+                '{0}/{1}' -f $network.AddressSpace.Network.AddressAsString, $network.AddressSpace.Cidr
             }
         }
 
@@ -158,9 +158,13 @@ function Install-LabFailoverCluster
                 Node                      = @($env:COMPUTERNAME) + $clusterNodeNames
                 StaticAddress             = $clusterIp
                 AdministrativeAccessPoint = $clusterAccessPoint
-                IgnoreNetwork             = $ignoreNetwork
                 ErrorAction               = 'Stop'
                 WarningAction             = 'SilentlyContinue'
+            }
+
+            if ($ignoreNetwork)
+            {
+                $clusterParameters.IgnoreNetwork = $ignoreNetwork
             }
 
             $clusterParameters = Sync-Parameter -Command (Get-Command New-Cluster) -Parameters $clusterParameters
