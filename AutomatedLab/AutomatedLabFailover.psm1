@@ -199,6 +199,7 @@ function Install-LabFailoverStorage
 
     $storageNode = Get-LabVM -Role FailoverStorage -ErrorAction SilentlyContinue
     $failoverNodes = Get-LabVM -Role FailoverNode -ErrorAction SilentlyContinue
+    Start-LabVm -ComputerName (Get-LabVm -Role FailoverStorage,FailoverNode) -Wait
     
     $clusters = @{}
     
