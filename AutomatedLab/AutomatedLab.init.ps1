@@ -501,7 +501,7 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-ComputerName' -ScriptBlock {
     (Get-LabVM -All -IncludeLinux -SkipConnectionInfo).Name
 }
 
-Register-PSFTeppScriptblock Name 'AutomatedLab-Subscription' -ScriptBlock {
+Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
     (Get-AzSubscription -WarningAction SilentlyContinue).Name
 }
 
