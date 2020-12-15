@@ -5,6 +5,12 @@
 
 ### Enhancements
 
+### Fixes
+
+## 5.30.0 (2020-12-15)
+
+### Enhancements
+
 - Added SCVMM Role to deploy SCVMM 2016 and 2019
 - 'FailoverStorage' is available as a separate install option
 - Speed of Add-LabIsoImageDefinition on Azure increased by adding Path parameter
