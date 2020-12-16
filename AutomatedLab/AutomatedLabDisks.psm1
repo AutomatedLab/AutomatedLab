@@ -439,17 +439,6 @@ function Update-LabIsoImage
     }
     #endregion Get-IsoImageName
 
-    $isUefi = try
-    {
-        Get-SecureBootUEFI -Name SetupMode
-    }
-    catch { }
-
-    if (-not $isUefi)
-    {
-        throw "Updating ISO files does only work on UEFI systems due to a limitation of oscdimg.exe"
-    }
-
     if (-not (Test-Path -Path $SourceIsoImagePath -PathType Leaf))
     {
         Write-Error "The specified ISO image '$SourceIsoImagePath' could not be found"
