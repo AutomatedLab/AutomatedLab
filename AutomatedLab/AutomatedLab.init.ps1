@@ -416,6 +416,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'LibrarySharePath'
             'IndigoTcpPort'
             'SkipServer'
+            'ConnectHyperVRoleVms'
         )
         Scvmm2019 = @(
             'MUOptIn'
@@ -442,6 +443,7 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'LibrarySharePath'
             'IndigoTcpPort'
             'SkipServer'
+            'ConnectHyperVRoleVms'
         )
     }
     MandatoryRoleProperties = @{

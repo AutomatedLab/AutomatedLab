@@ -30,9 +30,9 @@ function Install-LabScvmm
         TopContainerName            = 'CN=VMMServer,DC=contoso,DC=com'
     }
     $iniContentConsole = @{
-        ProgramFiles             = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
-        IndigoTcpPort            = '8100'
-        MUOptIn                  = '0'
+        ProgramFiles  = 'C:\Program Files\Microsoft System Center\Virtual Machine Manager {0}'
+        IndigoTcpPort = '8100'
+        MUOptIn       = '0'
     }
     $setupCommandLineServer = '/server /i /f C:\Server.ini /VmmServiceDomain {0} /VmmServiceUserName {1} /VmmServiceUserPassword {2} /SqlDBAdminDomain {0} /SqlDBAdminName {1} /SqlDBAdminPassword {2} /IACCEPTSCEULA'
 
@@ -64,8 +64,8 @@ function Install-LabScvmm
     }
     else
     {
-        & $adkFile.FullName /quiet /layout (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline)
-        & $adkpeFile.FullName /quiet /layout (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline)
+        Start-Process -FilePath $adkFile.FullName -ArgumentList "/quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline)" -Wait -NoNewWindow
+        Start-Process -FilePath $adkpeFile.FullName -ArgumentList " /quiet /layout $(Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline)" -Wait -NoNewWindow
         Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKoffline) -ComputerName $all
         Copy-LabFileItem -Path (Join-Path (Get-LabSourcesLocation -Local) Tools/ADKPEoffline) -ComputerName $all
     }
@@ -92,14 +92,14 @@ function Install-LabScvmm
         }
 
         $iniServer['ProgramFiles'] = $iniServer['ProgramFiles'] -f $role.Name.ToString().Substring(5)
-        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role -eq [AutomatedLab.Roles]::Scvmm2016)
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2016')
         {
-            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2012,SQLServer2014,SQLServer2016 | Select-Object -First 1 -ExpandProperty Fqdn
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2012, SQLServer2014, SQLServer2016 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
-        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role -eq [AutomatedLab.Roles]::Scvmm2019)
+        if ($iniServer['SqlMachineName'] -eq 'REPLACE' -and $role.Name -eq 'Scvmm2019')
         {
-            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016,SQLServer2017 | Select-Object -First 1 -ExpandProperty Fqdn
+            $iniServer['SqlMachineName'] = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1 -ExpandProperty Fqdn
         }
 
         Invoke-LabCommand -ComputerName (Get-LabVM -Role ADDS | Select-Object -First 1) -ScriptBlock {
@@ -141,6 +141,38 @@ function Install-LabScvmm
     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
+
+    # Jobs seem to end prematurely...
+    Remove-LabPSSession
+    Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ScriptBlock {        
+        $installer = Get-Process -Name SetupVM -ErrorAction SilentlyContinue
+        if ($installer)
+        {
+            $installer.WaitForExit((New-TimeSpan -Minutes 20).TotalMilliseconds)
+        }
+    }
+
+    # Onboard Hyper-V servers
+    foreach ($vm in (Get-LabVM -Role SCVMM))
+    {
+        $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
+        if ([Convert]::ToBoolean($role.Properties['SkipServer'])) { continue }
+
+        if ($role.Properties['ConnectHyperVRoleVms'])
+        {
+            $vmNames = $role.Properties['ConnectHyperVRoleVms'] -split '\s*(?:,|;)\s*'
+            $hyperVisors = (Get-LabVm -Role HyperV -Filter { $_.Name -in $vmNames }).FQDN
+            $joinCred = $vm.GetCredential((Get-Lab))
+            Invoke-LabCommand -ComputerName $vm -ActivityName "Registering Hypervisors with $vm" -ScriptBlock {
+                $module = Get-Item "C:\Program Files\Microsoft System Center\Virtual Machine Manager *\bin\psModules\virtualmachinemanager\virtualmachinemanager.psd1"
+                Import-Module -Name $module.FullName
+                foreach ($vmHost in $hyperVisors)
+                {
+                    $null = Add-SCVMHost -ComputerName $vmHost -Credential $joinCred -VmmServer $vm.FQDN
+                }
+            } -Variable (Get-Variable hyperVisors, joinCred, vm)
+        }
+    }
 
     # Console, if SkipServer was chosen
     $jobs = foreach ($vm in (Get-LabVM -Role SCVMM))
