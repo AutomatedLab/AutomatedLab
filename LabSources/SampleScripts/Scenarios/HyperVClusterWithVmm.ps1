@@ -30,16 +30,10 @@ $cluster1 = Get-LabMachineRoleDefinition -Role FailoverNode -Properties @{ Clust
 Add-LabMachineDefinition -Name HV1 -Roles $cluster1, HyperV -Memory 8GB
 Add-LabMachineDefinition -Name HV2 -Roles $cluster1, HyperV -Memory 8GB
 $vmmRole = Get-LabMachineRoleDefinition -Role Scvmm2019 -Properties @{
-    ConnectHyperVRoleVms        = 'HV1, HV2'
+    ConnectClusters             =  'Clu1'
 }
-Add-LabMachineDefinition -Name VMM -Roles $vmmRole
+Add-LabMachineDefinition -Name VMM -Memory 3gb -Roles $vmmRole
 
 Install-Lab
-
-# Use this, or a PostInstallationActivity script to customize your installation of SCVMM.
-# Maybe add in a sprinkle of Windows Admin Center as well ;)
-Invoke-LabCommand -ComputerName VMM -ScriptBlock {
-    Add-SCVmhostCluster -Name Clu1.contoso.com -VmmServer VMM.contoso.com
-}
 
 Show-LabDeploymentSummary

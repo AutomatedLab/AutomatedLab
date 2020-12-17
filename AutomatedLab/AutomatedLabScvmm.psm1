@@ -136,7 +136,6 @@ function Install-LabScvmm
                 $iniServer.GetEnumerator() | ForEach-Object { "$($_.Key) = $($_.Value)" | Add-Content C:\Server.ini }
             }
             Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCVMM\setup.exe -CommandLine $commandLine -AsJob -PassThru -UseShellExecute -Timeout 20
-            Dismount-LabIsoImage -ComputerName $vm -SupressOutput
         }
     }
 
@@ -144,6 +143,7 @@ function Install-LabScvmm
 
     # Jobs seem to end prematurely...
     Remove-LabPSSession
+    Dismount-LabIsoImage -ComputerName (Get-LabVm -Role SCVMM) -SupressOutput
     Invoke-LabCommand -ComputerName (Get-LabVm -Role SCVMM) -ScriptBlock {        
         $installer = Get-Process -Name SetupVM -ErrorAction SilentlyContinue
         if ($installer)
@@ -158,19 +158,35 @@ function Install-LabScvmm
         $role = $vm.Roles | Where-Object Name -in Scvmm2016, Scvmm2019
         if ([Convert]::ToBoolean($role.Properties['SkipServer'])) { continue }
 
-        if ($role.Properties['ConnectHyperVRoleVms'])
+        if ($role.Properties.ContainsKey('ConnectHyperVRoleVms') -or $role.Properties.ContainsKey('ConnectClusters'))
         {
             $vmNames = $role.Properties['ConnectHyperVRoleVms'] -split '\s*(?:,|;)\s*'
+            $clusterNames = $role.Properties['ConnectClusters'] -split '\s*(?:,|;)\s*'
             $hyperVisors = (Get-LabVm -Role HyperV -Filter { $_.Name -in $vmNames }).FQDN
+            $clusters = Get-LabVm | foreach {$_.Roles | Where Name -eq FailoverNode}
+            [string[]] $clusterNameProperties = $clusters['ClusterName'] | Select-Object -Unique
+            if ($clusters.Where({-not $_.Properties.ContainsKey('ClusterName')}))
+            {
+                $clusterNameProperties += 'ALCluster'
+            }
+
+            $clusterNameProperties = $clusterNameProperties.Where({$_.Name -in $clusterNames})
+
             $joinCred = $vm.GetCredential((Get-Lab))
             Invoke-LabCommand -ComputerName $vm -ActivityName "Registering Hypervisors with $vm" -ScriptBlock {
                 $module = Get-Item "C:\Program Files\Microsoft System Center\Virtual Machine Manager *\bin\psModules\virtualmachinemanager\virtualmachinemanager.psd1"
                 Import-Module -Name $module.FullName
+                
                 foreach ($vmHost in $hyperVisors)
                 {
-                    $null = Add-SCVMHost -ComputerName $vmHost -Credential $joinCred -VmmServer $vm.FQDN
+                    $null = Add-SCVMHost -ComputerName $vmHost -Credential $joinCred -VmmServer $vm.FQDN -ErrorAction SilentlyContinue
                 }
-            } -Variable (Get-Variable hyperVisors, joinCred, vm)
+
+                foreach ($cluster in $clusterNameProperties)
+                {
+                    Add-SCVMHostCluster -Name $cluster -Credential $joinCred -VmmServer $vm.FQDN -ErrorAction SilentlyContinue
+                }
+            } -Variable (Get-Variable hyperVisors, joinCred, vm, clusterNameProperties)
         }
     }
 

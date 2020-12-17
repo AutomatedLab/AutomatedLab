@@ -33,53 +33,91 @@ if (-not (Get-Module -List PlatyPs))
     Install-Module PlatyPS -Force -AllowClobber -SkipPublisherCheck
 }
 
+Write-Host 'Trying to build generic help content'
+# Prepare about_help from wiki content (until a better solution presents itself)
+@'
+# AutomatedLab Roles Overview
+## about_AutomatedLabRoles
+
+# SHORT DESCRIPTION
+Generic help about the role system of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+$roleContent = Get-Content -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md) | ForEach-Object {if($_.StartsWith('#')){$_.Insert(0, '#')} else {$_}}
+$roleContent | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+
+$helpFiles = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles) -Exclude roles.md
+$roleContent = @'
+# AutomatedLab {0} Role
+## about_AutomatedLab_{0}
+
+# SHORT DESCRIPTION
+Generic help about the Role '{0}' in AutomatedLab
+
+# LONG DESCRIPTION
+
+'@
+foreach ($helpfile in $helpFiles)
+{
+    $rolename = $helpFile.BaseName
+
+    $roleContent -f $rolename | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLab_$rolename.md)
+    foreach ($line in ($helpFile | Get-Content))
+    {
+        if ($line.StartsWith('#'))
+        {
+            $line = $line.Insert(0, '#')
+        }
+        $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLab_$rolename.md)
+    }
+}
+
+@'
+# AutomatedLab Basics
+## about_AutomatedLabBasics
+
+# SHORT DESCRIPTION
+Generic help about the basics of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+[System.Collections.Generic.List[System.IO.FileInfo]]$helpFiles = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic/gettingstarted.md)
+$helpFiles.AddRange([IO.FileInfo[]](Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic)))
+foreach ($line in ($helpFiles | Get-Content))
+{
+    if ($line.StartsWith('#'))
+    {
+        $line = $line.Insert(0, '#')
+    }
+    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+}
+
+@'
+# AutomatedLab Advanced
+## about_AutomatedLabAdvanced
+
+# SHORT DESCRIPTION
+Generic help about the advanced mechanics of AutomatedLab
+
+# LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+$advHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Advanced)
+foreach ($line in ($advHelp | Get-Content))
+{
+    if ($line.StartsWith('#'))
+    {
+        $line = $line.Insert(0, '#')
+    }
+    $line | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+}
+
 foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
 {
     Write-Host "Building help for module '$moduleName'"
-    # Prepare about_help from wiki content (until a better solution presents itself)
-    $rolesRoot = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md)
-    $rolesHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles)
-    @'
-TOPIC
-    about_AutomatedLabRoles
-	
-SHORT DESCRIPTION
-    Explains how to use of AutomatedLab's roles
-	
-LONG DESCRIPTION
-
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
-    Get-Content -Path $rolesRoot | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
-    $rolesHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
-
-    @'
-TOPIC
-    about_AutomatedLabBasics
-    
-SHORT DESCRIPTION
-    Explains some of the basics of AutomatedLab
-    
-LONG DESCRIPTION
-    
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
-    $basicsRoot = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic/gettingstarted.md)
-    $basicHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic)
-    Get-Content -Path $basicsRoot | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
-    $basicHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
-
-    @'
-TOPIC
-    about_AutomatedLabAdvanced
-    
-SHORT DESCRIPTION
-    Explains some of the advanced mechanics of AutomatedLab
-    
-LONG DESCRIPTION
-    
-'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
-    $advHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Advanced)
-    $advHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
-
     foreach ($language in ($moduleName | Get-ChildItem -Directory))
     {
         $ci = try { [cultureinfo]$language.BaseName} catch { }
