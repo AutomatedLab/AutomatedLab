@@ -36,6 +36,50 @@ if (-not (Get-Module -List PlatyPs))
 foreach ($moduleName in (Get-ChildItem -Path $SolutionDir\Help -Directory))
 {
     Write-Host "Building help for module '$moduleName'"
+    # Prepare about_help from wiki content (until a better solution presents itself)
+    $rolesRoot = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles/roles.md)
+    $rolesHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Roles)
+    @'
+TOPIC
+    about_AutomatedLabRoles
+	
+SHORT DESCRIPTION
+    Explains how to use of AutomatedLab's roles
+	
+LONG DESCRIPTION
+
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+    Get-Content -Path $rolesRoot | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+    $rolesHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabRoles.md)
+
+    @'
+TOPIC
+    about_AutomatedLabBasics
+    
+SHORT DESCRIPTION
+    Explains some of the basics of AutomatedLab
+    
+LONG DESCRIPTION
+    
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+    $basicsRoot = Get-Item -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic/gettingstarted.md)
+    $basicHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Basic)
+    Get-Content -Path $basicsRoot | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+    $basicHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabBasics.md)
+
+    @'
+TOPIC
+    about_AutomatedLabAdvanced
+    
+SHORT DESCRIPTION
+    Explains some of the advanced mechanics of AutomatedLab
+    
+LONG DESCRIPTION
+    
+'@ | Set-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+    $advHelp = Get-ChildItem -Path (Join-Path $SolutionDir -ChildPath Help/Wiki/Advanced)
+    $advHelp | Get-Content | Add-Content -Path (Join-Path $SolutionDir -ChildPath Help/AutomatedLab/en-us/about_AutomatedLabAdvanced.md)
+
     foreach ($language in ($moduleName | Get-ChildItem -Directory))
     {
         $ci = try { [cultureinfo]$language.BaseName} catch { }

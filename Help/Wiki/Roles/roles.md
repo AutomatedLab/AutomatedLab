@@ -58,3 +58,4 @@ The list of available roles in AutomatedLab is below. Of course, there are many 
 - DSCPullServer
 - HyperV
 - TFS2015, 2017, 2018, Azure DevOps (Server as well as cloud service)
+- SCVMM
