@@ -8,6 +8,7 @@
 ### Fixes
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
+- Fix the issue with Update-LabIsoImage removing OS images not targeted for update (Issue #1051)
 
 ## 5.30.0 (2020-12-15)
 
