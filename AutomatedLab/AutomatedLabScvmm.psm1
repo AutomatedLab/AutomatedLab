@@ -164,13 +164,13 @@ function Install-LabScvmm
             $clusterNames = $role.Properties['ConnectClusters'] -split '\s*(?:,|;)\s*'
             $hyperVisors = (Get-LabVm -Role HyperV -Filter { $_.Name -in $vmNames }).FQDN
             $clusters = Get-LabVm | foreach {$_.Roles | Where Name -eq FailoverNode}
-            [string[]] $clusterNameProperties = $clusters['ClusterName'] | Select-Object -Unique
+            [string[]] $clusterNameProperties = $clusters.Foreach({$_.Properties['ClusterName']}) | Select-Object -Unique
             if ($clusters.Where({-not $_.Properties.ContainsKey('ClusterName')}))
             {
                 $clusterNameProperties += 'ALCluster'
             }
 
-            $clusterNameProperties = $clusterNameProperties.Where({$_.Name -in $clusterNames})
+            $clusterNameProperties = $clusterNameProperties.Where({$_ -in $clusterNames})
 
             $joinCred = $vm.GetCredential((Get-Lab))
             Invoke-LabCommand -ComputerName $vm -ActivityName "Registering Hypervisors with $vm" -ScriptBlock {
