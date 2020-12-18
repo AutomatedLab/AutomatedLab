@@ -474,18 +474,15 @@ function Update-LabIsoImage
     Expand-IsoImage -SourceIsoImagePath $SourceIsoImagePath -OutputPath $extractTempFolder -Force
 
     $installWim = Get-ChildItem -Path $extractTempFolder -Filter install.wim -Recurse
-    Write-PSFMessage -Level Host -Message "Working with '$installWim'"
-    Write-PSFMessage -Level Host -Message "Exporting install.wim to $labSources"
-    Export-WindowsImage -SourceImagePath $installWim.FullName -DestinationImagePath $labSources\install.wim -SourceIndex $SourceImageIndex
+    $windowsImage = Get-WindowsImage -ImagePath $installWim.FullName -Index $SourceImageIndex
+    Write-PSFMessage -Level Host -Message "The Windows Image targeted is named '$($windowsImage.ImageName)'"
 
-    $windowsImage = Get-WindowsImage -ImagePath $labSources\install.wim
-    Write-PSFMessage -Level Host -Message "The Windows Image exported is named '$($windowsImage.ImageName)'"
-
+    Write-PSFMessage -Level Host -Message "Mounting Windows Image '$($windowsImage.ImagePath)' to folder '$mountTempFolder'"
+    Set-ItemProperty $installWim.FullName -Name IsReadOnly -Value $false
+    Mount-WindowsImage -Path $mountTempFolder -ImagePath $installWim.FullName -Index $SourceImageIndex
+    
     $patches = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu, *.cab
     Write-PSFMessage -Level Host -Message "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
-
-    Write-PSFMessage -Level Host -Message "Mounting Windows Image '$($windowsImage.ImagePath)' to folder "
-    Mount-WindowsImage -Path $mountTempFolder -ImagePath $windowsImage.ImagePath -Index 1
 
     Write-PSFMessage -Level Host -Message "Adding patches to the mounted Windows Image. This can take quite some time..."
     foreach ($patch in $patches)
@@ -497,10 +494,8 @@ function Update-LabIsoImage
 
     Write-PSFMessage -Level Host -Message "Dismounting Windows Image from path '$mountTempFolder' and saving the changes. This can take quite some time again..."
     Dismount-WindowsImage -Path $mountTempFolder -Save
+    Set-ItemProperty $installWim.FullName -Name IsReadOnly -Value $true
     Write-PSFMessage -Level Host -Message 'finished'
-
-    Write-PSFMessage -Level Host -Message "Moving updated Windows Image '$labsources\install.wim' to '$extractTempFolder'"
-    Move-Item -Path $labsources\install.wim -Destination $extractTempFolder\sources -Force
 
     Write-PSFMessage -Level Host -Message "Calling oscdimg.exe to create a new bootable ISO image '$TargetIsoImagePath'..."
     $cmd = "$labSources\Tools\oscdimg.exe -m -o -u2 -l$isoImageName -udfver102 -bootdata:2#p0,e,b$extractTempFolder\boot\etfsboot.com#pEF,e,b$extractTempFolder\efi\microsoft\boot\efisys.bin $extractTempFolder $TargetIsoImagePath"
