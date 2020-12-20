@@ -8,6 +8,7 @@
 ### Fixes
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
+- Fixed that only the first additional 10 disks were initialized
 
 ## 5.30.0 (2020-12-15)
 
