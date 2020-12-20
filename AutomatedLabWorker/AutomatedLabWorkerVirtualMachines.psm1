@@ -602,7 +602,7 @@ Windows Registry Editor Version 5.00
 Start-Transcript -Path C:\DeployDebug\AdditionalDisksOnline.log
 $diskpartCmd = 'LIST DISK'
 $disks = $diskpartCmd | diskpart.exe
-$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB)'
+$pattern = 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)'
 foreach ($line in $disks)
 {
     if ($line -match $pattern)
