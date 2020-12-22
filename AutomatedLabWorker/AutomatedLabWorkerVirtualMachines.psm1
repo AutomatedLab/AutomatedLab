@@ -626,7 +626,7 @@ foreach ($line in $disks)
 }
 foreach ($volume in (Get-WmiObject -Class Win32_Volume))
 {
-    if ($volume.Label -notmatch '(?<Label>[\w\d]+)_AL_(?<DriveLetter>[A-Z])')
+    if ($volume.Label -notmatch '(?<Label>[-_\w\d]+)_AL_(?<DriveLetter>[A-Z])')
     {
         continue
     }
