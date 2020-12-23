@@ -9,6 +9,7 @@
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
 - Fixed that only the first additional 10 disks were initialized
+- Fixed regex, considering drives with underscores and hyphens in the name now
 
 ## 5.30.0 (2020-12-15)
 
