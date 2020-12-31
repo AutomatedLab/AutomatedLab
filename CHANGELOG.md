@@ -10,6 +10,7 @@
 - Fixed issue with SCVMM role where ADK files would not be fully downloaded
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
+- Fix the issue with Update-LabIsoImage removing OS images not targeted for update (Issue #1051)
 - Fixed that only the first additional 10 disks were initialized
 - Fixed regex, considering drives with underscores and hyphens in the name now
 
