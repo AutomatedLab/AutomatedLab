@@ -4,12 +4,25 @@
 
     # These modules SHOULD be marked as Core compatible, as tested with Windows 10.0.18362.113
     # However, if they are not, they need to be imported.
-    $requiredModules = @('Dism', 'International')
+    $requiredModules = @('Dism')
+    $requiredModulesImplicit = @('International') # These modules should be imported via implicit remoting. Might suffer from implicit sessions getting removed though
 
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
-    foreach ($module in $requiredModules)
+    if ($requiredModulesImplicit)
     {
-        Import-Module -SkipEditionCheck -Name $module -ErrorAction SilentlyContinue -ErrorVariable +ipmoErr
+        if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+        {
+            Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+        }
+        else
+        {
+            Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+        }
+    }
+
+    if ($requiredModules)
+    {
+        Import-Module -Name $requiredModules -SkipEditionCheck -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
     }
 
     if ($ipmoErr)
@@ -25,7 +38,7 @@ else
 $usedRelease = (Split-Path -Leaf -Path $PSScriptRoot) -as [version]
 $currentRelease = try {((Invoke-RestMethod -Method Get -Uri https://api.github.com/repos/AutomatedLab/AutomatedLab/releases/latest -ErrorAction Stop).tag_Name -replace 'v') -as [Version] } catch {}
 
-if ($null -ne $currentRelease -and $usedRelease -lt $currentRelease)
+if ($currentRelease -and $usedRelease -lt $currentRelease)
 {
     Write-PSFMessage -Level Host -Message "Your version of AutomatedLab is outdated. Consider updating to the recent version, $currentRelease"
 }
