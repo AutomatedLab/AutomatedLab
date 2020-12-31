@@ -1331,7 +1331,7 @@ function Initialize-LWAzureVM
 
             foreach ($line in $disks)
             {
-                if ($line -match 'Disk (?<DiskNumber>\d) \s+(Online|Offline)\s+(?<Size>\d+) GB\s+(?<Free>\d+) (B|GB)')
+                if ($line -match 'Disk (?<DiskNumber>\d{1,3}) \s+(?<State>Online|Offline)\s+(?<Size>\d+) (KB|MB|GB|TB)\s+(?<Free>\d+) (B|KB|MB|GB|TB)')
                 {
                     $nextDriveLetter = [char[]](67..90) |
                         Where-Object { (Get-WmiObject -Class Win32_LogicalDisk |

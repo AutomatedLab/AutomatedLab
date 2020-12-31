@@ -24,8 +24,26 @@
 	}
 	else
 	{
-		$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
-		$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
+		try
+		{
+			$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
+			$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
+		}
+		catch
+		{
+			Remove-Module -Name International -ErrorAction SilentlyContinue
+			if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+			{
+				Import-Module -Name International -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force
+			}
+			else
+			{
+				Import-WinModule -Name International -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force
+			}
+
+			$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
+			$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
+		}
 	}
 	if ($inputLocale)
 	{
