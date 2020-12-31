@@ -3,7 +3,7 @@ This demo creates a failover cluster with 2 nodes, and 2 shared disks
 that can be added to cluster roles.
 #>
 
-$labname = 'FailOverLab1'
+$labname = 'FailOverLab2'
 New-LabDefinition -Name $labname -DefaultVirtualizationEngine HyperV
 
 Add-LabDomainDefinition -Name contoso.com -AdminUser Install -AdminPassword Somepass1

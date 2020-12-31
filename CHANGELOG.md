@@ -4,11 +4,15 @@
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
 ### Enhancements
+- Enabled auto-onboarding of Hypervisors for SCVMM role
 
 ### Fixes
+- Fixed issue with SCVMM role where ADK files would not be fully downloaded
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
 - Fix the issue with Update-LabIsoImage removing OS images not targeted for update (Issue #1051)
+- Fixed that only the first additional 10 disks were initialized
+- Fixed regex, considering drives with underscores and hyphens in the name now
 
 ## 5.30.0 (2020-12-15)
 
@@ -18,6 +22,7 @@
 - 'FailoverStorage' is available as a separate install option
 - Speed of Add-LabIsoImageDefinition on Azure increased by adding Path parameter
 - Added two new validators: DuplicateAddressAssigned, NonExistingDnsServerAssigned
+- Multiple Cluster IP addresses can be passed as argument, docs updated
 
 ### Fixes
 

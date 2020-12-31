@@ -24,6 +24,10 @@
 	}
 	else
 	{
+		if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+		{
+			Import-Module -Name International -UseWindowsPowerShell -WarningAction SilentlyContinue
+		}
 		$inputLocale = @((New-WinUserLanguageList -Language $UserLocale).InputMethodTips)
 		$inputLocale += (New-WinUserLanguageList -Language 'en-us').InputMethodTips
 	}
