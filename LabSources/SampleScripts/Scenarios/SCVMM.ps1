@@ -52,6 +52,7 @@ $role = Get-LabMachineRoleDefinition -Role Scvmm2019 -Properties @{
     # SQMOptIn                    = '0'
     # MUOptIn                     = '0'
     # VmmServiceLocalAccount      = '0'
+    # ConnectHyperVRoleVms        = 'VM1, VM2, VM3' # Single string with comma- or semicolon-separated values
 }
 Add-LabMachineDefinition -DomainName contoso.com -Name VMC1 -Memory 8GB -OperatingSystem 'Windows Server 2016 Datacenter (Desktop Experience)' -Roles $role
 Install-Lab

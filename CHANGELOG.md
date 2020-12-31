@@ -4,8 +4,10 @@
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
 ### Enhancements
+- Enabled auto-onboarding of Hypervisors for SCVMM role
 
 ### Fixes
+- Fixed issue with SCVMM role where ADK files would not be fully downloaded
 
 - Fix unnessary UEFI dependency of Update-LabIsoImage
 - Fixed that only the first additional 10 disks were initialized
