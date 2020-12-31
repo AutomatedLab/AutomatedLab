@@ -1,4 +1,4 @@
-﻿﻿#region Install-LabScvmm
+﻿
 function Install-LabScvmm
 {
     [CmdletBinding()]
@@ -172,4 +172,3 @@ function Install-LabScvmm
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 }
-#endregion

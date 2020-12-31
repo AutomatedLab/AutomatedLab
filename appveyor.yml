@@ -66,7 +66,17 @@ for:
         description: 'This is an automated deployment'
         auth_token:
           secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
-        artifact: al(debian|rpm)package
+        artifact: aldebianpackage
+        draft: false
+        force_update: true
+        prerelease: false
+        on:
+          branch: master
+      - provider: GitHub
+        description: 'This is an automated deployment'
+        auth_token:
+          secure: 0gI2mQ864yW9/wSMzuKz4vqrHZ8hOEWcLdxTxvcH/U13he2WSmRyNIxN7Rebersx # your encrypted token from GitHub
+        artifact: alrpmpackage
         draft: false
         force_update: true
         prerelease: false

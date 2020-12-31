@@ -19,6 +19,7 @@
 - 'FailoverStorage' is available as a separate install option
 - Speed of Add-LabIsoImageDefinition on Azure increased by adding Path parameter
 - Added two new validators: DuplicateAddressAssigned, NonExistingDnsServerAssigned
+- Multiple Cluster IP addresses can be passed as argument, docs updated
 
 ### Fixes
 

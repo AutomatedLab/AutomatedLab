@@ -4,17 +4,22 @@ function Install-LabFailoverCluster
     [CmdletBinding()]
     param ( )
 
-    # 1 Get-LabVM -Role FailoverNode, Count ge 2. Wenn Machine bereits installiert, FC aktivieren, sonst Start-LabVm, DomJoin, ...
-    # Validator: DomJoin, min count 2, Role FailoverStorage in Lab
-
     $failoverNodes = Get-LabVm -Role FailoverNode -ErrorAction SilentlyContinue
     $clusters = $failoverNodes | Group-Object { ($PSItem.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterName'] }
     $useDiskWitness = $false
+    Start-LabVm -Wait -ComputerName $failoverNodes
 
     Install-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering -IncludeAllSubFeature
 
     Write-ScreenInfo -Message 'Restart post FCI Install'
     Restart-LabVM $failoverNodes -Wait
+
+    if (Get-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering | Where InstallState -ne Installed)
+    {
+        Install-LabWindowsFeature -ComputerName $failoverNodes -FeatureName Failover-Clustering, RSAT-Clustering -IncludeAllSubFeature
+        Write-ScreenInfo -Message 'Restart post FCI Install'
+        Restart-LabVM $failoverNodes -Wait
+    }
 
     if (Get-LabVm -Role FailoverStorage)
     {
@@ -31,7 +36,7 @@ function Install-LabFailoverCluster
         $clusterDomains = $cluster.Group.DomainName | Sort-Object -Unique
         $clusterNodeNames = $cluster.Group | Select-Object -Skip 1 -ExpandProperty Name
         $clusterName = $cluster.Name
-        $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp']
+        $clusterIp = ($firstNode.Roles | Where-Object -Property Name -eq 'FailoverNode').Properties['ClusterIp'] -split '\s*(?:,|;?),\s*'
 
         if (-not $clusterIp)
         {
@@ -42,6 +47,17 @@ function Install-LabFailoverCluster
         if (-not $clusterName)
         {
             $clusterName = 'ALCluster'
+        }
+
+        $ignoreNetwork = foreach ($network in (Get-Lab).VirtualNetworks)
+        {
+            $range = Get-NetworkRange -IPAddress $network.AddressSpace.Network.AddressAsString -SubnetMask $network.AddressSpace.Cidr
+            $inRange = $clusterIp | Where-Object {$_ -in $range}
+            
+            if (-not $inRange)
+            {
+                '{0}/{1}' -f $network.AddressSpace.Network.AddressAsString, $network.AddressSpace.Cidr
+            }
         }
 
         if ($useDiskWitness -and -not ($firstNode.OperatingSystem.Version -lt 6.2))
@@ -139,28 +155,46 @@ function Install-LabFailoverCluster
             'ActiveDirectoryAndDns'
         }
 
+        Remove-LabPSSession -ComputerName $failoverNodes
         Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Enabling clustering on first node' -ScriptBlock {
-            Import-Module FailoverClusters -ErrorAction Stop
+            Import-Module FailoverClusters -ErrorAction Stop -WarningAction SilentlyContinue
 
             $clusterParameters = @{
                 Name                      = $clusterName
-                Node                      = $env:COMPUTERNAME
                 StaticAddress             = $clusterIp
                 AdministrativeAccessPoint = $clusterAccessPoint
-                ErrorAction               = 'Stop'
+                ErrorAction               = 'SilentlyContinue'
                 WarningAction             = 'SilentlyContinue'
+            }
+
+            if ($ignoreNetwork)
+            {
+                $clusterParameters.IgnoreNetwork = $ignoreNetwork
             }
 
             $clusterParameters = Sync-Parameter -Command (Get-Command New-Cluster) -Parameters $clusterParameters
 
-            New-Cluster @clusterParameters
+            $null = New-Cluster @clusterParameters
+        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint, ignoreNetwork) -Function (Get-Command Sync-Parameter)
 
-            while (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
+        Remove-LabPSSession -ComputerName $failoverNodes
+        Invoke-LabCommand -ComputerName $firstNode -ActivityName 'Adding nodes' -ScriptBlock {
+            Import-Module FailoverClusters -ErrorAction Stop -WarningAction SilentlyContinue
+
+            if (-not (Get-Cluster -Name $clusterName -ErrorAction SilentlyContinue))
             {
-                Start-Sleep -Seconds 1
+                Write-Error "Cluster $clusterName was not deployed"
             }
 
-            Get-Cluster -Name $clusterName | Add-ClusterNode $clusterNodeNames
+            foreach ($node in $clusterNodeNames)
+            {
+                Add-ClusterNode -Name $node -Cluster $clusterName -ErrorAction SilentlyContinue
+            }
+
+            if (Compare-Object -ReferenceObject $clusterNodeNames -DifferenceObject (Get-ClusterNode -Cluster $clusterName).Name | Where-Object SideIndicator -eq '<=')
+            {
+                Write-Error -Message "Error deploying cluster $clusterName, not all nodes were added to the cluster"
+            }
 
             if ($useDiskWitness)
             {
@@ -171,7 +205,7 @@ function Install-LabFailoverCluster
                     Get-Cluster -Name $clusterName | Set-ClusterQuorum -DiskWitness $clusterDisk
                 }
             }
-        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint) -Function (Get-Command Sync-Parameter)
+        } -Variable (Get-Variable clusterName, clusterNodeNames, clusterIp, useDiskWitness, clusterAccessPoint, ignoreNetwork)
     }
 }
 #endregion
@@ -185,6 +219,7 @@ function Install-LabFailoverStorage
 
     $storageNode = Get-LabVM -Role FailoverStorage -ErrorAction SilentlyContinue
     $failoverNodes = Get-LabVM -Role FailoverNode -ErrorAction SilentlyContinue
+    Start-LabVm -ComputerName (Get-LabVm -Role FailoverStorage,FailoverNode) -Wait
     
     $clusters = @{}
     
