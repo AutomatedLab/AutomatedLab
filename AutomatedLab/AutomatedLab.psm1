@@ -413,7 +413,7 @@ function Import-Lab
 
         if (Get-PSsession)
         {
-            Get-PSSession | Remove-PSSession -ErrorAction SilentlyContinue
+            Get-PSSession | Where-Object Name -ne WinPSCompatSession | Remove-PSSession -ErrorAction SilentlyContinue
         }
 
         if (-not (Test-LabHostRemoting))

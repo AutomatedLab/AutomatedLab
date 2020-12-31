@@ -4,11 +4,16 @@
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
 ### Enhancements
+
+### Fixes
+
+## 5.32.0 (2020-12-31)
+
+### Enhancements
 - Enabled auto-onboarding of Hypervisors for SCVMM role
 
 ### Fixes
 - Fixed issue with SCVMM role where ADK files would not be fully downloaded
-
 - Fix unnessary UEFI dependency of Update-LabIsoImage
 - Fix the issue with Update-LabIsoImage removing OS images not targeted for update (Issue #1051)
 - Fixed that only the first additional 10 disks were initialized

@@ -1058,7 +1058,7 @@ function Install-LabRootDcs
         Write-ScreenInfo -Message 'All Root Domain Controllers are already installed' -Type Warning -TaskEnd
         return
     }
-    Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
+    Get-PSSession | Where-Object { $_.Name -ne 'WinPSCompatSession' -and $_.State -ne 'Disconnected'} | Remove-PSSession
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
@@ -1357,7 +1357,7 @@ function Install-LabFirstChildDcs
         return
     }
 
-    Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
+    Get-PSSession | Where-Object { $_.Name -ne 'WinPSCompatSession' -and $_.State -ne 'Disconnected'} | Remove-PSSession
 
     #this sections is required to join all machines to the domain. This is happening when starting the machines, that's why all machines are started.
     $domains = $machines.DomainName
@@ -1622,7 +1622,7 @@ function Install-LabDcs
         return
     }
 
-    Get-PSSession | Where-Object State -ne Disconnected | Remove-PSSession
+    Get-PSSession | Where-Object { $_.Name -ne 'WinPSCompatSession' -and $_.State -ne 'Disconnected'} | Remove-PSSession
 
     Write-LogFunctionExit
 }
