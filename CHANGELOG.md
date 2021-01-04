@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- Adding SQL Server 2019 to Azure DevOps Server deployment and validators.
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
