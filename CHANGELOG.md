@@ -6,6 +6,7 @@
 ### Enhancements
 
 ### Fixes
+- Adding SQL 2019 to Azure DevOps Server validators.
 
 ## 5.32.0 (2020-12-31)
 
