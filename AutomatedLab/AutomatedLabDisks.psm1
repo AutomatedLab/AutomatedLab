@@ -362,7 +362,7 @@ function Update-LabIsoImage
         [int]$SourceImageIndex,
 
         [Parameter(Mandatory=$false)]
-        [Switch]$SkipSuperseedCleanup
+        [Switch]$SkipSuperseededCleanup
     )
 
     if ($IsLinux)
@@ -495,7 +495,7 @@ function Update-LabIsoImage
         Write-PSFMessage -Level Host -Message 'finished'
     }
 
-    if (! $SkipSuperseedCleanup) {
+    if (! $SkipSuperseededCleanup) {
         Write-PSFMessage -Level Host -Message "Cleaning up superseeded updates.  This can take quite some time..."
         $cmd = "dism.exe /image:$mountTempFolder /Cleanup-Image /StartComponentCleanup /ResetBase"
         Write-PSFMessage -Message $cmd
