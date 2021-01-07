@@ -14,7 +14,7 @@ Update an ISO
 
 ```
 Update-LabIsoImage -SourceIsoImagePath <String> -TargetIsoImagePath <String> -UpdateFolderPath <String>
- -SourceImageIndex <Int32> [<CommonParameters>]
+ -SourceImageIndex <Int32> [-SkipSuperseededCleanup] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -87,6 +87,21 @@ Aliases:
 Required: True
 Position: Named
 Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipSuperseededCleanup
+Skip superseeded updates cleanup
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: False
 Accept pipeline input: False
 Accept wildcard characters: False
 ```

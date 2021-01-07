@@ -4,6 +4,7 @@
 <!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
 ### Enhancements
+- Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
 
 ### Fixes
 

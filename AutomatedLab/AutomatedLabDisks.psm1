@@ -359,7 +359,10 @@ function Update-LabIsoImage
         [string]$UpdateFolderPath,
 
         [Parameter(Mandatory)]
-        [int]$SourceImageIndex
+        [int]$SourceImageIndex,
+
+        [Parameter(Mandatory=$false)]
+        [Switch]$SkipSuperseededCleanup
     )
 
     if ($IsLinux)
@@ -480,7 +483,7 @@ function Update-LabIsoImage
     Write-PSFMessage -Level Host -Message "Mounting Windows Image '$($windowsImage.ImagePath)' to folder '$mountTempFolder'"
     Set-ItemProperty $installWim.FullName -Name IsReadOnly -Value $false
     Mount-WindowsImage -Path $mountTempFolder -ImagePath $installWim.FullName -Index $SourceImageIndex
-    
+
     $patches = Get-ChildItem -Path $UpdateFolderPath\* -Include *.msu, *.cab
     Write-PSFMessage -Level Host -Message "Found $($patches.Count) patches in the UpdateFolderPath '$UpdateFolderPath'"
 
@@ -489,6 +492,14 @@ function Update-LabIsoImage
     {
         Write-PSFMessage -Level Host -Message "Adding patch '$($patch.Name)'..."
         Add-WindowsPackage -PackagePath $patch.FullName -Path $mountTempFolder | Out-Null
+        Write-PSFMessage -Level Host -Message 'finished'
+    }
+
+    if (! $SkipSuperseededCleanup) {
+        Write-PSFMessage -Level Host -Message "Cleaning up superseeded updates.  This can take quite some time..."
+        $cmd = "dism.exe /image:$mountTempFolder /Cleanup-Image /StartComponentCleanup /ResetBase"
+        Write-PSFMessage -Message $cmd
+        $global:dismResult = Invoke-Expression -Command $cmd 2>&1
         Write-PSFMessage -Level Host -Message 'finished'
     }
 
