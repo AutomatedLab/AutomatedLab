@@ -1151,12 +1151,18 @@ function Install-Lab
     {
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
+        $timeoutRemaining = 60
         if ($linuxHosts)
         {
+            $timeoutRemaining = 15
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
                 On Windows, those are installed from scratch and do not use differencing disks.
         
-            This process may take up to 30 minutes."
+                If you did not connect them to an external switch or deploy a router in your lab,
+                AutomatedLab will not be able to reach your VMs, as PowerShell will not be installed.
+
+                The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
+                minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1176,7 +1182,7 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
