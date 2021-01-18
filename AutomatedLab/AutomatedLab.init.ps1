@@ -10,13 +10,34 @@
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     if ($requiredModulesImplicit)
     {
-        if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+        try
         {
-            Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+            {
+                Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
+            }
+            else
+            {
+                Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
+            }
         }
-        else
+        catch
         {
-            Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            Remove-Module -Name $requiredModulesImplicit -Force -ErrorAction SilentlyContinue
+            Clear-Variable -Name ipmoErr -ErrorAction SilentlyContinue
+            foreach ($m in $requiredModulesImplicit)
+            {
+                Get-ChildItem -Directory -Path ([IO.Path]::GetTempPath()) -Filter "RemoteIpMoProxy_$($m)*_localhost_*" | Remove-Item -Recurse -Force
+            }
+
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+            {
+                Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            }
+            else
+            {
+                Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            }
         }
     }
 
