@@ -447,9 +447,10 @@ $unattendedXmlDefaultContent2008 = @'
 $kickstartContent = @"
 install
 cdrom
-text
+text --non-interactive
 firstboot --disable
 reboot
+eula --agreed
 bootloader --append="biosdevname=0 net.ifnames=0"
 zerombr
 clearpart --all
