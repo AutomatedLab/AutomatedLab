@@ -335,9 +335,13 @@ function New-LWHypervVM
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
-        if ( $machine.LinuxPackageGroup )
+        if ( $machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxPackageGroup )
         {
             Set-UnattendedPackage -Package $machine.LinuxPackageGroup
+        }
+        elseif ($machine.LinuxType -eq 'RedHat')
+        {
+            Set-UnattendedPackage -Package '@^server-product-environment'
         }
 
         # Copy Unattend-Stuff here

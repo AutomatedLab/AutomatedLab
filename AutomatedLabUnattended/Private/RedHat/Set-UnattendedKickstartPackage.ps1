@@ -15,7 +15,7 @@ function Set-UnattendedKickstartPackage
     }
 
     $script:un.Add('%packages --ignoremissing')
-    $script:un.Add('@core')
+    $script:un.Add('@^server-product-environment')
     $required = @(
         'oddjob'
         'oddjob-mkhomedir'
@@ -31,11 +31,11 @@ function Set-UnattendedKickstartPackage
 
     foreach ($p in $Package)
     {
-        if ($p -eq 'core' -or $p -in $required) { continue }
+        if ($p -eq '@^server-product-environment' -or $p -in $required) { continue }
 
-        $script:un.Add(('@{0}' -f $p))
+        $null = $script:un.Add($p)
 
-        if ($p -like '*gnome*') { $script:un.Add('@^graphical-server-environment')}
+        if ($p -like '*gnome*' -and $script:un -notcontains '@^graphical-server-environment') { $script:un.Add('@^graphical-server-environment')}
     }
 
     foreach ($p in $required)

@@ -8,6 +8,9 @@
 
 ### Fixes
 
+- Fixed issue with CentOS8/RHEL8 kickstart files being undeployable (issue #1065)
+- Fixed issue with International module on PS Core not being imported (issue #1066)
+
 ## 5.32.0 (2020-12-31)
 
 ### Enhancements
