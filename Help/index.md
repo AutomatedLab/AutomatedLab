@@ -13,6 +13,18 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 [![Downloads](https://img.shields.io/github/downloads/AutomatedLab/AutomatedLab/total.svg?label=Downloads&maxAge=999)](https://github.com/AutomatedLab/AutomatedLab/releases)
 [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/AutomatedLab.svg)](https://www.powershellgallery.com/packages/AutomatedLab/)
 
+## Tutorials
+
+### Videos
+
+- [How to automate active directory based lab environments for pentesting using Powershell and Hyper-V?](https://www.youtube.com/watch?v=y0aid7U5e-0) by @rajganeshp (Thanks!)
+- [Getting started with AutomatedLab](https://www.youtube.com/watch?v=lrPlRvFR5fA)
+
+### Scripts
+
+- Official sample scripts in your local [LabSources](https://github.com/AutomatedLab/AutomatedLab/tree/develop/LabSources/SampleScripts) should cover many scenarios
+- [DSC Community Lab](https://github.com/dsccommunity/dscworkshop)
+
 ## Requirements
 
 Apart from the module itself your system needs to meet the following requirements:
@@ -41,7 +53,7 @@ Apart from the module itself your system needs to meet the following requirement
 - PowerShell 6+
 - gss-ntlmssp to enable remoting (mandatory - no remoting, no way for AutomatedLab to do its thing)
 - ip and route commands available
-- Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.
+- **Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.**
 
 ## Supported products
 
