@@ -30,9 +30,18 @@ function Enable-LabHostRemoting
     {
         Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
         Start-Service -Name WinRM
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 2
         Write-ScreenInfo done
     }
+
+    if ((Get-Service -Name smphost).StartType -eq 'Disabled')
+    {
+        Write-ScreenInfo "The StartupType of the service 'smphost' is set to disabled. Setting it to 'manual'. This is required in order to read use the cmdlets in the 'Storage' module..." -NoNewLine
+        Set-Service -Name smphost -StartupType Manual
+        Write-ScreenInfo done
+    }
+
+    #1067
 
     # force English language output for Get-WSManCredSSP call
     [Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'; $WSManCredSSP = Get-WSManCredSSP

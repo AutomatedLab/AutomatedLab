@@ -10,6 +10,7 @@
 
 - Fixed issue with CentOS8/RHEL8 kickstart files being undeployable (issue #1065)
 - Fixed issue with International module on PS Core not being imported (issue #1066)
+- Fixed issue when cmdlets of the 'Storage' module did not work if the 'smphost' is set to disabled (issue #1067)
 
 ## 5.32.0 (2020-12-31)
 
