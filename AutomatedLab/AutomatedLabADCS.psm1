@@ -1575,38 +1575,48 @@ function Request-LabCertificate
 
     Write-LogFunctionEntry
 
-    $computer = Get-LabVM -ComputerName $ComputerName
-
-    if (-not $computer.IsDomainJoined -and -not $OnlineCA)
+    if ($OnlineCA -and -not (Get-LabVM -ComputerName $OnlineCA))
     {
-        Write-Error "Requesting a certificate from a non-domain joined machine '$ComputerName' requires the parameter OnlineCA to be used"
+        Write-ScreenInfo -Type Error -Message "Lab does not contain a VM called $OnlineCA, unable to request certificates from it"
         return
     }
-    if ($OnlineCA)
-    {
-        $onlineCAVM = Get-LabVM -ComputerName $OnlineCA
-    }
-    else
-    {
-        $onlineCAVM = Get-LabIssuingCA -DomainName (Get-LabVM -ComputerName $ComputerName).DomainName
-    }
 
-    # Especially on Azure, the CertSrv was sometimes stopped for no apparent reason
-    Invoke-LabCommand -ComputerName $onlineCAVM -ScriptBlock { Start-Service CertSvc }
+    $computer = Get-LabVM -ComputerName $ComputerName
 
-    #machine was found so only the machine name was given. Get the full CA path.
-    if ($onlineCAVM)
+    $caGroups = $computer | Group-Object -Property DomainName
+
+    foreach ($group in $caGroups)
     {
-        #$OnlineCA = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA | Select-Object -ExpandProperty CaPath
-        $PSBoundParameters.OnlineCA = (Get-LabIssuingCA | Where-Object Name -eq $OnlineCA).CaPath
-    }
+        # Empty group contains workgroup VMs
+        if ([string]::IsNullOrWhiteSpace($group.Name) -and -not $OnlineCA)
+        {
+            Write-ScreenInfo -Type Error "Requesting a certificate from non-domain joined machines $($group.Group -join ',') requires the parameter OnlineCA to be used"
+            return
+        }
 
-    $variables = Get-Variable -Name PSBoundParameters
-    $functions = Get-Command -Name Get-CATemplate, Request-Certificate, Find-CertificateAuthority, Sync-Parameter
+        if ($OnlineCA)
+        {
+            $onlineCAVM = Get-LabIssuingCA | Where-Object Name -eq $OnlineCA
+        }
+        else
+        {
+            $onlineCAVM = Get-LabIssuingCA -DomainName $group.Name
+        }
 
-    foreach ($computer in $ComputerName)
-    {
-        Invoke-LabCommand -ActivityName "Requesting certificate for template '$TemplateName'" -ComputerName $computer -ScriptBlock {
+        if (-not $onlineCAVM)
+        {
+            Write-ScreenInfo -Type Error -Message "No Certificate Authority was found in your lab for domain '$($group.Name)'. Unable to issue certificates for $($group.Group)"
+            continue
+        }
+
+        # Especially on Azure, the CertSrv was sometimes stopped for no apparent reason
+        Invoke-LabCommand -ComputerName $onlineCAVM -ScriptBlock { Start-Service CertSvc } -NoDisplay
+        
+        $PSBoundParameters.OnlineCA = $onlineCAVM.CaPath
+        $variables = Get-Variable -Name PSBoundParameters
+        $functions = Get-Command -Name Get-CATemplate, Request-Certificate, Find-CertificateAuthority, Sync-Parameter
+
+        Invoke-LabCommand -ActivityName "Requesting certificate for template '$TemplateName'" -ComputerName $($group.Group) -ScriptBlock {
 
             Sync-Parameter -Command (Get-Command -Name Request-Certificate)
             Request-Certificate @ALBoundParameters

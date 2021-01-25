@@ -12,6 +12,7 @@
 - Fixed issue with International module on PS Core not being imported (issue #1066)
 - Fixed issue when cmdlets of the 'Storage' module did not work if the 'smphost' is set to disabled (issue #1067)
 - The parameter 'New-LabNetworkAdapterDefinition\InterfaceName' does not have an effect on the network adapter names
+- Fixed issue with Request-LabCertificate failing when multiple ComputerNames were specified (issue #1073)
 
 ## 5.32.0 (2020-12-31)
 
