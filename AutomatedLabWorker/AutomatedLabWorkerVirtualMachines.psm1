@@ -1594,12 +1594,21 @@ function Repair-LWHypervNetworkConfig
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
-            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
-            while ($newName -in $newNames)
+            $newName = if ($adapterInfo.InterfaceName)
             {
-                $newName = Add-StringIncrement -String $newName
+                $adapterInfo.InterfaceName
+            }
+            else
+            {
+                $tempName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
+                while ($tempName -in $newNames)
+                {
+                    $tempName = Add-StringIncrement -String $tempName
+                }
+                $tempName
             }
             $newNames += $newName
+
             if (-not [string]::IsNullOrEmpty($adapterInfo.VirtualSwitch.FriendlyName))
             {
                 $adapterInfo.VirtualSwitch.FriendlyName = $newName

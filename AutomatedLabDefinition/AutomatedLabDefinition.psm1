@@ -2635,7 +2635,7 @@ function Add-LabMachineDefinition
         foreach ($adapter in $NetworkAdapter)
         {
             $adapterVirtualNetwork = Get-LabVirtualNetworkDefinition -Name $adapter.VirtualSwitch
-            $adapter.InterfaceName = "Ethernet ($($adapterVirtualNetwork.Name))"
+
             #if there is no IPV4 address defined on the adapter
             if (-not $adapter.IpV4Address)
             {
