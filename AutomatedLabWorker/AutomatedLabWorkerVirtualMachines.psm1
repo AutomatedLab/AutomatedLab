@@ -454,14 +454,20 @@ function New-LWHypervVM
                 'MicrosoftUEFICertificateAuthority'
             }
         }
+
+        $vmFirmwareParameters = @{}
+
         if ($Machine.HypervProperties.EnableSecureBoot)
         {
-            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate
+            $vmFirmwareParameters.EnableSecureBoot = 'On'
+            $vmFirmwareParameters.SecureBootTemplate = $secureBootTemplate
         }
         else
         {
-            $vm | Set-VMFirmware -EnableSecureBoot Off
+            $vmFirmwareParameters.EnableSecureBoot = 'Off'
         }
+
+        $vm | Set-VMFirmware @vmFirmwareParameters
     }
 
     #remove the unconnected default network adapter
@@ -493,7 +499,8 @@ function New-LWHypervVM
 
     if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
-        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+        $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
+        $vm | Set-VMFirmware -FirstBootDevice $dvd
     }
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
