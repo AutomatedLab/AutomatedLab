@@ -13,6 +13,7 @@
 - Fixed issue when cmdlets of the 'Storage' module did not work if the 'smphost' is set to disabled (issue #1067)
 - The parameter 'New-LabNetworkAdapterDefinition\InterfaceName' does not have an effect on the network adapter names
 - Fixed issue with Request-LabCertificate failing when multiple ComputerNames were specified (issue #1073)
+- Improved startup time for Linux VMs by setting boot order to boot from DVD instead of PXE
 
 ## 5.32.0 (2020-12-31)
 
