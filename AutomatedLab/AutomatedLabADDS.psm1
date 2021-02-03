@@ -2161,6 +2161,7 @@ function New-LabADSite
     }
     catch {
         Restart-LabVM -ComputerName $ComputerName -Wait
+        Wait-LabADReady -ComputerName $ComputerName
         
         Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock $createSiteCmd `
         -ArgumentList $ComputerName, $SiteName, $SiteSubnet -ErrorAction Stop
