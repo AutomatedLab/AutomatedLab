@@ -14,6 +14,7 @@
 - The parameter 'New-LabNetworkAdapterDefinition\InterfaceName' does not have an effect on the network adapter names
 - Fixed issue with Request-LabCertificate failing when multiple ComputerNames were specified (issue #1073)
 - Improved startup time for Linux VMs by setting boot order to boot from DVD instead of PXE
+- Fixed issue #1081, AD Replication Sites not beingt created
 
 ## 5.32.0 (2020-12-31)
 
