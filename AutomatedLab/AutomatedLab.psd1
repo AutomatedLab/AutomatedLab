@@ -246,7 +246,8 @@
         'New-LabTfsFeed',
         'New-LabCimSession',
         'Get-LabCimSession',
-        'Remove-LabCimSession'
+        'Remove-LabCimSession',
+        'Enable-LabInternalRouting'
     )
 
     FileList               = @(
