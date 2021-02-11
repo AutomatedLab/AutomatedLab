@@ -1292,16 +1292,28 @@ function Test-LabDefinition
         $Path = Join-Path -Path $lab.LabPath -ChildPath (Get-LabConfigurationItem LabFileName)
     }
 
+    $labDefinition = Import-LabDefinition -Path $Path -PassThru
+    $skipHostFileModification = Get-LabConfigurationItem -Name SkipHostFileModification
+
+    foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
+    {
+        $hostEntry = Get-HostEntry -HostName $machine
+
+        if ($machine.FriendlyName -or $skipHostFileModification)
+        {
+                continue #if FriendlyName / ResourceName is defined, host file will not be modified
+        }
+
+        if ($hostEntry -and $hostEntry.IpAddress.IPAddressToString -ne $machine.IpV4Address)
+        {
+            Write-ScreenInfo "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
+            $wrongIpInHostEntry = $true
+        }
+    }
+    if ($wrongIpInHostEntry) { return $false }
+
     #we need to get the machine config files as well
-    try
-    {
-        $machineDefinitionFiles = ([xml](Get-Content -Path $Path -Encoding UTF8) | Select-Xml -XPath '//MachineDefinitionFile' -ErrorAction Stop).Node.Path
-    }
-    catch
-    {
-        Write-Error -Message 'Cannot read lab file'
-        return $false
-    }
+    $machineDefinitionFiles = $labDefinition.MachineDefinitionFiles.Path
 
     Write-PSFMessage "There are $($machineDefinitionFiles.Count) machine XML file referenced in the lab xml file"
     foreach ($machineDefinitionFile in $machineDefinitionFiles)
