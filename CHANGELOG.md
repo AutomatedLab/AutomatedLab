@@ -6,6 +6,7 @@
 ### Enhancements
 - Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
 - Add Cmdlet Enable-LabInternalRouting to configure routing between networks connected to routing VM
+- New Import-LabDefinition cmdlet
 
 ### Fixes
 
