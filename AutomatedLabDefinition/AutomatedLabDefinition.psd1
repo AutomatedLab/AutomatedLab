@@ -42,6 +42,7 @@
         'Add-LabMachineDefinition'
         'Add-LabVirtualNetworkDefinition'
         'Export-LabDefinition'
+        'Import-LabDefinition'
         'Get-LabAzureWebAppDefinition'
         'Get-LabAzureAppServicePlanDefinition'
         'Get-DiskSpeed'
