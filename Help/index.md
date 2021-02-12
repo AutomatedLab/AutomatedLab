@@ -2,7 +2,24 @@
 
 ![Image](AutomatedLab-GIF250-whitebg-lossy25.gif)
 
-AutomatedLab (AL) enables you to setup test and lab environments on Hyper-v or Azure with multiple products or just a single VM in a very short time. There are only two requirements: You need .NET 4.7.1 (Windows PowerShell) or .NET Core 2+ (PowerShell 6+) and either DVD ISO images and a Hyper-V host or an Azure subscription.
+AutomatedLab (AL) enables you to
+
+- Set up lab and test environments
+- On Hyper-v or Azure with multiple products
+- Including just a single VM quickly.
+
+**Require one**:
+
+- .NET 4.7.1 (Windows PowerShell)
+- .NET Core 2+ (PowerShell 6+)
+
+**Require one**:
+Hyper-V Host
+Azure Subscription
+
+**Finally**:
+
+- Operating System DVD ISO Images
 
 Build | Status | Last Commit | Latest Release
 --- | --- | --- | ---
@@ -17,80 +34,116 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 
 ### Videos
 
-- [How to automate active directory based lab environments for pentesting using Powershell and Hyper-V?](https://www.youtube.com/watch?v=y0aid7U5e-0) by @rajganeshp (Thanks!)
 - [Getting started with AutomatedLab](https://www.youtube.com/watch?v=lrPlRvFR5fA)
+
+<!-- 
+YouTube link is marked private: Checked on 2021-02-12 @ 1530 EST
+- [How to automate ActiveDS lab to preform pentesting with Powershell &  Hyper-V?](https://www.youtube.com/watch?v=y0aid7U5e-0) *by @rajganeshp (Thanks!)* -->
 
 ### Scripts
 
-- Official sample scripts in your local [LabSources](https://github.com/AutomatedLab/AutomatedLab/tree/develop/LabSources/SampleScripts) should cover many scenarios
-- [DSC Community Lab](https://github.com/dsccommunity/dscworkshop)
+- Official sample scripts in your local [LabSources](https://github.com/AutomatedLab/AutomatedLab/tree/develop/LabSources/SampleScripts) should cover many scenarios.
+- [DSC Workshop Overview](https://github.com/dsccommunity/dscworkshop)
 
-## Requirements
+## Requirement
 
-Apart from the module itself your system needs to meet the following requirements:
+Apart from the module itself, your system needs to meet the following requirements:
 
-- Windows Management Framework 5+ (Windows)
-- .NET 4.7.1 (Windows PowerShell) or .NET Core 2.x (PowerShell 6+)
-- Windows Server 2012 R2+/Windows 8.1+ (Hyper-V, Azure) or Linux (Azure)
-- Recommended OS language is en-us
-- Admin privileges are required
-- ISO files for all operating systems and roles to be deployed
-- Intel VT-x or AMD/V capable CPU
-- A decent amount of RAM
-- Low-Latency high-throughput storage (No spinning disks please, as there are issues related to them)
+1. .NET Core 2.x (PowerShell Core 6+) Preferred
+2. Recommended en-us language Operating Systems language
+3. Operating Systems ISO files for all roles to be deployed
+4. Intel VT-x or AMD/V capable CPU
+5. A generous amount of RAM
+6. Low-Latency high-throughput storage (*No spinning disks, please, as there are issues related to them*)
 
 ### Windows
 
 - Windows Management Framework 5+
+- NET 4.7.1 (Windows PowerShell)
 - Windows Server 2012 R2+/Windows 8.1+
-- Recommended OS language is en-us
-- Admin privileges are required
+- Admin privileges are required.
 
 ### Linux
 
-- WSL supported, Azure Cloud Shell supported
-- Tested on Fedora and Ubuntu, should run on any system capable of running PowerShell
-- PowerShell 6+
-- gss-ntlmssp to enable remoting (mandatory - no remoting, no way for AutomatedLab to do its thing)
-- ip and route commands available
-- **Azure subscription - At the moment, AutomatedLab only works using Azure. KVM is planned for a later date.**
+- Linux (Azure)
+- WSL & Azure Cloud Shell supported
+- Tested on Fedora and Ubuntu, or any OS capable of running PowerShell
+- PowerShell Core 6+
+- gss-ntlmssp to enable remoting (*mandatory - no remoting, no way for AutomatedLab to do its thing*)
+- IP and route commands available
+- **Azure subscription**
+  - At the moment, AutomatedLab only works using Azure.
+  - KVM planned for a later date.
 
 ## Supported products
 
-This solution supports setting up virtual machines with the following products
+This solution supports setting up virtual machines with the following.
 
-- Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
-- SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
-- Visual Studio 2012, 2013, 2015, 2017
-- Team Foundation Services 2015+, Azure DevOps
-- Exchange 2013, Exchange 2016
-- SharePoint 2013, 2016, 2019
-- System Center Orchestrator 2012
-- System Center Configuration Manager 1809
-- System Center Configuration Manager 1902+
-- MDT
-- ProGet (Private PowerShell Gallery)
-- Office 2013, 2016
-- DSC Pull Server (with SQL Reporting)
-- Hyper-V
-- Failover Clustering
+1. Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
+1. SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017 [*more*](https://www.microsoft.com/en-us/sql-server)
+1. Visual Studio 2012, 2013, 2015, 2017 [*more*](https://visualstudio.microsoft.com)
+1. Team Foundation Services 2015+
+1. Azure DevOps [*more*](https://azure.microsoft.com/en-us/services/devops/server/)
+1. Exchange 2013, Exchange 2016
+1. SharePoint 2013, 2016, 2019
+1. System Center Orchestrator 2012
+1. System Center Configuration Manager 1809 or 1902+
+1. Microsoft Deployment Toolkit (MDT) [*more*](https://www.microsoft.com/en-us/download/details.aspx?id=54259)
+1. ProGet (Private PowerShell Gallery)
+1. Office 2013, 2016
+1. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver)
+1. Hyper-V [*more*](https://docs.microsoft.com/en-us/virtualization/)
+1. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering)
 
 ## Feature List
 
-- AutomatedLab (AL) makes the setup of labs extremely easy. Setting up a lab with just a single machine is [only 3 lines](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/01%20Single%20Win10%20Client.ps1). And even [complex labs](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/HyperV/BigLab%202012R2%20EX%20SQL%20ORCH%20VS%20OFF.ps1) can be defined with about 100 lines (see [sample scripts](https://github.com/AutomatedLab/AutomatedLab/tree/master/LabSources/SampleScripts)).
-- Labs on Azure can be connected to each other or connected to a Hyper-V lab [using a single command](/Wiki/connectlabs.md).
-- AL can be used to setup scenarios to demo a [PowerShell Gallery using Inedo ProGet](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/ProGet%20Lab%20-%20HyperV.ps1), [PowerShell DSC Pull Server scenarios](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/DSC%20Pull%20Scenario%201%20(Pull%20Configuration).ps1), ADFS or a lab with [3 Active Directory forests trusting each other](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/Multi-AD%20Forest%20with%20Trusts.ps1).
-- Create, restore and remove snapshots of some or all lab machines with one cmdlet (Checkpoint-LabVM, Restore-LabVMSnapshot, Remove-LabVMSnapshot).
-- Install Windows Features on one, some or all lab machines with one line of code (Install-LabWindowsFeature).
-- Install software to a bunch of lab machines with just one cmdlet (Install-LabSoftwarePackages). You only need to know the argument to make the MSI or EXE go into silent installation mode. This can also work in parallel thanks to PowerShell workflows.
-- Run any custom activity (Script or ScriptBlock) on a number of lab machines (Invoke-LabCommand). You do not have to care about credentials or double-hop authentication issues as CredSsp is always enabled and can be used with the UseCredSsp switch.
-- Creating a [virtual environment that is connected to the internet](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1) was never easier. The only requirements are defining an external facing virtual switch and a machine with two network cards that acts as the router. AL takes care about all the configuration details like setting the getaway on all machines and also the DNS settings (see introduction script [05 Single domain-joined server (internet facing).ps1](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)).
-- AL offers offline patching with a single command. As all machines a based on one disk per OS, it is much more efficient to patch the ISO files that are used to create the base images (Update-LabIsoImage). See script [11 ISO Offline Patching.ps1](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1) for more details.
-- If a lab is no longer required, one command is enough to remove everything to be ready to start from scratch (Remove-Lab)
+### Set-Up
+
+- AutomatedLab (AL) makes setup easy 
+- A single machine is [three lines](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/01%20Single%20Win10%20Client.ps1).
+- [Complex labs](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/HyperV/BigLab%202012R2%20EX%20SQL%20ORCH%20VS%20OFF.ps1) in approximately 100 lines
+- Scan these [sample scripts](https://github.com/AutomatedLab/AutomatedLab/tree/master/LabSources/SampleScripts)
+
+### Enviroment
+
+- A single command to connect Azure or Hyper-V Lab [*Learn more*](/Wiki/connectlabs.md)
+- Composite scenarios to demo PowerShell Gallery resources
+  - Inedo ProGet [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/ProGet%20Lab%20-%20HyperV.ps1)
+  - Desired State Configuration (DSC) Pull Service [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/DSC%20Pull%20Scenario%201%20(Pull%20Configuration).ps1)
+  - Multiple Active Directory Federation Services (ADFS) Forests Trusts [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/Multi-AD%20Forest%20with%20Trusts.ps1)
+
+### Configuration
+
+Manage one, some, or all virtual lab machines
+
+- Run Checkpoint-LabVM, Get-LabVMSnapshoft, Restore-LabVMSnapshot, Remove-LabVMSnapshot
+- Get-LabWindows Feature,Install-LabWindowsFeature, Uninstall-LabWindowsFeature
+- Get-LabSoftwarePackage, Install-LabSoftwarePackage(s)
+- Silent installation mode available
+  - MSI & EXE supported
+  - Parallel workflows supported
+- Invoke-LabDscConfiguration
+- Invoke-LabCommand to run Script & ScriptBlock
+- CredSsp is always enabled to use with the UseCredSsp switch
+
+### Network
+
+- Multi-Virtual Network Adapter to create DMZs
+- External, Internal & Private network supported
+- DHCP, DNS, IPAM, NLB, SMB supported
+- Routing & Remote Access Service (RRAS)
+- Single Domain, Routing & File Server with DMZ [lab](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/05%20Single%20domain-joined%20server%20(internet%20facing).ps1)
+
+### Management
+
+- Single command offline patching
+- All lab machines use one disk per OS
+- Update-LabIsoImage Efficiently patch  OS ISO files [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/mastr/LabSources/SampleScripts/Introduction/11%20ISO%20Offline%20Patching.ps1)
+- Remove-Lab obliterate lab with one command
 
 ## Telemetry
 
-Starting with AutomatedLab version 5 we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you. The [full report] can be viewed at your leisure. To learn more about what is actually collected, see [here](https://automatedlab.org/en/latest/Wiki/telemetry.md).
+Starting with AutomatedLab version 5, we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you.  You can view the [full report] at your leisure. To learn more about what is collected, see [here](https://automatedlab.org/en/latest/Wiki/telemetry.md).
 
 ### Facts and figures
 
@@ -112,11 +165,14 @@ Starting with AutomatedLab version 5 we are collecting telemetry. To see what yo
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
 [full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
 
-### [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
+### Next Steps
 
-### [2. Getting started](https://automatedlab.org/en/latest/Wiki/gettingstarted/)
+- [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
 
-### [3. Contributing](https://github.com/AutomatedLab/AutomatedLab/blob/master/CONTRIBUTING.md)
+- [2. Getting started](https://automatedlab.org/en/latest/Wiki/gettingstarted/)
 
-### [Version History](https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md)
+- [3. Contributing](https://github.com/AutomatedLab/AutomatedLab/blob/master/CONTRIBUTING.md)
 
+### Change Log
+
+- [Version History](https://github.com/AutomatedLab/AutomatedLab/blob/master/CHANGELOG.md)
