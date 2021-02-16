@@ -6,6 +6,11 @@
 ### Enhancements
 - Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
 - Add Cmdlet Enable-LabInternalRouting to configure routing between networks connected to routing VM
+- Caching of ISO files updated to be more user-friendly (issue #1068)
+  - Allows multiple ISO locations and adding individual files
+  - Cache eviction based on availability of ISO
+  - Cache rebuild based on new ISOs
+  - Cache will not entirely be rebuilt, additional OSs will be added
 
 ### Fixes
 

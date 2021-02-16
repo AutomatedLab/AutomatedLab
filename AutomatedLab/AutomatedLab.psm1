@@ -654,7 +654,7 @@ function Get-Lab
     {
         $labsPath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs"
 
-        foreach ($path in Get-ChildItem -Path $labsPath -Directory)
+        foreach ($path in Get-ChildItem -Path $labsPath -Directory -ErrorAction SilentlyContinue)
         {
             $labXmlPath = Join-Path -Path $path.FullName -ChildPath Lab.xml
             if (Test-Path -Path $labXmlPath)
@@ -1524,68 +1524,65 @@ function Get-LabAvailableOperatingSystem
     }
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
-    $singleFile = Test-Path -Path $Path -PathType Leaf
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
     Write-PSFMessage "Found $($isoFiles.Count) ISO files"
 
-    if (-not $singleFile)
+    #read the cache
+    try
     {
-        #read the cache
-        try
+        if ($IsLinux -or $IsMacOS)
         {
-            if ($IsLinux -or $IsMacOS)
-            {
-                $cachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
-            }
-            else
-            {
-                $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
-            }
-
-            Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
+            $cachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
         }
-        catch
+        else
         {
-            Write-PSFMessage 'Could not read OS image info from the cache'
+            $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
         }
 
-        if ($cachedOsList)
-        {
-            $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
-            $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
-
-            if ($cachedIsoFileSize -eq $actualIsoFileSize)
-            {
-                Write-PSFMessage 'Cached data is still up to date'
-                Write-LogFunctionExit -ReturnValue $cachedOsList
-                return $cachedOsList
-            }
-            else
-            {
-                Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
-                Write-PSFMessage ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
-                $global:AL_OperatingSystems = $null
-            }
-        }
+        Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
+    }
+    catch
+    {
+        Write-PSFMessage 'Could not read OS image info from the cache'
     }
 
-    if ($UseOnlyCache)
+    $present, $absent = $cachedOsList.Where({Test-Path $_.IsoPath}, 'Split')
+    foreach ($cachedOs in $absent)
+    {
+        Write-ScreenInfo -Type Verbose -Message "Evicting $cachedOs from cache"
+        if ($global:AL_OperatingSystems) { $null = $global:AL_OperatingSystems.Remove($cachedOs) }
+        $null = $cachedOsList.Remove($cachedOs)
+    }
+
+    if (($UseOnlyCache -and $present))
+    {
+        Write-ScreenInfo -Type Verbose -Message 'Returning all present ISO files - cache may not be up to date'
+        return $present
+    }
+
+    $presentFiles = $present.IsoPath | Select-Object -Unique
+    $allFiles = ($isoFiles | Where FullName -notin $cachedOsList.MetaData).FullName
+    if ($present -and -not (Compare-Object -Reference $presentFiles -Difference $allFiles -ErrorAction SilentlyContinue | Where-Object SideIndicator -eq '=>'))
+    {
+        Write-ScreenInfo -Type Verbose -Message 'ISO cache seems to be up to date'
+        return $present
+    }
+
+    if ($UseOnlyCache -and -not $present)
     {
         Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
-    $osList = New-Object $type
-    if ($singleFile)
+    if (-not $cachedOsList)
     {
-        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems..." -NoNewLine
+        $cachedOsList = New-Object $type
     }
-    else
-    {
-        Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
-    }
+
+    Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
 
     foreach ($isoFile in $isoFiles)
     {
+        if ($cachedOsList.IsoPath -contains $isoFile.FullName) { continue }
         Write-ProgressIndicator
         Write-PSFMessage "Mounting ISO image '$($isoFile.FullName)'"
         $drive = Mount-LabDiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
@@ -1601,9 +1598,14 @@ function Get-LabAvailableOperatingSystem
             Get-LabImageOnWindows -DriveLetter $drive.DriveLetter -IsoFile $isoFile
         }
 
+        if (-not $opSystems)
+        {
+            $null = $cachedOsList.MetaData.Add($isoFile.FullName)
+        }
+
         foreach ($os in $opSystems)
         {
-            $osList.Add($os)
+            $cachedOsList.Add($os)
         }
 
         Write-PSFMessage 'Dismounting ISO'
@@ -1611,29 +1613,21 @@ function Get-LabAvailableOperatingSystem
         Write-ProgressIndicator
     }
 
-    $osList.ToArray()
+    $cachedOsList.ToArray()
 
-    if ($singleFile)
+    $cachedOsList.Timestamp = Get-Date
+
+    if ($IsLinux -or $IsMacOS)
     {
-        Write-ScreenInfo "Found $($osList.Count) OS images."
+        $cachedOsList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
     }
     else
     {
-        $osList.Timestamp = Get-Date
-        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
-
-        if ($IsLinux -or $IsMacOS)
-        {
-            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
-        }
-        else
-        {
-            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
-        }
-
-        Write-ProgressIndicatorEnd
-        Write-ScreenInfo "Found $($osList.Count) OS images."
+        $cachedOsList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
     }
+
+    Write-ProgressIndicatorEnd
+    Write-ScreenInfo "Found $($cachedOsList.Count) OS images."
     Write-LogFunctionExit
 }
 #endregion Get-LabAvailableOperatingSystem
@@ -3701,7 +3695,7 @@ if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 
 if (-not (Test-Path -Path $productKeyFilePath))
 {
-    Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath
+    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
 }
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom
