@@ -31,7 +31,7 @@ namespace AutomatedLab
     }
 
     [Flags]
-    public enum Roles : long
+    public enum Roles : ulong
     {
         RootDC = 1,
         FirstChildDC = 2,
@@ -81,7 +81,12 @@ namespace AutomatedLab
         ScomWebConsole = 4398046511104,
         ScomReporting = 8796093022208,
         ScomGateway = 17592186044416,
-        SCOM = ScomManagement | ScomConsole | ScomWebConsole | ScomReporting | ScomGateway
+        SCOM = ScomManagement | ScomConsole | ScomWebConsole | ScomReporting | ScomGateway,
+
+        DynamicsFull = 35184372088832,
+        DynamicsFrontend = 70368744177664,
+        DynamicsBackend = 105553116266496,
+        DynamicsAdministration = 140737488355328
     }
 
     public enum ActiveDirectoryFunctionalLevel

@@ -1012,6 +1012,13 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if (($Dynamics -or $performAll) -and (Get-LabVm -Role DynamicsFull,DynamicsFrontend,DynamicsBackend,DynamicsAdmin| Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Dynamics' -TaskStart
+        Install-LabDynamics -CreateCheckPoints:$CreateCheckPoints
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
     {
         Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
