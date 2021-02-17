@@ -1539,7 +1539,7 @@ function Get-LabAvailableOperatingSystem
             $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
         }
 
-        Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
+        Write-ScreenInfo -Type Verbose -Message "found $($cachedOsList.Count) OS images in the cache"
     }
     catch
     {
@@ -1562,10 +1562,17 @@ function Get-LabAvailableOperatingSystem
 
     $presentFiles = $present.IsoPath | Select-Object -Unique
     $allFiles = ($isoFiles | Where FullName -notin $cachedOsList.MetaData).FullName
-    if ($present -and -not (Compare-Object -Reference $presentFiles -Difference $allFiles -ErrorAction SilentlyContinue | Where-Object SideIndicator -eq '=>'))
+    if ($presentFiles -and $allFiles -and -not (Compare-Object -Reference $presentFiles -Difference $allFiles -ErrorAction SilentlyContinue | Where-Object SideIndicator -eq '=>'))
     {
         Write-ScreenInfo -Type Verbose -Message 'ISO cache seems to be up to date'
-        return $present
+        if (Test-Path -Path $Path -PathType Leaf)
+        {
+            return ($present | Where-Object IsoPath -eq $Path)
+        }
+        else
+        {
+            return $present
+        }
     }
 
     if ($UseOnlyCache -and -not $present)
@@ -1613,8 +1620,6 @@ function Get-LabAvailableOperatingSystem
         Write-ProgressIndicator
     }
 
-    $cachedOsList.ToArray()
-
     $cachedOsList.Timestamp = Get-Date
 
     if ($IsLinux -or $IsMacOS)
@@ -1624,6 +1629,15 @@ function Get-LabAvailableOperatingSystem
     else
     {
         $cachedOsList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
+    }
+
+    if (Test-Path -Path $Path -PathType Leaf)
+    {
+        $cachedOsList.ToArray() | Where-Object IsoPath -eq $Path
+    }
+    else
+    {
+        $cachedOsList.ToArray()
     }
 
     Write-ProgressIndicatorEnd
