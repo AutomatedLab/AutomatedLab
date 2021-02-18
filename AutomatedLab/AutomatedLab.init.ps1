@@ -544,7 +544,7 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
 }
 
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
-Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab -Parameter Name -Name 'AutomatedLab-Labs'
+Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
 Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter SubscriptionName -Name 'AutomatedLab-Subscription'

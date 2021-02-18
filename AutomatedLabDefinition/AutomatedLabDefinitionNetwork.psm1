@@ -185,11 +185,8 @@ function Add-LabVirtualNetworkDefinition
 #region Get-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
-
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
-
     param(
         [Parameter(ParameterSetName = 'ByName')]
         [string]$Name,
@@ -197,6 +194,8 @@ function Get-LabVirtualNetworkDefinition
         [Parameter(Mandatory, ParameterSetName = 'ByAddressSpace')]
         [string]$AddressSpace
     )
+
+    $script:lab = Get-LabDefinition -ErrorAction SilentlyContinue
 
     Write-LogFunctionEntry
 

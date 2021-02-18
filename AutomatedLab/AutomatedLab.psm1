@@ -454,22 +454,6 @@ function Import-Lab
         if (-not $NoValidation)
         {
             Write-ScreenInfo -Message 'Validating lab definition' -TaskStart
-            $skipHostFileModification = Get-LabConfigurationItem -Name SkipHostFileModification
-
-            foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
-            {
-                $hostEntry = Get-HostEntry -HostName $machine
-
-                if ($machine.FriendlyName -or $skipHostFileModification)
-                {
-                     continue #if FriendlyName / ResourceName is defined, host file will not be modified
-                }
-
-                if ($hostEntry -and $hostEntry.IpAddress.IPAddressToString -ne $machine.IpV4Address)
-                {
-                    throw "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
-                }
-            }
 
             $validation = Test-LabDefinition -Path $Path -Quiet
 
