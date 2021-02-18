@@ -83,10 +83,10 @@ namespace AutomatedLab
         ScomGateway = 17592186044416,
         SCOM = ScomManagement | ScomConsole | ScomWebConsole | ScomReporting | ScomGateway,
 
-        DynamicsFull = 35184372088832,
-        DynamicsFrontend = 70368744177664,
-        DynamicsBackend = 105553116266496,
-        DynamicsAdministration = 140737488355328
+        DynamicsFull = 1099511627776,
+        DynamicsFrontend = 2199023255552,
+        DynamicsBackend = 4398046511104,
+        DynamicsAdmin = 8796093022208
     }
 
     public enum ActiveDirectoryFunctionalLevel
