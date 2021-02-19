@@ -154,6 +154,7 @@
         'Install-LabHyperV',
         'Install-LabWindowsAdminCenter',
         'Install-LabScom',
+        'Install-LabDynamics'
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
