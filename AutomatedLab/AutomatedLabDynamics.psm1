@@ -297,11 +297,9 @@
             Add-LocalGroupMember -Group 'Performance Log Users' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin,$serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
             $serverXml.Save('C:\DeployDebug\Dynamics.xml')
         } -Variable (Get-Variable serverXml) -NoDisplay
-
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /quiet' -ExpectedReturnCodes 0, 3010 -AsJob -PassThru
     }
 
-    Wait-LWLabJob -Job $jobs
+    Install-LabSoftwarePackage -ComputerName $vms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010
 
     if ($CreateCheckPoints.IsPresent)
     {
