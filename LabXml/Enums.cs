@@ -86,7 +86,8 @@ namespace AutomatedLab
         DynamicsFull = 1099511627776,
         DynamicsFrontend = 2199023255552,
         DynamicsBackend = 4398046511104,
-        DynamicsAdmin = 8796093022208
+        DynamicsAdmin = 8796093022208,
+        Dynamics = DynamicsFull | DynamicsFrontend | DynamicsBackend | DynamicsAdmin
     }
 
     public enum ActiveDirectoryFunctionalLevel

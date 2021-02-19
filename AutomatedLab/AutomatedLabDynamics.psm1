@@ -10,7 +10,7 @@
     Write-LogFunctionEntry
 
     $lab = Get-Lab -ErrorAction Stop
-    $vms = Get-LabVm -Role DynamicsFull, DynamicsFrontend, DynamicsBackend, DynamicsAdmin
+    $vms = Get-LabVm -Role Dynamics
     $sql = Get-LabVm -Role SQLServer2016, SQLServer2017 | Sort-Object { $_.Roles.Name } | Select-Object -Last 1
     Start-LabVM -ComputerName $vms -Wait
     $dynamicsUri = Get-LabConfigurationItem -Name Dynamics365Uri
@@ -185,17 +185,17 @@
             }
         }
 
-        if ($role -is [AutomatedLab.Roles]::DynamicsFrontend)
+        if ($role.Name -eq [AutomatedLab.Roles]::DynamicsFrontend)
         {
             $node = $serverXml.ImportNode($frontendRole.RoleConfig, $true)
             $null = $serverXml.CRMSetup.Server.AppendChild($node)
         }
-        if ($role -is [AutomatedLab.Roles]::DynamicsBackend)
+        if ($role.Name -eq [AutomatedLab.Roles]::DynamicsBackend)
         {
             $node = $serverXml.ImportNode($backendRole.RoleConfig, $true)
             $null = $serverXml.CRMSetup.Server.AppendChild($node)
         }
-        if ($role -is [AutomatedLab.Roles]::DynamicsAdmin)
+        if ($role.Name -eq [AutomatedLab.Roles]::DynamicsAdmin)
         {
             $node = $serverXml.ImportNode($adminRole.RoleConfig, $true)
             $null = $serverXml.CRMSetup.Server.AppendChild($node)
@@ -296,13 +296,12 @@
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Group 'Performance Log Users' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin,$serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
             $serverXml.Save('C:\DeployDebug\Dynamics.xml')
-        } -Variable (Get-Variable serverXml) -PassThru -NoDisplay
+        } -Variable (Get-Variable serverXml) -NoDisplay
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /quiet' -ExpectedReturnCodes 0, 3010 -AsJob
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /quiet' -ExpectedReturnCodes 0, 3010 -AsJob -PassThru
     }
 
     Wait-LWLabJob -Job $jobs
-    $ncliUrl = Get-LabConfigurationItem -Name SqlServerNativeClient
 
     if ($CreateCheckPoints.IsPresent)
     {
