@@ -294,7 +294,8 @@
         } -Variable (Get-Variable groups, ous, users, memberships) -NoDisplay
 
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
-            Add-LocalGroupMember -Group 'Performance Log Users' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin,$serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
+            # Using SID instead of name 'Performance Log Users' to avoid possible translation issues
+            Get-LocalGroup -SID  'S-1-5-32-559' | Add-LocalGroupMember -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin,$serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
             $serverXml.Save('C:\DeployDebug\Dynamics.xml')
         } -Variable (Get-Variable serverXml) -NoDisplay
     }
