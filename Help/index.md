@@ -91,9 +91,9 @@ This solution supports setting up virtual machines with the following.
 1. Microsoft Deployment Toolkit (MDT) [*more*](https://www.microsoft.com/en-us/download/details.aspx?id=54259)
 1. ProGet (Private PowerShell Gallery)
 1. Office 2013, 2016
-1. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver)
+1. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver/)
 1. Hyper-V [*more*](https://docs.microsoft.com/en-us/virtualization/)
-1. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering)
+1. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering/failover-clustering-overview/)
 
 ## Feature List
 
@@ -106,7 +106,7 @@ This solution supports setting up virtual machines with the following.
 
 ### Enviroment
 
-- A single command to connect Azure or Hyper-V Lab [*Learn more*](/Wiki/connectlabs.md)
+- A single command to connect Azure or Hyper-V Lab [*Learn more*](https://automatedlab.org/en/latest/Wiki/Advanced/connectlabs/)
 - Composite scenarios to demo PowerShell Gallery resources
   - Inedo ProGet [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/ProGet%20Lab%20-%20HyperV.ps1)
   - Desired State Configuration (DSC) Pull Service [*more*](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Scenarios/DSC%20Pull%20Scenario%201%20(Pull%20Configuration).ps1)
@@ -143,7 +143,7 @@ Manage one, some, or all virtual lab machines
 
 ## Telemetry
 
-Starting with AutomatedLab version 5, we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you.  You can view the [full report] at your leisure. To learn more about what is collected, see [here](https://automatedlab.org/en/latest/Wiki/telemetry.md).
+Starting with AutomatedLab version 5, we are collecting telemetry. To see what you guys deliver, we are sharing the resulting Power BI report with you.  You can view the [full report] at your leisure. To learn more about what is collected, see [here](https://automatedlab.org/en/latest/Wiki/About/telemetry/).
 
 ### Facts and figures
 
@@ -167,9 +167,9 @@ Starting with AutomatedLab version 5, we are collecting telemetry. To see what y
 
 ### Next Steps
 
-- [1. Installation](https://automatedlab.org/en/latest/Wiki/install/)
+- [1. Installation](https://automatedlab.org/en/latest/Wiki/Basic/install/)
 
-- [2. Getting started](https://automatedlab.org/en/latest/Wiki/gettingstarted/)
+- [2. Getting started](https://automatedlab.org/en/latest/Wiki/Basic/gettingstarted/)
 
 - [3. Contributing](https://github.com/AutomatedLab/AutomatedLab/blob/master/CONTRIBUTING.md)
 
