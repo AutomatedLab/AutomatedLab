@@ -98,7 +98,7 @@
     </CRMSetup>
 "@
     [xml]$frontendRole = @"
-    <RoleConfig>
+<RoleConfig>
 <Roles>  
     <Role Name="WebApplicationServer" />  
     <Role Name="OrganizationWebService" />  
@@ -127,6 +127,7 @@
 "@
 
     Write-ScreenInfo -Message "Installing Dynamics 365 CRM on $($vms.Count) machines"
+    $orgFirstDeployed = @{ }
 
     foreach ($vm in $vms)
     {
@@ -185,20 +186,30 @@
             }
         }
 
+        if ($orgFirstDeployed.Contains($serverXml.CRMSetup.Server.OrganizationUniqueName))
+        {
+            $serverXml.CRMSetup.Server.Database.create = 'False'
+        }
+
+        if (-not $orgFirstDeployed.Contains($serverXml.CRMSetup.Server.OrganizationUniqueName))
+        {
+            $orgFirstDeployed[$serverXml.CRMSetup.Server.OrganizationUniqueName] = $vm.Name
+        }
+
         if ($role.Name -eq [AutomatedLab.Roles]::DynamicsFrontend)
         {
             $node = $serverXml.ImportNode($frontendRole.RoleConfig, $true)
-            $null = $serverXml.CRMSetup.Server.AppendChild($node)
+            $null = $serverXml.CRMSetup.Server.AppendChild($node.Roles)
         }
         if ($role.Name -eq [AutomatedLab.Roles]::DynamicsBackend)
         {
             $node = $serverXml.ImportNode($backendRole.RoleConfig, $true)
-            $null = $serverXml.CRMSetup.Server.AppendChild($node)
+            $null = $serverXml.CRMSetup.Server.AppendChild($node.Roles)
         }
         if ($role.Name -eq [AutomatedLab.Roles]::DynamicsAdmin)
         {
             $node = $serverXml.ImportNode($adminRole.RoleConfig, $true)
-            $null = $serverXml.CRMSetup.Server.AppendChild($node)
+            $null = $serverXml.CRMSetup.Server.AppendChild($node.Roles)
         }
 
         # Begin AD Prep
@@ -295,13 +306,20 @@
 
         Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             # Using SID instead of name 'Performance Log Users' to avoid possible translation issues
-            Add-LocalGroupMember -SID 'S-1-5-32-559' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin,$serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
+            Add-LocalGroupMember -SID 'S-1-5-32-559' -Member $serverxml.crmsetup.Server.AsyncServiceAccount.ServiceAccountLogin, $serverxml.crmsetup.Server.CrmServiceAccount.ServiceAccountLogin
             $serverXml.Save('C:\DeployDebug\Dynamics.xml')
         } -Variable (Get-Variable serverXml) -NoDisplay
     }
 
     Restart-LabVM -ComputerName $vms -Wait -NoDisplay
-    Install-LabSoftwarePackage -ComputerName $vms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay
+
+    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob
+
+    $remainingVms = $vms | Where-Object -Property Name -notin $orgFirstDeployed.Values
+    if ($remainingVms)
+    {
+        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob
+    }
 
     if ($CreateCheckPoints.IsPresent)
     {
