@@ -1,4 +1,12 @@
-﻿[CmdletBinding()]
+﻿# Scenarios - Dynamics 365
+
+This sample script deploys Dynamics 365 either fully on one machine or split up into three individual machines.
+
+To customize your installation, try one of the role parameters you can find with `Get-LabMachineRoleDefinition -Role DynamicsFull -Syntax`. All
+components roles of Dynamics use the same parameters.
+
+```powershell
+[CmdletBinding()]
 param
 (
     # Select platform, defaults to HyperV
@@ -11,7 +19,7 @@ param
     $IndividualComponents
 )
 
-New-LabDefinition -name dynamics -DefaultVirtualizationEngine $Hypervisor
+New-LabDefinition -name dynamics -DefaultVirtualizationEngine HyperV
 
 Add-LabDomainDefinition contoso.com -AdminU Install -AdminP Somepass1
 Set-LabInstallationCredential -Username Install -Password Somepass1
@@ -33,3 +41,5 @@ else
 }
 
 Install-Lab
+
+```
