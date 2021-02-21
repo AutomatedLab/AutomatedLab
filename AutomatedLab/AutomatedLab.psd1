@@ -53,6 +53,7 @@
         'AutomatedLabRemoting.psm1',
         'AutomatedLabScvmm.psm1',
         'AutomatedLabScom.psm1'
+        'AutomatedLabDynamics.psm1'
     )
 
     RequiredModules        = @(

@@ -13,8 +13,6 @@
     $vms = Get-LabVm -Role Dynamics
     $sql = Get-LabVm -Role SQLServer2016, SQLServer2017 | Sort-Object { $_.Roles.Name } | Select-Object -Last 1
     Start-LabVM -ComputerName $vms -Wait
-    $dynamicsUri = Get-LabConfigurationItem -Name Dynamics365Uri
-    $installer = Get-LabInternetFile -Uri $dynamicsUri -Path $labSources/SoftwarePackages -PassThru
 
     Invoke-LabCommand -ComputerName $vms -ScriptBlock {
         if (-not (Test-Path C:\DeployDebug))
@@ -26,24 +24,27 @@
             $null = New-Item -ItemType Directory -Path C:\DynamicsSetup
         }
     } -NoDisplay
-    Install-LabSoftwarePackage -ComputerName $vms -Path $installer.FullName -CommandLine '/extract:C:\DynamicsSetup /quiet'
     $someDc = Get-LabVm -Role RootDc | Select -First 1
     $defaultDomain = Invoke-LabCommand -ComputerName $someDc -ScriptBlock { Get-ADDomain } -PassThru -NoDisplay
 
     # Download prerequisites (which are surprisingly old...)
+    Write-ScreenInfo -Message "Downloading and installing prerequisites on $($vms.Count) machines"
     $downloadTargetFolder = "$labSources\SoftwarePackages"
-    $cppRedist64_2013 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2013) -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru
-    $cppRedist64_2010 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2010) -Path $downloadTargetFolder -FileName vcredist_x64_2010.exe -PassThru
-    $odbc = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlOdbc13) -Path $downloadTargetFolder -FileName odbc2013.msi -PassThru
-    $sqlServerNativeClient2012 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerNativeClient2012) -Path $downloadTargetFolder -FileName sqlncli2012.msi -PassThru
-    $sqlClrType = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlClrType2016) -Path $downloadTargetFolder -FileName sqlclrtype2016.msi -PassThru
-    $sqlSmo = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlSmo2016) -Path $downloadTargetFolder -FileName sqlsmo2016.msi -PassThru
-    Install-LabSoftwarePackage -Path  $cppRedist64_2010.FullName -Computer $vms -CommandLine /quiet
-    Install-LabSoftwarePackage -Path  $cppRedist64_2013.FullName -Computer $vms -CommandLine /s
-    Install-LabSoftwarePackage -Path $odbc.FullName -ComputerName $vms -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
-    Install-LabSoftwarePackage -Path $sqlServerNativeClient2012.FullName -ComputerName $vms -CommandLine '/QN IACCEPTSQLNCLILICENSETERMS=YES'
-    Install-LabSoftwarePackage -Path $sqlClrType.FullName -ComputerName $vms
-    Install-LabSoftwarePackage -Path $sqlSmo.FullName -ComputerName $vms
+    $dynamicsUri = Get-LabConfigurationItem -Name Dynamics365Uri
+    $cppRedist64_2013 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2013) -Path $downloadTargetFolder -FileName vcredist_x64_2013.exe -PassThru -NoDisplay
+    $cppRedist64_2010 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2010) -Path $downloadTargetFolder -FileName vcredist_x64_2010.exe -PassThru -NoDisplay
+    $odbc = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlOdbc13) -Path $downloadTargetFolder -FileName odbc2013.msi -PassThru -NoDisplay
+    $sqlServerNativeClient2012 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerNativeClient2012) -Path $downloadTargetFolder -FileName sqlncli2012.msi -PassThru -NoDisplay
+    $sqlClrType = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlClrType2016) -Path $downloadTargetFolder -FileName sqlclrtype2016.msi -PassThru -NoDisplay
+    $sqlSmo = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlSmo2016) -Path $downloadTargetFolder -FileName sqlsmo2016.msi -PassThru -NoDisplay
+    $installer = Get-LabInternetFile -Uri $dynamicsUri -Path $labSources/SoftwarePackages -PassThru -NoDisplay
+    Install-LabSoftwarePackage -ComputerName $vms -Path $installer.FullName -CommandLine '/extract:C:\DynamicsSetup /quiet' -NoDisplay
+    Install-LabSoftwarePackage -Path  $cppRedist64_2010.FullName -Computer $vms -CommandLine '/quiet' -NoDisplay
+    Install-LabSoftwarePackage -Path  $cppRedist64_2013.FullName -Computer $vms -CommandLine '/s' -NoDisplay
+    Install-LabSoftwarePackage -Path $odbc.FullName -ComputerName $vms -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log' -NoDisplay
+    Install-LabSoftwarePackage -Path $sqlServerNativeClient2012.FullName -ComputerName $vms -CommandLine '/QN IACCEPTSQLNCLILICENSETERMS=YES' -NoDisplay
+    Install-LabSoftwarePackage -Path $sqlClrType.FullName -ComputerName $vms -NoDisplay
+    Install-LabSoftwarePackage -Path $sqlSmo.FullName -ComputerName $vms -NoDisplay
     
     [xml]$defaultXml = @"
     <CRMSetup>  
@@ -52,7 +53,7 @@
     <LicenseKey>KKNV2-4YYK8-D8HWD-GDRMW-29YTW</LicenseKey>
     <SqlServer>$sql</SqlServer>  
     <Database create="true"/>  
-    <Reporting URL="https://$sql/ReportServer"/>  
+    <Reporting URL="http://$sql/ReportServer"/>  
     <OrganizationCollation>Latin1_General_CI_AI</OrganizationCollation>  
     <basecurrency isocurrencycode="USD" currencyname="US Dollar" currencysymbol="$" currencyprecision="2"/>  
     <Organization>AutomatedLab</Organization>  
@@ -96,7 +97,6 @@
      </Server>  
     </CRMSetup>
 "@
-
     [xml]$frontendRole = @"
     <RoleConfig>
 <Roles>  
@@ -126,7 +126,7 @@
 </RoleConfig>
 "@
 
-    Restart-LabVM -ComputerName $vms -Wait
+    Write-ScreenInfo -Message "Installing Dynamics 365 CRM on $($vms.Count) machines"
 
     foreach ($vm in $vms)
     {
@@ -300,7 +300,8 @@
         } -Variable (Get-Variable serverXml) -NoDisplay
     }
 
-    Install-LabSoftwarePackage -ComputerName $vms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010
+    Restart-LabVM -ComputerName $vms -Wait -NoDisplay
+    Install-LabSoftwarePackage -ComputerName $vms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay
 
     if ($CreateCheckPoints.IsPresent)
     {
