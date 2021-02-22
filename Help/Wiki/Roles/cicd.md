@@ -19,11 +19,12 @@ To add a new pipeline in AutomatedLab, here are the two cmdlets.
 
 ### Get-LabBuildStep
 
-This cmdlet lists all available build steps that you can configure since there is not much documentation available. The output of Get-LabBuildStep can be copied and pasted with the correct formatting to use with New-LabReleasePipeline.
+This cmdlet lists all available build steps that you can configure since there is not much documentation available. The output of `Get-LabBuildStep` can be copied and pasted with the correct formatting to use with `New-LabReleasePipeline`.
 
 ### New-LabReleasePipeline
 
-This cmdlet goes through the necessary steps to create a new CI/CD pipeline. A project will be created, if specified a git repository will be forked and pushed to the new team project's repository and the build definition will be created.  
+This cmdlet goes through the necessary steps to create a new CI/CD pipeline. A project will be created, if specified a git repository will be forked and pushed to the new team project's repository and the build definition will be created.
+
 The build definition is the only thing that requires some though. Since a build definition consists of multiple build steps you will need to select for yourself which steps might make sense.
 
 ```powershell
@@ -50,7 +51,7 @@ $buildSteps = @(
 New-LabReleasePipeline -ProjectName 'ALSampleProject' -SourceRepository https://github.com/gaelcolas/DSCInfraSample -BuildSteps $buildSteps
 ```  
 
-The ID you can see in the little code sample refers to the build step ID - this is part of the output of ``` Get-LabBuildStep ```:
+The `ID` you can see in the little code sample refers to the build step `ID`. This is part of the output of `Get-LabBuildStep`:
 
 ```powershell
 @{
