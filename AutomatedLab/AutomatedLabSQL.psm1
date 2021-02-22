@@ -395,7 +395,7 @@ GO
         }
         $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
 
-        if (-not (Test-Path $downloadFolder))
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
         {
             $null = New-Item -ItemType Directory -Path $downloadFolder
         }
