@@ -313,12 +313,12 @@
 
     Restart-LabVM -ComputerName $vms -Wait -NoDisplay
 
-    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob
+    Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout 30
 
     $remainingVms = $vms | Where-Object -Property Name -notin $orgFirstDeployed.Values
     if ($remainingVms)
     {
-        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob
+        Install-LabSoftwarePackage -ComputerName $remainingVms -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout 30
     }
 
     if ($CreateCheckPoints.IsPresent)
