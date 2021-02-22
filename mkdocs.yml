@@ -118,7 +118,7 @@ nav:
 - Customizing your lab:
   - Installing Windows features: Wiki/Basic/installwindowsfeatures.md
   - Installing software: Wiki/Basic/installsoftware.md
-  - Run remote commands: WikiBasic//invokelabcommand.md
+  - Run remote commands: Wiki/Basic/invokelabcommand.md
   - Use DSC: Wiki/Advanced/usedsc.md
   - Exchanging data: Wiki/Basic/exchangedata.md
   - Notification system: Wiki/Advanced/notifications.md
