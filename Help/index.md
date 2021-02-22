@@ -36,7 +36,7 @@ Master | [![Build status](https://ci.appveyor.com/api/projects/status/9yynk81k3k
 
 - [Getting started with AutomatedLab](https://www.youtube.com/watch?v=lrPlRvFR5fA)
 
-<!-- 
+<!--
 YouTube link is marked private: Checked on 2021-02-12 @ 1530 EST
 - [How to automate ActiveDS lab to preform pentesting with Powershell &  Hyper-V?](https://www.youtube.com/watch?v=y0aid7U5e-0) *by @rajganeshp (Thanks!)* -->
 
@@ -99,7 +99,7 @@ This solution supports setting up virtual machines with the following.
 
 ### Set-Up
 
-- AutomatedLab (AL) makes setup easy 
+- AutomatedLab (AL) makes setup easy
 - A single machine is [three lines](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/Introduction/01%20Single%20Win10%20Client.ps1).
 - [Complex labs](https://github.com/AutomatedLab/AutomatedLab/blob/master/LabSources/SampleScripts/HyperV/BigLab%202012R2%20EX%20SQL%20ORCH%20VS%20OFF.ps1) in approximately 100 lines
 - Scan these [sample scripts](https://github.com/AutomatedLab/AutomatedLab/tree/master/LabSources/SampleScripts)
@@ -165,7 +165,7 @@ Starting with AutomatedLab version 5, we are collecting telemetry. To see what y
 [wiki]: https://github.com/AutomatedLab/AutomatedLab/wiki
 [full report]: https://msit.powerbi.com/view?r=eyJrIjoiN2Q3ZTU5Y2QtMjUyMi00YmFhLTkxNTMtZDBmYTA3MzcyYWQxIiwidCI6IjcyZjk4OGJmLTg2ZjEtNDFhZi05MWFiLTJkN2NkMDExZGI0NyIsImMiOjV9
 
-### Next Steps
+## Next Steps
 
 - [1. Installation](https://automatedlab.org/en/latest/Wiki/Basic/install/)
 
