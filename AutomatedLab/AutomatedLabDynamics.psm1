@@ -198,6 +198,10 @@
 
         if ($role.Name -eq [AutomatedLab.Roles]::DynamicsFrontend)
         {
+            $lab.AzureSettings.LoadBalancerPortCounter++
+            $remotePort = $lab.AzureSettings.LoadBalancerPortCounter
+            Write-ScreenInfo -Message ('Connection to dynamics frontend via http://{0}:{1}' -f $vm.AzureConnectionInfo.DnsName, $remotePort)
+            Add-LWAzureLoadBalancedPort -ComputerName $vm -DestinationPort $serverXml.CRMSetup.Server.WebsiteUrl.port -Port $remotePort
             $node = $serverXml.ImportNode($frontendRole.RoleConfig, $true)
             $null = $serverXml.CRMSetup.Server.AppendChild($node.Roles)
         }
@@ -313,7 +317,7 @@
 
     Restart-LabVM -ComputerName $vms -Wait -NoDisplay
 
-    $timeout = if ($lab.DefaultVirtualizationEngine -eq 'Azure') { 45 } else { 30 }
+    $timeout = if ($lab.DefaultVirtualizationEngine -eq 'Azure') { 60 } else { 45 }
     Install-LabSoftwarePackage -ComputerName $orgFirstDeployed.Values -LocalPath 'C:\DynamicsSetup\SetupServer.exe' -CommandLine '/config C:\DeployDebug\Dynamics.xml /log C:\DeployDebug\DynamicsSetup.log /Q' -ExpectedReturnCodes 0, 3010 -NoDisplay -UseShellExecute -AsScheduledJob -UseExplicitCredentialsForScheduledJob -Timeout $timeout
 
     $remainingVms = $vms | Where-Object -Property Name -notin $orgFirstDeployed.Values
