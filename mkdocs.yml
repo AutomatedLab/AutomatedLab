@@ -114,12 +114,12 @@ nav:
   - SQL Server: Wiki/Roles/sql.md
   - DSC Pull Server: Wiki/Roles/dscpull.md
   - Lab Builder REST API: Wiki/Roles/restapi.md
-- Custom roles: Wiki/Advanced/customroles.md
+  - Custom roles: Wiki/Advanced/customroles.md
 - Customizing your lab:
   - Installing Windows features: Wiki/Basic/installwindowsfeatures.md
   - Installing software: Wiki/Basic/installsoftware.md
   - Run remote commands: Wiki/Basic/invokelabcommand.md
-  - Use DSC: Wiki/Advanced/usedsc.md
+  - Use PowerShell DSC: Wiki/Advanced/usedsc.md
   - Exchanging data: Wiki/Basic/exchangedata.md
   - Notification system: Wiki/Advanced/notifications.md
   - Connecting two labs: Wiki/Advanced/connectlabs.md
