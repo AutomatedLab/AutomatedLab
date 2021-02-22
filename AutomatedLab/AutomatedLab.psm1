@@ -714,6 +714,7 @@ function Install-Lab
         [switch]$WindowsAdminCenter,
         [switch]$Scvmm,
         [switch]$Scom,
+        [switch]$Dynamics,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1012,7 +1013,7 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($Dynamics -or $performAll) -and (Get-LabVm -Role DynamicsFull,DynamicsFrontend,DynamicsBackend,DynamicsAdmin| Where-Object { -not $_.SkipDeployment }))
+    if (($Dynamics -or $performAll) -and (Get-LabVm -Role Dynamics | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Dynamics' -TaskStart
         Install-LabDynamics -CreateCheckPoints:$CreateCheckPoints
