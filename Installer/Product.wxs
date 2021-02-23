@@ -135,6 +135,7 @@
                 <File Id='Sample_CM1902Lab1' Name='CM-1902.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\CM-1902.ps1' />
                 <File Id='Sample_NuGetServerLab1' Name='NuGetServer.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\NuGetServer.ps1' />
                 <File Id='Sample_SCVMM' Name='SCVMM.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCVMM.ps1' />
+                <File Id='Sample_Scom' Name='SCOMDistributed.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCOMDistributed.ps1' />
                 <File Id='Sample_HyperVClusterWithVmm' Name='HyperVClusterWithVmm.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\HyperVClusterWithVmm.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
