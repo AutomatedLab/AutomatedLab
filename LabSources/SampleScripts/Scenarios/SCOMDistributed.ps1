@@ -18,11 +18,11 @@ Add-LabIsoImageDefinition -Name ScomManagement -Path $labsources\ISOs\mu_system_
 
 # Basic Root Domain Controller and SQL 2017 Server, including SSRS and SSMS
 Add-LabMachineDefinition -Name SCDC1 -Memory 2GB -Roles RootDc -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
-Add-LabMachineDefinition -Name SCDB1 -Memory 8GB -Roles SQLServer2017 -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
+Add-LabMachineDefinition -Name SCDB1 -Memory 8GB -Roles SQLServer2017,ScomReporting -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
 
 # Add as many role VMs as desired. These can all be installed on a single VM as well.
 Add-LabMachineDefinition -Name SCMG1 -Memory 8GB -Role ScomManagement,ScomConsole -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
-Add-LabMachineDefinition -Name SCRE1 -Memory 8GB -Role ScomWebConsole,ScomReporting -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
+Add-LabMachineDefinition -Name SCWC1 -Memory 8GB -Role ScomWebConsole -Domain contoso.com -OperatingSystem 'Windows Server 2019 Datacenter (Desktop Experience)'
 
 Install-Lab
 Show-LabDeploymentSummary -Detailed

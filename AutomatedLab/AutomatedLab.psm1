@@ -1153,7 +1153,7 @@ function Install-Lab
             Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         }
 
-        Install-LabScvmm
+        Install-LabScom
         Write-ScreenInfo -Message 'SCOM environment deployed'
     }
 

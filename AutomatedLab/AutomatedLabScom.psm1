@@ -64,6 +64,8 @@
     $scomWebConsoleRole = Get-LabVM -Role ScomWebConsole
     $scomReportingServer = Get-LabVm -Role ScomReporting
 
+    Start-LabVM -ComputerName $all -Wait
+
     # Prerequisites, all
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $SQLSysClrTypes = Get-LabConfigurationItem -Name SqlClrType2014
