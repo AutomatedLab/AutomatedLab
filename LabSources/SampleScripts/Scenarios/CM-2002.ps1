@@ -145,11 +145,10 @@
 
     Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-2002 scripts on CM01.
 .NOTES
-    Author:       Adam Cook (@codaamok)
-    Date created: 2020-06-03
-    Source:       https://github.com/codaamok/PoSH/AutomatedLab
+    Author: Adam Cook (@codaamok)
+    Source: https://github.com/codaamok/PoSH/AutomatedLab
 #>
-#Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V"
+#Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V", @{ ModuleName = "Pester"; ModuleVersion = "5.0" }
 [Cmdletbinding()]
 Param (
     [Parameter()]
@@ -197,8 +196,26 @@ Param (
     [String]$SiteName = $LabName,
 
     [Parameter()]
-    [ValidateSet("2002","Latest")]
-    [String]$CMVersion = "Latest",
+    [ValidateSet("2002", "2006", "2010")]
+    [String]$CMVersion = "2010",
+
+    [Parameter()]
+    [ValidateSet(
+        "None",
+        "Management Point", 
+        "Distribution Point", 
+        "Software Update Point", 
+        "Reporting Services Point", 
+        "Endpoint Protection Point"
+    )]
+    [String[]]$CMRoles = @(
+        "None",
+        "Management Point", 
+        "Distribution Point", 
+        "Software Update Point", 
+        "Reporting Services Point", 
+        "Endpoint Protection Point"
+    ),
 
     [Parameter()]
     [ValidateSet("CB","TP")]
@@ -325,7 +342,7 @@ $PSDefaultParameterValues = @{
     'Add-LabMachineDefinition:OperatingSystem' = $OSVersion
     'Add-LabMachineDefinition:DomainName'      = $Domain
     'Add-LabMachineDefinition:Network'         = $LabName
-    'Add-LabMachineDefinition:ToolsPath'       = "$labSources\Tools"
+    'Add-LabMachineDefinition:ToolsPath'       = "{0}\Tools" -f $labSources
     'Add-LabMachineDefinition:MinMemory'       = 1GB
     'Add-LabMachineDefinition:Memory'          = 1GB
 }
@@ -491,6 +508,7 @@ else {
     $CMRole = Get-LabPostInstallationActivity -CustomRole "CM-2002" -Properties @{
         Branch              = $Branch
         Version             = $CMVersion
+        ALLabName           = $LabName
         CMSiteCode          = $SiteCode
         CMSiteName          = $SiteName
         CMBinariesDirectory = "{0}\SoftwarePackages\CM2002-{1}" -f $labSources, $Branch
@@ -501,9 +519,10 @@ else {
                 "https://download.microsoft.com/download/e/0/a/e0a2dd5e-2b96-47e7-9022-3030f8a1807b/MEM_Configmgr_2002.exe"
             }
             "TP" { 
-                "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2002.exe"
+                "https://download.microsoft.com/download/D/8/E/D8E795CE-44D7-40B7-9067-D3D1313865E5/Configmgr_TechPreview2010.exe"
             }
         }
+        CMRoles             = $CMRoles
         ADKDownloadURL      = $ADKDownloadUrl
         ADKDownloadPath     = "{0}\SoftwarePackages\ADK" -f $labSources
         WinPEDownloadURL    = $WinPEDownloadURL

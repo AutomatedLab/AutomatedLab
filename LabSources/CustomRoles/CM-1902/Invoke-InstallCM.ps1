@@ -36,33 +36,6 @@ Param (
 )
 
 #region Define functions
-function Import-CMModule {
-    Param(
-        [String]$ComputerName,
-        [String]$SiteCode
-    )
-    if(-not(Get-Module ConfigurationManager)) {
-        try {
-            Import-Module ("{0}\..\ConfigurationManager.psd1" -f $ENV:SMS_ADMIN_UI_PATH) -ErrorAction "Stop" -ErrorVariable "ImportModuleError"
-        }
-        catch {
-            throw ("Failed to import ConfigMgr module: {0}" -f $ImportModuleError.ErrorRecord.Exception.Message)
-        }
-    }
-    try {
-        if(-not(Get-PSDrive -Name $SiteCode -PSProvider "CMSite" -ErrorAction "SilentlyContinue")) {
-            New-PSDrive -Name $SiteCode -PSProvider "CMSite" -Root $ComputerName -Scope "Script" -ErrorAction "Stop" | Out-Null
-        }
-        Set-Location ("{0}:\" -f $SiteCode) -ErrorAction "Stop"    
-    } 
-    catch {
-        if(Get-PSDrive -Name $SiteCode -PSProvider "CMSite" -ErrorAction "SilentlyContinue") {
-            Remove-PSDrive -Name $SiteCode -Force
-        }
-        throw ("Failed to create New-PSDrive with site code `"{0}`" and server `"{1}`"" -f $SiteCode, $ComputerName)
-    }
-}
-
 function Install-CMSite {
     Param (
         [Parameter(Mandatory)]
@@ -99,13 +72,62 @@ function Install-CMSite {
     $sqlServer = Get-LabVM -Role SQLServer | Where-Object Name -eq $SqlServerName
     $sqlServerFqdn = $sqlServer.FQDN
     $DCServerName = Get-LabVM -Role RootDC | Where-Object { $_.DomainName -eq  $CMServer.DomainName } | Select-Object -ExpandProperty Name
-    $downloadTargetFolder = "$labSources\SoftwarePackages"
+    $downloadTargetDirectory = "{0}\SoftwarePackages" -f $labSources
     $VMInstallDirectory = "C:\Install"
-    $VMCMBinariesDirectory = Join-Path -Path $VMInstallDirectory -ChildPath (Split-Path -Leaf $CMBinariesDirectory)
-    $VMCMPreReqsDirectory = Join-Path -Path $VMInstallDirectory -ChildPath (Split-Path -Leaf $CMPreReqsDirectory)
-    $CMComputerAccount = '{0}\{1}$' -f @(
-        $CMServer.DomainName.Substring(0, $CMServer.DomainName.IndexOf('.')),
-        $CMServerName
+    $VMCMBinariesDirectory = "{0}\{1}" -f $VMInstallDirectory, (Split-Path -Leaf $CMBinariesDirectory)
+    $VMCMPreReqsDirectory = "{0}\{1}" -f $VMInstallDirectory, (Split-Path -Leaf $CMPreReqsDirectory)
+    $CMComputerAccount = '{0}\{1}$' -f $CMServer.DomainName.Substring(0, $CMServer.DomainName.IndexOf('.')), $CMServerName
+    $AVExcludedPaths = @(
+        $VMInstallDirectory
+        '{0}\ADK\adksetup.exe' -f $VMInstallDirectory
+        '{0}\WinPE\adkwinpesetup.exe' -f $VMInstallDirectory
+        '{0}\SMSSETUP\BIN\X64\setup.exe' -f $VMCMBinariesDirectory
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Binn\sqlservr.exe'
+        'C:\Program Files\Microsoft SQL Server Reporting Services\SSRS\ReportServer\bin\ReportingServicesService.exe'
+        'C:\Program Files\Microsoft Configuration Manager'
+        'C:\Program Files\Microsoft Configuration Manager\Inboxes'
+        'C:\Program Files\Microsoft Configuration Manager\Logs'
+        'C:\Program Files\Microsoft Configuration Manager\EasySetupPayload'
+        'C:\Program Files\Microsoft Configuration Manager\MP\OUTBOXES'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smsexec.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Sitecomp.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smswriter.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smssqlbkup.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Cmupdate.exe'
+        'C:\Program Files\SMS_CCM'
+        'C:\Program Files\SMS_CCM\Logs'
+        'C:\Program Files\SMS_CCM\ServiceData'
+        'C:\Program Files\SMS_CCM\PolReqStaging\POL00000.pol'
+        'C:\Program Files\SMS_CCM\ccmexec.exe'
+        'C:\Program Files\SMS_CCM\Ccmrepair.exe'
+        'C:\Program Files\SMS_CCM\RemCtrl\CmRcService.exe'
+        'C:\Windows\CCMSetup'
+        'C:\Windows\CCMSetup\ccmsetup.exe'
+        'C:\Windows\CCMCache'
+        'G:\SMS_DP$'
+        'G:\SMSPKGG$'
+        'G:\SMSPKG'
+        'G:\SMSPKGSIG'
+        'G:\SMSSIG$'
+        'G:\RemoteInstall'
+        'G:\WSUS'
+        'F:\Microsoft SQL Server'
+    )
+    $AVExcludedProcesses = @(
+        '{0}\ADK\adksetup.exe' -f $VMInstallDirectory
+        '{0}\WinPE\adkwinpesetup.exe' -f $VMInstallDirectory
+        '{0}\SMSSETUP\BIN\X64\setup.exe' -f $VMCMBinariesDirectory
+        'C:\Program Files\Microsoft SQL Server\MSSQL14.MSSQLSERVER\MSSQL\Binn\sqlservr.exe'
+        'C:\Program Files\Microsoft SQL Server Reporting Services\SSRS\ReportServer\bin\ReportingServicesService.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smsexec.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Sitecomp.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smswriter.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Smssqlbkup.exe'
+        'C:\Program Files\Microsoft Configuration Manager\bin\x64\Cmupdate.exe'
+        'C:\Program Files\SMS_CCM\ccmexec.exe'
+        'C:\Program Files\SMS_CCM\Ccmrepair.exe'
+        'C:\Program Files\SMS_CCM\RemCtrl\CmRcService.exe'
+        'C:\Windows\CCMSetup\ccmsetup.exe'
     )
 
     $PSDefaultParameterValues = @{
@@ -165,7 +187,7 @@ UseProxy=0
 [HierarchyExpansionOption]
 "@
     
-    $setupConfigFileContent | Out-File -FilePath "$($downloadTargetFolder)\ConfigurationFile-CM.ini" -Encoding ascii -ErrorAction "Stop"
+    $setupConfigFileContent | Out-File -FilePath "$($downloadTargetDirectory)\ConfigurationFile-CM.ini" -Encoding ascii -ErrorAction "Stop"
     #endregion
     
     # Pre-req checks
@@ -204,22 +226,22 @@ UseProxy=0
         return
     }
     
-    if (-not (Test-Path -Path "$downloadTargetFolder\ADK")) {
-        $Message = "ADK Installation files are not located in '{0}\ADK'" -f $downloadTargetFolder
+    if (-not (Test-Path -Path "$downloadTargetDirectory\ADK")) {
+        $Message = "ADK Installation files are not located in '{0}\ADK'" -f $downloadTargetDirectory
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
     else {
-        Write-ScreenInfo -Message ("Found ADK folder '{0}\ADK'" -f $downloadTargetFolder)
+        Write-ScreenInfo -Message ("Found ADK folder '{0}\ADK'" -f $downloadTargetDirectory)
     }
 
-    if (-not (Test-Path -Path "$downloadTargetFolder\WinPE")) {
-        $Message = "WinPE Installation files are not located in '{0}\WinPE'" -f $downloadTargetFolder
+    if (-not (Test-Path -Path "$downloadTargetDirectory\WinPE")) {
+        $Message = "WinPE Installation files are not located in '{0}\WinPE'" -f $downloadTargetDirectory
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
     else {
-        Write-ScreenInfo -Message ("Found WinPE folder '{0}\WinPE'" -f $downloadTargetFolder)
+        Write-ScreenInfo -Message ("Found WinPE folder '{0}\WinPE'" -f $downloadTargetDirectory)
     }
 
     if (-not (Test-Path -Path $CMBinariesDirectory)) {
@@ -238,6 +260,26 @@ UseProxy=0
     }
     else {
         Write-ScreenInfo -Message ("Found CM pre-reqs folder in '{0}'" -f $CMPreReqsDirectory)
+    }
+    Write-ScreenInfo -Message "Activity done" -TaskEnd
+    #endregion
+
+    #region Add Windows Defender exclusions
+    # https://docs.microsoft.com/en-us/troubleshoot/mem/configmgr/recommended-antivirus-exclusions
+    # https://docs.microsoft.com/en-us/powershell/module/defender/add-mppreference?view=win10-ps
+    # https://docs.microsoft.com/en-us/powershell/module/defender/set-mppreference?view=win10-ps
+    Write-ScreenInfo -Message "Adding Windows Defender exclusions" -TaskStart
+    $job = Invoke-LabCommand -ActivityName "Adding Windows Defender exclusions" -Variable (Get-Variable "AVExcludedPaths", "AVExcludedProcesses") -ScriptBlock {
+        Add-MpPreference -ExclusionPath $AVExcludedPaths -ExclusionProcess $AVExcludedProcesses -ErrorAction "Stop"
+        Set-MpPreference -RealTimeScanDirection "Incoming" -ErrorAction "Stop"
+    }
+    Wait-LWLabJob -Job $job
+    try {
+        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
+    }
+    catch {
+        Write-ScreenInfo -Message ("Failed to add Windows Defender exclusions ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
+        throw $ReceiveJobErr
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
@@ -266,8 +308,12 @@ UseProxy=0
     #region Saving NO_SMS_ON_DRIVE.SMS file on C: and F:
     Write-ScreenInfo -Message "Saving NO_SMS_ON_DRIVE.SMS file on C: and F:" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Place NO_SMS_ON_DRIVE.SMS file on C: and F:" -ScriptBlock {
-        New-Item -Path "C:\" -Name "NO_SMS_ON_DRIVE.SMS" -ItemType "File" -ErrorAction "Stop"
-        New-Item -Path "F:\" -Name "NO_SMS_ON_DRIVE.SMS" -ItemType "File" -ErrorAction "Stop"
+        foreach ($drive in "C:","F:") {
+            $Path = "{0}\NO_SMS_ON_DRIVE.SMS" -f $drive
+            if (-not (Test-Path $Path)) {
+                New-Item -Path $Path -ItemType "File" -ErrorAction "Stop"
+            }
+        }
     }
     Wait-LWLabJob -Job $job
     try {
@@ -306,6 +352,7 @@ UseProxy=0
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
+
     try {
         Copy-LabFileItem -Path $CMPreReqsDirectory -DestinationFolderPath $VMInstallDirectory
     }
@@ -314,13 +361,15 @@ UseProxy=0
         Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
         throw $Message
     }
+
     $Paths = @(
-        (Join-Path -Path $downloadTargetFolder -ChildPath "ADK"),
-        (Join-Path -Path $downloadTargetFolder -ChildPath "WinPE"),
-        (Join-Path -Path $downloadTargetFolder -ChildPath "ConfigurationFile-CM.ini")
-        (Join-Path -Path $downloadTargetFolder -ChildPath "sqlncli.msi")
+        "{0}\ConfigurationFile-CM.ini" -f $downloadTargetDirectory
+        "{0}\sqlncli.msi" -f $downloadTargetDirectory
+        "{0}\WinPE" -f $downloadTargetDirectory
+        "{0}\ADK" -f $downloadTargetDirectory
     )
-    ForEach ($Path in $Paths) {
+
+    foreach ($Path in $Paths) {
         # Put CM ini file in same location as SQL ini, just for consistency. Placement of SQL ini from SQL role isn't configurable.
         switch -Regex ($Path) {
             "Configurationfile-CM\.ini$" {
@@ -344,8 +393,8 @@ UseProxy=0
 
     #region Install SQL Server Native Client
     Write-ScreenInfo -Message "Installing SQL Server Native Client" -TaskStart
-    $Path = Join-Path -Path $VMInstallDirectory -ChildPath "sqlncli.msi"
-    $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/qn /norestart IACCEPTSQLNCLILICENSETERMS=YES" -ExpectedReturnCodes 0
+    $Path = "{0}\sqlncli.msi" -f $VMInstallDirectory
+    $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/qn /norestart IAcceptSqlncliLicenseTerms=Yes" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
         $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
@@ -366,8 +415,8 @@ UseProxy=0
     #region Extend the AD Schema
     Write-ScreenInfo -Message "Extending the AD Schema" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Extending the AD Schema" -Variable (Get-Variable -Name "VMCMBinariesDirectory") -ScriptBlock {
-        $path = Join-Path -Path $VMCMBinariesDirectory -ChildPath "SMSSETUP\BIN\X64\extadsch.exe"
-        Start-Process $path -Wait -PassThru -ErrorAction "Stop"
+        $Path = "{0}\SMSSETUP\BIN\X64\extadsch.exe" -f $VMCMBinariesDirectory
+        Start-Process $Path -Wait -PassThru -ErrorAction "Stop"
     }
     Wait-LWLabJob -Job $job
     try {
@@ -438,7 +487,7 @@ UseProxy=0
     
     #region Install ADK
     Write-ScreenInfo -Message "Installing ADK" -TaskStart
-    $Path = Join-Path -Path $VMInstallDirectory -ChildPath "ADK\adksetup.exe"
+    $Path = "{0}\ADK\adksetup.exe" -f $VMInstallDirectory
     $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/norestart /q /ceip off /features OptionId.DeploymentTools OptionId.UserStateMigrationTool OptionId.ImagingAndConfigurationDesigner" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
@@ -453,7 +502,7 @@ UseProxy=0
 
     #region Install WinPE
     Write-ScreenInfo -Message "Installing WinPE" -TaskStart
-    $Path = Join-Path $VMInstallDirectory -ChildPath "WinPE\adkwinpesetup.exe"
+    $Path = "{0}\WinPE\adkwinpesetup.exe" -f $VMInstallDirectory
     $job = Install-LabSoftwarePackage -LocalPath $Path -CommandLine "/norestart /q /ceip off /features OptionId.WindowsPreinstallationEnvironment" -ExpectedReturnCodes 0
     Wait-LWLabJob -Job $job
     try {
@@ -465,87 +514,6 @@ UseProxy=0
     }
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion 
-
-    #region Install .NET 3.5
-    Write-ScreenInfo -Message "Installing .NET 3.5 on" -TaskStart
-    $job = Install-LabWindowsFeature -FeatureName NET-Framework-Core
-    Wait-LWLabJob -Job $job
-    try {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch {
-        Write-ScreenInfo -Message ("Failed to install .NET 3.5 ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
-    
-    #region Install WDS
-    Write-ScreenInfo -Message "Installing WDS" -TaskStart
-    $job = Install-LabWindowsFeature -ComputerName $CMServerName -FeatureName WDS
-    Wait-LWLabJob -Job $job
-    try {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch {
-        Write-ScreenInfo -Message ("Failed to install WDS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
-
-    #region Verify WDS is installed
-    # Sometimes, not always, I noticed WDS state was "InstallPending" and reboot resolved.
-    Write-ScreenInfo -Message "Verifying WDS is installed" -TaskStart
-    $job = Invoke-LabCommand -ActivityName "Verifying WDS is installed" -ScriptBlock {
-        Get-WindowsFeature -Name "WDS-Deployment" -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
-    try {
-        $WDS = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch {
-        Write-ScreenInfo -Message ("Failed to verify WDS is installed ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
-    switch ($WDS.InstallState) {
-        "InstallPending" {
-            Write-ScreenInfo -Message "Restart required, restarting server" -TaskStart
-            Restart-LabVM -ComputerName $CMServerName -Wait -ErrorAction "Stop"
-            Write-ScreenInfo -Message "Activity done" -TaskEnd
-        }
-        "Available" {
-            $Message = "WDS install verification failed, reporting as not installed"
-            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
-            throw $Message
-        }
-        "Installed" {
-            #Write-ScreenInfo -Message "WDS is installed"
-        }
-        default {
-            Write-ScreenInfo -Message "Could not determine WDS's install state" -Type "Warning"
-        }
-    }
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
-    
-    #region Configure WDS
-    Write-ScreenInfo -Message "Configuring WDS" -TaskStart
-    $job = Invoke-LabCommand -ActivityName "Configuring WDS" -ScriptBlock {
-        Start-Process -FilePath "C:\Windows\System32\WDSUTIL.EXE" -ArgumentList "/Initialize-Server /RemInst:G:\RemoteInstall" -Wait -ErrorAction "Stop"
-        Start-Sleep -Seconds 10
-        Start-Process -FilePath "C:\Windows\System32\WDSUTIL.EXE" -ArgumentList "/Set-Server /AnswerClients:All" -Wait -ErrorAction "Stop"
-    }
-    Wait-LWLabJob -Job $job
-    try {
-        $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-    }
-    catch {
-        Write-ScreenInfo -Message ("Failed to configure WDS ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-        throw $ReceiveJobErr
-    }
-    Write-ScreenInfo -Message "Activity done" -TaskEnd
-    #endregion
 
     #region Install WSUS
     Write-ScreenInfo -Message "Installing WSUS" -TaskStart
@@ -608,32 +576,10 @@ UseProxy=0
     Restart-LabVM -ComputerName $CMServerName -Wait -ErrorAction "Stop"
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
-    
-    #region Add CM system account to local adminsitrators group
-    # Initially used for testing where SQL was remote from CM
-    if ($CMServerName -ne $sqlServerName) {
-        Write-ScreenInfo -Message "Adding CM system account to local adminsitrators group" -TaskStart
-        $job = Invoke-LabCommand -ActivityName "Adding CM system account to local adminsitrators group" -Variable (Get-Variable -Name "CMComputerAccount") -ScriptBlock {
-            if (-not (Get-LocalGroupMember -Group Administrators -Member $CMComputerAccount -ErrorAction "Stop"))
-            {
-                Add-LocalGroupMember -Group Administrators -Member $CMComputerAccount -ErrorAction "Stop"
-            }
-        }
-        Wait-LWLabJob -Job $job
-        try {
-            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
-        }
-        catch {
-            Write-ScreenInfo -Message ("Failed to add CM system account to '{0}' ({1})" -f $sqlServerFqdn, $ReceiveJobErr.ErrorRecord.Exception.Message) -Type "Error" -TaskEnd
-            throw $ReceiveJobErr
-        }
-        Write-ScreenInfo -Message "Activity done" -TaskEnd
-    }
-    #endregion
-    
+
     #region Install Configuration Manager
     Write-ScreenInfo "Installing Configuration Manager" -TaskStart
-    $exePath = Join-Path -Path $VMCMBinariesDirectory -ChildPath "SMSSETUP\BIN\X64\setup.exe"
+    $exePath = "{0}\SMSSETUP\BIN\X64\setup.exe" -f $VMCMBinariesDirectory
     $iniPath = "C:\ConfigurationFile-CM.ini"
     $cmd = "/Script `"{0}`" /NoUserInput" -f $iniPath
     $job = Install-LabSoftwarePackage -LocalPath $exePath -CommandLine $cmd -ProgressIndicator 2 -ExpectedReturnCodes 0
@@ -673,10 +619,41 @@ UseProxy=0
     Write-ScreenInfo -Message "Activity done" -TaskEnd
     #endregion
 
-    #region Install SUP
+    #region Install PXE Responder
+    Write-ScreenInfo -Message "Installing PXE Responder" -TaskStart
+    New-LoopAction -LoopTimeout 15 -LoopTimeoutType "Minutes" -LoopDelay 60 -ScriptBlock {
+        $job = Invoke-LabCommand -ActivityName "Installing PXE Responder" -Variable (Get-Variable "CMServerFqdn","CMServerName") -Function (Get-Command "Import-CMModule") -ScriptBlock {
+            Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
+            Set-CMDistributionPoint -SiteSystemServerName $CMServerFqdn -EnablePxe $true -EnableNonWdsPxe $true -ErrorAction "Stop"
+            do {
+                Start-Sleep -Seconds 5
+            } while ((Get-Service).Name -notcontains "SccmPxe")
+            Write-Output "Installed"
+        }
+        Wait-LWLabJob -Job $job
+        try {
+            $result = $job | Receive-Job -ErrorAction "Stop" -ErrorVariable "ReceiveJobErr"
+        }
+        catch {
+            $Message = "Failed to install PXE Responder ({0})" -f $ReceiveJobErr.ErrorRecord.Exception.Message
+            Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+            throw $ReceiveJobErr
+        }
+    } -IfTimeoutScript {
+        $Message = "Timed out waiting for PXE Responder to install"
+        Write-ScreenInfo -Message $Message -Type "Error" -TaskEnd
+        throw $Message
+    } -ExitCondition {
+        $result -eq "Installed"
+    } -IfSucceedScript {
+        Write-ScreenInfo -Message "Activity done" -TaskEnd
+    }
+    #endregion
+
+    #region Install Sofware Update Point
     Write-ScreenInfo -Message "Installing Software Update Point" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Installing Software Update Point" -Variable (Get-Variable "CMServerFqdn","CMServerName","CMSiteCode") -Function (Get-Command "Import-CMModule") -ScriptBlock {
-        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode
+        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
         Add-CMSoftwareUpdatePoint -WsusIisPort 8530 -WsusIisSslPort 8531 -SiteSystemServerName $CMServerFqdn -SiteCode $CMSiteCode -ErrorAction "Stop"
     }
     Wait-LWLabJob -Job $job
@@ -692,9 +669,9 @@ UseProxy=0
     #endregion
 
     #region Add CM account to use for Reporting Service Point
-    Write-ScreenInfo -Message ("Creating CM user account '{0}'" -f $AdminUser) -TaskStart
+    Write-ScreenInfo -Message ("Adding new CM account '{0}' to use for Reporting Service Point" -f $AdminUser) -TaskStart
     $job = Invoke-LabCommand -ActivityName ("Adding new CM account '{0}' to use for Reporting Service Point" -f $AdminUser) -Variable (Get-Variable "CMServerName", "CMSiteCode", "AdminUser", "AdminPass") -Function (Get-Command "Import-CMModule") -ScriptBlock {
-        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode
+        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
         $Account = "{0}\{1}" -f $env:USERDOMAIN, $AdminUser
         $Secure = ConvertTo-SecureString -String $AdminPass -AsPlainText -Force
         New-CMAccount -Name $Account -Password $Secure -SiteCode $CMSiteCode -ErrorAction "Stop"
@@ -714,7 +691,7 @@ UseProxy=0
     #region Install Reporting Service Point
     Write-ScreenInfo -Message "Installing Reporting Service Point" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Installing Reporting Service Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode", "AdminUser") -Function (Get-Command "Import-CMModule") -ScriptBlock {
-        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode
+        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
         $Account = "{0}\{1}" -f $env:USERDOMAIN, $AdminUser
         Add-CMReportingServicePoint -SiteCode $CMSiteCode -SiteSystemServerName $CMServerFqdn -ReportServerInstance "SSRS" -UserName $Account -ErrorAction "Stop"
     }
@@ -733,7 +710,7 @@ UseProxy=0
     #region Install Endpoint Protection Point
     Write-ScreenInfo -Message "Installing Endpoint Protection Point" -TaskStart
     $job = Invoke-LabCommand -ActivityName "Installing Endpoint Protection Point" -Variable (Get-Variable "CMServerFqdn", "CMServerName", "CMSiteCode") -ScriptBlock {
-        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode
+        Import-CMModule -ComputerName $CMServerName -SiteCode $CMSiteCode -ErrorAction "Stop"
         Add-CMEndpointProtectionPoint -ProtectionService "DoNotJoinMaps" -SiteCode $CMSiteCode -SiteSystemServerName $CMServerFqdn -ErrorAction "Stop"
     }
     Wait-LWLabJob -Job $job

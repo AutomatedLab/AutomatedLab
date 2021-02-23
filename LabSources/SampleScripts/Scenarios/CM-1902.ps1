@@ -138,12 +138,11 @@
 
     Following on from the previous example, this executes the post installation tasks which is to execute the CustomRole CM-1902 scripts on CM01.
 .NOTES
-    Author:       Adam Cook (@codaamok)
-    Date created: 2019-01-05
-    Source:       https://github.com/codaamok/PoSH/AutomatedLab
-    TODO: Convert throw to ThrowTerminatingError() method
+    Author: Adam Cook (@codaamok)
+    Source: https://github.com/codaamok/PoSH/AutomatedLab
+
 #>
-#Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V"
+#Requires -Version 5.1 -Modules "AutomatedLab", "Hyper-V", @{ ModuleName = "Pester"; ModuleVersion = "5.0" }
 [Cmdletbinding()]
 Param (
     [Parameter()]
@@ -157,7 +156,7 @@ Param (
         elseif (-not ($_ | Test-Path -PathType Container)) { 
             throw "Value must be a directory, not a file" 
         }
-        return $true
+        $true
     })]
     [String]$VMPath,
 
@@ -213,14 +212,19 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt 0) { throw "Invalid number of CPUs" }; return $true
+        if ($_ -lt 0) { throw "Invalid number of CPUs" }; $true
     })]
     [Int]$DCCPU = 2,
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { throw "Memory for VM must be more than 128MB and less than 128GB" }; $true
-        if ($_ -lt [Double]1GB) { throw "Please specify more than 1GB of memory" }
+        if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { 
+            throw "Memory for VM must be more than 128MB and less than 128GB" 
+        }
+        if ($_ -lt [Double]1GB) { 
+            throw "Please specify more than 1GB of memory" 
+        }
+        $true
     })]
     [Double]$DCMemory = 2GB,
 
@@ -230,7 +234,7 @@ Param (
 
     [Parameter()]
     [ValidateScript({
-        if ($_ -lt 0) { throw "Invalid number of CPUs" }; return $true
+        if ($_ -lt 0) { throw "Invalid number of CPUs" }; $true
     })]
     [Int]$CMCPU = 4,
 
@@ -238,7 +242,7 @@ Param (
     [ValidateScript({
         if ($_ -lt [Double]128MB -or $_ -gt [Double]128GB) { throw "Memory for VM must be more than 128MB and less than 128GB" }
         if ($_ -lt [Double]1GB) { throw "Please specify more than 1GB of memory" }
-        return $true
+        $true
     })]
     [Double]$CMMemory = 8GB,
 
@@ -250,7 +254,7 @@ Param (
         elseif (-not $_.StartsWith($labSources)) {
             throw "Please move SQL ISO to your Lab Sources folder '$labSources\ISOs'"
         }
-        return $true
+        $true
     })]
     [String]$SQLServer2017ISO,
 
@@ -291,8 +295,8 @@ $NewLabDefinitionSplat = @{
     ErrorAction                 = "Stop"
 }
 if ($PSBoundParameters.ContainsKey("VMPath")) { 
-    $Path = Join-Path -Path $VMPath -ChildPath $LabName
-    $NewLabDefinitionSplat.Add("VMPath",$Path)
+    $Path = "{0}\{1}" -f $VMPath, $LabName
+    $NewLabDefinitionSplat["VMPath"] = $Path
 }
 New-LabDefinition @NewLabDefinitionSplat
 #endregion
@@ -316,7 +320,7 @@ if ($AutoLogon.IsPresent) {
 $DataDisk = "{0}-DATA-01" -f $CMHostname
 $SQLDisk = "{0}-SQL-01" -f $CMHostname
 
-$SQLConfigurationFile = Join-Path -Path $labSources -ChildPath "CustomRoles\CM-1902\ConfigurationFile-SQL.ini"
+$SQLConfigurationFile = "{0}\CustomRoles\CM-1902\ConfigurationFile-SQL.ini" -f $labSources
 #endregion
 
 #region Preflight checks
@@ -378,7 +382,7 @@ if (-not $PSBoundParameters.ContainsKey("SQLServer2017ISO")) {
     Write-ScreenInfo -Message "Downloading SQL Server 2017 Evaluation" -TaskStart
 
     $URL = "https://download.microsoft.com/download/E/F/2/EF23C21D-7860-4F05-88CE-39AA114B014B/SQLServer2017-x64-ENU.iso"
-    $SQLServer2017ISO = Join-Path -Path $labSources -ChildPath "ISOs\SQLServer2017-x64-ENU.iso"
+    $SQLServer2017ISO = "{0}\ISOs\SQLServer2017-x64-ENU.iso" -f $labSources
 
     if (Test-Path $SQLServer2017ISO) {
         Write-ScreenInfo -Message ("SQL Server 2017 Evaluation ISO already exists, delete '{0}' if you want to download again" -f $SQLServer2017ISO)
@@ -435,8 +439,8 @@ $NewLabNetworkAdapterDefinitionSplat = @{
 }
 
 if ($PSBoundParameters.ContainsKey("AddressSpace")) {
-    $AddLabVirtualNetworkDefinitionSplat.Add("AddressSpace", $AddressSpace)
-    $NewLabNetworkAdapterDefinitionSplat.Add("Ipv4Address", $AddressSpace)
+    $AddLabVirtualNetworkDefinitionSplat["AddressSpace"] = $AddressSpace
+    $NewLabNetworkAdapterDefinitionSplat["Ipv4Address"]  = $AddressSpace
 }
 
 Add-LabVirtualNetworkDefinition @AddLabVirtualNetworkDefinitionSplat
@@ -468,7 +472,7 @@ else {
         CMSiteCode              = $SiteCode
         CMSiteName              = $SiteName
         CMBinariesDirectory     = "{0}\SoftwarePackages\CM1902" -f $labSources
-        CMPreReqsDirectory      = "{0}\SoftwarePackages\CMPreReqs" -f $labSources
+        CMPreReqsDirectory      = "{0}\SoftwarePackages\CM1902-PreReqs" -f $labSources
         CMProductId             = "Eval" # Can be "Eval" or a product key
         Version                 = $CMVersion
         AdkDownloadPath         = "{0}\SoftwarePackages\ADK" -f $labSources
@@ -479,6 +483,7 @@ else {
         AdminUser               = $AdminUser
         AdminPass               = $AdminPass
     }
+
     Add-LabMachineDefinition -Name $CMHostname -Processors $CMCPU -Roles $sqlRole -MaxMemory $CMMemory -DiskName $DataDisk, $SQLDisk -PostInstallationActivity $CMRole
 }
 #endregion
