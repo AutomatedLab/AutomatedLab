@@ -201,6 +201,12 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://d
 Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/8/6/c/86c218f3-4349-4aa5-beba-d05e48bbc286/adk/adksetup.exe'
 Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/3/c/2/3c2b23b2-96a0-452c-b9fd-6df72266e335/adkwinpeaddons/adkwinpesetup.exe'
 
+# SCOM
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi'
+
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
 
