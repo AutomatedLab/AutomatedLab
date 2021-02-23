@@ -1,5 +1,4 @@
-﻿
-function Install-LabScom
+﻿function Install-LabScom
 {
     [CmdletBinding()]
     param ( )
@@ -68,7 +67,7 @@ function Install-LabScom
     # Prerequisites, all
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $SQLSysClrTypes = Get-LabConfigurationItem -Name SqlClrType2014
-    $ReportViewer = Get-LabConfigurationItem -Name ReportViewer2014
+    $ReportViewer = Get-LabConfigurationItem -Name ReportViewer2015
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
     $SQLSysClrTypesFile = Get-LabInternetFile -uri $SQLSysClrTypes -Path $labsources\SoftwarePackages -FileName SQLSysClrTypes.msi -PassThru
     $ReportViewer = Get-LabInternetFile -uri $ReportViewer -Path $labsources\SoftwarePackages -FileName ReportViewer.msi -PassThru

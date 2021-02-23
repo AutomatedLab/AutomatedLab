@@ -51,7 +51,8 @@
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',
         'AutomatedLabRemoting.psm1',
-        'AutomatedLabScvmm.psm1'
+        'AutomatedLabScvmm.psm1',
+        'AutomatedLabScom.psm1'
     )
 
     RequiredModules        = @(
@@ -152,6 +153,7 @@
         'Install-LabTeamFoundationEnvironment',
         'Install-LabHyperV',
         'Install-LabWindowsAdminCenter',
+        'Install-LabScom',
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
