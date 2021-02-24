@@ -1200,7 +1200,10 @@ function Sync-LabAzureLabSources
         $MaxFileSizeInMb,
 
         [string]
-        $Filter
+        $Filter,
+
+        [switch]
+        $NoDisplay
     )
 
     Test-LabHostConnected -Throw -Quiet
@@ -1223,116 +1226,109 @@ function Sync-LabAzureLabSources
     $localLabsources = Get-LabSourcesLocationInternal -Local
     Unblock-LabSources -Path $localLabsources
 
-    # Create the empty folders first
-    foreach ($folder in (Get-ChildItem -Path $localLabsources -Recurse -Directory))
+    # Sync the lab sources
+    $fileParams = @{
+        Recurse = $true
+        Path    = $localLabsources
+        File    = $true
+        Filter  = if ($Filter) { $Filter } else { "*" }
+    }
+
+    $files = Get-ChildItem @fileParams
+    $share = (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare
+
+    foreach ($file in $files)
     {
-        if ($SkipIsos -and $folder.Name -eq 'ISOs')
+        Write-ProgressIndicator
+        if ($SkipIsos -and $file.Directory.Name -eq 'Isos')
         {
+            Write-PSFMessage "SkipIsos is true, skipping $($file.Name)"
             continue
         }
 
-        $folderName = $folder.FullName.Replace($localLabsources, '')
-        Write-ScreenInfo "Working on folder '$folderName' with " -NoNewLine
-
-        $err = $null
-
-        # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-        New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-        Write-PSFMessage "Created directory $($folderName) in labsources"
-        if ($err)
+        if ($MaxFileSizeInMb -and $file.Length / 1MB -ge $MaxFileSizeInMb)
         {
-            $err = $null
-
-            # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-            New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $folderName -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-            Write-PSFMessage "Created directory '$folderName' in labsources"
-            if ($err)
-            {
-                if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
-                {
-                    throw "An error ocurred during file upload: $($err[0].Exception.Message)"
-                }
-            }
+            Write-PSFMessage "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
+            continue
         }
 
-
-        # Sync the lab sources
-        $fileParams = @{
-            Path   = $folder.FullName
-            File   = $true
-            Filter = if ($Filter) { $Filter}else {"*"}
-        }
-        $files = Get-ChildItem @fileParams
-
-        Write-ScreenInfo "$($files.Count) files" -NoNewLine
-        foreach ($file in $files)
+        # Check if file is an OS ISO and skip
+        if ($file.Extension -eq '.iso')
         {
-            Write-ProgressIndicator
-            if ($SkipIsos -and $file.Directory.Name -eq 'Isos')
+            $isOs = [bool](Get-LabAvailableOperatingSystem -Path $file.FullName)
+
+            if ($isOs -and -not $DoNotSkipOsIsos)
             {
-                Write-PSFMessage "SkipIsos is true, skipping $($file.Name)"
+                Write-PSFMessage "Skipping OS ISO $($file.FullName)"
                 continue
             }
-
-            if ($MaxFileSizeInMb -and $file.Length / 1MB -ge $MaxFileSizeInMb)
-            {
-                Write-PSFMessage "MaxFileSize is $MaxFileSizeInMb MB, skipping '$($file.Name)'"
-                continue
-            }
-
-            # Check if file is an OS ISO and skip
-            if ($file.Extension -eq '.iso')
-            {
-                $isOs = [bool](Get-LabAvailableOperatingSystem -Path $file.FullName)
-
-                if ($isOs -and -not $DoNotSkipOsIsos)
-                {
-                    Write-PSFMessage "Skipping OS ISO $($file.FullName)"
-                    continue
-                }
-            }
-
-            $fileName = $file.FullName.Replace("$(Get-LabSourcesLocationInternal -Local)\", '')
-
-            $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
-            if ($azureFile)
-            {
-                $azureHash = $azureFile.CloudFile.Properties.ContentMD5
-                $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-                Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
-            }
-
-            if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
-            {
-                $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
-                Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
-            }
-
-            # Try to set the file hash
-            $uploadedFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $fileName -ErrorAction SilentlyContinue
-            try
-            {
-                $uploadedFile.CloudFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
-                $apiResponse = $uploadedFile.CloudFile.SetPropertiesAsync()
-                if (-not $apiResponse.Status -eq "RanToCompletion")
-                {
-                    Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
-                }
-            }
-            catch
-            {
-                Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
-            }
-
-            Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
         }
 
-        Write-ScreenInfo 'done' #with folder
+        $fileName = $file.FullName.Replace("$($localLabSources)\", '')
+
+        $azureFile = Get-AzStorageFile -Share $share -Path $fileName -ErrorAction SilentlyContinue
+        if ($azureFile)
+        {
+            $azureHash = $azureFile.CloudFile.Properties.ContentMD5
+            $fileHash = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+            Write-PSFMessage "$fileName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
+        }
+
+        if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
+        {
+            $null = New-LabSourcesPath -RelativePath $fileName -Share $share
+            $null = Set-AzStorageFileContent -Share $share -Source $file.FullName -Path $fileName -ErrorAction SilentlyContinue -Force
+            Write-PSFMessage "Azure file $fileName successfully uploaded. Generating file hash..."
+        }
+
+        # Try to set the file hash
+        $uploadedFile = Get-AzStorageFile -Share $share -Path $fileName -ErrorAction SilentlyContinue
+        try
+        {
+            $uploadedFile.CloudFile.Properties.ContentMD5 = (Get-FileHash -Path $file.FullName -Algorithm MD5).Hash
+            $apiResponse = $uploadedFile.CloudFile.SetPropertiesAsync()
+            if (-not $apiResponse.Status -eq "RanToCompletion")
+            {
+                Write-ScreenInfo "Could not generate MD5 hash for file $fileName. Status was $($apiResponse.Status)" -Type Warning
+            }
+        }
+        catch
+        {
+            Write-ScreenInfo "Could not generate MD5 hash for file $fileName." -Type Warning
+        }
+
+        Write-PSFMessage "Azure file $fileName successfully uploaded and hash generated"
     }
 
     Write-ScreenInfo "LabSources Sync complete" -TaskEnd
 
     Write-LogFunctionExit
+}
+
+function New-LabSourcesPath
+{
+    [CmdletBinding()]
+    param
+    (
+        [string]
+        $RelativePath,
+
+        [Microsoft.Azure.Storage.File.CloudFileShare]
+        $Share
+    )
+
+    $container = Split-Path -Path $RelativePath
+    if (-not $container)
+    {
+        New-AzStorageDirectory -Share $Share -Path $RelativePath -ErrorAction SilentlyContinue
+        return
+    }
+
+    if (-not (Get-AzStorageFile -Share $Share -Path $container -ErrorAction SilentlyContinue))
+    {
+        New-LabSourcesPath -RelativePath $container -Share $Share
+        New-AzStorageDirectory -Share $Share -Path $container -ErrorAction SilentlyContinue
+    }
 }
 
 function Get-LabAzureLabSourcesContent
