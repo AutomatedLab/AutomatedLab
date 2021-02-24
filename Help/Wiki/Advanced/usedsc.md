@@ -1,15 +1,18 @@
-Invoke-LabDSCConfiguration is the counterpart to Inoke-LabCommand. As described in [Running custom commands using Invoke-LabCommand](https://github.com/AutomatedLab/AutomatedLab/wiki/Running-Custom-Commands-using-Invoke-LabCommand), Invoke-LabCommand is a very powerful cmdlet to customize your lab environment after the initial deployment. Invoke-LabDSCConfiguration can be even more powerful if your customizations can be achieved using PowerShell DSC.
+# Use Powershell Desired State Configuration (DSC)
 
-Invoke-LabDSCConfiguration offers the same level of comfort as Invoke-LabCommand, maybe even more as it handles also some of the complexities coming with DSC. You do not have to care about authentication, copying resources or configuring the Local Configuration Manager (if in push mode).
+`Invoke-LabDSCConfiguration` is the counterpart to `Invoke-LabCommand`. As described in [Running custom commands using `Invoke-LabCommand`](https://github.com/AutomatedLab/AutomatedLab/wiki/Running-Custom-Commands-using-Invoke-LabCommand), `Invoke-LabCommand` is a very powerful cmdlet to customize your lab environment after the initial deployment. `Invoke-LabDSCConfiguration` can be even more powerful if your customizations can be achieved using PowerShell DSC.
 
-> Note: If you are not familiar with DSC, please consult the documentation published on MSDN [Windows PowerShell Desired State Configuration Overview](https://msdn.microsoft.com/en-us/powershell/dsc/overview).
+`Invoke-LabDSCConfiguration` offers the same level of comfort as `Invoke-LabCommand`, maybe even more as it handles also some of the complexities coming with DSC. You do not have to care about authentication, copying resources or configuring the Local Configuration Manager (if in push mode).
 
-In order to use Invoke-LabDSCConfiguration, you have to define a local configuration on your host machine and you must have the required DSC resources available on your host machine as well. To demonstrate how Invoke-LabDSCConfiguration works, this article features two demos. The first is extremely simple and does not use any non-standard DSC resources. The second is much more complex, uses the [xWebAdministration](https://github.com/PowerShell/xWebAdministration) DSC Resource and configuration data.
+> Note: If you are not familiar with DSC, please consult the documentation published on MSDN [Windows PowerShell Desired State Configuration Overview](https://docs.microsoft.com/en-us/powershell/scripting/dsc/overview/overview).
+
+In order to use `Invoke-LabDSCConfiguration`, you have to define a local configuration on your host machine and you must have the required DSC resources available on your host machine as well. To demonstrate how `Invoke-LabDSCConfiguration` works, this article features two demos. The first is extremely simple and does not use any non-standard DSC resources. The second is much more complex, uses the [`xWebAdministration`](https://github.com/PowerShell/xWebAdministration) DSC Resource and configuration data.
 
 ## Demo 1
+
 This configuration is just creating a single file with whatever content you define in the configuration data. The MOF file is created locally on the host in \LabSources\DscConfigurations. The MOF file is then pushed to the lab machines specified by the ComputerName parameter and the Local Configuration Manager (LCM) is configured accordingly with default values. The configuration will be applied each 15 minutes on the lab VMs unless you re-configure the LCM or overwrite the configuration.
 
-Import-Lab is used to make the lab data available in a new PowerShell session.
+`Import-Lab` is used to make the lab data available in a new PowerShell session.
 
 ``` PowerShell
 Import-lab -Name POSH -NoValidation
@@ -40,17 +43,18 @@ Invoke-LabDscConfiguration -ComputerName poshfs1 -UseExisting
 ```
 
 ## Demo 2
-In next example, a web site is configured on two lab machines using the DSC resource xWebAdministration. Invoke-LabDSCConfiguration pushes the configuration including the DSC resource to all machines specified.
 
-The xWebAdministration DSC resource is required on the host computer. If this is not there, you can install it right from the PowerShell Gallery like this:
+In next example, a web site is configured on two lab machines using the DSC resource `xWebAdministration`. `Invoke-LabDSCConfiguration` pushes the configuration including the DSC resource to all machines specified.
+
+The `xWebAdministration` DSC resource is required on the host computer. If this is not there, you can install it right from the PowerShell Gallery like this:
 
 ``` PowerShell
 Install-Module -Name xWebAdministration
 ```
 
-This demo configuration was taken from the [xWebAdministration](https://github.com/PowerShell/xWebAdministration#creating-the-default-website-using-configuration-data) main page and slightly modified.
+This demo configuration was taken from the [`xWebAdministration`](https://github.com/PowerShell/xWebAdministration#creating-the-default-website-using-configuration-data) main page and slightly modified.
 
-> Note: The function Get-DscConfigurationImportedResource is used to discover all the DSC resources used within a configuration so you do not have to care about that.
+> Note: The function `Get-DscConfigurationImportedResource` is used to discover all the DSC resources used within a configuration so you do not have to care about that.
 
 ``` PowerShell
 Configuration Sample_xWebsite_FromConfigurationData

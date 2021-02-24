@@ -38,7 +38,7 @@ Show-LabDeploymentSummary
 The just press the run button or hit F5 to start the deployment.
 
 This is what is going to happen. Many things happen automatically but can be customized:
-* AutomatedLab starts a new lab named "GettingStarted". The lab defininition will be stored in C:\ProgramData\AutomatedLab\Labs\GettingStarted. The location can be [customized](automatedlabconfig.md) with the setting LabAppDataRoot.
+* AutomatedLab starts a new lab named "GettingStarted". The lab defininition will be stored in C:\ProgramData\AutomatedLab\Labs\GettingStarted. The location can be customized ["Advanced AutomatedLab Configurations"](../Advanced/automatedlabconfig.md) with the setting LabAppDataRoot.
 * AL will update download the SysInternals tools and put them into the LabSources folder.
 * AL looks for an ISO file that contains the specified OS. If the ISO file cannot be found, the deployment stops.
 * AL adds the one and only machine to the lab and recognizes that no network was defined. In this case, AL creates a virtual switch automatically and uses an free IP range.
@@ -65,8 +65,8 @@ Please provide feedback if something does not work as expected. If you are missi
 
 ## Next steps
 
-Now that you have deployed your first lab, what comes next? Would you like to connect to the machines and run remote commands without you knowing the password? Then start with [the docs on lab management](invokelabcommand.md).
+Now that you have deployed your first lab, what comes next? Would you like to connect to the machines and run remote commands without you knowing the password? Then start with [the docs on lab management](./invokelabcommand.md).
 
-Wondering how to transfer data to your new lab? Then start with [the docs on data exchange](exchangedata.md).
+Wondering how to transfer data to your new lab? Then start with [the docs on data exchange](./exchangedata.md).
 
-If you - like us - like to tinker around with things, check out the [possible settings](automatedlabconfig.md).
+If you - like us - like to tinker around with things, check out the [possible settings](../Advanced/automatedlabconfig.md).
