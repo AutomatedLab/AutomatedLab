@@ -1,5 +1,4 @@
-﻿
-function Install-LabScom
+﻿function Install-LabScom
 {
     [CmdletBinding()]
     param ( )
@@ -65,22 +64,22 @@ function Install-LabScom
     $scomWebConsoleRole = Get-LabVM -Role ScomWebConsole
     $scomReportingServer = Get-LabVm -Role ScomReporting
 
+    Start-LabVM -ComputerName $all -Wait
+
     # Prerequisites, all
     $odbc = Get-LabConfigurationItem -Name SqlOdbc13
     $SQLSysClrTypes = Get-LabConfigurationItem -Name SqlClrType2014
-    $ReportViewer = Get-LabConfigurationItem -Name ReportViewer2014
+    $ReportViewer = Get-LabConfigurationItem -Name ReportViewer2015
     $odbcFile = Get-LabInternetFile -Uri $odbc -Path $labsources\SoftwarePackages -FileName odbc.msi -PassThru
     $SQLSysClrTypesFile = Get-LabInternetFile -uri $SQLSysClrTypes -Path $labsources\SoftwarePackages -FileName SQLSysClrTypes.msi -PassThru
-    $ReportViewer = Get-LabInternetFile -uri $ReportViewer -Path $labsources\SoftwarePackages -FileName ReportViewer.msi -PassThru
-    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log'
-    Install-LabSoftwarePackage -path $SQLSysClrTypesFile.FullName -ComputerName $ScomConsoleRole -CommandLine '/quiet /norestart /log C:\DeployDebug\SQLSysClrTypes.log'
-    Install-LabSoftwarePackage -path $ReportViewer.FullName -ComputerName $ScomConsoleRole, $scomWebConsoleRole -CommandLine '/quiet /norestart /log C:\DeployDebug\ReportViewer.log'
-    if ($scomWebConsoleRole)
+    $ReportViewerFile = Get-LabInternetFile -uri $ReportViewer -Path $labsources\SoftwarePackages -FileName ReportViewer.msi -PassThru
+    Install-LabSoftwarePackage -Path $odbcFile.FullName -ComputerName $all -CommandLine '/QN ADDLOCAL=ALL IACCEPTMSODBCSQLLICENSETERMS=YES /L*v C:\odbc.log' -NoDisplay
+    
+    if (Get-LabVm -Role ScomConsole,ScomWebConsole)
     {
-        Install-LabWindowsFeature -Computername $scomWebConsoleRole NET-WCF-HTTP-Activation45, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Http-Logging, Web-Request-Monitor, Web-Filtering, Web-Stat-Compression, Web-Mgmt-Console, Web-Metabase, Web-Asp-Net, Web-Windows-Auth 
-    }if ($scomReportingServer)
-    {
-        Install-LabWindowsFeature -Computername $scomReportingServer NET-WCF-HTTP-Activation45, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Http-Logging, Web-Request-Monitor, Web-Filtering, Web-Stat-Compression, Web-Mgmt-Console, Web-Metabase, Web-Asp-Net, Web-Windows-Auth 
+        Install-LabSoftwarePackage -path $SQLSysClrTypesFile.FullName -ComputerName (Get-LabVm -Role ScomConsole,ScomWebConsole) -CommandLine '/quiet /norestart /log C:\DeployDebug\SQLSysClrTypes.log' -NoDisplay
+        Install-LabSoftwarePackage -path $ReportViewerFile.FullName -ComputerName (Get-LabVm -Role ScomConsole,ScomWebConsole) -CommandLine '/quiet /norestart /log C:\DeployDebug\ReportViewer.log' -NoDisplay
+        Install-LabWindowsFeature -Computername (Get-LabVm -Role ScomConsole,ScomWebConsole) NET-WCF-HTTP-Activation45, Web-Static-Content, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Http-Logging, Web-Request-Monitor, Web-Filtering, Web-Stat-Compression, Web-Mgmt-Console, Web-Metabase, Web-Asp-Net, Web-Windows-Auth  -NoDisplay
     }
 
     # Extract SCOM on all machines
@@ -89,7 +88,7 @@ function Install-LabScom
     Invoke-LabCommand -ComputerName $all -Variable (Get-Variable isos) -ActivityName 'Extracting SCOM Server' -ScriptBlock {
         $setup = Get-ChildItem -Path $($isos.Where( { $_.InternalComputerName -eq $env:COMPUTERNAME })).DriveLetter -Filter *.exe | Select-Object -First 1
         Start-Process -FilePath $setup.FullName -ArgumentList '/VERYSILENT', '/DIR=C:\SCOM' -Wait
-    }
+    } -NoDisplay
     
     # Server
     $jobs = foreach ($vm in $scomManagementServer)
@@ -133,10 +132,8 @@ function Install-LabScom
 
                 if (-not $userAccount)
                 {
-                    $userAccount = New-ADUser -Name $userName -SamAccountName $userName -PassThru -
+                    $userAccount = New-ADUser -Name $userName -SamAccountName $userName -PassThru -Enabled $true -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force)
                 }
-
-                $userAccount | Set-ADAccountPassword -NewPassword ($password | ConvertTo-SecureString -AsPlainText -Force)
             }
 
             $group = $iniManagement['ScomAdminGroupName']
@@ -150,7 +147,7 @@ function Install-LabScom
             {
                 New-ADGroup -Name $group -GroupScope Global -GroupType Security
             }
-        } -Variable (Get-Variable iniManagement)
+        } -Variable (Get-Variable iniManagement) -NoDisplay
 
         foreach ($kvp in $iniManagement.GetEnumerator().Where({$_.Key -like '*User'}))
         {
@@ -196,7 +193,7 @@ function Install-LabScom
         } -Variable (Get-Variable iniManagement)
         $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -Timeout 20 -NoDisplay
     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
@@ -205,13 +202,13 @@ function Install-LabScom
     foreach ($vm in $scomManagementServer)
     {
         $role = $vm.Roles | Where-Object Name -eq ScomManagement
-        if (-not $role.Properties.Contains('ProductKey')) { continue }
+        if (-not $role.Properties.ContainsKey('ProductKey')) { continue }
         if ([string]::IsNullOrWhiteSpace($role.Properties['ProductKey'])) { continue }
         $productKey = $role.Properties['ProductKey']
  
         Invoke-LabCommand -ComputerName $vm -Variable (Get-Variable -Name productKey) -ScriptBlock {
             Set-SCOMLicense -ProductId $productKey
-        }        
+        } -NoDisplay
     }
 
     $jobs = foreach ($vm in $scomConsoleRole)
@@ -228,7 +225,7 @@ function Install-LabScom
         $CommandlineArgumentsNativeConsole = $iniNativeConsole.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineNativeConsole = "/install /silent /components:OMConsole $CommandlineArgumentsNativeConsole"
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineNativeConsole -AsJob -PassThru -UseShellExecute -Timeout 20 -NoDisplay
     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
@@ -262,7 +259,7 @@ function Install-LabScom
         $CommandlineArgumentsWebConsole = $iniWeb.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineWebConsole = "/install /silent /components:OMWebConsole $commandlineArgumentsWebConsole"
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineWebConsole -AsJob -PassThru -UseShellExecute -Timeout 20 -UseExplicitCredentialsForScheduledJob -AsScheduledJob -NoDisplay
     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
@@ -334,17 +331,16 @@ function Install-LabScom
 
                 if (-not $userAccount)
                 {
-                    $userAccount = New-ADUser -Name $userName -SamAccountName $userName -PassThru
+                    $userAccount = New-ADUser -Name $userName -SamAccountName $userName -PassThru -Enabled $true -AccountPassword ($password | ConvertTo-SecureString -AsPlainText -Force)
                 }
 
-                $userAccount | Set-ADAccountPassword -NewPassword ($password | ConvertTo-SecureString -AsPlainText -Force)
             }
-        } -Variable (Get-Variable iniReport)
+        } -Variable (Get-Variable iniReport) -NoDisplay
 
         $CommandlineArgumentsReportServer = $iniReport.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineReportServer = "/install /silent /components:OMReporting $commandlineArgumentsReportServer"
 
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -Timeout 20
+        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -Timeout 20 -NoDisplay
     }
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }

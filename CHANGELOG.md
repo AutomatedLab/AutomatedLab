@@ -12,7 +12,7 @@
   - Cache rebuild based on new ISOs
   - Cache will not entirely be rebuilt, additional OSs will be added
 - New Import-LabDefinition cmdlet
-- Various updates to custom roles CM-1902 and CM-2002:
+- Various updates to custom roles CM-1902 and CM-2002: (thank you @codaamok !)
   - In both CM-1902 and CM-2002: 
     - Checks for site update failure, and site update download failures, and throw exception if one occurs
     - Improved site update success rate by adding a wait for idle state on SMS_SITE_COMPONENT_MANAGER
@@ -22,6 +22,7 @@
     - A boundary and boundary group of the AutomatedLab address space is now created by default
     - Updated Technical Preview baseline to 2010
   - Using `CM-2002.ps1` with the CM-2002 custom role, you can now specify which roles you want to install, e.g. using `-CMRoles` parameter choose from None, MP, DP, SUP, RSP and EP to install. The default is to install all roles.
+- New SCOM role (thank you @mlinowski !)
 
 ### Fixes
 

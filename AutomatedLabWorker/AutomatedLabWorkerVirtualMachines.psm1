@@ -1533,6 +1533,7 @@ function Mount-LWIsoImage
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
         $drive | Add-Member -Name DriveLetter -MemberType NoteProperty -Value $driveLetter
+        $drive | Add-Member -Name InternalComputerName -MemberType NoteProperty -Value $machine.Name
 
         if ($PassThru) { $drive }
 

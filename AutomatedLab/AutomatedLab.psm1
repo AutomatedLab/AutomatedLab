@@ -712,6 +712,8 @@ function Install-Lab
         [switch]$FileServer,
         [switch]$HyperV,
         [switch]$WindowsAdminCenter,
+        [switch]$Scvmm,
+        [switch]$Scom,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1138,6 +1140,21 @@ function Install-Lab
 
         Install-LabScvmm
         Write-ScreenInfo -Message 'SCVMM environment deployed'
+    }
+
+    if (($Scom -or $performAll) -and (Get-LabVM -Role SCOM))
+    {
+        Write-ScreenInfo -Message 'Installing SCOM'
+        Write-ScreenInfo -Message "Machines to have SCOM components installed: '$((Get-LabVM -Role SCOM).Name -join ', ')'"
+
+        $machinesToStart = Get-LabVM -Role SCOM | Where-Object -Property SkipDeployment -eq $false
+        if ($machinesToStart)
+        {
+            Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        }
+
+        Install-LabScom
+        Write-ScreenInfo -Message 'SCOM environment deployed'
     }
 
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
