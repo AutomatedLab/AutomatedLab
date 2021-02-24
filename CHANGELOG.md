@@ -23,6 +23,7 @@
     - Updated Technical Preview baseline to 2010
   - Using `CM-2002.ps1` with the CM-2002 custom role, you can now specify which roles you want to install, e.g. using `-CMRoles` parameter choose from None, MP, DP, SUP, RSP and EP to install. The default is to install all roles.
 - New SCOM role (thank you @mlinowski !)
+- Add-LabIsoImageDefinition and Sync-LabAzureLabSources is now faster on Azure
 
 ### Fixes
 
