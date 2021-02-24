@@ -304,7 +304,7 @@
 
         if ([string]::IsNullOrWhiteSpace($iniReport['SRSInstance']))
         {
-            $iniReport['SRSInstance'] = $ssrsVm
+            $iniReport['SRSInstance'] = "$ssrsVm\SSRS"
         }
 
         if ([string]::IsNullOrWhiteSpace($iniReport['DataReaderPassword']))
