@@ -80,7 +80,7 @@ Apart from the module itself, your system needs to meet the following requiremen
 This solution supports setting up virtual machines with the following.
 
 1. Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
-1. SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017 [*more*](https://www.microsoft.com/en-us/sql-server)
+1. SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017, 2019 [*more*](https://www.microsoft.com/en-us/sql-server)
 1. Visual Studio 2012, 2013, 2015, 2017 [*more*](https://visualstudio.microsoft.com)
 1. Team Foundation Services 2015+
 1. Azure DevOps [*more*](https://azure.microsoft.com/en-us/services/devops/server/)
@@ -94,6 +94,7 @@ This solution supports setting up virtual machines with the following.
 1. DSC Pull Server (with SQL Reporting) [*more*](https://docs.microsoft.com/en-us/powershell/scripting/dsc/pull-server/pullserver/)
 1. Hyper-V [*more*](https://docs.microsoft.com/en-us/virtualization/)
 1. Failover Clustering [*more*](https://docs.microsoft.com/en-us/windows-server/failover-clustering/failover-clustering-overview/)
+1. Dynamics 365 [*more*](https://docs.microsoft.com/en-us/dynamics365/customerengagement/on-premises/deploy/deploy-and-operate-dynamics-365-on-premises)
 
 ## Feature List
 

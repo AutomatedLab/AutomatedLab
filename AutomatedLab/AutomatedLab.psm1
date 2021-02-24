@@ -714,6 +714,7 @@ function Install-Lab
         [switch]$WindowsAdminCenter,
         [switch]$Scvmm,
         [switch]$Scom,
+        [switch]$Dynamics,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1009,6 +1010,13 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($Dynamics -or $performAll) -and (Get-LabVm -Role Dynamics | Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Dynamics' -TaskStart
+        Install-LabDynamics -CreateCheckPoints:$CreateCheckPoints
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 

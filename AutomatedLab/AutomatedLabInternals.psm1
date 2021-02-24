@@ -598,7 +598,7 @@ function Get-LabInternetFile
 
             if ($machine)
             {
-                $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
+                $result = Invoke-LabCommand -ActivityName "Downloading file from '$Uri'" -NoDisplay:$NoDisplay.IsPresent -ComputerName $machine -ScriptBlock (Get-Command -Name Get-LabInternetFileInternal).ScriptBlock -ArgumentList $argumentList -PassThru
             }
             elseif (Get-LabAzureSubscription -ErrorAction SilentlyContinue)
             {

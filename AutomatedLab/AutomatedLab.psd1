@@ -53,6 +53,7 @@
         'AutomatedLabRemoting.psm1',
         'AutomatedLabScvmm.psm1',
         'AutomatedLabScom.psm1'
+        'AutomatedLabDynamics.psm1'
     )
 
     RequiredModules        = @(
@@ -154,6 +155,7 @@
         'Install-LabHyperV',
         'Install-LabWindowsAdminCenter',
         'Install-LabScom',
+        'Install-LabDynamics'
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',

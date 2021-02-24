@@ -170,6 +170,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://down
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x86)'
 
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2010 -Value 'http://go.microsoft.com/fwlink/?LinkId=404264&clcid=0x409' -Initialize -Validation string -Description 'Link to VC++ redist 2010 (x64)'
+
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=2099720' -Initialize -Validation string -Description 'Link to SSMS 2017 18.2'
@@ -284,6 +286,15 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
     'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+
+# Dynamics 365 CRM
+Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
+#Set-PSFConfig -Module AutomatedLab -Name -Uri 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/msodbcsql.msi'
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -486,6 +497,122 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SkipServer'
             'ConnectHyperVRoleVms'
             'ConnectClusters'
+        )
+        DynamicsFull = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsFrontend = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsBackend = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsAdmin = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
         )
     }
     MandatoryRoleProperties = @{
