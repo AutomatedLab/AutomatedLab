@@ -2150,6 +2150,7 @@ function Mount-LWAzureIsoImage
 
         $drive = Mount-DiskImage -ImagePath $azureIsoPath -StorageType ISO -PassThru | Get-Volume
         $drive | Add-Member -MemberType NoteProperty -Name DriveLetter -Value ($drive.CimInstanceProperties.Item('DriveLetter').Value + ":") -Force
+        $drive | Add-Member -MemberType NoteProperty -Name InternalComputerName -Value $env:COMPUTERNAME -Force
         $drive | Select-Object -Property *
 
     } -ArgumentList $azureIsoPath -Variable (Get-Variable -Name azureIsoPath) -PassThru:$PassThru
