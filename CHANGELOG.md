@@ -1,7 +1,8 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
+- Update Exchange2016 custom role to use CU19.
+- Update Exchange2013 and Exchange2016 custom roles to dotnet 4.8.
 
 ### Enhancements
 - Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
