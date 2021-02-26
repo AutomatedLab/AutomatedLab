@@ -1571,10 +1571,10 @@ function Add-LabIsoImageDefinition
                 if (-not $isoFiles -and $Name)
                 {
                     $filterPath = Split-Path -Path $Path -Leaf
-                    Write-PSFMessage -Message "Syncing $filterPath with Azure lab sources storage in case it does not already exist"
-                    Sync-LabAzureLabSources -Filter $filterPath
+                    Write-ScreenInfo -Message "Syncing $filterPath with Azure lab sources storage as it did not exist"
+                    Sync-LabAzureLabSources -Filter $filterPath -NoDisplay
 
-                    $isoFiles = Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
+                    $isoFiles = Get-LabAzureLabSourcesContent -Path $isoRoot -RegexFilter '\.iso' -File -ErrorAction SilentlyContinue | Where-Object {$_.Name -eq (Split-Path -Path $Path -Leaf)}
                 }
             }
         }
