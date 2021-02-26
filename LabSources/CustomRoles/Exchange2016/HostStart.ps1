@@ -285,7 +285,7 @@ function Start-ExchangeInstallation
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/6/6/F/66F70200-E2E8-4E73-88F9-A1F6E3E04650/ExchangeServer2016-x64-cu11.iso'
+$exchangeDownloadLink = 'https://download.microsoft.com/download/a/8/4/a84c8458-c924-4e6d-a19b-be65848c0fe3/ExchangeServer2016-x64-CU19.ISO'
 $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013
