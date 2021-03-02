@@ -48,7 +48,7 @@ function Copy-ExchangeSources
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
     Write-ScreenInfo -Message 'Done' -TaskEnd
 
-    Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'" -TaskStart
+    Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnetDownloadLink'" -TaskStart
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
     Write-ScreenInfo 'Done' -TaskEnd
 
@@ -152,14 +152,14 @@ function Install-ExchangeRequirements
     foreach ($machine in $vms)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -notcontains '4.7.2')
+        if ($dotnetFrameworkVersion.Version -notcontains '4.8')
         {
-            Write-ScreenInfo "Installing .net Framework 4.7.2 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet471.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -LocalPath "C:\Install\$($script:dotnetInstallFile.FileName)" -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
-            Write-ScreenInfo ".net Framework 4.7.2 or later is already installed on '$machine'" -Type Verbose
+            Write-ScreenInfo ".net Framework 4.8 or later is already installed on '$machine'" -Type Verbose
         }
 
         $InstalledApps = Invoke-LabCommand -ActivityName 'Get Installed Applications' -ComputerName $machine -ScriptBlock {
@@ -427,7 +427,7 @@ Function Test-MailboxPath {
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
 $exchangeDownloadLink = 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
 $vcRedistDownloadLink = 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe'
-$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet472DownloadLink
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 
 #----------------------------------------------------------------------------------------------------------------------------------------------------
 

@@ -17,7 +17,7 @@ function Download-ExchangeSources
     Write-ScreenInfo -Message "Downloading UCMA from '$ucmaDownloadLink'"
     $script:ucmaInstallFile = Get-LabInternetFile -Uri $ucmaDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
-    Write-ScreenInfo -Message "Downloading .net Framework 4.7.1 from '$dotnetDownloadLink'"
+    Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnetDownloadLink'"
     $script:dotnetInstallFile = Get-LabInternetFile -Uri $dotnetDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     Write-ScreenInfo -Message "Downloading C++ 2013 Runtime from '$cppredist642013DownloadLink'"
@@ -76,14 +76,14 @@ function Install-ExchangeRequirements
     foreach ($machine in $machines)
     {
         $dotnetFrameworkVersion = Get-LabVMDotNetFrameworkVersion -ComputerName $machine -NoDisplay
-        if ($dotnetFrameworkVersion.Version -lt '4.7.1')
+        if ($dotnetFrameworkVersion.Version -lt '4.8')
         {
-            Write-ScreenInfo "Installing .net Framework 4.7.1 on '$machine'" -Type Verbose
-            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet462.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
+            Write-ScreenInfo "Installing .net Framework 4.8 on '$machine'" -Type Verbose
+            $jobs += Install-LabSoftwarePackage -ComputerName $machine -Path $dotnetInstallFile.FullName -CommandLine '/q /norestart /log c:\dotnet48.txt' -AsJob -NoDisplay -AsScheduledJob -UseShellExecute -PassThru
         }
         else
         {
-            Write-ScreenInfo ".net Framework 4.7.1 is already installed on '$machine'" -Type Verbose
+            Write-ScreenInfo ".net Framework 4.8 is already installed on '$machine'" -Type Verbose
         }
     }
 
@@ -285,8 +285,8 @@ function Start-ExchangeInstallation
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/6/6/F/66F70200-E2E8-4E73-88F9-A1F6E3E04650/ExchangeServer2016-x64-cu11.iso'
-$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet471DownloadLink
+$exchangeDownloadLink = 'https://download.microsoft.com/download/a/8/4/a84c8458-c924-4e6d-a19b-be65848c0fe3/ExchangeServer2016-x64-CU19.ISO'
+$dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013
 
