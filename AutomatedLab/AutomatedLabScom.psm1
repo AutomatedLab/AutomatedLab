@@ -187,11 +187,11 @@
 
         if ([string]::IsNullOrWhiteSpace($iniManagement['SqlServerInstance']))
         {
-            $iniManagement['SqlServerInstance'] = $sqlMachine
+            $iniManagement['SqlServerInstance'] = $sqlMachine.Name
         }
         if ([string]::IsNullOrWhiteSpace($iniManagement['DwSqlServerInstance']))
         {
-            $iniManagement['DwSqlServerInstance'] = $sqlMachine
+            $iniManagement['DwSqlServerInstance'] = $sqlMachine.Name
         }
 
         # Setup Command Line Management-Server
@@ -260,7 +260,7 @@
 
         if ([string]::IsNullOrWhiteSpace($iniWeb['ManagementServer']))
         {
-            $iniWeb['ManagementServer'] = $mgtMachine
+            $iniWeb['ManagementServer'] = $mgtMachine.Name
         }
 
         $CommandlineArgumentsWebConsole = $iniWeb.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
@@ -295,7 +295,7 @@
 
         if ([string]::IsNullOrWhiteSpace($iniReport['ManagementServer']))
         {
-            $iniReport['ManagementServer'] = $mgtMachine
+            $iniReport['ManagementServer'] = $mgtMachine.Name
         }
 
         if (-not [string]::IsNullOrWhiteSpace($iniReport['SRSInstance']))
