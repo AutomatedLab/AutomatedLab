@@ -335,9 +335,13 @@ function New-LWHypervVM
         $unattendPartition = $unattendPartition | Get-Partition
         $drive = [System.IO.DriveInfo][string]$unattendPartition.DriveLetter
 
-        if ( $machine.LinuxPackageGroup )
+        if ( $machine.OperatingSystemType -eq 'Linux' -and $machine.LinuxPackageGroup )
         {
             Set-UnattendedPackage -Package $machine.LinuxPackageGroup
+        }
+        elseif ($machine.LinuxType -eq 'RedHat')
+        {
+            Set-UnattendedPackage -Package '@^server-product-environment'
         }
 
         # Copy Unattend-Stuff here
@@ -450,14 +454,20 @@ function New-LWHypervVM
                 'MicrosoftUEFICertificateAuthority'
             }
         }
+
+        $vmFirmwareParameters = @{}
+
         if ($Machine.HypervProperties.EnableSecureBoot)
         {
-            $vm | Set-VMFirmware -EnableSecureBoot On -SecureBootTemplate $secureBootTemplate
+            $vmFirmwareParameters.EnableSecureBoot = 'On'
+            $vmFirmwareParameters.SecureBootTemplate = $secureBootTemplate
         }
         else
         {
-            $vm | Set-VMFirmware -EnableSecureBoot Off
+            $vmFirmwareParameters.EnableSecureBoot = 'Off'
         }
+
+        $vm | Set-VMFirmware @vmFirmwareParameters
     }
 
     #remove the unconnected default network adapter
@@ -489,7 +499,8 @@ function New-LWHypervVM
 
     if ( $Machine.OperatingSystemType -eq 'Linux' -and $Machine.LinuxType -eq 'RedHat')
     {
-        $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath
+        $dvd = $vm | Add-VMDvdDrive -Path $Machine.OperatingSystem.IsoPath -Passthru
+        $vm | Set-VMFirmware -FirstBootDevice $dvd
     }
 
     if ( $Machine.OperatingSystemType -eq 'Windows')
@@ -1522,6 +1533,7 @@ function Mount-LWIsoImage
 
         $driveLetter = (Compare-Object -ReferenceObject $dvdDrivesBefore -DifferenceObject $dvdDrivesAfter).InputObject
         $drive | Add-Member -Name DriveLetter -MemberType NoteProperty -Value $driveLetter
+        $drive | Add-Member -Name InternalComputerName -MemberType NoteProperty -Value $machine.Name
 
         if ($PassThru) { $drive }
 
@@ -1590,12 +1602,21 @@ function Repair-LWHypervNetworkConfig
         $newNames = @()
         foreach ($adapterInfo in $machine.NetworkAdapters)
         {
-            $newName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
-            while ($newName -in $newNames)
+            $newName = if ($adapterInfo.InterfaceName)
             {
-                $newName = Add-StringIncrement -String $newName
+                $adapterInfo.InterfaceName
+            }
+            else
+            {
+                $tempName = Add-StringIncrement -String $adapterInfo.VirtualSwitch.ResourceName
+                while ($tempName -in $newNames)
+                {
+                    $tempName = Add-StringIncrement -String $tempName
+                }
+                $tempName
             }
             $newNames += $newName
+
             if (-not [string]::IsNullOrEmpty($adapterInfo.VirtualSwitch.FriendlyName))
             {
                 $adapterInfo.VirtualSwitch.FriendlyName = $newName

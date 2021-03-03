@@ -1,11 +1,46 @@
 # Changelog
 
 ## Unreleased
-<!-- SCROLL DOWN TO ENHANCEMENTS AND BUG FIXES PLEASE -->
 
 ### Enhancements
 
 ### Fixes
+
+## 5.33.0 (2021-03-03)
+
+### Enhancements
+- Add superseeded updates cleanup to Update-LabIsoImage (Issue #1061)
+- Add Cmdlet Enable-LabInternalRouting to configure routing between networks connected to routing VM
+- Caching of ISO files updated to be more user-friendly (issue #1068)
+  - Allows multiple ISO locations and adding individual files
+  - Cache eviction based on availability of ISO
+  - Cache rebuild based on new ISOs
+  - Cache will not entirely be rebuilt, additional OSs will be added
+- New Import-LabDefinition cmdlet
+- Various updates to custom roles CM-1902 and CM-2002: (thank you @codaamok !)
+  - In both CM-1902 and CM-2002: 
+    - Checks for site update failure, and site update download failures, and throw exception if one occurs
+    - Improved site update success rate by adding a wait for idle state on SMS_SITE_COMPONENT_MANAGER
+    - Added Defender antivirus exclusions as per Microsoft recommendations
+    - PXE Responder now installs instead of WDS
+  - In CM-2002:
+    - A boundary and boundary group of the AutomatedLab address space is now created by default
+    - Updated Technical Preview baseline to 2010
+  - Using `CM-2002.ps1` with the CM-2002 custom role, you can now specify which roles you want to install, e.g. using `-CMRoles` parameter choose from None, MP, DP, SUP, RSP and EP to install. The default is to install all roles.
+- New SCOM role (thank you @mlinowski !)
+- Add-LabIsoImageDefinition and Sync-LabAzureLabSources is now faster on Azure
+- Update Exchange2016 custom role to use CU19.
+- Update Exchange2013 and Exchange2016 custom roles to dotnet 4.8.
+
+### Fixes
+
+- Fixed issue with CentOS8/RHEL8 kickstart files being undeployable (issue #1065)
+- Fixed issue with International module on PS Core not being imported (issue #1066)
+- Fixed issue when cmdlets of the 'Storage' module did not work if the 'smphost' is set to disabled (issue #1067)
+- The parameter 'New-LabNetworkAdapterDefinition\InterfaceName' does not have an effect on the network adapter names
+- Fixed issue with Request-LabCertificate failing when multiple ComputerNames were specified (issue #1073)
+- Improved startup time for Linux VMs by setting boot order to boot from DVD instead of PXE
+- Fixed issue #1081, AD Replication Sites not beingt created
 
 ## 5.32.0 (2020-12-31)
 

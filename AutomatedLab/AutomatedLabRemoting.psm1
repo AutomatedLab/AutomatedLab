@@ -105,7 +105,7 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
-                if (-not $m.AzureConnectionInfo.DnsName)
+                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
                 {
                     $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
                 }
@@ -869,6 +869,11 @@ function New-LabCimSession
 
             if ($m.HostType -eq 'Azure')
             {
+                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
+                {
+                    $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
+                }
+
                 $param.Add('ComputerName', $m.AzureConnectionInfo.DnsName)
                 Write-PSFMessage "Azure DNS name for machine '$m' is '$($m.AzureConnectionInfo.DnsName)'"
                 $param.Add('Port', $m.AzureConnectionInfo.Port)

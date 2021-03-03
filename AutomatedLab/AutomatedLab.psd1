@@ -51,7 +51,9 @@
         'AutomatedLabDiskImageLinux.psm1',
         'AutomatedLabDiskImageWindows.psm1',
         'AutomatedLabRemoting.psm1',
-        'AutomatedLabScvmm.psm1'
+        'AutomatedLabScvmm.psm1',
+        'AutomatedLabScom.psm1'
+        'AutomatedLabDynamics.psm1'
     )
 
     RequiredModules        = @(
@@ -152,6 +154,8 @@
         'Install-LabTeamFoundationEnvironment',
         'Install-LabHyperV',
         'Install-LabWindowsAdminCenter',
+        'Install-LabScom',
+        'Install-LabDynamics'
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
@@ -246,7 +250,8 @@
         'New-LabTfsFeed',
         'New-LabCimSession',
         'Get-LabCimSession',
-        'Remove-LabCimSession'
+        'Remove-LabCimSession',
+        'Enable-LabInternalRouting'
     )
 
     FileList               = @(

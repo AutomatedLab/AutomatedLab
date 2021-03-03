@@ -2096,8 +2096,7 @@ function New-LabADSite
         }
     }
 
-    $null = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock `
-    {
+    $createSiteCmd = {
         param
         (
             $ComputerName, $SiteName, $SiteSubnet
@@ -2153,7 +2152,20 @@ function New-LabADSite
                 }
             }
         }
-    } -ArgumentList $ComputerName, $SiteName, $SiteSubnet
+    }
+
+    try
+    {
+        $null = Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock $createSiteCmd `
+        -ArgumentList $ComputerName, $SiteName, $SiteSubnet -ErrorAction Stop
+    }
+    catch {
+        Restart-LabVM -ComputerName $ComputerName -Wait
+        Wait-LabADReady -ComputerName $ComputerName
+        
+        Invoke-LabCommand -ComputerName $rootDc -NoDisplay -PassThru -ScriptBlock $createSiteCmd `
+        -ArgumentList $ComputerName, $SiteName, $SiteSubnet -ErrorAction Stop
+    }
 
     Write-LogFunctionExit
 }

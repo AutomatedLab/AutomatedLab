@@ -185,11 +185,8 @@ function Add-LabVirtualNetworkDefinition
 #region Get-LabVirtualNetworkDefinition
 function Get-LabVirtualNetworkDefinition
 {
-
-
     [CmdletBinding()]
     [OutputType([AutomatedLab.VirtualNetwork])]
-
     param(
         [Parameter(ParameterSetName = 'ByName')]
         [string]$Name,
@@ -197,6 +194,8 @@ function Get-LabVirtualNetworkDefinition
         [Parameter(Mandatory, ParameterSetName = 'ByAddressSpace')]
         [string]$AddressSpace
     )
+
+    $script:lab = Get-LabDefinition -ErrorAction SilentlyContinue
 
     Write-LogFunctionEntry
 
@@ -263,7 +262,7 @@ function New-LabNetworkAdapterDefinition
         [Parameter(Mandatory)]
         [string]$VirtualSwitch,
 
-        [string]$InterfaceName = 'Ethernet',
+        [string]$InterfaceName,
 
         [Parameter(ParameterSetName = 'dhcp')]
         [switch]$UseDhcp,
@@ -342,8 +341,11 @@ function New-LabNetworkAdapterDefinition
             throw "VLAN tagging of interface '$InterfaceName' on non-external virtual switch '$VirtualSwitch' is not supported, either remove the AccessVlanID setting, or assign the interface to an external switch"
         }
     }
-
-    $adapter.InterfaceName = $InterfaceName
+    
+    if ($InterfaceName)
+    {
+        $adapter.InterfaceName = $InterfaceName
+    }
 
     foreach ($item in $Ipv4Address)
     {

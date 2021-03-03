@@ -30,9 +30,18 @@ function Enable-LabHostRemoting
     {
         Write-ScreenInfo 'Starting the WinRM service. This is required in order to read the WinRM configuration...' -NoNewLine
         Start-Service -Name WinRM
-        Start-Sleep -Seconds 5
+        Start-Sleep -Seconds 2
         Write-ScreenInfo done
     }
+
+    if ((Get-Service -Name smphost).StartType -eq 'Disabled')
+    {
+        Write-ScreenInfo "The StartupType of the service 'smphost' is set to disabled. Setting it to 'manual'. This is required in order to read use the cmdlets in the 'Storage' module..." -NoNewLine
+        Set-Service -Name smphost -StartupType Manual
+        Write-ScreenInfo done
+    }
+
+    #1067
 
     # force English language output for Get-WSManCredSSP call
     [Threading.Thread]::CurrentThread.CurrentUICulture = 'en-US'; $WSManCredSSP = Get-WSManCredSSP
@@ -445,22 +454,6 @@ function Import-Lab
         if (-not $NoValidation)
         {
             Write-ScreenInfo -Message 'Validating lab definition' -TaskStart
-            $skipHostFileModification = Get-LabConfigurationItem -Name SkipHostFileModification
-
-            foreach ($machine in (Get-LabMachineDefinition | Where-Object HostType -in 'HyperV', 'VMware' ))
-            {
-                $hostEntry = Get-HostEntry -HostName $machine
-
-                if ($machine.FriendlyName -or $skipHostFileModification)
-                {
-                     continue #if FriendlyName / ResourceName is defined, host file will not be modified
-                }
-
-                if ($hostEntry -and $hostEntry.IpAddress.IPAddressToString -ne $machine.IpV4Address)
-                {
-                    throw "There is already an entry for machine '$($machine.Name)' in the hosts file pointing to other IP address(es) ($((Get-HostEntry -HostName $machine).IpAddress.IPAddressToString -join ',')) than the machine '$($machine.Name)' in this lab will have ($($machine.IpV4Address)). Cannot continue."
-                }
-            }
 
             $validation = Test-LabDefinition -Path $Path -Quiet
 
@@ -645,7 +638,7 @@ function Get-Lab
     {
         $labsPath = "$((Get-LabConfigurationItem -Name LabAppDataRoot))/Labs"
 
-        foreach ($path in Get-ChildItem -Path $labsPath -Directory)
+        foreach ($path in Get-ChildItem -Path $labsPath -Directory -ErrorAction SilentlyContinue)
         {
             $labXmlPath = Join-Path -Path $path.FullName -ChildPath Lab.xml
             if (Test-Path -Path $labXmlPath)
@@ -719,6 +712,9 @@ function Install-Lab
         [switch]$FileServer,
         [switch]$HyperV,
         [switch]$WindowsAdminCenter,
+        [switch]$Scvmm,
+        [switch]$Scom,
+        [switch]$Dynamics,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1017,6 +1013,13 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    if (($Dynamics -or $performAll) -and (Get-LabVm -Role Dynamics | Where-Object { -not $_.SkipDeployment }))
+    {
+        Write-ScreenInfo -Message 'Installing Dynamics' -TaskStart
+        Install-LabDynamics -CreateCheckPoints:$CreateCheckPoints
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
     if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
     {
         Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
@@ -1147,16 +1150,37 @@ function Install-Lab
         Write-ScreenInfo -Message 'SCVMM environment deployed'
     }
 
+    if (($Scom -or $performAll) -and (Get-LabVM -Role SCOM))
+    {
+        Write-ScreenInfo -Message 'Installing SCOM'
+        Write-ScreenInfo -Message "Machines to have SCOM components installed: '$((Get-LabVM -Role SCOM).Name -join ', ')'"
+
+        $machinesToStart = Get-LabVM -Role SCOM | Where-Object -Property SkipDeployment -eq $false
+        if ($machinesToStart)
+        {
+            Start-LabVm -ComputerName $machinesToStart -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        }
+
+        Install-LabScom
+        Write-ScreenInfo -Message 'SCOM environment deployed'
+    }
+
     if (($StartRemainingMachines -or $performAll) -and (Get-LabVM -IncludeLinux | Where-Object -Property SkipDeployment -eq $false))
     {
         $linuxHosts = (Get-LabVM -IncludeLinux | Where-Object OperatingSystemType -eq 'Linux').Count
         Write-ScreenInfo -Message 'Starting remaining machines' -TaskStart
+        $timeoutRemaining = 60
         if ($linuxHosts)
         {
+            $timeoutRemaining = 15
             Write-ScreenInfo -Type Warning -Message "There are $linuxHosts Linux hosts in the lab.
                 On Windows, those are installed from scratch and do not use differencing disks.
         
-            This process may take up to 30 minutes."
+                If you did not connect them to an external switch or deploy a router in your lab,
+                AutomatedLab will not be able to reach your VMs, as PowerShell will not be installed.
+
+                The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
+                minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1176,7 +1200,7 @@ function Install-Lab
 
         Write-ScreenInfo -Message 'Waiting for machines to start up...' -NoNewLine
 
-        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes 60 -Wait
+        Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1509,68 +1533,72 @@ function Get-LabAvailableOperatingSystem
     }
 
     $type = Get-Type -GenericType AutomatedLab.ListXmlStore -T AutomatedLab.OperatingSystem
-    $singleFile = Test-Path -Path $Path -PathType Leaf
     $isoFiles = Get-ChildItem -Path $Path -Filter *.iso -Recurse
     Write-PSFMessage "Found $($isoFiles.Count) ISO files"
 
-    if (-not $singleFile)
+    #read the cache
+    try
     {
-        #read the cache
-        try
+        if ($IsLinux -or $IsMacOS)
         {
-            if ($IsLinux -or $IsMacOS)
-            {
-                $cachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
-            }
-            else
-            {
-                $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
-            }
-
-            Write-ScreenInfo "found $($cachedOsList.Count) OS images in the cache"
+            $cachedOsList = $type::Import((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
         }
-        catch
+        else
         {
-            Write-PSFMessage 'Could not read OS image info from the cache'
+            $cachedOsList = $type::ImportFromRegistry('Cache', "$($storeLocationName)OperatingSystems")
         }
 
-        if ($cachedOsList)
-        {
-            $cachedIsoFileSize = [long]$cachedOsList.Metadata[0]
-            $actualIsoFileSize = ($isoFiles | Measure-Object -Property Length -Sum).Sum
+        Write-ScreenInfo -Type Verbose -Message "found $($cachedOsList.Count) OS images in the cache"
+    }
+    catch
+    {
+        Write-PSFMessage 'Could not read OS image info from the cache'
+    }
 
-            if ($cachedIsoFileSize -eq $actualIsoFileSize)
-            {
-                Write-PSFMessage 'Cached data is still up to date'
-                Write-LogFunctionExit -ReturnValue $cachedOsList
-                return $cachedOsList
-            }
-            else
-            {
-                Write-ScreenInfo -Message "ISO cache is not up to date. Analyzing all ISO files and updating the cache. This happens when running AutomatedLab for the first time and when changing contents of locations used for ISO files" -Type Warning
-                Write-PSFMessage ('ISO file size ({0:N2}GB) does not match cached file size ({1:N2}). Reading the OS images from the ISO files and re-populating the cache' -f $actualIsoFileSize, $cachedIsoFileSize)
-                $global:AL_OperatingSystems = $null
-            }
+    $present, $absent = $cachedOsList.Where({Test-Path $_.IsoPath}, 'Split')
+    foreach ($cachedOs in $absent)
+    {
+        Write-ScreenInfo -Type Verbose -Message "Evicting $cachedOs from cache"
+        if ($global:AL_OperatingSystems) { $null = $global:AL_OperatingSystems.Remove($cachedOs) }
+        $null = $cachedOsList.Remove($cachedOs)
+    }
+
+    if (($UseOnlyCache -and $present))
+    {
+        Write-ScreenInfo -Type Verbose -Message 'Returning all present ISO files - cache may not be up to date'
+        return $present
+    }
+
+    $presentFiles = $present.IsoPath | Select-Object -Unique
+    $allFiles = ($isoFiles | Where FullName -notin $cachedOsList.MetaData).FullName
+    if ($presentFiles -and $allFiles -and -not (Compare-Object -Reference $presentFiles -Difference $allFiles -ErrorAction SilentlyContinue | Where-Object SideIndicator -eq '=>'))
+    {
+        Write-ScreenInfo -Type Verbose -Message 'ISO cache seems to be up to date'
+        if (Test-Path -Path $Path -PathType Leaf)
+        {
+            return ($present | Where-Object IsoPath -eq $Path)
+        }
+        else
+        {
+            return $present
         }
     }
 
-    if ($UseOnlyCache)
+    if ($UseOnlyCache -and -not $present)
     {
         Write-Error -Message "Get-LabAvailableOperatingSystems is used with the switch 'UseOnlyCache', however the cache is empty. Please run 'Get-LabAvailableOperatingSystems' first by pointing to your LabSources\ISOs folder" -ErrorAction Stop
     }
 
-    $osList = New-Object $type
-    if ($singleFile)
+    if (-not $cachedOsList)
     {
-        Write-ScreenInfo -Message "Scanning ISO file '$([System.IO.Path]::GetFileName($Path))' files for operating systems..." -NoNewLine
+        $cachedOsList = New-Object $type
     }
-    else
-    {
-        Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
-    }
+
+    Write-ScreenInfo -Message "Scanning $($isoFiles.Count) files for operating systems" -NoNewLine
 
     foreach ($isoFile in $isoFiles)
     {
+        if ($cachedOsList.IsoPath -contains $isoFile.FullName) { continue }
         Write-ProgressIndicator
         Write-PSFMessage "Mounting ISO image '$($isoFile.FullName)'"
         $drive = Mount-LabDiskImage -ImagePath $isoFile.FullName -StorageType ISO -PassThru
@@ -1586,9 +1614,14 @@ function Get-LabAvailableOperatingSystem
             Get-LabImageOnWindows -DriveLetter $drive.DriveLetter -IsoFile $isoFile
         }
 
+        if (-not $opSystems)
+        {
+            $null = $cachedOsList.MetaData.Add($isoFile.FullName)
+        }
+
         foreach ($os in $opSystems)
         {
-            $osList.Add($os)
+            $cachedOsList.Add($os)
         }
 
         Write-PSFMessage 'Dismounting ISO'
@@ -1596,29 +1629,28 @@ function Get-LabAvailableOperatingSystem
         Write-ProgressIndicator
     }
 
-    $osList.ToArray()
+    $cachedOsList.Timestamp = Get-Date
 
-    if ($singleFile)
+    if ($IsLinux -or $IsMacOS)
     {
-        Write-ScreenInfo "Found $($osList.Count) OS images."
+        $cachedOsList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
     }
     else
     {
-        $osList.Timestamp = Get-Date
-        $osList.Metadata.Add(($isoFiles | Measure-Object -Property Length -Sum).Sum)
-
-        if ($IsLinux -or $IsMacOS)
-        {
-            $osList.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath "Stores/$($storeLocationName)OperatingSystems.xml"))
-        }
-        else
-        {
-            $osList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
-        }
-
-        Write-ProgressIndicatorEnd
-        Write-ScreenInfo "Found $($osList.Count) OS images."
+        $cachedOsList.ExportToRegistry('Cache', "$($storeLocationName)OperatingSystems")
     }
+
+    if (Test-Path -Path $Path -PathType Leaf)
+    {
+        $cachedOsList.ToArray() | Where-Object IsoPath -eq $Path
+    }
+    else
+    {
+        $cachedOsList.ToArray()
+    }
+
+    Write-ProgressIndicatorEnd
+    Write-ScreenInfo "Found $($cachedOsList.Count) OS images."
     Write-LogFunctionExit
 }
 #endregion Get-LabAvailableOperatingSystem
@@ -3686,7 +3718,7 @@ if (-not (Test-Path -Path (Split-Path $productKeyFilePath -Parent)))
 
 if (-not (Test-Path -Path $productKeyFilePath))
 {
-    Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath
+    try { Invoke-RestMethod -Method Get -Uri $productKeyFileLink -OutFile $productKeyFilePath -ErrorAction Stop } catch {}
 }
 
 $productKeyCustomFilePath = Get-PSFConfigValue AutomatedLab.ProductKeyFilePathCustom

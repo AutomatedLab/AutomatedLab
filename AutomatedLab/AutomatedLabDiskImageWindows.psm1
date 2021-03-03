@@ -134,10 +134,11 @@
             Select-Object -First 1
         }
 
-        if ($null -ne $packageXml)
+        if ($packageXml)
         {
             [xml]$packageInfo = Get-Content -Path $packageXml -Raw
-            $os.LinuxPackageGroup = (Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText
+            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/group/id" -Xml $packageInfo).Node.InnerText | ForEach-Object {"@$_"}) )
+            $os.LinuxPackageGroup.AddRange([string[]]((Select-Xml -XPath "/comps/environment/id" -Xml $packageInfo).Node.InnerText | ForEach-Object {"@^$_"}) )
         }
 
         $os.Version = $versionInfo

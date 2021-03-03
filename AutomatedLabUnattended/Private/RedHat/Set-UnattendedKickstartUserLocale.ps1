@@ -17,6 +17,7 @@
         return
     }
 
-    $script:un.Add("keyboard '$($ci.TwoLetterISOLanguageName)'")
+    $weirdLinuxCultureName = if ($ci.IsNeutralCulture) { $ci.TwoLetterISOLanguageName } else {$ci.Name -split '-' | Select-Object -Last 1}
+    $script:un.Add("keyboard '$($weirdLinuxCultureName.ToLower())'")
     $script:un.Add("lang $($ci.IetfLanguageTag -replace '-','_')")
 }

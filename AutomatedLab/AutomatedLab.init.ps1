@@ -10,13 +10,34 @@
     $ipmoErr = $null # Initialize, otherwise Import-MOdule -Force will extend this variable indefinitely
     if ($requiredModulesImplicit)
     {
-        if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+        try
         {
-            Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+            {
+                Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
+            }
+            else
+            {
+                Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction Stop -Force -ErrorVariable +ipmoErr
+            }
         }
-        else
+        catch
         {
-            Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            Remove-Module -Name $requiredModulesImplicit -Force -ErrorAction SilentlyContinue
+            Clear-Variable -Name ipmoErr -ErrorAction SilentlyContinue
+            foreach ($m in $requiredModulesImplicit)
+            {
+                Get-ChildItem -Directory -Path ([IO.Path]::GetTempPath()) -Filter "RemoteIpMoProxy_$($m)*_localhost_*" | Remove-Item -Recurse -Force
+            }
+
+            if ((Get-Command Import-Module).Parameters.ContainsKey('UseWindowsPowerShell'))
+            {
+                Import-Module -Name $requiredModulesImplicit -UseWindowsPowerShell -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            }
+            else
+            {
+                Import-WinModule -Name $requiredModulesImplicit -WarningAction SilentlyContinue -ErrorAction SilentlyContinue -Force -ErrorVariable +ipmoErr
+            }
         }
     }
 
@@ -149,6 +170,8 @@ Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2013 -Value 'https://down
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x64.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x64)'
 Set-PSFConfig -Module 'AutomatedLab' -Name cppredist32_2012 -Value 'https://download.microsoft.com/download/1/6/B/16B06F60-3B20-4FF2-B699-5E9B7962F9AE/VSU_4/vcredist_x86.exe' -Initialize -Validation string -Description 'Link to VC++ redist 2012 (x86)'
 
+Set-PSFConfig -Module 'AutomatedLab' -Name cppredist64_2010 -Value 'http://go.microsoft.com/fwlink/?LinkId=404264&clcid=0x409' -Initialize -Validation string -Description 'Link to VC++ redist 2010 (x64)'
+
 #SQL Server 2016 Management Studio
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2016ManagementStudio -Value 'https://go.microsoft.com/fwlink/?LinkID=840946' -Initialize -Validation string -Description 'Link to SSMS 2016'
 Set-PSFConfig -Module 'AutomatedLab' -Name Sql2017ManagementStudio -Value 'https://go.microsoft.com/fwlink/?linkid=2099720' -Initialize -Validation string -Description 'Link to SSMS 2017 18.2'
@@ -179,6 +202,12 @@ Set-PSFConfig -Module 'AutomatedLab' -Name SqlOdbc13 -Value 'https://download.mi
 Set-PSFConfig -Module 'AutomatedLab' -Name SqlCommandLineUtils -Value 'https://download.microsoft.com/download/C/8/8/C88C2E51-8D23-4301-9F4B-64C8E2F163C5/x64/MsSqlCmdLnUtils.msi'
 Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdk -Value 'https://download.microsoft.com/download/8/6/c/86c218f3-4349-4aa5-beba-d05e48bbc286/adk/adksetup.exe'
 Set-PSFConfig -Module 'AutomatedLab' -Name WindowsAdkPe -Value 'https://download.microsoft.com/download/3/c/2/3c2b23b2-96a0-452c-b9fd-6df72266e335/adkwinpeaddons/adkwinpesetup.exe'
+
+# SCOM
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value 'https://download.microsoft.com/download/6/7/8/67858AF1-B1B3-48B1-87C4-4483503E71DC/ENU/x64/SQLSysClrTypes.msi' -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name ReportViewer2015 -Value 'https://download.microsoft.com/download/A/1/2/A129F694-233C-4C7C-860F-F73139CF2E01/ENU/x86/ReportViewer.msi'
 
 # OpenSSH
 Set-PSFConfig -Module 'AutomatedLab' -Name OpenSshUri -Value 'https://github.com/PowerShell/Win32-OpenSSH/releases/download/v7.6.0.0p1-Beta/OpenSSH-Win64.zip' -Initialize -Validation string -Description 'Link to OpenSSH binaries'
@@ -257,6 +286,15 @@ Set-PSFConfig -Module AutomatedLab -Name SharePoint2019Prerequisites -Value @(
     'https://download.microsoft.com/download/5/7/2/57249A3A-19D6-4901-ACCE-80924ABEB267/ENU/x64/msodbcsql.msi'
     'https://download.microsoft.com/download/6/E/4/6E48E8AB-DC00-419E-9704-06DD46E5F81D/NDP472-KB4054530-x86-x64-AllOS-ENU.exe'
 ) -Initialize -Description 'List of prerequisite urls for SP2013' -Validation stringarray
+
+# Dynamics 365 CRM
+Set-PSFConfig -Module AutomatedLab -Name SqlServerNativeClient2012 -Value "https://download.microsoft.com/download/B/E/D/BED73AAC-3C8A-43F5-AF4F-EB4FEA6C8F3A/ENU/x64/sqlncli.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2014 -Value "https://download.microsoft.com/download/1/3/0/13089488-91FC-4E22-AD68-5BE58BD5C014/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download.microsoft.com/download/d/d/1/dd194c5c-d859-49b8-ad64-5cbdcbb9b7bd/SQLSysClrTypes.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
+Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
+#Set-PSFConfig -Module AutomatedLab -Name -Uri 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/msodbcsql.msi'
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -460,6 +498,122 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'ConnectHyperVRoleVms'
             'ConnectClusters'
         )
+        DynamicsFull = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsFrontend = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsBackend = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
+        DynamicsAdmin = @(
+            'SqlServer',
+            'ReportingUrl',
+            'OrganizationCollation',
+            'IsoCurrencyCode'
+            'CurrencyName'
+            'CurrencySymbol'
+            'CurrencyPrecision'
+            'Organization'
+            'OrganizationUniqueName'
+            'CrmServiceAccount'
+            'SandboxServiceAccount'
+            'DeploymentServiceAccount'
+            'AsyncServiceAccount'
+            'VSSWriterServiceAccount'
+            'MonitoringServiceAccount'
+            'CrmServiceAccountPassword'
+            'SandboxServiceAccountPassword'
+            'DeploymentServiceAccountPassword'
+            'AsyncServiceAccountPassword'
+            'VSSWriterServiceAccountPassword'
+            'MonitoringServiceAccountPassword'
+            'IncomingExchangeServer',
+            'PrivUserGroup',
+            'SQLAccessGroup',
+            'ReportingGroup',
+            'PrivReportingGroup'
+            'LicenseKey'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
@@ -523,7 +677,7 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
 }
 
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
-Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab -Parameter Name -Name 'AutomatedLab-Labs'
+Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
 Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter SubscriptionName -Name 'AutomatedLab-Subscription'

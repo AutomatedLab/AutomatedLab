@@ -85,6 +85,8 @@ GO
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles |
             Where-Object Name -like 'SQL*').Properties.Keys |
     Where-Object {$_ -ne 'InstallSampleDatabase'})}
+    Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
+    $dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     if ($onPremisesMachines)
     {
@@ -95,8 +97,6 @@ GO
         $cppredist32_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2015) -Path $downloadTargetFolder -FileName vcredist_x86_2015.exe -PassThru
         $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 
-        Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
-        $dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
         $parallelInstalls = 4
         Write-ScreenInfo -Type Verbose -Message "Parallel installs: $parallelInstalls"
         $machineIndex = 0
@@ -348,108 +348,108 @@ GO
         Write-ScreenInfo -Message "All SQL Servers '$($onPremisesMachines -join ', ')' have now been installed and restarted. Waiting for these to be ready." -NoNewline
 
         Wait-LabVM -ComputerName $onPremisesMachines -TimeoutInMinutes 30 -ProgressIndicator 10
+    }
         
-        $servers = Get-LabVM -Role SQLServer | Where-Object { $_.Roles.Name -ge 'SQLServer2016' }
-        foreach ($server in $servers)
+    $servers = Get-LabVM -Role SQLServer | Where-Object { $_.Roles.Name -ge 'SQLServer2016' }
+    foreach ($server in $servers)
+    {
+        $sqlRole = $server.Roles | Where-Object { $_.Name -band [AutomatedLab.Roles]::SQLServer }
+        $sqlRole.Name -match '(?<Version>\d+)' | Out-Null
+        $server | Add-Member -Name SqlVersion -MemberType NoteProperty -Value $Matches.Version -Force
+
+        if (($sqlRole.Properties.Features -split ',') -contains 'RS' -or
+            (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'RS' -or
+            (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
         {
-            $sqlRole = $server.Roles | Where-Object { $_.Name -band [AutomatedLab.Roles]::SQLServer }
-            $sqlRole.Name -match '(?<Version>\d+)' | Out-Null
-            $server | Add-Member -Name SqlVersion -MemberType NoteProperty -Value $Matches.Version -Force
-
-            if (($sqlRole.Properties.Features -split ',') -contains 'RS' -or
-                (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'RS' -or
-                (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
-            {
-                $server | Add-Member -Name SsRsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)SSRS") -Force
-            }
-
-            if (($sqlRole.Properties.Features -split ',') -contains 'Tools' -or
-                (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'Tools' -or
-                (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
-            {
-                $server | Add-Member -Name SsmsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)ManagementStudio") -Force
-            }
+            $server | Add-Member -Name SsRsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)SSRS") -Force
         }
 
-        #region install SSRS
-        $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
-        Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
-
-        if ($servers)
+        if (($sqlRole.Properties.Features -split ',') -contains 'Tools' -or
+            (($configurationFileContent | Where-Object Key -eq Features).Value -split ',') -contains 'Tools' -or
+            (-not $sqlRole.Properties.ContainsKey('ConfigurationFile') -and -not $sqlRole.Properties.Features))
         {
-            Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
-            Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
-            Restart-LabVM -ComputerName $servers -Wait
+            $server | Add-Member -Name SsmsUri -MemberType NoteProperty -Value (Get-LabConfigurationItem -Name "Sql$($Matches.Version)ManagementStudio") -Force
+        }
+    }
+
+    #region install SSRS
+    $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsRsUri }
+    Write-ScreenInfo -Message "Installing SSRS on'$($servers.Name -join ',')'"
+
+    if ($servers)
+    {
+        Write-ScreenInfo -Message "Installing .net Framework 4.8 on '$($servers.Name -join ',')'"
+        Install-LabSoftwarePackage -Path $dotnet48InstallFile.FullName -CommandLine '/q /norestart /log c:\DeployDebug\dotnet48.txt' -ComputerName $servers -UseShellExecute
+        Restart-LabVM -ComputerName $servers -Wait
+    }
+
+    $jobs = @()
+
+    foreach ($server in $servers)
+    {
+        Write-ScreenInfo "Installing Server Reporting Services on $server" -NoNewLine
+        if (-not $server.SsRsUri)
+        {
+            Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+            continue
+        }
+        $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
+
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
+        {
+            $null = New-Item -ItemType Directory -Path $downloadFolder
         }
 
-        $jobs = @()
+        Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
+        Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Sql$($server.SqlVersion)SSRS) -Path $downloadFolder\SQLServerReportingServices.exe
 
-        foreach ($server in $servers)
+        Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $server
+        Install-LabSoftwarePackage -Path $downloadFolder\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $server
+        Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $server -FilePath $labSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
+    }
+    #endregion
+
+    #region Install Tools
+    $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsmsUri }
+
+    if ($servers)
+    {
+        Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
+    }
+
+    $jobs = @()
+
+    foreach ($server in $servers)
+    {
+        if (-not $server.SsmsUri)
         {
-            Write-ScreenInfo "Installing Server Reporting Services on $server" -NoNewLine
-            if (-not $server.SsRsUri)
-            {
-                Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
-                continue
-            }
-            $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
-
-            if (-not (Test-Path $downloadFolder))
-            {
-                $null = New-Item -ItemType Directory -Path $downloadFolder
-            }
-
-            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name SqlServerReportBuilder) -Path $labSources\SoftwarePackages\ReportBuilder.msi
-            Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name Sql$($server.SqlVersion)SSRS) -Path $downloadFolder\SQLServerReportingServices.exe
-
-            Install-LabSoftwarePackage -Path $labsources\SoftwarePackages\ReportBuilder.msi -ComputerName $server
-            Install-LabSoftwarePackage -Path $downloadFolder\SQLServerReportingServices.exe -CommandLine '/Quiet /IAcceptLicenseTerms' -ComputerName $server
-            Invoke-LabCommand -ActivityName 'Configuring SSRS' -ComputerName $server -FilePath $labSources\PostInstallationActivities\SqlServer\SetupSqlServerReportingServices.ps1
-        }
-        #endregion
-
-        #region Install Tools
-        $servers = Get-LabVM -Role SQLServer | Where-Object { $_.SsmsUri }
-
-        if ($servers)
-        {
-            Write-ScreenInfo -Message "Installing SQL Server Management Studio on '$($servers.Name -join ',')' in the background."
+            Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+            continue
         }
 
-        $jobs = @()
+        $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
+        $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
 
-        foreach ($server in $servers)
+        if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
         {
-            if (-not $server.SsmsUri)
-            {
-                Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
-                continue
-            }
-
-            $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"
-            $downloadPath = Join-Path -Path $downloadFolder -ChildPath 'SSMS-Setup-ENU.exe'
-
-            if ($lab.DefaultVirtualizationEngine -ne 'Azure' -and -not (Test-Path $downloadFolder))
-            {
-                $null = New-Item -ItemType Directory -Path $downloadFolder
-            }
-
-            Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath -NoDisplay
-
-            $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -NoDisplay -AsJob -PassThru
+            $null = New-Item -ItemType Directory -Path $downloadFolder
         }
 
-        if ($jobs)
-        {
-            Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish' -NoNewLine
-            Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
-        }
-        #endregion
+        Get-LabInternetFile -Uri $server.SsmsUri -Path $downloadPath -NoDisplay
 
-        if ($CreateCheckPoints)
-        {
-            Checkpoint-LabVM -ComputerName ($machines | Where-Object HostType -eq 'HyperV') -SnapshotName 'Post SQL Server Installation'
-        }
+        $jobs += Install-LabSoftwarePackage -Path $downloadPath -CommandLine '/install /quiet' -ComputerName $server -NoDisplay -AsJob -PassThru
+    }
+
+    if ($jobs)
+    {
+        Write-ScreenInfo 'Waiting for SQL Server Management Studio installation jobs to finish' -NoNewLine
+        Wait-LWLabJob -Job $jobs -Timeout 10 -NoDisplay -ProgressIndicator 30
+    }
+    #endregion
+
+    if ($CreateCheckPoints)
+    {
+        Checkpoint-LabVM -ComputerName ($machines | Where-Object HostType -eq 'HyperV') -SnapshotName 'Post SQL Server Installation'
     }
 
     foreach ($machine in $machines)
