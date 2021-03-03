@@ -351,6 +351,9 @@
 
         $CommandlineArgumentsReportServer = $iniReport.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineReportServer = "/install /silent /components:OMReporting $commandlineArgumentsReportServer"
+        Invoke-LabCommand -ComputerName $scomReportingServer -ScriptBlock {
+            Get-Service -Name SQLSERVERAGENT* | Set-Service -StartupType Automatic -Status Running
+        } -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
     }
