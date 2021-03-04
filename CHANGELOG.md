@@ -5,6 +5,7 @@
 ### Enhancements
 
 ### Fixes
+- Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
 
 ## 5.33.0 (2021-03-03)
 
