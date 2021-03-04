@@ -12,7 +12,7 @@
     )
 
     $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
-    $standardImagePath = Get-Item -Path "$DriveLetter`:\Sources\Install.*" | Where-Object Name -Match '.*\.(esd|wim)'
+    $standardImagePath = Get-Item -Path "$DriveLetter`:\Sources\install.*" | Where-Object Name -Match '.*\.(esd|wim)'
     $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
     
     if (Test-Path -Path $standardImagePath)
