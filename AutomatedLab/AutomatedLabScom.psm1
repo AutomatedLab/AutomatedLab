@@ -207,12 +207,22 @@
 
     # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
     Start-Sleep -Seconds 30
+    Remove-LabPSSession -ComputerName $scomManagementServer
+    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $scomManagementServer {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
+    if (-not $cmdAvailable)
+    {
+        Start-Sleep -Seconds 30
+        Remove-LabPSSession -ComputerName $scomManagementServer
+    }
+
     Invoke-LabCommand -ComputerName $scomManagementServer -ActivityName 'Waiting for SCOM Management to get in gear' -ScriptBlock {
         $start = Get-Date
-        while (-not (Get-ScomManagementServer -ErrorAction SilentlyContinue) -and -not (Get-Date).Subtract($start) -gt '00:05:00')
+        do
         {
             Start-Sleep -Seconds 10
+            if ((Get-Date).Subtract($start) -gt '00:05:00') { throw 'SCOM startup not finished after 5 minutes' }
         }
+        until (Get-ScomManagementServer -ErrorAction SilentlyContinue)
     }
 
     # Licensing
