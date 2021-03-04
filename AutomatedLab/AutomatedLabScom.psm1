@@ -205,6 +205,16 @@
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 
+    # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
+    Start-Sleep -Seconds 30
+    Invoke-LabCommand -ComputerName $scomManagementServer -ActivityName 'Waiting for SCOM Management to get in gear' -ScriptBlock {
+        $start = Get-Date
+        while (-not (Get-ScomManagementServer -ErrorAction SilentlyContinue) -and -not (Get-Date).Subtract($start) -gt '00:05:00')
+        {
+            Start-Sleep -Seconds 10
+        }
+    }
+
     # Licensing
     foreach ($vm in $scomManagementServer)
     {
