@@ -59,8 +59,7 @@ namespace AutomatedLab
         {
             var serializer = new XmlSerializer(typeof(T));
             T item = null;
-
-            var fileStream = new FileStream(path, FileMode.Open);
+            var fileStream = File.OpenRead(path);
 
             item = (T)serializer.Deserialize(fileStream);
 
