@@ -3068,6 +3068,10 @@ function Get-LabMachineRoleDefinition
             {
                 $roleObjects += "Get-LabMachineRoleDefinition -Role $availableRole -Properties @{`r`n$($config.ValidRoleProperties[$availableRole.ToString()] -join `"='value'`r`n`")='value'`r`n}`r`n"
             }
+            elseif ($Syntax.IsPresent -and -not $config.ValidRoleProperties.Contains($availableRole.ToString()))
+            {
+                $roleObjects += "Get-LabMachineRoleDefinition -Role $availableRole`r`n"
+            }
             else
             {
                 $roleObject = New-Object -TypeName AutomatedLab.Role

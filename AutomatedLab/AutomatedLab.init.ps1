@@ -614,6 +614,56 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
+        ScomManagement = @(
+            'ManagementGroupName'
+            'SqlServerInstance'
+            'SqlInstancePort'
+            'DatabaseName'
+            'DwSqlServerInstance'
+            'InstallLocation'
+            'DwSqlInstancePort'
+            'DwDatabaseName'
+            'ActionAccountUser'
+            'ActionAccountPassword'
+            'DASAccountUser'
+            'DASAccountPassword'
+            'DataReaderUser'
+            'DataReaderPassword'
+            'DataWriterUser'
+            'DataWriterPassword'
+            'EnableErrorReporting'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+            'ProductKey'
+        )
+    
+        ScomConsole = @(
+            'EnableErrorReporting'
+            'InstallLocation'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
+    
+        ScomWebConsole = @(
+            'ManagementServer'
+            'WebSiteName'
+            'WebConsoleAuthorizationMode'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
+    
+        ScomReporting = @(
+            'ManagementServer'
+            'SRSInstance'
+            'DataReaderUser'
+            'DataReaderPassword'
+            'SendODRReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
