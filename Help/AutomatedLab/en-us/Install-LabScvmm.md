@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Install-LabScvmm
 
 ## SYNOPSIS
-Get an Azure subscription
+Install SCVMM environment
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Install-LabScvmm [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Install SCVMM environment
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Install-LabScvmm
 ```
 
-Gets all subscriptions for a given lab
+Install SCVMM environment
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

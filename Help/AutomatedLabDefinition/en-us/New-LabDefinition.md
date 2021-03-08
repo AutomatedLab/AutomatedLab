@@ -14,9 +14,8 @@ Creates a new lab definition
 
 ```
 New-LabDefinition [[-Name] <String>] [[-VmPath] <String>] [[-ReferenceDiskSizeInGB] <Int32>]
- [[-MaxMemory] <Int32>] [[-Notes] <Hashtable>] [-UseAllMemory] [-UseStaticMemory]
- [[-DefaultVirtualizationEngine] <String>] [-NoAzurePublishSettingsFile] [[-AzureSubscriptionName] <String>]
- [-Passthru] [<CommonParameters>]
+ [[-MaxMemory] <Int64>] [[-Notes] <Hashtable>] [-UseAllMemory] [-UseStaticMemory]
+ [[-DefaultVirtualizationEngine] <String>] [[-AzureSubscriptionName] <String>] [-Passthru] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -102,7 +101,6 @@ All machines will be using static memory as opposed the default dynamic memory.
 ## PARAMETERS
 
 ### -Name
-
 Name of lab.
 Name must only contain character a-z, A-Z and 0-9.
 
@@ -119,7 +117,6 @@ Accept wildcard characters: False
 ```
 
 ### -VmPath
-
 Path of placement of Hyper-V based machines
 
 ```yaml
@@ -135,7 +132,6 @@ Accept wildcard characters: False
 ```
 
 ### -ReferenceDiskSizeInGB
-
 Specifies the size of the base disk to create for each used Operating System
 
 ```yaml
@@ -151,11 +147,10 @@ Accept wildcard characters: False
 ```
 
 ### -MaxMemory
-
 Maximum memory to use for lab if using automatic configuration of memory for each machine (by not specifying the memory at all)
 
 ```yaml
-Type: Int32
+Type: Int64
 Parameter Sets: (All)
 Aliases:
 
@@ -167,7 +162,6 @@ Accept wildcard characters: False
 ```
 
 ### -Notes
-
 Notes to add to the lab
 
 ```yaml
@@ -183,7 +177,6 @@ Accept wildcard characters: False
 ```
 
 ### -UseAllMemory
-
 Instructs AutomatedLab to use 80% of all available memory for the lab where the machines will split this memory in a weighted approach
 based on what role(s) the machines are to have.
 This is only true if the memory is NOT specified when defining machine using Add-LabMachineDefinition.
@@ -201,7 +194,6 @@ Accept wildcard characters: False
 ```
 
 ### -UseStaticMemory
-
 Instructs AutomatedLab to only configure static memory for all machines if using automatic configuration of memory for each machine (by not specifying the memory at all).
 
 ```yaml
@@ -217,7 +209,6 @@ Accept wildcard characters: False
 ```
 
 ### -DefaultVirtualizationEngine
-
 Virtualization engine to use as default for the lab.
 When not specifying the -VirtualizationHost parameter
 
@@ -234,7 +225,6 @@ Accept wildcard characters: False
 ```
 
 ### -AzureSubscriptionName
-
 Specifying what Azure subscription to use as default.
 This could be needed if having more than one Azure subscription to make sure a specific subscription is used.
 
@@ -251,7 +241,6 @@ Accept wildcard characters: False
 ```
 
 ### -Passthru
-
 Indicates that the created definition should also be returned
 
 ```yaml
@@ -267,17 +256,14 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
-
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### None
-
 ## NOTES
 
 ## RELATED LINKS

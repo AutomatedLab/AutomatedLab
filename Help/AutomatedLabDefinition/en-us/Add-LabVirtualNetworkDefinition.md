@@ -15,7 +15,8 @@ Adds a definition of a virtual network
 ```
 Add-LabVirtualNetworkDefinition [[-Name] <String>] [[-AddressSpace] <IPNetwork>]
  [[-VirtualizationEngine] <VirtualizationHost>] [[-HyperVProperties] <Hashtable[]>]
- [[-AzureProperties] <Hashtable[]>] [-ManagementAdapter <NetworkAdapter>] [-PassThru] [<CommonParameters>]
+ [[-AzureProperties] <Hashtable[]>] [-ManagementAdapter <NetworkAdapter>] [-ResourceName <String>] [-PassThru]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,8 +26,6 @@ For Azure, a definition of a virtual network is created associated with the addr
 ## EXAMPLES
 
 ### EXAMPLE 1
-
-
 ```powershell
 Add-LabVirtualNetworkDefinition -Name Network1 -AddressSpace 192.168.10.0/24
 ```
@@ -36,8 +35,6 @@ Hyper-V machines can then be configured (defined) to use this network using -Net
 Virtual switch type will be internal.
 
 ### EXAMPLE 2
-
-
 ```powershell
 Add-LabVirtualNetworkDefinition -Name Network2
 ```
@@ -48,8 +45,6 @@ Hyper-V machines can then be configured (defined) to use this network using -Net
 Virtual switch type will be internal.
 
 ### EXAMPLE 3
-
-
 ```powershell
 Add-LabVirtualNetworkDefinition -Name Network3 -AddressSpace 192.168.0.0/16 -VirtualizationEngine Azure
 ```
@@ -58,8 +53,6 @@ Adds a definition of a virtual network with the name 'Network3' and with an addr
 Azure machines can then be configured (defined) to use this network using -Network parameter.
 
 ### EXAMPLE 4
-
-
 ```powershell
 Add-LabVirtualNetworkDefinition -Name Network4 -AddressSpace 192.168.0.0/16 -VirtualizationEngine Azure -AzureProperties @{SubnetName = 'Subnet1';LocationName = 'West Europe';DnsServers = '192.168.10.4';ConnectToVnets = 'Network8'}
 ```
@@ -67,12 +60,9 @@ Add-LabVirtualNetworkDefinition -Name Network4 -AddressSpace 192.168.0.0/16 -Vir
 Adds a definition of a virtual network with the name 'Network4' and with an address space of 192.168.0.0/16 (which is a subnet mask of 255.255.0.0).
 A subnet will be created inside the virtual network called 'Subnet1'.
 Virtual network will be placed in Azure data center 'West Europe'.
-DNS server for virtual network will be '192.168.10.4' and a VPN gateway will be created and configured to route between the network created ('Network4') and 'Network8''
-Azure machines can then be configured (defined) to use this network using -Network parameter.
+DNS server for virtual network will be '192.168.10.4' and a VPN gateway will be created and configured to route between the network created ('Network4') and 'Network8'' Azure machines can then be configured (defined) to use this network using -Network parameter.
 
 ### EXAMPLE 5
-
-
 ```powershell
 Add-LabVirtualNetworkDefinition -Name Network5 -AddressSpace 192.168.10.0/24 -VirtualizationEngine HyperV -HyperVProperties @{SwitchType = 'External';AdapterName = 'Ethernet adapter vEthernet (External)'}
 ```
@@ -186,6 +176,21 @@ Accept wildcard characters: False
 
 ```yaml
 Type: NetworkAdapter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceName
+Name of the resource in the resource group
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Install-LabBuildWorker
 
 ## SYNOPSIS
-Get an Azure subscription
+Install build worker roles
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Install-LabBuildWorker [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Install build worker roles
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Install-LabBuildWorker
 ```
 
-Gets all subscriptions for a given lab
+Install build worker roles
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

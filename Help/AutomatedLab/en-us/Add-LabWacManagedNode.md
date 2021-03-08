@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Add-LabWacManagedNode
 
 ## SYNOPSIS
-Get an Azure subscription
+Add lab vms as managed systems to the lab Windows Admin Center role
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Add-LabWacManagedNode [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Add lab vms as managed systems to the lab Windows Admin Center role
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Add-LabWacManagedNode
 ```
 
-Gets all subscriptions for a given lab
+Add lab vms as managed systems to the lab Windows Admin Center role
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

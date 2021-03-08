@@ -13,7 +13,8 @@ Create and populate a new labsources folder
 ## SYNTAX
 
 ```
-New-LabSourcesFolder [[-DriveLetter] <String>] [-Force] [-WhatIf] [-Confirm] [<CommonParameters>]
+New-LabSourcesFolder [[-DriveLetter] <String>] [-Force] [-Branch <String>] [-WhatIf] [-Confirm]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -108,13 +109,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Branch
+Name of branch to use when downloading content. Defaults to master
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

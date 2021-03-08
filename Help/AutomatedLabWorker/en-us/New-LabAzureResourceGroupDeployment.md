@@ -1,40 +1,40 @@
 ---
-external help file: AutomatedLab-help.xml
-Module Name: AutomatedLab
+external help file: AutomatedLabWorker-help.xml
+Module Name: AutomatedLabWorker
 online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# New-LabAzureResourceGroupDeployment
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+Deploy the lab definition as an Azure resource group
 
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+New-LabAzureResourceGroupDeployment [-Lab] <Lab> [-PassThru] [-Wait] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+Deploy the lab definition as an Azure resource group
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> New-LabAzureResourceGroupDeployment -Lab (Get-LabDefinition) -Wait
 ```
 
-If auto logon is not configured, configure it for SQL01
+Build current definition on Azure, wait for deployment to finish
 
 ## PARAMETERS
 
-### -ComputerName
-The hosts to test auto logon on
+### -Lab
+Lab definition
 
 ```yaml
-Type: String[]
+Type: Lab
 Parameter Sets: (All)
 Aliases:
 
@@ -45,9 +45,23 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -PassThru
+Indicates that resulting job or resulting path will be returned
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Wait
+Indicates that cmdlet should wait for the deployment to finish
 
 ```yaml
 Type: SwitchParameter
@@ -67,6 +81,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

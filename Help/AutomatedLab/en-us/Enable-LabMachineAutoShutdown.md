@@ -5,57 +5,56 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# Enable-LabMachineAutoShutdown
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+Enable Azure auto-shutdown for machines
 
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+Enable-LabMachineAutoShutdown [[-ComputerName] <Machine>] [[-Time] <TimeSpan>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+Enable Azure auto-shutdown for machines
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> Enable-LabMachineAutoShutdown -Time '19:00:00'
 ```
 
-If auto logon is not configured, configure it for SQL01
+Using the current time zone, shut down all lab VMs at 7 pm
 
 ## PARAMETERS
 
 ### -ComputerName
-The hosts to test auto logon on
+List of machines to stop
 
 ```yaml
-Type: String[]
+Type: Machine
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -Time
+Time at which machines are stopped
 
 ```yaml
-Type: SwitchParameter
+Type: TimeSpan
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -67,6 +66,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

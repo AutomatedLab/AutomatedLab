@@ -8,94 +8,97 @@ nav:
   - Advanced configuration: Wiki/Advanced/automatedlabconfig.md
 - Sample scripts:
   - Azure:
-    - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/Azure/MultiForestLab 2012R2.md
-    - VpnConnectedLab.ps1: Wiki/SampleScripts/Azure/VpnConnectedLab.md
+    - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/Azure/en-us/MultiForestLab 2012R2.md
+    - VpnConnectedLab.ps1: Wiki/SampleScripts/Azure/en-us/VpnConnectedLab.md
   - HyperV:
-    - AL Loves Linux.ps1: Wiki/SampleScripts/HyperV/AL Loves Linux.md
-    - BigLab 2012R2 EX SQL ORCH VS OFF.ps1: Wiki/SampleScripts/HyperV/BigLab 2012R2 EX SQL ORCH VS OFF.md
-    - MediumLab 2012R2 SQL EX.ps1: Wiki/SampleScripts/HyperV/MediumLab 2012R2 SQL EX.md
-    - MediumLab 2012R2 SQL.ps1: Wiki/SampleScripts/HyperV/MediumLab 2012R2 SQL.md
-    - MultiForestLab 2008R2.ps1: Wiki/SampleScripts/HyperV/MultiForestLab 2008R2.md
-    - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/HyperV/MultiForestLab 2012R2.md
-    - PKI Custom.ps1: Wiki/SampleScripts/HyperV/PKI Custom.md
-    - PKI Simple.ps1: Wiki/SampleScripts/HyperV/PKI Simple.md
-    - PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1: Wiki/SampleScripts/HyperV/PKI Two Tier - Workgroup and Domain - Custom Production Deployment.md
-    - PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1: Wiki/SampleScripts/HyperV/PKI Two Tier - Workgroup and Domain - Typical Production Deployment.md
-    - Single 10 Client with Office, VS and Reflector.ps1: Wiki/SampleScripts/HyperV/Single 10 Client with Office, VS and Reflector.md
-    - Single 10 Client with Office2019.ps1: Wiki/SampleScripts/HyperV/Single 10 Client with Office2019.md
-    - Single 10 Client.ps1: Wiki/SampleScripts/HyperV/Single 10 Client.md
-    - Single 2008R2 Server.ps1: Wiki/SampleScripts/HyperV/Single 2008R2 Server.md
-    - Single 2012R2 Server DC SQL2014 Web CA.ps1: Wiki/SampleScripts/HyperV/Single 2012R2 Server DC SQL2014 Web CA.md
-    - Single 2012R2 Server.ps1: Wiki/SampleScripts/HyperV/Single 2012R2 Server.md
-    - Single 81 Client with Office.ps1: Wiki/SampleScripts/HyperV/Single 81 Client with Office.md
-    - Single 81 Client.ps1: Wiki/SampleScripts/HyperV/Single 81 Client.md
-    - SmallLab 2012R2 EX.ps1: Wiki/SampleScripts/HyperV/SmallLab 2012R2 EX.md
-    - SmallLab 2012R2 Single Client.ps1: Wiki/SampleScripts/HyperV/SmallLab 2012R2 Single Client.md
-    - SmallLab 2012R2 Single Server.ps1: Wiki/SampleScripts/HyperV/SmallLab 2012R2 Single Server.md
-    - SmallLab 2012R2 SQL.ps1: Wiki/SampleScripts/HyperV/SmallLab 2012R2 SQL.md
+    - AL Loves Linux.ps1: Wiki/SampleScripts/HyperV/en-us/AL Loves Linux.md
+    - BigLab 2012R2 EX SQL ORCH VS OFF.ps1: Wiki/SampleScripts/HyperV/en-us/BigLab 2012R2 EX SQL ORCH VS OFF.md
+    - MediumLab 2012R2 SQL EX.ps1: Wiki/SampleScripts/HyperV/en-us/MediumLab 2012R2 SQL EX.md
+    - MediumLab 2012R2 SQL.ps1: Wiki/SampleScripts/HyperV/en-us/MediumLab 2012R2 SQL.md
+    - MultiForestLab 2008R2.ps1: Wiki/SampleScripts/HyperV/en-us/MultiForestLab 2008R2.md
+    - MultiForestLab 2012R2.ps1: Wiki/SampleScripts/HyperV/en-us/MultiForestLab 2012R2.md
+    - PKI Custom.ps1: Wiki/SampleScripts/HyperV/en-us/PKI Custom.md
+    - PKI Simple.ps1: Wiki/SampleScripts/HyperV/en-us/PKI Simple.md
+    - PKI Two Tier - Workgroup and Domain - Custom Production Deployment.ps1: Wiki/SampleScripts/HyperV/en-us/PKI Two Tier - Workgroup and Domain - Custom Production Deployment.md
+    - PKI Two Tier - Workgroup and Domain - Typical Production Deployment.ps1: Wiki/SampleScripts/HyperV/en-us/PKI Two Tier - Workgroup and Domain - Typical Production Deployment.md
+    - Single 10 Client with Office, VS and Reflector.ps1: Wiki/SampleScripts/HyperV/en-us/Single 10 Client with Office, VS and Reflector.md
+    - Single 10 Client with Office2019.ps1: Wiki/SampleScripts/HyperV/en-us/Single 10 Client with Office2019.md
+    - Single 10 Client.ps1: Wiki/SampleScripts/HyperV/en-us/Single 10 Client.md
+    - Single 2008R2 Server.ps1: Wiki/SampleScripts/HyperV/en-us/Single 2008R2 Server.md
+    - Single 2012R2 Server DC SQL2014 Web CA.ps1: Wiki/SampleScripts/HyperV/en-us/Single 2012R2 Server DC SQL2014 Web CA.md
+    - Single 2012R2 Server.ps1: Wiki/SampleScripts/HyperV/en-us/Single 2012R2 Server.md
+    - Single 81 Client with Office.ps1: Wiki/SampleScripts/HyperV/en-us/Single 81 Client with Office.md
+    - Single 81 Client.ps1: Wiki/SampleScripts/HyperV/en-us/Single 81 Client.md
+    - SmallLab 2012R2 EX.ps1: Wiki/SampleScripts/HyperV/en-us/SmallLab 2012R2 EX.md
+    - SmallLab 2012R2 Single Client.ps1: Wiki/SampleScripts/HyperV/en-us/SmallLab 2012R2 Single Client.md
+    - SmallLab 2012R2 Single Server.ps1: Wiki/SampleScripts/HyperV/en-us/SmallLab 2012R2 Single Server.md
+    - SmallLab 2012R2 SQL.ps1: Wiki/SampleScripts/HyperV/en-us/SmallLab 2012R2 SQL.md
   - Introduction:
-    - 01 Single Win10 Client.ps1: Wiki/SampleScripts/Introduction/01 Single Win10 Client.md
-    - 02 Single Win10 Client (internet facing).ps1: Wiki/SampleScripts/Introduction/02 Single Win10 Client (internet facing).md
-    - 03 PowerShell 5 on Windows 7.ps1: Wiki/SampleScripts/Introduction/03 PowerShell 5 on Windows 7.md
-    - 04 Single domain-joined server.ps1: Wiki/SampleScripts/Introduction/04 Single domain-joined server.md
-    - 05 Single domain-joined server (internet facing).ps1: Wiki/SampleScripts/Introduction/05 Single domain-joined server (internet facing).md
-    - 06 SQL Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/06 SQL Server and client, domain joined.md
-    - 07.1 Exchange 2013 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/07.1 Exchange 2013 Server and client, domain joined.md
-    - 07.2 Exchange 2016 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/07.2 Exchange 2016 Server and client, domain joined.md
-    - 07.3 Exchange 2019 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/07.3 Exchange 2019 Server and client, domain joined.md
-    - 08 Standalone Root CA, Sub Ca domain joined.ps1: Wiki/SampleScripts/Introduction/08 Standalone Root CA, Sub Ca domain joined.md
-    - 09 Web Servers with SSL certs, Root CA, domain joined.ps1: Wiki/SampleScripts/Introduction/09 Web Servers with SSL certs, Root CA, domain joined.md
-    - 10 Development Client, domain joined (internet facing).ps1: Wiki/SampleScripts/Introduction/10 Development Client, domain joined (internet facing).md
-    - 11 ISO Offline Patching.ps1: Wiki/SampleScripts/Introduction/11 ISO Offline Patching.md
-    - 12.1 Azure Single domain-joined server.ps1: Wiki/SampleScripts/Introduction/12.1 Azure Single domain-joined server.md
-    - 12.2 Azure SQL Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/12.2 Azure SQL Server and client, domain joined.md
+    - 01 Single Win10 Client.ps1: Wiki/SampleScripts/Introduction/en-us/01 Single Win10 Client.md
+    - 02 Single Win10 Client (internet facing).ps1: Wiki/SampleScripts/Introduction/en-us/02 Single Win10 Client (internet facing).md
+    - 03 PowerShell 5 on Windows 7.ps1: Wiki/SampleScripts/Introduction/en-us/03 PowerShell 5 on Windows 7.md
+    - 04 Single domain-joined server.ps1: Wiki/SampleScripts/Introduction/en-us/04 Single domain-joined server.md
+    - 05 Single domain-joined server (internet facing).ps1: Wiki/SampleScripts/Introduction/en-us/05 Single domain-joined server (internet facing).md
+    - 06 SQL Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/06 SQL Server and client, domain joined.md
+    - 07.1 Exchange 2013 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/07.1 Exchange 2013 Server and client, domain joined.md
+    - 07.2 Exchange 2016 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/07.2 Exchange 2016 Server and client, domain joined.md
+    - 07.3 Exchange 2019 Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/07.3 Exchange 2019 Server and client, domain joined.md
+    - 08 Standalone Root CA, Sub Ca domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/08 Standalone Root CA, Sub Ca domain joined.md
+    - 09 Web Servers with SSL certs, Root CA, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/09 Web Servers with SSL certs, Root CA, domain joined.md
+    - 10 Development Client, domain joined (internet facing).ps1: Wiki/SampleScripts/Introduction/en-us/10 Development Client, domain joined (internet facing).md
+    - 11 ISO Offline Patching.ps1: Wiki/SampleScripts/Introduction/en-us/11 ISO Offline Patching.md
+    - 12.1 Azure Single domain-joined server.ps1: Wiki/SampleScripts/Introduction/en-us/12.1 Azure Single domain-joined server.md
+    - 12.2 Azure SQL Server and client, domain joined.ps1: Wiki/SampleScripts/Introduction/en-us/12.2 Azure SQL Server and client, domain joined.md
   - Scenarios:
-    - AGPM Lab 1.ps1: Wiki/SampleScripts/Scenarios/AGPM Lab 1.md
-    - AzureDevOpsBuildAgent.ps1: Wiki/SampleScripts/Scenarios/AzureDevOpsBuildAgent.md
-    - AzureDevOpsCloudConnection.ps1: Wiki/SampleScripts/Scenarios/AzureDevOpsCloudConnection.md
-    - CM-1902.ps1: Wiki/SampleScripts/Scenarios/CM-1902.md
-    - CM-2002.ps1: Wiki/SampleScripts/Scenarios/CM-2002.md
-    - DSC Pull Scenario 1 (Pull Configuration).ps1: Wiki/SampleScripts/Scenarios/DSC Pull Scenario 1 (Pull Configuration).md
-    - DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1: Wiki/SampleScripts/Scenarios/DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).md
-    - DSC Pull Scenario 2 (Pull Partial Configuration).ps1: Wiki/SampleScripts/Scenarios/DSC Pull Scenario 2 (Pull Partial Configuration).md
-    - DSC With Release Pipeline.ps1: Wiki/SampleScripts/Scenarios/DSC With Release Pipeline.md
-    - ExistingDomainLab.ps1: Wiki/SampleScripts/Scenarios/ExistingDomainLab.md
-    - Failover Clustering 1.ps1: Wiki/SampleScripts/Scenarios/Failover Clustering 1.md
-    - Failover Clustering 2 (Shared Storage).ps1: Wiki/SampleScripts/Scenarios/Failover Clustering 2 (Shared Storage).md
-    - Failover Clustering 3 MultipleNetworks.ps1: Wiki/SampleScripts/Scenarios/Failover Clustering 3 MultipleNetworks.md
-    - Failover Clustering 3 MultipleNetworksAzure.ps1: Wiki/SampleScripts/Scenarios/Failover Clustering 3 MultipleNetworksAzure.md
-    - Hybrid Environment HyperV and Azure 1.ps1: Wiki/SampleScripts/Scenarios/Hybrid Environment HyperV and Azure 1.md
-    - HyperVClusterWithVmm.ps1: Wiki/SampleScripts/Scenarios/HyperVClusterWithVmm.md
-    - Lab in a Box 1 - HyperV.ps1: Wiki/SampleScripts/Scenarios/Lab in a Box 1 - HyperV.md
-    - Lab in a Box 2 - Azure.ps1: Wiki/SampleScripts/Scenarios/Lab in a Box 2 - Azure.md
-    - Lab in a Box 3 - Build worker.ps1: Wiki/SampleScripts/Scenarios/Lab in a Box 3 - Build worker.md
-    - MDT Lab 1, MDT Server 1.ps1: Wiki/SampleScripts/Scenarios/MDT Lab 1, MDT Server 1.md
-    - MDT Lab 2, DC and MDT Server.ps1: Wiki/SampleScripts/Scenarios/MDT Lab 2, DC and MDT Server.md
-    - Multi-AD Forest with Trusts.ps1: Wiki/SampleScripts/Scenarios/Multi-AD Forest with Trusts.md
-    - NuGetServer.ps1: Wiki/SampleScripts/Scenarios/NuGetServer.md
-    - ProGet Lab - Azure.ps1: Wiki/SampleScripts/Scenarios/ProGet Lab - Azure.md
-    - ProGet Lab - HyperV.ps1: Wiki/SampleScripts/Scenarios/ProGet Lab - HyperV.md
-    - SCCM Lab 1.ps1: Wiki/SampleScripts/Scenarios/SCCM Lab 1.md
-    - SCVMM.ps1: Wiki/SampleScripts/Scenarios/SCVMM.md
-    - SharePoint2016.ps1: Wiki/SampleScripts/Scenarios/SharePoint2016.md
-    - TFS 2015 Deployment.ps1: Wiki/SampleScripts/Scenarios/TFS 2015 Deployment.md
-    - TFS 2017 Deployment.ps1: Wiki/SampleScripts/Scenarios/TFS 2017 Deployment.md
-    - WindowsAdminCenter-OnPrem.ps1: Wiki/SampleScripts/Scenarios/WindowsAdminCenter-OnPrem.md
-    - WindowsAdminCenter.ps1: Wiki/SampleScripts/Scenarios/WindowsAdminCenter.md
-    - WinRM clients with SSL.ps1: Wiki/SampleScripts/Scenarios/WinRM clients with SSL.md
+    - AGPM Lab 1.ps1: Wiki/SampleScripts/Scenarios/en-us/AGPM Lab 1.md
+    - AzureDevOpsBuildAgent.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureDevOpsBuildAgent.md
+    - AzureDevOpsCloudConnection.ps1: Wiki/SampleScripts/Scenarios/en-us/AzureDevOpsCloudConnection.md
+    - CM-1902.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-1902.md
+    - CM-2002.ps1: Wiki/SampleScripts/Scenarios/en-us/CM-2002.md
+    - DSC Pull Scenario 1 (Pull Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration).md
+    - DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 1 (Pull Configuration, SQL Reporting).md
+    - DSC Pull Scenario 2 (Pull Partial Configuration).ps1: Wiki/SampleScripts/Scenarios/en-us/DSC Pull Scenario 2 (Pull Partial Configuration).md
+    - DSC With Release Pipeline.ps1: Wiki/SampleScripts/Scenarios/en-us/DSC With Release Pipeline.md
+    - Dynamics365.ps1: Wiki/SampleScripts/Scenarios/en-us/Dynamics365.md
+    - ExistingDomainLab.ps1: Wiki/SampleScripts/Scenarios/en-us/ExistingDomainLab.md
+    - Failover Clustering 1.ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 1.md
+    - Failover Clustering 2 (Shared Storage).ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 2 (Shared Storage).md
+    - Failover Clustering 3 MultipleNetworks.ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 3 MultipleNetworks.md
+    - Failover Clustering 3 MultipleNetworksAzure.ps1: Wiki/SampleScripts/Scenarios/en-us/Failover Clustering 3 MultipleNetworksAzure.md
+    - Hybrid Environment HyperV and Azure 1.ps1: Wiki/SampleScripts/Scenarios/en-us/Hybrid Environment HyperV and Azure 1.md
+    - HyperVClusterWithVmm.ps1: Wiki/SampleScripts/Scenarios/en-us/HyperVClusterWithVmm.md
+    - InternalRouting.ps1: Wiki/SampleScripts/Scenarios/en-us/InternalRouting.md
+    - Lab in a Box 1 - HyperV.ps1: Wiki/SampleScripts/Scenarios/en-us/Lab in a Box 1 - HyperV.md
+    - Lab in a Box 2 - Azure.ps1: Wiki/SampleScripts/Scenarios/en-us/Lab in a Box 2 - Azure.md
+    - Lab in a Box 3 - Build worker.ps1: Wiki/SampleScripts/Scenarios/en-us/Lab in a Box 3 - Build worker.md
+    - MDT Lab 1, MDT Server 1.ps1: Wiki/SampleScripts/Scenarios/en-us/MDT Lab 1, MDT Server 1.md
+    - MDT Lab 2, DC and MDT Server.ps1: Wiki/SampleScripts/Scenarios/en-us/MDT Lab 2, DC and MDT Server.md
+    - Multi-AD Forest with Trusts.ps1: Wiki/SampleScripts/Scenarios/en-us/Multi-AD Forest with Trusts.md
+    - NuGetServer.ps1: Wiki/SampleScripts/Scenarios/en-us/NuGetServer.md
+    - ProGet Lab - Azure.ps1: Wiki/SampleScripts/Scenarios/en-us/ProGet Lab - Azure.md
+    - ProGet Lab - HyperV.ps1: Wiki/SampleScripts/Scenarios/en-us/ProGet Lab - HyperV.md
+    - SCCM Lab 1.ps1: Wiki/SampleScripts/Scenarios/en-us/SCCM Lab 1.md
+    - SCOMDistributed.ps1: Wiki/SampleScripts/Scenarios/en-us/SCOMDistributed.md
+    - SCVMM.ps1: Wiki/SampleScripts/Scenarios/en-us/SCVMM.md
+    - SharePoint2016.ps1: Wiki/SampleScripts/Scenarios/en-us/SharePoint2016.md
+    - TFS 2015 Deployment.ps1: Wiki/SampleScripts/Scenarios/en-us/TFS 2015 Deployment.md
+    - TFS 2017 Deployment.ps1: Wiki/SampleScripts/Scenarios/en-us/TFS 2017 Deployment.md
+    - WindowsAdminCenter-OnPrem.ps1: Wiki/SampleScripts/Scenarios/en-us/WindowsAdminCenter-OnPrem.md
+    - WindowsAdminCenter.ps1: Wiki/SampleScripts/Scenarios/en-us/WindowsAdminCenter.md
+    - WinRM clients with SSL.ps1: Wiki/SampleScripts/Scenarios/en-us/WinRM clients with SSL.md
   - VMWare:
-    - VMWare Single Server.ps1: Wiki/SampleScripts/VMWare/VMWare Single Server.md
+    - VMWare Single Server.ps1: Wiki/SampleScripts/VMWare/en-us/VMWare Single Server.md
   - Workshops:
-    - ADPowerShellWorkshopLab.ps1: Wiki/SampleScripts/Workshops/ADPowerShellWorkshopLab.md
-    - ADRecoveryLab - Azure.ps1: Wiki/SampleScripts/Workshops/ADRecoveryLab - Azure.md
-    - ADRecoveryLab - HyperV.ps1: Wiki/SampleScripts/Workshops/ADRecoveryLab - HyperV.md
-    - DFSHC - Azure.ps1: Wiki/SampleScripts/Workshops/DFSHC - Azure.md
-    - DFSHC - HyperV.ps1: Wiki/SampleScripts/Workshops/DFSHC - HyperV.md
-    - Kerberos 101 Lab - HyperV.ps1: Wiki/SampleScripts/Workshops/Kerberos 101 Lab - HyperV.md
-    - Kerberos 101 Lab with Linux - HyperV.ps1: Wiki/SampleScripts/Workshops/Kerberos 101 Lab with Linux - HyperV.md
-    - PowerShell Lab - Azure.ps1: Wiki/SampleScripts/Workshops/PowerShell Lab - Azure.md
-    - PowerShell Lab - HyperV with Internet.ps1: Wiki/SampleScripts/Workshops/PowerShell Lab - HyperV with Internet.md
-    - PowerShell Lab - HyperV.ps1: Wiki/SampleScripts/Workshops/PowerShell Lab - HyperV.md
+    - ADPowerShellWorkshopLab.ps1: Wiki/SampleScripts/Workshops/en-us/ADPowerShellWorkshopLab.md
+    - ADRecoveryLab - Azure.ps1: Wiki/SampleScripts/Workshops/en-us/ADRecoveryLab - Azure.md
+    - ADRecoveryLab - HyperV.ps1: Wiki/SampleScripts/Workshops/en-us/ADRecoveryLab - HyperV.md
+    - DFSHC - Azure.ps1: Wiki/SampleScripts/Workshops/en-us/DFSHC - Azure.md
+    - DFSHC - HyperV.ps1: Wiki/SampleScripts/Workshops/en-us/DFSHC - HyperV.md
+    - Kerberos 101 Lab - HyperV.ps1: Wiki/SampleScripts/Workshops/en-us/Kerberos 101 Lab - HyperV.md
+    - Kerberos 101 Lab with Linux - HyperV.ps1: Wiki/SampleScripts/Workshops/en-us/Kerberos 101 Lab with Linux - HyperV.md
+    - PowerShell Lab - Azure.ps1: Wiki/SampleScripts/Workshops/en-us/PowerShell Lab - Azure.md
+    - PowerShell Lab - HyperV with Internet.ps1: Wiki/SampleScripts/Workshops/en-us/PowerShell Lab - HyperV with Internet.md
+    - PowerShell Lab - HyperV.ps1: Wiki/SampleScripts/Workshops/en-us/PowerShell Lab - HyperV.md
 - Defining your lab:
   - Creating a new lab: Wiki/Basic/createnewlab.md
   - Networks and IP Addresses: Wiki/Basic/networksandaddresses.md
@@ -108,12 +111,14 @@ nav:
   - ActiveDirectory: Wiki/Roles/activedirectory.md
   - Office 2013, 2016: Wiki/Roles/office.md
   - Sharepoint: Wiki/Roles/sharepoint.md
-  - Failover clustering: Wiki/Roles/failover.md
+  - Failover clustering: Wiki/Roles/failoverclustering.md
   - TFS and Azure DevOps: Wiki/Roles/cicd.md
   - Hyper-V: Wiki/Roles/hyperv.md
   - SQL Server: Wiki/Roles/sql.md
   - DSC Pull Server: Wiki/Roles/dscpull.md
   - Lab Builder REST API: Wiki/Roles/restapi.md
+  - Dynamics 365: Wiki/Roles/dynamics365.md
+  - SCVMM: Wiki/Roles/scvmm.md
   - Custom roles: Wiki/Advanced/customroles.md
 - Customizing your lab:
   - Installing Windows features: Wiki/Basic/installwindowsfeatures.md
@@ -153,6 +158,7 @@ nav:
     - Enable-LabAutoLogon: AutomatedLab/en-us/Enable-LabAutoLogon.md
     - Enable-LabCertificateAutoenrollment: AutomatedLab/en-us/Enable-LabCertificateAutoenrollment.md
     - Enable-LabHostRemoting: AutomatedLab/en-us/Enable-LabHostRemoting.md
+    - Enable-LabInternalRouting: AutomatedLab/en-us/Enable-LabInternalRouting.md
     - Enable-LabMachineAutoShutdown: AutomatedLab/en-us/Enable-LabMachineAutoShutdown.md
     - Enable-LabTelemetry: AutomatedLab/en-us/Enable-LabTelemetry.md
     - Enable-LabVMFirewallGroup: AutomatedLab/en-us/Enable-LabVMFirewallGroup.md
@@ -214,6 +220,7 @@ nav:
     - Install-LabDnsForwarder: AutomatedLab/en-us/Install-LabDnsForwarder.md
     - Install-LabDscClient: AutomatedLab/en-us/Install-LabDscClient.md
     - Install-LabDscPullServer: AutomatedLab/en-us/Install-LabDscPullServer.md
+    - Install-LabDynamics: AutomatedLab/en-us/Install-LabDynamics.md
     - Install-LabFailoverCluster: AutomatedLab/en-us/Install-LabFailoverCluster.md
     - Install-LabFirstChildDcs: AutomatedLab/en-us/Install-LabFirstChildDcs.md
     - Install-LabHyperV: AutomatedLab/en-us/Install-LabHyperV.md
@@ -222,6 +229,7 @@ nav:
     - Install-LabRdsCertificate: AutomatedLab/en-us/Install-LabRdsCertificate.md
     - Install-LabRootDcs: AutomatedLab/en-us/Install-LabRootDcs.md
     - Install-LabRouting: AutomatedLab/en-us/Install-LabRouting.md
+    - Install-LabScom: AutomatedLab/en-us/Install-LabScom.md
     - Install-LabScvmm: AutomatedLab/en-us/Install-LabScvmm.md
     - Install-LabSoftwarePackage: AutomatedLab/en-us/Install-LabSoftwarePackage.md
     - Install-LabSoftwarePackages: AutomatedLab/en-us/Install-LabSoftwarePackages.md
@@ -336,6 +344,7 @@ nav:
     - Get-LabVirtualNetwork: AutomatedLabDefinition/en-us/Get-LabVirtualNetwork.md
     - Get-LabVirtualNetworkDefinition: AutomatedLabDefinition/en-us/Get-LabVirtualNetworkDefinition.md
     - Get-LabVolumesOnPhysicalDisks: AutomatedLabDefinition/en-us/Get-LabVolumesOnPhysicalDisks.md
+    - Import-LabDefinition: AutomatedLabDefinition/en-us/Import-LabDefinition.md
     - New-LabDefinition: AutomatedLabDefinition/en-us/New-LabDefinition.md
     - New-LabNetworkAdapterDefinition: AutomatedLabDefinition/en-us/New-LabNetworkAdapterDefinition.md
     - Remove-LabDomainDefinition: AutomatedLabDefinition/en-us/Remove-LabDomainDefinition.md

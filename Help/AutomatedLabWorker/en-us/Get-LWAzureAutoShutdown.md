@@ -1,32 +1,32 @@
 ---
-external help file: AutomatedLab-help.xml
-Module Name: AutomatedLab
+external help file: AutomatedLabWorker-help.xml
+Module Name: AutomatedLabWorker
 online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Get-LWAzureAutoShutdown
 
 ## SYNOPSIS
-Get an Azure subscription
+Internal worker to list Azure Auto Shutdown
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Get-LWAzureAutoShutdown [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Internal worker to list Azure Auto Shutdown
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> {{ Add example code here }}
 ```
 
-Gets all subscriptions for a given lab
+{{ Add example description here }}
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -5,49 +5,48 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# Get-LabCimSession
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+Cmdlet to list all or specific CIM sessions
 
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+Get-LabCimSession [[-ComputerName] <String[]>] [-DoNotUseCredSsp] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+Cmdlet to list all or specific CIM sessions
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> Get-LabCimSession
 ```
 
-If auto logon is not configured, configure it for SQL01
+List all currently open CIM sessions in your lab
 
 ## PARAMETERS
 
 ### -ComputerName
-The hosts to test auto logon on
+List of computers to connect to
 
 ```yaml
 Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: True
+Required: False
 Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -DoNotUseCredSsp
+Indicates that CredSSP should not be used
 
 ```yaml
 Type: SwitchParameter
@@ -67,9 +66,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
-### System.Object
+### Microsoft.Management.Infrastructure.CimSession
+
 ## NOTES
 
 ## RELATED LINKS

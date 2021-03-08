@@ -1,85 +1,73 @@
 ---
-external help file: AutomatedLab-help.xml
-Module Name: AutomatedLab
+external help file: AutomatedLabTest-help.xml
+Module Name: AutomatedLabTest
 online version:
 schema: 2.0.0
 ---
 
-# Sync-LabAzureLabSources
+# Invoke-LabPester
 
 ## SYNOPSIS
-Sync local lab sources to Azure
+Invoke all role-specific pester tests for a lab
 
 ## SYNTAX
 
+### ByLab (Default)
 ```
-Sync-LabAzureLabSources [-SkipIsos] [-DoNotSkipOsIsos] [[-MaxFileSizeInMb] <Int32>] [-Filter <String>]
- [-NoDisplay] [<CommonParameters>]
+Invoke-LabPester -Lab <Lab> [-Show <Object>] [-PassThru] [-OutputFile <String>] [<CommonParameters>]
+```
+
+### ByName
+```
+Invoke-LabPester -LabName <String> [-Show <Object>] [-PassThru] [-OutputFile <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Synchronize your local lab source depot to Azure.
-OS ISOs will automatically be skipped, otherwise there are no limitations.
-All files are hashed to ensure that no existing files are overwritten
+Invoke all role-specific pester tests for a lab
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Sync-LabAzureLabSources -MaxFileSizeInMb 500 -Filter *.exe
+PS C:\> Invoke-LabPester -LabName MyLab -Show Detailed
 ```
 
-Upload all executables smaller than 500MB to Azure
+Give detailed feedback for all roles deployed in MyLab
 
 ## PARAMETERS
 
-### -SkipIsos
-Indicates that ISOs should not be uploaded
+### -Lab
+Lab data
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
+Type: Lab
+Parameter Sets: ByLab
 Aliases:
 
-Required: False
+Required: True
 Position: Named
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -MaxFileSizeInMb
-The maximum file size to upload
+### -LabName
+Name of lab
 
 ```yaml
-Type: Int32
-Parameter Sets: (All)
+Type: String
+Parameter Sets: ByName
 Aliases:
 
-Required: False
-Position: 0
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -DoNotSkipOsIsos
-Indicates that OS ISOs should indeed be uploaded to Azure
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
+Required: True
 Position: Named
 Default value: None
-Accept pipeline input: False
+Accept pipeline input: True (ByValue)
 Accept wildcard characters: False
 ```
 
-### -Filter
-Wildcard filter
+### -OutputFile
+Result file for CI
 
 ```yaml
 Type: String
@@ -93,8 +81,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -NoDisplay
-Indicates that the cmdlet should not display messages on the console host
+### -PassThru
+Indicates that results should be returned
 
 ```yaml
 Type: SwitchParameter
@@ -108,13 +96,34 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Show
+Level of verbosity
+
+```yaml
+Type: Object
+Parameter Sets: (All)
+Aliases:
+Accepted values: None, Normal, Detailed, Diagnostic
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
+### AutomatedLab.Lab
+
+### System.String
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS
