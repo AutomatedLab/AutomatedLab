@@ -18,12 +18,12 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
  [-Processors <Int32>] [-DiskName <String[]>] [-OperatingSystem <OperatingSystem>]
  [-OperatingSystemVersion <String>] [-Network <String>] [-IpAddress <String>] [-Gateway <String>]
  [-DnsServer1 <String>] [-DnsServer2 <String>] [-IsDomainJoined] [-DefaultDomain]
- [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-ProductKey <String>]
- [-UserLocale <String>] [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
+ [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-UserLocale <String>]
+ [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
  [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>] [-EnableWindowsFirewall]
  [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>] [-AutoLogonPassword <String>]
  [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>] [-Notes <Hashtable>] [-PassThru]
- [-FriendlyName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
+ [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
  [-RhelPackage <String[]>] [<CommonParameters>]
 ```
 
@@ -32,24 +32,23 @@ Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>]
 Add-LabMachineDefinition -Name <String> [-Memory <Double>] [-MinMemory <Double>] [-MaxMemory <Double>]
  [-Processors <Int32>] [-DiskName <String[]>] [-OperatingSystem <OperatingSystem>]
  [-OperatingSystemVersion <String>] [-NetworkAdapter <NetworkAdapter[]>] [-IsDomainJoined] [-DefaultDomain]
- [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-ProductKey <String>]
- [-UserLocale <String>] [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
+ [-InstallationUserCredential <PSCredential>] [-DomainName <String>] [-Roles <Role[]>] [-UserLocale <String>]
+ [-PostInstallationActivity <PostInstallationActivity[]>] [-ToolsPath <String>]
  [-ToolsPathDestination <String>] [-VirtualizationHost <VirtualizationHost>] [-EnableWindowsFirewall]
  [-AutoLogonDomainName <String>] [-AutoLogonUserName <String>] [-AutoLogonPassword <String>]
  [-AzureProperties <Hashtable>] [-HypervProperties <Hashtable>] [-Notes <Hashtable>] [-PassThru]
- [-FriendlyName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
+ [-ResourceName <String>] [-SkipDeployment] [-AzureRoleSize <String>] [-TimeZone <String>]
  [-RhelPackage <String[]>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Adds a definition of a machine to the lab. This does not create the actual machine.
+Adds a definition of a machine to the lab.
+This does not create the actual machine.
 It merely creates the information of how the machines should look like.
 
 ## EXAMPLES
 
 ### EXAMPLE 1
-
-
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2016 Technical Preview 5 SERVERDATACENTER' -ToolsPath 'C:\LabSources\MyLabTools1' -ToolsPathDestination 'C:\MyDistTools'
 ```
@@ -60,8 +59,6 @@ Machine will not be domain joined but be placed in workgroup.
 If using a folder for tools folder for each machine in the lab ie C:\MyLabTools1\Server1, C:\MyLabTools1\Server2 etc, you can use 'C:\MyLabTools1\\\<machine\>' and AutomatedLab will map using the name of each machine to find the tools folder.
 
 ### EXAMPLE 2
-
-
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2008 R2 Datacenter (Full Installation)' -VirtualizationHost HyperV -Memory 1GB -MinMemory 512MB -MaxMemory 2GB -DomainName 'contoso.com'
 ```
@@ -79,8 +76,6 @@ Following parameters for the machine, will be auto-configured:
 - Hyper-V switch or Azure virtual network depending on -DefaultVirtualizationEngine parameter used for New-LabDefinition or -VirtualizationEngine parameter used for this function (Add-LabMachineDefinition)
 
 ### EXAMPLE 3
-
-
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -OperatingSystemVersion 6.3.9600.17415 -VirtualizationHost HyperV -Processors 2 -Memory 2GB -IpAddress '192.168.100.5/24' -Network Network1
 ```
@@ -90,8 +85,6 @@ Adds a definition of a Hyper-V machine with the name 'Server1' with the operatin
 Memory will be set to 2GB (static).
 
 ### EXAMPLE 4
-
-
 ```powershell
 Add-MachineDefinition -Name Server1 -OperatingSystem 'Windows Server 2012 R2 Datacenter (Server with a GUI)' -VirtualizationHost HyperV -DefaultDomain -ProductKey 'ABCDE-ABCDE-ABCDE-ABCDE-ABCDE'
 ```
@@ -103,8 +96,7 @@ Memory will be set to 2GB (static).
 ## PARAMETERS
 
 ### -Name
-Name of machine
-Name must consist of characters a-z, A-Z, '-' or 0-9 and must be 1-15 in length.
+Name of machine Name must consist of characters a-z, A-Z, '-' or 0-9 and must be 1-15 in length.
 
 ```yaml
 Type: String
@@ -135,8 +127,7 @@ Accept wildcard characters: False
 ```
 
 ### -MinMemory
-Minimum dynamic memory for machine
-Specified in bytes and must be within range 128MB-128GB.
+Minimum dynamic memory for machine Specified in bytes and must be within range 128MB-128GB.
 
 ```yaml
 Type: Double
@@ -151,8 +142,7 @@ Accept wildcard characters: False
 ```
 
 ### -MaxMemory
-Maximum dynamic memory for machine
-Specified in bytes and must be within range 128MB-128GB.
+Maximum dynamic memory for machine Specified in bytes and must be within range 128MB-128GB.
 
 ```yaml
 Type: Double
@@ -367,21 +357,6 @@ The machine's role definitions
 
 ```yaml
 Type: Role[]
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -ProductKey
-The product key of the machine
-
-```yaml
-Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -634,21 +609,6 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -FriendlyName
-not implemented.
-
-```yaml
-Type: String
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
 ### -RhelPackage
 The RHEL packages to install
 
@@ -670,6 +630,21 @@ When the lab is removed, these machines are not destroyed.
 
 ```yaml
 Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -ResourceName
+Name of the resource in the resource group
+
+```yaml
+Type: String
 Parameter Sets: (All)
 Aliases:
 

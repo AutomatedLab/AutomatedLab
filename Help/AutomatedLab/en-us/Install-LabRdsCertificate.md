@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Install-LabRdsCertificate
 
 ## SYNOPSIS
-Get an Azure subscription
+Install RDS certificates of all lab VMs
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Install-LabRdsCertificate [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Install RDS certificates of all lab VMs
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Install-LabRdsCertificate
 ```
 
-Gets all subscriptions for a given lab
+Install RDS certificates of all lab VMs
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -5,83 +5,81 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureLabSourcesContent
+# Test-LabTfsEnvironment
 
 ## SYNOPSIS
-Get the file content of the Azure lab sources file share
+Test lab TFS/Azure DevOps deployment
 
 ## SYNTAX
 
 ```
-Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-Path <String>] [-File] [-Directory]
- [<CommonParameters>]
+Test-LabTfsEnvironment [-ComputerName] <String> [-SkipServer] [-SkipWorker] [-NoDisplay] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Get the file content of the Azure lab sources file share.
-Capable of Regex filtering
+Test lab TFS/Azure DevOps deployment
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureLabSourcesContent -RegexFilter '\.iso' -File
+PS C:\> Test-LabTfsEnvironment -ComputerName AZDO001 -SkipWorker
 ```
 
-Get all ISO files in the Azure lab sources file share
+Test lab TFS/Azure DevOps deployment on AZDO001, while ignoring the build worker status
 
 ## PARAMETERS
 
-### -Directory
-Indicates that only directories (Data type Microsoft.Azure.Storage.File.CloudFileDirectory) should be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -File
-INdicates that only files (data type Microsoft.Azure.Storage.File.CloudFile) should be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -RegexFilter
-The regular expression to filter the list of files on
+### -ComputerName
+The lab machine (or reference) hosting the Azure DevOps role
 
 ```yaml
 Type: String
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -Path
-The path to look in, e.g. $labsources - speeds up this cmdlet significantly.
+### -NoDisplay
+Indicates that no messages are displayed
 
 ```yaml
-Type: String
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipServer
+Indicates that server deployment should be ignored
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SkipWorker
+Indicates that build worker deployment should be ignored
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 
@@ -98,6 +96,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

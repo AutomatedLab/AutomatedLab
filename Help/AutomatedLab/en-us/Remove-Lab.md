@@ -14,17 +14,17 @@ Remove the lab
 
 ### Path (Default)
 ```
-Remove-Lab [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByPath
 ```
-Remove-Lab -Path <String> [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab -Path <String> [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ### ByName
 ```
-Remove-Lab [-Name] <String> [-WhatIf] [-Confirm] [<CommonParameters>]
+Remove-Lab [-Name] <String> [-RemoveExternalSwitches] [-WhatIf] [-Confirm] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -97,6 +97,21 @@ Aliases:
 
 Required: True
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -RemoveExternalSwitches
+Indicates that external switches should also be removed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

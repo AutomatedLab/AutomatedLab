@@ -5,71 +5,47 @@ online version:
 schema: 2.0.0
 ---
 
-# Remove-LWAzureVM
+# Get-LWAzureVmSize
 
 ## SYNOPSIS
-Remove an Azure VM
+Return configured size of lab VM
 
 ## SYNTAX
 
 ```
-Remove-LWAzureVM -Name <String> [-AsJob] [-PassThru] [<CommonParameters>]
+Get-LWAzureVmSize [-Machine] <Machine> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Remove an Azure VM
+Return configured size of lab VM
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Remove-LWAzureVm -ComputerName DC01 -AsJob
+PS C:\> Get-LWAzureVmSize -Machine (get-labvm -ComputerName DFS-DC1)
 ```
 
-Removes the host DC01 in a background job
+NumberOfCores        : 2
+MemoryInMB           : 7168
+Name                 : Standard_D2_v2
+MaxDataDiskCount     : 8
+ResourceDiskSizeInMB : 102400
+OSDiskSizeInMB       : 1047552
+NonMappedProperties  : {}
 
 ## PARAMETERS
 
-### -AsJob
-Indicates that the cmdlet should run in the background
+### -Machine
+Machines to retrieve
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -PassThru
-Indicates that a job object should be returned
-
-```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
-Aliases:
-
-Required: False
-Position: Named
-Default value: None
-Accept pipeline input: False
-Accept wildcard characters: False
-```
-
-### -Name
-The host to remove
-
-```yaml
-Type: String
+Type: Machine
 Parameter Sets: (All)
 Aliases:
 
 Required: True
-Position: Named
+Position: 0
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -81,6 +57,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

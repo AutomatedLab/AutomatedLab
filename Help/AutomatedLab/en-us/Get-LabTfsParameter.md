@@ -5,36 +5,36 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# Get-LabTfsParameter
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+Get relevant connection parameters to connect to TFS/AzDevOps
 
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+Get-LabTfsParameter [-ComputerName] <String> [-Local] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+Get relevant connection parameters to connect to TFS/AzDevOps
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> Get-LabTfsParameter
 ```
 
-If auto logon is not configured, configure it for SQL01
+Get relevant connection parameters to connect to TFS/AzDevOps
 
 ## PARAMETERS
 
 ### -ComputerName
-The hosts to test auto logon on
+TFS/Azure DevOps instances
 
 ```yaml
-Type: String[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -45,9 +45,8 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -Local
+Indicates that connection details should be local (internal) to the lab environment
 
 ```yaml
 Type: SwitchParameter
@@ -67,6 +66,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

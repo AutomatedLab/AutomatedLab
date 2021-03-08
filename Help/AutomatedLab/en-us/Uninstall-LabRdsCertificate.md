@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Uninstall-LabRdsCertificate
 
 ## SYNOPSIS
-Get an Azure subscription
+Remove RDS certificates of all lab VMs from cert store
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Uninstall-LabRdsCertificate [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Remove RDS certificates of all lab VMs from cert store
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Uninstall-LabRdsCertificate
 ```
 
-Gets all subscriptions for a given lab
+Remove RDS certificates of all lab VMs from cert store
 
 ## PARAMETERS
 
@@ -35,8 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
 
+### System.Object
 ## NOTES
 
 ## RELATED LINKS

@@ -33,7 +33,7 @@ Add-LabMachineDefinition -Name P1DC1 -IpAddress 192.168.86.10 -Roles $role
 #the second will be a member server configured as Root CA server. Everything in $labSources\Tools get copied to the machine's Windows folder
 $role = Get-LabMachineRoleDefinition -Role CaRoot @{
     CACommonName        = "MySpecialRootCA1"
-    KeyLength           = “2048”
+    KeyLength           = '2048'
     ValidityPeriod      = "Weeks"
     ValidityPeriodUnits = "4"
 }

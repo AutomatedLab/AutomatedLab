@@ -15,23 +15,24 @@ Invoke a DSC configuration on one or more nodes
 ### New (Default)
 ```
 Invoke-LabDscConfiguration -Configuration <ConfigurationInfo> -ComputerName <String[]>
- [-ConfigurationData <Hashtable>] [-Wait] [<CommonParameters>]
+ [-ConfigurationData <Hashtable>] [-Wait] [-Force] [<CommonParameters>]
 ```
 
 ### UseExisting
 ```
-Invoke-LabDscConfiguration -ComputerName <String[]> [-UseExisting] [-Wait] [<CommonParameters>]
+Invoke-LabDscConfiguration -ComputerName <String[]> [-UseExisting] [-Wait] [-Force] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Invoke a DSC configuration on one or more nodes. Compareable with a push, the configuration
-will be applied to the target nodes. The configuration needs to be stored in a file that should
-be imported before. Can either deploy a fresh configuration or use an existing one.
+Invoke a DSC configuration on one or more nodes.
+Compareable with a push, the configuration will be applied to the target nodes.
+The configuration needs to be stored in a file that should be imported before.
+Can either deploy a fresh configuration or use an existing one.
 
 ## EXAMPLES
 
 ### Example 1
-```powershell
+```
 configuration Baseline
 {
     WindowsFeature ADTools
@@ -64,7 +65,8 @@ Accept wildcard characters: False
 ```
 
 ### -Configuration
-The configuration that is stored somewhere. Retrieve with Get-Command
+The configuration that is stored somewhere.
+Retrieve with Get-Command
 
 ```yaml
 Type: ConfigurationInfo
@@ -123,13 +125,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Force
+Indicates that the force is used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

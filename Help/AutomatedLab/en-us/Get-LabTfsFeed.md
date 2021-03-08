@@ -5,36 +5,36 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# Get-LabTfsFeed
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+List or locate Artifact feed details of an Azure DevOps/TFS instance
 
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+Get-LabTfsFeed [-ComputerName] <String> [[-FeedName] <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+List or locate Artifact feed details of an Azure DevOps/TFS instance
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> Get-LabTfsFeed -ComputerName ADO001 -FeedName PowerShell -ErrorAction SilentlyContinue
 ```
 
-If auto logon is not configured, configure it for SQL01
+Find a feed called PowerShell on ADO001
 
 ## PARAMETERS
 
 ### -ComputerName
-The hosts to test auto logon on
+The lab machine (or reference) hosting the Azure DevOps role
 
 ```yaml
-Type: String[]
+Type: String
 Parameter Sets: (All)
 Aliases:
 
@@ -45,17 +45,16 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -FeedName
+Name of the feed
 
 ```yaml
-Type: SwitchParameter
+Type: String
 Parameter Sets: (All)
 Aliases:
 
 Required: False
-Position: Named
+Position: 1
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -67,6 +66,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object

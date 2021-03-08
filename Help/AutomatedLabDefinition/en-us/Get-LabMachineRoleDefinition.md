@@ -13,7 +13,7 @@ Get a role definition
 ## SYNTAX
 
 ```
-Get-LabMachineRoleDefinition [-Role] <Roles> [[-Properties] <Hashtable>] [<CommonParameters>]
+Get-LabMachineRoleDefinition [-Role] <Roles> [[-Properties] <Hashtable>] [-Syntax] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -29,6 +29,12 @@ Add-LabMachineDefinition -Name Host -Role $role
 
 Gets a role definition for the first DC of a child domain with the additional properties ParentDomain = contoso.com and the child domain name NewDomain = child
 
+### Example 2
+```powershell
+Get-LabMachineRoleDefinition -Role RootDc -Syntax
+```
+
+Returns all possible parameter for the specified role
 ## PARAMETERS
 
 ### -Role
@@ -57,6 +63,21 @@ Aliases:
 
 Required: False
 Position: 1
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Syntax
+Indicates that Property-Syntax should be returned
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False

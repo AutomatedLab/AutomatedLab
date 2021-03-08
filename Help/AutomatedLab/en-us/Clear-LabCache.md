@@ -26,9 +26,9 @@ Removes the automated lab cache from the Windows registry: HKEY_CURRENT_USER\Sof
 PS C:\> Clear-LabCache
 ```
 
-Clears all of AutomatedLab's caches, meaning that all timestamps and the cached ISOs will be removed. During
-the next lab installation, the caches will be updated again. Useful when running into issues with the available
-operating systems.
+Clears all of AutomatedLab's caches, meaning that all timestamps and the cached ISOs will be removed.
+During the next lab installation, the caches will be updated again.
+Useful when running into issues with the available operating systems.
 
 ## PARAMETERS
 

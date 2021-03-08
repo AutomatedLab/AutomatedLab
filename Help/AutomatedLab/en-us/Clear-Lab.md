@@ -23,10 +23,10 @@ Clears the variable $script:data to effectively clear the lab definition
 
 ### Example 1
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> Clear-Lab
 ```
 
-{{ Add example description here }}
+Clear current lab, so that Get-Lab and Get-LabDefinition will not return
 
 ## PARAMETERS
 

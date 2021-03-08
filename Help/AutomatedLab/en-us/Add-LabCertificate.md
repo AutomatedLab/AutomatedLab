@@ -143,7 +143,7 @@ Accept wildcard characters: False
 ```
 
 ### -RawContentBytes
-Certificate as Byte[]
+Certificate as Byte\[\]
 
 ```yaml
 Type: Byte[]

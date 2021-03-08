@@ -5,28 +5,28 @@ online version:
 schema: 2.0.0
 ---
 
-# Get-LabAzureSubscription
+# Test-LabAzureModuleAvailability
 
 ## SYNOPSIS
-Get an Azure subscription
+Test if Azure modules are installed and have the required version
 
 ## SYNTAX
 
 ```
-Get-LabAzureSubscription [<CommonParameters>]
+Test-LabAzureModuleAvailability [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Gets all subscriptions for a given lab
+Test if Azure modules are installed and have the required version
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> Get-LabAzureSubscription
+PS C:\> Test-LabAzureModuleAvailability
 ```
 
-Gets all subscriptions for a given lab
+Boolean indicator
 
 ## PARAMETERS
 
@@ -35,7 +35,11 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 
 ## INPUTS
 
+### None
+
 ## OUTPUTS
+
+### System.Boolean
 
 ## NOTES
 

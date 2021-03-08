@@ -17,7 +17,7 @@ Invoke command on a lab vm
 Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-PostInstallationActivity]
  [-CustomRoleName <String[]>] [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
  [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-ThrottleLimit <Int32>]
- [-AsJob] [-PassThru] [-NoDisplay] [<CommonParameters>]
+ [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### ScriptBlock
@@ -25,7 +25,7 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-PostInst
 Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-ScriptBlock] <ScriptBlock>
  [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential <PSCredential>]
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
- [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [<CommonParameters>]
+ [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### Script
@@ -33,7 +33,7 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-ScriptBl
 Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FilePath <String>
  [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential] [-Credential <PSCredential>]
  [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>] [-RetryIntervalInSeconds <Int32>]
- [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [<CommonParameters>]
+ [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### ScriptFileNameContentDependency
@@ -42,7 +42,7 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FileName 
  [-DependencyFolderPath <String>] [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
  [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
  [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [<CommonParameters>]
+ [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### ScriptFileContentDependency
@@ -51,7 +51,7 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> -FilePath 
  -DependencyFolderPath <String> [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
  [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
  [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [<CommonParameters>]
+ [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### ScriptBlockFileContentDependency
@@ -60,7 +60,7 @@ Invoke-LabCommand [-ActivityName <String>] [-ComputerName] <String[]> [-ScriptBl
  -DependencyFolderPath <String> [-ArgumentList <Object[]>] [-DoNotUseCredSsp] [-UseLocalCredential]
  [-Credential <PSCredential>] [-Variable <PSVariable[]>] [-Function <FunctionInfo[]>] [-Retries <Int32>]
  [-RetryIntervalInSeconds <Int32>] [-ThrottleLimit <Int32>] [-AsJob] [-PassThru] [-NoDisplay]
- [<CommonParameters>]
+ [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -70,8 +70,6 @@ Scripts and script blocks can also use a dependency folder containing dependenci
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 $ALocallyDefinedVariable = "This is a"
 $AndAnother = "Test"
@@ -391,6 +389,21 @@ The custom role that should be deployed, e.g. ProGet
 ```yaml
 Type: String[]
 Parameter Sets: PostInstallationActivity
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IgnoreAzureLabSources
+Indicates that Invoke-LabCommand does not need to map LabSources share
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
 Aliases:
 
 Required: False

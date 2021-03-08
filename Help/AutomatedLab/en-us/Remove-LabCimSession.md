@@ -5,56 +5,81 @@ online version:
 schema: 2.0.0
 ---
 
-# Test-LabAutoLogon
+# Remove-LabCimSession
 
 ## SYNOPSIS
-Test if the autologon settings are correct
+Remove open CIM sessions to lab VMs
 
 ## SYNTAX
 
+### ByName
 ```
-Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
+Remove-LabCimSession -ComputerName <String[]> [<CommonParameters>]
+```
+
+### ByMachine
+```
+Remove-LabCimSession -Machine <Machine[]> [<CommonParameters>]
+```
+
+### All
+```
+Remove-LabCimSession [-All] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Test if the autologon settings are correct
+Remove open CIM sessions to lab VMs
 
 ## EXAMPLES
 
 ### Example 1
 ```powershell
-PS C:\> if (-not (Test-LabAutoLogon SQL01)) {Enable-LabAutoLogon SQL01}
+PS C:\> Remove-LabCimSession -All
 ```
 
-If auto logon is not configured, configure it for SQL01
+Remove open CIM sessions to lab VMs
 
 ## PARAMETERS
 
-### -ComputerName
-The hosts to test auto logon on
+### -All
+Indicates that all lab CIM sessions should be removed
 
 ```yaml
-Type: String[]
-Parameter Sets: (All)
+Type: SwitchParameter
+Parameter Sets: All
 Aliases:
 
-Required: True
-Position: 0
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
-### -TestInteractiveLogonSession
-Indicates that the cmdlet should test if there is an interactive logon session.
-Useful to test before Installations that require an interactive context.
+### -ComputerName
+List of lab machine names
 
 ```yaml
-Type: SwitchParameter
-Parameter Sets: (All)
+Type: String[]
+Parameter Sets: ByName
 Aliases:
 
-Required: False
+Required: True
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Machine
+List of lab machine objects
+
+```yaml
+Type: Machine[]
+Parameter Sets: ByMachine
+Aliases:
+
+Required: True
 Position: Named
 Default value: None
 Accept pipeline input: False
@@ -67,6 +92,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
+
 ## OUTPUTS
 
 ### System.Object
