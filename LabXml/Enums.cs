@@ -93,7 +93,8 @@ namespace AutomatedLab
         RemoteDesktopSessionHost = 2251799813685248,
         RemoteDesktopConnectionBroker = 4503599627370496,
         RemoteDesktopLicensing = 9007199254740992,
-        RemoteDesktopVirtualizationHost = 18014398509481984
+        RemoteDesktopVirtualizationHost = 18014398509481984,
+        RDS = RemoteDesktopConnectionBroker | RemoteDesktopGateway | RemoteDesktopLicensing | RemoteDesktopSessionHost | RemoteDesktopVirtualizationHost | RemoteDesktopWebAccess
     }
 
     public enum ActiveDirectoryFunctionalLevel

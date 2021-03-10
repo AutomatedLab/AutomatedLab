@@ -15,21 +15,25 @@
     $licensing = Get-LabVm -Role RemoteDesktopLicensing
     $virtHost = Get-LabVm -Role RemoteDesktopVirtualizationHost
     
+    if (-not $gw)
+    {
+        $gw = Get-LabVm -Role RDS | Select-Object -First 1
+    }
     if (-not $webAccess)
     {
-        $webAccess = Get-LabVm -Role RemoteDesktopGateway
+        $webAccess = Get-LabVm -Role RDS | Select-Object -First 1
     }
     if (-not $sessionHosts)
     {
-        $sessionHosts = Get-LabVm -Role RemoteDesktopGateway
+        $sessionHosts = Get-LabVm -Role RDS | Select-Object -First 1
     }
     if (-not $connectionBroker)
     {
-        $connectionBroker = Get-LabVm -Role RemoteDesktopGateway
+        $connectionBroker = Get-LabVm -Role RDS | Select-Object -First 1
     }
     if (-not $licensing)
     {
-        $licensing = Get-LabVm -Role RemoteDesktopGateway
+        $licensing = Get-LabVm -Role RDS | Select-Object -First 1
     }
     if (-not $virtHost)
     {
@@ -135,8 +139,11 @@
             New-RDSessionCollection @config
         }
         Set-RDDeploymentGatewayConfiguration @gwConfig
-        Set-RDLicenseConfiguration @licenseConfig
-    } -Variable (Get-Variable gwConfig, sessionCollectionConfig, deploymentConfig, licenseConfig) -NoDisplay
+    } -Variable (Get-Variable gwConfig, sessionCollectionConfig, deploymentConfig) -NoDisplay
+
+    Invoke-LabCommand -ComputerName $connectionBroker -ScriptBlock {
+        Set-RDLicenseConfiguration @licenseConfig -ErrorAction SilentlyContinue
+    } -Variable (Get-Variable licenseConfig) -NoDisplay
 
     $prefix = if (Get-LabVm -Role CARoot)
     {
@@ -170,7 +177,9 @@
     Save-Module -Name RDWebClientManagement -Path $destination -AcceptLicense
     Send-ModuleToPSSession -Module (Get-Module (Join-Path -Path $destination -ChildPath 'RDWebClientManagement/*/RDWebClientManagement.psd1' -Resolve) -ListAvailable) -Session (New-LabPSSession -ComputerName $webAccess)
     
-    $client = Get-LabInternetFile -NoDisplay -PassThru -Uri 'https://go.microsoft.com/fwlink/?linkid=2005418' -Path $labsources/SoftwarePackages -FileName rdwebclient.zip
+    $clientInfo = (Invoke-RestMethod -Uri 'https://go.microsoft.com/fwlink/?linkid=2005418' -UseBasicParsing).packages
+
+    $client = Get-LabInternetFile -NoDisplay -PassThru -Uri $clientInfo.url -Path $labsources/SoftwarePackages -FileName "rdwebclient-$($clientInfo.version).zip"
     $localPath = Copy-LabFileItem -Path $client.FullName -ComputerName $webAccess -PassThru -DestinationFolderPath C:\
 
     Invoke-LabCommand -ComputerName $webAccess -ScriptBlock {
@@ -188,11 +197,14 @@
     } -NoDisplay
     $certPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer
     Receive-File -SourceFilePath C:\LabRootCa.cer -DestinationFilePath $certPath -Session (New-LabPSSession -ComputerName (Get-LabVm -Role CaRoot))
+    <#
+    # This technique does not work in ISE for some reason
     $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certPath)
     $rootStore = Get-Item cert:\CurrentUser\Root
     $rootStore.Open("ReadWrite")
     $rootStore.Add($cert)
     $rootStore.Close()
+    #>
     Write-ScreenInfo -Message "RDWeb Client available at $($prefix)://$gwFqdn/RDWeb/webclient"
     Write-LogFunctionExit
 }
