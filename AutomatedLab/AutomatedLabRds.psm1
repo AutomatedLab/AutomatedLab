@@ -186,9 +186,13 @@
     Invoke-LabCommand -ComputerName (Get-LabVm -Role CaRoot) -ScriptBlock {
         Get-ChildItem -Path Cert:\LocalMachine\my | Select-Object -First 1 | Export-Certificate -FilePath C:\LabRootCa.cer -Type CERT -Force
     } -NoDisplay
-    Receive-File -SourceFilePath C:\LabRootCa.cer -DestinationFilePath (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer) -Session (New-LabPSSession -ComputerName (Get-LabVm -Role CaRoot))
-    $null = Import-Certificate -FilePath (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer) -CertStoreLocation Cert:\CurrentUser\Root -Confirm:$false
-
+    $certPath = Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer
+    Receive-File -SourceFilePath C:\LabRootCa.cer -DestinationFilePath $certPath -Session (New-LabPSSession -ComputerName (Get-LabVm -Role CaRoot))
+    $cert = [System.Security.Cryptography.X509Certificates.X509Certificate2]::new($certPath)
+    $rootStore = Get-Item cert:\CurrentUser\Root
+    $rootStore.Open("ReadWrite")
+    $rootStore.Add($cert)
+    $rootStore.Close()
     Write-ScreenInfo -Message "RDWeb Client available at $($prefix)://$gwFqdn/RDWeb/webclient"
     Write-LogFunctionExit
 }
