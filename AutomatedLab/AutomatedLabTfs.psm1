@@ -138,10 +138,15 @@ function Install-LabTeamFoundationServer
         $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
         [string]$sqlServer = switch -Regex ($role.Name)
         {
-            'Tfs2015' { Get-LabVm -Role SQLServer2014 | Select-Object -First 1 }
-            'Tfs2017' { Get-LabVm -Role SQLServer2014, SQLServer2016 | Select-Object -First 1 }
-            'Tfs2018|AzDevOps' { Get-LabVm -Role SQLServer2017 | Select-Object -First 1 }
+            'Tfs2015' { Get-LabVM -Role SQLServer2014 | Select-Object -First 1 }
+            'Tfs2017' { Get-LabVM -Role SQLServer2014, SQLServer2016 | Select-Object -First 1 }
+            'Tfs2018|AzDevOps' { Get-LabVM -Role SQLServer2017, SQLServer2019 | Select-Object -First 1 }
             default { throw 'No fitting SQL Server found in lab!' }
+        }
+        
+        if (-not $sqlServer)
+        {
+            Write-Error 'No fitting SQL Server found in lab for TFS / Azure DevOps role.' -ErrorAction Stop
         }
 
         $initialCollection = 'AutomatedLab'
