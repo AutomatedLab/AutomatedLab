@@ -91,19 +91,21 @@
         Force                = $true
     }
 
-    $sessionHostRoles = $sessionHosts.Roles | Where-Object Name -eq 'RemoteDesktopSessionHost' | Group-Object { $_.Properties['CollectionName'] } # GROUP! CollectionName
+    $sessionHostRoles = $sessionHosts | Group-Object { ($_.Roles | Where-Object Name -eq 'RemoteDesktopSessionHost').Properties['CollectionName'] }
     [hashtable[]]$sessionCollectionConfig = foreach ($sessionhost in $sessionHostRoles)
     {
-        $firstRoleMember = $sessionhost.Group | Select-Object -First 1
+        $firstRoleMember = ($sessionhost.Group | Select-Object -First 1).Roles | Where-Object Name -eq 'RemoteDesktopSessionHost'
         $param = @{
-            CollectionName        = $sessionhost.Name
+            CollectionName        = if (-not [string]::IsNullOrWhiteSpace($sessionhost.Name)) { $sessionhost.Name } else { 'AutomatedLab' }
             CollectionDescription = if ($firstRoleMember.Properties.ContainsKey('CollectionDescription')) { $firstRoleMember.Properties['CollectionDescription'] } else { 'AutomatedLab session host collection' }
             ConnectionBroker      = $connectionBroker.Fqdn
-            SessionHost           = $sessionhost.Group
+            SessionHost           = $sessionhost.Group.Fqdn
+            PooledUnmanaged       = $true
         }
 
         if ($firstRoleMember.Properties.Keys -in 'PersonalUnmanaged', 'AutoAssignUser', 'GrantAdministrativePrivilege')
         {
+            $param.Remove('PooledUnmanaged')
             $param['PersonalUnmanaged'] = $true
             $param['AutoAssignUser'] = if ($firstRoleMember.Properties.ContainsKey('AutoAssignUser')) { [Convert]::ToBoolean($firstRoleMember.Properties['AutoAssignUser']) } else { $true }
             $param['GrantAdministrativePrivilege'] = if ($firstRoleMember.Properties.ContainsKey('GrantAdministrativePrivilege')) { [Convert]::ToBoolean($firstRoleMember.Properties['GrantAdministrativePrivilege']) } else { $false }
@@ -128,7 +130,10 @@
     }
     Invoke-LabCommand -ComputerName $connectionBroker -ScriptBlock {
         New-RDSessionDeployment @deploymentConfig
-        New-RDSessionCollection -PersonalUnmanaged -AutoAssignUser @sessionCollectionConfig
+        foreach ($config in $sessionCollectionConfig)
+        {
+            New-RDSessionCollection @config
+        }
         Set-RDDeploymentGatewayConfiguration @gwConfig
         Set-RDLicenseConfiguration @licenseConfig
     } -Variable (Get-Variable gwConfig, sessionCollectionConfig, deploymentConfig, licenseConfig) -NoDisplay
@@ -163,12 +168,10 @@
 
     $destination = Join-Path -Path (Get-LabSourcesLocation -Local) -ChildPath SoftwarePackages
     Save-Module -Name RDWebClientManagement -Path $destination -AcceptLicense
-    Import-Module -Name (Join-Path -Path $destination -ChildPath 'RDWebClientManagement/*/RDWebClientManagement.psd1' -Resolve)
     Send-ModuleToPSSession -Module (Get-Module (Join-Path -Path $destination -ChildPath 'RDWebClientManagement/*/RDWebClientManagement.psd1' -Resolve) -ListAvailable) -Session (New-LabPSSession -ComputerName $webAccess)
     
-    Save-RDWebClientPackage -Path $destination
-    $client = Join-Path -Path $destination -ChildPath 'rdwebclient*.zip' -Resolve
-    $localPath = Copy-LabFileItem -Path $client -ComputerName $webAccess -UseAzureLabSourcesOnAzureVm $false -PassThru -DestinationFolderPath C:\
+    $client = Get-LabInternetFile -NoDisplay -PassThru -Uri 'https://go.microsoft.com/fwlink/?linkid=2005418' -Path $labsources/SoftwarePackages -FileName rdwebclient.zip
+    $localPath = Copy-LabFileItem -Path $client.FullName -ComputerName $webAccess -PassThru -DestinationFolderPath C:\
 
     Invoke-LabCommand -ComputerName $webAccess -ScriptBlock {
         Install-RDWebClientPackage -Source $localPath
@@ -178,13 +181,13 @@
         }
 
         Publish-RDWebClientPackage -Type Production -Latest
-    } -Variable (Get-Variable localPath) -PassThru
+    } -Variable (Get-Variable localPath) -NoDisplay
 
     Invoke-LabCommand -ComputerName (Get-LabVm -Role CaRoot) -ScriptBlock {
         Get-ChildItem -Path Cert:\LocalMachine\my | Select-Object -First 1 | Export-Certificate -FilePath C:\LabRootCa.cer -Type CERT -Force
-    } -PassThru -NoDisplay
+    } -NoDisplay
     Receive-File -SourceFilePath C:\LabRootCa.cer -DestinationFilePath (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer) -Session (New-LabPSSession -ComputerName (Get-LabVm -Role CaRoot))
-    Import-Certificate -FilePath (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer) -CertStoreLocation Cert:\CurrentUser\Root
+    $null = Import-Certificate -FilePath (Join-Path -Path ([IO.Path]::GetTempPath()) -ChildPath LabRootCa.cer) -CertStoreLocation Cert:\CurrentUser\Root -Confirm:$false
 
     Write-ScreenInfo -Message "RDWeb Client available at $($prefix)://$gwFqdn/RDWeb/webclient"
     Write-LogFunctionExit

@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- New roles to deploy Remote Desktop Services
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
