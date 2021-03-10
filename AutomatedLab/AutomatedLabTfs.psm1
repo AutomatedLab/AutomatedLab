@@ -193,7 +193,7 @@ function Install-LabTeamFoundationServer
             if (-not $sqlServer)
             {
                 Write-ScreenInfo -Message "No SQL server called $($role.Properties['DbServer']) found in lab." -NoNewLine -Type Warning
-                [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+                [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017, SQLServer2019 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $sqlServer instead." -Type Warning
             }
         }
