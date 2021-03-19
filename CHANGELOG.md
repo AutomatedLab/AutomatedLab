@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- VM path now globally configurable
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
