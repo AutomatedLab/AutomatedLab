@@ -6,6 +6,7 @@
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
+- Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019
 
 ## 5.33.0 (2021-03-03)
 
