@@ -7,6 +7,7 @@
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
+- Fixing issue with Get-LabInternetFile on Azure when no LabSources have been synced yet.
 
 ## 5.33.0 (2021-03-03)
 

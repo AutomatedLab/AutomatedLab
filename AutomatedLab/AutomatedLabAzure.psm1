@@ -1228,10 +1228,11 @@ function Sync-LabAzureLabSources
 
     # Sync the lab sources
     $fileParams = @{
-        Recurse = $true
-        Path    = $localLabsources
-        File    = $true
-        Filter  = if ($Filter) { $Filter } else { "*" }
+        Recurse     = $true
+        Path        = $localLabsources
+        File        = $true
+        Filter      = if ($Filter) { $Filter } else { "*" }
+        ErrorAction = 'SilentlyContinue'
     }
 
     $files = Get-ChildItem @fileParams
