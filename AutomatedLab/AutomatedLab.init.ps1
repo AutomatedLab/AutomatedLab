@@ -665,6 +665,24 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'UseMicrosoftUpdate'
             'AcceptEndUserLicenseAgreement'
         )
+        RemoteDesktopSessionHost = @(
+            'CollectionName'
+            'CollectionDescription'
+            'PersonalUnmanaged'
+            'AutoAssignUser'
+            'GrantAdministrativePrivilege'
+            'PooledUnmanaged'
+        )
+        RemoteDesktopGateway = @(
+            'GatewayExternalFqdn'
+            'BypassLocal'
+            'LogonMethod'
+            'UseCachedCredentials'
+            'GatewayMode'
+        )
+        RemoteDesktopLicensing = @(
+            'Mode'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(

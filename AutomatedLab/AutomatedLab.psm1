@@ -715,6 +715,7 @@ function Install-Lab
         [switch]$Scvmm,
         [switch]$Scom,
         [switch]$Dynamics,
+        [switch]$RemoteDesktop,
         [switch]$StartRemainingMachines,
         [switch]$CreateCheckPoints,
         [switch]$InstallRdsCertificates,
@@ -1010,6 +1011,13 @@ function Install-Lab
         if (Get-LabVM -Role SQLServer2019)   { Write-ScreenInfo -Message "Machines to have SQL Server 2019 installed: '$((Get-LabVM -Role SQLServer2019).Name -join ', ')'" }
         Install-LabSqlServers -CreateCheckPoints:$CreateCheckPoints
 
+        Write-ScreenInfo -Message 'Done' -TaskEnd
+    }
+
+    if (($RemoteDesktop -or $performAll) -and (Get-LabVm -Role RemoteDesktopConnectionBroker,RemoteDesktopGateway,RemoteDesktopLicensing,RemoteDesktopSessionHost,RemoteDesktopVirtualizationHost,RemoteDesktopWebAccess -Filter {-not $_.SkipDeployment}))
+    {
+        Write-ScreenInfo -Message 'Deploying Remote Desktop Services' -TaskStart
+        Install-LabRemoteDesktopServices
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 

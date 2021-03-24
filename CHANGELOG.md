@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- New roles to deploy Remote Desktop Services
 - VM path now globally configurable
 
 ### Fixes

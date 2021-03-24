@@ -85,9 +85,16 @@ namespace AutomatedLab
 
         DynamicsFull = 35184372088832,
         DynamicsFrontend = 70368744177664,
-        DynamicsBackend = 105553116266496,
-        DynamicsAdmin = 140737488355328,
-        Dynamics = DynamicsFull | DynamicsFrontend | DynamicsBackend | DynamicsAdmin
+        DynamicsBackend = 140737488355328,
+        DynamicsAdmin = 281474976710656,
+        Dynamics = DynamicsFull | DynamicsFrontend | DynamicsBackend | DynamicsAdmin,
+        RemoteDesktopGateway = 562949953421312,
+        RemoteDesktopWebAccess = 1125899906842624,
+        RemoteDesktopSessionHost = 2251799813685248,
+        RemoteDesktopConnectionBroker = 4503599627370496,
+        RemoteDesktopLicensing = 9007199254740992,
+        RemoteDesktopVirtualizationHost = 18014398509481984,
+        RDS = RemoteDesktopConnectionBroker | RemoteDesktopGateway | RemoteDesktopLicensing | RemoteDesktopSessionHost | RemoteDesktopVirtualizationHost | RemoteDesktopWebAccess
     }
 
     public enum ActiveDirectoryFunctionalLevel
