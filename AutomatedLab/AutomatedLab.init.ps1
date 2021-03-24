@@ -106,6 +106,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2013Installation 
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2015'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $false -Initialize -Validation bool -Description 'Indicates whether connectivity checks should be skipped. Certain systems like Azure DevOps build workers do not send ICMP packges and the method might always fail'
+Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'
@@ -663,6 +664,24 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'SendODRReports'
             'UseMicrosoftUpdate'
             'AcceptEndUserLicenseAgreement'
+        )
+        RemoteDesktopSessionHost = @(
+            'CollectionName'
+            'CollectionDescription'
+            'PersonalUnmanaged'
+            'AutoAssignUser'
+            'GrantAdministrativePrivilege'
+            'PooledUnmanaged'
+        )
+        RemoteDesktopGateway = @(
+            'GatewayExternalFqdn'
+            'BypassLocal'
+            'LogonMethod'
+            'UseCachedCredentials'
+            'GatewayMode'
+        )
+        RemoteDesktopLicensing = @(
+            'Mode'
         )
     }
     MandatoryRoleProperties = @{

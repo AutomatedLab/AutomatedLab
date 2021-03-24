@@ -688,7 +688,7 @@ function New-LabDefinition
     param (
         [string]$Name,
 
-        [string]$VmPath,
+        [string]$VmPath = (Get-LabConfigurationItem -Name VmPath),
 
         [int]$ReferenceDiskSizeInGB = 50,
 

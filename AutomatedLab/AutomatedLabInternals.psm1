@@ -602,48 +602,14 @@ function Get-LabInternetFile
             }
             elseif (Get-LabAzureSubscription -ErrorAction SilentlyContinue)
             {
-                $blob = $Path.Replace("$(Get-LabSourcesLocation)\",'')
                 $PSBoundParameters.Remove('PassThru') | Out-Null
                 $param = Sync-Parameter -Command (Get-Command Get-LabInternetFileInternal) -Parameters $PSBoundParameters
                 $param['Path'] = $Path.Replace((Get-LabSourcesLocation), (Get-LabSourcesLocation -Local))
-
                 $result = Get-LabInternetFileInternal @param
+
                 $fullName = Join-Path -Path $param.Path.Replace($FileName,'') -ChildPath (?? { $FileName } { $FileName } { $result.FileName })
-                $storageAccount = Get-AzStorageAccount -ResourceGroupName automatedlabsources | Where-Object StorageAccountName -like automatedlabsources?????
-                
-                $container = Split-Path -Path $blob
-                $blobName = Split-Path -Path $blob -Leaf
-                New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-                Write-PSFMessage "Created directory $($container) in labsources"
-                if ($err)
-                {
-                    $err = $null
-
-                    # Use an error variable and check the HttpStatusCode since there is no cmdlet to get or test a StorageDirectory
-                    New-AzStorageDirectory -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $container -ErrorVariable err -ErrorAction SilentlyContinue | Out-Null
-                    Write-PSFMessage "Created directory '$container' in labsources"
-                    if ($err)
-                    {
-                        if ($err[0].Exception.RequestInformation.HttpStatusCode -ne 409)
-                        {
-                            throw "An error ocurred during file upload: $($err[0].Exception.Message)"
-                        }
-                    }
-                }
-
-                $azureFile = Get-AzStorageFile -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Path $blobName -ErrorAction SilentlyContinue
-                if ($azureFile)
-                {
-                    $azureHash = $azureFile.CloudFile.Properties.ContentMD5
-                    $fileHash = (Get-FileHash -Path $fullName -Algorithm MD5).Hash
-                    Write-PSFMessage "$blobName already exists in Azure. Source hash is $fileHash and Azure hash is $azureHash"
-                }
-
-                if (-not $azureFile -or ($azureFile -and $fileHash -ne $azureHash))
-                {
-                    $null = Set-AzStorageFileContent -Share (Get-AzStorageShare -Name labsources -Context $storageAccount.Context).CloudFileShare -Source $fullName -Path $blobName -ErrorAction SilentlyContinue -Force
-                    Write-PSFMessage "Azure file $blobName successfully uploaded. Generating file hash..."
-                }
+                $pathFilter = $fullName.Replace("$(Get-LabSourcesLocation -Local)\",'')
+                Sync-LabAzureLabSources -Filter $pathFilter -NoDisplay
             }
             else
             {
