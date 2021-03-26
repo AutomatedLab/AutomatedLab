@@ -285,7 +285,7 @@ function Start-ExchangeInstallation
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/0/b/7/0b702b8b-03ab-4553-9e2c-c73bb0c8535f/ExchangeServer2016-x64-CU20.ISO'
+$exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2016DownloadUrl
 $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $cppredist642013DownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $cppredist322013DownloadLink = Get-LabConfigurationItem -Name cppredist32_2013

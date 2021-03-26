@@ -300,7 +300,7 @@ function Start-ExchangeInstallation
     }
 }
 
-$exchangeDownloadLink = 'https://download.microsoft.com/download/d/7/b/d7bcf78a-00d2-4a46-a3d2-7d506116bcd2/ExchangeServer2019-x64-CU9.ISO'
+$exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2019DownloadUrl
 $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $VC2013RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $VC2012RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2012
