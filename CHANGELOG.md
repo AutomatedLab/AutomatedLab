@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update Exchange2019 custom role to use public download.
 
 ### Enhancements
 - New roles to deploy Remote Desktop Services
