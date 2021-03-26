@@ -10,6 +10,7 @@
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
 - Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019
 - Fixing issue with Get-LabInternetFile on Azure when no LabSources have been synced yet.
+- Using the 20h2 Windows 10 images in Azure now.
 
 ## 5.33.0 (2021-03-03)
 
