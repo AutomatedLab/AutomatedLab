@@ -12,6 +12,7 @@
 - Fixing issue with Get-LabInternetFile on Azure when no LabSources have been synced yet.
 - Fixed #1049. NonExistingDnsServerAssigned works without errors.
 - Using the 20h2 Windows 10 images in Azure now.
+- Fixing upstream issue with duplicate files in SysInternals archive
 
 ## 5.33.0 (2021-03-03)
 
