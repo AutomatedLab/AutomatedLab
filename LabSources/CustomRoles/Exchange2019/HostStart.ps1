@@ -2,10 +2,7 @@
     [Parameter(Mandatory)]
     [string]$ComputerName,
 
-    [string]$OrganizationName,
-
-    [Parameter(Mandatory)]
-    [string]$IsoPath
+    [string]$OrganizationName
 )
 
 function Download-ExchangeSources
@@ -13,10 +10,9 @@ function Download-ExchangeSources
 
     Write-ScreenInfo -Message 'Download Exchange 2019 requirements' -TaskStart
 
-    #The image is no longer available publicly
-    #$downloadTargetFolder = "$labSources\ISOs"
-    #Write-ScreenInfo -Message "Adding Exchange 2019 iso from '$exchangeDownloadLink'"
-    #$script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop -FileName 'mu_exchange_server_2019-x64-cu2.iso'
+    $downloadTargetFolder = "$labSources\ISOs"
+    Write-ScreenInfo -Message "Downloading Exchange 2019 from '$exchangeDownloadLink'"
+    $script:exchangeInstallFile = Get-LabInternetFile -Uri $exchangeDownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     $downloadTargetFolder = "$labSources\SoftwarePackages"
     Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
@@ -304,6 +300,7 @@ function Start-ExchangeInstallation
     }
 }
 
+$exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2019DownloadUrl
 $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 $VC2013RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2013
 $VC2012RedristroDownloadLink = Get-LabConfigurationItem -Name cppredist64_2012
@@ -317,13 +314,6 @@ if (-not $OrganizationName)
 {
     $OrganizationName = $lab.Name + 'ExOrg'
 }
-
-if (-not (Test-Path -Path $IsoPath))
-{
-    Write-Error "The ISO file '$IsoPath' could not be found."
-    return
-}
-$exchangeInstallFile = Get-Item -Path $IsoPath
 
 Write-ScreenInfo "Intalling Exchange 2019 '$ComputerName'..." -TaskStart
 
