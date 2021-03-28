@@ -29,9 +29,9 @@ namespace AutomatedLab
             {"2019-Datacenter", "Windows Server 2019 Datacenter (Desktop Experience)" },
             {"2019-Datacenter-Core", "Windows Server 2019 Datacenter" },
             {"Datacenter-Core-1803-with-Containers-smalldisk", "Windows Server Datacenter" },
-            {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise" },
-            {"Win81-Ent-N-x64", "Windows 8.1 Enterprise" },
-            {"Windows-10-N-x64", "Windows 10 Enterprise" },
+            {"Win7-SP1-Ent-N-x64", "Windows 7 Enterprise N" },
+            {"Win81-Ent-N-x64", "Windows 8.1 Enterprise N" },
+            {"Windows-10-N-x64", "Windows 10 Enterprise N" },
             {"20h2-ent", "Windows 10 Enterprise" },
             {"20h2-pro", "Windows 10 Pro" }
             };
