@@ -554,6 +554,8 @@ $autoyastContent = @"
 <networking>
 <interfaces config:type="list">
 </interfaces>
+<net-udev config:type="list">
+</net-udev>
 <dns>
     <nameservers config:type="list">
     </nameservers>
@@ -641,26 +643,6 @@ function Get-LabFreeDiskSpace
         [Parameter(Mandatory)]
         [string]$Path
     )
-
-    $type = @'
-using System;
-using System.Runtime.InteropServices;
-
-namespace AutomatedLab
-{
-    public class DiskSpaceWin32
-    {
-        [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
-           out ulong lpFreeBytesAvailable,
-           out ulong lpTotalNumberOfBytes,
-           out ulong lpTotalNumberOfFreeBytes);
-    }
-}
-'@
-
-    Add-Type -TypeDefinition $type
 
     [uint64]$freeBytesAvailable = 0
     [uint64]$totalNumberOfBytes = 0
