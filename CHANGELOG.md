@@ -6,6 +6,7 @@
 ### Enhancements
 - New roles to deploy Remote Desktop Services
 - VM path now globally configurable
+- Replaced dynamic parameters with user-friendly TEPP Argument Completers
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.

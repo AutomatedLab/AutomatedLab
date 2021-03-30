@@ -750,9 +750,35 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
     (Get-AzSubscription -WarningAction SilentlyContinue).Name
 }
 
+Register-PSFTeppScriptblock -Name 'AutomatedLab-CustomRole' -ScriptBlock {
+(Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-AzureRoleSize' -ScriptBlock {
+    $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
+    (Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name).Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-TimeZone' -ScriptBlock {
+    [System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-RhelPackage' -ScriptBlock {
+    (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat'} | Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-SusePackage' -ScriptBlock {
+    (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE'} | Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+}
+
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
 Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
 Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter SubscriptionName -Name 'AutomatedLab-Subscription'
+Register-PSFTeppArgumentCompleter -Command Get-LabPostInstallationActivity -Parameter CustomRole -Name 'AutomatedLab-CustomRole'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter AzureRoleSize -Name 'AutomatedLab-AzureRoleSize'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter TimeZone -Name 'AutomatedLab-TimeZone'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter RhelPackage -Name 'AutomatedLab-RhelPackage'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter SusePackage -Name 'AutomatedLab-SusePackage'
 #endregion
