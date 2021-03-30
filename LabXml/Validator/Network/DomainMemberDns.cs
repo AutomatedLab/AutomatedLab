@@ -40,7 +40,7 @@ namespace AutomatedLab
                 var domainDns = domainControllers.Where(dc => dc.DomainName.Equals(machine.DomainName)).Select(dc => dc.IpV4Address);
                 var machineDns = machine.NetworkAdapters.SelectMany(n => n.Ipv4DnsServers).Where(dns => domainDns.Contains(dns.AddressAsString));
 
-                if (machineDns.Count() != 0)
+                if (machineDns.Count() == 0)
                 {
                     yield return new ValidationMessage
                     {
