@@ -1072,7 +1072,13 @@ function Export-LabDefinition
                         $roleParentDomain = $firstChildDcRole.Properties.ParentDomain
                         $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $roleParentDomain
 
-                        $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                    }
+                    elseif ($machine.Roles.Name -contains 'DC')
+                    {
+                        $parentDc = Get-LabMachineDefinition -Role RootDC,FirstChildDc | Where-Object DomainName -eq $machine.DomainName | Select-Object -First 1
+
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $parentDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
                     }
                     else #machine is domain joined and not a RootDC or FirstChildDC
                     {
