@@ -13,8 +13,10 @@ Adds Azure subscription data to lab
 ## SYNTAX
 
 ```
-Add-LabAzureSubscription [[-SubscriptionName] <String>] [[-DefaultLocationName] <String>]
- [[-DefaultStorageAccountName] <String>] [[-DefaultResourceGroupName] <String>] [-PassThru]
+Add-LabAzureSubscription [[-SubscriptionName] <String>] [-SubscriptionId <Guid>]
+ [[-DefaultLocationName] <String>] [[-DefaultStorageAccountName] <String>]
+ [[-DefaultResourceGroupName] <String>] [-AutoShutdownTime <TimeSpan>] [-AutoShutdownTimeZone <TimeZoneInfo>]
+ [-PassThru] [-AllowBastionHost] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -25,16 +27,13 @@ The location can either be pre-selected or auto-generated based on response time
 ## EXAMPLES
 
 ### Example 1
-
-
 ```powershell
 $labName = 'myAzureLab'
-$azurePublishingFile = 'C:\MyExportedProfile'
 $azureDefaultLocation = 'East US'
-Add-LabAzureSubscription -Path $azurePublishingFile -DefaultLocationName $azureDefaultLocation
+Add-LabAzureSubscription -SubscriptionName JHPaaS -DefaultLocationName $azureDefaultLocation
 ```
 
-Adds the subscription selected in the exported profile and creates a lab resource group $labname in the default location
+Adds the subscription JHPaaS and creates a lab resource group $labname in the default location
 
 ## PARAMETERS
 
@@ -108,10 +107,73 @@ Aliases:
 
 Required: False
 Position: Named
+Default value: False
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AllowBastionHost
+Indicates that a Bastion host will be deployed
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
 ```
+
+### -AutoShutdownTime
+Time that machines will be shut down
+
+```yaml
+Type: TimeSpan
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -AutoShutdownTimeZone
+Time zone for shutdown time. Defaults to current system timezone
+
+```yaml
+Type: TimeZoneInfo
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -SubscriptionId
+Subscription GUID
+
+```yaml
+Type: Guid
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### CommonParameters
+This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 

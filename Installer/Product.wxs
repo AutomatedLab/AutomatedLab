@@ -138,6 +138,7 @@
                 <File Id='Sample_Scom' Name='SCOMDistributed.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCOMDistributed.ps1' />
                 <File Id='Sample_HyperVClusterWithVmm' Name='HyperVClusterWithVmm.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\HyperVClusterWithVmm.ps1' />
                 <File Id='Sample_Dynamics' Name='Dynamics365.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Dynamics365.ps1' />
+                <File Id='Sample_RemoteDesktopServices' Name='RemoteDesktopServices.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\RemoteDesktopServices.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>

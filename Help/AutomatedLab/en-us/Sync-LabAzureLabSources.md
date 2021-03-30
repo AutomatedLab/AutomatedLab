@@ -14,7 +14,7 @@ Sync local lab sources to Azure
 
 ```
 Sync-LabAzureLabSources [-SkipIsos] [-DoNotSkipOsIsos] [[-MaxFileSizeInMb] <Int32>] [-Filter <String>]
- [<CommonParameters>]
+ [-NoDisplay] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -83,6 +83,21 @@ Wildcard filter
 
 ```yaml
 Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -NoDisplay
+Indicates that the cmdlet should not display messages on the console host
+
+```yaml
+Type: SwitchParameter
 Parameter Sets: (All)
 Aliases:
 

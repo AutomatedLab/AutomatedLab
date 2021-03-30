@@ -6,6 +6,24 @@
 
 ### Fixes
 
+## 5.34.0 (2021-03-30)
+
+### Enhancements
+- New roles to deploy Remote Desktop Services.
+- VM path now globally configurable.
+- Replaced dynamic parameters with user-friendly TEPP Argument Completers.
+- Update Exchange2019 custom role to use public download.
+
+### Fixes
+- Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
+- Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019
+- Fixing issue with Get-LabInternetFile on Azure when no LabSources have been synced yet.
+- Fixed #1049. NonExistingDnsServerAssigned works without errors.
+- Using the 20h2 Windows 10 images in Azure now.
+- Fixing upstream issue with duplicate files in SysInternals archive
+- Removing defunct parameter AzureSubscriptionName from New-LabDefinition (#1079)
+- Fixing issue with post-install scripts and DNS resolution on Linux
+
 ## 5.33.0 (2021-03-03)
 
 ### Enhancements

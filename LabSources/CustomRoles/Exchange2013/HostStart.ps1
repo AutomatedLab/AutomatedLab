@@ -425,7 +425,7 @@ Function Test-MailboxPath {
 }
 
 $ucmaDownloadLink = 'http://download.microsoft.com/download/2/C/4/2C47A5C1-A1F3-4843-B9FE-84C0032C61EC/UcmaRuntimeSetup.exe'
-$exchangeDownloadLink = 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
+$exchangeDownloadLink = Get-LabConfigurationItem -Name Exchange2013DownloadUrl
 $vcRedistDownloadLink = 'http://download.microsoft.com/download/0/5/6/056dcda9-d667-4e27-8001-8a0c6971d6b1/vcredist_x64.exe'
 $dotnetDownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 

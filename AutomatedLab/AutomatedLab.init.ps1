@@ -106,6 +106,7 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2013Installation 
 Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation -Value 90 -Initialize -Validation integer -Description 'Timeout in minutes for VS 2015'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $false -Initialize -Validation bool -Description 'Indicates whether connectivity checks should be skipped. Certain systems like Azure DevOps build workers do not send ICMP packges and the method might always fail'
+Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'
@@ -295,6 +296,11 @@ Set-PSFConfig -Module AutomatedLab -Name SqlClrType2019 -Value "https://download
 Set-PSFConfig -Module AutomatedLab -Name SqlSmo2016 -Value "https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/SharedManagementObjects.msi" -Initialize -Validation string
 Set-PSFConfig -Module AutomatedLab -Name Dynamics365Uri -Value 'https://download.microsoft.com/download/B/D/0/BD0FA814-9885-422A-BA0E-54CBB98C8A33/CRM9.0-Server-ENU-amd64.exe' -Initialize -Validation String
 #Set-PSFConfig -Module AutomatedLab -Name -Uri 'https://download.microsoft.com/download/6/4/5/645B2661-ABE3-41A4-BC2D-34D9A10DD303/ENU/x64/msodbcsql.msi'
+
+# Exchange Server
+Set-PSFConfig -Module AutomatedLab -Name Exchange2013DownloadUrl -Value 'https://download.microsoft.com/download/7/F/D/7FDCC96C-26C0-4D49-B5DB-5A8B36935903/Exchange2013-x64-cu23.exe'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2016DownloadUrl -Value 'https://download.microsoft.com/download/0/b/7/0b702b8b-03ab-4553-9e2c-c73bb0c8535f/ExchangeServer2016-x64-CU20.ISO'
+Set-PSFConfig -Module AutomatedLab -Name Exchange2019DownloadUrl -Value 'https://download.microsoft.com/download/d/7/b/d7bcf78a-00d2-4a46-a3d2-7d506116bcd2/ExchangeServer2019-x64-CU9.ISO'
 
 # Validation
 Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
@@ -614,6 +620,74 @@ Set-PSFConfig -Module AutomatedLab -Name ValidationSettings -Value @{
             'PrivReportingGroup'
             'LicenseKey'
         )
+        ScomManagement = @(
+            'ManagementGroupName'
+            'SqlServerInstance'
+            'SqlInstancePort'
+            'DatabaseName'
+            'DwSqlServerInstance'
+            'InstallLocation'
+            'DwSqlInstancePort'
+            'DwDatabaseName'
+            'ActionAccountUser'
+            'ActionAccountPassword'
+            'DASAccountUser'
+            'DASAccountPassword'
+            'DataReaderUser'
+            'DataReaderPassword'
+            'DataWriterUser'
+            'DataWriterPassword'
+            'EnableErrorReporting'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+            'ProductKey'
+        )
+    
+        ScomConsole = @(
+            'EnableErrorReporting'
+            'InstallLocation'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
+    
+        ScomWebConsole = @(
+            'ManagementServer'
+            'WebSiteName'
+            'WebConsoleAuthorizationMode'
+            'SendCEIPReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
+    
+        ScomReporting = @(
+            'ManagementServer'
+            'SRSInstance'
+            'DataReaderUser'
+            'DataReaderPassword'
+            'SendODRReports'
+            'UseMicrosoftUpdate'
+            'AcceptEndUserLicenseAgreement'
+        )
+        RemoteDesktopSessionHost = @(
+            'CollectionName'
+            'CollectionDescription'
+            'PersonalUnmanaged'
+            'AutoAssignUser'
+            'GrantAdministrativePrivilege'
+            'PooledUnmanaged'
+        )
+        RemoteDesktopGateway = @(
+            'GatewayExternalFqdn'
+            'BypassLocal'
+            'LogonMethod'
+            'UseCachedCredentials'
+            'GatewayMode'
+        )
+        RemoteDesktopLicensing = @(
+            'Mode'
+        )
     }
     MandatoryRoleProperties = @{
         ADFSProxy = @(
@@ -676,9 +750,35 @@ Register-PSFTeppScriptblock -Name 'AutomatedLab-Subscription' -ScriptBlock {
     (Get-AzSubscription -WarningAction SilentlyContinue).Name
 }
 
+Register-PSFTeppScriptblock -Name 'AutomatedLab-CustomRole' -ScriptBlock {
+(Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-AzureRoleSize' -ScriptBlock {
+    $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
+    (Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name).Name
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-TimeZone' -ScriptBlock {
+    [System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-RhelPackage' -ScriptBlock {
+    (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'RedHat'} | Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+}
+
+Register-PSFTeppScriptblock -Name 'AutomatedLab-SusePackage' -ScriptBlock {
+    (Get-LabAvailableOperatingSystem -UseOnlyCache -ErrorAction SilentlyContinue | Where-Object {$_.OperatingSystemType -eq 'Linux' -and $_.LinuxType -eq 'SuSE'} | Sort-Object Version | Select-Object -Last 1).LinuxPackageGroup
+}
+
 Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter Roles -Name 'AutomatedLab-Roles'
 Register-PSFTeppArgumentCompleter -Command Get-Lab, Remove-Lab, Import-Lab, Import-LabDefinition -Parameter Name -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Connect-Lab -Parameter SourceLab, DestinationLab -Name 'AutomatedLab-Labs'
 Register-PSFTeppArgumentCompleter -Command Send-ALNotification -Parameter Provider -Name "AutomatedLab-NotificationProviders"
 Register-PSFTeppArgumentCompleter -Command Add-LabAzureSubscription -Parameter SubscriptionName -Name 'AutomatedLab-Subscription'
+Register-PSFTeppArgumentCompleter -Command Get-LabPostInstallationActivity -Parameter CustomRole -Name 'AutomatedLab-CustomRole'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter AzureRoleSize -Name 'AutomatedLab-AzureRoleSize'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter TimeZone -Name 'AutomatedLab-TimeZone'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter RhelPackage -Name 'AutomatedLab-RhelPackage'
+Register-PSFTeppArgumentCompleter -Command Add-LabMachineDefinition -Parameter SusePackage -Name 'AutomatedLab-SusePackage'
 #endregion

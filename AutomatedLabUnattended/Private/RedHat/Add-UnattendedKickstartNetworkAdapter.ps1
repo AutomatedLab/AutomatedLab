@@ -15,7 +15,7 @@
 
     if (-not $adapterAddress)
     {
-        $configurationItem = "network --bootproto=dhcp"
+        $configurationItem = "network --bootproto=dhcp --device={0}" -f $linuxInterfaceName
     }
     else
     {
@@ -27,7 +27,7 @@
         $configurationItem += ' --gateway={0}' -f ($Gateways.AddressAsString -join ',')
     }
 
-    $configurationItem += if ($DnsServers)
+    $configurationItem += if ($DnsServers | Where-Object AddressAsString -ne '0.0.0.0')
     {
         ' --nameserver={0}' -f ($DnsServers.AddressAsString -join ',')
     }

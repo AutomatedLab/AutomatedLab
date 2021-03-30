@@ -15,19 +15,20 @@ Create PowerShell sessions
 ### ByName
 ```
 New-LabPSSession [-ComputerName] <String[]> [-UseLocalCredential] [-DoNotUseCredSsp]
- [-Credential <PSCredential>] [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [<CommonParameters>]
+ [-Credential <PSCredential>] [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [-IgnoreAzureLabSources]
+ [<CommonParameters>]
 ```
 
 ### ByMachine
 ```
 New-LabPSSession -Machine <Machine[]> [-UseLocalCredential] [-DoNotUseCredSsp] [-Credential <PSCredential>]
- [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [<CommonParameters>]
+ [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ### BySession
 ```
 New-LabPSSession -Session <PSSession> [-UseLocalCredential] [-DoNotUseCredSsp] [-Credential <PSCredential>]
- [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [<CommonParameters>]
+ [-Retries <Int32>] [-Interval <Int32>] [-UseSSL] [-IgnoreAzureLabSources] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -174,6 +175,21 @@ Accept wildcard characters: False
 
 ### -DoNotUseCredSsp
 Indicates that CredSSP should not be used
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -IgnoreAzureLabSources
+Indicates that Invoke-LabCommand does not need to map LabSources share
 
 ```yaml
 Type: SwitchParameter

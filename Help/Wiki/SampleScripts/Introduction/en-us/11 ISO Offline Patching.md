@@ -23,7 +23,7 @@ Update-LabIsoImage -SourceIsoImagePath $labSources\ISOs\en_windows_server_2012_r
 -UpdateFolderPath $labSources\OSUpdates\2012R2 `
 -SourceImageIndex 4
 
-The script below does is all automatically. It looks for the latest ISO that provides “Windows Server 2012 R2 Datacenter (Server with a GUI)” and uses the correct index.
+The script below does is all automatically. It looks for the latest ISO that provides 'Windows Server 2012 R2 Datacenter (Server with a GUI)' and uses the correct index.
 #>
 
 $os = Get-LabAvailableOperatingSystem -Path $labSources |

@@ -13,7 +13,7 @@ Test if the autologon settings are correct
 ## SYNTAX
 
 ```
-Test-LabAutoLogon [[-ComputerName] <String[]>] [<CommonParameters>]
+Test-LabAutoLogon [-ComputerName] <String[]> [-TestInteractiveLogonSession] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -38,8 +38,24 @@ Type: String[]
 Parameter Sets: (All)
 Aliases:
 
-Required: False
+Required: True
 Position: 0
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -TestInteractiveLogonSession
+Indicates that the cmdlet should test if there is an interactive logon session.
+Useful to test before Installations that require an interactive context.
+
+```yaml
+Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
 Default value: None
 Accept pipeline input: False
 Accept wildcard characters: False
@@ -51,7 +67,6 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

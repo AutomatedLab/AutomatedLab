@@ -85,17 +85,18 @@ GO
     $onPremisesMachines += $machines | Where-Object {$_.HostType -eq 'Azure' -and (($_.Roles |
             Where-Object Name -like 'SQL*').Properties.Keys |
     Where-Object {$_ -ne 'InstallSampleDatabase'})}
+
+    $downloadTargetFolder = "$labSources\SoftwarePackages"
+    $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
     Write-ScreenInfo -Message "Downloading .net Framework 4.8 from '$dotnet48DownloadLink'"
     $dotnet48InstallFile = Get-LabInternetFile -Uri $dotnet48DownloadLink -Path $downloadTargetFolder -PassThru -ErrorAction Stop
 
     if ($onPremisesMachines)
     {
-        $downloadTargetFolder = "$labSources\SoftwarePackages"
         $cppRedist64_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2017) -Path $downloadTargetFolder -FileName vcredist_x64_2017.exe -PassThru
         $cppredist32_2017 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2017) -Path $downloadTargetFolder -FileName vcredist_x86_2017.exe -PassThru
         $cppRedist64_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist64_2015) -Path $downloadTargetFolder -FileName vcredist_x64_2015.exe -PassThru
         $cppredist32_2015 = Get-LabInternetFile -Uri (Get-LabConfigurationItem -Name cppredist32_2015) -Path $downloadTargetFolder -FileName vcredist_x86_2015.exe -PassThru
-        $dotnet48DownloadLink = Get-LabConfigurationItem -Name dotnet48DownloadLink
 
         $parallelInstalls = 4
         Write-ScreenInfo -Type Verbose -Message "Parallel installs: $parallelInstalls"

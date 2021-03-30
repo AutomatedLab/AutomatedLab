@@ -14,17 +14,20 @@ Gets a lab VM object
 
 ### ByName (Default)
 ```
-Get-LabVM [[-ComputerName] <String[]>] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+Get-LabVM [[-ComputerName] <String[]>] [-Filter <ScriptBlock>] [-IncludeLinux] [-IsRunning]
+ [-SkipConnectionInfo] [<CommonParameters>]
 ```
 
 ### ByRole
 ```
-Get-LabVM -Role <Roles> [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+Get-LabVM -Role <Roles> [-Filter <ScriptBlock>] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo]
+ [<CommonParameters>]
 ```
 
 ### All
 ```
-Get-LabVM [-All] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo] [<CommonParameters>]
+Get-LabVM [-All] [-Filter <ScriptBlock>] [-IncludeLinux] [-IsRunning] [-SkipConnectionInfo]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -35,8 +38,6 @@ Tries to retrieve Azure connection info for Azure labs
 ## EXAMPLES
 
 ### All machines
-
-
 ```powershell
 Get-LabVm -All
 ```
@@ -51,8 +52,6 @@ ChildDC1   child.contoso.com 192.168.41.20 Windows Server 2012 R2 Datacenter (Se
 ChildDC2   child.contoso.com 192.168.41.21 Windows Server 2012 R2 Datacenter (Server with a GUI) (6.3)
 
 ### Get all DCs
-
-
 ```powershell
 Get-LabVm -Role DC
 ```
@@ -146,6 +145,21 @@ Skip generating the Azure connection info to speed up things
 
 ```yaml
 Type: SwitchParameter
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Filter
+Scriptblock to filter VMs, think Where-Object
+
+```yaml
+Type: ScriptBlock
 Parameter Sets: (All)
 Aliases:
 

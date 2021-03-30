@@ -127,9 +127,10 @@ exit
 
         Write-PSFMessage 'Applying image to the volume...'
 
-        $wimPath = "$isoDrive\Sources\install.wim"
+        $installFilePath = Get-Item -Path "$isoDrive\Sources\install.*" | Where-Object Name -Match '.*\.(esd|wim)'
+
         $job = Start-Job -ScriptBlock {
-            $output = Dism.exe /English /apply-Image /ImageFile:$using:wimPath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\
+            $output = Dism.exe /English /apply-Image /ImageFile:$using:installFilePath /index:$using:imageIndex /ApplyDir:$using:vhdWindowsVolume\
             New-Object PSObject -Property @{
                 Outout = $output
                 LastExitCode = $LASTEXITCODE

@@ -14,12 +14,12 @@ Get RDP connection file
 
 ### ByName
 ```
-Get-LabVMRdpFile -ComputerName <String[]> [-UseLocalCredential] [<CommonParameters>]
+Get-LabVMRdpFile -ComputerName <String[]> [-UseLocalCredential] [-Path <String>] [<CommonParameters>]
 ```
 
 ### All
 ```
-Get-LabVMRdpFile [-UseLocalCredential] [-All] [<CommonParameters>]
+Get-LabVMRdpFile [-UseLocalCredential] [-All] [-Path <String>] [<CommonParameters>]
 ```
 
 ## DESCRIPTION
@@ -73,6 +73,21 @@ Create RDP files for all lab VMs
 ```yaml
 Type: SwitchParameter
 Parameter Sets: All
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
+### -Path
+Output path for RDP files
+
+```yaml
+Type: String
+Parameter Sets: (All)
 Aliases:
 
 Required: False

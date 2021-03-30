@@ -205,6 +205,26 @@
 
     if ($jobs) { Wait-LWLabJob -Job $jobs }
 
+    # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
+    Start-Sleep -Seconds 30
+    Remove-LabPSSession -ComputerName $scomManagementServer
+    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $scomManagementServer {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
+    if (-not $cmdAvailable)
+    {
+        Start-Sleep -Seconds 30
+        Remove-LabPSSession -ComputerName $scomManagementServer
+    }
+
+    Invoke-LabCommand -ComputerName $scomManagementServer -ActivityName 'Waiting for SCOM Management to get in gear' -ScriptBlock {
+        $start = Get-Date
+        do
+        {
+            Start-Sleep -Seconds 10
+            if ((Get-Date).Subtract($start) -gt '00:05:00') { throw 'SCOM startup not finished after 5 minutes' }
+        }
+        until (Get-ScomManagementServer -ErrorAction SilentlyContinue)
+    }
+
     # Licensing
     foreach ($vm in $scomManagementServer)
     {
@@ -351,6 +371,9 @@
 
         $CommandlineArgumentsReportServer = $iniReport.GetEnumerator() | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
         $setupCommandlineReportServer = "/install /silent /components:OMReporting $commandlineArgumentsReportServer"
+        Invoke-LabCommand -ComputerName $scomReportingServer -ScriptBlock {
+            Get-Service -Name SQLSERVERAGENT* | Set-Service -StartupType Automatic -Status Running
+        } -NoDisplay
 
         Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineReportServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
     }

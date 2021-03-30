@@ -12,10 +12,10 @@
     )
 
     $dismPattern = 'Index : (?<Index>\d{1,2})(\r)?\nName : (?<Name>.+)'
-    $standardImagePath = "$DriveLetter`:\Sources\Install.wim"
+    $standardImagePath = Get-Item -Path "$DriveLetter`:\Sources\install.*" -ErrorAction SilentlyContinue | Where-Object Name -Match '.*\.(esd|wim)'
     $doNotSkipNonNonEnglishIso = Get-LabConfigurationItem -Name DoNotSkipNonNonEnglishIso
     
-    if (Test-Path -Path $standardImagePath)
+    if ($standardImagePath -and (Test-Path -Path $standardImagePath))
     {
         $dismOutput = Dism.exe /English /Get-WimInfo /WimFile:$standardImagePath
         $dismOutput = $dismOutput -join "`n"

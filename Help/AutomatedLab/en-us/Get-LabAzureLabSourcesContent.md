@@ -13,11 +13,13 @@ Get the file content of the Azure lab sources file share
 ## SYNTAX
 
 ```
-Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-File] [-Directory] [<CommonParameters>]
+Get-LabAzureLabSourcesContent [[-RegexFilter] <String>] [-Path <String>] [-File] [-Directory]
+ [<CommonParameters>]
 ```
 
 ## DESCRIPTION
-Get the file content of the Azure lab sources file share. Capable of Regex filtering
+Get the file content of the Azure lab sources file share.
+Capable of Regex filtering
 
 ## EXAMPLES
 
@@ -75,13 +77,27 @@ Accept pipeline input: False
 Accept wildcard characters: False
 ```
 
+### -Path
+The path to look in, e.g. $labsources - speeds up this cmdlet significantly.
+
+```yaml
+Type: String
+Parameter Sets: (All)
+Aliases:
+
+Required: False
+Position: Named
+Default value: None
+Accept pipeline input: False
+Accept wildcard characters: False
+```
+
 ### CommonParameters
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
 
 ### None
-
 ## OUTPUTS
 
 ### System.Object

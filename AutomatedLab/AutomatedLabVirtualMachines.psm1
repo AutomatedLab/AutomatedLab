@@ -325,7 +325,7 @@ function Start-LabVM
             Start-LWVMWareVM -ComputerName $vmwareVms -DelayBetweenComputers $DelayBetweenComputers
         }
 
-        if ($Wait)
+        if ($Wait -and $vmsCopy)
         {
             Wait-LabVM -ComputerName ($vmsCopy) -Timeout $TimeoutInMinutes -DoNotUseCredSsp:$DoNotUseCredSsp -ProgressIndicator $ProgressIndicator -NoNewLine
         }
