@@ -1,12 +1,18 @@
 # Changelog
 
 ## Unreleased
-- Update Exchange2019 custom role to use public download.
 
 ### Enhancements
-- New roles to deploy Remote Desktop Services
-- VM path now globally configurable
-- Replaced dynamic parameters with user-friendly TEPP Argument Completers
+
+### Fixes
+
+## 5.34.0 (2021-03-30)
+
+### Enhancements
+- New roles to deploy Remote Desktop Services.
+- VM path now globally configurable.
+- Replaced dynamic parameters with user-friendly TEPP Argument Completers.
+- Update Exchange2019 custom role to use public download.
 
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
