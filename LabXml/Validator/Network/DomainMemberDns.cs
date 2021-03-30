@@ -35,7 +35,7 @@ namespace AutomatedLab
                 }
             }
 
-            foreach (var machine in lab.Machines.Where(m => m.Roles.Select(r => r.Name).Where(r => (AutomatedLab.Roles.ADDS & r) == r).Count() == 0))
+            foreach (var machine in lab.Machines.Where(m => !string.IsNullOrWhiteSpace(m.DomainName) && m.Roles.Select(r => r.Name).Where(r => (AutomatedLab.Roles.ADDS & r) == r).Count() == 0))
             {
                 var domainDns = domainControllers.Where(dc => dc.DomainName.Equals(machine.DomainName)).Select(dc => dc.IpV4Address);
                 var machineDns = machine.NetworkAdapters.SelectMany(n => n.Ipv4DnsServers).Where(dns => domainDns.Contains(dns.AddressAsString));
