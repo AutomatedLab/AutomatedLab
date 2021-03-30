@@ -18,6 +18,7 @@
 
     $networking = $script:un.SelectSingleNode('/un:profile/un:networking', $script:nsm)
     $interfaceList = $script:un.SelectSingleNode('/un:profile/un:networking/un:interfaces', $script:nsm)
+    $udevList = $script:un.SelectSingleNode('/un:profile/un:networking/un:net-udev', $script:nsm)
     $dns = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns', $script:nsm)
     $nameServers = $script:un.SelectSingleNode('/un:profile/un:networking/un:dns/un:nameservers', $script:nsm)
     $routes = $script:un.SelectSingleNode('/un:profile/un:networking/un:routing/un:routes', $script:nsm)
@@ -43,7 +44,7 @@
         if ($DNSSuffixSearchOrder)
         {
             $searchlist = $script:un.CreateElement('searchlist', $script:nsm.LookupNamespace('un'))
-            $nsAttr = $script:un.CreateAttribute('config','type', $script:nsm.LookupNamespace('config'))
+            $nsAttr = $script:un.CreateAttribute('config', 'type', $script:nsm.LookupNamespace('config'))
             $nsAttr.InnerText = 'list'
             $null = $searchlist.Attributes.Append($nsAttr)
 
@@ -62,32 +63,35 @@
 
     $interface = 'eth0'
     $lastInterface = $script:un.SelectNodes('/un:profile/un:networking/un:interfaces/un:interface/un:device', $script:nsm).InnerText | Sort-Object | Select-Object -Last 1
-    if ($lastInterface) {$interface = 'eth{0}' -f ([int]$lastInterface.Substring($lastInterface.Length - 1, 1) + 1)}
+    if ($lastInterface) { $interface = 'eth{0}' -f ([int]$lastInterface.Substring($lastInterface.Length - 1, 1) + 1) }
 
     $interfaceNode = $script:un.CreateElement('interface', $script:nsm.LookupNamespace('un'))
     $bootproto = $script:un.CreateElement('bootproto', $script:nsm.LookupNamespace('un'))
-    $bootproto.InnerText = 'static'
+    $bootproto.InnerText = if ($IpAddresses.Count -eq 0) { 'dhcp' } else { 'static' }
     $deviceNode = $script:un.CreateElement('device', $script:nsm.LookupNamespace('un'))
     $deviceNode.InnerText = $interface
     $firewallnode = $script:un.CreateElement('firewall', $script:nsm.LookupNamespace('un'))
     $firewallnode.InnerText = 'no'
 
-    $ipaddr = $script:un.CreateElement('ipaddr', $script:nsm.LookupNamespace('un'))
-    $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
-    $network = $script:un.CreateElement('network', $script:nsm.LookupNamespace('un'))
+    if ($IpAddresses.Count -gt 0)
+    {
+        $ipaddr = $script:un.CreateElement('ipaddr', $script:nsm.LookupNamespace('un'))
+        $netmask = $script:un.CreateElement('netmask', $script:nsm.LookupNamespace('un'))
+        $network = $script:un.CreateElement('network', $script:nsm.LookupNamespace('un'))
+        $ipaddr.InnerText = $IpAddresses[0].IpAddress.AddressAsString
+        $netmask.InnerText = $IpAddresses[0].Netmask.AddressAsString
+        $network.InnerText = $IpAddresses[0].Network.AddressAsString
+        $null = $interfaceNode.AppendChild($ipaddr)
+        $null = $interfaceNode.AppendChild($netmask)
+        $null = $interfaceNode.AppendChild($network)
+    }
     $startmode = $script:un.CreateElement('startmode', $script:nsm.LookupNamespace('un'))
 
-    $ipaddr.InnerText = $IpAddresses[0].IpAddress.AddressAsString
-    $netmask.InnerText = $IpAddresses[0].Netmask.AddressAsString
-    $network.InnerText = $IpAddresses[0].Network.AddressAsString
     $startmode.InnerText = 'auto'
 
     $null = $interfaceNode.AppendChild($bootproto)
     $null = $interfaceNode.AppendChild($deviceNode)
     $null = $interfaceNode.AppendChild($firewallnode)
-    $null = $interfaceNode.AppendChild($ipaddr)
-    $null = $interfaceNode.AppendChild($netmask)
-    $null = $interfaceNode.AppendChild($network)
     $null = $interfaceNode.AppendChild($startmode)
 
     if ($IpAddresses.Count -gt 1)
@@ -115,6 +119,18 @@
     }
 
     $null = $interfaceList.AppendChild($interfaceNode)
+
+    $udevRuleNode = $script:un.CreateElement('rule', $script:nsm.LookupNamespace('un'))
+    $udevRuleNameNode = $script:un.CreateElement('name', $script:nsm.LookupNamespace('un'))
+    $udevRuleNameNode.InnerText = $interface
+    $udevRuleRuleNode = $script:un.CreateElement('rule', $script:nsm.LookupNamespace('un'))
+    $udevRuleRuleNode.InnerText = 'ATTR{address}' # No joke. They really mean it to be written this way
+    $udevRuleValueNode = $script:un.CreateElement('value', $script:nsm.LookupNamespace('un'))
+    $udevRuleValueNode.InnerText = ($Interfacename -replace '-', ':').ToUpper()
+    $null = $udevRuleNode.AppendChild($udevRuleNameNode)
+    $null = $udevRuleNode.AppendChild($udevRuleRuleNode)
+    $null = $udevRuleNode.AppendChild($udevRuleValueNode)
+    $null = $udevList.AppendChild($udevRuleNode)
 
     if ($Gateways)
     {
