@@ -15,6 +15,7 @@
 - Using the 20h2 Windows 10 images in Azure now.
 - Fixing upstream issue with duplicate files in SysInternals archive
 - Removing defunct parameter AzureSubscriptionName from New-LabDefinition (#1079)
+- Adding validator for DNS settings on domain members and domain controllers (#3)
 
 ## 5.33.0 (2021-03-03)
 
