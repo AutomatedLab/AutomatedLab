@@ -7,6 +7,9 @@
         [string]
         $Name,
 
+        [string[]]
+        $DependsOn,
+
         [ValidateSet('Sample','Snippet', 'CustomRole')]
         [string]
         $Type,
@@ -15,11 +18,40 @@
         $Tag,
 
         [scriptblock]
-        $ScriptBlock
+        $ScriptBlock,
+
+        [switch]
+        $NoExport
     )
 
     process
     {
+        $schnippet = Get-LabSnippet -Name $Name
+        if (-not $schnippet)
+        {
+            Write-PSFMessage -Level Warning -Message "Snippet $Name not found"
+            break
+        }
 
+        if (-not $Tag)
+        {
+            $Tag = $schnippet.Tag
+        }
+
+        if (-not $Description)
+        {
+            $Description = $schnippet.Description
+        }
+
+        if (-not $ScriptBlock)
+        {
+            $ScriptBlock = $schnippet.ScriptBlock
+        }
+
+        Set-PSFScriptblock -Name $Name -Description $Description -Tag $Tag -Scriptblock $ScriptBlock -Global
+        
+        if ($NoExport) { return }
+
+        Export-LabSnippet -Name $Name -DependsOn $DependsOn
     }
 }
