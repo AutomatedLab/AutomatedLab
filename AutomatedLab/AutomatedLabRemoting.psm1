@@ -456,6 +456,9 @@ function Invoke-LabCommand
         [switch]$PostInstallationActivity,
 
         [Parameter(ParameterSetName = 'PostInstallationActivity')]
+        [switch]$PreInstallationActivity,
+
+        [Parameter(ParameterSetName = 'PostInstallationActivity')]
         [string[]]$CustomRoleName,
 
         [object[]]$ArgumentList,
@@ -545,7 +548,16 @@ function Invoke-LabCommand
         }
     }
 
-    if ($PostInstallationActivity)
+    if ($PreInstallationActivity)
+    {
+        $machines = Get-LabVM -ComputerName $ComputerName | Where-Object { $_.PreInstallationActivity -and -not $_.SkipDeployment }
+        if (-not $machines)
+        {
+            Write-PSFMessage 'There are no machine with PreInstallationActivity defined, exiting...'
+            return
+        }
+    }
+    elseif ($PostInstallationActivity)
     {
         $machines = Get-LabVM -ComputerName $ComputerName | Where-Object { $_.PostInstallationActivity -and -not $_.SkipDeployment }
         if (-not $machines)
@@ -570,15 +582,16 @@ function Invoke-LabCommand
         Start-LabVM -ComputerName $machines -Wait
     }
 
-    if ($PostInstallationActivity)
+    if ($PostInstallationActivity -or $PreInstallationActivity)
     {
-        Write-ScreenInfo -Message 'Performing post-installations tasks defined for each machine' -TaskStart -OverrideNoDisplay
+        Write-ScreenInfo -Message 'Performing pre/post-installation tasks defined for each machine' -TaskStart -OverrideNoDisplay
 
         $results = @()
 
         foreach ($machine in $machines)
         {
-            foreach ($item in $machine.PostInstallationActivity)
+            $activities = if ($PreInstallationActivity) { $machine.PreInstallationActivity } elseif ($PostInstallationActivity) { $machine.PostInstallationActivity }
+            foreach ($item in $activities)
             {
                 if ($item.RoleName -notin $CustomRoleName -and $CustomRoleName.Count -gt 0)
                 {

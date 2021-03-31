@@ -1879,7 +1879,9 @@ function Add-LabMachineDefinition
         [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name) })]
         [string]$UserLocale,
 
-        [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
+        [AutomatedLab.InstallationActivity[]]$PostInstallationActivity,
+
+        [AutomatedLab.InstallationActivity[]]$PreInstallationActivity,
 
         [string]$ToolsPath,
 
@@ -2795,6 +2797,7 @@ function Add-LabMachineDefinition
 
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
+        $machine.PreInstallationActivity = $PreInstallationActivity
 
         if ($HypervProperties)
         {
@@ -3010,7 +3013,7 @@ function Get-LabMachineRoleDefinition
 #endregion Get-LabMachineRoleDefinition
 
 #region Get-LabPostInstallationActivity
-function Get-LabPostInstallationActivity
+function Get-LabInstallationActivity
 {
     [CmdletBinding()]
     param (
@@ -3046,7 +3049,7 @@ function Get-LabPostInstallationActivity
     begin
     {
         Write-LogFunctionEntry
-        $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+        $activity = New-Object -TypeName AutomatedLab.InstallationActivity
         if (-not $Properties)
         {
             $Properties = @{ } 
@@ -3726,3 +3729,5 @@ function Get-OnlineAdapterHardwareAddress
     }
 }
 #endregion Internal
+
+if (-not (Test-Path "alias:Get-LabPostInstallationActivity")) { New-Alias -Name Get-LabPostInstallationActivity -Value Get-LabInstallationActivity -Description "Alias so that scripts keep working" }

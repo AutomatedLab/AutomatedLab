@@ -5,7 +5,7 @@ using System.Xml.Serialization;
 namespace AutomatedLab
 {
     [Serializable]
-    public class PostInstallationActivity
+    public class InstallationActivity
     {
         private Path dependencyFolder;
         private string scriptFileName;
@@ -94,7 +94,7 @@ namespace AutomatedLab
             set { asJob = value; }
         }
 
-        public PostInstallationActivity()
+        public InstallationActivity()
         {
             properties = new SerializableDictionary<string, List<object>>();
         }
