@@ -704,7 +704,7 @@ function Invoke-LabCommand
             }
         }
 
-        Write-ScreenInfo -Message 'Post-installations done' -TaskEnd -OverrideNoDisplay
+        Write-ScreenInfo -Message 'Pre/Post-installations done' -TaskEnd -OverrideNoDisplay
     }
     else
     {

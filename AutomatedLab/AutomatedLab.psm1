@@ -962,6 +962,12 @@ function Install-Lab
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+
+    if ((Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}))
+    {
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName (Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+    }
     
     if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
     {
