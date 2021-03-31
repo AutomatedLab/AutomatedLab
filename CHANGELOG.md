@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- New `*-LabSnippet` cmdlets!
 
 ### Fixes
 
