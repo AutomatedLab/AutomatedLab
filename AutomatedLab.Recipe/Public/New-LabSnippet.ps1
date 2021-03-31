@@ -44,6 +44,11 @@
 
     foreach ($dependency in $DependsOn)
     {
+        if ($Tag -notcontains "DependsOn_$($dependency)")
+        {
+            $Tag += "DependsOn_$($dependency)"
+        }
+
         if (Get-LabSnippet -Name $dependency) { continue }
         Write-PSFMessage -Level Warning -Message "Snippet dependency $dependency has not been registered."
     }

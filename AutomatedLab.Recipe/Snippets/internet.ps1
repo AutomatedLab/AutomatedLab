@@ -1,5 +1,4 @@
 ﻿$snippet = {
-    [CmdletBinding(DefaultParameterSetName = 'Defaults')]
     param
     (
         [Parameter(Mandatory, ParameterSetName = 'NoDefaultSwitch')]

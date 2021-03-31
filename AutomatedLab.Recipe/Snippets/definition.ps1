@@ -6,6 +6,14 @@
         [string]
         $Name,
 
+        [Parameter(Mandatory)]
+        [string]
+        $DefaultVirtualizationEngine,
+
+        [Parameter(Mandatory)]
+        [AutomatedLab.IpNetwork]
+        $MachineNetwork,
+
         [string]
         $VmPath,
 
@@ -23,10 +31,6 @@
 
         [switch]
         $UseStaticMemory,
-
-        [Parameter(Mandatory)]
-        [string]
-        $DefaultVirtualizationEngine,
 
         [string]
         $SubscriptionName,
@@ -51,10 +55,6 @@
 
         [pscredential]
         $AdminCredential,
-
-        [Parameter(Mandatory)]
-        [AutomatedLab.IpNetwork]
-        $MachineNetwork,
 
         [ValidateLength(1,10)]
         [string]

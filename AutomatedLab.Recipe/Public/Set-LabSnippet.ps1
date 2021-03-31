@@ -38,6 +38,13 @@
             $Tag = $schnippet.Tag
         }
 
+        foreach ($dependency in $DependsOn)
+        {
+            if ($Tag -contains "DependsOn_$($dependency)") { Continue }
+
+            $Tag += "DependsOn_$($dependency)"
+        }
+
         if (-not $Description)
         {
             $Description = $schnippet.Description
