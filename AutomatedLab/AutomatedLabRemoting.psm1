@@ -632,6 +632,28 @@ function Invoke-LabCommand
                 }
                 $param.Add('Session', $session)
 
+                foreach ($serVariable in ($item.SerializedVariables | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue))
+                {
+                    $existingVariable = Get-Variable -Name $serVariable.Name -ErrorAction SilentlyContinue
+                    if ($existingVariable.Value -ne $serVariable.Value)
+                    {
+                        Set-Variable -Name $serVariable.Name -Value $serVariable.Value -Force
+                    }
+
+                    Add-VariableToPSSession -Session $session -PSVariable (Get-Variable -Name $serVariable.Name)
+                }
+
+                foreach ($serFunction in ($item.SerializedFunctions | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue))
+                {
+                    $existingFunction = Get-Command -Name $serFunction.Name -ErrorAction SilentlyContinue
+                    if ($existingFunction.ScriptBlock -eq $serFunction.ScriptBlock)
+                    {
+                        Set-Item -Path "function:\$($serFunction.Name)" -Value $serFunction.ScriptBlock -Force
+                    }
+
+                    Add-FunctionToPSSession -Session $session -FunctionInfo (Get-Command -Name $serFunction.Name)
+                }
+
                 if ($item.DependencyFolder.Value) { $param.Add('DependencyFolderPath', $item.DependencyFolder.Value) }
                 if ($item.ScriptFileName) { $param.Add('ScriptFileName',$item.ScriptFileName) }
                 if ($item.ScriptFilePath) { $param.Add('ScriptFilePath', $item.ScriptFilePath) }
@@ -648,10 +670,10 @@ function Invoke-LabCommand
                 }
 
                 $scriptFullName = Join-Path -Path $param.DependencyFolderPath -ChildPath $param.ScriptFileName
-                if ($item.Properties.Count -and (Test-Path -Path $scriptFullName))
+                if ($item.Properties -and (Test-Path -Path $scriptFullName))
                 {
                     $script = Get-Command -Name $scriptFullName
-                    $temp = Sync-Parameter -Command $script -Parameters $item.Properties
+                    $temp = Sync-Parameter -Command $script -Parameters ($item.SerializedProperties | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue)
 
                     Add-VariableToPSSession -Session $session -PSVariable (Get-Variable -Name temp)
                     $param.ParameterVariableName = 'temp'
@@ -679,7 +701,7 @@ function Invoke-LabCommand
                     if (Test-Path -Path $hostEndPath)
                     {
                         $hostEndScript = Get-Command -Name $hostEndPath
-                        $hostEndParam = Sync-Parameter -Command $hostEndScript -Parameters $item.Properties
+                        $hostEndParam = Sync-Parameter -Command $hostEndScript -Parameters ($item.SerializedProperties | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue)
                         if ($hostEndScript.Parameters.ContainsKey('ComputerName'))
                         {
                             $hostEndParam['ComputerName'] = $machine.Name

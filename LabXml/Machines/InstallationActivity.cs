@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Management.Automation;
 using System.Xml.Serialization;
 
 namespace AutomatedLab
@@ -13,9 +14,17 @@ namespace AutomatedLab
         private bool keepFolder;
         private Path isoImage;
         private bool isCustomRole;
-        private SerializableDictionary<string, List<object>> properties;
         private bool doNotUseCredSsp;
         private bool asJob;
+
+        // Serialized list of PSVariable
+        public string SerializedVariables { get; set; }
+
+        // Serialized list of PSFunctionInfo
+        public string SerializedFunctions { get; set; }
+
+        // Serialized hashtable
+        public string SerializedProperties { get; set; }
 
         public Path DependencyFolder
         {
@@ -65,21 +74,16 @@ namespace AutomatedLab
             get { return isCustomRole; }
             set { isCustomRole = value; }
         }
-        
+
         public string RoleName
         {
-            get {
+            get
+            {
                 if (!string.IsNullOrEmpty(scriptFileName))
                     return ScriptFileName.Split('.')[0];
                 else
                     return string.Empty;
             }
-        }
-
-        public SerializableDictionary<string, List<object>> Properties
-        {
-            get { return properties; }
-            set { properties = value; }
         }
 
         public bool DoNotUseCredSsp
@@ -92,11 +96,6 @@ namespace AutomatedLab
         {
             get { return asJob; }
             set { asJob = value; }
-        }
-
-        public InstallationActivity()
-        {
-            properties = new SerializableDictionary<string, List<object>>();
         }
 
         public override string ToString()
