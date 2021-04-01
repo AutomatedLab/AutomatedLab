@@ -52,7 +52,7 @@
         'Get-LabIsoImageDefinition'
         'Get-LabMachineDefinition'
         'Get-LabMachineRoleDefinition'
-        'Get-LabPostInstallationActivity'
+        'Get-LabInstallationActivity'
         'Get-LabVirtualNetwork'
         'Get-LabVirtualNetworkDefinition'
         'Get-LabVolumesOnPhysicalDisks'
@@ -66,5 +66,9 @@
         'Set-LabDefinition'
         'Set-LabLocalVirtualMachineDiskAuto'
         'Test-LabDefinition'
+    )
+
+    AliasesToExport = @(
+        'Get-LabPostInstallationActivity'
     )
 }
