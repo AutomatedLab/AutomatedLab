@@ -235,7 +235,7 @@ namespace TestClient
             m.DomainName = "vm.net";
             m.HostType = VirtualizationHost.HyperV;
             m.PostInstallationActivity.Add(
-                new PostInstallationActivity()
+                new InstallationActivity()
                 {
                     DependencyFolder = new AutomatedLab.Path() { Value = @"c:\test" },
                     IsoImage = new AutomatedLab.Path() { Value = @"c:\test\windows.iso" },

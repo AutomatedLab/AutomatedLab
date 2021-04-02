@@ -53,7 +53,8 @@
         'AutomatedLabRemoting.psm1',
         'AutomatedLabScvmm.psm1',
         'AutomatedLabScom.psm1'
-        'AutomatedLabDynamics.psm1'
+        'AutomatedLabDynamics.psm1',
+        'AutomatedLabRds.psm1'
     )
 
     RequiredModules        = @(
@@ -155,7 +156,8 @@
         'Install-LabHyperV',
         'Install-LabWindowsAdminCenter',
         'Install-LabScom',
-        'Install-LabDynamics'
+        'Install-LabDynamics',
+        'Install-LabRemoteDesktopServices'
         'Add-LabWacManagedNode',
         'Invoke-LabCommand',
         'Invoke-LabDscConfiguration',
@@ -277,6 +279,7 @@
         'AutomatedLabVirtualMachines.psm1',
         'AutomatedLabVMWare.psm1',
         'AutomatedLabDiskImageLinux.psm1',
-        'AutomatedLabDiskImageWindows.psm1'
+        'AutomatedLabDiskImageWindows.psm1',
+        'AutomatedLabRds.psm1'
     )
 }

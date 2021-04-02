@@ -13,18 +13,32 @@ function Export-UnattendedKickstartFile
         $idx = $script:un.IndexOf('%post')
     }
 
+    $repoIp = (Resolve-DnsName -Name packages.microsoft.com -Type A).IP4Address
+    $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction SilentlyContinue) -split "`n"
     if ($script:un[$idx + 1] -ne '#start')
     {
         @(
             '#start'
-            'curl https://packages.microsoft.com/config/rhel/7/prod.repo | sudo tee /etc/yum.repos.d/microsoft.repo'
+            'echo "nameserver 192.168.2.121" >> /etc/resolv.conf'
+            'systemctl restart NetworkManager'
+            foreach ($line in $repoContent)
+            {
+                if (-not $line) { continue }
+                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line.Replace('packages.microsoft.com', $repoIp)
+            }
             'yum install -y openssl'
             'yum install -y omi'
             'yum install -y powershell'
             'yum install -y omi-psrp-server'
-            'yum list installed "powershell" > /tmp/ksPowerShell'
-            'yum list installed "omi-psrp-server" > /tmp/ksOmi'
-            'authselect sssd with-mkhomedir'
+            'yum list installed "powershell" > /ksPowerShell'
+            'yum list installed "omi-psrp-server" > /ksOmi'
+            'rm /etc/yum.repos.d/microsoft.repo'
+            foreach ($line in $repoContent)
+            {
+                if (-not $line) { continue }
+                'echo "{0}" >> /etc/yum.repos.d/microsoft.repo' -f $line
+            }
+            'authselect select sssd with-mkhomedir -f'
             'systemctl restart sssd'
             'echo "Subsystem powershell /usr/bin/pwsh -sshs -NoLogo" >> /etc/ssh/sshd_config'
             'systemctl restart sshd'

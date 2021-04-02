@@ -26,7 +26,7 @@ namespace AutomatedLab
         private User installationUser;
         private string userLocale;
         private string timeZone;
-        private List<PostInstallationActivity> postInstallationActivity;
+        private List<InstallationActivity> postInstallationActivity;
         private string productKey;
         private Path toolsPath;
         private string toolsPathDestination;
@@ -144,6 +144,8 @@ namespace AutomatedLab
             get { return memory; }
             set { memory = value; }
         }
+
+        public List<InstallationActivity> PreInstallationActivity { get; set; }
 
         public long MinMemory
         {
@@ -275,7 +277,7 @@ namespace AutomatedLab
         }
 
         [XmlElement("PostInstallation")]
-        public List<PostInstallationActivity> PostInstallationActivity
+        public List<InstallationActivity> PostInstallationActivity
         {
             get { return postInstallationActivity; }
             set { postInstallationActivity = value; }
@@ -385,7 +387,8 @@ namespace AutomatedLab
         {
             roles = new List<Role>();
             LinuxPackageGroup = new List<string>();
-            postInstallationActivity = new List<PostInstallationActivity>();
+            postInstallationActivity = new List<InstallationActivity>();            
+            PreInstallationActivity = new List<InstallationActivity>();
             networkAdapters = new List<NetworkAdapter>();
             internalNotes = new SerializableDictionary<string, string>();
             notes = new SerializableDictionary<string, string>();

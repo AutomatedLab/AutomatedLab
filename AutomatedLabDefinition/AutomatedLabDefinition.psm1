@@ -1,6 +1,4 @@
 ﻿#region Internals
-$script:RedHatPackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
-$script:SusePackage = New-Object -TypeName System.Collections.Generic.HashSet[string]
 $unattendedXmlDefaultContent2012 = @'
 <?xml version="1.0" encoding="utf-8"?>
 <unattend xmlns="urn:schemas-microsoft-com:unattend">
@@ -554,6 +552,8 @@ $autoyastContent = @"
 <networking>
 <interfaces config:type="list">
 </interfaces>
+<net-udev config:type="list">
+</net-udev>
 <dns>
     <nameservers config:type="list">
     </nameservers>
@@ -642,26 +642,6 @@ function Get-LabFreeDiskSpace
         [string]$Path
     )
 
-    $type = @'
-using System;
-using System.Runtime.InteropServices;
-
-namespace AutomatedLab
-{
-    public class DiskSpaceWin32
-    {
-        [DllImport("kernel32.dll", SetLastError=true, CharSet=CharSet.Auto)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool GetDiskFreeSpaceEx(string lpDirectoryName,
-           out ulong lpFreeBytesAvailable,
-           out ulong lpTotalNumberOfBytes,
-           out ulong lpTotalNumberOfFreeBytes);
-    }
-}
-'@
-
-    Add-Type -TypeDefinition $type
-
     [uint64]$freeBytesAvailable = 0
     [uint64]$totalNumberOfBytes = 0
     [uint64]$totalNumberOfFreeBytes = 0
@@ -688,7 +668,7 @@ function New-LabDefinition
     param (
         [string]$Name,
 
-        [string]$VmPath,
+        [string]$VmPath = (Get-LabConfigurationItem -Name VmPath),
 
         [int]$ReferenceDiskSizeInGB = 50,
 
@@ -702,8 +682,6 @@ function New-LabDefinition
 
         [ValidateSet('Azure', 'HyperV', 'VMWare')]
         [string]$DefaultVirtualizationEngine,
-
-        [string]$AzureSubscriptionName,
 
         [switch]$Passthru
     )
@@ -1074,7 +1052,13 @@ function Export-LabDefinition
                         $roleParentDomain = $firstChildDcRole.Properties.ParentDomain
                         $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $roleParentDomain
 
-                        $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                    }
+                    elseif ($machine.Roles.Name -contains 'DC')
+                    {
+                        $parentDc = Get-LabMachineDefinition -Role RootDC,FirstChildDc | Where-Object DomainName -eq $machine.DomainName | Select-Object -First 1
+
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $parentDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
                     }
                     else #machine is domain joined and not a RootDC or FirstChildDC
                     {
@@ -1676,11 +1660,6 @@ function Add-LabIsoImageDefinition
 
     foreach ($iso in $isos)
     {
-        if ($iso.IsOperatingSystem -and $iso.OperatingSystems.OperatingSystemType -contains 'Linux')
-        {
-            Set-LinuxPackage -Package $iso.OperatingSystems[0].LinuxPackageGroup -LinuxType ($iso.OperatingSystems.LinuxType)[0]
-        }
-
         $isosToRemove = $script:lab.Sources.ISOs | Where-Object { $_.Name -eq $iso.Name -or $_.Path -eq $iso.Path }
         foreach ($isoToRemove in $isosToRemove)
         {
@@ -1900,7 +1879,9 @@ function Add-LabMachineDefinition
         [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name) })]
         [string]$UserLocale,
 
-        [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
+        [AutomatedLab.InstallationActivity[]]$PostInstallationActivity,
+
+        [AutomatedLab.InstallationActivity[]]$PreInstallationActivity,
 
         [string]$ToolsPath,
 
@@ -1926,77 +1907,20 @@ function Add-LabMachineDefinition
 
         [string]$ResourceName,
 
-        [switch]$SkipDeployment
+        [switch]$SkipDeployment,
+
+        [string]$AzureRoleSize,
+
+        [string]$TimeZone,
+
+        [string[]]$RhelPackage,
+
+        [string[]]$SusePackage
     )
-    DynamicParam
-    {
-        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-
-        #Parameter 'AzureRoleSize'
-        $ParameterName = 'AzureRoleSize'
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $AttributeCollection.Add($ParameterAttribute)
-        $defaultLocation = (Get-LabAzureDefaultLocation -ErrorAction SilentlyContinue).Location
-        if ($defaultLocation)
-        {
-            $vmSizes = Get-AzVMSize -Location $defaultLocation -ErrorAction SilentlyContinue | Where-Object -Property Name -notlike *basic* | Sort-Object -Property Name
-            $validateSetValues = $vmSizes | Select-Object -ExpandProperty Name
-            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
-            $AttributeCollection.Add($ValidateSetAttribute)
-        }
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
-        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-
-        #Parameter 'TimeZone'
-        $ParameterName = 'TimeZone'
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $AttributeCollection.Add($ParameterAttribute)
-        $validateSetValues = ([System.TimeZoneInfo]::GetSystemTimeZones().Id | Sort-Object)
-        $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($validateSetValues)
-        $AttributeCollection.Add($ValidateSetAttribute)
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
-
-        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-
-        #Parameter 'RhelPackage'
-        $ParameterName = 'RhelPackage'
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $AttributeCollection.Add($ParameterAttribute)
-        if ($script:RedHatPackage.Count -gt 0)
-        {
-            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:RedHatPackage))
-            $AttributeCollection.Add($ValidateSetAttribute)
-        }
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
-
-        $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-
-        #Parameter 'SusePackage'
-        $ParameterName = 'SusePackage'
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $AttributeCollection.Add($ParameterAttribute)
-        if ($script:SusePackage.Count -gt 0)
-        {
-            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute(([string[]]$script:SusePackage))
-            $AttributeCollection.Add($ValidateSetAttribute)
-        }
-
-        $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string[]], $AttributeCollection)
-
-        return $RuntimeParameterDictionary
-    }
 
     begin
     {
         Write-LogFunctionEntry
-        $AzureRoleSize = $PsBoundParameters['AzureRoleSize']
-        $TimeZone = $PsBoundParameters['TimeZone']
-        $SusePackage = $PsBoundParameters['SusePackage']
-        $RhelPackage = $PsBoundParameters['RhelPackage']
     }
 
     process
@@ -2873,6 +2797,7 @@ function Add-LabMachineDefinition
 
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
+        $machine.PreInstallationActivity = $PreInstallationActivity
 
         if ($HypervProperties)
         {
@@ -3088,7 +3013,7 @@ function Get-LabMachineRoleDefinition
 #endregion Get-LabMachineRoleDefinition
 
 #region Get-LabPostInstallationActivity
-function Get-LabPostInstallationActivity
+function Get-LabInstallationActivity
 {
     [CmdletBinding()]
     param (
@@ -3116,35 +3041,21 @@ function Get-LabPostInstallationActivity
         [Parameter(ParameterSetName = 'CustomRole')]
         [hashtable]$Properties,
 
-        [switch]$DoNotUseCredSsp
+        [System.Management.Automation.PSVariable[]]$Variable,
+    
+        [System.Management.Automation.FunctionInfo[]]$Function,
+
+        [switch]$DoNotUseCredSsp,
+
+        [string]$CustomRole
     )
-    DynamicParam
-    {
-        $RuntimeParameterDictionary = New-Object System.Management.Automation.RuntimeDefinedParameterDictionary
-
-        $ParameterName = 'CustomRole'
-        $AttributeCollection = New-Object System.Collections.ObjectModel.Collection[System.Attribute]
-        $ParameterAttribute = New-Object System.Management.Automation.ParameterAttribute
-        $ParameterAttribute.ParameterSetName = 'CustomRole'
-        $AttributeCollection.Add($ParameterAttribute)
-        $arrSet = (Get-ChildItem -Path (Join-Path -Path (Get-LabSourcesLocationInternal -Local) -ChildPath 'CustomRoles' -ErrorAction SilentlyContinue) -Directory -ErrorAction SilentlyContinue).Name
-
-        if ($arrSet)
-        {
-            $ValidateSetAttribute = New-Object System.Management.Automation.ValidateSetAttribute($arrSet)
-            $AttributeCollection.Add($ValidateSetAttribute)
-            $RuntimeParameter = New-Object System.Management.Automation.RuntimeDefinedParameter($ParameterName, [string], $AttributeCollection)
-
-            $RuntimeParameterDictionary.Add($ParameterName, $RuntimeParameter)
-            return $RuntimeParameterDictionary
-        }
-    }
 
     begin
     {
         Write-LogFunctionEntry
-        $CustomRole = $PsBoundParameters['CustomRole']
-        $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+        $activity = New-Object -TypeName AutomatedLab.InstallationActivity
+        if ($Variable) { $activity.SerializedVariables = $Variable | ConvertTo-PSFClixml}
+        if ($Function) { $activity.SerializedFunctions = $Function | ConvertTo-PSFClixml}
         if (-not $Properties)
         {
             $Properties = @{ } 
@@ -3264,11 +3175,7 @@ function Get-LabPostInstallationActivity
 
             if ($Properties)
             {
-                foreach ($kvp in $Properties.GetEnumerator())
-                {
-                    [object[]]$toList = $kvp.Value
-                    $activity.Properties.Add($kvp.Key, $toList )
-                }
+                $activity.SerializedProperties = $Properties | ConvertTo-PSFClixml -ErrorAction SilentlyContinue
             }
         }
 
@@ -3803,33 +3710,6 @@ function Repair-LabDuplicateIpAddresses
     }
 }
 
-function Set-LinuxPackage
-{
-    param
-    (
-        [string[]]
-        $Package,
-
-        [ValidateSet('RedHat', 'Suse')]
-        [string]
-        $LinuxType
-    )
-
-    if ($LinuxType -eq 'RedHat')
-    {
-        foreach ($entry in $Package)
-        {
-            [void] ($script:RedHatPackage.Add($entry))
-        }
-        return
-    }
-
-    foreach ($entry in $Package)
-    {
-        [void] ($script:SusePackage.Add($entry))
-    }
-}
-
 function Get-OnlineAdapterHardwareAddress
 {
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseCompatibleCmdlets", "", Justification="Special handling for Linux")]
@@ -3851,3 +3731,5 @@ function Get-OnlineAdapterHardwareAddress
     }
 }
 #endregion Internal
+
+if (-not (Test-Path "alias:Get-LabPostInstallationActivity")) { New-Alias -Name Get-LabPostInstallationActivity -Value Get-LabInstallationActivity -Description "Alias so that scripts keep working" }

@@ -16,7 +16,7 @@ namespace AutomatedLab
         public override IEnumerable<ValidationMessage> Validate()
         {
             var dnsServers = lab.Machines
-                .Where(m => m.Roles.Select(r => r.Name).Where(r => (AutomatedLab.Roles.ADDS & r) == r).Count() == 0)
+                .Where(m => m.Roles.Select(r => r.Name).Where(r => (AutomatedLab.Roles.ADDS & r) == r).Count() > 0)
                 .SelectMany(m =>m.NetworkAdapters)
                 .SelectMany(n => n.Ipv4DnsServers);
 
