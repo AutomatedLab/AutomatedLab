@@ -7,6 +7,7 @@
   - Immediately before a role is deployed, the PreInstallationActivity is executed
   - Machines without roles will get their PreInstallActivity executed after all domains are deployed
   - For both pre and post, Get-LabInstallationActivity can be used, and can even include custom roles
+  - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 
 ### Fixes
 

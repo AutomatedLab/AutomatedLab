@@ -3041,6 +3041,10 @@ function Get-LabInstallationActivity
         [Parameter(ParameterSetName = 'CustomRole')]
         [hashtable]$Properties,
 
+        [System.Management.Automation.PSVariable[]]$Variable,
+    
+        [System.Management.Automation.FunctionInfo[]]$Function,
+
         [switch]$DoNotUseCredSsp,
 
         [string]$CustomRole
@@ -3050,6 +3054,8 @@ function Get-LabInstallationActivity
     {
         Write-LogFunctionEntry
         $activity = New-Object -TypeName AutomatedLab.InstallationActivity
+        if ($Variable) { $activity.SerializedVariables = $Variable | ConvertTo-PSFClixml}
+        if ($Function) { $activity.SerializedFunctions = $Function | ConvertTo-PSFClixml}
         if (-not $Properties)
         {
             $Properties = @{ } 
@@ -3169,11 +3175,7 @@ function Get-LabInstallationActivity
 
             if ($Properties)
             {
-                foreach ($kvp in $Properties.GetEnumerator())
-                {
-                    [object[]]$toList = $kvp.Value
-                    $activity.Properties.Add($kvp.Key, $toList )
-                }
+                $activity.SerializedProperties = $Properties | ConvertTo-PSFClixml -ErrorAction SilentlyContinue
             }
         }
 
