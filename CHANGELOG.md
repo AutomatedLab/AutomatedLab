@@ -4,6 +4,11 @@
 
 ### Enhancements
 - New `*-LabSnippet` cmdlets!
+- New PreInstallationActivity parameter for Add-LabMachineDefinition
+  - Immediately before a role is deployed, the PreInstallationActivity is executed
+  - Machines without roles will get their PreInstallActivity executed after all domains are deployed
+  - For both pre and post, Get-LabInstallationActivity can be used, and can even include custom roles
+  - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 
 ### Fixes
 
@@ -23,6 +28,7 @@
 - Using the 20h2 Windows 10 images in Azure now.
 - Fixing upstream issue with duplicate files in SysInternals archive
 - Removing defunct parameter AzureSubscriptionName from New-LabDefinition (#1079)
+- Adding validator for DNS settings on domain members and domain controllers (#3)
 - Fixing issue with post-install scripts and DNS resolution on Linux
 
 ## 5.33.0 (2021-03-03)
