@@ -109,11 +109,11 @@ function Install-LabTeamFoundationServer
     param
     ( )
 
-    $tfsMachines = Get-LabVm -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object SkipDeployment -eq $false | Sort-Object { ($_.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps').Name } -Descending
+    $tfsMachines = Get-LabVM -Role Tfs2015, Tfs2017, Tfs2018, AzDevOps | Where-Object SkipDeployment -eq $false | Sort-Object { ($_.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps').Name } -Descending
     if (-not $tfsMachines) { return }
 
     # Assign unassigned build workers to our most current TFS machine
-    Get-LabVm -Role TfsBuildWorker | Where-Object {
+    Get-LabVM -Role TfsBuildWorker | Where-Object {
         -not ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.ContainsKey('TfsServer')
     } | ForEach-Object {
         ($_.Roles | Where-Object Name -eq TfsBuildWorker).Properties.Add('TfsServer', $tfsMachines[0].Name)
@@ -138,10 +138,15 @@ function Install-LabTeamFoundationServer
         $role = $machine.Roles | Where-Object Name -match 'Tfs\d{4}|AzDevOps'
         [string]$sqlServer = switch -Regex ($role.Name)
         {
-            'Tfs2015' { Get-LabVm -Role SQLServer2014 | Select-Object -First 1 }
-            'Tfs2017' { Get-LabVm -Role SQLServer2014, SQLServer2016 | Select-Object -First 1 }
-            'Tfs2018|AzDevOps' { Get-LabVm -Role SQLServer2017 | Select-Object -First 1 }
+            'Tfs2015' { Get-LabVM -Role SQLServer2014 | Select-Object -First 1 }
+            'Tfs2017' { Get-LabVM -Role SQLServer2014, SQLServer2016 | Select-Object -First 1 }
+            'Tfs2018|AzDevOps' { Get-LabVM -Role SQLServer2017, SQLServer2019 | Select-Object -First 1 }
             default { throw 'No fitting SQL Server found in lab!' }
+        }
+        
+        if (-not $sqlServer)
+        {
+            Write-Error 'No fitting SQL Server found in lab for TFS / Azure DevOps role.' -ErrorAction Stop
         }
 
         $initialCollection = 'AutomatedLab'
@@ -183,12 +188,12 @@ function Install-LabTeamFoundationServer
 
         if ($role.Properties.ContainsKey('DbServer'))
         {
-            [string]$sqlServer = Get-LabVm -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
+            [string]$sqlServer = Get-LabVM -ComputerName $role.Properties['DbServer'] -ErrorAction SilentlyContinue
 
             if (-not $sqlServer)
             {
                 Write-ScreenInfo -Message "No SQL server called $($role.Properties['DbServer']) found in lab." -NoNewLine -Type Warning
-                [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+                [string]$sqlServer = Get-LabVM -Role SQLServer2016, SQLServer2017, SQLServer2019 | Select-Object -First 1
                 Write-ScreenInfo -Message " Selecting $sqlServer instead." -Type Warning
             }
         }

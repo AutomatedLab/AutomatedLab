@@ -9,6 +9,7 @@
   - Machines without roles will get their PreInstallActivity executed after all domains are deployed
   - For both pre and post, Get-LabInstallationActivity can be used, and can even include custom roles
   - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
+- Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
 
 ### Fixes
 
