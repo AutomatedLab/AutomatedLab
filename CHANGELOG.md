@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- New `*-LabSnippet` cmdlets!
 - New PreInstallationActivity parameter for Add-LabMachineDefinition
   - Immediately before a role is deployed, the PreInstallationActivity is executed
   - Machines without roles will get their PreInstallActivity executed after all domains are deployed
