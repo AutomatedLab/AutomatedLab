@@ -12,6 +12,7 @@
 - Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
 
 ### Fixes
+- Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
 
 ## 5.34.0 (2021-03-30)
 
