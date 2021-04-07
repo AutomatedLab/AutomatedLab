@@ -10,7 +10,7 @@ namespace AutomatedLab
 {
     /// <summary>
     /// This validator makes sure the required ISOs are present
-    /// Azure DevOps Server 2019	Azure SQL Database, SQL Server 2017,  SQL Server 2016 (minimum SP1)
+    /// Azure DevOps Server 2019	Azure SQL Database, SQL Server 2017, SQL Server 2019,  SQL Server 2016 (minimum SP1)
     /// TFS 2018	SQL Server 2017
     /// SQL Server 2016 (minimum SP1)
     /// TFS 2017 Update 1	SQL Server 2016 (minimum SP1)
