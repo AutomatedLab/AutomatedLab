@@ -3,8 +3,6 @@
 ## Unreleased
 
 ### Enhancements
-<<<<<<< HEAD
-<<<<<<< HEAD
 - New `*-LabSnippet` cmdlets!
 - New PreInstallationActivity parameter for Add-LabMachineDefinition
   - Immediately before a role is deployed, the PreInstallationActivity is executed
