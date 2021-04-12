@@ -89,7 +89,7 @@ function Install-LabSharePoint
     }
   
     $machines = Get-LabVM -Role SharePoint2013, SharePoint2016, SharePoint2019
-    $versionGroups = $machines | Group-Object { $null = $_.Roles.Name -match 'SharePoint\d{4}'; $Matches[0] }
+    $versionGroups = $machines | Group-Object { $_.Roles.Name | Where-Object {$_ -match 'SharePoint\d{4}' }}
 
     if (-not $machines)
     {
