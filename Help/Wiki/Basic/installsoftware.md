@@ -6,7 +6,7 @@ The cmdlet that handles the installation is Install-LabSoftwarePackage. It is de
 Internally, it uses Invoke-LabCommand again to connect to the lab VMs by using the credentials known to the lab. The files are copied to the lab VMs using Copy-LabFileItem.
 
 ### Install-LabSoftwarePackage Usage
-#### Insalling an package that is on the host machine
+#### Installing an package that is on the host machine
 A very simple demonstration of how the cmdlet can help, is installing Notepad++ on a lab VM. Note that $labSources always points to the LabSources folder that is created by AL, so you do not have to provide the full path. This also works on Azure. A lab VM hosted on Azure accesses the share hosted on Azure by default. The Azure LabSources share can be synced with the local one.
 The next command copes the Notepad++.exe file to the VM and invokes the installer. The package must support a silent installation. For Notepad++, you can switch to the silent mode by providing the argument “/S” (case-sensitive).
 ``` PowerShell
