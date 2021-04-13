@@ -25,9 +25,6 @@
 - Replaced dynamic parameters with user-friendly TEPP Argument Completers.
 - Update Exchange2019 custom role to use public download.
 
-=======
-- Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
->>>>>>> 6eaed7b1 (Added SQL Server 2019 support for Azure DevOps Server)
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
 - Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019
