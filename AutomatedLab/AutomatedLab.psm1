@@ -246,7 +246,7 @@ function Undo-LabHostRemoting
     Disable-WSManCredSSP -Role Client
     Write-ScreenInfo done
 
-    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empyt string"
+    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empty string"
     Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '' -Force
 
     Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'"
@@ -279,6 +279,8 @@ function Undo-LabHostRemoting
 
     Write-LogFunctionExit
 }
+
+if (-not (Test-Path "alias:Disable-LabHostRemoting")) { New-Alias -Name Disable-LabHostRemoting -Value Undo-LabHostRemoting -Description "Alias function for Undo-LabHostRemoting to increase visibility" }
 #endregion Undo-LabHostRemoting
 
 #region Test-LabHostRemoting
@@ -878,6 +880,9 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Root Domain Controllers' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RootDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
 
@@ -888,6 +893,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Configuring routing' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Routing | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabRouting
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -907,6 +914,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Child Domain Controllers' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FirstChildDC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines with FirstChildDC role to be installed: '$((Get-LabVM -Role FirstChildDC).Name -join ', ')'"
         Install-LabFirstChildDcs -CreateCheckPoints:$CreateCheckPoints
 
@@ -929,6 +938,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Additional Domain Controllers' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role DC | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines with DC role to be installed: '$((Get-LabVM -Role DC).Name -join ', ')'"
         Install-LabDcs -CreateCheckPoints:$CreateCheckPoints
 
@@ -953,10 +964,18 @@ function Install-Lab
         Install-LabADDSTrust
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+
+    if ((Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}))
+    {
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName (Get-LabVm -Filter {-not $_.SkipDeployment -and $_.Roles.Count -eq 0}) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
+    }
     
     if (($FileServer -or $performAll) -and (Get-LabVM -Role FileServer))
     {
         Write-ScreenInfo -Message 'Installing File Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FileServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabFileServers -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -965,6 +984,8 @@ function Install-Lab
     if (($CA -or $performAll) -and (Get-LabVM -Role CaRoot, CaSubordinate))
     {
         Write-ScreenInfo -Message 'Installing Certificate Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role CaRoot,CaSubordinate | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabCA -CreateCheckPoints:$CreateCheckPoints
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -973,6 +994,8 @@ function Install-Lab
     if(($HyperV -or $performAll) -and (Get-LabVm -Role HyperV | Where-Object {-not $_.SkipDeployment}))
     {
         Write-ScreenInfo -Message 'Installing HyperV servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role HyperV | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Install-LabHyperV
 
@@ -983,6 +1006,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing Failover Storage' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FailoverStorage | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Start-LabVM -RoleName FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverStorage
 
@@ -992,6 +1017,8 @@ function Install-Lab
     if (($FailoverCluster -or $performAll) -and (Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Failover Cluster' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role FailoverNode, FailoverStorage | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Start-LabVM -RoleName FailoverNode,FailoverStorage -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
         Install-LabFailoverCluster
@@ -1002,6 +1029,8 @@ function Install-Lab
     if (($SQLServers -or $performAll) -and (Get-LabVM -Role SQLServer2008, SQLServer2008R2, SQLServer2012, SQLServer2014, SQLServer2016, SQLServer2017, SQLServer2019 | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing SQL Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SQLServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         if (Get-LabVM -Role SQLServer2008)   { Write-ScreenInfo -Message "Machines to have SQL Server 2008 installed: '$((Get-LabVM -Role SQLServer2008).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2008R2) { Write-ScreenInfo -Message "Machines to have SQL Server 2008 R2 installed: '$((Get-LabVM -Role SQLServer2008R2).Name -join ', ')'" }
         if (Get-LabVM -Role SQLServer2012)   { Write-ScreenInfo -Message "Machines to have SQL Server 2012 installed: '$((Get-LabVM -Role SQLServer2012).Name -join ', ')'" }
@@ -1014,9 +1043,11 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
-    if (($RemoteDesktop -or $performAll) -and (Get-LabVm -Role RemoteDesktopConnectionBroker,RemoteDesktopGateway,RemoteDesktopLicensing,RemoteDesktopSessionHost,RemoteDesktopVirtualizationHost,RemoteDesktopWebAccess -Filter {-not $_.SkipDeployment}))
+    if (($RemoteDesktop -or $performAll) -and (Get-LabVm -Role RDS -Filter {-not $_.SkipDeployment}))
     {
         Write-ScreenInfo -Message 'Deploying Remote Desktop Services' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role RDS | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabRemoteDesktopServices
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1024,6 +1055,8 @@ function Install-Lab
     if (($Dynamics -or $performAll) -and (Get-LabVm -Role Dynamics | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Dynamics' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Dynamics | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabDynamics -CreateCheckPoints:$CreateCheckPoints
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -1031,6 +1064,8 @@ function Install-Lab
     if (($DSCPullServer -or $performAll) -and (Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }))
     {
         Start-LabVM -RoleName DSCPullServer -ProgressIndicator 15 -PostDelaySeconds 5 -Wait
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role DSCPullServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Write-ScreenInfo -Message 'Installing DSC Pull Servers' -TaskStart
         Install-LabDscPullServer
@@ -1041,6 +1076,8 @@ function Install-Lab
     if (($ADFS -or $performAll) -and (Get-LabVM -Role ADFS))
     {
         Write-ScreenInfo -Message 'Configuring ADFS' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role ADFS | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Install-LabAdfs
 
@@ -1056,6 +1093,8 @@ function Install-Lab
     if (($WebServers -or $performAll) -and (Get-LabVM -Role WebServer | Where-Object { -not $_.SkipDeployment }))
     {
         Write-ScreenInfo -Message 'Installing Web Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role WebServer | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines to have Web Server role installed: '$((Get-LabVM -Role WebServer | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
         Install-LabWebServers -CreateCheckPoints:$CreateCheckPoints
 
@@ -1065,6 +1104,8 @@ function Install-Lab
     if (($WindowsAdminCenter -or $performAll) -and (Get-LabVm -Role WindowsAdminCenter))
     {
         Write-ScreenInfo -Message 'Installing Windows Admin Center Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role WindowsAdminCenter | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines to have Windows Admin Center installed: '$((Get-LabVM -Role WindowsAdminCenter | Where-Object { -not $_.SkipDeployment }).Name -join ', ')'"
         Install-LabWindowsAdminCenter
 
@@ -1074,6 +1115,8 @@ function Install-Lab
     if (($Orchestrator2012 -or $performAll) -and (Get-LabVM -Role Orchestrator2012))
     {
         Write-ScreenInfo -Message 'Installing Orchestrator Servers' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Orchestrator2012 | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabOrchestrator2012
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1083,6 +1126,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing SharePoint Servers' -TaskStart
 
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SharePoint | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Install-LabSharePoint
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1091,6 +1136,8 @@ function Install-Lab
     if (($VisualStudio -or $performAll) -and (Get-LabVM -Role VisualStudio2013))
     {
         Write-ScreenInfo -Message 'Installing Visual Studio 2013' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role VisualStudio2013 | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Write-ScreenInfo -Message "Machines to have Visual Studio 2013 installed: '$((Get-LabVM -Role VisualStudio2013).Name -join ', ')'"
         Install-VisualStudio2013
@@ -1101,6 +1148,8 @@ function Install-Lab
     if (($VisualStudio -or $performAll) -and (Get-LabVM -Role VisualStudio2015))
     {
         Write-ScreenInfo -Message 'Installing Visual Studio 2015' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role VisualStudio2015 | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Write-ScreenInfo -Message "Machines to have Visual Studio 2015 installed: '$((Get-LabVM -Role VisualStudio2015).Name -join ', ')'"
         Install-VisualStudio2015
@@ -1111,6 +1160,8 @@ function Install-Lab
     if (($Office2013 -or $performAll) -and (Get-LabVM -Role Office2013))
     {
         Write-ScreenInfo -Message 'Installing Office 2013' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Office2013 | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Write-ScreenInfo -Message "Machines to have Office 2013 installed: '$((Get-LabVM -Role Office2013).Name -join ', ')'"
         Install-LabOffice2013
@@ -1121,6 +1172,8 @@ function Install-Lab
     if (($Office2016 -or $performAll) -and (Get-LabVM -Role Office2016))
     {
         Write-ScreenInfo -Message 'Installing Office 2016' -TaskStart
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Office2016 | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         Write-ScreenInfo -Message "Machines to have Office 2016 installed: '$((Get-LabVM -Role Office2016).Name -join ', ')'"
         Install-LabOffice2016
@@ -1131,6 +1184,8 @@ function Install-Lab
     if (($TeamFoundation -or $performAll) -and (Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps))
     {
         Write-ScreenInfo -Message 'Installing Team Foundation Server environment'
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
         Write-ScreenInfo -Message "Machines to have TFS or the build agent installed: '$((Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps).Name -join ', ')'"
 
         $machinesToStart = Get-LabVM -Role Tfs2015,Tfs2017,Tfs2018,TfsBuildWorker,AzDevOps | Where-Object -Property SkipDeployment -eq $false
@@ -1147,6 +1202,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing SCVMM'
         Write-ScreenInfo -Message "Machines to have SCVMM Management or Console installed: '$((Get-LabVM -Role SCVMM).Name -join ', ')'"
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SCVMM | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         $machinesToStart = Get-LabVM -Role SCVMM | Where-Object -Property SkipDeployment -eq $false
         if ($machinesToStart)
@@ -1162,6 +1219,8 @@ function Install-Lab
     {
         Write-ScreenInfo -Message 'Installing SCOM'
         Write-ScreenInfo -Message "Machines to have SCOM components installed: '$((Get-LabVM -Role SCOM).Name -join ', ')'"
+        $jobs = Invoke-LabCommand -PreInstallationActivity -ActivityName 'Pre-installation' -ComputerName $(Get-LabVM -Role SCOM | Where-Object { -not $_.SkipDeployment }) -PassThru -NoDisplay
+        $jobs | Where-Object { $_ -is [System.Management.Automation.Job] } | Wait-Job | Out-Null
 
         $machinesToStart = Get-LabVM -Role SCOM | Where-Object -Property SkipDeployment -eq $false
         if ($machinesToStart)
