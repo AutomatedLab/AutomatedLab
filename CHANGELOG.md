@@ -14,6 +14,7 @@
 ### Fixes
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
 - Fixed issue with SharePoint servers not being deployed when they had other roles applied to them
+- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137)
 
 ## 5.34.0 (2021-03-30)
 
