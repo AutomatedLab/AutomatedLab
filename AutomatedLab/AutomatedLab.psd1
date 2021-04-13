@@ -256,6 +256,10 @@
         'Enable-LabInternalRouting'
     )
 
+    AliasesToExport        = @(
+        'Disable-LabHostRemoting'
+    )
+
     FileList               = @(
         'AutomatedLab.format.ps1xml',
         'AutomatedLab.init.ps1',

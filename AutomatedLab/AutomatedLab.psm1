@@ -246,7 +246,7 @@ function Undo-LabHostRemoting
     Disable-WSManCredSSP -Role Client
     Write-ScreenInfo done
 
-    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empyt string"
+    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empty string"
     Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '' -Force
 
     Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'"
@@ -279,6 +279,8 @@ function Undo-LabHostRemoting
 
     Write-LogFunctionExit
 }
+
+if (-not (Test-Path "alias:Disable-LabHostRemoting")) { New-Alias -Name Disable-LabHostRemoting -Value Undo-LabHostRemoting -Description "Alias function for Undo-LabHostRemoting to increase visibility" }
 #endregion Undo-LabHostRemoting
 
 #region Test-LabHostRemoting
