@@ -10,6 +10,7 @@
   - For both pre and post, Get-LabInstallationActivity can be used, and can even include custom roles
   - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 - Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
+- Added product keys for 'Windows 10 Education' and 'Windows 10 Pro Education'.
 
 ### Fixes
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
