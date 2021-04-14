@@ -306,7 +306,10 @@ function New-LabNetworkAdapterDefinition
         [ValidateRange(0,4096)]
         [int]$AccessVLANID = 0,
 
-        [boolean]$ManagementAdapter = $false
+        [boolean]$ManagementAdapter = $false,
+
+        [string]
+        $MacAddress
     )
 
     Write-LogFunctionEntry
@@ -369,6 +372,7 @@ function New-LabNetworkAdapterDefinition
 
     if ($Ipv4Gateway) { $adapter.Ipv4Gateway = $Ipv4Gateway }
     if ($Ipv6Gateway) { $adapter.Ipv6Gateway = $Ipv6Gateway }
+    if ($MacAddress)  { $adapter.MacAddress = $MacAddress}
     $adapter.ConnectionSpecificDNSSuffix = $ConnectionSpecificDNSSuffix
     $adapter.AppendParentSuffixes        = $AppendParentSuffixes
     $adapter.AppendDNSSuffixes           = $AppendDNSSuffixes

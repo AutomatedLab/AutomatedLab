@@ -99,15 +99,13 @@ function New-LWHypervVM
 
         $mac = "$macAddressPrefix{0:X6}" -f $macIdx++
 
-        $ipSettings.Add('MacAddress', $mac)
-        $adapter.MacAddress = $mac
-
-        $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f $mac.Substring(0, 2),
-        $mac.Substring(2, 2),
-        $mac.Substring(4, 2),
-        $mac.Substring(6, 2),
-        $mac.Substring(8, 2),
-        $mac.Substring(10, 2)
+        if (-not $adapter.MacAddress)
+        {
+            $adapter.MacAddress = $mac
+        }
+        
+        $ipSettings.Add('MacAddress', $adapter.MacAddress)
+        $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f (Get-StringSection -SectionSize 2 -String $mac)
 
         $ipSettings.Add('InterfaceName', $macWithDash)
         $ipSettings.Add('IpAddresses', @())
