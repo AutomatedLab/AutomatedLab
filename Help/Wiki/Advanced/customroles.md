@@ -4,6 +4,15 @@ Adding roles to AutomatedLab was painful and complicated and almost only possibl
 
 Custom roles can be defined by just one file or can be quite complex. A very simple one that explains all the features of custom roles is the [DemoCustomRole](https://github.com/AutomatedLab/AutomatedLab/wiki/DemoCustomRole). When assigning a custom role to a machine you can specify parameters to make the use flexible.
 
+At the moment, the following custom roles exist:
+- CM-2002, CM-1902 to deploy System Center Configuration Manager
+- LabBuilder to deploy a REST API using polaris on a nested Hyper-V which can be used to deploy labs
+- MDT
+- Exchange2016, Exchange2019 to deploy the respective Exchange version
+- NuGetServer to deploy a simple ASP.NET page that includes the NuGet.Server package
+- PowerShellWebAccess to enable PowerShell Web Access (PSWA) on a VM
+- ProGet5 to install Inedo ProGet
+
 ## The concept in short
 ### Simple Custom Role
 Defining a new custom role is as simple as that:
