@@ -320,6 +320,7 @@ function New-LabNetworkAdapterDefinition
     }
 
     $adapter = New-Object -TypeName AutomatedLab.NetworkAdapter
+    $MacAddress = $MacAddress -replace '[\.\-\:]'
 
     #If the defined interface is flagged as being a Management interface, ignore the virtual switch check as it will not exist yet
     if (-not $ManagementAdapter)
