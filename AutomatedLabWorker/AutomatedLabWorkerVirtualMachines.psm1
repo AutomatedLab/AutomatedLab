@@ -503,7 +503,7 @@ function New-LWHypervVM
     {
         $bytes = [Text.Encoding]::Unicode.GetBytes($command)
         $b64 = [Convert]::ToBase64String($bytes)
-        Add-UnattendedSynchronousCommand -Command "powershell.exe -EncodedCommand $b64"
+        Add-UnattendedSynchronousCommand -Command "powershell.exe -EncodedCommand $b64" -Description 'Configure WSMAN'
     }
 
     Write-PSFMessage "`tMachine '$Name' created"
