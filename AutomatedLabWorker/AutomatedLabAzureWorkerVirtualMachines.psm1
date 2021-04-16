@@ -1201,9 +1201,6 @@ function Initialize-LWAzureVM
             $WinRmMaxEnvelopeSizeKb,
 
             [int]
-            $WinRmMaxConcurrentOperations,
-
-            [int]
             $WinRmMaxConcurrentOperationsPerUser,
 
             [int]
@@ -1212,7 +1209,6 @@ function Initialize-LWAzureVM
 
         $defaultSettings = @{
             WinRmMaxEnvelopeSizeKb              = 500
-            WinRmMaxConcurrentOperations        = 4294967295
             WinRmMaxConcurrentOperationsPerUser = 1500
             WinRmMaxConnections                 = 300
         }
@@ -1222,7 +1218,8 @@ function Initialize-LWAzureVM
         {
             if ($PSBoundParameters[$setting.Key].Value -ne $setting.Value)
             {
-                Set-Item WSMAN:\localhost\Service\$($PSBoundParameters[$setting.Key].Replace('WinRm','')) $($PSBoundParameters[$setting.Key].Value) -Force
+                $subdir = if ($setting.Key -match 'MaxEnvelope') { $null } else { 'Service\' }
+                Set-Item "WSMAN:\localhost\$subdir$($setting.Key.Replace('WinRm',''))" $($PSBoundParameters[$setting.Key]) -Force
             }
         }
 
@@ -1425,7 +1422,6 @@ function Initialize-LWAzureVM
             StorageAccountKey                   = $labsourcesStorage.StorageAccountKey
             DnsServers                          = $DnsServers
             WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
-            WinRmMaxConcurrentOperations        = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperations
             WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
             WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
         }
