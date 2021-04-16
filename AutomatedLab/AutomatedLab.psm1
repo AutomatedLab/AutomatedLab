@@ -1307,6 +1307,22 @@ function Install-Lab
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
+    # Set account expiration for builtin account and lab domain account
+    foreach ($machine in (Get-LabVM -Role ADDS | Group-Object DomainName))
+    {
+        $anyDc = $machine.Group | Select -First 1
+        $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
+        Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
+            Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+        } -Variable (Get-Variable userName)
+    }
+
+    $userName = (Get-Lab).DefaultInstallationCredential.UserName
+    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {-not ($_.Roles.Name -band [int][AutomatedLab.Roles]::ADDS)}) -ScriptBlock {
+        # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
+    } -Variable (Get-Variable userName)
+
     try
     {
         [AutomatedLab.LabTelemetry]::Instance.LabFinished((Get-Lab).Export())
