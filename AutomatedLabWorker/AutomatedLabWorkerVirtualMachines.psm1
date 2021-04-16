@@ -482,6 +482,30 @@ function New-LWHypervVM
         }
     }
 
+    $defaultSettings = @{
+        WinRmMaxEnvelopeSizeKb              = 500
+        WinRmMaxConcurrentOperations        = 4294967295
+        WinRmMaxConcurrentOperationsPerUser = 1500
+        WinRmMaxConnections                 = 300
+    }
+
+    $command = 'Start-Service WinRm'
+    foreach ($setting in $defaultSettings.GetEnumerator())
+    {
+        if ((Get-LabConfigurationItem -Name $setting.Key) -ne $setting.Value)
+        {
+            $addCommand = $true
+            $command = -join @($command, "`r`nSet-Item WSMAN:\localhost\Service\$($setting.Key.Replace('WinRm','')) $($setting.Value) -Force")
+        }
+    }
+
+    if ($addCommand)
+    {
+        $bytes = [Text.Encoding]::Unicode.GetBytes($command)
+        $b64 = [Convert]::ToBase64String($bytes)
+        Add-UnattendedSynchronousCommand -Command "powershell.exe -EncodedCommand $b64"
+    }
+
     Write-PSFMessage "`tMachine '$Name' created"
 
     $automaticStartAction = 'Nothing'

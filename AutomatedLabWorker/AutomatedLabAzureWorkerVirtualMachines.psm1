@@ -1195,8 +1195,36 @@ function Initialize-LWAzureVM
             $StorageAccountKey,
 
             [string[]]
-            $DnsServers
+            $DnsServers,
+
+            [int]
+            $WinRmMaxEnvelopeSizeKb,
+
+            [int]
+            $WinRmMaxConcurrentOperations,
+
+            [int]
+            $WinRmMaxConcurrentOperationsPerUser,
+
+            [int]
+            $WinRmMaxConnections
         )
+
+        $defaultSettings = @{
+            WinRmMaxEnvelopeSizeKb              = 500
+            WinRmMaxConcurrentOperations        = 4294967295
+            WinRmMaxConcurrentOperationsPerUser = 1500
+            WinRmMaxConnections                 = 300
+        }
+    
+        Start-Service WinRm
+        foreach ($setting in $defaultSettings.GetEnumerator())
+        {
+            if ($PSBoundParameters[$setting.Key].Value -ne $setting.Value)
+            {
+                Set-Item WSMAN:\localhost\Service\$($PSBoundParameters[$setting.Key].Replace('WinRm','')) $($PSBoundParameters[$setting.Key].Value) -Force
+            }
+        }
 
         #region Region Settings Xml
         $regionSettings = @'
@@ -1389,13 +1417,17 @@ function Initialize-LWAzureVM
     {
         [string[]]$DnsServers = ($m.NetworkAdapters | Where-Object {$_.VirtualSwitch.Name -eq $Lab.Name}).Ipv4DnsServers.AddressAsString
         $scriptParam = @{
-            UserLocale         = $m.UserLocale
-            TimeZoneId         = $m.TimeZone
-            DiskCount          = $m.Disks.Count
-            LabSourcesPath     = $labsourcesStorage.Path
-            StorageAccountName = $labsourcesStorage.StorageAccountName
-            StorageAccountKey  = $labsourcesStorage.StorageAccountKey
-            DnsServers         = $DnsServers
+            UserLocale                          = $m.UserLocale
+            TimeZoneId                          = $m.TimeZone
+            DiskCount                           = $m.Disks.Count
+            LabSourcesPath                      = $labsourcesStorage.Path
+            StorageAccountName                  = $labsourcesStorage.StorageAccountName
+            StorageAccountKey                   = $labsourcesStorage.StorageAccountKey
+            DnsServers                          = $DnsServers
+            WinRmMaxEnvelopeSizeKb              = Get-LabConfigurationItem -Name WinRmMaxEnvelopeSizeKb
+            WinRmMaxConcurrentOperations        = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperations
+            WinRmMaxConcurrentOperationsPerUser = Get-LabConfigurationItem -Name WinRmMaxConcurrentOperationsPerUser
+            WinRmMaxConnections                 = Get-LabConfigurationItem -Name WinRmMaxConnections
         }
 
         if ($DNSServers.Count -eq 0) {$scriptParam.Remove('DnsServers')}
