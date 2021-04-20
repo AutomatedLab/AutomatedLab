@@ -11,13 +11,14 @@
   - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 - Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
 - Added product keys for 'Windows 10 Education' and 'Windows 10 Pro Education'.
-- Setting lab administrative accounts to never expire
-- MAC addresses are now configurable
+- Setting lab administrative accounts to never expire.
+- MAC addresses are now configurable.
 
 ### Fixes
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
-- Fixed issue with SharePoint servers not being deployed when they had other roles applied to them
-- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137)
+- Fixed issue with SharePoint servers not being deployed when they had other roles applied to them.
+- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137).
+- AL does no longer use the Hyper-V VM's notes field exclusively (Fixes #1135).
 
 ## 5.34.0 (2021-03-30)
 

@@ -1697,9 +1697,19 @@ function Set-LWHypervVMDescription
         [string]$ComputerName
     )
 
-    Write-LogFunctionEntry
+    Write-LogFunctionEntry    
 
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
+    $prefix = '#AL<#'
+    $suffix = '#>AL#'
+    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
+
+    $notes = (Get-VM -Name $ComputerName).Notes
+
+    if ($notes -match $pattern) {
+        $notes = $notes -replace $pattern, ''
+    }
+
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
     $disctionary = New-Object $type
 
     foreach ($kvp in $Hashtable.GetEnumerator())
@@ -1707,7 +1717,7 @@ function Set-LWHypervVMDescription
         $disctionary.Add($kvp.Key, $kvp.Value)
     }
 
-    $notes = $disctionary.ExportToString()
+    $notes += $prefix + $disctionary.ExportToString() + $suffix
 
     Set-VM -Name $ComputerName -Notes $notes
 
@@ -1724,19 +1734,29 @@ function Get-LWHypervVMDescription
     )
 
     Write-LogFunctionEntry
-
+    
     $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         return
     }
+    
+    $prefix = '#AL<#'
+    $suffix = '#>AL#'
+    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
+    
+    $notes = if ($vm.Notes -match $pattern) {
+        $Matches.ALNotes
+    }
+    else {
+        $vm.Notes
+    }
 
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
     try
     {
         $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
+        $dictionary = $importMethodInfo.Invoke($null, $notes.Trim())
         $dictionary
     }
     catch
