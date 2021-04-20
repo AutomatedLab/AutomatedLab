@@ -11,8 +11,10 @@
   - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 - Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
 - Added product keys for 'Windows 10 Education' and 'Windows 10 Pro Education'.
+- MAC addresses are now configurable
+- A choice selection of WSMAN settings can now be configured
+  - To see which: Get-PSFConfig -FullName AutomatedLab.WinRm*
 - Setting lab administrative accounts to never expire.
-- MAC addresses are now configurable.
 
 ### Fixes
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.

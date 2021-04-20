@@ -533,14 +533,10 @@ function New-LWHypervVM
             #for Generation 1 VMs
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
+        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
 
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
-
-        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
-        $unattendXmlContent = Get-UnattendedContent
-        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
-        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
 
         #copy AL tools to lab machine and optionally the tools folder
         $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
@@ -650,11 +646,39 @@ Stop-Transcript
 '@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
 
+        $defaultSettings = @{
+            WinRmMaxEnvelopeSizeKb              = 500
+            WinRmMaxConcurrentOperationsPerUser = 1500
+            WinRmMaxConnections                 = 300
+        }
+    
+        $command = 'Start-Service WinRm'
+        foreach ($setting in $defaultSettings.GetEnumerator())
+        {
+            $settingValue = if ((Get-LabConfigurationItem -Name $setting.Key) -ne $setting.Value)
+            {
+                Get-LabConfigurationItem -Name $setting.Key
+            }
+            else
+            {
+                $setting.Value
+            }
+
+            $subdir = if ($setting.Key -match 'MaxEnvelope') { $null } else { 'Service\' }
+            $command = -join @($command, "`r`nSet-Item WSMAN:\localhost\$subdir$($setting.Key.Replace('WinRm','')) $($settingValue) -Force")
+        }
+
+        [System.IO.File]::WriteAllText("$vhdVolume\WinRmCustomization.ps1", $command)
+    
+        Write-ProgressIndicator
+        
+        $unattendXmlContent = Get-UnattendedContent
+        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
+        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
+        
         [void] (Dismount-DiskImage -ImagePath $path)
         Write-PSFMessage "`tdisk image dismounted"
-
-        Write-ProgressIndicator
-    }
+    }    
 
     Write-PSFMessage "`tSettings RAM, start and stop actions"
     $param = @{}
