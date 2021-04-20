@@ -404,7 +404,7 @@ $unattendedXmlDefaultContent2008 = @'
         <SynchronousCommand wcm:action="add">
             <Description>Bring all additional disks online</Description>
             <Order>6</Order>
-            <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>WinRmCustomization
+            <CommandLine>PowerShell -File C:\AdditionalDisksOnline.ps1</CommandLine>
         </SynchronousCommand>
 		<SynchronousCommand wcm:action="add">
             <Description>Disable .net Optimization</Description>
