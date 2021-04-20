@@ -14,11 +14,13 @@
 - MAC addresses are now configurable
 - A choice selection of WSMAN settings can now be configured
   - To see which: Get-PSFConfig -FullName AutomatedLab.WinRm*
+- Setting lab administrative accounts to never expire.
 
 ### Fixes
 - Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
-- Fixed issue with SharePoint servers not being deployed when they had other roles applied to them
-- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137)
+- Fixed issue with SharePoint servers not being deployed when they had other roles applied to them.
+- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137).
+- AL does no longer use the Hyper-V VM's notes field exclusively (Fixes #1135).
 
 ## 5.34.0 (2021-03-30)
 
