@@ -3,6 +3,12 @@
 ## Unreleased
 
 ### Enhancements
+
+### Fixes
+
+## 5.35.0 (2021-04-23)
+
+### Enhancements
 - New `*-LabSnippet` cmdlets!
 - New PreInstallationActivity parameter for Add-LabMachineDefinition
   - Immediately before a role is deployed, the PreInstallationActivity is executed
