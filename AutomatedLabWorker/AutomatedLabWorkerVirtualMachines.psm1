@@ -99,15 +99,13 @@ function New-LWHypervVM
 
         $mac = "$macAddressPrefix{0:X6}" -f $macIdx++
 
-        $ipSettings.Add('MacAddress', $mac)
-        $adapter.MacAddress = $mac
-
-        $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f $mac.Substring(0, 2),
-        $mac.Substring(2, 2),
-        $mac.Substring(4, 2),
-        $mac.Substring(6, 2),
-        $mac.Substring(8, 2),
-        $mac.Substring(10, 2)
+        if (-not $adapter.MacAddress)
+        {
+            $adapter.MacAddress = $mac
+        }
+        
+        $ipSettings.Add('MacAddress', $adapter.MacAddress)
+        $macWithDash = '{0}-{1}-{2}-{3}-{4}-{5}' -f (Get-StringSection -SectionSize 2 -String $adapter.MacAddress)
 
         $ipSettings.Add('InterfaceName', $macWithDash)
         $ipSettings.Add('IpAddresses', @())
@@ -535,14 +533,10 @@ function New-LWHypervVM
             #for Generation 1 VMs
             $VhdVolume = "$($VhdPartition.DriveLetter):"
         }
+        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
 
         #Get-PSDrive needs to be called to update the PowerShell drive list
         Get-PSDrive | Out-Null
-
-        Write-PSFMessage "`tDisk mounted to drive $VhdVolume"
-        $unattendXmlContent = Get-UnattendedContent
-        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
-        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
 
         #copy AL tools to lab machine and optionally the tools folder
         $drive = New-PSDrive -Name $VhdVolume[0] -PSProvider FileSystem -Root $VhdVolume
@@ -652,11 +646,39 @@ Stop-Transcript
 '@
         [System.IO.File]::WriteAllText("$vhdVolume\AdditionalDisksOnline.ps1", $additionalDisksOnline)
 
+        $defaultSettings = @{
+            WinRmMaxEnvelopeSizeKb              = 500
+            WinRmMaxConcurrentOperationsPerUser = 1500
+            WinRmMaxConnections                 = 300
+        }
+    
+        $command = 'Start-Service WinRm'
+        foreach ($setting in $defaultSettings.GetEnumerator())
+        {
+            $settingValue = if ((Get-LabConfigurationItem -Name $setting.Key) -ne $setting.Value)
+            {
+                Get-LabConfigurationItem -Name $setting.Key
+            }
+            else
+            {
+                $setting.Value
+            }
+
+            $subdir = if ($setting.Key -match 'MaxEnvelope') { $null } else { 'Service\' }
+            $command = -join @($command, "`r`nSet-Item WSMAN:\localhost\$subdir$($setting.Key.Replace('WinRm','')) $($settingValue) -Force")
+        }
+
+        [System.IO.File]::WriteAllText("$vhdVolume\WinRmCustomization.ps1", $command)
+    
+        Write-ProgressIndicator
+        
+        $unattendXmlContent = Get-UnattendedContent
+        $unattendXmlContent.Save("$VhdVolume\Unattend.xml")
+        Write-PSFMessage "`tUnattended file copied to VM Disk '$vhdVolume\unattend.xml'"
+        
         [void] (Dismount-DiskImage -ImagePath $path)
         Write-PSFMessage "`tdisk image dismounted"
-
-        Write-ProgressIndicator
-    }
+    }    
 
     Write-PSFMessage "`tSettings RAM, start and stop actions"
     $param = @{}
@@ -1699,9 +1721,19 @@ function Set-LWHypervVMDescription
         [string]$ComputerName
     )
 
-    Write-LogFunctionEntry
+    Write-LogFunctionEntry    
 
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
+    $prefix = '#AL<#'
+    $suffix = '#>AL#'
+    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
+
+    $notes = (Get-VM -Name $ComputerName).Notes
+
+    if ($notes -match $pattern) {
+        $notes = $notes -replace $pattern, ''
+    }
+
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
     $disctionary = New-Object $type
 
     foreach ($kvp in $Hashtable.GetEnumerator())
@@ -1709,7 +1741,7 @@ function Set-LWHypervVMDescription
         $disctionary.Add($kvp.Key, $kvp.Value)
     }
 
-    $notes = $disctionary.ExportToString()
+    $notes += $prefix + $disctionary.ExportToString() + $suffix
 
     Set-VM -Name $ComputerName -Notes $notes
 
@@ -1726,19 +1758,29 @@ function Get-LWHypervVMDescription
     )
 
     Write-LogFunctionEntry
-
+    
     $vm = Get-VM -Name $ComputerName -ErrorAction SilentlyContinue
     if (-not $vm)
     {
         return
     }
+    
+    $prefix = '#AL<#'
+    $suffix = '#>AL#'
+    $pattern = '{0}(?<ALNotes>[\s\S]+){1}' -f [regex]::Escape($prefix), [regex]::Escape($suffix)
+    
+    $notes = if ($vm.Notes -match $pattern) {
+        $Matches.ALNotes
+    }
+    else {
+        $vm.Notes
+    }
 
-    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T String,String
-
+    $type = Get-Type -GenericType AutomatedLab.DictionaryXmlStore -T string, string
     try
     {
         $importMethodInfo = $type.GetMethod('ImportFromString', [System.Reflection.BindingFlags]::Public -bor [System.Reflection.BindingFlags]::Static)
-        $dictionary = $importMethodInfo.Invoke($null, $vm.Notes)
+        $dictionary = $importMethodInfo.Invoke($null, $notes.Trim())
         $dictionary
     }
     catch

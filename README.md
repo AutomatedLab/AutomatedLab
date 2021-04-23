@@ -63,11 +63,13 @@ There are two options installing AutomatedLab:
 This solution supports setting up virtual machines with the following products
 
 - Windows 7, 2008 R2, 8 / 8.1 and 2012 / 2012 R2, 10 / 2016, 2019
-- SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017
+- SQL Server 2008, 2008R2, 2012, 2014, 2016, 2017, 2019
 - Visual Studio 2012, 2013, 2015
 - Team Foundation Services 2018, Azure DevOps Server
 - Exchange 2013, 2016, 2019
 - System Center Orchestrator 2012
+- System Center Operations Manager 2019
+- System Center Service Manager 2019
 - Microsoft Endpoint Manager Configuration Manager 1902 (and newer)
 - MDT
 - ProGet (Private PowerShell Gallery)

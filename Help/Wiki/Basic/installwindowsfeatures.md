@@ -1,5 +1,5 @@
 ## Summary
-A quite common task in a lab is to add Windows features to one or some machines. This can be easily done using the cmdlet Install-WindowsFeature that is available since Windows Server 2008 R2. It is also quite easy to the cmdlet on another machine by using Install-WindowsFeature inside a scriptblock that you invoke on a remote machine using Invoke-Command. However, this requires authentication, createing the scripblock and other things. The cmdlet Install-LabWinowsFeature does this all for you.
+A quite common task in a lab is to add Windows features to one or some machines. This can be easily done using the cmdlet Install-WindowsFeature that is available since Windows Server 2008 R2. It is also quite easy to the cmdlet on another machine by using Install-WindowsFeature inside a scriptblock that you invoke on a remote machine using Invoke-Command. However, this requires authentication, creating the scriptblock and other things. The cmdlet Install-LabWindowsFeature does this all for you.
 
 ### Installing Windows Features using Install-LabWindowsFeature
 Install-LabWindowsFeature uses Invoke-LabCommand that is discussed in <TODO>. As Invoke-LabCommand handles obstacles like name resolution and authentication with the standard lab account, which makes this task even easier.

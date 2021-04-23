@@ -173,6 +173,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>5</Order>
             <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
         </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Configure WinRM settings</Description>
+            <Order>6</Order>
+            <CommandLine>PowerShell -File C:\WinRmCustomization.ps1</CommandLine>
+        </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
         <AdministratorPassword>
@@ -405,6 +410,11 @@ $unattendedXmlDefaultContent2008 = @'
             <Description>Disable .net Optimization</Description>
             <Order>7</Order>
             <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Configure WinRM settings</Description>
+            <Order>8</Order>
+            <CommandLine>PowerShell -File C:\WinRmCustomization.ps1</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
@@ -1052,7 +1062,13 @@ function Export-LabDefinition
                         $roleParentDomain = $firstChildDcRole.Properties.ParentDomain
                         $rootDc = Get-LabMachineDefinition -Role RootDC | Where-Object DomainName -eq $roleParentDomain
 
-                        $networkAdapter.IPv4DnsServers = $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $rootDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
+                    }
+                    elseif ($machine.Roles.Name -contains 'DC')
+                    {
+                        $parentDc = Get-LabMachineDefinition -Role RootDC,FirstChildDc | Where-Object DomainName -eq $machine.DomainName | Select-Object -First 1
+
+                        $networkAdapter.IPv4DnsServers = $machine.NetworkAdapters[0].Ipv4Address[0].IpAddress, $parentDc.NetworkAdapters[0].Ipv4Address[0].IpAddress
                     }
                     else #machine is domain joined and not a RootDC or FirstChildDC
                     {
@@ -1873,7 +1889,9 @@ function Add-LabMachineDefinition
         [ValidateScript( { $_ -in @([System.Globalization.CultureInfo]::GetCultures([System.Globalization.CultureTypes]::AllCultures).Name) })]
         [string]$UserLocale,
 
-        [AutomatedLab.PostInstallationActivity[]]$PostInstallationActivity,
+        [AutomatedLab.InstallationActivity[]]$PostInstallationActivity,
+
+        [AutomatedLab.InstallationActivity[]]$PreInstallationActivity,
 
         [string]$ToolsPath,
 
@@ -2789,6 +2807,7 @@ function Add-LabMachineDefinition
 
         $machine.Roles = $Roles
         $machine.PostInstallationActivity = $PostInstallationActivity
+        $machine.PreInstallationActivity = $PreInstallationActivity
 
         if ($HypervProperties)
         {
@@ -3004,7 +3023,7 @@ function Get-LabMachineRoleDefinition
 #endregion Get-LabMachineRoleDefinition
 
 #region Get-LabPostInstallationActivity
-function Get-LabPostInstallationActivity
+function Get-LabInstallationActivity
 {
     [CmdletBinding()]
     param (
@@ -3032,6 +3051,10 @@ function Get-LabPostInstallationActivity
         [Parameter(ParameterSetName = 'CustomRole')]
         [hashtable]$Properties,
 
+        [System.Management.Automation.PSVariable[]]$Variable,
+    
+        [System.Management.Automation.FunctionInfo[]]$Function,
+
         [switch]$DoNotUseCredSsp,
 
         [string]$CustomRole
@@ -3040,7 +3063,9 @@ function Get-LabPostInstallationActivity
     begin
     {
         Write-LogFunctionEntry
-        $activity = New-Object -TypeName AutomatedLab.PostInstallationActivity
+        $activity = New-Object -TypeName AutomatedLab.InstallationActivity
+        if ($Variable) { $activity.SerializedVariables = $Variable | ConvertTo-PSFClixml}
+        if ($Function) { $activity.SerializedFunctions = $Function | ConvertTo-PSFClixml}
         if (-not $Properties)
         {
             $Properties = @{ } 
@@ -3160,11 +3185,7 @@ function Get-LabPostInstallationActivity
 
             if ($Properties)
             {
-                foreach ($kvp in $Properties.GetEnumerator())
-                {
-                    [object[]]$toList = $kvp.Value
-                    $activity.Properties.Add($kvp.Key, $toList )
-                }
+                $activity.SerializedProperties = $Properties | ConvertTo-PSFClixml -ErrorAction SilentlyContinue
             }
         }
 
@@ -3720,3 +3741,5 @@ function Get-OnlineAdapterHardwareAddress
     }
 }
 #endregion Internal
+
+if (-not (Test-Path "alias:Get-LabPostInstallationActivity")) { New-Alias -Name Get-LabPostInstallationActivity -Value Get-LabInstallationActivity -Description "Alias so that scripts keep working" }

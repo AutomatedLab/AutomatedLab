@@ -38,7 +38,7 @@ $role = Get-LabMachineRoleDefinition -Role WindowsAdminCenter -Properties @{
     UseSsl = 'False'
     ConnectedNode = '["WACHO1","WACHO3"]'
 }
-$instCred = [pscredential]::new('fabrikam\OtherUser' , ('Other Password' | ConvertTo-SecureString -AsPlain -Force)
+$instCred = [pscredential]::new('fabrikam\OtherUser' , ('Other Password' | ConvertTo-SecureString -AsPlain -Force))
 Add-LabMachineDefinition -Name WACWAC2.fabrikam.com -SkipDeployment -Roles $role -InstallationUserCredential $instCred
 
 # or to connect to your local installation
