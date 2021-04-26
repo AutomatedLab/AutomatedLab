@@ -5,6 +5,7 @@
 ### Enhancements
 
 ### Fixes
+- Fixing issue during deployment when admin account is set not to expire (email submission)
 
 ## 5.35.0 (2021-04-23)
 
