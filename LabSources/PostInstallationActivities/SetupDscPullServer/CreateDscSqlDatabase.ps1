@@ -540,6 +540,15 @@ ORDER BY dbo.StatusReportMetaData.CreationTime DESC
 
 GO
 
+CREATE VIEW [dbo].[vDscTaggingData]
+AS
+SELECT dbo.RegistrationData.NodeName, dbo.TaggingData.Environment, dbo.TaggingData.BuildNumber, dbo.TaggingData.GitCommitId, dbo.TaggingData.Version, dbo.TaggingData.BuildDate, dbo.TaggingData.Timestamp, 
+dbo.TaggingData.AgentId
+FROM dbo.RegistrationData INNER JOIN
+dbo.TaggingData ON dbo.RegistrationData.AgentId = dbo.TaggingData.AgentId
+
+GO
+
 /****** Object:  View [dbo].[vNodeLastStatus]    Script Date: 4/6/2021 10:53:28 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -671,6 +680,124 @@ CREATE TABLE [dbo].[RegistrationMetaData](
 	[CreationTime] [datetime] NOT NULL
 ) ON [PRIMARY]
 GO
+
+CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
+ON [dbo].[RegistrationData]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @AgentId nvarchar(255)
+  SELECT @AgentId = AgentId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
+  VALUES(@AgentId,GETDATE())
+
+END
+GO
+
+CREATE TRIGGER [dbo].[InsertCreationTimeSRMD]
+ON [dbo].[StatusReport]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @JobId nvarchar(255)
+  SELECT @JobId = JobId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
+  VALUES(@JobId,GETDATE())
+
+END
+GO
+
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
+ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
+GO
+
+CREATE TRIGGER [dbo].[InsertNodeLastStatusData]
+ON [dbo].[StatusReport]
+AFTER UPDATE
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @NodeName nvarchar(30)
+  DECLARE @StatusData nvarchar(max)
+  DECLARE @status varchar(10)
+  SELECT @NodeName = NodeName, @StatusData = StatusData, @status = Status
+  FROM INSERTED
+
+       IF @status = 'Success'
+       Begin
+         --create temp table
+         IF OBJECT_ID('tempdb..#TempJSON') IS NOT NULL
+                DROP TABLE #TempJSON
+
+         CREATE TABLE #TempJSON(
+                [NodeName] [varchar](30) NOT NULL,
+                [NumberOfResources] [int] NULL,
+                [DscMode] [varchar](10) NULL,
+                [DscConfigMode] [varchar](100) NULL,
+                [ActionAfterReboot] [varchar](50) NULL,
+                [ReapplyMOFCycle] [int] NULL,
+                [CheckForNewMOF] [int] NULL,
+                [PullServer] [varchar](30) NULL,
+                [LastUpdate] datetime)
+             --split JSON
+                    DECLARE @j VARCHAR(max)
+                    SET @j = (SELECT REPLACE(Replace(REPLACE(@StatusData,'["{','[{'),'}"]','}]'),'\"','"'));
+
+                    WITH ReadableJSON AS (
+                    SELECT
+                              json_value(@j, '$[0].HostName') AS NodeName,   
+                              json_value(@j, '$[0].NumberOfResources') AS NumberOfResources,
+                              json_value(@j, '$[0].Mode') AS DscMode,
+                              json_value(@j, '$[0].MetaConfiguration.ConfigurationMode') AS DscConfigMode,
+                              json_value(@j, '$[0].MetaConfiguration.ActionAfterReboot') AS ActionAfterReboot,
+                              json_value(@j, '$[0].MetaConfiguration.RefreshFrequencyMins') AS ReapplyMOFCycle,
+                              json_value(@j, '$[0].MetaConfiguration.ConfigurationModeFrequencyMins') AS CheckForNewMOF,
+                              substring(json_value(@j, '$[0].MetaConfiguration.ConfigurationDownloadManagers[0].ServerURL'), 9, 15) AS PullServer,
+                              GETDATE() AS LastUpdated
+                    FROM OPENJSON(@j)
+                    ) INSERT INTO #TempJSON SELECT * FROM ReadableJSON
+
+         -- Insert statements for trigger here
+         IF NOT EXISTS (SELECT NodeName FROM dbo.NodeLastStatusData WHERE NodeName = @NodeName)
+         BEGIN
+                    INSERT INTO [NodeLastStatusData] (NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate)
+                    SELECT NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate FROM #TempJSON
+         END
+         ELSE
+         BEGIN
+                           UPDATE [NodeLastStatusData] SET NumberOfResources = #TempJSON.NumberOfResources, DscMode = #TempJSON.DscMode, DscConfigMode = #TempJSON.DscConfigMode, ActionAfterReboot = #TempJSON.ActionAfterReboot, ReapplyMOFCycle = #TempJSON.ReapplyMOFCycle, CheckForNewMOF = #TempJSON.CheckForNewMOF, PullServer = #TempJSON.PullServer, LastUpdate = #TempJSON.LastUpdate
+                           FROM [NodeLastStatusData] nlsd
+                           INNER JOIN #TempJSON ON nlsd.NodeName = #TempJSON.NodeName
+                           WHERE nlsd.NodeName = #TempJSON.NodeName
+         END
+       END
+END
+
+GO
+
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertNodeLastStatusData]
+GO
+
 USE [master]
 GO
 ALTER DATABASE [DSC] SET  READ_WRITE 
