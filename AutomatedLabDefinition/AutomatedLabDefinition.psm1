@@ -173,6 +173,11 @@ $unattendedXmlDefaultContent2012 = @'
             <Order>5</Order>
             <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
         </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Configure WinRM settings</Description>
+            <Order>6</Order>
+            <CommandLine>PowerShell -File C:\WinRmCustomization.ps1</CommandLine>
+        </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>
         <AdministratorPassword>
@@ -405,6 +410,11 @@ $unattendedXmlDefaultContent2008 = @'
             <Description>Disable .net Optimization</Description>
             <Order>7</Order>
             <CommandLine>PowerShell -Command "schtasks.exe /query /FO CSV | ConvertFrom-Csv | Where-Object { $_.TaskName -like '*NGEN*' } | ForEach-Object { schtasks.exe /Change /TN $_.TaskName /Disable }"</CommandLine>
+        </SynchronousCommand>
+        <SynchronousCommand wcm:action="add">
+            <Description>Configure WinRM settings</Description>
+            <Order>8</Order>
+            <CommandLine>PowerShell -File C:\WinRmCustomization.ps1</CommandLine>
         </SynchronousCommand>
       </FirstLogonCommands>
       <UserAccounts>

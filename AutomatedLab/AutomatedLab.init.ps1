@@ -123,6 +123,9 @@ Set-PSFConfig -Module 'AutomatedLab' -Name DisableWindowsDefender -Value $true -
 Set-PSFConfig -Module 'AutomatedLab' -Name DoNotSkipNonNonEnglishIso -Value $false -Initialize -Validation bool  -Description 'Indicates that non English ISO files will not be skipped'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultDnsForwarder1 -Value 1.1.1.1 -Initialize -Description 'If routing is installed on a Root DC, this forwarder is used'
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultDnsForwarder2 -Value 8.8.8.8 -Initialize -Description 'If routing is installed on a Root DC, this forwarder is used'
+Set-PSFConfig -Module 'AutomatedLab' -Name WinRmMaxEnvelopeSizeKb -Value 500 -Validation integerpositive -Initialize -Description 'CAREFUL! Fiddling with the defaults will likely result in errors if you do not know what you are doing! Configure a different envelope size on all lab machines if necessary.'
+Set-PSFConfig -Module 'AutomatedLab' -Name WinRmMaxConcurrentOperationsPerUser -Value 1500 -Validation integerpositive -Initialize -Description 'CAREFUL! Fiddling with the defaults will likely result in errors if you do not know what you are doing! Configure a different number of per-user concurrent operations on all lab machines if necessary.'
+Set-PSFConfig -Module 'AutomatedLab' -Name WinRmMaxConnections -Value 300 -Validation integerpositive -Initialize -Description 'CAREFUL! Fiddling with the defaults will likely result in errors if you do not know what you are doing! Configure a different max number of connections on all lab machines if necessary.'
 
 #Hyper-V VM Settings
 Set-PSFConfig -Module 'AutomatedLab' -Name SetLocalIntranetSites -Value 'All'  -Initialize -Validation string  -Description 'All, Forest, Domain, None'

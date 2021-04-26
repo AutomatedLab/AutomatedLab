@@ -16,6 +16,7 @@ Install-Module AutomatedLab -AllowClobber
 Set-PSFConfig -Module AutomatedLab -Name LabAppDataRoot -Value /home/youruser/.alConfig -PassThru | Register-PSFConfig
 
 # Prepare sample content - modify to your needs
+
 # Windows
 New-LabSourcesFolder -Drive C
 

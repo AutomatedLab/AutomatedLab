@@ -3,6 +3,12 @@
 ## Unreleased
 
 ### Enhancements
+
+### Fixes
+
+## 5.35.0 (2021-04-23)
+
+### Enhancements
 - New `*-LabSnippet` cmdlets!
 - New PreInstallationActivity parameter for Add-LabMachineDefinition
   - Immediately before a role is deployed, the PreInstallationActivity is executed
@@ -10,8 +16,17 @@
   - For both pre and post, Get-LabInstallationActivity can be used, and can even include custom roles
   - Thanks to the awesomeness that is @friedrichweinmann and his PSFramework, we now have Variables and Functions that can be passed to Get-LabInstallationActivity
 - Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
+- Added product keys for 'Windows 10 Education' and 'Windows 10 Pro Education'.
+- MAC addresses are now configurable
+- A choice selection of WSMAN settings can now be configured
+  - To see which: Get-PSFConfig -FullName AutomatedLab.WinRm*
+- Setting lab administrative accounts to never expire.
 
 ### Fixes
+- Fixed #1033, NonExistingDnsServerAssigned is now only called if domain controllers are defined in the lab.
+- Fixed issue with SharePoint servers not being deployed when they had other roles applied to them.
+- Adding alias Disable-LabHostRemoting for increased visibility (Fixes #1137).
+- AL does no longer use the Hyper-V VM's notes field exclusively (Fixes #1135).
 
 ## 5.34.0 (2021-03-30)
 
@@ -21,9 +36,6 @@
 - Replaced dynamic parameters with user-friendly TEPP Argument Completers.
 - Update Exchange2019 custom role to use public download.
 
-=======
-- Adding SQL Server 2019 to Azure DevOps Server deployment ode and validators.
->>>>>>> 6eaed7b1 (Added SQL Server 2019 support for Azure DevOps Server)
 ### Fixes
 - Fixed #1087. AL now supports WIM and ESD files in Windows ISOs.
 - Fixed #1115, the validator for AzDevOps/TFS now also validates SQLServer2019

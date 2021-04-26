@@ -246,7 +246,7 @@ function Undo-LabHostRemoting
     Disable-WSManCredSSP -Role Client
     Write-ScreenInfo done
 
-    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empyt string"
+    Write-ScreenInfo -Message "Setting 'TrustedHosts' to an empty string"
     Set-Item -Path Microsoft.WSMan.Management\WSMan::localhost\Client\TrustedHosts -Value '' -Force
 
     Write-ScreenInfo "Resetting local policy 'Computer Configuration -> Administrative Templates -> System -> Credentials Delegation -> Allow Delegating Fresh Credentials'"
@@ -279,6 +279,8 @@ function Undo-LabHostRemoting
 
     Write-LogFunctionExit
 }
+
+if (-not (Test-Path "alias:Disable-LabHostRemoting")) { New-Alias -Name Disable-LabHostRemoting -Value Undo-LabHostRemoting -Description "Alias function for Undo-LabHostRemoting to increase visibility" }
 #endregion Undo-LabHostRemoting
 
 #region Test-LabHostRemoting
@@ -1304,6 +1306,22 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
+
+    # Set account expiration for builtin account and lab domain account
+    foreach ($machine in (Get-LabVM -Role ADDS | Group-Object DomainName))
+    {
+        $anyDc = $machine.Group | Select -First 1
+        $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
+        Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
+            Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+        } -Variable (Get-Variable userName)
+    }
+
+    $userName = (Get-Lab).DefaultInstallationCredential.UserName
+    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {-not ($_.Roles.Name -band [int][AutomatedLab.Roles]::ADDS)}) -ScriptBlock {
+        # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
+    } -Variable (Get-Variable userName)
 
     try
     {

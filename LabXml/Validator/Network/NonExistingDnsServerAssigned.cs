@@ -25,7 +25,7 @@ namespace AutomatedLab
                 .SelectMany(n => n.Ipv4DnsServers)
                 .Where(dns => !dnsServers.Contains(dns));
 
-            if (nonExistingDnssServers.Count() == 0)
+            if (nonExistingDnssServers.Count() == 0 | dnsServers.Count() == 0)
                 yield break;
 
             foreach (var nonExistingDnssServer in nonExistingDnssServers)
