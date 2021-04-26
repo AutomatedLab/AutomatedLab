@@ -212,6 +212,92 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+/****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TaggingData](
+	[AgentId] [nvarchar](255) NOT NULL,
+	[Environment] [nvarchar](255) NULL,
+	[BuildNumber] [int] NOT NULL,
+	[GitCommitId] [nvarchar](255) NOT NULL,
+	[Version] [nvarchar](50) NOT NULL,
+	[BuildDate] [datetime] NOT NULL,
+	[Timestamp] [datetime] NOT NULL,
+ CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
+(
+	[AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Devices](
+	[TargetName] [nvarchar](255) NOT NULL,
+	[ConfigurationID] [nvarchar](255) NOT NULL,
+	[ServerCheckSum] [nvarchar](255) NOT NULL,
+	[TargetCheckSum] [nvarchar](255) NOT NULL,
+	[NodeCompliant] [bit] NOT NULL,
+	[LastComplianceTime] [datetime] NULL,
+	[LastHeartbeatTime] [datetime] NULL,
+	[Dirty] [bit] NOT NULL,
+	[StatusCode] [int] NULL,
+ CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
+(
+	[TargetName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeErrorData](
+	[NodeName] [nvarchar](50) NULL,
+	[StartTime] [datetime] NULL,
+	[Errors] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeLastStatusData](
+	[NodeName] [varchar](30) NOT NULL,
+	[NumberOfResources] [int] NULL,
+	[DscMode] [varchar](10) NULL,
+	[DscConfigMode] [varchar](100) NULL,
+	[ActionAfterReboot] [varchar](50) NULL,
+	[ReapplyMOFCycle] [int] NULL,
+	[CheckForNewMOF] [int] NULL,
+	[PullServer] [varchar](30) NULL,
+	[LastUpdate] [datetime] NULL
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RegistrationMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AgentId] [nvarchar](255) NOT NULL,
+	[CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+
 --Base views
 CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
 AS
@@ -540,6 +626,15 @@ ORDER BY dbo.StatusReportMetaData.CreationTime DESC
 
 GO
 
+CREATE VIEW [dbo].[vDscTaggingData]
+AS
+SELECT dbo.RegistrationData.NodeName, dbo.TaggingData.Environment, dbo.TaggingData.BuildNumber, dbo.TaggingData.GitCommitId, dbo.TaggingData.Version, dbo.TaggingData.BuildDate, dbo.TaggingData.Timestamp, 
+dbo.TaggingData.AgentId
+FROM dbo.RegistrationData INNER JOIN
+dbo.TaggingData ON dbo.RegistrationData.AgentId = dbo.TaggingData.AgentId
+
+GO
+
 /****** Object:  View [dbo].[vNodeLastStatus]    Script Date: 4/6/2021 10:53:28 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -568,26 +663,7 @@ SELECT sr.[JobId]
   inner join [DSC].[dbo].[vNodeStatusSimple] vnss on sr.NodeName = vnss.NodeName AND sr.EndTime = vnss.Time
 
 GO
-/****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[TaggingData](
-	[AgentId] [nvarchar](255) NOT NULL,
-	[Environment] [nvarchar](255) NULL,
-	[BuildNumber] [int] NOT NULL,
-	[GitCommitId] [nvarchar](255) NOT NULL,
-	[Version] [nvarchar](50) NOT NULL,
-	[BuildDate] [datetime] NOT NULL,
-	[Timestamp] [datetime] NOT NULL,
- CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
-(
-	[AgentId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
 
-GO
 /****** Object:  View [dbo].[vTaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -609,68 +685,123 @@ SELECT NodeName
 
 GO
 
-/****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
+CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
+ON [dbo].[RegistrationData]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @AgentId nvarchar(255)
+  SELECT @AgentId = AgentId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
+  VALUES(@AgentId,GETDATE())
+
+END
 GO
-SET QUOTED_IDENTIFIER ON
+
+CREATE TRIGGER [dbo].[InsertCreationTimeSRMD]
+ON [dbo].[StatusReport]
+AFTER INSERT
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @JobId nvarchar(255)
+  SELECT @JobId = JobId
+  FROM INSERTED
+
+  -- Insert statements for trigger here
+  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
+  VALUES(@JobId,GETDATE())
+
+END
 GO
-CREATE TABLE [dbo].[Devices](
-	[TargetName] [nvarchar](255) NOT NULL,
-	[ConfigurationID] [nvarchar](255) NOT NULL,
-	[ServerCheckSum] [nvarchar](255) NOT NULL,
-	[TargetCheckSum] [nvarchar](255) NOT NULL,
-	[NodeCompliant] [bit] NOT NULL,
-	[LastComplianceTime] [datetime] NULL,
-	[LastHeartbeatTime] [datetime] NULL,
-	[Dirty] [bit] NOT NULL,
-	[StatusCode] [int] NULL,
- CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
-(
-	[TargetName] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
+
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
+ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
 GO
-/****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[NodeErrorData](
-	[NodeName] [nvarchar](50) NULL,
-	[StartTime] [datetime] NULL,
-	[Errors] [nvarchar](max) NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+CREATE TRIGGER [dbo].[InsertNodeLastStatusData]
+ON [dbo].[StatusReport]
+AFTER UPDATE
+AS
+BEGIN
+  -- SET NOCOUNT ON added to prevent extra result sets from
+  -- interfering with SELECT statements.
+  SET NOCOUNT ON;
+
+  -- get the last id value of the record inserted or updated
+  DECLARE @NodeName nvarchar(30)
+  DECLARE @StatusData nvarchar(max)
+  DECLARE @status varchar(10)
+  SELECT @NodeName = NodeName, @StatusData = StatusData, @status = Status
+  FROM INSERTED
+
+       IF @status = 'Success'
+       Begin
+         --create temp table
+         IF OBJECT_ID('tempdb..#TempJSON') IS NOT NULL
+                DROP TABLE #TempJSON
+
+         CREATE TABLE #TempJSON(
+                [NodeName] [varchar](30) NOT NULL,
+                [NumberOfResources] [int] NULL,
+                [DscMode] [varchar](10) NULL,
+                [DscConfigMode] [varchar](100) NULL,
+                [ActionAfterReboot] [varchar](50) NULL,
+                [ReapplyMOFCycle] [int] NULL,
+                [CheckForNewMOF] [int] NULL,
+                [PullServer] [varchar](30) NULL,
+                [LastUpdate] datetime)
+             --split JSON
+                    DECLARE @j VARCHAR(max)
+                    SET @j = (SELECT REPLACE(Replace(REPLACE(@StatusData,'["{','[{'),'}"]','}]'),'\"','"'));
+
+                    WITH ReadableJSON AS (
+                    SELECT
+                              json_value(@j, '$[0].HostName') AS NodeName,   
+                              json_value(@j, '$[0].NumberOfResources') AS NumberOfResources,
+                              json_value(@j, '$[0].Mode') AS DscMode,
+                              json_value(@j, '$[0].MetaConfiguration.ConfigurationMode') AS DscConfigMode,
+                              json_value(@j, '$[0].MetaConfiguration.ActionAfterReboot') AS ActionAfterReboot,
+                              json_value(@j, '$[0].MetaConfiguration.RefreshFrequencyMins') AS ReapplyMOFCycle,
+                              json_value(@j, '$[0].MetaConfiguration.ConfigurationModeFrequencyMins') AS CheckForNewMOF,
+                              substring(json_value(@j, '$[0].MetaConfiguration.ConfigurationDownloadManagers[0].ServerURL'), 9, 15) AS PullServer,
+                              GETDATE() AS LastUpdated
+                    FROM OPENJSON(@j)
+                    ) INSERT INTO #TempJSON SELECT * FROM ReadableJSON
+
+         -- Insert statements for trigger here
+         IF NOT EXISTS (SELECT NodeName FROM dbo.NodeLastStatusData WHERE NodeName = @NodeName)
+         BEGIN
+                    INSERT INTO [NodeLastStatusData] (NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate)
+                    SELECT NodeName, NumberOfResources, DscMode, DscConfigMode, ActionAfterReboot, ReapplyMOFCycle, CheckForNewMOF, PullServer, LastUpdate FROM #TempJSON
+         END
+         ELSE
+         BEGIN
+                           UPDATE [NodeLastStatusData] SET NumberOfResources = #TempJSON.NumberOfResources, DscMode = #TempJSON.DscMode, DscConfigMode = #TempJSON.DscConfigMode, ActionAfterReboot = #TempJSON.ActionAfterReboot, ReapplyMOFCycle = #TempJSON.ReapplyMOFCycle, CheckForNewMOF = #TempJSON.CheckForNewMOF, PullServer = #TempJSON.PullServer, LastUpdate = #TempJSON.LastUpdate
+                           FROM [NodeLastStatusData] nlsd
+                           INNER JOIN #TempJSON ON nlsd.NodeName = #TempJSON.NodeName
+                           WHERE nlsd.NodeName = #TempJSON.NodeName
+         END
+       END
+END
 
 GO
-/****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[NodeLastStatusData](
-	[NodeName] [varchar](30) NOT NULL,
-	[NumberOfResources] [int] NULL,
-	[DscMode] [varchar](10) NULL,
-	[DscConfigMode] [varchar](100) NULL,
-	[ActionAfterReboot] [varchar](50) NULL,
-	[ReapplyMOFCycle] [int] NULL,
-	[CheckForNewMOF] [int] NULL,
-	[PullServer] [varchar](30) NULL,
-	[LastUpdate] [datetime] NULL
-) ON [PRIMARY]
 
+ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertNodeLastStatusData]
 GO
-/****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[RegistrationMetaData](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[AgentId] [nvarchar](255) NOT NULL,
-	[CreationTime] [datetime] NOT NULL
-) ON [PRIMARY]
-GO
+
 USE [master]
 GO
 ALTER DATABASE [DSC] SET  READ_WRITE 
