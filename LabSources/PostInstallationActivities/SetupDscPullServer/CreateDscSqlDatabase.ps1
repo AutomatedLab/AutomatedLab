@@ -225,6 +225,7 @@ CREATE TABLE [dbo].[TaggingData](
 	[Version] [nvarchar](50) NOT NULL,
 	[BuildDate] [datetime] NOT NULL,
 	[Timestamp] [datetime] NOT NULL,
+	[Layers] [text] NULL,
  CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
 (
 	[AgentId] ASC
