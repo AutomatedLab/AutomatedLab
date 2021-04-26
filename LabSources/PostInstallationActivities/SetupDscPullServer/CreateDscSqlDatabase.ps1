@@ -212,6 +212,92 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
+/****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TaggingData](
+	[AgentId] [nvarchar](255) NOT NULL,
+	[Environment] [nvarchar](255) NULL,
+	[BuildNumber] [int] NOT NULL,
+	[GitCommitId] [nvarchar](255) NOT NULL,
+	[Version] [nvarchar](50) NOT NULL,
+	[BuildDate] [datetime] NOT NULL,
+	[Timestamp] [datetime] NOT NULL,
+ CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
+(
+	[AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Devices](
+	[TargetName] [nvarchar](255) NOT NULL,
+	[ConfigurationID] [nvarchar](255) NOT NULL,
+	[ServerCheckSum] [nvarchar](255) NOT NULL,
+	[TargetCheckSum] [nvarchar](255) NOT NULL,
+	[NodeCompliant] [bit] NOT NULL,
+	[LastComplianceTime] [datetime] NULL,
+	[LastHeartbeatTime] [datetime] NULL,
+	[Dirty] [bit] NOT NULL,
+	[StatusCode] [int] NULL,
+ CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
+(
+	[TargetName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+
+/****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeErrorData](
+	[NodeName] [nvarchar](50) NULL,
+	[StartTime] [datetime] NULL,
+	[Errors] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeLastStatusData](
+	[NodeName] [varchar](30) NOT NULL,
+	[NumberOfResources] [int] NULL,
+	[DscMode] [varchar](10) NULL,
+	[DscConfigMode] [varchar](100) NULL,
+	[ActionAfterReboot] [varchar](50) NULL,
+	[ReapplyMOFCycle] [int] NULL,
+	[CheckForNewMOF] [int] NULL,
+	[PullServer] [varchar](30) NULL,
+	[LastUpdate] [datetime] NULL
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RegistrationMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AgentId] [nvarchar](255) NOT NULL,
+	[CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+
 --Base views
 CREATE VIEW [dbo].[vBaseNodeUpdateErrors]
 AS
@@ -577,26 +663,7 @@ SELECT sr.[JobId]
   inner join [DSC].[dbo].[vNodeStatusSimple] vnss on sr.NodeName = vnss.NodeName AND sr.EndTime = vnss.Time
 
 GO
-/****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[TaggingData](
-	[AgentId] [nvarchar](255) NOT NULL,
-	[Environment] [nvarchar](255) NULL,
-	[BuildNumber] [int] NOT NULL,
-	[GitCommitId] [nvarchar](255) NOT NULL,
-	[Version] [nvarchar](50) NOT NULL,
-	[BuildDate] [datetime] NOT NULL,
-	[Timestamp] [datetime] NOT NULL,
- CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
-(
-	[AgentId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
 
-GO
 /****** Object:  View [dbo].[vTaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
 SET ANSI_NULLS ON
 GO
@@ -616,69 +683,6 @@ SELECT NodeName
   inner join [dbo].[RegistrationData] rg on rg.AgentId = tg.AgentId
 
 
-GO
-
-/****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[Devices](
-	[TargetName] [nvarchar](255) NOT NULL,
-	[ConfigurationID] [nvarchar](255) NOT NULL,
-	[ServerCheckSum] [nvarchar](255) NOT NULL,
-	[TargetCheckSum] [nvarchar](255) NOT NULL,
-	[NodeCompliant] [bit] NOT NULL,
-	[LastComplianceTime] [datetime] NULL,
-	[LastHeartbeatTime] [datetime] NULL,
-	[Dirty] [bit] NOT NULL,
-	[StatusCode] [int] NULL,
- CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
-(
-	[TargetName] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
-) ON [PRIMARY]
-GO
-/****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[NodeErrorData](
-	[NodeName] [nvarchar](50) NULL,
-	[StartTime] [datetime] NULL,
-	[Errors] [nvarchar](max) NULL
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-
-GO
-/****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[NodeLastStatusData](
-	[NodeName] [varchar](30) NOT NULL,
-	[NumberOfResources] [int] NULL,
-	[DscMode] [varchar](10) NULL,
-	[DscConfigMode] [varchar](100) NULL,
-	[ActionAfterReboot] [varchar](50) NULL,
-	[ReapplyMOFCycle] [int] NULL,
-	[CheckForNewMOF] [int] NULL,
-	[PullServer] [varchar](30) NULL,
-	[LastUpdate] [datetime] NULL
-) ON [PRIMARY]
-
-GO
-/****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[RegistrationMetaData](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
-	[AgentId] [nvarchar](255) NOT NULL,
-	[CreationTime] [datetime] NOT NULL
-) ON [PRIMARY]
 GO
 
 CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
