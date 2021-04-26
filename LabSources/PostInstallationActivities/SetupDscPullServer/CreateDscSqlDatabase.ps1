@@ -4,239 +4,212 @@
 )
 
 $creatreDbQuery = @'
+USE [master]
+GO
+/****** Object:  Database [DSC]    Script Date: 07.04.2021 16:59:54 ******/
 CREATE DATABASE [DSC]
  CONTAINMENT = NONE
- ON  PRIMARY
-( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 5120KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
- LOG ON
-( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1024GB , FILEGROWTH = 10%)
+ ON  PRIMARY 
+( NAME = N'DSC', FILENAME = N'C:\DSCDB\DSC.mdf' , SIZE = 8192KB , MAXSIZE = UNLIMITED, FILEGROWTH = 1024KB )
+ LOG ON 
+( NAME = N'DSC_log', FILENAME = N'C:\DSCDB\DSC_log.ldf' , SIZE = 1024KB , MAXSIZE = 1073741824KB , FILEGROWTH = 10%)
+ WITH CATALOG_COLLATION = DATABASE_DEFAULT
 GO
-
-ALTER DATABASE DSC SET RECOVERY SIMPLE
-GO
-
 ALTER DATABASE [DSC] SET COMPATIBILITY_LEVEL = 130
 GO
-
 IF (1 = FULLTEXTSERVICEPROPERTY('IsFullTextInstalled'))
 begin
 EXEC [DSC].[dbo].[sp_fulltext_database] @action = 'enable'
 end
 GO
-
-ALTER DATABASE [DSC] SET ANSI_NULL_DEFAULT OFF
+ALTER DATABASE [DSC] SET ANSI_NULL_DEFAULT OFF 
 GO
-
-ALTER DATABASE [DSC] SET ANSI_NULLS OFF
+ALTER DATABASE [DSC] SET ANSI_NULLS OFF 
 GO
-
-ALTER DATABASE [DSC] SET ANSI_PADDING OFF
+ALTER DATABASE [DSC] SET ANSI_PADDING OFF 
 GO
-
-ALTER DATABASE [DSC] SET ANSI_WARNINGS OFF
+ALTER DATABASE [DSC] SET ANSI_WARNINGS OFF 
 GO
-
-ALTER DATABASE [DSC] SET ARITHABORT OFF
+ALTER DATABASE [DSC] SET ARITHABORT OFF 
+GO  
+ALTER DATABASE [DSC] SET AUTO_CLOSE OFF 
 GO
-
-ALTER DATABASE [DSC] SET AUTO_CLOSE OFF
+ALTER DATABASE [DSC] SET AUTO_SHRINK OFF 
 GO
-
-ALTER DATABASE [DSC] SET AUTO_SHRINK OFF
+ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS ON 
 GO
-
-ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS ON
+ALTER DATABASE [DSC] SET CURSOR_CLOSE_ON_COMMIT OFF 
 GO
-
-ALTER DATABASE [DSC] SET CURSOR_CLOSE_ON_COMMIT OFF
+ALTER DATABASE [DSC] SET CURSOR_DEFAULT  GLOBAL 
 GO
-
-ALTER DATABASE [DSC] SET CURSOR_DEFAULT  GLOBAL
+ALTER DATABASE [DSC] SET CONCAT_NULL_YIELDS_NULL OFF 
 GO
-
-ALTER DATABASE [DSC] SET CONCAT_NULL_YIELDS_NULL OFF
+ALTER DATABASE [DSC] SET NUMERIC_ROUNDABORT OFF 
 GO
-
-ALTER DATABASE [DSC] SET NUMERIC_ROUNDABORT OFF
+ALTER DATABASE [DSC] SET QUOTED_IDENTIFIER OFF 
 GO
-
-ALTER DATABASE [DSC] SET QUOTED_IDENTIFIER OFF
+ALTER DATABASE [DSC] SET RECURSIVE_TRIGGERS OFF 
 GO
-
-ALTER DATABASE [DSC] SET RECURSIVE_TRIGGERS OFF
+ALTER DATABASE [DSC] SET  DISABLE_BROKER 
 GO
-
-ALTER DATABASE [DSC] SET  DISABLE_BROKER
+ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS_ASYNC OFF 
 GO
-
-ALTER DATABASE [DSC] SET AUTO_UPDATE_STATISTICS_ASYNC OFF
+ALTER DATABASE [DSC] SET DATE_CORRELATION_OPTIMIZATION OFF 
 GO
-
-ALTER DATABASE [DSC] SET DATE_CORRELATION_OPTIMIZATION OFF
+ALTER DATABASE [DSC] SET TRUSTWORTHY OFF 
 GO
-
-ALTER DATABASE [DSC] SET TRUSTWORTHY OFF
+ALTER DATABASE [DSC] SET ALLOW_SNAPSHOT_ISOLATION OFF 
 GO
-
-ALTER DATABASE [DSC] SET ALLOW_SNAPSHOT_ISOLATION OFF
+ALTER DATABASE [DSC] SET PARAMETERIZATION SIMPLE 
 GO
-
-ALTER DATABASE [DSC] SET PARAMETERIZATION SIMPLE
+ALTER DATABASE [DSC] SET READ_COMMITTED_SNAPSHOT OFF 
 GO
-
-ALTER DATABASE [DSC] SET READ_COMMITTED_SNAPSHOT OFF
+ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF 
 GO
-
-ALTER DATABASE [DSC] SET HONOR_BROKER_PRIORITY OFF
+ALTER DATABASE [DSC] SET RECOVERY SIMPLE 
 GO
-
-ALTER DATABASE [DSC] SET RECOVERY SIMPLE
+ALTER DATABASE [DSC] SET  MULTI_USER 
 GO
-
-ALTER DATABASE [DSC] SET  MULTI_USER
+ALTER DATABASE [DSC] SET PAGE_VERIFY CHECKSUM  
 GO
-
-ALTER DATABASE [DSC] SET PAGE_VERIFY CHECKSUM
+ALTER DATABASE [DSC] SET DB_CHAINING OFF 
 GO
-
-ALTER DATABASE [DSC] SET DB_CHAINING OFF
+ALTER DATABASE [DSC] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF ) 
 GO
-
-ALTER DATABASE [DSC] SET FILESTREAM( NON_TRANSACTED_ACCESS = OFF )
+ALTER DATABASE [DSC] SET TARGET_RECOVERY_TIME = 0 SECONDS 
 GO
-
-ALTER DATABASE [DSC] SET TARGET_RECOVERY_TIME = 0 SECONDS
+ALTER DATABASE [DSC] SET DELAYED_DURABILITY = DISABLED 
 GO
-
-ALTER DATABASE [DSC] SET DELAYED_DURABILITY = DISABLED
+EXEC sys.sp_db_vardecimal_storage_format N'DSC', N'ON'
 GO
-
-ALTER DATABASE [DSC] SET  READ_WRITE
+ALTER DATABASE [DSC] SET QUERY_STORE = OFF
 GO
-
 USE [DSC]
-
+GO
+/****** Object:  User [DSCPull01$]    Script Date: 07.04.2021 16:59:54 ******/
+CREATE USER [DSCPull01$] FOR LOGIN [contoso\DSCPull01$] WITH DEFAULT_SCHEMA=[db_datareader]
+GO
+ALTER ROLE [db_datareader] ADD MEMBER [DSCPull01$]
+GO
+ALTER ROLE [db_datawriter] ADD MEMBER [DSCPull01$]
+GO
+/****** Object:  UserDefinedFunction [dbo].[Split]    Script Date: 07.04.2021 16:59:54 ******/
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE TABLE [dbo].[Devices](
-    [TargetName] [nvarchar](255) NOT NULL,
-    [ConfigurationID] [nvarchar](255) NOT NULL,
-    [ServerCheckSum] [nvarchar](255) NOT NULL,
-    [TargetCheckSum] [nvarchar](255) NOT NULL,
-    [NodeCompliant] [bit] NOT NULL,
-    [LastComplianceTime] [datetime] NULL,
-    [LastHeartbeatTime] [datetime] NULL,
-    [Dirty] [bit] NOT NULL,
-    [StatusCode] [int] NULL,
- CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED
-(
-    [TargetName] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY]
+--Adding functions
+CREATE FUNCTION [dbo].[Split] (
+      @InputString                  VARCHAR(8000),
+      @Delimiter                    VARCHAR(50)
+)
+
+RETURNS @Items TABLE (
+      Item                          VARCHAR(8000)
+)
+
+AS
+BEGIN
+      IF @Delimiter = ' '
+      BEGIN
+            SET @Delimiter = ','
+            SET @InputString = REPLACE(@InputString, ' ', @Delimiter)
+      END
+
+      IF (@Delimiter IS NULL OR @Delimiter = '')
+            SET @Delimiter = ','
+
+      DECLARE @Item           VARCHAR(8000)
+      DECLARE @ItemList       VARCHAR(8000)
+      DECLARE @DelimIndex     INT
+
+      SET @ItemList = @InputString
+      SET @DelimIndex = CHARINDEX(@Delimiter, @ItemList, 0)
+      WHILE (@DelimIndex != 0)
+      BEGIN
+            SET @Item = SUBSTRING(@ItemList, 0, @DelimIndex)
+            INSERT INTO @Items VALUES (@Item)
+
+            -- Set @ItemList = @ItemList minus one less item
+            SET @ItemList = SUBSTRING(@ItemList, @DelimIndex+1, LEN(@ItemList)-@DelimIndex)
+            SET @DelimIndex = CHARINDEX(@Delimiter, @ItemList, 0)
+      END -- End WHILE
+
+      IF @Item IS NOT NULL -- At least one delimiter was encountered in @InputString
+      BEGIN
+            SET @Item = @ItemList
+            INSERT INTO @Items VALUES (@Item)
+      END
+
+      -- No delimiters were encountered in @InputString, so just return @InputString
+      ELSE INSERT INTO @Items VALUES (@InputString)
+
+      RETURN
+
+END -- End Function
 
 GO
-
+/****** Object:  Table [dbo].[RegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
 CREATE TABLE [dbo].[RegistrationData](
-    [AgentId] [nvarchar](255) NOT NULL,
-    [LCMVersion] [nvarchar](255) NULL,
-    [NodeName] [nvarchar](255) NULL,
-    [IPAddress] [nvarchar](255) NULL,
-    [ConfigurationNames] [nvarchar](max) NULL,
- CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED
-(
-    [AgentId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-
-GO
-
-CREATE TABLE [dbo].[StatusReport](
-    [JobId] [nvarchar](50) NOT NULL,
-    [Id] [nvarchar](50) NOT NULL,
-    [OperationType] [nvarchar](255) NULL,
-    [RefreshMode] [nvarchar](255) NULL,
-    [Status] [nvarchar](255) NULL,
-    [LCMVersion] [nvarchar](50) NULL,
-    [ReportFormatVersion] [nvarchar](255) NULL,
-    [ConfigurationVersion] [nvarchar](255) NULL,
-    [NodeName] [nvarchar](255) NULL,
-    [IPAddress] [nvarchar](255) NULL,
-    [StartTime] [datetime] NULL,
-    [EndTime] [datetime] NULL,
-    [Errors] [nvarchar](max) NULL,
-    [StatusData] [nvarchar](max) NULL,
-    [RebootRequested] [nvarchar](255) NULL,
-    [AdditionalData] [nvarchar](max) NULL,
- CONSTRAINT [PK_StatusReport] PRIMARY KEY CLUSTERED
-(
-    [JobId] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-
-CREATE TABLE [dbo].[RegistrationMetaData](
-	[Id] [int] IDENTITY(1,1) NOT NULL,
 	[AgentId] [nvarchar](255) NOT NULL,
+	[LCMVersion] [nvarchar](255) NULL,
+	[NodeName] [nvarchar](255) NULL,
+	[IPAddress] [nvarchar](255) NULL,
+	[ConfigurationNames] [nvarchar](max) NULL,
+ CONSTRAINT [PK_RegistrationData] PRIMARY KEY CLUSTERED 
+(
+	[AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[StatusReport]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[StatusReport](
+	[JobId] [nvarchar](50) NOT NULL,
+	[Id] [nvarchar](50) NOT NULL,
+	[OperationType] [nvarchar](255) NULL,
+	[RefreshMode] [nvarchar](255) NULL,
+	[Status] [nvarchar](255) NULL,
+	[LCMVersion] [nvarchar](50) NULL,
+	[ReportFormatVersion] [nvarchar](255) NULL,
+	[ConfigurationVersion] [nvarchar](255) NULL,
+	[NodeName] [nvarchar](255) NULL,
+	[IPAddress] [nvarchar](255) NULL,
+	[StartTime] [datetime] NULL,
+	[EndTime] [datetime] NULL,
+	[Errors] [nvarchar](max) NULL,
+	[StatusData] [nvarchar](max) NULL,
+	[RebootRequested] [nvarchar](255) NULL,
+	[AdditionalData] [nvarchar](max) NULL,
+ CONSTRAINT [PK_StatusReport] PRIMARY KEY CLUSTERED 
+(
+	[JobId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[StatusReportMetaData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[StatusReportMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[JobId] [nvarchar](255) NOT NULL,
 	[CreationTime] [datetime] NOT NULL
 ) ON [PRIMARY]
-
 GO
-
-CREATE TABLE [dbo].[StatusReportMetaData](
-       [Id] [int] IDENTITY(1,1) NOT NULL,
-       [JobId] [nvarchar](255) NOT NULL,
-       [CreationTime] [datetime] NOT NULL
-) ON [PRIMARY]
-
+/****** Object:  View [dbo].[vBaseNodeUpdateErrors]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
 GO
-
-CREATE TRIGGER [dbo].[InsertCreationTimeRDMD]
-ON [dbo].[RegistrationData]
-AFTER INSERT
-AS
-BEGIN
-  -- SET NOCOUNT ON added to prevent extra result sets from
-  -- interfering with SELECT statements.
-  SET NOCOUNT ON;
-
-  -- get the last id value of the record inserted or updated
-  DECLARE @AgentId nvarchar(255)
-  SELECT @AgentId = AgentId
-  FROM INSERTED
-
-  -- Insert statements for trigger here
-  INSERT INTO [RegistrationMetaData] (AgentId,CreationTime)
-  VALUES(@AgentId,GETDATE())
-
-END
-GO
-
-CREATE TRIGGER [dbo].[InsertCreationTimeSRMD]
-ON [dbo].[StatusReport]
-AFTER INSERT
-AS
-BEGIN
-  -- SET NOCOUNT ON added to prevent extra result sets from
-  -- interfering with SELECT statements.
-  SET NOCOUNT ON;
-
-  -- get the last id value of the record inserted or updated
-  DECLARE @JobId nvarchar(255)
-  SELECT @JobId = JobId
-  FROM INSERTED
-
-  -- Insert statements for trigger here
-  INSERT INTO [StatusReportMetaData] (JobId,CreationTime)
-  VALUES(@JobId,GETDATE())
-
-END
-GO
-
-ALTER TABLE [dbo].[StatusReport] ENABLE TRIGGER [InsertCreationTimeSRMD]
-ALTER TABLE [dbo].[RegistrationData] ENABLE TRIGGER [InsertCreationTimeRDMD]
+SET QUOTED_IDENTIFIER ON
 GO
 
 --Base views
@@ -276,6 +249,12 @@ ORDER BY EndTime DESC
 --Module does not exist					Cannot find module
 --Configuration does not exist			The assigned configuration <Name> is not found
 --Checksum does not exist				Checksum file not located for
+
+GO
+/****** Object:  View [dbo].[vBaseNodeLocalStatus]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE VIEW [dbo].[vBaseNodeLocalStatus]
@@ -338,57 +317,12 @@ SELECT StatusReport.JobId
 		AND [Status] IS NOT NULL
 		OR ErrorMessage IS NULL
 
+
 GO
-
---Adding functions
-CREATE FUNCTION [dbo].[Split] (
-      @InputString                  VARCHAR(8000),
-      @Delimiter                    VARCHAR(50)
-)
-
-RETURNS @Items TABLE (
-      Item                          VARCHAR(8000)
-)
-
-AS
-BEGIN
-      IF @Delimiter = ' '
-      BEGIN
-            SET @Delimiter = ','
-            SET @InputString = REPLACE(@InputString, ' ', @Delimiter)
-      END
-
-      IF (@Delimiter IS NULL OR @Delimiter = '')
-            SET @Delimiter = ','
-
-      DECLARE @Item           VARCHAR(8000)
-      DECLARE @ItemList       VARCHAR(8000)
-      DECLARE @DelimIndex     INT
-
-      SET @ItemList = @InputString
-      SET @DelimIndex = CHARINDEX(@Delimiter, @ItemList, 0)
-      WHILE (@DelimIndex != 0)
-      BEGIN
-            SET @Item = SUBSTRING(@ItemList, 0, @DelimIndex)
-            INSERT INTO @Items VALUES (@Item)
-
-            -- Set @ItemList = @ItemList minus one less item
-            SET @ItemList = SUBSTRING(@ItemList, @DelimIndex+1, LEN(@ItemList)-@DelimIndex)
-            SET @DelimIndex = CHARINDEX(@Delimiter, @ItemList, 0)
-      END -- End WHILE
-
-      IF @Item IS NOT NULL -- At least one delimiter was encountered in @InputString
-      BEGIN
-            SET @Item = @ItemList
-            INSERT INTO @Items VALUES (@Item)
-      END
-
-      -- No delimiters were encountered in @InputString, so just return @InputString
-      ELSE INSERT INTO @Items VALUES (@InputString)
-
-      RETURN
-
-END -- End Function
+/****** Object:  UserDefinedFunction [dbo].[tvfGetRegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE FUNCTION [dbo].[tvfGetRegistrationData] ()
@@ -402,6 +336,12 @@ RETURN
         (SELECT COUNT(*) FROM (SELECT [Value] FROM OPENJSON([ConfigurationNames]))AS ConfigurationCount ) AS ConfigurationCount
     FROM dbo.RegistrationData
 )
+
+GO
+/****** Object:  UserDefinedFunction [dbo].[tvfGetNodeStatus]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE FUNCTION [dbo].[tvfGetNodeStatus] ()
@@ -496,6 +436,12 @@ RETURN
 
 	) AS SubMax ON CreationTime = SubMax.MaxEndTime AND [dbo].[vBaseNodeLocalStatus].[NodeName] = SubMax.NodeName
 )
+
+GO
+/****** Object:  View [dbo].[vRegistrationData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 --Remaining views
@@ -503,22 +449,57 @@ CREATE VIEW [dbo].[vRegistrationData]
 AS
 SELECT GetRegistrationData.*
 FROM dbo.tvfGetRegistrationData() AS GetRegistrationData
+
+GO
+/****** Object:  View [dbo].[vNodeStatusSimple]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE VIEW [dbo].[vNodeStatusSimple]
 AS
-SELECT rd.NodeName, IIF(nss.NodeName IS NULL,'Failure',nss.Status) as Status, nss.Time
+SELECT rd.NodeName,nss.Time,
+	CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NOT NULL THEN 'No data' ELSE
+	CASE WHEN nss.NodeName IS NULL AND nss.RefreshMode IS NULL THEN 'LCM Error' ELSE
+	CASE WHEN nss.NodeName IS NOT NULL AND RefreshMode IS NULL THEN 'LCM Error' ELSE
+	CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState > 0 THEN 'Not in Desired state' ELSE
+	CASE WHEN nss.NodeName IS NOT NULL AND Status = 'Success' AND ResourceCountNotInDesiredState = 0 THEN 'In Desired state' ELSE
+	CASE WHEN nss.NodeName IS NOT NULL THEN Status END END END END END END AS Status,
+	ResourceCountNotInDesiredState,
+	IIF(ResourcesNotInDesiredState IS NULL, '0', ResourcesNotInDesiredState) AS ResourcesNotInDesiredState
 FROM (
-SELECT DISTINCT dbo.StatusReport.NodeName, dbo.StatusReport.Status, dbo.StatusReport.EndTime AS Time
+SELECT DISTINCT
+	dbo.StatusReport.NodeName
+	,dbo.StatusReport.Status
+	,(SELECT COUNT(*)
+		FROM OPENJSON(
+		(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+		))  AS ResourceCountNotInDesiredState
+	,(SELECT [ResourceId] + ',' AS [text()] 
+	FROM OPENJSON(
+	(SELECT [value] FROM OPENJSON((SELECT [value] FROM OPENJSON([StatusData]))) WHERE [key] = 'ResourcesNotInDesiredState')
+	)
+	WITH (
+		ResourceId nvarchar(200) '$.ResourceId'
+	) FOR XML PATH (''))  AS ResourcesNotInDesiredState
+	,dbo.StatusReport.EndTime AS Time
+	,dbo.StatusReport.RefreshMode
 FROM dbo.StatusReport INNER JOIN
     (SELECT MAX(EndTime) AS MaxEndTime, NodeName
     FROM dbo.StatusReport AS StatusReport_1
     GROUP BY NodeName) AS SubMax ON dbo.StatusReport.EndTime = SubMax.MaxEndTime AND dbo.StatusReport.NodeName = SubMax.NodeName
-       WHERE dbo.StatusReport.Status IS NOT NULL
+	WHERE dbo.StatusReport.Status IS NOT NULL
 ) as nss
-RIGHT OUTER JOIN dbo.RegistrationData AS rd
+RIGHT OUTER JOIN dbo.RegistrationData AS rd 
 ON nss.NodeName = rd.NodeName
 
+
+GO
+/****** Object:  View [dbo].[vNodeStatusComplex]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 
@@ -527,6 +508,12 @@ AS
 SELECT GetNodeStatus.*,
 IIF([ResourceCountNotInDesiredState] > 0 OR [ResourceCountInDesiredState] = 0, 'FALSE', 'TRUE') AS [InDesiredState]
 FROM dbo.tvfGetNodeStatus() AS GetNodeStatus
+
+GO
+/****** Object:  View [dbo].[vNodeStatusCount]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 CREATE VIEW [dbo].[vNodeStatusCount]
 AS
@@ -534,16 +521,159 @@ SELECT NodeName, COUNT(*) AS NodeStatusCount
 FROM dbo.StatusReport
 WHERE (NodeName IS NOT NULL)
 GROUP BY NodeName
+
+GO
+/****** Object:  View [dbo].[vStatusReportDataNewest]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
 GO
 
 CREATE VIEW [dbo].[vStatusReportDataNewest]
 AS
-SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime,
+SELECT TOP (1000) dbo.StatusReport.JobId,dbo.RegistrationData.NodeName, dbo.StatusReport.OperationType, dbo.StatusReport.RefreshMode, dbo.StatusReport.Status, dbo.StatusReportMetaData.CreationTime, 
 dbo.StatusReport.StartTime, dbo.StatusReport.EndTime, dbo.StatusReport.Errors, dbo.StatusReport.StatusData
 FROM dbo.StatusReport
 INNER JOIN dbo.StatusReportMetaData ON dbo.StatusReport.JobId = dbo.StatusReportMetaData.JobId
 INNER JOIN dbo.RegistrationData ON dbo.StatusReport.Id = dbo.RegistrationData.AgentId
 ORDER BY dbo.StatusReportMetaData.CreationTime DESC
+
+GO
+
+/****** Object:  View [dbo].[vNodeLastStatus]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+Create View [dbo].[vNodeLastStatus]
+AS
+SELECT sr.[JobId]
+      ,sr.[Id]
+      ,[OperationType]
+      ,[RefreshMode]
+      ,sr.[Status]
+      ,[LCMVersion]
+      ,[ReportFormatVersion]
+      ,[ConfigurationVersion]
+      ,sr.[NodeName]
+      ,[IPAddress]
+      ,[StartTime]
+      ,[EndTime]
+      ,[Errors]
+      ,[StatusData]
+      ,[RebootRequested]
+      ,[AdditionalData]
+  FROM [DSC].[dbo].[StatusReport] sr
+  inner join [dbo].[StatusReportMetaData] srmd on sr.JobId = srmd.JobId
+  inner join [DSC].[dbo].[vNodeStatusSimple] vnss on sr.NodeName = vnss.NodeName AND sr.EndTime = vnss.Time
+
+GO
+/****** Object:  Table [dbo].[TaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[TaggingData](
+	[AgentId] [nvarchar](255) NOT NULL,
+	[Environment] [nvarchar](255) NULL,
+	[BuildNumber] [int] NOT NULL,
+	[GitCommitId] [nvarchar](255) NOT NULL,
+	[Version] [nvarchar](50) NOT NULL,
+	[BuildDate] [datetime] NOT NULL,
+	[Timestamp] [datetime] NOT NULL,
+ CONSTRAINT [PK_DiagnosticData] PRIMARY KEY CLUSTERED 
+(
+	[AgentId] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY]
+
+GO
+/****** Object:  View [dbo].[vTaggingData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+Create View [dbo].[vTaggingData]
+AS
+SELECT NodeName
+      ,tg.[Environment]
+      ,tg.[BuildNumber]
+      ,tg.[GitCommitId]
+      ,tg.[Version]
+      ,tg.[BuildDate]
+      ,tg.[Timestamp]
+  FROM [DSC].[dbo].[TaggingData] tg
+  inner join [dbo].[RegistrationData] rg on rg.AgentId = tg.AgentId
+
+
+GO
+
+/****** Object:  Table [dbo].[Devices]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[Devices](
+	[TargetName] [nvarchar](255) NOT NULL,
+	[ConfigurationID] [nvarchar](255) NOT NULL,
+	[ServerCheckSum] [nvarchar](255) NOT NULL,
+	[TargetCheckSum] [nvarchar](255) NOT NULL,
+	[NodeCompliant] [bit] NOT NULL,
+	[LastComplianceTime] [datetime] NULL,
+	[LastHeartbeatTime] [datetime] NULL,
+	[Dirty] [bit] NOT NULL,
+	[StatusCode] [int] NULL,
+ CONSTRAINT [PK_Devices] PRIMARY KEY CLUSTERED 
+(
+	[TargetName] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON, OPTIMIZE_FOR_SEQUENTIAL_KEY = OFF) ON [PRIMARY]
+) ON [PRIMARY]
+GO
+/****** Object:  Table [dbo].[NodeErrorData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeErrorData](
+	[NodeName] [nvarchar](50) NULL,
+	[StartTime] [datetime] NULL,
+	[Errors] [nvarchar](max) NULL
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[NodeLastStatusData]    Script Date: 4/6/2021 10:53:28 AM ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[NodeLastStatusData](
+	[NodeName] [varchar](30) NOT NULL,
+	[NumberOfResources] [int] NULL,
+	[DscMode] [varchar](10) NULL,
+	[DscConfigMode] [varchar](100) NULL,
+	[ActionAfterReboot] [varchar](50) NULL,
+	[ReapplyMOFCycle] [int] NULL,
+	[CheckForNewMOF] [int] NULL,
+	[PullServer] [varchar](30) NULL,
+	[LastUpdate] [datetime] NULL
+) ON [PRIMARY]
+
+GO
+/****** Object:  Table [dbo].[RegistrationMetaData]    Script Date: 07.04.2021 16:59:54 ******/
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE TABLE [dbo].[RegistrationMetaData](
+	[Id] [int] IDENTITY(1,1) NOT NULL,
+	[AgentId] [nvarchar](255) NOT NULL,
+	[CreationTime] [datetime] NOT NULL
+) ON [PRIMARY]
+GO
+USE [master]
+GO
+ALTER DATABASE [DSC] SET  READ_WRITE 
 GO
 '@
 

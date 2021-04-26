@@ -3,6 +3,7 @@
 ## Unreleased
 
 ### Enhancements
+- Updated the DSC SQL DB for better reporting.
 
 ### Fixes
 
