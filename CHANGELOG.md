@@ -3,6 +3,7 @@
 ### Enhancements
 
 ### Fixes
+- Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
 
 ## 5.36.0 (2021-04-27)
 
