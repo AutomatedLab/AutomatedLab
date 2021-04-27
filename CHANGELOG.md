@@ -1,6 +1,10 @@
 # Changelog
 
-## Unreleased
+### Enhancements
+
+### Fixes
+
+## 5.36.0 (2021-04-27)
 
 ### Enhancements
 - Updated the DSC SQL DB for better reporting.
