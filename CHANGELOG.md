@@ -4,6 +4,7 @@
 
 ### Fixes
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
+- Azure DevOps installation 'failed' with success code 3010 (reboot required).
 
 ## 5.36.0 (2021-04-27)
 
