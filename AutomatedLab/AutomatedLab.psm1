@@ -955,6 +955,17 @@ function Install-Lab
                 Checkpoint-LabVM -ComputerName $allDcVMs -SnapshotName 'Post Forest Setup'
             }
         }
+
+        # Set account expiration for builtin account and lab domain account
+        foreach ($machine in (Get-LabVM -Role ADDS -ErrorAction SilentlyContinue | Group-Object DomainName))
+        {
+            $anyDc = $machine.Group | Select -First 1
+            $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
+            Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
+                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+            } -Variable (Get-Variable userName)
+        }
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1269,6 +1280,12 @@ function Install-Lab
 
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
+        $userName = (Get-Lab).DefaultInstallationCredential.UserName
+        Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
+            # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+            Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
+        } -Variable (Get-Variable userName)
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1306,22 +1323,6 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    # Set account expiration for builtin account and lab domain account
-    foreach ($machine in (Get-LabVM -Role ADDS | Group-Object DomainName))
-    {
-        $anyDc = $machine.Group | Select -First 1
-        $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
-        Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
-            Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-        } -Variable (Get-Variable userName)
-    }
-
-    $userName = (Get-Lab).DefaultInstallationCredential.UserName
-    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
-        # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
-    } -Variable (Get-Variable userName)
 
     try
     {
