@@ -1,10 +1,16 @@
 # Changelog
 
-## Unreleased
-
 ### Enhancements
 
 ### Fixes
+
+## 5.36.0 (2021-04-27)
+
+### Enhancements
+- Updated the DSC SQL DB for better reporting.
+
+### Fixes
+- Fixing issue during deployment when admin account is set not to expire (email submission)
 
 ## 5.35.0 (2021-04-23)
 

@@ -1318,7 +1318,7 @@ function Install-Lab
     }
 
     $userName = (Get-Lab).DefaultInstallationCredential.UserName
-    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {-not ($_.Roles.Name -band [int][AutomatedLab.Roles]::ADDS)}) -ScriptBlock {
+    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
         # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
         Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
     } -Variable (Get-Variable userName)
