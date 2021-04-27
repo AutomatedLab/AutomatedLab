@@ -1,4 +1,4 @@
-version: 5.35.{build}
+version: 5.36.{build}
 image:
 - Visual Studio 2017
 - Ubuntu
