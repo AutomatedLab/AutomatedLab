@@ -2699,11 +2699,15 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $Path)
         }
 
-        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $Path -Leaf)
+        $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
         $installPath = $LocalPath
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and $CopyFolder)
+        {
+            $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
+        }
     }
     else
     {
@@ -2716,7 +2720,7 @@ function Install-LabSoftwarePackage
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
         }
 
-        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
+        $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
     }
 
     $installParams = @{
@@ -3514,7 +3518,7 @@ function New-LabSourcesFolder
     }
     elseif (-not $path)
     {
-        $path = (Join-Path -Path / -ChildPath LabSources)
+        $path = (Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath LabSources)
     }
 
     if ($DriveLetter)

@@ -107,6 +107,15 @@ Set-PSFConfig -Module 'AutomatedLab' -Name Timeout_VisualStudio2015Installation 
 Set-PSFConfig -Module 'AutomatedLab' -Name DefaultProgressIndicator -Value 10 -Initialize -Validation integer -Description 'After how many minutes will a progress indicator be written'
 Set-PSFConfig -Module 'AutomatedLab' -Name DisableConnectivityCheck -Value $false -Initialize -Validation bool -Description 'Indicates whether connectivity checks should be skipped. Certain systems like Azure DevOps build workers do not send ICMP packges and the method might always fail'
 Set-PSFConfig -Module 'AutomatedLab' -Name 'VmPath' -Value $null -Validation string -Initialize -Description 'VM storage location'
+$osroot = if ([System.Environment]::OSVersion.Platform -eq 'Win32NT')
+{
+    'C:\'
+}
+else
+{
+    '/'
+}
+Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Hidden
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'

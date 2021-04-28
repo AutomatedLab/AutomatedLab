@@ -541,7 +541,7 @@ function Copy-LabFileItem
                 $session = New-LabPSSession -ComputerName $machine
                 $destination = if (-not $DestinationFolderPath)
                 {
-                    Join-Path -Path / -ChildPath (Split-Path -Path $p -Leaf)
+                    Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $p -Leaf)
                 }
                 else
                 {
