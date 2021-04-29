@@ -115,7 +115,7 @@ else
 {
     '/'
 }
-Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Hidden
+Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'

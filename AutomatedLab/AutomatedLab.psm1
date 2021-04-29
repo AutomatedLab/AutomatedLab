@@ -2693,13 +2693,16 @@ function Install-LabSoftwarePackage
         if ($CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
+            $dependency = Split-Path -Path ([System.IO.Path]::GetDirectoryName($Path)) -Leaf
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath "$($dependency)/$(Split-Path -Path $Path -Leaf)"
         }
         else
         {
             $parameters.Add('DependencyFolderPath', $Path)
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
         }
 
-        $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
+        
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
@@ -2714,13 +2717,14 @@ function Install-LabSoftwarePackage
         if ($SoftwarePackage.CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($SoftwarePackage.Path))
+            $dependency = Split-Path -Path ([System.IO.Path]::GetDirectoryName($SoftwarePackage.Path)) -Leaf
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath "$($dependency)/$(Split-Path -Path $SoftwarePackage.Path -Leaf)"
         }
         else
         {
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
-        }
-
-        $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath $(Split-Path -Path $SoftwarePackage.Path -Leaf)
+        }        
     }
 
     $installParams = @{
@@ -2731,6 +2735,11 @@ function Install-LabSoftwarePackage
     if ($UseShellExecute) { $installParams.UseShellExecute = $true }
     if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
     if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+    if ($CopyFolder -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $child = Split-Path -Leaf -Path $parameters.DependencyFolderPath
+        $installParams.DestinationPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath $child
+    }
 
     $parameters.Add('ActivityName', "Installation of '$installPath'")
 
@@ -2749,8 +2758,22 @@ function Install-LabSoftwarePackage
         if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
         {
             # Often issues with Zone Mapping
-            $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            if ($installParams.DestinationPath)
+            {
+                $newPath = (New-Item -ItemType Directory -Path $installParams.DestinationPath -Force).FullName
+            }
+            else
+            {
+                $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            }
+
+            $installParams.Remove('DestinationPath')
             Copy-Item -Path $installParams.Path -Destination $newPath -Force
+
+            if (-not (Test-Path -Path $newPath -PathType Leaf))
+            {
+                $newPath = Join-Path -Path $newPath -ChildPath (Split-Path -Path $installParams.Path -Leaf)
+            }
             $installParams.Path = $newPath
         }
         Install-SoftwarePackage @installParams
