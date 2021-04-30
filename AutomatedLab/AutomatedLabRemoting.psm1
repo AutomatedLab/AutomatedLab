@@ -105,7 +105,16 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
-                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
+                try
+                {
+                    $azConInfResolved = [System.Net.Dns]::GetHostByName($m.AzureConnectionInfo.DnsName)
+                }
+                catch
+                {
+
+                }
+
+                if (-not $m.AzureConnectionInfo.DnsName -or -not $azConInfResolved)
                 {
                     $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
                 }
@@ -904,7 +913,16 @@ function New-LabCimSession
 
             if ($m.HostType -eq 'Azure')
             {
-                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
+                try
+                {
+                    $azConInfResolved = [System.Net.Dns]::GetHostByName($m.AzureConnectionInfo.DnsName)
+                }
+                catch
+                {
+
+                }
+
+                if (-not $m.AzureConnectionInfo.DnsName -or -not $azConInfResolved)
                 {
                     $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
                 }
