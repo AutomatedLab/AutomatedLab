@@ -13,7 +13,12 @@ function Export-UnattendedKickstartFile
         $idx = $script:un.IndexOf('%post')
     }
 
-    $repoIp = (Resolve-DnsName -Name packages.microsoft.com -Type A).IP4Address
+    $repoIp = try {
+        ([System.Net.Dns]::GetHostByName('packages.microsoft.com').AddressList | Where-Object AddressFamily -eq InterNetwork).IPAddressToString
+    }
+    catch
+    { }
+
     $repoContent = (Invoke-RestMethod -Method Get -Uri 'https://packages.microsoft.com/config/rhel/7/prod.repo' -ErrorAction SilentlyContinue) -split "`n"
     if ($script:un[$idx + 1] -ne '#start')
     {
