@@ -1,6 +1,9 @@
 # Changelog
 
 ### Enhancements
+- Configurable parameters for LabSources sync to Azure
+  - AutoSyncLabSources: boolean (defaults to false, user gets to choose in Add-LabAzureSubscription)
+  - LabSourcesSyncIntervalDays: uint, defaults to 60 (our previous hardcoded value)
 
 ### Fixes
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used

@@ -357,15 +357,23 @@ function Add-LabAzureSubscription
 
     $lastchecked = $timestamps.LabSourcesSynced
     $syncMaxSize = Get-LabConfigurationItem -Name LabSourcesMaxFileSizeMb
+    $syncIntervalDays = Get-LabConfigurationItem -Name LabSourcesSyncIntervalDays
+
     if (-not $lastchecked)
     {
+        $lastchecked = [datetime]0
         $syncText = @"
-Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to your Azure file share $($global:labsources)?
+Do you want to sync the content of $(Get-LabSourcesLocationInternal -Local) to your Azure file share $($global:labsources) every $syncIntervalDays days?
 
 By default, all files smaller than $syncMaxSize MB will be synced. Should you require more control,
 execute Sync-LabAzureLabSources manually. The maximum file size for the automatic sync can also
 be set in your settings with the setting LabSourcesMaxFileSizeMb.
 Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional information.
+
+To configure later:
+Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name LabSourcesMaxFileSizeMb
+Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name LabSourcesSyncIntervalDays
+Get/Set/Register/Unregister-PSFConfig -Module AutomatedLab -Name AutoSyncLabSources
 "@
         # Detecting Interactivity this way only works in .NET Full - .NET Core always defaults to $true
         # Last Resort is checking the CommandLine Args
@@ -380,33 +388,16 @@ Have a look at Get-Command -Syntax Sync-LabAzureLabSources for additional inform
 
         if ($choice -eq 0)
         {
-            Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
-            $timestamps.LabSourcesSynced = Get-Date
-            if ($IsLinux -or $IsMacOs)
-            {
-                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
-            }
-            else
-            {
-                $timestamps.ExportToRegistry('Cache', 'Timestamps')
-            }
+            Set-PSFConfig -Module AutomatedLab -Name AutoSyncLabSources -Value $true -PassThru | Register-PSFConfig            
         }
         elseif ($choice -eq 1)
         {
-            $timestamps.LabSourcesSynced = [datetime]::MaxValue
-            if ($IsLinux -or $IsMacOs)
-            {
-                $timestamps.Export((Join-Path -Path (Get-LabConfigurationItem -Name LabAppDataRoot) -ChildPath 'Stores/Timestamps.xml'))
-            }
-            else
-            {
-                $timestamps.ExportToRegistry('Cache', 'Timestamps')
-            }
+            Set-PSFConfig -Module AutomatedLab -Name AutoSyncLabSources -Value $false -PassThru | Register-PSFConfig
         }
     }
-    elseif ($lastchecked -and $lastchecked -lt [datetime]::Now.AddDays(-60))
+
+    if ((Get-LabConfigurationItem -Name AutoSyncLabSources) -and $lastchecked -lt [datetime]::Now.AddDays(-$syncIntervalDays) )
     {
-        Write-PSFMessage -Message "Syncing local lab sources (all files <$syncMaxSize MB) to Azure. Last sync was $lastchecked"
         Sync-LabAzureLabSources -MaxFileSizeInMb $syncMaxSize
         $timestamps.LabSourcesSynced = Get-Date
         if ($IsLinux -or $IsMacOs)
