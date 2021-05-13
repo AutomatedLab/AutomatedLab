@@ -886,6 +886,15 @@ function Install-Lab
         Write-ScreenInfo -Message "Machines with RootDC role to be installed: '$((Get-LabVM -Role RootDC).Name -join ', ')'"
         Install-LabRootDcs -CreateCheckPoints:$CreateCheckPoints
 
+        # Set account expiration for builtin account and lab domain account
+        foreach ($machine in (Get-LabVM -Role RootDC -ErrorAction SilentlyContinue))
+        {
+            $userName = (Get-Lab).Domains.Where({ $_.Name -eq $machine.DomainName }).Administrator.UserName
+            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for deployment accounts in AD' -ComputerName $machine -ScriptBlock {
+                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+            } -Variable (Get-Variable userName)
+        }
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -954,16 +963,6 @@ function Install-Lab
                 Write-ScreenInfo -Message 'Creating a snapshot of all domain controllers'
                 Checkpoint-LabVM -ComputerName $allDcVMs -SnapshotName 'Post Forest Setup'
             }
-        }
-
-        # Set account expiration for builtin account and lab domain account
-        foreach ($machine in (Get-LabVM -Role ADDS -ErrorAction SilentlyContinue | Group-Object DomainName))
-        {
-            $anyDc = $machine.Group | Select -First 1
-            $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
-            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for deployment accounts in AD' -ComputerName $anyDc -ScriptBlock {
-                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-            } -Variable (Get-Variable userName) -NoDisplay
         }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
