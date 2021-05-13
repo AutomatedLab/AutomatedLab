@@ -892,7 +892,7 @@ function Install-Lab
             $userName = (Get-Lab).Domains.Where({ $_.Name -eq $machine.DomainName }).Administrator.UserName
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for deployment accounts in AD' -ComputerName $machine -ScriptBlock {
                 Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-            } -Variable (Get-Variable userName)
+            } -Variable (Get-Variable userName) -NoDisplay
         }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
