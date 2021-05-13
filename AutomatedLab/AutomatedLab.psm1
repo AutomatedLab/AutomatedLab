@@ -1258,7 +1258,7 @@ function Install-Lab
                 AutomatedLab will not be able to reach your VMs, as PowerShell will not be installed.
 
                 The timeout to wait for VMs to be accessible via PowerShell was reduced from 60 to 15
-                minutes."
+            minutes."
         }
 
         if (-not $DelayBetweenComputers)
@@ -1281,10 +1281,13 @@ function Install-Lab
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
         $userName = (Get-Lab).DefaultInstallationCredential.UserName
-        Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
-            # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-            Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
-        } -Variable (Get-Variable userName)
+        $nonDomainControllers = Get-LabVM -Filter { $_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc' }
+        if ($nonDomainControllers) {
+            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
+                # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+                Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
+            } -Variable (Get-Variable userName)
+        }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
@@ -3679,10 +3682,10 @@ catch
 }
 
 if (-not (
-    (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
+        (Test-Path Env:\AUTOMATEDLAB_TELEMETRY_OPTIN) -or `
     (Test-Path -Path "$((Get-PSFConfigValue -FullName AutomatedLab.LabAppDataRoot))/telemetry.enabled")) -and `
     (Get-Date) -ge $nextCheck
-    )
+)
 {
     $choice = Read-Choice -ChoiceList '&Yes','&No','&Ask later' -Caption 'Opt in to telemetry?' -Message $telemetryChoice -Default 0
 
