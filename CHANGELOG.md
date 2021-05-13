@@ -5,7 +5,7 @@
 ### Fixes
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
 - Azure DevOps installation 'failed' with success code 3010 (reboot required).
-
+- Fixed 'PasswordNeverExpires' when there is only DCs in the lab.
 ## 5.36.0 (2021-04-27)
 
 ### Enhancements

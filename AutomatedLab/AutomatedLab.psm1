@@ -961,9 +961,9 @@ function Install-Lab
         {
             $anyDc = $machine.Group | Select -First 1
             $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
-            Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
+            Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for deployment accounts in AD' -ComputerName $anyDc -ScriptBlock {
                 Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-            } -Variable (Get-Variable userName)
+            } -Variable (Get-Variable userName) -NoDisplay
         }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
@@ -1286,7 +1286,7 @@ function Install-Lab
             Invoke-LabCommand -ActivityName 'Setting PasswordNeverExpires for local deployment accounts' -ComputerName $nonDomainControllers -ScriptBlock {
                 # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
                 Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'" | Set-WmiInstance -Arguments @{ PasswordExpires = $false}
-            } -Variable (Get-Variable userName)
+            } -Variable (Get-Variable userName) -NoDisplay
         }
 
         Write-ScreenInfo -Message 'Done' -TaskEnd
