@@ -618,7 +618,7 @@ function Invoke-LabCommand
                     {
                         if (-not $script:data) {$script:data = Get-Lab}
                         $hostStartScript = Get-Command -Name $hostStartPath
-                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties -ConvertValue
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters ($item.SerializedProperties | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue) -ConvertValue
                         if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
                             $hostStartParam['ComputerName'] = $machine.Name
