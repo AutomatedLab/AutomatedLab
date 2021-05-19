@@ -6,6 +6,7 @@
   - LabSourcesSyncIntervalDays: uint, defaults to 60 (our previous hardcoded value)
 
 ### Fixes
+- Fixed issue where custom role properties did not deserialise (issue #1164)
 - Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
 - Azure DevOps installation 'failed' with success code 3010 (reboot required).
 
