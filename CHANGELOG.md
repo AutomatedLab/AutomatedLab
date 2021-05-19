@@ -4,6 +4,7 @@
 - Configurable parameters for LabSources sync to Azure
   - AutoSyncLabSources: boolean (defaults to false, user gets to choose in Add-LabAzureSubscription)
   - LabSourcesSyncIntervalDays: uint, defaults to 60 (our previous hardcoded value)
+- Added MEMCM / ConfigMgr / SCCM 2103 custom role
 
 ### Fixes
 - Fixed issue where custom role properties did not deserialise (issue #1164)
