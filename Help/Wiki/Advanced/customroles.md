@@ -51,9 +51,9 @@ If you use HostStart and / or HostEnd scripts, AutomatedLab verifies the propert
 As AutomatedLab copies the whole folder to the machine the role is assigned to, you can also have a script that calls other scripts. For example TestRole.ps1 could look like this:
 
 ```powershell
-& $PSScriptRoor\Init.ps1
-& $PSScriptRoor\Install.ps1
-& $PSScriptRoor\Customizations.ps1
+& $PSScriptRoot\Init.ps1
+& $PSScriptRoot\Install.ps1
+& $PSScriptRoot\Customizations.ps1
 ```
 
 The same pattern can be used for HostStart and HostEnd as well. You do not have to put all the logic in just one file.

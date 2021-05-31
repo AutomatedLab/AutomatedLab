@@ -1,8 +1,19 @@
 # Changelog
 
+## Unreleased
+
+## 5.37.0 (2021-05-31)
+
 ### Enhancements
+- Configurable parameters for LabSources sync to Azure
+  - AutoSyncLabSources: boolean (defaults to false, user gets to choose in Add-LabAzureSubscription)
+  - LabSourcesSyncIntervalDays: uint, defaults to 60 (our previous hardcoded value)
+- Added MEMCM / ConfigMgr / SCCM 2103 custom role
 
 ### Fixes
+- Fixed issue where custom role properties did not deserialise (issue #1164)
+- Fixing issue when `Install-Lab -BaseImages` or `-NetworkSwitches` was used
+- Azure DevOps installation 'failed' with success code 3010 (reboot required).
 
 ## 5.36.0 (2021-04-27)
 

@@ -388,10 +388,10 @@ GO
 
     foreach ($server in $servers)
     {
-        Write-ScreenInfo "Installing Server Reporting Services on $server" -NoNewLine
+        Write-ScreenInfo "Installing SQL Server Reporting Services on $server" -NoNewLine
         if (-not $server.SsRsUri)
         {
-            Write-ScreenInfo -Message "No SSMS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
+            Write-ScreenInfo -Message "No SSRS URI available for $server. Please provide a valid URI in AutomatedLab.psd1 and try again. Skipping..." -Type Warning
             continue
         }
         $downloadFolder = Join-Path -Path $global:labSources\SoftwarePackages -ChildPath "SQL$($server.SqlVersion)"

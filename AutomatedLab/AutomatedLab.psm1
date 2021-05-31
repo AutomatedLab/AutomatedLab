@@ -955,6 +955,17 @@ function Install-Lab
                 Checkpoint-LabVM -ComputerName $allDcVMs -SnapshotName 'Post Forest Setup'
             }
         }
+
+        # Set account expiration for builtin account and lab domain account
+        foreach ($machine in (Get-LabVM -Role ADDS -ErrorAction SilentlyContinue | Group-Object DomainName))
+        {
+            $anyDc = $machine.Group | Select -First 1
+            $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
+            Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
+                Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
+            } -Variable (Get-Variable userName)
+        }
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1269,6 +1280,12 @@ function Install-Lab
 
         Start-LabVM -All -DelayBetweenComputers $DelayBetweenComputers -ProgressIndicator 30 -TimeoutInMinutes $timeoutRemaining -Wait
 
+        $userName = (Get-Lab).DefaultInstallationCredential.UserName
+        Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
+            # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
+            Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
+        } -Variable (Get-Variable userName)
+
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
 
@@ -1306,22 +1323,6 @@ function Install-Lab
         
         Write-ScreenInfo -Message 'Done' -TaskEnd
     }
-
-    # Set account expiration for builtin account and lab domain account
-    foreach ($machine in (Get-LabVM -Role ADDS | Group-Object DomainName))
-    {
-        $anyDc = $machine.Group | Select -First 1
-        $userName = (Get-Lab).Domains.Where({$_.Name -eq $machine.Name}).Administrator.Username
-        Invoke-LabCommand -ComputerName $anyDc -ScriptBlock {
-            Set-ADUser -Identity $userName -PasswordNeverExpires $true -Confirm:$false
-        } -Variable (Get-Variable userName)
-    }
-
-    $userName = (Get-Lab).DefaultInstallationCredential.UserName
-    Invoke-LabCommand -ComputerName (Get-LabVM -Filter {$_.Roles.Name -notcontains 'RootDc' -and $_.RolesName -notcontains 'DC' -and $_.RolesName -notcontains 'FirstChildDc'}) -ScriptBlock {
-        # Still supporting ANCIENT server 2008 R2 with it's lack of CIM cmdlets :'(
-        Get-WmiObject -Query "Select * from Win32_UserAccount where name = '$userName' and localaccount='true'"  | Set-WmiInstance -Arguments @{PasswordExpires=$False}
-    } -Variable (Get-Variable userName)
 
     try
     {
@@ -2692,30 +2693,38 @@ function Install-LabSoftwarePackage
         if ($CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
+            $dependency = Split-Path -Path ([System.IO.Path]::GetDirectoryName($Path)) -Leaf
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath "$($dependency)/$(Split-Path -Path $Path -Leaf)"
         }
         else
         {
             $parameters.Add('DependencyFolderPath', $Path)
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath (Split-Path -Path $Path -Leaf)
         }
 
-        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $Path -Leaf)
+        
     }
     elseif ($parameterSetName -eq 'SingleLocalPackage')
     {
         $installPath = $LocalPath
+        if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure' -and $CopyFolder)
+        {
+            $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($Path))
+        }
     }
     else
     {
         if ($SoftwarePackage.CopyFolder)
         {
             $parameters.Add('DependencyFolderPath', [System.IO.Path]::GetDirectoryName($SoftwarePackage.Path))
+            $dependency = Split-Path -Path ([System.IO.Path]::GetDirectoryName($SoftwarePackage.Path)) -Leaf
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath "$($dependency)/$(Split-Path -Path $SoftwarePackage.Path -Leaf)"
         }
         else
         {
             $parameters.Add('DependencyFolderPath', $SoftwarePackage.Path)
-        }
-
-        $installPath = Join-Path -Path / -ChildPath (Split-Path -Path $SoftwarePackage.Path -Leaf)
+            $installPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath $(Split-Path -Path $SoftwarePackage.Path -Leaf)
+        }        
     }
 
     $installParams = @{
@@ -2726,6 +2735,11 @@ function Install-LabSoftwarePackage
     if ($UseShellExecute) { $installParams.UseShellExecute = $true }
     if ($AsScheduledJob -and $UseExplicitCredentialsForScheduledJob) { $installParams.Credential = $Machine[0].GetCredential((Get-Lab)) }
     if ($ExpectedReturnCodes) { $installParams.ExpectedReturnCodes = $ExpectedReturnCodes }
+    if ($CopyFolder -and (Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
+    {
+        $child = Split-Path -Leaf -Path $parameters.DependencyFolderPath
+        $installParams.DestinationPath = Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath $child
+    }
 
     $parameters.Add('ActivityName', "Installation of '$installPath'")
 
@@ -2744,8 +2758,22 @@ function Install-LabSoftwarePackage
         if ($installParams.Path.StartsWith('\\') -and (Test-Path /ALAzure))
         {
             # Often issues with Zone Mapping
-            $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            if ($installParams.DestinationPath)
+            {
+                $newPath = (New-Item -ItemType Directory -Path $installParams.DestinationPath -Force).FullName
+            }
+            else
+            {
+                $newPath = if ($IsLinux) { "/$(Split-Path -Path $installParams.Path -Leaf)" } else { "C:\$(Split-Path -Path $installParams.Path -Leaf)"}
+            }
+
+            $installParams.Remove('DestinationPath')
             Copy-Item -Path $installParams.Path -Destination $newPath -Force
+
+            if (-not (Test-Path -Path $newPath -PathType Leaf))
+            {
+                $newPath = Join-Path -Path $newPath -ChildPath (Split-Path -Path $installParams.Path -Leaf)
+            }
             $installParams.Path = $newPath
         }
         Install-SoftwarePackage @installParams
@@ -3513,7 +3541,7 @@ function New-LabSourcesFolder
     }
     elseif (-not $path)
     {
-        $path = (Join-Path -Path / -ChildPath LabSources)
+        $path = (Join-Path -Path (Get-LabConfigurationItem -Name OsRoot) -ChildPath LabSources)
     }
 
     if ($DriveLetter)

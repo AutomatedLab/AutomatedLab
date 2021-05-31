@@ -105,7 +105,16 @@ function New-LabPSSession
 
             if ($m.HostType -eq 'Azure')
             {
-                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
+                try
+                {
+                    $azConInfResolved = [System.Net.Dns]::GetHostByName($m.AzureConnectionInfo.DnsName)
+                }
+                catch
+                {
+
+                }
+
+                if (-not $m.AzureConnectionInfo.DnsName -or -not $azConInfResolved)
                 {
                     $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
                 }
@@ -609,7 +618,7 @@ function Invoke-LabCommand
                     {
                         if (-not $script:data) {$script:data = Get-Lab}
                         $hostStartScript = Get-Command -Name $hostStartPath
-                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters $item.Properties -ConvertValue
+                        $hostStartParam = Sync-Parameter -Command $hostStartScript -Parameters ($item.SerializedProperties | ConvertFrom-PSFClixml -ErrorAction SilentlyContinue) -ConvertValue
                         if ($hostStartScript.Parameters.ContainsKey('ComputerName'))
                         {
                             $hostStartParam['ComputerName'] = $machine.Name
@@ -904,7 +913,16 @@ function New-LabCimSession
 
             if ($m.HostType -eq 'Azure')
             {
-                if (-not $m.AzureConnectionInfo.DnsName -or -not (Resolve-DnsName -Name $m.AzureConnectionInfo.DnsName -DnsOnly -ErrorAction SilentlyContinue))
+                try
+                {
+                    $azConInfResolved = [System.Net.Dns]::GetHostByName($m.AzureConnectionInfo.DnsName)
+                }
+                catch
+                {
+
+                }
+
+                if (-not $m.AzureConnectionInfo.DnsName -or -not $azConInfResolved)
                 {
                     $m.AzureConnectionInfo = Get-LWAzureVMConnectionInfo -ComputerName $m
                 }

@@ -125,7 +125,7 @@ function Install-LabTeamFoundationServer
 
     $installationJobs = @()
     $count = 0
-    foreach ( $machine in $tfsMachines)
+    foreach ($machine in $tfsMachines)
     {
         if (Get-LabIssuingCA)
         {
@@ -201,8 +201,10 @@ function Install-LabTeamFoundationServer
         if ((Get-Lab).DefaultVirtualizationEngine -eq 'Azure')
         {
             # For good luck, disable the firewall again - in case Invoke-AzVmRunCommand failed to do its job.
-            Invoke-LabCommand -ComputerName $machine,$sqlServer -NoDisplay -ScriptBlock {Set-NetFirewallProfile -All -Enabled False -PolicyStore PersistentStore}
+            Invoke-LabCommand -ComputerName $machine, $sqlServer -NoDisplay -ScriptBlock { Set-NetFirewallProfile -All -Enabled False -PolicyStore PersistentStore }
         }
+
+        Restart-LabVM -ComputerName $machine -Wait -NoDisplay
 
         $installationJobs += Invoke-LabCommand -ComputerName $machine -ScriptBlock {
             $tfsConfigPath = (Get-ChildItem -Path $env:ProgramFiles -Filter tfsconfig.exe -Recurse | Select-Object -First 1).FullName

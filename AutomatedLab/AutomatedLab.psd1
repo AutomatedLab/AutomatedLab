@@ -67,6 +67,7 @@
         'AutomatedLabNotifications',
         @{ModuleName='AutomatedLab.Common'; ModuleVersion='2.0.188'; }
         'PSFramework'
+        'AutomatedLabTest'
     )
 
     CmdletsToExport        = @()
