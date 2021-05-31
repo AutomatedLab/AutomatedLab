@@ -1259,6 +1259,7 @@
       </Component>
       <Component Id="cmpCFDA434FE2294C39A01B1A9F6DC59529" Directory="dirA53F69F85E224F84873C47FAFD3B88BB" Guid="015a25fd-f85e-4185-8fe7-09b05cb32d9b">
         <File Id="filDC4663A87BBC486D96836D3BB0F4F246" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\HostStart.ps1" />
+        <File Id="filD6FFEA4ABA0A491CB12286E6300C694D" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1.ps1" />
       </Component>
       <Component Id="cmpD43AC3ADCAC343318238CE837A8511FD" Directory="dirC36E8B7EEDBFAC7EC8246E888318E976" Guid="8f1d61d4-524e-480a-bced-3808ee1464d7">
         <File Id="fil322C12274D5FA443820293B774FB33F8" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\HostStart.ps1" />
