@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+## 5.37.0 (2021-05-31)
+
 ### Enhancements
 - Configurable parameters for LabSources sync to Azure
   - AutoSyncLabSources: boolean (defaults to false, user gets to choose in Add-LabAzureSubscription)
