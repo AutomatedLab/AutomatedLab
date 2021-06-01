@@ -1215,7 +1215,7 @@
       <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
         <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\README.md" />
       </Component>
-      <Component Id="cmp37d49212390jei0d1d4dca1274" Directory="dirD49C097A9asd9813oen50AC9C2" Guid="b3952a83-4f30-4709-8236-e107e5071d36">
+      <Component Id="cmp5192578560334F24BC166F2BF05FEA16" Directory="dirE5932629FB4A45BB8ABFA79A78890A04" Guid="b3952a83-4f30-4709-8236-e107e5071d36">
         <File Id="fil68d33fed4c7f4f8b83f5fc86d924600e" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini" />
         <File Id="fil18ace1a31c3d4837877053c2cb91a694" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\HostStart.ps1" />
         <File Id="fil5d8467bd9d3c4ca69b64092c4d6b1948" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1" />
@@ -1224,6 +1224,26 @@
         <File Id="fila209b4ed5af743b196c755331f316841" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-DownloadMisc.ps1" />
         <File Id="fil3ad4c4c495024d66ae7101748c8ddfe4" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1" />
         <File Id="fil3ad4c4c495024d66ae7101748c8ddfe5" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1" />
+      </Component>
+      <Component Id="cmp8BC6C6CFD6FF4582BEB3345446EF50CA" Directory="dir141892B23C7E4AD281B7868E9429C03A" Guid="8afb2c5e-3bb3-4ad7-bed8-7b6a67fab629">
+        <File Id="filD6986FB1EBC3401F9F4314E8EC47F80E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\ConfigurationFile-SQL.ini" />
+        <File Id="filDA940B9E558B4E88A117C82AA0AAEF9C" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\HostStart.ps1" />
+        <File Id="fil9DE4F3BD37184443BACC10CAA14D82E4" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-CustomiseCM.ps1" />
+        <File Id="fil3B5378076932419AB2B6856BFC2E39AA" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadADK.ps1" />
+        <File Id="filB12A698C7E014E2681486177757BF765" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadCM.ps1" />
+        <File Id="fil1042B56EE65A41BA9202D1A4B7F90865" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadMisc.ps1" />
+        <File Id="filE8BE53CB20FF4E2AA6881ACFA9E86E09" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-InstallCM.ps1" />
+        <File Id="fil153E8CD183634BDB9E3264DA03919A12" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-UpdateCM.ps1" />
+      </Component>
+      <Component Id="cmp058B8A745C134E3FA9C17460D3A09D98" Directory="dirD74EDE5ACE9244AAAAA4BC50F8AA8BD23" Guid="4c437b02-4e84-4f9f-a439-7677891553a3">
+        <File Id="filE5F47FF9A73F4B7FADE065D3D4C314DF" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\ConfigurationFile-SQL.ini" />
+        <File Id="fil9BCDAAFE06E14A79A769B11B8BF8F0B5" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\HostStart.ps1" />
+        <File Id="fil9563F35CA8A243B1B2360056775BF475" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-CustomiseCM.ps1" />
+        <File Id="fil0F084D6433484C50A81FB78CCFE4D97E" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadADK.ps1" />
+        <File Id="fil2091D65AAC054DB09D6AC99AD429BCA3" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadCM.ps1" />
+        <File Id="filFD8AD0CAB7464D6B87666C49248C175E" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadMisc.ps1" />
+        <File Id="fil2E8C0BC817624863A9E877D52AEA0FC3" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-InstallCM.ps1" />
+        <File Id="fil87783AD566374D4FA9D658BF17EB789A" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-UpdateCM.ps1" />
       </Component>
       <Component Id="cmp37d492e149754ae5a9ec1f7d4dca1274" Directory="dirD49C097A947F489194CAACFE550AC9C2" Guid="b206fa90-412b-4d5d-9cdf-e7265d07fb7c">
         <File Id="fil14812A370302467D999A50F69F73486E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\DownloadAdk.ps1" />
@@ -1452,7 +1472,17 @@
   </Fragment>
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
-      <Directory Id="dirD49C097A9asd9813oen50AC9C2" Name="CM-1902" />
+      <Directory Id="dirE5932629FB4A45BB8ABFA79A78890A04" Name="CM-1902" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir141892B23C7E4AD281B7868E9429C03A" Name="CM-2002" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD74EDE5ACE9244AAAAA4BC50F8AA8BD23" Name="CM-2103" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
