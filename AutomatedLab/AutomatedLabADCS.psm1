@@ -1826,6 +1826,12 @@ function Install-LabCAMachine
             $rootDc = Get-LabVM -Role RootDC | Where-Object DomainName -eq $rootDomain
         }
 
+        $rdcProperties = $rootDc.Roles | Where-Object Name -eq 'RootDc'
+        if ($rdcProperties -and $rdcProperties.Properties.ContainsKey('NetBiosDomainName'))
+        {
+            $rootDomainNetBIOSName = $rdcProperties.Properties['NetBiosDomainName']
+        }
+
         $param.Add('ForestAdminUserName', ('{0}\{1}' -f $rootDomainNetBIOSName, $rootDomain.Administrator.UserName))
         $param.Add('ForestAdminPassword', $rootDomain.Administrator.Password)
 

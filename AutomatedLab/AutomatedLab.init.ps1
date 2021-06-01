@@ -116,6 +116,7 @@ else
     '/'
 }
 Set-PSFConfig -Module 'AutomatedLab' -Name OsRoot -Value $osroot -Initialize -Validation string
+Set-PSFConfig -Module 'AutomatedLab' -Name OverridePowerPlan -Value $true -Initialize -Validation bool -Description 'On Windows: Indicates that power settings will be set to High Power during lab deployment'
 
 #PSSession settings
 Set-PSFConfig -Module 'AutomatedLab' -Name InvokeLabCommandRetries -Value 3 -Initialize -Validation integer -Description 'Number of retries for Invoke-LabCommand'

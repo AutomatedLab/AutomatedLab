@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Enhancements
+
+### Bugs
+
+- Fixed bug in CA deployment: NETBIOS domain name was disregarded if one was explicitly configured
+
 ## 5.37.0 (2021-05-31)
 
 ### Enhancements
