@@ -3671,7 +3671,7 @@ function Import-LabDefinition
             -Credential ([System.Management.Automation.PSSerializer]::Deserialize($Script:lab.VMWareSettings.Credential))
         }
 
-        if (-not ($IsLinux -or $IsMacOs))
+        if (-not ($IsLinux -or $IsMacOs) -and (Get-LabConfigurationItem -Name OverridePowerPlan))
         {
             $powerSchemeBackup = (powercfg.exe -GETACTIVESCHEME).Split(':')[1].Trim().Split()[0]
             powercfg.exe -setactive 8c5e7fda-e8bf-4a96-9a85-a6e23a8c635c
