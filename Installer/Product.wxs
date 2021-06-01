@@ -1229,6 +1229,9 @@
       <Component Id="cmpD0587757D9A94FF2B4794226ABE4E3BF" Directory="dir173133541A464C18AA07E8E6F6862181" Guid="c4aea826-aae0-4318-b8c4-d5b29bfd9ab1">
         <File Id="fil4BCECFAE71234E86B1B97C4A0B0D5848" Source="$(var.SolutionDir)\LabSources\CustomRoles\Office2019\HostStart.ps1" />
       </Component>
+      <Component Id="cmpD1B147C179BA4890BBE4DC354DABFCBE" Directory="dirDCF05B8A2D444B60B8AC412CE687FC66" Guid="bc18385a-bccc-4b0b-87ab-fe73514c052f">
+        <File Id="fil1EB0F286319041778CC4F589DB9D89D6" Source="$(var.SolutionDir)\LabSources\CustomRoles\PowerShellWebAccess\HostStart.ps1" />
+      </Component>
       <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
         <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
         <File Id="filE256ED55FB34497690F40A3DFD18B4F8" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\README.md" />
@@ -1455,6 +1458,11 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dir173133541A464C18AA07E8E6F6862181" Name="Office2019" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirDCF05B8A2D444B60B8AC412CE687FC66" Name="PowerShellWebAccess" />
     </DirectoryRef>
   </Fragment>
   <Fragment>

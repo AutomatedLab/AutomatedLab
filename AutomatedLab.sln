@@ -790,6 +790,35 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PublishProfiles", "PublishP
 		LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml = LabSources\CustomRoles\NuGetServer\AutomatedLab.Feed\AutomatedLab.Feed\Properties\PublishProfiles\FolderProfile.pubxml
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "PowerShellWebAccess", "PowerShellWebAccess", "{58EA5188-AB03-4F64-B19B-11C59B44FC52}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\PowerShellWebAccess\HostStart.ps1 = LabSources\CustomRoles\PowerShellWebAccess\HostStart.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CM-2002", "CM-2002", "{8B811168-529E-4A16-BFD6-C09B61582D26}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\CM-2002\ConfigurationFile-SQL.ini = LabSources\CustomRoles\CM-2002\ConfigurationFile-SQL.ini
+		LabSources\CustomRoles\CM-2002\HostStart.ps1 = LabSources\CustomRoles\CM-2002\HostStart.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-CustomiseCM.ps1 = LabSources\CustomRoles\CM-2002\Invoke-CustomiseCM.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-DownloadADK.ps1 = LabSources\CustomRoles\CM-2002\Invoke-DownloadADK.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-DownloadCM.ps1 = LabSources\CustomRoles\CM-2002\Invoke-DownloadCM.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-DownloadMisc.ps1 = LabSources\CustomRoles\CM-2002\Invoke-DownloadMisc.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-InstallCM.ps1 = LabSources\CustomRoles\CM-2002\Invoke-InstallCM.ps1
+		LabSources\CustomRoles\CM-2002\Invoke-UpdateCM.ps1 = LabSources\CustomRoles\CM-2002\Invoke-UpdateCM.ps1
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CM-2103", "CM-2103", "{6362C208-FA36-465D-8A02-BF6CAC4EA2A1}"
+	ProjectSection(SolutionItems) = preProject
+		LabSources\CustomRoles\CM-2103\ConfigurationFile-SQL.ini = LabSources\CustomRoles\CM-2103\ConfigurationFile-SQL.ini
+		LabSources\CustomRoles\CM-2103\HostStart.ps1 = LabSources\CustomRoles\CM-2103\HostStart.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-CustomiseCM.ps1 = LabSources\CustomRoles\CM-2103\Invoke-CustomiseCM.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-DownloadADK.ps1 = LabSources\CustomRoles\CM-2103\Invoke-DownloadADK.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-DownloadCM.ps1 = LabSources\CustomRoles\CM-2103\Invoke-DownloadCM.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-DownloadMisc.ps1 = LabSources\CustomRoles\CM-2103\Invoke-DownloadMisc.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-InstallCM.ps1 = LabSources\CustomRoles\CM-2103\Invoke-InstallCM.ps1
+		LabSources\CustomRoles\CM-2103\Invoke-UpdateCM.ps1 = LabSources\CustomRoles\CM-2103\Invoke-UpdateCM.ps1
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -914,6 +943,9 @@ Global
 		{411B5A16-8587-4ED3-8B4A-4AD53710B4B3} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
 		{4933BEF3-43BA-4C13-99D4-C1F8163F4620} = {47CCA009-5AFB-48F3-984C-431EB80BFAB1}
 		{16B5F4A5-7B37-45A4-ACBF-474C32D308FD} = {4933BEF3-43BA-4C13-99D4-C1F8163F4620}
+		{58EA5188-AB03-4F64-B19B-11C59B44FC52} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{8B811168-529E-4A16-BFD6-C09B61582D26} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
+		{6362C208-FA36-465D-8A02-BF6CAC4EA2A1} = {EB139A97-DC93-405A-BBBC-CD5EB12D6E3C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E716662E-EF8D-4B55-AAEE-8AB4FFD8A321}
