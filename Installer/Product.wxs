@@ -133,12 +133,17 @@
                 <File Id='Sample_MDTLab2' Name='MDT Lab 2, DC and MDT Server.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\MDT Lab 2, DC and MDT Server.ps1' />
                 <File Id='Sample_SCCMLab1' Name='SCCM Lab 1.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCCM Lab 1.ps1' />
                 <File Id='Sample_CM1902Lab1' Name='CM-1902.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\CM-1902.ps1' />
+                <File Id='Sample_CM2002Lab1' Name='CM-2002.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\CM-2002.ps1' />
+                <File Id='Sample_CM2103Lab1' Name='CM-2103.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\CM-2103.ps1' />
                 <File Id='Sample_NuGetServerLab1' Name='NuGetServer.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\NuGetServer.ps1' />
                 <File Id='Sample_SCVMM' Name='SCVMM.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCVMM.ps1' />
                 <File Id='Sample_Scom' Name='SCOMDistributed.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\SCOMDistributed.ps1' />
                 <File Id='Sample_HyperVClusterWithVmm' Name='HyperVClusterWithVmm.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\HyperVClusterWithVmm.ps1' />
                 <File Id='Sample_Dynamics' Name='Dynamics365.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\Dynamics365.ps1' />
                 <File Id='Sample_RemoteDesktopServices' Name='RemoteDesktopServices.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\RemoteDesktopServices.ps1' />
+                <File Id='Sample_InternalRouting' Name='InternalRouting.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\InternalRouting.ps1' />
+                <File Id='Sample_AzureDevOpsBuildAgent' Name='AzureDevOpsBuildAgent.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\AzureDevOpsBuildAgent.ps1' />
+                <File Id='Sample_AzureDevOpsCloudConnection' Name='AzureDevOpsCloudConnection.ps1' DiskId='1' Source='$(var.SolutionDir)LabSources\SampleScripts\Scenarios\AzureDevOpsCloudConnection.ps1' />
                 <RemoveFolder Id="RemoveFolderSAMPLESSCENARIOSDIR" Directory="SAMPLESSCENARIOSDIR" On="both"/>
               </Component>
             </Directory>
@@ -1210,7 +1215,7 @@
       <Component Id="cmp5C2AC57928537B9972701349942A3FFA" Directory="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39" Guid="b201d944-e2ac-4186-a6da-0582fcbd97df">
         <File Id="fil1B630379D59BAF3FB3D75978CD293A6B" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\README.md" />
       </Component>
-      <Component Id="cmp37d49212390jei0d1d4dca1274" Directory="dirD49C097A9asd9813oen50AC9C2" Guid="b3952a83-4f30-4709-8236-e107e5071d36">
+      <Component Id="cmp5192578560334F24BC166F2BF05FEA16" Directory="dirE5932629FB4A45BB8ABFA79A78890A04" Guid="b3952a83-4f30-4709-8236-e107e5071d36">
         <File Id="fil68d33fed4c7f4f8b83f5fc86d924600e" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\ConfigurationFile-SQL.ini" />
         <File Id="fil18ace1a31c3d4837877053c2cb91a694" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\HostStart.ps1" />
         <File Id="fil5d8467bd9d3c4ca69b64092c4d6b1948" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-CustomiseCM.ps1" />
@@ -1220,6 +1225,26 @@
         <File Id="fil3ad4c4c495024d66ae7101748c8ddfe4" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-InstallCM.ps1" />
         <File Id="fil3ad4c4c495024d66ae7101748c8ddfe5" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-1902\Invoke-UpdateCM.ps1" />
       </Component>
+      <Component Id="cmp8BC6C6CFD6FF4582BEB3345446EF50CA" Directory="dir141892B23C7E4AD281B7868E9429C03A" Guid="8afb2c5e-3bb3-4ad7-bed8-7b6a67fab629">
+        <File Id="filD6986FB1EBC3401F9F4314E8EC47F80E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\ConfigurationFile-SQL.ini" />
+        <File Id="filDA940B9E558B4E88A117C82AA0AAEF9C" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\HostStart.ps1" />
+        <File Id="fil9DE4F3BD37184443BACC10CAA14D82E4" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-CustomiseCM.ps1" />
+        <File Id="fil3B5378076932419AB2B6856BFC2E39AA" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadADK.ps1" />
+        <File Id="filB12A698C7E014E2681486177757BF765" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadCM.ps1" />
+        <File Id="fil1042B56EE65A41BA9202D1A4B7F90865" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-DownloadMisc.ps1" />
+        <File Id="filE8BE53CB20FF4E2AA6881ACFA9E86E09" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-InstallCM.ps1" />
+        <File Id="fil153E8CD183634BDB9E3264DA03919A12" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2002\Invoke-UpdateCM.ps1" />
+      </Component>
+      <Component Id="cmp058B8A745C134E3FA9C17460D3A09D98" Directory="dirD74EDE5ACE9244AAAAA4BC50F8AA8BD23" Guid="4c437b02-4e84-4f9f-a439-7677891553a3">
+        <File Id="filE5F47FF9A73F4B7FADE065D3D4C314DF" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\ConfigurationFile-SQL.ini" />
+        <File Id="fil9BCDAAFE06E14A79A769B11B8BF8F0B5" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\HostStart.ps1" />
+        <File Id="fil9563F35CA8A243B1B2360056775BF475" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-CustomiseCM.ps1" />
+        <File Id="fil0F084D6433484C50A81FB78CCFE4D97E" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadADK.ps1" />
+        <File Id="fil2091D65AAC054DB09D6AC99AD429BCA3" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadCM.ps1" />
+        <File Id="filFD8AD0CAB7464D6B87666C49248C175E" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-DownloadMisc.ps1" />
+        <File Id="fil2E8C0BC817624863A9E877D52AEA0FC3" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-InstallCM.ps1" />
+        <File Id="fil87783AD566374D4FA9D658BF17EB789A" Source="$(var.SolutionDir)\LabSources\CustomRoles\CM-2103\Invoke-UpdateCM.ps1" />
+      </Component>
       <Component Id="cmp37d492e149754ae5a9ec1f7d4dca1274" Directory="dirD49C097A947F489194CAACFE550AC9C2" Guid="b206fa90-412b-4d5d-9cdf-e7265d07fb7c">
         <File Id="fil14812A370302467D999A50F69F73486E" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\DownloadAdk.ps1" />
         <File Id="fil90167B87796A44B0B67E03659AD053BD" Source="$(var.SolutionDir)\LabSources\CustomRoles\MDT\HostStart.ps1" />
@@ -1228,6 +1253,9 @@
       </Component>
       <Component Id="cmpD0587757D9A94FF2B4794226ABE4E3BF" Directory="dir173133541A464C18AA07E8E6F6862181" Guid="c4aea826-aae0-4318-b8c4-d5b29bfd9ab1">
         <File Id="fil4BCECFAE71234E86B1B97C4A0B0D5848" Source="$(var.SolutionDir)\LabSources\CustomRoles\Office2019\HostStart.ps1" />
+      </Component>
+      <Component Id="cmpD1B147C179BA4890BBE4DC354DABFCBE" Directory="dirDCF05B8A2D444B60B8AC412CE687FC66" Guid="bc18385a-bccc-4b0b-87ab-fe73514c052f">
+        <File Id="fil1EB0F286319041778CC4F589DB9D89D6" Source="$(var.SolutionDir)\LabSources\CustomRoles\PowerShellWebAccess\HostStart.ps1" />
       </Component>
       <Component Id="cmp31B7386BE61E4CBC87B547A4223A7FA3" Directory="dir81AC7AA67CD84A6B9CBA05139A977B45" Guid="4339a451-190b-4ff0-9e30-1bed0acee283">
         <File Id="filE55F655A00EA4CC490F8A54BF44BFA49" Source="$(var.SolutionDir)\LabSources\CustomRoles\ProGet5\HostStart.ps1" />
@@ -1259,6 +1287,7 @@
       </Component>
       <Component Id="cmpCFDA434FE2294C39A01B1A9F6DC59529" Directory="dirA53F69F85E224F84873C47FAFD3B88BB" Guid="015a25fd-f85e-4185-8fe7-09b05cb32d9b">
         <File Id="filDC4663A87BBC486D96836D3BB0F4F246" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\HostStart.ps1" />
+        <File Id="filD6FFEA4ABA0A491CB12286E6300C694D" Source="$(var.SolutionDir)\LabSources\CustomRoles\LabBuilder\PolarisLabBuilder.ps1" />
       </Component>
       <Component Id="cmpD43AC3ADCAC343318238CE837A8511FD" Directory="dirC36E8B7EEDBFAC7EC8246E888318E976" Guid="8f1d61d4-524e-480a-bced-3808ee1464d7">
         <File Id="fil322C12274D5FA443820293B774FB33F8" KeyPath="yes" Source="$(var.SolutionDir)\LabSources\CustomRoles\NuGetServer\HostStart.ps1" />
@@ -1443,7 +1472,17 @@
   </Fragment>
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
-      <Directory Id="dirD49C097A9asd9813oen50AC9C2" Name="CM-1902" />
+      <Directory Id="dirE5932629FB4A45BB8ABFA79A78890A04" Name="CM-1902" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dir141892B23C7E4AD281B7868E9429C03A" Name="CM-2002" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirD74EDE5ACE9244AAAAA4BC50F8AA8BD23" Name="CM-2103" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
@@ -1454,6 +1493,11 @@
   <Fragment>
     <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
       <Directory Id="dir173133541A464C18AA07E8E6F6862181" Name="Office2019" />
+    </DirectoryRef>
+  </Fragment>
+  <Fragment>
+    <DirectoryRef Id="dirE3A2F6A6AFF66E7DBE85D5202BCC2B39">
+      <Directory Id="dirDCF05B8A2D444B60B8AC412CE687FC66" Name="PowerShellWebAccess" />
     </DirectoryRef>
   </Fragment>
   <Fragment>
