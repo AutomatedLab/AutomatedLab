@@ -9,7 +9,7 @@ Add-LabMachineDefinition -Name Web1 -Roles WebServer
 ```
 
 Many roles offer options for customization. The options are documented in the role documentation. If you want to define a customized role, use the cmdlet Get-LabMachineRoleDefinition which takes two parameters, the role and properties. The properties parameter takes a hashtabe.
-If you want to define the fole FirstChildDC, you can leave everything to default / automatics or go with your own definition.
+If you want to define the role FirstChildDC, you can leave everything to default / automatics or go with your own definition.
 ```powershell
 $role = Get-LabMachineRoleDefinition -Role FirstChildDC -Properties @{ ParentDomain = 'vm.net'; NewDomain = 'a'; DomainFunctionalLevel = 'Win2012R2' }
 Add-LabMachineDefinition -Name T3ADC1 -IpAddress 192.168.50.20 -DomainName a.vm.net -Roles $role
