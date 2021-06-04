@@ -192,6 +192,8 @@
 
 ## 5.21.0 - 2020-05-26
 
+## 5.16.0 - 2019-09-29
+
 ### Enhancements
 
 - Added NuGet custom role that uses open source NuGet server package
