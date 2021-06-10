@@ -7,6 +7,7 @@
 ### Bugs
 
 - Fixed bug in CA deployment: NETBIOS domain name was disregarded if one was explicitly configured
+- Fixing multiple bugs in DSC Pull Server DB deployment
 
 ## 5.37.0 (2021-05-31)
 
