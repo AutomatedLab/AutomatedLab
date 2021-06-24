@@ -30,6 +30,25 @@
         ProductKey                    = ''        
     }
 
+    $iniAddManagementServer = @{
+        SqlServerInstance             = ''
+        SqlInstancePort               = '1433'
+        DatabaseName                  = 'OperationsManager'
+        InstallLocation               = 'C:\Program Files\{0}'
+        ActionAccountUser             = 'OM19AA'
+        ActionAccountPassword         = ''
+        DASAccountUser                = 'OM19DAS' 
+        DASAccountPassword            = ''
+        DataReaderUser                = 'OM19READ'
+        DataReaderPassword            = ''
+        DataWriterUser                = 'OM19WRITE'
+        DataWriterPassword            = ''
+        EnableErrorReporting          = 'Never'
+        SendCEIPReports               = '0'
+        AcceptEndUserLicenseAgreement = '1'
+        UseMicrosoftUpdate            = '0'
+    }
+
     $iniNativeConsole = @{
         EnableErrorReporting          = 'Never'
         InstallLocation               = 'C:\Program Files\{0}'
@@ -61,6 +80,8 @@
     $all = Get-LabVM -Role Scom
     $scomConsoleRole = Get-LabVM -Role ScomConsole
     $scomManagementServer = Get-LabVm -Role ScomManagement
+    $firstmgmt = $scomManagementServer | Select-Object -First 1
+    $addtlmgmt = $scomManagementServer | Select-Object -Skip 1
     $scomWebConsoleRole = Get-LabVM -Role ScomWebConsole
     $scomReportingServer = Get-LabVm -Role ScomReporting
 
@@ -98,7 +119,7 @@
     } -NoDisplay
     
     # Server
-    $jobs = foreach ($vm in $scomManagementServer)
+    $jobs = foreach ($vm in $firstmgmt)
     {
         $iniManagement = $iniManagementServer.Clone()
         $role = $vm.Roles | Where-Object Name -eq ScomManagement
@@ -194,28 +215,104 @@
             $iniManagement['DwSqlServerInstance'] = $sqlMachine.Name
         }
 
-        # Setup Command Line Management-Server
-        Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+         # Setup Command Line Management-Server
+            
+            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
             Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
-        } -Variable (Get-Variable iniManagement)
-        $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
-        $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
-        Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+            } -Variable (Get-Variable iniManagement)
+            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+            
+            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+            $isPrimaryManagementServer = $isPrimaryManagementServer - 1
+        
     }
 
+    
     if ($jobs) { Wait-LWLabJob -Job $jobs }
+
+    $jobs = foreach ($vm in $addtlmgmt)
+    {
+        $iniManagement = $iniAddManagementServer.Clone()
+        $role = $vm.Roles | Where-Object Name -eq ScomManagement
+
+        foreach ($kvp in $iniManagement.GetEnumerator().Where( { $_.Key -like '*Password' }))
+        {
+            $iniManagement[$kvp.Key] = $vm.GetCredential((Get-Lab)).GetNetworkCredential().Password # Default lab credential
+        }
+
+        foreach ($property in $role.Properties.GetEnumerator())
+        {
+            if (-not $iniManagement.ContainsKey($property.Key)) { continue }
+            $iniManagement[$property.Key] = $property.Value
+        }
+
+        if ($role.Properties.ContainsKey('ProductKey'))
+        {
+            $iniServer['ProductKey'] = $role.Properties['ProductKey']
+        }
+
+        foreach ($kvp in $iniManagement.GetEnumerator().Where( { $_.Key -like '*User' }))
+        {
+            if ($kvp.Value.Contains('\')) { continue }
+            
+            $iniManagement[$kvp.Key] = '{0}\{1}' -f $vm.DomainAccountName.Split('\')[0], $kvp.Value
+        }
+        
+        if ($iniManagement['SqlServerInstance'] -like '*\*')
+        {
+            $sqlMachineName = $iniManagement['SqlServerInstance'].Split('\')[0]
+            $sqlMachine = Get-LabVm -ComputerName $sqlMachineName
+        }
+
+        if ($iniManagement['DwSqlServerInstance'] -like '*\*')
+        {
+            $sqlDwMachineName = $iniManagement['DwSqlServerInstance'].Split('\')[0]
+            $sqlDwMachine = Get-LabVm -ComputerName $sqlDwMachineName
+        }
+
+        if (-not $sqlMachine)
+        {
+            $sqlMachine = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+        }
+
+        if (-not $sqlDwMachine)
+        {
+            $sqlDwMachine = Get-LabVm -Role SQLServer2016, SQLServer2017 | Select-Object -First 1
+        }
+
+        if ([string]::IsNullOrWhiteSpace($iniManagement['SqlServerInstance']))
+        {
+            $iniManagement['SqlServerInstance'] = $sqlMachine.Name
+        }
+        if ([string]::IsNullOrWhiteSpace($iniManagement['DwSqlServerInstance']))
+        {
+            $iniManagement['DwSqlServerInstance'] = $sqlMachine.Name
+        }
+
+        
+            # Setup Command Line Management-Server
+            Invoke-LabCommand -ComputerName $vm -ScriptBlock {
+            Add-LocalGroupMember -Sid S-1-5-32-544 -Member $iniManagement['DASAccountUser']
+            } -Variable (Get-Variable iniManagement)
+            $CommandlineArgumentsServer = $iniManagement.GetEnumerator() | Where-Object Key -notin ProductKey, ScomAdminGroupName | ForEach-Object { '/{0}:"{1}"' -f $_.Key, $_.Value }
+            
+            $setupCommandlineServer = "/install /silent /components:OMServer $CommandlineArgumentsServer"
+            Install-LabSoftwarePackage -ComputerName $vm -LocalPath C:\SCOM\setup.exe -CommandLine $setupCommandlineServer -AsJob -PassThru -UseShellExecute -UseExplicitCredentialsForScheduledJob -AsScheduledJob -Timeout 20 -NoDisplay
+        
+    }
 
     # After SCOM is set up, we need to wait a bit for it to "settle", otherwise there might be timing issues later on
     Start-Sleep -Seconds 30
-    Remove-LabPSSession -ComputerName $scomManagementServer
-    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $scomManagementServer {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
+    Remove-LabPSSession -ComputerName $firstmgmt
+    $cmdAvailable = Invoke-LabCommand -PassThru -NoDisplay -ComputerName $firstmgmt {Get-Command Get-ScomManagementServer -ErrorAction SilentlyContinue}
     if (-not $cmdAvailable)
     {
         Start-Sleep -Seconds 30
-        Remove-LabPSSession -ComputerName $scomManagementServer
+        Remove-LabPSSession -ComputerName $firstmgmt
     }
 
-    Invoke-LabCommand -ComputerName $scomManagementServer -ActivityName 'Waiting for SCOM Management to get in gear' -ScriptBlock {
+    Invoke-LabCommand -ComputerName $firstmgmt -ActivityName 'Waiting for SCOM Management to get in gear' -ScriptBlock {
         $start = Get-Date
         do
         {
@@ -226,7 +323,7 @@
     }
 
     # Licensing
-    foreach ($vm in $scomManagementServer)
+    foreach ($vm in $firstmgmt)
     {
         $role = $vm.Roles | Where-Object Name -eq ScomManagement
         if (-not $role.Properties.ContainsKey('ProductKey')) { continue }
