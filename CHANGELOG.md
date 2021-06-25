@@ -4,6 +4,11 @@
 
 ### Enhancements
 
+- ARM templates redeployability improved by using uniqueString function
+- ARM login using device authentication for headless scenarios as well as Linux
+- Azure location name can now be specified either as Display Name or Location Name
+- SCOM role now takes care of multiple management servers (thanks @mlinowski !)
+
 ### Bugs
 
 - Fixed bug in CA deployment: NETBIOS domain name was disregarded if one was explicitly configured
